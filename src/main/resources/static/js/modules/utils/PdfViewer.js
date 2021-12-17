@@ -660,8 +660,8 @@ export class PdfViewer extends EventFactory {
                             report.css("display", "block");
                         }
                     })
-                    // signField.attr("data-toggle", "modal");
-                    // signField.attr("data-target", "#sign_" + self.signRequestId);
+                    // signField.attr("data-bs-toggle", "modal");
+                    // signField.attr("data-bs-target", "#sign_" + self.signRequestId);
                     // signField.addClass("d-none");
                     // signField.parent().remove();
                 }

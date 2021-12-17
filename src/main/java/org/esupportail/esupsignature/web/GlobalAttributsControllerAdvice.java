@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.beanutils.BeanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.OJService;
 import org.esupportail.esupsignature.entity.User;
@@ -11,6 +10,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.info.BuildProperties;
@@ -76,7 +76,8 @@ public class GlobalAttributsControllerAdvice {
     @ModelAttribute
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, JsonProcessingException {
         if(userEppn != null) {
-            GlobalProperties myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
+            GlobalProperties myGlobalProperties = new GlobalProperties();
+            BeanUtils.copyProperties(globalProperties, myGlobalProperties);
             User user = userService.getUserByEppn(userEppn);
             parseRoles(user, myGlobalProperties);
             model.addAttribute("user", user);

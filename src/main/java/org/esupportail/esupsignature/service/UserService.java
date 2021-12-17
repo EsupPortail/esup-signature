@@ -374,9 +374,11 @@ public class UserService {
             if (domain.equals(globalProperties.getDomain())) {
                 return UserType.ldap;
             }
-            File whiteListFile = getDomainsWhiteList();
-            if (fileService.isFileContainsText(whiteListFile, domain)) {
-                return UserType.shib;
+            if(shibProperties.getDomainsWhiteListUrl() != null) {
+                File whiteListFile = getDomainsWhiteList();
+                if (fileService.isFileContainsText(whiteListFile, domain)) {
+                    return UserType.shib;
+                }
             }
         }
         return UserType.external;

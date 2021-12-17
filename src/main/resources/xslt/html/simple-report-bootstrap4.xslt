@@ -26,9 +26,9 @@
         <div>
             <xsl:attribute name="class">card mb-3</xsl:attribute>
             <div>
-                <xsl:attribute name="class">card-header bg-primary</xsl:attribute>
-                <xsl:attribute name="data-target">#collapsePolicy</xsl:attribute>
-                <xsl:attribute name="data-toggle">collapse</xsl:attribute>
+                <xsl:attribute name="class">card-header bg-primary text-white</xsl:attribute>
+                <xsl:attribute name="data-bs-target">#collapsePolicy</xsl:attribute>
+                <xsl:attribute name="data-bs-toggle">collapse</xsl:attribute>
                 Validation Policy : <xsl:value-of select="dss:PolicyName"/>
             </div>
             <div>
@@ -57,9 +57,9 @@
         <div>
             <xsl:attribute name="class">card mb-3</xsl:attribute>
             <div>
-                <xsl:attribute name="class">card-header bg-<xsl:value-of select="$cardStyle" /></xsl:attribute>
-                <xsl:attribute name="data-target">#collapseSig<xsl:value-of select="$idToken" /></xsl:attribute>
-                <xsl:attribute name="data-toggle">collapse</xsl:attribute>
+                <xsl:attribute name="class">card-header bg-<xsl:value-of select="$cardStyle" /> text-white</xsl:attribute>
+                <xsl:attribute name="data-bs-target">#collapseSig<xsl:value-of select="$idToken" /></xsl:attribute>
+                <xsl:attribute name="data-bs-toggle">collapse</xsl:attribute>
 
                 <xsl:if test="@CounterSignature = 'true'">
                     <span>
@@ -126,7 +126,7 @@
                             </xsl:if>
                             <i>
                                 <xsl:attribute name="class">fa fa-info-circle text-info ml-2</xsl:attribute>
-                                <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                                <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                                 <xsl:attribute name="data-placement">right</xsl:attribute>
 
                                 <xsl:if test="dss:SignatureLevel">
@@ -174,7 +174,7 @@
                             <xsl:variable name="semanticText" select="//dss:Semantic[contains(@Key,$dssIndication)]"/>
 
                             <xsl:if test="string-length($semanticText) &gt; 0">
-                                <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                                <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                                 <xsl:attribute name="data-placement">right</xsl:attribute>
                                 <xsl:attribute name="title"><xsl:value-of select="$semanticText" /></xsl:attribute>
                             </xsl:if>
@@ -303,7 +303,7 @@
                             <xsl:value-of select="dss:BestSignatureTime"/>
                             <i>
                                 <xsl:attribute name="class">fa fa-info-circle text-info ml-2</xsl:attribute>
-                                <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                                <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                                 <xsl:attribute name="data-placement">right</xsl:attribute>
                                 <xsl:attribute name="title">
                                     Lowest time at which there exists a proof of existence for the signature
@@ -352,9 +352,9 @@
                     <div>
                         <xsl:attribute name="class">card mt-3</xsl:attribute>
                         <div>
-                            <xsl:attribute name="class">card-header bg-primary collapsed</xsl:attribute>
-                            <xsl:attribute name="data-target">#collapseSigDetails<xsl:value-of select="$idToken" /></xsl:attribute>
-                            <xsl:attribute name="data-toggle">collapse</xsl:attribute>
+                            <xsl:attribute name="class">card-header bg-primary text-white collapsed</xsl:attribute>
+                            <xsl:attribute name="data-bs-target">#collapseSigDetails<xsl:value-of select="$idToken" /></xsl:attribute>
+                            <xsl:attribute name="data-bs-toggle">collapse</xsl:attribute>
                             <xsl:attribute name="aria-expanded">false</xsl:attribute>
 
                             Timestamps <span class="badge bg-light"><xsl:value-of select="count(dss:Timestamps/dss:Timestamp)" /></span>
@@ -438,7 +438,7 @@
                     <xsl:attribute name="class">badge bg-<xsl:value-of select="$indicationClass" /></xsl:attribute>
 
                     <xsl:if test="string-length($semanticText) &gt; 0">
-                        <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                        <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                         <xsl:attribute name="data-placement">right</xsl:attribute>
                         <xsl:attribute name="title"><xsl:value-of select="$semanticText" /></xsl:attribute>
                     </xsl:if>
@@ -453,9 +453,9 @@
         <div>
             <xsl:attribute name="class">card</xsl:attribute>
             <div>
-                <xsl:attribute name="class">card-header bg-primary</xsl:attribute>
-                <xsl:attribute name="data-target">#collapseInfo</xsl:attribute>
-                <xsl:attribute name="data-toggle">collapse</xsl:attribute>
+                <xsl:attribute name="class">card-header bg-primary text-white</xsl:attribute>
+                <xsl:attribute name="data-bs-target">#collapseInfo</xsl:attribute>
+                <xsl:attribute name="data-bs-toggle">collapse</xsl:attribute>
                 Document Information
             </div>
             <div>

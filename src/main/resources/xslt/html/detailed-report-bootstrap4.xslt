@@ -10,9 +10,9 @@
             <xsl:attribute name="id">detailed-report-card</xsl:attribute>
             <xsl:attribute name="class">card</xsl:attribute>
             <div>
-                <xsl:attribute name="class">card-header bg-primary d-flex</xsl:attribute>
-                <xsl:attribute name="data-target">#collapseDR</xsl:attribute>
-                <xsl:attribute name="data-toggle">collapse</xsl:attribute>
+                <xsl:attribute name="class">card-header bg-primary text-white d-flex</xsl:attribute>
+                <xsl:attribute name="data-bs-target">#collapseDR</xsl:attribute>
+                <xsl:attribute name="data-bs-toggle">collapse</xsl:attribute>
                 <div>
                     <xsl:attribute name="class">align-self-center</xsl:attribute>
                     Validation
@@ -44,9 +44,9 @@
         <div>
             <xsl:attribute name="class">card mb-2 mb-sm-3</xsl:attribute>
             <div>
-                <xsl:attribute name="class">card-header bg-primary</xsl:attribute>
-                <xsl:attribute name="data-target">#collapseSignatureValidationData<xsl:value-of select="@Id"/></xsl:attribute>
-                <xsl:attribute name="data-toggle">collapse</xsl:attribute>
+                <xsl:attribute name="class">card-header bg-primary text-white</xsl:attribute>
+                <xsl:attribute name="data-bs-target">#collapseSignatureValidationData<xsl:value-of select="@Id"/></xsl:attribute>
+                <xsl:attribute name="data-bs-toggle">collapse</xsl:attribute>
 
                 <xsl:call-template name="badge-conclusion">
                     <xsl:with-param name="Conclusion" select="dss:Conclusion" />
@@ -64,7 +64,7 @@
                 <i>
                     <xsl:attribute name="class">id-copy fa fa-clipboard btn btn-outline-light cursor-pointer text-light border-0 p-2 ml-1 mr-1</xsl:attribute>
                     <xsl:attribute name="data-id"><xsl:value-of select="@Id"/></xsl:attribute>
-                    <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                    <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                     <xsl:attribute name="data-placement">right</xsl:attribute>
                     <xsl:attribute name="data-success-text">Id copied successfully!</xsl:attribute>
                     <xsl:attribute name="title">Copy Id to clipboard</xsl:attribute>
@@ -90,8 +90,8 @@
             <xsl:attribute name="class">card mb-2 mb-sm-3</xsl:attribute>
             <div>
                 <xsl:attribute name="class">card-header</xsl:attribute>
-                <xsl:attribute name="data-target">#collapseTimestamp<xsl:value-of select="@Id"/></xsl:attribute>
-                <xsl:attribute name="data-toggle">collapse</xsl:attribute>
+                <xsl:attribute name="data-bs-target">#collapseTimestamp<xsl:value-of select="@Id"/></xsl:attribute>
+                <xsl:attribute name="data-bs-toggle">collapse</xsl:attribute>
 
                 <xsl:call-template name="badge-conclusion">
                     <xsl:with-param name="Conclusion" select="dss:ValidationProcessTimestamp/dss:Conclusion" />
@@ -102,7 +102,7 @@
                 <i>
                     <xsl:attribute name="class">id-copy fa fa-clipboard btn btn-outline-light cursor-pointer text-dark border-0 p-2 ml-1 mr-1</xsl:attribute>
                     <xsl:attribute name="data-id"><xsl:value-of select="@Id"/></xsl:attribute>
-                    <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                    <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                     <xsl:attribute name="data-placement">right</xsl:attribute>
                     <xsl:attribute name="data-success-text">Id copied successfully!</xsl:attribute>
                     <xsl:attribute name="title">Copy Id to clipboard</xsl:attribute>
@@ -126,15 +126,15 @@
             </xsl:if>
             <xsl:attribute name="class">card mb-2 mb-sm-3</xsl:attribute>
             <div>
-                <xsl:attribute name="class">card-header bg-primary</xsl:attribute>
-                <xsl:attribute name="data-target">#collapseBasicBuildingBlocks<xsl:value-of select="@Id"/></xsl:attribute>
-                <xsl:attribute name="data-toggle">collapse</xsl:attribute>
+                <xsl:attribute name="class">card-header bg-primary text-white</xsl:attribute>
+                <xsl:attribute name="data-bs-target">#collapseBasicBuildingBlocks<xsl:value-of select="@Id"/></xsl:attribute>
+                <xsl:attribute name="data-bs-toggle">collapse</xsl:attribute>
 
                 <span>Basic Building Blocks <br/><xsl:value-of select="@Type"/> (Id = <xsl:value-of select="@Id"/>)</span>
                 <i>
                     <xsl:attribute name="class">id-copy fa fa-clipboard btn btn-outline-light cursor-pointer text-light border-0 p-2 ml-1 mr-1</xsl:attribute>
                     <xsl:attribute name="data-id"><xsl:value-of select="@Id"/></xsl:attribute>
-                    <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                    <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                     <xsl:attribute name="data-placement">right</xsl:attribute>
                     <xsl:attribute name="data-success-text">Id copied successfully!</xsl:attribute>
                     <xsl:attribute name="title">Copy Id to clipboard</xsl:attribute>
@@ -173,8 +173,8 @@
             <xsl:attribute name="class">card mb-2 mb-sm-3</xsl:attribute>
             <div>
                 <xsl:attribute name="class">card-header</xsl:attribute>
-                <xsl:attribute name="data-target">#collapse<xsl:value-of select="name(.)"/><xsl:value-of select="../@Id"/></xsl:attribute>
-                <xsl:attribute name="data-toggle">collapse</xsl:attribute>
+                <xsl:attribute name="data-bs-target">#collapse<xsl:value-of select="name(.)"/><xsl:value-of select="../@Id"/></xsl:attribute>
+                <xsl:attribute name="data-bs-toggle">collapse</xsl:attribute>
 
                 <xsl:call-template name="badge-conclusion">
                     <xsl:with-param name="Conclusion" select="dss:Conclusion" />
@@ -186,7 +186,7 @@
                 <xsl:if test="dss:ProofOfExistence/dss:Time">
                     <i>
                         <xsl:attribute name="class">constraint-tooltip fa fa-clock-o</xsl:attribute>
-                        <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                        <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                         <xsl:attribute name="data-placement">top</xsl:attribute>
                         <xsl:attribute name="title">Best signature time : <xsl:value-of select="dss:ProofOfExistence/dss:Time" /></xsl:attribute>
                     </i>
@@ -209,8 +209,8 @@
             <xsl:attribute name="class">card mb-2 mb-sm-3</xsl:attribute>
             <div>
                 <xsl:attribute name="class">card-header</xsl:attribute>
-                <xsl:attribute name="data-target">#collapseTimestampValidationData<xsl:value-of select="../@Id"/></xsl:attribute>
-                <xsl:attribute name="data-toggle">collapse</xsl:attribute>
+                <xsl:attribute name="data-bs-target">#collapseTimestampValidationData<xsl:value-of select="../@Id"/></xsl:attribute>
+                <xsl:attribute name="data-bs-toggle">collapse</xsl:attribute>
 
                 <xsl:call-template name="badge-conclusion">
                     <xsl:with-param name="Conclusion" select="dss:Conclusion" />
@@ -225,7 +225,7 @@
 
                 <i>
                     <xsl:attribute name="class">constraint-tooltip fa fa-clock-o</xsl:attribute>
-                    <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                    <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                     <xsl:attribute name="data-placement">top</xsl:attribute>
                     <xsl:attribute name="title">Production time : <xsl:value-of select="@ProductionTime"/></xsl:attribute>
                 </i>
@@ -249,8 +249,8 @@
             <xsl:attribute name="class">card mb-2 mb-sm-3</xsl:attribute>
             <div>
                 <xsl:attribute name="class">card-header</xsl:attribute>
-                <xsl:attribute name="data-target">#collapseTL<xsl:value-of select="@CountryCode"/></xsl:attribute>
-                <xsl:attribute name="data-toggle">collapse</xsl:attribute>
+                <xsl:attribute name="data-bs-target">#collapseTL<xsl:value-of select="@CountryCode"/></xsl:attribute>
+                <xsl:attribute name="data-bs-toggle">collapse</xsl:attribute>
 
                 <xsl:call-template name="badge-conclusion">
                     <xsl:with-param name="Conclusion" select="dss:Conclusion" />
@@ -263,7 +263,7 @@
                     <i>
                         <xsl:attribute name="class">id-copy fa fa-clipboard btn btn-outline-light cursor-pointer text-dark border-0 p-2 ml-1 mr-1</xsl:attribute>
                         <xsl:attribute name="data-id"><xsl:value-of select="@Id"/></xsl:attribute>
-                        <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                        <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                         <xsl:attribute name="data-placement">right</xsl:attribute>
                         <xsl:attribute name="data-success-text">Id copied successfully!</xsl:attribute>
                         <xsl:attribute name="title">Copy Id to clipboard</xsl:attribute>
@@ -285,8 +285,8 @@
             <xsl:attribute name="class">card</xsl:attribute>
             <div>
                 <xsl:attribute name="class">card-header</xsl:attribute>
-                <xsl:attribute name="data-target">#collapseSigAnalysis<xsl:value-of select="@Id"/></xsl:attribute>
-                <xsl:attribute name="data-toggle">collapse</xsl:attribute>
+                <xsl:attribute name="data-bs-target">#collapseSigAnalysis<xsl:value-of select="@Id"/></xsl:attribute>
+                <xsl:attribute name="data-bs-toggle">collapse</xsl:attribute>
 
                 <span>
                     <xsl:attribute name="class">badge bg-secondary float-end</xsl:attribute>
@@ -308,8 +308,8 @@
             <xsl:attribute name="class">card</xsl:attribute>
             <div>
                 <xsl:attribute name="class">card-header</xsl:attribute>
-                <xsl:attribute name="data-target">#collapseTstAnalysis<xsl:value-of select="@Id"/></xsl:attribute>
-                <xsl:attribute name="data-toggle">collapse</xsl:attribute>
+                <xsl:attribute name="data-bs-target">#collapseTstAnalysis<xsl:value-of select="@Id"/></xsl:attribute>
+                <xsl:attribute name="data-bs-toggle">collapse</xsl:attribute>
 
                 <span>
                     <xsl:attribute name="class">badge bg-secondary float-end</xsl:attribute>
@@ -331,8 +331,8 @@
             <xsl:attribute name="class">card mt-3</xsl:attribute>
             <div>
                 <xsl:attribute name="class">card-header</xsl:attribute>
-                <xsl:attribute name="data-target">#cert-qual-<xsl:value-of select="generate-id(.)"/></xsl:attribute>
-                <xsl:attribute name="data-toggle">collapse</xsl:attribute>
+                <xsl:attribute name="data-bs-target">#cert-qual-<xsl:value-of select="generate-id(.)"/></xsl:attribute>
+                <xsl:attribute name="data-bs-toggle">collapse</xsl:attribute>
 
                 <span>
                     <xsl:attribute name="class">badge bg-secondary float-end</xsl:attribute>
@@ -343,7 +343,7 @@
 
                 <i>
                     <xsl:attribute name="class">constraint-tooltip fa fa-clock-o</xsl:attribute>
-                    <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                    <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                     <xsl:attribute name="data-placement">top</xsl:attribute>
                     <xsl:attribute name="title"><xsl:value-of select="@DateTime"/></xsl:attribute>
                 </i>
@@ -354,7 +354,7 @@
                     <i>
                         <xsl:attribute name="class">id-copy fa fa-clipboard btn btn-outline-light cursor-pointer text-dark border-0 p-2 ml-1 mr-1</xsl:attribute>
                         <xsl:attribute name="data-id"><xsl:value-of select="@Id"/></xsl:attribute>
-                        <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                        <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                         <xsl:attribute name="data-placement">right</xsl:attribute>
                         <xsl:attribute name="data-success-text">Id copied successfully!</xsl:attribute>
                         <xsl:attribute name="title">Copy Id to clipboard</xsl:attribute>
@@ -392,7 +392,7 @@
                     <xsl:attribute name="class">badge <xsl:value-of select="$indicationCssClass" /> <xsl:value-of select="$AdditionalClass" /></xsl:attribute>
 
                     <xsl:if test="string-length($semanticText) &gt; 0">
-                        <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                        <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                         <xsl:attribute name="data-placement">right</xsl:attribute>
                         <xsl:attribute name="title"><xsl:value-of select="$semanticText" /></xsl:attribute>
                     </xsl:if>
@@ -406,7 +406,7 @@
                     <xsl:attribute name="class">badge <xsl:value-of select="$indicationCssClass" /> <xsl:value-of select="$AdditionalClass" /></xsl:attribute>
 
                     <xsl:if test="string-length($semanticText) &gt; 0">
-                        <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                        <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                         <xsl:attribute name="data-placement">right</xsl:attribute>
                         <xsl:attribute name="title"><xsl:value-of select="$semanticText" /></xsl:attribute>
                     </xsl:if>
@@ -449,8 +449,8 @@
             <div>
                 <xsl:attribute name="class">card mt-3</xsl:attribute>
                 <div>
-                    <xsl:attribute name="data-target">#collapse-SubXCV-<xsl:value-of select="$currentId"/></xsl:attribute>
-                    <xsl:attribute name="data-toggle">collapse</xsl:attribute>
+                    <xsl:attribute name="data-bs-target">#collapse-SubXCV-<xsl:value-of select="$currentId"/></xsl:attribute>
+                    <xsl:attribute name="data-bs-toggle">collapse</xsl:attribute>
                     <xsl:choose>
                         <xsl:when test="@TrustAnchor = 'true'">
                             <xsl:attribute name="class">card-header border-bottom-0</xsl:attribute>
@@ -466,7 +466,7 @@
                             <xsl:when test="@TrustAnchor = 'true'">
                                 <i>
                                     <xsl:attribute name="class">constraint-tooltip fa fa-certificate ml-2</xsl:attribute>
-                                    <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                                    <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                                     <xsl:attribute name="data-placement">top</xsl:attribute>
                                     <xsl:attribute name="title">Trust Anchor</xsl:attribute>
                                 </i>
@@ -482,7 +482,7 @@
                         <xsl:if test="@SelfSigned = 'true'">
                             <i>
                                 <xsl:attribute name="class">constraint-tooltip fa fa-user-circle ml-2</xsl:attribute>
-                                <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                                <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                                 <xsl:attribute name="data-placement">top</xsl:attribute>
                                 <xsl:attribute name="title">Self-signed</xsl:attribute>
                             </i>
@@ -491,7 +491,7 @@
                         <xsl:if test="dss:CrossCertificate">
                             <i>
                                 <xsl:attribute name="class">constraint-tooltip fa fa-link ml-2</xsl:attribute>
-                                <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                                <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                                 <xsl:attribute name="data-placement">top</xsl:attribute>
                                 <xsl:attribute name="title">Cross-Certification: <xsl:value-of select="dss:CrossCertificate"/></xsl:attribute>
                             </i>
@@ -500,7 +500,7 @@
                         <xsl:if test="dss:EquivalentCertificate">
                             <i>
                                 <xsl:attribute name="class">constraint-tooltip fa fa-refresh ml-2</xsl:attribute>
-                                <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                                <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                                 <xsl:attribute name="data-placement">top</xsl:attribute>
                                 <xsl:attribute name="title">Equivalent certification: <xsl:value-of select="dss:EquivalentCertificate"/></xsl:attribute>
                             </i>
@@ -517,7 +517,7 @@
                             <i>
                                 <xsl:attribute name="class">id-copy fa fa-clipboard btn btn-outline-light cursor-pointer text-dark border-0 p-2 ml-1 mr-1</xsl:attribute>
                                 <xsl:attribute name="data-id"><xsl:value-of select="@Id"/></xsl:attribute>
-                                <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                                <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                                 <xsl:attribute name="data-placement">right</xsl:attribute>
                                 <xsl:attribute name="data-success-text">Id copied successfully!</xsl:attribute>
                                 <xsl:attribute name="title">Copy Id to clipboard</xsl:attribute>
@@ -657,7 +657,7 @@
                 </xsl:variable>
                 <i>
                     <xsl:attribute name="class">constraint-tooltip <xsl:value-of select="$colorCssClass" /> fa <xsl:value-of select="$iconCssClass" /> mr-2 ml-0 ml-md-3 ml-lg-5</xsl:attribute>
-                    <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                    <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                     <xsl:attribute name="data-placement">left</xsl:attribute>
                     <xsl:attribute name="title"><xsl:value-of select="$textTitle" /></xsl:attribute>
                 </i>
@@ -669,7 +669,7 @@
                 <xsl:if test="dss:AdditionalInfo">
                     <i>
                         <xsl:attribute name="class">constraint-tooltip fa fa-plus-circle text-info</xsl:attribute>
-                        <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                        <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                         <xsl:attribute name="data-placement">right</xsl:attribute>
                         <xsl:attribute name="title"><xsl:value-of select="dss:AdditionalInfo" /></xsl:attribute>
                     </i>
