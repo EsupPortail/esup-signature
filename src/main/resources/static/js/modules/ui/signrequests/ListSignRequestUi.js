@@ -29,9 +29,9 @@ export class ListSignRequestUi {
         this.initListeners();
         this.massSignButtonHide = true;
         this.rowHeight = null;
-        if(signRequests.totalElements > 10 && signRequests.numberOfElements === 10) {
-            this.scaleList();
-        }
+        // if(signRequests.totalElements > 10 && signRequests.numberOfElements === 10) {
+        //     this.scaleList();
+        // }
     }
 
     initListeners() {
@@ -47,17 +47,13 @@ export class ListSignRequestUi {
         $('#menuDownloadMultipleButton').on("click", e => this.downloadMultiple());
         $('#menuDownloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
-        $('#listSignRequestTable').bind('resize', function(){
-            console.log('resized');
-        });
+        $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
         this.refreshListeners();
         document.addEventListener("massSign", e => this.updateWaitModal(e));
         document.addEventListener("sign", e => this.updateErrorWaitModal(e));
-        if(this.signRequests.totalElements > 10 && this.signRequests.numberOfElements === 10) {
-            $(window).resize(e => this.scaleList());
-        }
+        $("#more-sign-request").on("click", e => this.addToPage());
     }
 
     refreshListeners() {
@@ -96,7 +92,7 @@ export class ListSignRequestUi {
         if(tableHeight <= windowHeight) {
             height = tableHeight + (windowHeight - tableHeight);
         }
-        this.signRequestTable.css("height", height  )
+        this.signRequestTable.css("height", height)
     }
 
     checkNbCheckboxes() {
@@ -223,7 +219,7 @@ export class ListSignRequestUi {
             $("#listSignRequestTable").removeClass("wait");
             $("#loader").hide();
             self.refreshListeners();
-            self.scaleList();
+            // self.scaleList();
         });
     }
 

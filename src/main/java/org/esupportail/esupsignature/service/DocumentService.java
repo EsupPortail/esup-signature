@@ -74,11 +74,17 @@ public class DocumentService {
 		return name;
 	}
 
-	public String archiveDocument(Document signedFile, String path, String subPath, String name) throws EsupSignatureFsException, EsupSignatureException {
-		return exportDocument(fsAccessFactoryService.getPathIOType(path), path + subPath, signedFile, name);
+	public String archiveDocument(Document signedFile, String path, String subPath, String name) throws EsupSignatureFsException {
+		try {
+			return exportDocument(fsAccessFactoryService.getPathIOType(path), path + subPath, signedFile, name);
+		} catch (EsupSignatureException e) {
+			logger.error(e.getMessage());
+		}
+		return null;
 	}
 
-	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile, String name) throws EsupSignatureFsException {
+	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile, String name) throws EsupSignatureException, EsupSignatureFsException {
+		assert !name.isEmpty();
 		String documentUri;
 		FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(targetUrl);
 		if(fsAccessService != null) {
@@ -95,13 +101,13 @@ public class DocumentService {
 					documentUri = targetUrl + "/" + name;
 					return documentUri;
 				} else {
-					throw new EsupSignatureFsException("file is not exported");
+					throw new EsupSignatureException("file is not exported");
 				}
 			} catch (EsupSignatureFsException e) {
-				throw new EsupSignatureFsException("write fsaccess error : ", e);
+				throw new EsupSignatureException("write fsaccess error : ", e);
 			}
 		} else {
-			throw new EsupSignatureFsException("aucun fsService configuré");
+			throw new EsupSignatureException("aucun fsService configuré");
 		}
 	}
 
