@@ -40,8 +40,12 @@ public class UserWsController {
     @Resource
     private UserService userService;
 
-    @Autowired(required = false)
     private SmsService smsService;
+
+    @Autowired(required = false)
+    public void setSmsService(SmsService smsService) {
+        this.smsService = smsService;
+    }
 
     @Resource
     private ExtValueService extValueService;

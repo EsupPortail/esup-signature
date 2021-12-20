@@ -122,7 +122,7 @@
                         <tfoot>
                         <tr>
                             <td colspan="100%">
-                                <span th:if="${infiniteScrolling}">Faire défiler la page pour afficher plus d'éléments</span>
+                                <a id="more-sign-request" href="javascript:void(0);" th:if="${infiniteScrolling}">Afficher plus d'éléments</a>
                                 <nav  th:unless="${infiniteScrolling}" th:include="fragments/pagination"></nav>
                             </td>
                         </tr>
