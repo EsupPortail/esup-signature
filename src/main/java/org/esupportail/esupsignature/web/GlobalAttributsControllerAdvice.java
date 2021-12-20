@@ -60,7 +60,12 @@ public class GlobalAttributsControllerAdvice {
 
     private final ValidationService validationService;
 
-    private final UserKeystoreService userKeystoreService;
+    private UserKeystoreService userKeystoreService;
+
+    @Autowired(required = false)
+    public void setUserKeystoreService(UserKeystoreService userKeystoreService) {
+        this.userKeystoreService = userKeystoreService;
+    }
 
     public GlobalAttributsControllerAdvice(GlobalProperties globalProperties, @Autowired(required = false) BuildProperties buildProperties,
                                            @Autowired(required = false) ValidationService validationService,

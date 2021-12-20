@@ -204,6 +204,7 @@ server:
             enabled: true
         remoteip:
             remote-ip-header: X-Forwarded-For
+        basedir: ./temp
 
 sign:
     aes-key : "0000000000000000"

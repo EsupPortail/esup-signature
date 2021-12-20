@@ -67,8 +67,12 @@ public class DSSBeanConfig {
 		this.dssProperties = dssProperties;
 	}
 
-	@Autowired(required = false)
 	private ProxyConfig proxyConfig;
+
+	@Autowired(required = false)
+	public void setProxyConfig(ProxyConfig proxyConfig) {
+		this.proxyConfig = proxyConfig;
+	}
 
 	@PostConstruct
 	public void cachedCRLSourceInitialization() throws SQLException {
@@ -188,7 +192,7 @@ public class DSSBeanConfig {
 
 	@Bean
 	public File tlCacheDirectory() {
-		File rootFolder = new File(System.getProperty("java.io.tmpdir"));
+		File rootFolder = new File("./temp");
 		File tslCache = new File(rootFolder, "dss-tsl-loader");
 		if (tslCache.mkdirs()) {
 			logger.info("TL Cache folder : {}", tslCache.getAbsolutePath());
@@ -208,6 +212,7 @@ public class DSSBeanConfig {
 
 	@Bean
 	public CertificateVerifier certificateVerifier(OnlineOCSPSource onlineOcspSource, CommonsDataLoader dataLoader, TrustedListsCertificateSource trustedListSource) {
+		logger.info("creating certificat verifier");
 		CommonCertificateVerifier certificateVerifier = new CommonCertificateVerifier();
 		certificateVerifier.setCrlSource(cachedCRLSource());
 		certificateVerifier.setOcspSource(onlineOcspSource);
