@@ -25,7 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 
-@ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller", "org.esupportail.esupsignature.web.wssecure"})
+@ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 @EnableConfigurationProperties(GlobalProperties.class)
 public class GlobalAttributsControllerAdvice {
 

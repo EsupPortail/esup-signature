@@ -7,6 +7,9 @@ import java.util.*;
 
 @Entity
 @Configurable
+@Table(indexes =  {
+        @Index(name = "user_properties_user", columnList = "user_id")
+})
 public class UserPropertie {
 
     @Id
