@@ -887,22 +887,32 @@ public class SignRequestService {
 	public void archiveSignRequests(List<SignRequest> signRequests, String authUserEppn) throws EsupSignatureFsException, EsupSignatureException {
 		if(globalProperties.getArchiveUri() != null) {
 			logger.info("start archiving documents");
+			boolean result = true;
 			for(SignRequest signRequest : signRequests) {
 				Document signedFile = signRequest.getLastSignedDocument();
 				String subPath = "/" + signRequest.getParentSignBook().getTitle().replaceAll("\\W+", "_") + "/";
 				if(signRequest.getExportedDocumentURI() == null) {
-					String name = signRequest.getTitle().replaceAll("\\W+", "_");
+					String name;
 					if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate() != null) {
 						name = signBookService.generateName2(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTitle(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName(), 0, userService.getSystemUser(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate());
+					} else {
+						name = signRequest.getTitle().replaceAll("\\W+", "_");
 					}
-					String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath, name);
-					signRequest.setExportedDocumentURI(documentUri);
-					updateStatus(signRequest.getId(), SignRequestStatus.archived, "Exporté vers l'archivage", "SUCCESS", authUserEppn, authUserEppn);
+					String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath, signedFile.getId() + "_" + name);
+					if(documentUri != null) {
+						signRequest.setExportedDocumentURI(documentUri);
+						updateStatus(signRequest.getId(), SignRequestStatus.archived, "Exporté vers l'archivage", "SUCCESS", authUserEppn, authUserEppn);
+					} else {
+						logger.error("unable to archive " + subPath + name);
+						result = false;
+					}
 				}
 			}
-			signRequests.get(0).getParentSignBook().setStatus(SignRequestStatus.archived);
+			if(result) {
+				signRequests.get(0).getParentSignBook().setStatus(SignRequestStatus.archived);
+			}
 		} else {
-			logger.info("archive document was skipped");
+			logger.debug("archive document was skipped");
 		}
 	}
 
@@ -1622,23 +1632,27 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void getMultipleSignedDocuments(List<Long> ids, HttpServletResponse response) throws IOException {
+	public void getMultipleSignedDocuments(List<Long> ids, HttpServletResponse response) throws IOException, EsupSignatureFsException {
 		response.setContentType("application/zip; charset=utf-8");
 		response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode("alldocs", StandardCharsets.UTF_8.toString()) + ".zip");
-		List<Document> documents = new ArrayList<>();
+		List<FsFile> fsFiles = new ArrayList<>();
 		for(Long id : ids) {
 			SignBook signBook = signBookService.getById(id);
 			for (SignRequest signRequest : signBook.getSignRequests()) {
-				if(signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived))
-				documents.add(signRequest.getLastSignedDocument());
+				if(signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
+					FsFile fsFile = getLastSignedFsFile(signRequest);
+					if(fsFile != null) {
+						fsFiles.add(fsFile);
+					}
+				}
 			}
 		}
 		ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
 		int i = 0;
-		for(Document document : documents) {
-			zipOutputStream.putNextEntry(new ZipEntry(i + "_" + document.getFileName()));
-			IOUtils.copy(document.getInputStream(), zipOutputStream);
-			zipOutputStream.write(document.getInputStream().readAllBytes());
+		for(FsFile fsFile : fsFiles) {
+			zipOutputStream.putNextEntry(new ZipEntry(i + "_" + fsFile.getName()));
+			IOUtils.copy(fsFile.getInputStream(), zipOutputStream);
+			zipOutputStream.write(fsFile.getInputStream().readAllBytes());
 			zipOutputStream.closeEntry();
 			i++;
 		}

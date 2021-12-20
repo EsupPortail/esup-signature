@@ -4,7 +4,7 @@
 <!--/*@thymesVar id="certificats" type="java.util.List<org.esupportail.esupsignature.entity.Certificat>"*/-->
 <head th:replace="fragments/head"></head>
 <body>
-<script type="module">
+<script th:inline="javascript" type="module">
     import {WorkflowUi} from '/js/modules/ui/workflows/WorkflowUi.js?version=[[${versionApp}]]';
     new WorkflowUi();
 </script>

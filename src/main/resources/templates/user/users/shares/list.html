@@ -73,7 +73,7 @@
                                     <span th:text="${#dates.format(userShare.endDate, 'dd/MM/yyyy HH:mm')}"></span>
                                 </td>
                                 <td>
-                                    <a type="button" title="Supprimer" th:href="'/user/users/shares/update/' + ${userShare.id}"
+                                    <a type="button" title="Modifier" th:href="'/user/users/shares/update/' + ${userShare.id}"
                                             class="btn btn-warning me-2">
                                         <i class="fas fa-pencil-alt text-white"></i>
                                     </a>
@@ -206,6 +206,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="fragments/footer"></footer>
 </body>
 </html>

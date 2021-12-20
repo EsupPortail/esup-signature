@@ -79,8 +79,8 @@
         </div>
     </div>
 </div>
-<script type="module">
+<script th:inline="javascript" type="module">
     import {default as SelectUser} from '/js/modules/utils/SelectUser.js?version=[[${versionApp}]]';
-    new SelectUser("recipientsEmail", null, null, [[${_csrf}]]);
+    new SelectUser("recipientsEmails", null, null, [[${_csrf}]]);
 </script>
 </html>

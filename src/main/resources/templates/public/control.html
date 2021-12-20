@@ -23,7 +23,7 @@
                     <div class="card-body">
                         <dl class="row border-bottom m-0">
                             <dt class="col-lg-5">Nom de document</dt>
-                            <dd th:text="${signedDocument.fileName}"></dd>
+                            <dd th:text="${signedDocument.keySet().stream().findFirst()}"></dd>
                         </dl>
                         <dl class="row border-bottom m-0">
                             <dt class="col-lg-5">Statut du document</dt>
