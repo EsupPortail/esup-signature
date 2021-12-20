@@ -47,18 +47,13 @@ export class ListSignRequestUi {
         $('#menuDownloadMultipleButton').on("click", e => this.downloadMultiple());
         $('#menuDownloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
-        $('#listSignRequestTable').bind('resize', function(){
-            console.log('resized');
-        });
+        $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
         this.refreshListeners();
         document.addEventListener("massSign", e => this.updateWaitModal(e));
         document.addEventListener("sign", e => this.updateErrorWaitModal(e));
         $("#more-sign-request").on("click", e => this.addToPage());
-        // if(this.signRequests.totalElements > 10 && this.signRequests.numberOfElements === 10) {
-        //     $(window).resize(e => this.scaleList());
-        // }
     }
 
     refreshListeners() {

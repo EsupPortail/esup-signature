@@ -12,7 +12,7 @@
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
-<main role="main">
+<main role="main" th:style="${infiniteScrolling} ? '' : 'padding-bottom: 0px;'">
     <div class="wrapper">
         <nav th:insert="fragments/sides/side-dashboard"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
@@ -123,7 +123,6 @@
                         <tr>
                             <td colspan="100%">
                                 <a id="more-sign-request" href="javascript:void(0);" th:if="${infiniteScrolling}">Afficher plus d'éléments</a>
-                                <nav  th:unless="${infiniteScrolling}" th:include="fragments/pagination"></nav>
                             </td>
                         </tr>
                         </tfoot>
@@ -131,7 +130,7 @@
                     </div>
                 </div>
             </div>
-
+            <nav  th:unless="${infiniteScrolling}" th:include="fragments/pagination"></nav>
         </div>
     </div>
 </main>
