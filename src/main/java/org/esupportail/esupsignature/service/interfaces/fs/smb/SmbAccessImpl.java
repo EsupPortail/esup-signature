@@ -381,6 +381,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 	private FsFile toFsFile(SmbFile smbFile, String path) throws IOException {
+		String name = smbFile.getName();
 		File tempFile = fileService.getTempFile(smbFile.getName());
 		FileOutputStream out = new FileOutputStream(tempFile);
 		InputStream is = smbFile.getInputStream();

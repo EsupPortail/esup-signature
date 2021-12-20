@@ -334,6 +334,9 @@ public class SignBookService {
     }
 
     public String generateName2(SignBook signBook, String title, String worflowName, int order, User user, String template) {
+        if(template.isEmpty()) {
+            template = globalProperties.getNamingTemplate();
+        }
         if(template.contains("[id]")) {
             template = template.replace("[id]", signBook.getId() + "");
         }
