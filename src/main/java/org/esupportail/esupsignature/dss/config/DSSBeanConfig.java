@@ -67,8 +67,12 @@ public class DSSBeanConfig {
 		this.dssProperties = dssProperties;
 	}
 
-	@Autowired(required = false)
 	private ProxyConfig proxyConfig;
+
+	@Autowired(required = false)
+	public void setProxyConfig(ProxyConfig proxyConfig) {
+		this.proxyConfig = proxyConfig;
+	}
 
 	@PostConstruct
 	public void cachedCRLSourceInitialization() throws SQLException {
@@ -208,6 +212,7 @@ public class DSSBeanConfig {
 
 	@Bean
 	public CertificateVerifier certificateVerifier(OnlineOCSPSource onlineOcspSource, CommonsDataLoader dataLoader, TrustedListsCertificateSource trustedListSource) {
+		logger.info("creating certificat verifier");
 		CommonCertificateVerifier certificateVerifier = new CommonCertificateVerifier();
 		certificateVerifier.setCrlSource(cachedCRLSource());
 		certificateVerifier.setOcspSource(onlineOcspSource);
