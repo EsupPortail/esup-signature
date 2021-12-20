@@ -194,7 +194,6 @@ security:
 server:
     servlet:
         session:
-            persistent: true
             tracking-modes: COOKIE
     error:
         include-stacktrace: always
