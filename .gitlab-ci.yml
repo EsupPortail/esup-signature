@@ -20,9 +20,13 @@ build3:
   stage: deploy
   script: 
     - mvn clean package -Dspring.config.location=/opt/esup-signature/application.yml
-    - systemctl --user stop esup-signature.service
-    - cp -rf target/esup-signature.war /opt/esup-signature/
-    - systemctl --user restart esup-signature.service
+    - sshpass -V
+    - export SSHPASS=$CI_USER_PASS
+    - sshpass -e scp -o StrictHostKeyChecking=no target/esup-signature.war gitlab-ci@signes:/home/gitlab-ci
+    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@signes sudo systemctl stop esup-signature.service
+    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@signes sudo rm /opt/esup-signature/esup-signature.war
+    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@signes sudo cp /home/gitlab-ci/esup-signature.war /opt/esup-signature/
+    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@signes sudo systemctl restart esup-signature.service
   only:
     - prod2
   tags:
