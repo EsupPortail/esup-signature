@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.FieldPropertie;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
@@ -17,8 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.ldap.NamingException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,11 +25,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.DayOfWeek;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -52,9 +44,13 @@ public class UserController {
 	@Resource
 	private FormService formService;
 
-	@Autowired(required=false)
 	private UserKeystoreService userKeystoreService;
-	
+
+	@Autowired(required=false)
+	public void setUserKeystoreService(UserKeystoreService userKeystoreService) {
+		this.userKeystoreService = userKeystoreService;
+	}
+
 	@Resource
 	private UserService userService;
 
