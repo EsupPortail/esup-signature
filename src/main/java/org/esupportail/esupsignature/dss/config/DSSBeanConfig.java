@@ -192,7 +192,7 @@ public class DSSBeanConfig {
 
 	@Bean
 	public File tlCacheDirectory() {
-		File rootFolder = new File(System.getProperty("java.io.tmpdir"));
+		File rootFolder = new File("./temp");
 		File tslCache = new File(rootFolder, "dss-tsl-loader");
 		if (tslCache.mkdirs()) {
 			logger.info("TL Cache folder : {}", tslCache.getAbsolutePath());
