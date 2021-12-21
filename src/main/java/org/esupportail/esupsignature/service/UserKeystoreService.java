@@ -11,7 +11,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,21 +22,23 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Service
-@ConditionalOnBean(CertificateVerifier.class)
 public class UserKeystoreService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(UserKeystoreService.class);
 
-	@Autowired
 	private CertificateVerifier certificateVerifier;
+
+	@Autowired
+	public void setCertificateVerifier(CertificateVerifier certificateVerifier) {
+		this.certificateVerifier = certificateVerifier;
+	}
 
 	@Resource
 	private UserService userService;
 	
 	public Pkcs12SignatureToken getPkcs12Token(InputStream keyStoreFile, String password) throws EsupSignatureKeystoreException {
 		try {
-			Pkcs12SignatureToken token = new Pkcs12SignatureToken(keyStoreFile, new PasswordProtection(password.toCharArray()));
-			return token;
+			return new Pkcs12SignatureToken(keyStoreFile, new PasswordProtection(password.toCharArray()));
 		} catch (Exception e) {
 			if(e.getCause().getMessage().equals("keystore password was incorrect")) {
 				logger.warn("keystore password was incorrect");
@@ -90,7 +91,7 @@ public class UserKeystoreService {
 		for(CertificateToken token : certificateTokens) {
 			X509Certificate cert = token.getCertificate();
 			certInfo += "\n\n" + cert.getType() + ""
-				+ "\n" + cert.getSubjectDN()
+				+ "\n" + cert.getSubjectX500Principal()
 				+ "\n" + cert.getSerialNumber();
 		}
 		pkcs12SignatureToken.close();

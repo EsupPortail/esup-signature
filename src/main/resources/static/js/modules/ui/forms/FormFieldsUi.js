@@ -1,7 +1,7 @@
 import {Message} from "../../../prototypes/Message.js?version=@version@";
 import Toast from "../Toast.js?version=@version@";
 
-export default class FormFieldsUi {
+export class FormFieldsUi {
 
     constructor(domain, formId, prefillTypes) {
         console.info("Starting Form UI for " + formId);
@@ -33,9 +33,6 @@ export default class FormFieldsUi {
         $("#multipartModel").on('change', function () {
             $("#submitModel").removeClass("d-none");
         });
-        $("#saveButton").on("click", function() {
-            $('#formUpdate').submit();}
-        );
     }
 
     toggleSelect(e) {

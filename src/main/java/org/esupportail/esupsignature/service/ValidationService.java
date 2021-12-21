@@ -8,16 +8,12 @@ import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.esupportail.esupsignature.dss.DssUtils;
-import org.esupportail.esupsignature.entity.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -25,13 +21,16 @@ import java.util.List;
 import java.util.Locale;
 
 @Service
-@ConditionalOnBean(CertificateVerifier.class)
 public class ValidationService {
 
     private static final Logger logger = LoggerFactory.getLogger(ValidationService.class);
 
-    @Autowired
     private CertificateVerifier certificateVerifier;
+
+    @Autowired(required = false)
+    public void setCertificateVerifier(CertificateVerifier certificateVerifier) {
+        this.certificateVerifier = certificateVerifier;
+    }
 
     @Resource
     private org.springframework.core.io.Resource defaultPolicy;
@@ -53,7 +52,9 @@ public class ValidationService {
                 }
             }
             logger.debug("validate with : " + documentValidator.getClass());
-            documentValidator.setCertificateVerifier(certificateVerifier);
+            if(certificateVerifier != null) {
+                documentValidator.setCertificateVerifier(certificateVerifier);
+            }
             documentValidator.setTokenExtractionStrategy(TokenExtractionStrategy.NONE);
             documentValidator.setLocale(Locale.FRENCH);
             documentValidator.setValidationLevel(ValidationLevel.LONG_TERM_DATA);

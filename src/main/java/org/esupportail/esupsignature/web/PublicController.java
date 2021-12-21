@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web;
 
 import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ public class PublicController {
     }
 
     @GetMapping(value = "/control/{token}")
-    public String control(@PathVariable String token, Model model) {
+    public String control(@PathVariable String token, Model model) throws EsupSignatureFsException {
         if (buildProperties != null) {
             model.addAttribute("version", buildProperties.getVersion());
         }

@@ -1,17 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <!--/*@thymesVar id="certificats" type="java.util.List<org.esupportail.esupsignature.entity.Certificat>"*/-->
 <head th:replace="fragments/head"></head>
 <body>
-<script type="module">
+<script th:inline="javascript" type="module">
     import {WorkflowUi} from '/js/modules/ui/workflows/WorkflowUi.js?version=[[${versionApp}]]';
     new WorkflowUi();
 </script>
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="/fragments/sides/side-admin"></nav>
+        <nav th:insert="fragments/sides/side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb col-12">
                 <li class="breadcrumb-item"><a href="/admin/workflows">Liste des circuits</a></li>

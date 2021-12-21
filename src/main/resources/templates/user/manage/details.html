@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml">
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
@@ -66,7 +66,7 @@
 <!--                                </th>-->
                                 <th class="w-20 d-none d-xxl-table-cell text-center">Circuit</th>
                                 <th class="w-20 text-center">Titre</th>
-                                <th class="d-none d-lg-table-cell">Crée par</th>
+                                <th><a class="sorted" sd:pagination-sort="createBy">Crée par</a></th>
                                 <th><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
                                 <th class="d-none d-lg-table-cell">Participants</th>
                                 <th class="d-none d-xxl-table-cell">Date de signature/refus</th>
@@ -172,7 +172,7 @@
                             <tfoot>
                             <tr>
                                 <td colspan="100%">
-                                    <nav th:replace="fragments/pagination :: pagination"></nav>
+                                    <nav th:replace="fragments/pagination"></nav>
                                 </td>
                             </tr>
                             </tfoot>

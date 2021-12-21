@@ -13,6 +13,11 @@ import java.util.stream.Collectors;
 
 @Entity
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
+@Table(indexes =  {
+        @Index(name = "sign_request_create_by_create_date", columnList = "create_by_id, createDate"),
+        @Index(name = "sign_request_parent_sign_book", columnList = "parent_sign_book_id"),
+
+})
 public class SignRequest {
 	
 	@Id
@@ -66,6 +71,7 @@ public class SignRequest {
     @OrderColumn
     private List<SignRequestParams> signRequestParams = new LinkedList<>();
 
+    @Transient
     private Date endDate;
 
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)

@@ -161,9 +161,8 @@ public class ValidationController {
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.valueOf(MimeType.SVG.getMimeTypeString()));
-		ResponseEntity<String> svgEntity = new ResponseEntity<String>(xsltService.generateSVG(report), headers,
+		return new ResponseEntity<>(xsltService.generateSVG(report), headers,
 				HttpStatus.OK);
-		return svgEntity;
 	}
 
 	@RequestMapping(value = "/download-revocation")

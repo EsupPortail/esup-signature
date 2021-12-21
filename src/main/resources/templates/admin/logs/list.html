@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
 <head th:replace="fragments/head"></head>
@@ -6,7 +6,7 @@
 <nav th:replace="fragments/nav"></nav>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="/fragments/sides/side-admin"></nav>
+        <nav th:insert="fragments/sides/side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Logs</li>
@@ -38,7 +38,7 @@
                         </th:block>
                         </tbody>
                     </table>
-                    <nav th:replace="fragments/pagination :: pagination"></nav>
+                    <nav th:replace="fragments/pagination"></nav>
                 </div>
             </div>
         </div>
