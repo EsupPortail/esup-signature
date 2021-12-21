@@ -1,5 +1,5 @@
 build:
-  script: export JAVA_HOME='/opt/jdk-13.0.2/' && mvn clean initialize && mvn -Dspring.config.location=/opt/tomcat-dematag/conf/app_config/application.yml clean package && cp -rf target/esup-signature.war /opt/tomcat-dematag/webapps/ROOT.war
+  script: export JAVA_HOME='/opt/jdk-14.0.2/' && mvn clean initialize && mvn -Dspring.config.location=/opt/tomcat-dematag/conf/app_config/application.yml clean package && cp -rf target/esup-signature.war /opt/tomcat-dematag/webapps/ROOT.war
   only:
     - test
   tags:
@@ -20,7 +20,13 @@ build3:
   stage: deploy
   script: 
     - mvn clean package -DskipTests -Dspring.config.location=/opt/esup-signature/application.yml
-    - sudo systemctl restart esup-signature
+    - sshpass -V
+    - export SSHPASS=$CI_USER_PASS
+    - sshpass -e scp -o StrictHostKeyChecking=no target/esup-signature.war gitlab-ci@signes:/home/gitlab-ci
+    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@signes sudo systemctl stop esup-signature.service
+    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@signes rm /opt/esup-signature/esup-signature.war
+    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@signes cp /home/gitlab-ci/esup-signature.war /opt/esup-signature/
+    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@signes sudo systemctl restart esup-signature.service
   only:
     - prod2
   tags:
