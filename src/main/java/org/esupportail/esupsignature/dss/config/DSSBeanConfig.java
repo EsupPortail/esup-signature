@@ -212,7 +212,6 @@ public class DSSBeanConfig {
 
 	@Bean
 	public CertificateVerifier certificateVerifier(OnlineOCSPSource onlineOcspSource, CommonsDataLoader dataLoader, TrustedListsCertificateSource trustedListSource) {
-		logger.info("creating certificat verifier");
 		CommonCertificateVerifier certificateVerifier = new CommonCertificateVerifier();
 		certificateVerifier.setCrlSource(cachedCRLSource());
 		certificateVerifier.setOcspSource(onlineOcspSource);
