@@ -1,13 +1,8 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<script th:inline="javascript" type="module">
-    import {default as FilesInput} from '/static/js/modules/utils/FilesInput.js?version=[[${version}]]';
-    new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf}]], [[${signRequest.id}]]);
-</script>
-<div th:replace="user/signrequests/cards/recipientscard :: recipientscard"></div>
-<div th:replace="user/signrequests/cards/commentscard :: commentscard"></div>
-<div th:replace="user/signrequests/cards/logscard :: logscard"></div>
+<div th:replace="user/signrequests/cards/recipientscard"></div>
+<div th:replace="user/signrequests/cards/commentscard"></div>
+<div th:replace="user/signrequests/cards/logscard"></div>
 <div class="col-12 text-center">
 <a class="btn btn-floating bg-primary waves-effect m-1" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
     <i class="fas fa-download"></i>

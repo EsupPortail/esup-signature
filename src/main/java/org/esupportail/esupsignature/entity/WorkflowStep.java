@@ -32,7 +32,12 @@ public class WorkflowStep {
 
     private Boolean repeatable = false;
 
+    @Enumerated(EnumType.STRING)
+    private SignType repeatableSignType;
+
     private Boolean allSignToComplete = false;
+
+    private Boolean attachmentAlert = false;
 
     private Boolean attachmentRequire = false;
 
@@ -87,6 +92,14 @@ public class WorkflowStep {
 
     public void setAllSignToComplete(Boolean allSignToComplete) {
         this.allSignToComplete = allSignToComplete;
+    }
+
+    public Boolean getAttachmentAlert() {
+        return attachmentAlert;
+    }
+
+    public void setAttachmentAlert(Boolean attachmentAlert) {
+        this.attachmentAlert = attachmentAlert;
     }
 
     public Boolean getAttachmentRequire() {
@@ -146,6 +159,14 @@ public class WorkflowStep {
 
     public void setRepeatable(Boolean repeatable) {
         this.repeatable = repeatable;
+    }
+
+    public SignType getRepeatableSignType() {
+        return repeatableSignType;
+    }
+
+    public void setRepeatableSignType(SignType repeatebleSignType) {
+        this.repeatableSignType = repeatebleSignType;
     }
 
     public Integer getMaxRecipients() {

@@ -1,16 +1,16 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <head th:replace="fragments/head"></head>
-<script type="module">
-    import {WorkflowUi} from '/static/js/modules/ui/workflows/WorkflowUi.js?version=[[${version}]]';
+<script th:inline="javascript" type="module">
+    import {WorkflowUi} from '/js/modules/ui/workflows/WorkflowUi.js?version=[[${versionApp}]]';
     new WorkflowUi();
 </script>
 <body>
 <nav th:replace="fragments/nav"></nav>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="/fragments/sides/side-admin"></nav>
+        <nav th:insert="fragments/sides/side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin/workflows">Liste des circuits</a></li>
@@ -120,6 +120,21 @@
                             <input id="sendAlertToAllRecipients" type="checkbox" class="form-check-input" th:field="*{sendAlertToAllRecipients}"/>
                             <label for="sendAlertToAllRecipients" class="form-check-label">Avertir tous les participants à la fin du circuit ?</label>
                         </div>
+                        <div class="form-check mb-2">
+                            <input id="scanPdfMetadatas" type="checkbox" class="form-check-input" th:field="*{scanPdfMetadatas}"/>
+                            <label for="scanPdfMetadatas" class="form-check-label">Construction du circuit à partir des métadonnées des pdf importés</label>
+                            <button class="btn btn-sm btn-transparent" data-bs-target="#help-scan-meta" data-bs-toggle="collapse"
+                                    type="button">
+                                <span class="fas fa-info-circle text-info"></span>
+                            </button>
+                            </label>
+                            <div class="collapse" id="help-scan-meta">
+                                <div class="alert alert-info mb-1">
+                                    Attention cette fonction est à utiliser dans le cas où les PDF contiennent la description du workflow.
+                                    Voir <a href="https://www.esup-portail.org/wiki/display/SIGN/Gestion+des+circuits#Gestiondescircuits-D%C3%A9finirlesparticipants%C3%A0uncircuit%C3%A0posteriori" target="_blank">https://www.esup-portail.org/wiki/display/SIGN/Gestion+des+circuits#Gestiondescircuits-D%C3%A9finirlesparticipants%C3%A0uncircuit%C3%A0posteriori</a>
+                                </div>
+                            </div>
+                        </div>
                         <div class="form-group mb-3">
                             <label><strong>Types de délégation autorisés</strong></label>
                             <th:block th:each="shareType : ${T(org.esupportail.esupsignature.entity.enums.ShareType).values()}">
@@ -135,10 +150,6 @@
                                    placeholder="Si autre que la valeur par défaut" class="form-control" type="text"
                                    th:value="${workflow.documentsSourceUri}"
                                    autocomplete="on">
-                        </div>
-                        <div class="form-check mb-2">
-                            <input id="scanPdfMetadatas" type="checkbox" class="form-check-input" th:field="*{scanPdfMetadatas}"/>
-                            <label for="scanPdfMetadatas" class="form-check-label">Construction du circuit à partir des métadonnées des pdf importés</label>
                         </div>
                         <div class="form-group mb-3">
                             <label for="documentsSourceUri"> <strong>Destination des documents</strong></label>
@@ -171,6 +182,10 @@
                                 </tbody>
                             </table>
                         </div>
+                        <label>
+                            <strong>Modèle de nommage pour l'export des documents</strong>
+                            <input class="form-control" type="text" th:field="*{targetNamingTemplate}" value="" autocomplete="off">
+                        </label>
                     </form>
                     <form id="importFormSetup" th:action="'/admin/workflows/import/' + ${workflow.id} + '/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
                         <label class="form-label">Importer une configuration</label>

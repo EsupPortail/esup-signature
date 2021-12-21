@@ -23,7 +23,7 @@ export default class Toast {
     }
 
     resetToasts() {
-        $('.toast').each(function() {
+        $(".toast-es").each(function() {
             $(this).css('z-index', -1);
             $(this).on('hidden.bs.toast', function (){
                 $(this).css('z-index', -1);
@@ -33,7 +33,7 @@ export default class Toast {
 
     launch(message) {
         console.info("display toast : " + message.type + " " + message.text);
-        $(".toast").each(function(e) {
+        $(".toast-es").each(function(e) {
             $(this).toast('hide');
         })
         let toast = $("#toast-" + message.type);

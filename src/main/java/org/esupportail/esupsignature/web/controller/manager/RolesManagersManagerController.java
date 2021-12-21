@@ -14,7 +14,7 @@ import java.util.Map;
 
 @RequestMapping("/manager/roles-managers")
 @Controller
-public class ManagerRolesManagersController {
+public class RolesManagersManagerController {
 
     @ModelAttribute("managerMenu")
     String getCurrentMenu() {

@@ -5,7 +5,7 @@
 <nav th:replace="fragments/nav"></nav>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="/fragments/sides/side-admin"></nav>
+        <nav th:insert="fragments/sides/side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">DSS List Of Trusted Lists</li>
@@ -41,7 +41,7 @@
 
                         <!-- LOTL -->
                         <h2>
-                            <a th:href="@{/admin/dss/lotl/} + ${lotl.getIdentifier().asXmlId()}">
+                            <a th:href="@{/admin/dss/lotl/} + ${lotl.getDSSId().asXmlId()}">
 							<span th:if="${parsingResult != null and parsingResult.resultExist and parsingResult.territory != null}"
                                   th:class="${'lotl-flag small_flag mt-2 flag_' + parsingResult.territory}" th:title="${parsingResult.territory}"></span>
                             </a>
@@ -56,7 +56,7 @@
                         <div class="table-container row" th:if="${not #lists.isEmpty(lotl.pivotInfos)}">
                             <h4>
                                 <span th:text=#{label.summary.pivot.loaded.header}></span>&nbsp;
-                                <a class="h6 fw-bold" th:href="@{/admin/dss/pivot-changes/} + ${lotl.getIdentifier().asXmlId()}"
+                                <a class="h6 fw-bold" th:href="@{/admin/dss/pivot-changes/} + ${lotl.getDSSId().asXmlId()}"
                                    th:text="#{label.summary.pivot.check.text}"></a>
                             </h4>
                             <table class="pivot-summary summary-table table">
@@ -69,7 +69,7 @@
                                     <th scope="col" th:text="#{label.summary.tl.info.validation.result}"></th>
                                 </tr>
                                 </thead>
-                                <tbody th:each="pivot,iterTL : ${lotl.pivotInfos}" th:with="id=${pivot.getIdentifier().asXmlId()},
+                                <tbody th:each="pivot,iterTL : ${lotl.pivotInfos}" th:with="id=${pivot.getDSSId().asXmlId()},
 									downloadResult=${pivot.downloadCacheInfo},
 									parsingResult=${pivot.parsingCacheInfo},
 									validationResult=${pivot.validationCacheInfo}">
@@ -109,7 +109,7 @@
                             <table class="tl-summary summary-table table accordion">
                                 <thead th:replace="fragments/tl-info :: tl-info-header()"></thead>
 
-                                <tbody th:each="tl,iterTL : ${lotl.getTLInfos()}" th:with="id=${tl.getIdentifier().asXmlId()},
+                                <tbody th:each="tl,iterTL : ${lotl.getTLInfos()}" th:with="id=${tl.getDSSId().asXmlId()},
 									country=${tl.parsingCacheInfo.isResultExist()}?${tl.parsingCacheInfo.territory}:'no_country',
 									downloadResult=${tl.downloadCacheInfo},
 									parsingResult=${tl.parsingCacheInfo},
@@ -134,7 +134,7 @@
                         <table class="tl-summary summary-table table accordion">
                             <thead th:replace="fragments/tl-info :: tl-info-header()"></thead>
 
-                            <tbody th:each="tl,iterTL : ${summary.otherTLInfos}" th:with="id=${tl.getIdentifier().asXmlId()},
+                            <tbody th:each="tl,iterTL : ${summary.otherTLInfos}" th:with="id=${tl.getDSSId().asXmlId()},
 								country=${tl.parsingCacheInfo.isResultExist()}?${tl.parsingCacheInfo.territory}:'no_country',
 								downloadResult=${tl.downloadCacheInfo},
 								parsingResult=${tl.parsingCacheInfo},

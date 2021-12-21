@@ -5,6 +5,8 @@ import eu.europa.esig.dss.model.ToBeSigned;
 import org.esupportail.esupsignature.dss.DssUtils;
 import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
@@ -90,6 +92,8 @@ public class NexuProcessController implements Serializable {
 		AbstractSignatureForm abstractSignatureForm = (AbstractSignatureForm) httpSession.getAttribute("abstractSignatureForm");
 		abstractSignatureForm.setBase64SignatureValue(signatureValue.getSignatureValue());
 		SignDocumentResponse signDocumentResponse = signService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn, authUserEppn);
+		signRequestService.updateStatus(id, SignRequestStatus.signed, "Signature", "SUCCESS", userEppn, authUserEppn);
+		signRequestService.applyEndOfSignRules(id, userEppn, authUserEppn, SignType.nexuSign, "");
 		httpSession.removeAttribute("abstractSignatureForm");
 		return signDocumentResponse;
 	}

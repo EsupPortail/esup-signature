@@ -14,14 +14,10 @@ import java.util.Properties;
 @EnableConfigurationProperties(FsProperties.class)
 public class FsConfig {
 
-	private FsProperties fsProperties;
+	private final FsProperties fsProperties;
 
 	public FsConfig(FsProperties fsProperties) {
 		this.fsProperties = fsProperties;
-	}
-
-	public FsProperties getFsProperties() {
-		return fsProperties;
 	}
 
 	@Bean

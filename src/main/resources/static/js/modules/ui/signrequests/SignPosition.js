@@ -104,7 +104,7 @@ export class SignPosition extends EventFactory {
     }
 
 
-    changeSignColor(color, signRequestParams) {
+    changeSignColor(color, signRequestParams, id) {
         console.info("change color to : " + color);
         const rgb = Color.hexToRgb(color);
 
@@ -120,8 +120,8 @@ export class SignPosition extends EventFactory {
                 cross.css("background-image", "url('" + e + "')");
             })
         }
-        // let textExtra = $("#textExtra_" + this.currentSign);
-        // textExtra.css({"color" : color + ""});
+        let textExtra = $("#divExtra_" + id);
+        textExtra.css({"color" : color + ""});
     }
 
 
@@ -148,7 +148,7 @@ export class SignPosition extends EventFactory {
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(id));
         this.signRequestParamses.get(id).addEventListener("nextSign", e => this.changeSignImage(this.signRequestParamses.get(id).signImageNumber + 1, this.signRequestParamses.get(id)));
         this.signRequestParamses.get(id).addEventListener("prevSign", e => this.changeSignImage(this.signRequestParamses.get(id).signImageNumber - 1, this.signRequestParamses.get(id)));
-        this.signRequestParamses.get(id).addEventListener("changeColor", e => this.changeSignColor(e, this.signRequestParamses.get(id)));
+        this.signRequestParamses.get(id).addEventListener("changeColor", e => this.changeSignColor(e, this.signRequestParamses.get(id), id));
         if(signImageNumber != null && signImageNumber >= 0) {
             this.signRequestParamses.get(id).cross.addClass("drop-sign");
         }

@@ -5,7 +5,7 @@
 <nav th:replace="fragments/nav"></nav>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="/fragments/sides/side-admin"></nav>
+        <nav th:insert="fragments/sides/side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">DSS List Of Trusted Lists</li>
@@ -74,7 +74,7 @@
                 <!-- Pivot certificate source changes -->
                 <div th:if="${not #lists.isEmpty(lotl.pivotInfos)}" class="certificates-container original-certificates"
                      th:each="pivot,iterPivot : ${lotl.pivotInfos}"
-                     th:with="pivotId=${pivot.getIdentifier().asXmlId()}, pivotUrl=${pivot.url}, pivotCerts=${pivot.getCertificateStatusMap()},
+                     th:with="pivotId=${pivot.getDSSId().asXmlId()}, pivotUrl=${pivot.url}, pivotCerts=${pivot.getCertificateStatusMap()},
 					lotlLocation=${pivot.getLOTLLocation()}">
 
                     <div class="card bg-primary mb-3">

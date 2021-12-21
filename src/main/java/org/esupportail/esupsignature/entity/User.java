@@ -12,7 +12,10 @@ import java.time.DayOfWeek;
 import java.util.*;
 
 @Entity
-@Table(name = "user_account", indexes = @Index(columnList = "eppn"))
+@Table(name = "user_account", indexes = {
+        @Index(name="user_eppn", columnList = "eppn"),
+        @Index(name="user_email", columnList = "email")
+})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
 	

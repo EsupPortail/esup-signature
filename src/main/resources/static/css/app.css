@@ -2,8 +2,8 @@
 
 @font-face {
     font-family: 'FontAwesome';
-    src: url('/webjars/font-awesome/5.15.2/webfonts/fa-solid-900.woff') format('woff'),
-    url('/webjars/font-awesome/5.15.2/webfonts/fa-solid-900.ttf') format('truetype');
+    src: url('/webjars/font-awesome/5.15.3/webfonts/fa-solid-900.woff') format('woff'),
+    url('/webjars/font-awesome/5.15.3/webfonts/fa-solid-900.ttf') format('truetype');
 }
 
 @font-face {
@@ -41,6 +41,22 @@
     font-weight: 100;
 }
 
+.select-users {
+    /*for javascript detection : new SelectUser()*/
+}
+
+.slim-select, .slim-select-simple {
+    /*for javascript detection : new SlimSelect()*/
+}
+
+.summer-note {
+    /*for javascript detection : new summernote()*/
+}
+
+.toast-es {
+    /*for javascript detection : new Toast()*/
+}
+
 html {
     position: relative;
     min-height: 100%;
@@ -61,6 +77,7 @@ main {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    padding-bottom: 70px;
 }
 
 pre {
@@ -197,6 +214,10 @@ td {
     z-index: 2;
 }
 
+#signRequestTable tr {
+    height: 64px;
+}
+
 code {
   font-size: 80%;
 }
@@ -219,16 +240,8 @@ code {
     height: 50px;
 }
 
-.select-users {
-    /*for javascript detection : new SelectUser()*/
-}
-
-.slim-select, .slim-select-simple {
-    /*for javascript detection : new SlimSelect()*/
-}
-
-.summer-note {
-    /*for javascript detection : new summernote()*/
+.dropdown-divider {
+    border-top-color: rgba(255, 255, 255, 0.2);
 }
 
 .hide-select {
@@ -293,7 +306,7 @@ code {
     -moz-user-select: none;
     -khtms-user-select: none;
     -webkit-user-select: none;
-    -o-user-select: none;"
+    -o-user-select: none;
 }
 
 
@@ -568,7 +581,7 @@ th .ss-content {
 
 .div-extra-top {
     font-family: "LiberationSans-Regular", serif !important;
-    color: black !important;
+    color: black;
     vertical-align: top!important;
     width: 100% !important;
 }
@@ -1922,4 +1935,24 @@ progress:before {
     vertical-align: initial;
     cursor: initial;
     background-color: initial;
+}
+
+.page-size-selector {
+    padding: 0.375rem 2.25rem 0.375rem 0.375rem;
+    -moz-padding-start: calc(0.75rem - 3px);
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.375rem center;
+    background-size: 16px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }

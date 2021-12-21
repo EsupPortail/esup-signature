@@ -69,7 +69,7 @@ public class DataController {
 						   @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException, EsupSignatureFsException {
 		List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
-			Data data = dataService.addData(id, userEppn, authUserEppn);
+			Data data = dataService.addData(id, userEppn);
 			SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, externalUsersInfos, targetEmails, null, userEppn, authUserEppn, false);
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 		} else {
@@ -87,7 +87,7 @@ public class DataController {
 						  @RequestParam MultiValueMap<String, String> formData, Model model,
 						  RedirectAttributes redirectAttributes) throws JsonProcessingException {
 		User user = (User) model.getAttribute("user");
-		User authUser = (User) model.getAttribute("authUser");
+		User authUser = userService.getUserByEppn(authUserEppn);
 		ObjectMapper objectMapper = new ObjectMapper();
 		TypeReference<Map<String, String>> type = new TypeReference<>(){};
 		Map<String, String> datas = objectMapper.readValue(formData.getFirst("formData"), type);

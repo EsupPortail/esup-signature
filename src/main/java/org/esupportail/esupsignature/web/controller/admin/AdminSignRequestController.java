@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -39,6 +40,9 @@ import java.util.stream.Collectors;
 public class AdminSignRequestController {
 
 	private static final Logger logger = LoggerFactory.getLogger(AdminSignRequestController.class);
+
+	@Resource
+	private SignService signService;
 
 	@ModelAttribute("adminMenu")
 	public String getAdminMenu() {
@@ -102,8 +106,8 @@ public class AdminSignRequestController {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 			model.addAttribute("signBooks", signBookService.getAllSignBooks());
 			Document toDisplayDocument = null;
-			if(signRequestService.getToSignDocuments(signRequest.getId()).size() == 1) {
-				toDisplayDocument = signRequestService.getToSignDocuments(signRequest.getId()).get(0);
+			if(signService.getToSignDocuments(signRequest.getId()).size() == 1) {
+				toDisplayDocument = signService.getToSignDocuments(signRequest.getId()).get(0);
 				if(toDisplayDocument.getContentType().equals("application/pdf")) {
 				}
 				model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
@@ -135,7 +139,7 @@ public class AdminSignRequestController {
 
 	@GetMapping(value = "/get-last-file/{id}")
 	public void getLastFile(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse response, Model model) {
-		List<Document> documents = signRequestService.getToSignDocuments(id);
+		List<Document> documents = signService.getToSignDocuments(id);
 		try {
 			if(documents.size() > 1) {
 				response.sendRedirect("/user/signrequests/" + id);

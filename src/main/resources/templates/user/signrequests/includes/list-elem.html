@@ -1,6 +1,6 @@
 <html th:remove="tag" lang="fr" xmlns:th="http://www.thymeleaf.org">
 <th:block th:each="signBook : ${signBooks}">
-    <tr th:with="signRequest = ${signBook.signRequests.get(0)}" th:data-href="'/user/signrequests/' + ${signRequest.id}" data-toggle="tooltip" th:title="${signRequest.parentSignBook.description}">
+    <tr th:with="signRequest = ${signBook.signRequests.get(0)}" th:data-href="'/user/signrequests/' + ${signRequest.id}" data-bs-toggle="tooltip" th:title="${signRequest.parentSignBook.description}">
         <td class="w-20 d-none d-lg-table-cell">
             <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"
                    th:data-sign-type="${signRequest.parentSignBook.liveWorkflow.currentStep != null ? signRequest.parentSignBook.liveWorkflow.currentStep.signType : ''}"
@@ -62,6 +62,12 @@
                     <div class=" card-body">
                         <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                             <i class="fas fa-eye pr-2"></i> Consulter
+                        </a>
+                        <a th:if="${!signRequest.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/toggle/' + ${signRequest.id} + '/?statusFilter=' + ${statusFilter}">
+                            <i class="fas fa-eye-slash pr-2"></i> Masquer
+                        </a>
+                        <a th:if="${signRequest.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/toggle/' + ${signRequest.id} + '/?statusFilter=' + ${statusFilter}">
+                            <i class="fas fa-eye-slash pr-2"></i> Afficher dans la liste
                         </a>
                         <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                             <i class="fas fa-signature pr-2"></i> Signer

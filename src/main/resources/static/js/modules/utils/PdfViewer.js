@@ -54,17 +54,24 @@ export class PdfViewer extends EventFactory {
    }
 
     listenToSearchCompletion() {
+        let controller = new AbortController();
+        let signal = controller.signal;
         console.info("listen to search autocompletion");
         $(".search-completion").each(function () {
             let serviceName = $(this).attr("search-completion-service-name");
             let searchType = $(this).attr("search-completion-type");
             let searchReturn = $(this).attr("search-completion-return");
             $(this).autocomplete({
+                delay: 500,
                 source: function( request, response ) {
                     if(request.term.length > 2) {
+                        controller.abort();
+                        controller = new AbortController()
+                        signal = controller.signal;
                         $.ajax({
                             url: "/ws-secure/users/search-extvalue/?searchType=" + searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
                             dataType: "json",
+                            signal: signal,
                             data: {
                                 q: request.term
                             },
@@ -569,32 +576,34 @@ export class PdfViewer extends EventFactory {
             }
 
             inputField = $('section[data-annotation-id=' + items[i].id + '] > select');
-            if(inputField.length && dataField) {
-                inputField.attr('name', inputName);
-                inputField.attr('id', inputName);
+            if(inputField.length) {
                 inputField.removeAttr('size');
-                if(items[i].readOnly || dataField.readOnly) {
-                    inputField.addClass('disabled-field disable-selection');
-                    // inputField.prop('disabled', true);
-                }
-                if(this.isFieldEnable(dataField)) {
-                    inputField.val(dataField.defaultValue);
-                    if(dataField.readOnly) {
-                        inputField.prop('disabled', true);
+                if (dataField) {
+                    inputField.attr('name', inputName);
+                    inputField.attr('id', inputName);
+                    if (items[i].readOnly || dataField.readOnly) {
+                        inputField.addClass('disabled-field disable-selection');
+                        // inputField.prop('disabled', true);
+                    }
+                    if (this.isFieldEnable(dataField)) {
+                        inputField.val(dataField.defaultValue);
+                        if (dataField.readOnly) {
+                            inputField.prop('disabled', true);
+                        } else {
+                            inputField.prop('disabled', false);
+                        }
+                        inputField.removeClass('disabled-field disable-selection');
+                        if (dataField.required) {
+                            inputField.prop('required', true);
+                            inputField.addClass('required-field');
+                        }
+                        inputField.attr('title', dataField.description);
                     } else {
-                        inputField.prop('disabled', false);
+                        inputField.prop('required', false);
+                        inputField.addClass('disabled-field disable-selection');
+                        inputField.prop('disabled', true);
+                        inputField.parent().addClass('disable-div-selection');
                     }
-                    inputField.removeClass('disabled-field disable-selection');
-                    if (dataField.required) {
-                        inputField.prop('required', true);
-                        inputField.addClass('required-field');
-                    }
-                    inputField.attr('title', dataField.description);
-                } else {
-                    inputField.prop('required', false);
-                    inputField.addClass('disabled-field disable-selection');
-                    inputField.prop('disabled', true);
-                    inputField.parent().addClass('disable-div-selection');
                 }
             }
 
@@ -651,8 +660,8 @@ export class PdfViewer extends EventFactory {
                             report.css("display", "block");
                         }
                     })
-                    // signField.attr("data-toggle", "modal");
-                    // signField.attr("data-target", "#sign_" + self.signRequestId);
+                    // signField.attr("data-bs-toggle", "modal");
+                    // signField.attr("data-bs-target", "#sign_" + self.signRequestId);
                     // signField.addClass("d-none");
                     // signField.parent().remove();
                 }
@@ -780,6 +789,7 @@ export class PdfViewer extends EventFactory {
         let div = "<div class='custom-autocompletion' id='div_" + id +"'></div>";
         $(div).insertAfter(inputField);
         inputField.autocomplete({
+            delay: 500,
             source: response,
             appendTo: "#div_" + id,
             minLength:0

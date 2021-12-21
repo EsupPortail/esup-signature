@@ -1,16 +1,16 @@
-<!doctype html>
+<!DOCTYPE html>
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    import {default as SelectUser} from '/static/js/modules/utils/SelectUser.js?version=[[${version}]]';
+    import {default as SelectUser} from '/js/modules/utils/SelectUser.js?version=[[${versionApp}]]';
     new SelectUser("recipientsEmails2", null, null, [[${_csrf}]]);
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="/fragments/sides/side-sign"></nav>
+        <nav th:insert="fragments/sides/side-sign"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/signrequests">Tableau de bord</a></li>
@@ -100,7 +100,7 @@
                 </div>
             </div>
             <th:block th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-                <div th:replace="user/signrequests/cards/stepscard-updatable :: stepscard-updatable"></div>
+                <div th:replace="user/signrequests/cards/stepscard-updatable"></div>
             </th:block>
         </div>
     </div>

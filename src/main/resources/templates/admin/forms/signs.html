@@ -1,18 +1,18 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="field" type="org.esupportail.esupsignature.entity.Field"*/-->
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
 <!--/*@thymesVar id="srpMap" type="java.util.Map<java.lang.Long, java.lang.Integer>"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    import {default as FormSignsUi} from '/static/js/modules/ui/forms/FormSignsUi.js?version=[[${version}]]';
+    import {default as FormSignsUi} from '/js/modules/ui/forms/FormSignsUi.js?version=[[${versionApp}]]';
     new FormSignsUi("admin", [[${form.id}]], [[${_csrf}]]);
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="/fragments/sides/side-admin"></nav>
+        <nav th:insert="fragments/sides/side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>

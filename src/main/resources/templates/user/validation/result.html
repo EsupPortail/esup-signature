@@ -1,14 +1,7 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
 <script type="text/javascript" src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
-<script th:inline="javascript">
-    $(document).ready(function () {
-        $('#collapsePolicy').show();
-        $('#collapseInfo').show();
-        $('#collapseETSI').show();
-    });
-</script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
@@ -50,8 +43,8 @@
 
                 <div th:if="${simpleReport} != null" role="tabcard" class="tab-pane fade in active show report" id="simple-report">
                     <div class="position-relative">
-                        <div class="position-absolute btn-group d-print-none" role="toolbar" style="margin: 6px; z-index : 3; right : 0">
-                            <a class="btn btn-light"
+                        <div class="d-print-none" role="toolbar" style="margin: 6px; z-index : 3; right : 0">
+                            <a class="btn btn-primary"
                                th:href="@{/user/validation/download-simple-report}" role="button"
                                th:if="${displayDownloadPdf}">
                                 <i class="fa fa-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>
@@ -64,8 +57,8 @@
 
                 <div th:if="${detailedReport} != null" role="tabcard" class="tab-pane fade report" id="detailed-report">
                     <div class="position-relative">
-                        <div class="position-absolute btn-group d-print-none" role="toolbar" style="margin: 6px; z-index : 3; right : 0">
-                            <a class="btn btn-light"
+                        <div class="d-print-none" role="toolbar" style="margin: 6px; z-index : 3; right : 0">
+                            <a class="btn btn-primary"
                                th:href="@{/user/validation/download-detailed-report}" role="button"
                                th:if="${displayDownloadPdf}">
                                 <i class="fa fa-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>
@@ -122,7 +115,7 @@
                                     <ul class="list-unstyled">
                                         <li th:each="rd : ${allRevocationData}">
                                             <span th:text="${rd.getName()}"></span>
-                                            <div th:replace="fragment/fields::field-der-pem(${#strings.startsWith(rd.getName(), 'CRL')}, |/user/validation/download-revocation?id=${rd.getId()}|)" th:remove="tag"></div>
+<!--                                            <div th:replace="fragment/fields::field-der-pem(${#strings.startsWith(rd.getName(), 'CRL')}, |/user/validation/download-revocation?id=${rd.getId()}|)" th:remove="tag"></div>-->
                                         </li>
                                     </ul>
                                 </div>
@@ -135,7 +128,7 @@
                                     <ul class="list-unstyled">
                                         <li th:each="tst : ${allTimestamps}">
                                             <span th:text="${tst.getName()}"></span>
-                                            <div th:replace="fragment/fields::field-der-pem(true, |/user/validation/download-timestamp?id=${tst.getId()}|)" th:remove="tag"></div>
+<!--                                            <div th:replace="fragment/fields::field-der-pem(true, |/user/validation/download-timestamp?id=${tst.getId()}|)" th:remove="tag"></div>-->
                                         </li>
                                     </ul>
                                 </div>
@@ -156,7 +149,7 @@
                             <div class="form-group row">
                                 <label for="select-visualrepresentation" class="col-sm-3 col-form-label">Display :</label>
                                 <div class="col-sm-9">
-                                    <select  class="form-control" id="select-visualrepresentation">
+                                    <select class="form-select" id="select-visualrepresentation">
                                         <optgroup th:label="#{label.signatures.and.timestamps}" id="select-visualrepresentation-sigs">
 
                                         </optgroup>
@@ -190,7 +183,6 @@
             </div>
             </div>
             <script type="text/javascript" th:inline="javascript">
-                /*<![CDATA[*/
                 $('#tabsResult a').click(function(e) {
                     e.preventDefault();
                     $(this).tab('show');
@@ -201,77 +193,79 @@
                 /* Collapsed Bootstrap plugin, show all cards */
                 $(".tab-pane .card > .card-body.collapse").addClass("show");
 
-                var currentCertificateId = [[${currentCertificate}]];
-                var mySVG = document.getElementById("svg-diag-data");
-                var svgWidth = parseInt(mySVG.width);
-                var svgHeight = parseInt(mySVG.height);
-                var padding = 40;
+                $(document).ready(function () {
+                    $('#collapsePolicy').show();
+                    $('#collapseInfo').show();
+                    $('#collapseETSI').show();
 
-                mySVG.addEventListener("load",function() {
-                    var representation = mySVG.contentDocument.initSVG(svgWidth, svgHeight, padding);
+                    var mySVG = document.getElementById("svg-diag-data");
+                    var svgWidth = parseInt(mySVG.width);
+                    var svgHeight = parseInt(mySVG.height);
+                    var padding = 40;
 
-                    if (currentCertificateId == null) {
-                        representation.displayFirstSignature();
-                    } else {
-                        representation.displayCertificateChainById(currentCertificateId);
-                    }
+                    mySVG.addEventListener("load",function() {
+                        var representation = mySVG.contentDocument.initSVG(svgWidth, svgHeight, padding);
 
-                    var signatureIds = mySVG.contentDocument.getSignatureIds();
-                    initSignatureSelect(signatureIds);
+                        representation.displayFirstSignatureOrTimestamp();
 
-                    var certificateIds = mySVG.contentDocument.getCertificateIds();
-                    initCertChainSelect(certificateIds);
-                });
+                        var signatureIds = mySVG.contentDocument.getSignatureIds();
+                        initSignatureSelect(signatureIds);
 
-                function initSignatureSelect(signatureIds) {
-                    var optgroup = document.getElementById("select-visualrepresentation-sigs");
-                    if (signatureIds == null || signatureIds.length == 0) {
-                        optgroup.style.display="none";
-                    } else {
-                        optgroup.style.display="";
-                        for (var elementIdx = 0;  elementIdx < signatureIds.length; elementIdx++) {
-                            var sigId = signatureIds[elementIdx];
-                            var option = document.createElement("option");
-                            option.text = sigId;
-                            option.className = "sig";
-                            optgroup.appendChild(option);
+                        var certificateIds = mySVG.contentDocument.getCertificateIds();
+                        initCertChainSelect(certificateIds);
+
+                    });
+
+                    function initSignatureSelect(signatureIds) {
+                        var optgroup = document.getElementById("select-visualrepresentation-sigs");
+                        if (signatureIds == null || signatureIds.length == 0) {
+                            optgroup.style.display="none";
+                        } else {
+                            optgroup.style.display="";
+                            for (var elementIdx = 0;  elementIdx < signatureIds.length; elementIdx++) {
+                                var sigId = signatureIds[elementIdx];
+                                var option = document.createElement("option");
+                                option.text = sigId;
+                                option.className = "sig";
+                                optgroup.appendChild(option);
+                            }
                         }
                     }
-                }
 
-                function initCertChainSelect(certificateIds) {
-                    var optgroup = document.getElementById("select-visualrepresentation-chains");
-                    if (certificateIds == null || certificateIds.length == 0) {
-                        optgroup.style.display="none";
-                    } else {
-                        optgroup.style.display="";
-                        for (var elementIdx = 0;  elementIdx < certificateIds.length; elementIdx++) {
-                            var certificateId = certificateIds[elementIdx];
-                            var option = document.createElement("option");
-                            option.text = certificateId;
-                            option.className = "chain";
-                            optgroup.appendChild(option);
+                    function initCertChainSelect(certificateIds) {
+                        var optgroup = document.getElementById("select-visualrepresentation-chains");
+                        if (certificateIds == null || certificateIds.length == 0) {
+                            optgroup.style.display="none";
+                        } else {
+                            optgroup.style.display="";
+                            for (var elementIdx = 0;  elementIdx < certificateIds.length; elementIdx++) {
+                                var certificateId = certificateIds[elementIdx];
+                                var option = document.createElement("option");
+                                option.text = certificateId;
+                                option.className = "chain";
+                                optgroup.appendChild(option);
+                            }
                         }
                     }
-                }
 
-                var selectVisual = document.getElementById("select-visualrepresentation");
+                    var selectVisual = document.getElementById("select-visualrepresentation");
 
-                selectVisual.addEventListener("change", function() {
-                    if (this.selectedOptions == null || this.selectedOptions.length != 1) {
-                        return;
-                    }
-                    var option = this.selectedOptions[0];
-                    var representation = mySVG.contentDocument.initSVG(svgWidth, svgHeight, padding);
-                    if ("sig" == option.className) {
-                        representation.displaySignatureById(option.value);
-                    } else {
-                        representation.displayCertificateChainById(option.value);
-                    }
+                    selectVisual.addEventListener("change", function() {
+                        if (this.selectedOptions == null || this.selectedOptions.length != 1){
+                            return;
+                        }
+                        var option = this.selectedOptions[0];
+                        var representation = mySVG.contentDocument.initSVG(svgWidth, svgHeight, padding);
+                        if ("sig" == option.className) {
+                            representation.displaySignatureById(option.value);
+                        }else {
+                            representation.displayCertificateChainById(option.value);
+                        }
 
+                    });
                 });
 
-                /*]]>*/
+
             </script>
         </div>
     </div>

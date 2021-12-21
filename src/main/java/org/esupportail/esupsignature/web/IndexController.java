@@ -22,14 +22,17 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
+import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
@@ -45,9 +48,17 @@ import java.util.List;
 
 @RequestMapping("/")
 @Controller
+@EnableConfigurationProperties(GlobalProperties.class)
 public class IndexController {
 
 	private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
+
+	@Resource
+	private PreAuthorizeService preAuthorizeService;
+
+	public IndexController(GlobalProperties globalProperties) {
+		this.globalProperties = globalProperties;
+	}
 
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
@@ -58,9 +69,6 @@ public class IndexController {
 	private List<SecurityService> securityServices;
 
 	@Resource
-	private UserShareService userShareService;
-
-	@Resource
 	private UserService userService;
 
 	@Resource
@@ -69,12 +77,14 @@ public class IndexController {
 	@Autowired(required = false)
 	private LdapPersonService ldapPersonService;
 
-	@Resource
-	private GlobalProperties globalProperties;
+	private final GlobalProperties globalProperties;
 
 	@GetMapping
 	public String index(Model model, HttpServletRequest httpServletRequest) {
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpServletRequest.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+		if(defaultSavedRequest != null && defaultSavedRequest.getServletPath().startsWith("/ws")) {
+			return "redirect:/denied/ws";
+		}
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		User authUser = getAuthUser(auth);
 		if(authUser != null && !authUser.getEppn().equals("system")) {
@@ -91,7 +101,7 @@ public class IndexController {
 				return "signin";
 			} else {
 				logger.info("auth user : " + auth.getName());
-				if(defaultSavedRequest != null) {
+				if(defaultSavedRequest != null && !defaultSavedRequest.getRequestURI().equals("/login/casentry")) {
 					return "redirect:" + defaultSavedRequest.getServletPath();
 				} else {
 					return "redirect:/user/";
@@ -105,6 +115,12 @@ public class IndexController {
 		return "redirect:/";
 	}
 
+	@RequestMapping(value = "/denied/ws/**", method = {RequestMethod.GET, RequestMethod.POST})
+	@ResponseBody
+	public ResponseEntity<String> deniedWs() {
+		return new ResponseEntity<> (HttpStatus.UNAUTHORIZED);
+	}
+
 	@RequestMapping(value = "/denied/**", method = {RequestMethod.GET, RequestMethod.POST})
 	public String denied(HttpSession httpSession, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -116,7 +132,7 @@ public class IndexController {
 				try {
 					SignRequest signRequest = signRequestService.getById(Long.parseLong(uriParams[3]));
 					if (signRequest != null) {
-						User suUser = userShareService.checkShareForSignRequest(signRequest, authUser.getEppn());
+						User suUser = preAuthorizeService.checkShareForSignRequest(signRequest, authUser.getEppn());
 						if (suUser != null) {
 							httpSession.setAttribute("suEppn", suUser);
 							redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation activée : " + suUser.getEppn()));

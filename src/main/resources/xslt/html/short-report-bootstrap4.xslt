@@ -76,7 +76,7 @@
                             </xsl:if>
                             <i>
                                 <xsl:attribute name="class">fa fa-info-circle text-info ml-2</xsl:attribute>
-                                <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                                <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                                 <xsl:attribute name="data-placement">right</xsl:attribute>
 
                                 <xsl:if test="dss:SignatureLevel">
@@ -123,7 +123,7 @@
                             <xsl:variable name="semanticText" select="//dss:Semantic[contains(@Key,$dssIndication)]"/>
 
                             <xsl:if test="string-length($semanticText) &gt; 0">
-                                <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                                <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                                 <xsl:attribute name="data-placement">right</xsl:attribute>
                                 <xsl:attribute name="title"><xsl:value-of select="$semanticText" /></xsl:attribute>
                             </xsl:if>
@@ -210,11 +210,10 @@
                         <xsl:attribute name="class">row mb-0</xsl:attribute>
                         <dt>
                             <xsl:attribute name="class">col-sm-5</xsl:attribute>
-                            Date de la signature:
+                            Date de la signature (GMT +00h00):
                         </dt>
                         <dd>
                             <xsl:attribute name="class">col-sm-7</xsl:attribute>
-
                             <xsl:value-of select="dss:SigningTime"/>
                         </dd>
                     </dl>
@@ -289,7 +288,7 @@
                     <xsl:attribute name="class">badge bg-<xsl:value-of select="$indicationClass" /></xsl:attribute>
 
                     <xsl:if test="string-length($semanticText) &gt; 0">
-                        <xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+                        <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>
                         <xsl:attribute name="data-placement">right</xsl:attribute>
                         <xsl:attribute name="title"><xsl:value-of select="$semanticText" /></xsl:attribute>
                     </xsl:if>

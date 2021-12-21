@@ -1,14 +1,12 @@
 package org.esupportail.esupsignature.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
 @ConfigurationProperties(prefix="global")
-public class GlobalProperties implements Cloneable {
+public class GlobalProperties {
 
     /**
      * Chemin d'acces à l'application
@@ -55,15 +53,15 @@ public class GlobalProperties implements Cloneable {
      */
     private List<String> hideSendSignExceptRoles = new ArrayList<>();
     /**
-     * Les documents des demandes terminées seront arvhivées vers ce dossier
+     * Les documents des demandes terminées seront archivées vers ce dossier
      */
     private String archiveUri;
     /**
-     * Délai en nombre de jours avant que les documents ne soient effacé de la base (ne concerne que les documents à l'état archivé)
+     * Délai en nombre de jours avant que les documents des demandes archivées ne soient effacé de la base (-1 non actif)
      */
     private Integer delayBeforeCleaning = -1;
     /**
-     * Délai de conservation dans la corbeille (en jours)
+     * Délai de conservation dans la corbeille en jours (-1 non actif)
      */
     private Integer trashKeepDelay = -1;
     /**
@@ -78,6 +76,9 @@ public class GlobalProperties implements Cloneable {
      * Géré automatiquement, ne pas modifier!
      */
     private String version = "";
+    /**
+     * Adresse email du contact technique de l'application
+     */
     private String applicationEmail = "esup.signature@univ-ville.fr";
     /**
      * Nombre d'heure minimum entre deux relances manuelles
@@ -126,11 +127,25 @@ public class GlobalProperties implements Cloneable {
      */
     private Integer shareMode = 0;
     /**
-     * Désactiver la possibilité de stocker des certificats utilisateurs
+     * Activer/Désactiver la possibilité de stocker des certificats utilisateurs
      */
     private Boolean disableCertStorage = false;
-
+    /**
+     * Activer/Désactiver la detection de robot à la connexion
+     */
     private Boolean enableCaptcha = false;
+    /**
+     * Taille maximum des uploads de fichiers en bytes
+     */
+    private Integer maxUploadSize = 52428800;
+    /**
+     * Nombre de jours avant alerte de suppression pour les demandes en attente (-1 non actif)
+     */
+    private Integer nbDaysBeforeWarning = -1;
+    /**
+     * Nombre de jours après alerte pour suppression des demandes en attente (-1 non actif)
+     */
+    private Integer nbDaysBeforeDeleting = -1;
 
     public String getRootUrl() {
         return rootUrl;
@@ -340,4 +355,27 @@ public class GlobalProperties implements Cloneable {
         this.enableCaptcha = enableCaptcha;
     }
 
+    public Integer getMaxUploadSize() {
+        return maxUploadSize;
+    }
+
+    public void setMaxUploadSize(Integer maxUploadSize) {
+        this.maxUploadSize = maxUploadSize;
+    }
+
+    public int getNbDaysBeforeWarning() {
+        return nbDaysBeforeWarning;
+    }
+
+    public void setNbDaysBeforeWarning(Integer nbDaysBeforeWarning) {
+        this.nbDaysBeforeWarning = nbDaysBeforeWarning;
+    }
+
+    public Integer getNbDaysBeforeDeleting() {
+        return nbDaysBeforeDeleting;
+    }
+
+    public void setNbDaysBeforeDeleting(Integer nbDaysBeforeDeleting) {
+        this.nbDaysBeforeDeleting = nbDaysBeforeDeleting;
+    }
 }

@@ -9,7 +9,7 @@ import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
-import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,7 @@ public class OtpService {
     private static LoadingCache<String, Otp> otpCache;
 
     @Resource
-    private SignRequestService signRequestService;
+    private SignRequestRepository signRequestRepository;
 
     @Resource
     private MailService mailService;
@@ -49,7 +49,7 @@ public class OtpService {
     }
 
     public void generateOtpForSignRequest(Long id, User extUser) throws EsupSignatureMailException {
-        SignRequest signRequest = signRequestService.getById(id);
+        SignRequest signRequest = signRequestRepository.findById(id).get();
         Otp otp = new Otp();
         otp.setCreateDate(new Data());
         otp.setPhoneNumber(extUser.getEppn());

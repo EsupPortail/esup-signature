@@ -1,11 +1,11 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
 <body>
 <nav th:replace="fragments/nav"></nav>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="/fragments/sides/side-admin"></nav>
+        <nav th:insert="fragments/sides/side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Messages</li>
@@ -34,10 +34,10 @@
                         <td th:utext="${message.text}"></td>
                         <td th:text="${#dates.format(message.endDate, 'dd/MM/yyyy')}"></td>
                         <td>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#modal-warning" th:attr="data-bs-target='#modal-warning'+${message.id }" class="btn btn-danger">
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#modal-warning" th:attr="data-bs-target='#modal-warning' + ${message.id }" class="btn btn-danger">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
-                            <div class="modal modal-warning fade in" th:id="modal-warning+${message.id}">
+                            <div class="modal modal-warning fade in" th:id="'modal-warning' + ${message.id}">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <form id="command" th:action="'/admin/messages/' + ${message.id}" th:method="delete">

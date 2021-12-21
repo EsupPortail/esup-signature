@@ -11,9 +11,6 @@ public class DSSProperties {
     private String cacheDataSourceDriverClassName;
     private String defaultValidationPolicy;
     private String tspServer;
-    private String ksType;
-    private String ksFilename;
-    private String ksPassword;
     private String serverSigningKeystoreType;
     private String serverSigningKeystoreFilename;
     private String serverSigningKeystorePassword;
@@ -67,30 +64,6 @@ public class DSSProperties {
 
     public void setTspServer(String tspServer) {
         this.tspServer = tspServer;
-    }
-
-    public String getKsType() {
-        return ksType;
-    }
-
-    public void setKsType(String ksType) {
-        this.ksType = ksType;
-    }
-
-    public String getKsFilename() {
-        return ksFilename;
-    }
-
-    public void setKsFilename(String ksFilename) {
-        this.ksFilename = ksFilename;
-    }
-
-    public String getKsPassword() {
-        return ksPassword;
-    }
-
-    public void setKsPassword(String ksPassword) {
-        this.ksPassword = ksPassword;
     }
 
     public String getServerSigningKeystoreType() {

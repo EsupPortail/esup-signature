@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,9 +20,6 @@ public class WorkflowStepService {
     private WorkflowStepRepository workflowStepRepository;
 
     @Resource
-    private WorkflowService workflowService;
-
-    @Resource
     private UserService userService;
 
     @Resource
@@ -35,6 +33,9 @@ public class WorkflowStepService {
 
     @Resource
     private CertificatService certificatService;
+
+    @Resource
+    private WorkflowRepository workflowRepository;
 
     @Transactional
     public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, String... recipientEmails) {
@@ -93,12 +94,13 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentRequire) {
+    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentAlert, Boolean attachmentRequire) {
         WorkflowStep workflowStep = getById(workflowStepId);
         changeSignType(workflowStep, null, signType);
         workflowStep.setDescription(description);
         workflowStep.setChangeable(Objects.requireNonNullElse(changeable, false));
         workflowStep.setRepeatable(Objects.requireNonNullElse(repeatable, false));
+        workflowStep.setAttachmentAlert(attachmentAlert);
         workflowStep.setAttachmentRequire(attachmentRequire);
         workflowStep.setMultiSign(Objects.requireNonNullElse(multiSign, false));
         workflowStep.setAllSignToComplete(Objects.requireNonNullElse(allSignToComplete, false));
@@ -112,7 +114,7 @@ public class WorkflowStepService {
         if(autoSign && certificatId == null) {
             throw new EsupSignatureException("Certificat is empty");
         }
-        Workflow workflow = workflowService.getById(workflowId);
+        Workflow workflow = workflowRepository.findById(workflowId).get();
         WorkflowStep workflowStep = createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
         workflowStep.setDescription(description);
         workflowStep.setChangeable(changeable);

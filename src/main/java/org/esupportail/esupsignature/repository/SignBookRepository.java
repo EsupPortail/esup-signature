@@ -23,5 +23,5 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("select count(s) from SignBook s where s.liveWorkflow.workflow = :workflow")
     int countByLiveWorkflowWorkflow(Workflow workflow);
     List<SignBook> findByLiveWorkflowAndStatus(LiveWorkflow liveWorkflow, SignRequestStatus signRequestStatus);
-    List<SignBook> findByViewersContaining(User user);
+    List<SignBook> findByViewersContaining(User uer);
 }

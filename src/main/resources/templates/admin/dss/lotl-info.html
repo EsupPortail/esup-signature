@@ -5,7 +5,7 @@
 <nav th:replace="fragments/nav"></nav>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="/fragments/sides/side-admin"></nav>
+        <nav th:insert="fragments/sides/side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">DSS List Of Trusted Lists</li>
@@ -18,7 +18,7 @@
                     <div class="lotl"
                          th:with="downloadResult=${lotlInfo.downloadCacheInfo}, parsingResult=${lotlInfo.parsingCacheInfo}, validationResult=${lotlInfo.validationCacheInfo}">
                         <h2>
-                            <a th:href="@{/admin/dss/lotl/} + ${lotlInfo.getIdentifier().asXmlId()}">
+                            <a th:href="@{/admin/dss/lotl/} + ${lotlInfo.getDSSId().asXmlId()}">
 							<span th:if="${parsingResult.resultExist and parsingResult.territory != null}"
                                   th:class="${'lotl-flag small_flag mt-2 flag_' + parsingResult.territory}"
                                   th:title="${parsingResult.territory}"></span>

@@ -1,18 +1,18 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="field" type="org.esupportail.esupsignature.entity.Field"*/-->
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
 <!--/*@thymesVar id="preFillTypes" type="java.util.Map<String, java.util.List<String>>"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    import {default as FormFieldsUi} from '/static/js/modules/ui/forms/FormFieldsUi.js?version=[[${version}]]';
+    import {FormFieldsUi} from '/js/modules/ui/forms/FormFieldsUi.js?version=[[${versionApp}]]';
     new FormFieldsUi("admin", [[${form.id}]], [[${preFillTypes}]]);
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="/fragments/sides/side-admin"></nav>
+        <nav th:insert="fragments/sides/side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
@@ -59,6 +59,7 @@
                             <th class="align-middle th-fixed">Type de données</th>
                             <th class="align-middle th-fixed">Attribut retourné</th>
                             <th class="align-middle th-fixed">Étapes autorisées</th>
+                            <th class="align-middle th-fixed"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -116,6 +117,42 @@
                                 </select>
                             </td>
                             </form>
+                            <td>
+                                <button type="button" data-bs-toggle="modal" data-bs-target="#modal-warning" th:attr="data-bs-target='#modal-warning' + ${field.id}" class="btn btn-danger">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                                <div class="modal modal-warning fade in" th:id="'modal-warning' + ${field.id}">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form id="command" th:action="'/admin/forms/' + ${form.id} + '/fields/' + ${field.id} + '/delete'" th:method="delete">
+                                                <div class="modal-header">
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                            aria-label="Close">
+
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="alert alert-danger text-center">
+                                                        Attention la suppression d'un champ entraine la suppression definitive des données qui lui sont associées !
+                                                        <br>
+                                                        Confirmez-vous la suppression ?
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-outline pull-left"
+                                                            data-bs-dismiss="modal">Non
+                                                    </button>
+                                                    <button type="submit"
+                                                            class="btn btn-outline pull-left btn-danger">
+                                                        Oui
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </td>
                         </tr>
                     </th:block>
                     </tbody>

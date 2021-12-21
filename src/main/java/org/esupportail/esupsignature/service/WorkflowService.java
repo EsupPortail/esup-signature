@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
@@ -9,11 +8,8 @@ import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
-import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
-import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
 import org.esupportail.esupsignature.service.utils.file.FileService;
-import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -24,7 +20,10 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,9 +54,6 @@ public class WorkflowService {
     private FsAccessFactoryService fsAccessFactoryService;
 
     @Resource
-    private SignRequestService signRequestService;
-
-    @Resource
     private UserService userService;
 
     @Resource
@@ -70,13 +66,10 @@ public class WorkflowService {
     private FileService fileService;
 
     @Resource
-    private PdfService pdfService;
-
-    @Resource
-    private LiveWorkflowStepService liveWorkflowStepService;
-
-    @Resource
     private TargetService targetService;
+
+    @Resource
+    private FieldService fieldService;
 
     @PostConstruct
     public void initCreatorWorkflow() {
@@ -240,105 +233,6 @@ public class WorkflowService {
         return workflows;
     }
 
-    @Transactional
-    public int importFilesFromSource(Long workflowId, User user, User authUser) throws EsupSignatureFsException {
-        Workflow workflow = getById(workflowId);
-        List<FsFile> fsFiles = new ArrayList<>();
-        int nbImportedFiles = 0;
-        if (workflow.getDocumentsSourceUri() != null && !workflow.getDocumentsSourceUri().equals("")) {
-            logger.info("retrieve from " + workflow.getProtectedDocumentsSourceUri());
-            FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(workflow.getDocumentsSourceUri());
-            if (fsAccessService != null) {
-                fsAccessService.open();
-
-//                fsAccessFactoryService.createPathIfNotExist(workflow.getDocumentsSourceUri());
-                fsAccessService.createURITree(workflow.getDocumentsSourceUri());
-                try {
-                    fsFiles.addAll(fsAccessService.listFiles(workflow.getDocumentsSourceUri() + "/"));
-                    if (fsFiles.size() > 0) {
-                        int j = 0;
-                        for (FsFile fsFile : fsFiles) {
-                            logger.info("adding file : " + fsFile.getName());
-                            ByteArrayOutputStream baos = fileService.copyInputStream(fsFile.getInputStream());
-                            Map<String, String> metadatas = pdfService.readMetadatas(new ByteArrayInputStream(baos.toByteArray()));
-                            String documentName = fsFile.getName();
-                            if (metadatas.get("Title") != null && !metadatas.get("Title").isEmpty()) {
-                                documentName = metadatas.get("Title");
-                            }
-                            SignBook signBook = signBookService.createSignBook(fileService.getNameOnly(documentName), workflow, "",null, user, false);
-                            signBook.getLiveWorkflow().setWorkflow(workflow);
-                            SignRequest signRequest = signRequestService.createSignRequest(null, signBook, user.getEppn(), authUser.getEppn());
-                            if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
-                                user = userService.getByEppn(fsFile.getCreateBy());
-                            }
-                            List<String> workflowRecipientsEmails = new ArrayList<>();
-                            workflowRecipientsEmails.add(user.getEmail());
-                            signRequestService.addDocsToSignRequest(signRequest, true, j, new ArrayList<>(), fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
-                            j++;
-                            if (workflow.getScanPdfMetadatas()) {
-                                String signType = metadatas.get("sign_type_default_val");
-                                User creator = userService.createUserWithEppn(metadatas.get("Creator"));
-                                if (creator != null) {
-                                    signRequest.setCreateBy(creator);
-                                    signBook.setCreateBy(creator);
-                                } else {
-                                    signRequest.setCreateBy(userService.getSystemUser());
-                                    signBook.setCreateBy(userService.getSystemUser());
-                                }
-                                int i = 0;
-                                for (String metadataKey : metadatas.keySet()) {
-                                    String[] keySplit = metadataKey.split("_");
-                                    if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {
-                                        ObjectMapper mapper = new ObjectMapper();
-                                        TypeReference<List<String>> type = new TypeReference<>(){};
-                                        List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), type);
-                                        WorkflowStep workflowStep = null;
-                                        if(workflow.getWorkflowSteps().size() > i) {
-                                            workflowStep = workflow.getWorkflowSteps().get(i);
-                                        }
-                                        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(workflowStep, false, true, false, false, SignType.valueOf(signType), recipientList, null);
-                                        signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
-                                        i++;
-                                    }
-                                    if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
-                                        String metadataTarget = metadatas.get(metadataKey);
-                                        for(Target target : workflow.getTargets()) {
-                                            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetUri() + "/" + metadataTarget));
-                                        }
-                                        logger.info("target set to : " + signBook.getLiveWorkflow().getTargets().get(0).getTargetUri());
-                                    }
-                                }
-                            } else {
-                                targetService.copyTargets(workflow.getTargets(), signBook, null);
-                                signBookService.importWorkflow(signBook, workflow, null);
-                            }
-                            signBookService.nextStepAndPending(signBook.getId(), null, user.getEppn(), authUser.getEppn());
-                            fsAccessService.remove(fsFile);
-                            nbImportedFiles++;
-                        }
-                    } else {
-                        logger.info("aucun fichier à importer depuis : " + workflow.getProtectedDocumentsSourceUri());
-                    }
-                } catch (Exception e) {
-                    logger.error("error on import from " + workflow.getProtectedDocumentsSourceUri(), e);
-                }
-                fsAccessService.close();
-            } else {
-                logger.warn("aucun service de fichier n'est disponible");
-            }
-        }
-        return nbImportedFiles;
-    }
-
-    public boolean isWorkflowStepFullSigned(LiveWorkflowStep liveWorkflowStep) {
-        for (Recipient recipient : liveWorkflowStep.getRecipients()) {
-            if (!recipient.getSigned()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     public List<Workflow> getClassesWorkflows() {
         return this.workflows;
     }
@@ -465,6 +359,12 @@ public class WorkflowService {
                 liveWorkflow.setWorkflow(null);
                 liveWorkflow.getLiveWorkflowSteps().forEach(lws -> lws.setWorkflowStep(null));
             }
+            for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
+                List<Field> fields = fieldService.getFieldsByWorkflowStep(workflowStep);
+                for(Field field : fields) {
+                    field.getWorkflowSteps().remove(workflowStep);
+                }
+            }
             workflowRepository.delete(workflow);
         } else {
             throw new EsupSignatureException("Le circuit ne peut pas être supprimé car il est en court d'utilisation");
@@ -521,6 +421,7 @@ public class WorkflowService {
         workflowToUpdate.setDescription(workflow.getDescription());
         workflowToUpdate.setTitle(workflow.getTitle());
         workflowToUpdate.setNamingTemplate(workflow.getNamingTemplate());
+        workflowToUpdate.setTargetNamingTemplate(workflow.getTargetNamingTemplate());
         workflowToUpdate.setPublicUsage(workflow.getPublicUsage());
         workflowToUpdate.setVisibility(workflow.getVisibility());
         workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
@@ -597,10 +498,10 @@ public class WorkflowService {
             Optional<WorkflowStep> optionalWorkflowStep = workflow.getWorkflowSteps().stream().filter(workflowStep1 -> workflowStep1.getId().equals(workflowStepSetup.getId())).findFirst();
             if(optionalWorkflowStep.isPresent()) {
                 WorkflowStep workflowStep = optionalWorkflowStep.get();
-                workflowStepService.updateStep(workflowStep.getId(), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentRequire());
+                workflowStepService.updateStep(workflowStep.getId(), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentAlert(), workflowStepSetup.getAttachmentRequire());
             } else {
                 WorkflowStep newWorkflowStep = workflowStepService.createWorkflowStep(workflowSetup.getName(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getSignType(), workflowStepSetup.getUsers().stream().map(User::getEmail).collect(Collectors.toList()).toArray(String[]::new));
-                workflowStepService.updateStep(newWorkflowStep.getId(), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentRequire());
+                workflowStepService.updateStep(newWorkflowStep.getId(), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentAlert(), workflowStepSetup.getAttachmentRequire());
                 workflow.getWorkflowSteps().add(newWorkflowStep);
             }
         }
@@ -613,6 +514,20 @@ public class WorkflowService {
         workflow.setName(savedName);
         workflow.setTitle(savedTitle);
         return;
+    }
+
+    @Transactional
+    public void saveWorkflow(Long signBookId, String title, String description, User user) throws EsupSignatureException {
+        SignBook signBook = signBookService.getById(signBookId);
+        Workflow workflow = createWorkflow(title, description, user);
+        for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+            List<String> recipientsEmails = new ArrayList<>();
+            for (Recipient recipient : liveWorkflowStep.getRecipients()) {
+                recipientsEmails.add(recipient.getUser().getEmail());
+            }
+            WorkflowStep toSaveWorkflowStep = workflowStepService.createWorkflowStep("" , liveWorkflowStep.getAllSignToComplete(), liveWorkflowStep.getSignType(), recipientsEmails.toArray(String[]::new));
+            workflow.getWorkflowSteps().add(toSaveWorkflowStep);
+        }
     }
 
 }

@@ -1,6 +1,6 @@
 import {CsrfToken} from "../../../prototypes/CsrfToken.js?version=@version@";
 
-export default class ListSignRequestUi {
+export class ListSignRequestUi {
 
     constructor(signRequests, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, infiniteScrolling, csrf) {
         console.info("Starting list sign UI");
@@ -29,9 +29,9 @@ export default class ListSignRequestUi {
         this.initListeners();
         this.massSignButtonHide = true;
         this.rowHeight = null;
-        if(signRequests.totalElements > 10 && signRequests.numberOfElements === 10) {
-            this.scaleList();
-        }
+        // if(signRequests.totalElements > 10 && signRequests.numberOfElements === 10) {
+        //     this.scaleList();
+        // }
     }
 
     initListeners() {
@@ -47,17 +47,13 @@ export default class ListSignRequestUi {
         $('#menuDownloadMultipleButton').on("click", e => this.downloadMultiple());
         $('#menuDownloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
-        $('#listSignRequestTable').bind('resize', function(){
-            console.log('resized');
-        });
+        $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
         this.refreshListeners();
         document.addEventListener("massSign", e => this.updateWaitModal(e));
         document.addEventListener("sign", e => this.updateErrorWaitModal(e));
-        if(this.signRequests.totalElements > 10 && this.signRequests.numberOfElements === 10) {
-            $(window).resize(e => this.scaleList());
-        }
+        $("#more-sign-request").on("click", e => this.addToPage());
     }
 
     refreshListeners() {
@@ -96,7 +92,7 @@ export default class ListSignRequestUi {
         if(tableHeight <= windowHeight) {
             height = tableHeight + (windowHeight - tableHeight);
         }
-        this.signRequestTable.css("height", height  )
+        this.signRequestTable.css("height", height)
     }
 
     checkNbCheckboxes() {
@@ -163,6 +159,10 @@ export default class ListSignRequestUi {
             let self = this;
             bootbox.confirm("Attention, les demandes au statut 'Supprimé' seront définitivement perdues. Les autres seront placées dans la corbeille.<br/>Confirmez vous l'opération ?", function(result) {
                 if(result) {
+                    bootbox.dialog({
+                        closeButton : false,
+                        message : "<div id=\"loader\" class=\"loader\"></div> Suppression en cours"
+                    });
                     $.ajax({
                         url: "/user/signrequests/delete-multiple?" + self.csrf.parameterName + "=" + self.csrf.token,
                         type: 'POST',
@@ -219,7 +219,7 @@ export default class ListSignRequestUi {
             $("#listSignRequestTable").removeClass("wait");
             $("#loader").hide();
             self.refreshListeners();
-            self.scaleList();
+            // self.scaleList();
         });
     }
 

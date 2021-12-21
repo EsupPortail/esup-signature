@@ -9,13 +9,17 @@ import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.service.crl.JdbcCacheCRLSource;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
-import eu.europa.esig.dss.service.http.commons.*;
+import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
+import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
+import eu.europa.esig.dss.service.http.commons.OCSPDataLoader;
+import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
 import eu.europa.esig.dss.service.http.proxy.ProxyConfig;
 import eu.europa.esig.dss.service.ocsp.JdbcCacheOCSPSource;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.spi.client.http.DSSFileLoader;
 import eu.europa.esig.dss.spi.client.http.IgnoreDataLoader;
+import eu.europa.esig.dss.spi.client.jdbc.JdbcCacheConnector;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
@@ -41,8 +45,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -51,7 +55,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 
-@Configuration
+@Component
 @EnableConfigurationProperties(DSSProperties.class)
 public class DSSBeanConfig {
 
@@ -63,19 +67,21 @@ public class DSSBeanConfig {
 		this.dssProperties = dssProperties;
 	}
 
-	@Autowired(required = false)
 	private ProxyConfig proxyConfig;
+
+	@Autowired(required = false)
+	public void setProxyConfig(ProxyConfig proxyConfig) {
+		this.proxyConfig = proxyConfig;
+	}
 
 	@PostConstruct
 	public void cachedCRLSourceInitialization() throws SQLException {
-		JdbcCacheCRLSource jdbcCacheCRLSource = cachedCRLSource();
-		jdbcCacheCRLSource.initTable();
+		cachedCRLSource().initTable();
 	}
 
 	@PreDestroy
 	public void cachedCRLSourceClean() throws SQLException {
-		JdbcCacheCRLSource jdbcCacheCRLSource = cachedCRLSource();
-		jdbcCacheCRLSource.destroyTable();
+		cachedCRLSource().destroyTable();
 	}
 
 	@Bean
@@ -98,7 +104,6 @@ public class DSSBeanConfig {
 		return dataLoader;
 	}
 
-	@Bean
 	public CommonsDataLoader trustAllDataLoader() {
 		CommonsDataLoader dataLoader = new CommonsDataLoader();
 		dataLoader.setProxyConfig(proxyConfig);
@@ -113,62 +118,59 @@ public class DSSBeanConfig {
 		return ocspDataLoader;
 	}
 
-	@Bean
 	public OnlineCRLSource onlineCRLSource() {
 		OnlineCRLSource onlineCRLSource = new OnlineCRLSource();
 		onlineCRLSource.setDataLoader(trustAllDataLoader());
 		return onlineCRLSource;
 	}
 
-	@Bean
 	public JdbcCacheCRLSource cachedCRLSource() {
 		JdbcCacheCRLSource jdbcCacheCRLSource = new JdbcCacheCRLSource();
-		jdbcCacheCRLSource.setDataSource(cacheDataSource());
+		jdbcCacheCRLSource.setJdbcCacheConnector(new JdbcCacheConnector(cacheDataSource()));
 		jdbcCacheCRLSource.setProxySource(onlineCRLSource());
 		jdbcCacheCRLSource.setDefaultNextUpdateDelay((long) (60 * 3)); // 3 minutes
 		return jdbcCacheCRLSource;
 	}
 
-	@Bean
-	public JdbcCacheOCSPSource cachedOCSPSource() {
+	public JdbcCacheOCSPSource cachedOCSPSource(OnlineOCSPSource onlineOcspSource) {
 		JdbcCacheOCSPSource jdbcCacheOCSPSource = new JdbcCacheOCSPSource();
-		jdbcCacheOCSPSource.setDataSource(cacheDataSource());
-		jdbcCacheOCSPSource.setProxySource(onlineOcspSource());
+		jdbcCacheOCSPSource.setJdbcCacheConnector(new JdbcCacheConnector(cacheDataSource()));
+		jdbcCacheOCSPSource.setProxySource(onlineOcspSource);
 		jdbcCacheOCSPSource.setDefaultNextUpdateDelay((long) (1000 * 60 * 3)); // 3 minutes
 		return jdbcCacheOCSPSource;
 	}
 
 	@Bean
-	public OnlineOCSPSource onlineOcspSource() {
+	public OnlineOCSPSource onlineOcspSource(OCSPDataLoader ocspDataLoader) {
 		OnlineOCSPSource onlineOCSPSource = new OnlineOCSPSource();
-		onlineOCSPSource.setDataLoader(ocspDataLoader());
+		onlineOCSPSource.setDataLoader(ocspDataLoader);
 		return onlineOCSPSource;
 	}
 
 	@Bean
 	public KeyStoreCertificateSource ojContentKeyStore() {
 		try {
-			return new KeyStoreCertificateSource(new ClassPathResource("keystore.p12").getFile(), "PKCS12", "dss-password");
+			return new KeyStoreCertificateSource(new ClassPathResource("/keystore.p12").getInputStream(), "PKCS12", "dss-password");
 		} catch (IOException e) {
 			throw new DSSException("Unable to load the file " + "keystore.p12", e);
 		}
 	}
 
 	@Bean
-	public DSSFileLoader onlineLoader() {
+	public DSSFileLoader onlineLoader(File tlCacheDirectory) {
 		FileCacheDataLoader onlineFileLoader = new FileCacheDataLoader();
 		onlineFileLoader.setCacheExpirationTime(0);
 		onlineFileLoader.setDataLoader(trustAllDataLoader());
-		onlineFileLoader.setFileCacheDirectory(tlCacheDirectory());
+		onlineFileLoader.setFileCacheDirectory(tlCacheDirectory);
 		return onlineFileLoader;
 	}
 
 	@Bean
-	public DSSFileLoader offlineLoader() {
+	public DSSFileLoader offlineLoader(File tlCacheDirectory) {
 		FileCacheDataLoader offlineFileLoader = new FileCacheDataLoader();
 		offlineFileLoader.setCacheExpirationTime(Long.MAX_VALUE);
 		offlineFileLoader.setDataLoader(new IgnoreDataLoader());
-		offlineFileLoader.setFileCacheDirectory(tlCacheDirectory());
+		offlineFileLoader.setFileCacheDirectory(tlCacheDirectory);
 		return offlineFileLoader;
 	}
 
@@ -178,19 +180,19 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public TLValidationJob job() {
+	public TLValidationJob job(TrustedListsCertificateSource trustedListSource, LOTLSource europeanLOTL, DSSFileLoader offlineLoader, DSSFileLoader onlineLoader) {
 		TLValidationJob job = new TLValidationJob();
-		job.setTrustedListCertificateSource(trustedListSource());
-		job.setListOfTrustedListSources(europeanLOTL());
-		job.setOfflineDataLoader(offlineLoader());
-		job.setOnlineDataLoader(onlineLoader());
+		job.setTrustedListCertificateSource(trustedListSource);
+		job.setListOfTrustedListSources(europeanLOTL);
+		job.setOfflineDataLoader(offlineLoader);
+		job.setOnlineDataLoader(onlineLoader);
 		job.setDebug(false);
 		return job;
 	}
 
 	@Bean
 	public File tlCacheDirectory() {
-		File rootFolder = new File(System.getProperty("java.io.tmpdir"));
+		File rootFolder = new File("./temp");
 		File tslCache = new File(rootFolder, "dss-tsl-loader");
 		if (tslCache.mkdirs()) {
 			logger.info("TL Cache folder : {}", tslCache.getAbsolutePath());
@@ -199,22 +201,22 @@ public class DSSBeanConfig {
 	}
 
 	@Bean(name = "european-lotl-source")
-	public LOTLSource europeanLOTL() {
+	public LOTLSource europeanLOTL(KeyStoreCertificateSource ojContentKeyStore) {
 		LOTLSource lotlSource = new LOTLSource();
 		lotlSource.setUrl(dssProperties.getLotlUrl());
-		lotlSource.setCertificateSource(ojContentKeyStore());
+		lotlSource.setCertificateSource(ojContentKeyStore);
 		lotlSource.setSigningCertificatesAnnouncementPredicate(new OfficialJournalSchemeInformationURI(dssProperties.getOjUrl()));
 		lotlSource.setPivotSupport(true);
 		return lotlSource;
 	}
 
 	@Bean
-	public CertificateVerifier certificateVerifier() {
+	public CertificateVerifier certificateVerifier(OnlineOCSPSource onlineOcspSource, CommonsDataLoader dataLoader, TrustedListsCertificateSource trustedListSource) {
 		CommonCertificateVerifier certificateVerifier = new CommonCertificateVerifier();
 		certificateVerifier.setCrlSource(cachedCRLSource());
-		certificateVerifier.setOcspSource(onlineOcspSource());
-		certificateVerifier.setDataLoader(dataLoader());
-		certificateVerifier.setTrustedCertSources(trustedListSource());
+		certificateVerifier.setOcspSource(onlineOcspSource);
+		certificateVerifier.setDataLoader(dataLoader);
+		certificateVerifier.setTrustedCertSources(trustedListSource);
 		certificateVerifier.setAlertOnMissingRevocationData(new ExceptionOnStatusAlert());
 		certificateVerifier.setCheckRevocationForUntrustedChains(false);
 		return certificateVerifier;
@@ -226,37 +228,37 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public CAdESService cadesService() {
-		CAdESService service = new CAdESService(certificateVerifier());
-		service.setTspSource(tspSource());
+	public CAdESService cadesService(CertificateVerifier certificateVerifier, TSPSource tspSource) {
+		CAdESService service = new CAdESService(certificateVerifier);
+		service.setTspSource(tspSource);
 		return service;
 	}
 
 	@Bean
-	public XAdESService xadesService() {
-		XAdESService service = new XAdESService(certificateVerifier());
-		service.setTspSource(tspSource());
+	public XAdESService xadesService(CertificateVerifier certificateVerifier, TSPSource tspSource) {
+		XAdESService service = new XAdESService(certificateVerifier);
+		service.setTspSource(tspSource);
 		return service;
 	}
 
 	@Bean
-	public PAdESService padesService() {
-		PAdESService service = new PAdESService(certificateVerifier());
-		service.setTspSource(tspSource());
+	public PAdESService padesService(CertificateVerifier certificateVerifier, TSPSource tspSource) {
+		PAdESService service = new PAdESService(certificateVerifier);
+		service.setTspSource(tspSource);
 		return service;
 	}
 
 	@Bean
-	public ASiCWithCAdESService asicWithCadesService() {
-		ASiCWithCAdESService service = new ASiCWithCAdESService(certificateVerifier());
-		service.setTspSource(tspSource());
+	public ASiCWithCAdESService asicWithCadesService(CertificateVerifier certificateVerifier, TSPSource tspSource) {
+		ASiCWithCAdESService service = new ASiCWithCAdESService(certificateVerifier);
+		service.setTspSource(tspSource);
 		return service;
 	}
 
 	@Bean
-	public ASiCWithXAdESService asicWithXadesService() {
-		ASiCWithXAdESService service = new ASiCWithXAdESService(certificateVerifier());
-		service.setTspSource(tspSource());
+	public ASiCWithXAdESService asicWithXadesService(CertificateVerifier certificateVerifier, TSPSource tspSource) {
+		ASiCWithXAdESService service = new ASiCWithXAdESService(certificateVerifier);
+		service.setTspSource(tspSource);
 		return service;
 	}
 

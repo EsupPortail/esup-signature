@@ -5,7 +5,7 @@ import {Message} from "../../../prototypes/Message.js?version=@version@";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentRequire, isOtp) {
+    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
         this.isOtp = isOtp;
@@ -24,6 +24,7 @@ export class WorkspacePdf {
         this.stepRepeatable = stepRepeatable;
         this.status = status;
         this.csrf = csrf;
+        this.attachmentAlert = attachmentAlert;
         this.attachmentRequire = attachmentRequire;
         this.currentStepMultiSign = currentStepMultiSign;
         this.forcePageNum = null;
@@ -363,50 +364,12 @@ export class WorkspacePdf {
                                 },
                                 callback: function (result) {
                                     if (result) {
-                                        if (self.attachmentRequire) {
-                                            bootbox.confirm({
-                                                message: "Attention, il est demandé de joindre un document à cette étape avant de signer",
-                                                buttons: {
-                                                    cancel: {
-                                                        label: '<i class="fa fa-times"></i> Annuler'
-                                                    },
-                                                    confirm: {
-                                                        label: '<i class="fa fa-check"></i> Continuer'
-                                                    }
-                                                },
-                                                callback: function (result) {
-                                                    if (result) {
-                                                        self.confirmLaunchSignModal();
-                                                    }
-                                                }
-                                            });
-                                        } else {
-                                            self.confirmLaunchSignModal();
-                                        }
+                                        self.checkAttachement();
                                     }
                                 }
                             });
                         } else {
-                            if (self.attachmentRequire) {
-                                bootbox.confirm({
-                                    message: "Attention, il est demandé de joindre un document à cette étape avant de signer",
-                                    buttons: {
-                                        cancel: {
-                                            label: '<i class="fa fa-times"></i> Annuler'
-                                        },
-                                        confirm: {
-                                            label: '<i class="fa fa-check"></i> Continuer'
-                                        }
-                                    },
-                                    callback: function (result) {
-                                        if (result) {
-                                            self.confirmLaunchSignModal();
-                                        }
-                                    }
-                                });
-                            } else {
-                                self.confirmLaunchSignModal();
-                            }
+                            self.checkAttachement();
                         }
                     }
                 }
@@ -420,6 +383,41 @@ export class WorkspacePdf {
                 signModal = $("#signModal");
             }
             signModal.modal('show');
+        }
+    }
+
+    checkAttachement() {
+        let self = this;
+        if (this.attachmentRequire) {
+            bootbox.dialog({
+                message: "Vous devez joindre un document à cette étape avant de signer",
+                buttons: {
+                    close: {
+                        label: 'Fermer'
+                    }
+                },
+                callback: function (result) {
+                }
+            });
+        } else if (this.attachmentAlert) {
+            bootbox.confirm({
+                message: "Attention, il est demandé de joindre un document à cette étape avant de signer",
+                buttons: {
+                    cancel: {
+                        label: '<i class="fa fa-times"></i> Annuler'
+                    },
+                    confirm: {
+                        label: '<i class="fa fa-check"></i> Continuer'
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        self.confirmLaunchSignModal();
+                    }
+                }
+            });
+        } else {
+            this.confirmLaunchSignModal();
         }
     }
 
@@ -556,25 +554,27 @@ export class WorkspacePdf {
                 let postitButton = $('#postit' + comment.id);
                 if (comment.pageNumber === this.pdfViewer.pageNum && this.mode === 'comment') {
                     postitDiv.show();
-                    postitDiv.css('left', ((parseInt(comment.posX) * this.pdfViewer.scale / .75) - 18) + "px");
-                    postitDiv.css('top', ((parseInt(comment.posY) * this.pdfViewer.scale / .75) - 48) + "px");
+                    postitDiv.css('left', ((parseInt(comment.posX) * this.pdfViewer.scale)) + "px");
+                    postitDiv.css('top', ((parseInt(comment.posY) * this.pdfViewer.scale) - 48) + "px");
                     postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                     postitButton.css("background-color", "#FFC");
                     postitDiv.unbind('mouseup');
-                    postitDiv.on('mouseup', function (e) {
-                        e.stopPropagation();
-                        bootbox.confirm("Supprimer cette annotation ?", function (result) {
-                            if (result) {
-                                $.ajax({
-                                    method: 'DELETE',
-                                    url: "/user/signrequests/delete-comment/" + self.signRequestId + "/" + comment.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
-                                    success: function () {
-                                        document.location.reload();
-                                    }
-                                });
-                            }
+                    if((self.status === "draft" || self.status === "pending") && postitDiv.attr('title') !== undefined) {
+                        postitDiv.on('mouseup', function (e) {
+                            e.stopPropagation();
+                            bootbox.confirm("Supprimer cette annotation ?", function (result) {
+                                if (result) {
+                                    $.ajax({
+                                        method: 'DELETE',
+                                        url: "/user/signrequests/delete-comment/" + self.signRequestId + "/" + comment.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
+                                        success: function () {
+                                            document.location.reload();
+                                        }
+                                    });
+                                }
+                            });
                         });
-                    });
+                    }
                 } else {
                     postitDiv.hide();
                     postitButton.css("background-color", "#EEE");
@@ -787,7 +787,9 @@ export class WorkspacePdf {
         $('#workspace').addClass('alert-warning');
         $('#commentModeButton').toggleClass('btn-outline-warning');
         $('#commentsTools').show();
-        this.changeModeSelector.set("comment");
+        if (this.changeModeSelector != null) {
+            this.changeModeSelector.set("comment");
+        }
         $('#commentsBar').show();
         $('#infos').show();
         this.pdfViewer.renderPage(1);

@@ -1,8 +1,8 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<head th:replace="fragments/head"></head>
+<head th:replace="fragments/head-lite"></head>
 <body>
 <nav th:replace="fragments/nav-empty"></nav>
 <main role="main">
@@ -23,7 +23,7 @@
                     <div class="card-body">
                         <dl class="row border-bottom m-0">
                             <dt class="col-lg-5">Nom de document</dt>
-                            <dd th:text="${signedDocument.fileName}"></dd>
+                            <dd th:text="${signedDocument.keySet().stream().findFirst()}"></dd>
                         </dl>
                         <dl class="row border-bottom m-0">
                             <dt class="col-lg-5">Statut du document</dt>
