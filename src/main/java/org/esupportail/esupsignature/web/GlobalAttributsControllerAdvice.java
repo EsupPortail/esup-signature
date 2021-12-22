@@ -11,7 +11,6 @@ import org.esupportail.esupsignature.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
@@ -60,17 +59,13 @@ public class GlobalAttributsControllerAdvice {
 
     private final ValidationService validationService;
 
-    private UserKeystoreService userKeystoreService;
+    private final UserKeystoreService userKeystoreService;
 
-    @Autowired(required = false)
-    public void setUserKeystoreService(UserKeystoreService userKeystoreService) {
-        this.userKeystoreService = userKeystoreService;
-    }
-
-    public GlobalAttributsControllerAdvice(GlobalProperties globalProperties, @Autowired(required = false) BuildProperties buildProperties,
-                                           @Autowired(required = false) ValidationService validationService,
-                                           @Autowired(required = false) UserKeystoreService userKeystoreService,
-                                           @Autowired Environment environment) {
+    public GlobalAttributsControllerAdvice(GlobalProperties globalProperties,
+                                           BuildProperties buildProperties,
+                                           ValidationService validationService,
+                                           UserKeystoreService userKeystoreService,
+                                           Environment environment) {
         this.globalProperties = globalProperties;
         this.buildProperties = buildProperties;
         this.validationService = validationService;

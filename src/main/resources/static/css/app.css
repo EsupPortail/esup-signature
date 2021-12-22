@@ -1612,6 +1612,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 @media (max-width: 785px) {
+
     #returnButton {
         display: none;
     }
@@ -1675,6 +1676,7 @@ input:focus, textarea:focus, select:focus {
         overflow: auto;
         margin-left: initial;
     }
+
 }
 
 @media (max-width: 575px) {
@@ -1727,6 +1729,12 @@ input:focus, textarea:focus, select:focus {
         margin-left: 10px;
     }
 
+}
+
+@media (max-width: 992px) {
+    .tools {
+        width: calc(100vw - 75px);
+    }
 }
 
 @media (max-width: 319px) {
