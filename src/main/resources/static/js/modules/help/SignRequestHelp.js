@@ -38,9 +38,9 @@ export class SignRequestHelp {
                 "<li>d'ajouter ou de modifier la/les signature(s)</li>",
             position: 'auto'
         });
-        if($.trim($("#signTools").html()) !== '') {
+        if($.trim($("#sign-tools").html()) !== '') {
             this.intro.addStep({
-                element: '#signTools',
+                element: '#sign-tools',
                 intro: "Ici vous pouvez ajouter des signatures ainsi que les mentions \"signé par\", \"signé le\"",
                 position: 'bottom'
             });
