@@ -830,7 +830,9 @@ export class WorkspacePdf {
         $('#signModeButton').toggleClass('btn-outline-success');
 
         if(this.signType !== 'hiddenVisa') {
-            $('#signTools').show();
+            let signTools = $('#sign-tools');
+            signTools.removeClass("d-none");
+            signTools.addClass("d-flex");
         }
 
         $('#infos').show();
@@ -867,7 +869,9 @@ export class WorkspacePdf {
         // this.signPosition.crossTools.addClass('d-none');
         $('#commentsTools').hide();
         $('#commentsBar').hide();
-        $('#signTools').hide();
+        let signTools = $('#sign-tools');
+        signTools.addClass("d-none");
+        signTools.removeClass("d-flex");
         // this.signPosition.cross.addClass('d-none');
         $('#infos').hide();
         $('#postit').hide();
