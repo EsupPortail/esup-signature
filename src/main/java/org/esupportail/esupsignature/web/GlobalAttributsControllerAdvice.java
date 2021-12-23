@@ -62,7 +62,7 @@ public class GlobalAttributsControllerAdvice {
     private final UserKeystoreService userKeystoreService;
 
     public GlobalAttributsControllerAdvice(GlobalProperties globalProperties,
-                                           BuildProperties buildProperties,
+                                           @Autowired(required = false) BuildProperties buildProperties,
                                            ValidationService validationService,
                                            UserKeystoreService userKeystoreService,
                                            Environment environment) {
