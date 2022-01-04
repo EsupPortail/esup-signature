@@ -53,7 +53,7 @@ public class OAuthSecurityServiceImpl implements SecurityService {
 
 	@Override
 	public LoginUrlAuthenticationEntryPoint getAuthenticationEntryPoint() {
-		return new LoginUrlAuthenticationEntryPoint("/oauth2/authorization/google");
+		return new LoginUrlAuthenticationEntryPoint("/oauth2/authorization/franceconnect");
 	}
 
 	@Override
@@ -64,8 +64,7 @@ public class OAuthSecurityServiceImpl implements SecurityService {
 		auth2LoginAuthenticationFilter.setAuthorizationRequestRepository(authorizationRequestRepository());
 		auth2LoginAuthenticationFilter.setAuthenticationManager(oAuthAuthenticationManager());
 		RequestMatcher authenticationNullMatcher = request -> SecurityContextHolder.getContext().getAuthentication() == null;
-		auth2LoginAuthenticationFilter.setRequiresAuthenticationRequestMatcher(new AndRequestMatcher(new AntPathRequestMatcher("/login/oauth2/code/google"), authenticationNullMatcher));
-
+		auth2LoginAuthenticationFilter.setRequiresAuthenticationRequestMatcher(new AndRequestMatcher(new AntPathRequestMatcher("/login/oauth2/code/franceconnect"), authenticationNullMatcher));
 		return auth2LoginAuthenticationFilter;
 	}
 
