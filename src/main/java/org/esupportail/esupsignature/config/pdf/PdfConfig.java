@@ -51,7 +51,7 @@ public class PdfConfig {
             Files.write(Path.of(pdfAFile.getAbsolutePath()), lines, StandardCharsets.UTF_8);
         } catch (IOException e) {
             logger.error("PDFA_def.ps read error", e);
-            throw new EsupSignatureRuntimeException("unable to modify PDFA_def.ps");
+            throw new EsupSignatureRuntimeException("unable to modify PDFA_def.ps", e);
         }
 
     }
