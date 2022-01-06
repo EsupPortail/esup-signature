@@ -50,7 +50,8 @@ public class PdfConfig {
             lines.set(7, "/ICCProfile (" + iccFile.getAbsolutePath() + ") % Customise");
             Files.write(Path.of(pdfAFile.getAbsolutePath()), lines, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new EsupSignatureRuntimeException("unable to modify PDFA_def.ps");
+            logger.error("PDFA_def.ps read error", e);
+            throw new EsupSignatureRuntimeException("unable to modify PDFA_def.ps", e);
         }
 
     }

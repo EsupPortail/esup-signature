@@ -156,7 +156,7 @@ fs:
 #    smb-password: password
 #    smb-test-uri: smb://smb.univ-ville.fr
     vfs-test-uri: /tmp
-    cmis-test-uri: https://esup-signature.univ-ville.fr/nuxeo
+#    cmis-test-uri: https://esup-signature.univ-ville.fr/nuxeo
 #    cmis-login: Administrator
 #    cmis-password: Administrator
 #    cmis-respository-id: default
