@@ -183,7 +183,8 @@ public class SignRequestController {
             model.addAttribute("notifTime", Duration.between(signRequest.getLastNotifDate().toInstant(), new Date().toInstant()).toHours());
         }
         model.addAttribute("signRequest", signRequest);
-        model.addAttribute("workflow", signRequest.getParentSignBook().getLiveWorkflow().getWorkflow());
+        Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
+        model.addAttribute("workflow", workflow);
         model.addAttribute("postits", signRequest.getComments().stream().filter(Comment::getPostit).collect(Collectors.toList()));
         List<Comment> comments = signRequest.getComments().stream().filter(comment -> !comment.getPostit() && comment.getStepNumber() == null).collect(Collectors.toList());
         model.addAttribute("comments", comments);

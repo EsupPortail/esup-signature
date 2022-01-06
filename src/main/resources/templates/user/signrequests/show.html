@@ -66,7 +66,12 @@
         [[${currentStepNumber}]],
         [[${currentStepId}]],
         [[${currentStepMultiSign}]],
-        [[${workflow}]],
+        [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null}"]
+            [[${workflow}]],
+        [/]
+        [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep == null}"]
+            null,
+        [/]
         [[${signImages}]],
         [[${user.firstname + ' ' + user.name}]],
         [[${authUser.firstname + ' ' + authUser.name}]],
@@ -505,21 +510,24 @@
                     </th:block>
                     <div th:if="${steps.size() > 0 || signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
                         <th:block th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 0}">
-                            <p>
-                                La procédure comporte <span
+                            <h5>
+                                Le circuit comporte <span
                                     th:text="${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps.size()}"></span>
                                 étape<span
                                     th:if="${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps.size() > 1}">s</span>
-                            </p>
-                            <th:block th:each="step,iterator : ${steps}">
+                            </h5>
+                            <br>
+                            <ul class="list-group">
+                            <th:block th:each="step, iterator : ${steps}">
+                                <li class="list-group-item">
                                 <!--                            <div class="form-group mb-3">-->
                                 <!--                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${liveWorkflowStep.description}"></span>-->
                                 <!--                            </div>-->
-                                <div th:if="${step.changeable == true}" class="form-group mb-3">
+                                <div th:if="${step.changeable == true}" class="form-group mb-1">
                                     <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span><span
                                         th:text="${step.description != null ?  step.description : ''}"></span>
                                 </div>
-                                <div th:unless="${step.changeable == true}" class="form-group d-inline">
+                                <div th:unless="${step.changeable == true}" class="form-group d-inline mb-1">
                                     <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span><span
                                         th:text="${step.description != null ?  step.description + ' (' : ''}"></span>
                                     <th:block th:if="${step.users.size() > 0}" th:each="user, iterator : ${step.users}">
@@ -528,19 +536,13 @@
                                     </th:block>
                                     <span th:text="${step.description != null ?  ')' : ''}"></span>
                                 </div>
-                                <br/>
-                            </th:block>
-                            <hr>
-                            <th:block
-                                    th:each="workFlowStep, iterator : ${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps}">
-                                <div th:if="${workFlowStep.changeable == true}" class="form-group mb-3">
-                                    <label><span
-                                            th:text="'Merci de saisir l\' étape ' + ${iterator.index + 1} + ' : ' + ${workFlowStep.description}"></span></label>
+                                <div th:if="${step.changeable == true}" class="form-group mb-1">
+                                    <label><span th:text="'Merci de saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span></label>
                                     <select class="select-users"
                                             th:data-signrequest-id="${signRequest.id}"
                                             th:id="'recipientEmailsSelect_' + ${iterator.index + 1}"
                                             multiple="multiple" name="recipientEmails" required="required">
-                                        <th:block th:each="user : ${workFlowStep.users}">
+                                        <th:block th:each="user : ${step.users}">
                                             <option th:if="${user.email != null}" selected="selected"
                                                     th:text="${user.email}"
                                                     th:value="${iterator.index + 1} + '*' + ${user.email}"></option>
@@ -551,7 +553,9 @@
                                     </p>
                                 </div>
                                 <div th:id="'tempUsers-recipientEmailsSelect_' + ${iterator.index + 1}"></div>
+                                </li>
                             </th:block>
+                            </ul>
                         </th:block>
                         <th:block th:unless="${signRequest.parentSignBook.liveWorkflow.workflow != null}">
                             <p>
