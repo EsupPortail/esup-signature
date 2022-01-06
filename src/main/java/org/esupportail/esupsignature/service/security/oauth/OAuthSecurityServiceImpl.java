@@ -35,7 +35,7 @@ public class OAuthSecurityServiceImpl implements SecurityService {
 
 	@Override
 	public String getTitle() {
-		return "France Connect";
+		return "FranceConnect";
 	}
 
 	@Override
