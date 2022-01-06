@@ -36,11 +36,11 @@ public class PdfConfig {
     @PostConstruct
     public void setPdfColorProfileUrl() {
         try {
-            File pdfAFile = new File("PDFA_def.ps");
+            File pdfAFile = File.createTempFile("PDFA_def", "ps");
             OutputStream pdfAoutStream = new FileOutputStream(pdfAFile);
             pdfAoutStream.write(new ClassPathResource("/PDFA_def.ps").getInputStream().readAllBytes());
 
-            File iccFile = new File("srgb.icc");
+            File iccFile = File.createTempFile("srgb", "icc");
             OutputStream iccOutStream = new FileOutputStream(iccFile);
             iccOutStream.write(new ClassPathResource("/srgb.icc").getInputStream().readAllBytes());
 
