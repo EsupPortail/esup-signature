@@ -10,10 +10,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
+
     private final OAuth2AuthorizationRequestResolver defaultAuthorizationRequestResolver;
 
-    public CustomAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository) {
+    private final String acr;
+
+    public CustomAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository, String acr) {
         this.defaultAuthorizationRequestResolver = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization");
+        this.acr = acr;
     }
 
     @Override
@@ -36,14 +40,7 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
 
     private OAuth2AuthorizationRequest customAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest, HttpServletRequest request) {
         Map<String, Object> additionalParameters = new LinkedHashMap<>(authorizationRequest.getAdditionalParameters());
-        additionalParameters.put("acr_values", "eidas1");
-        String nonce = "";
-        for(Object value : authorizationRequest.getAttributes().values()) {
-            nonce += value.toString();
-        }
-        nonce += request.getSession().getId();
-        additionalParameters.put("nonce", nonce.hashCode());
-        OAuth2AuthorizationRequest oAuth2AuthorizationRequest = OAuth2AuthorizationRequest.from(authorizationRequest).additionalParameters(additionalParameters).build();
-        return oAuth2AuthorizationRequest;
+        additionalParameters.put("acr_values", acr);
+        return OAuth2AuthorizationRequest.from(authorizationRequest).additionalParameters(additionalParameters).build();
     }
 }
