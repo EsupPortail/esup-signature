@@ -162,16 +162,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.exceptionHandling().defaultAuthenticationEntryPointFor(new IndexEntryPoint("/"), new AntPathRequestMatcher("/"));
 		for(SecurityService securityService : securityServices) {
 			http.antMatcher("/**").authorizeRequests().antMatchers(securityService.getLoginUrl()).authenticated();
+			http.exceptionHandling().defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), new AntPathRequestMatcher(securityService.getLoginUrl()));
 			if(securityService.getClass().equals(OAuthSecurityServiceImpl.class)) {
-				http.oauth2Login()
+				http.oauth2Login(oauth2 -> oauth2.loginPage("/"))
+						.oauth2Login()
 						.successHandler(((OAuthSecurityServiceImpl) securityService).getoAuthAuthenticationSuccessHandler())
 						.userInfoEndpoint().userService(new ValidatingOAuth2UserService(jwtDecoder()))
 						.and()
 						.authorizationEndpoint().authorizationRequestResolver(new CustomAuthorizationRequestResolver(clientRegistrationRepository, webSecurityProperties.getFranceConnectAcr()));
 			} else {
-				http.antMatcher("/**").authorizeRequests().antMatchers(securityService.getLoginUrl()).authenticated();
-				http.exceptionHandling().defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), new AntPathRequestMatcher(securityService.getLoginUrl()));
-				http.addFilterAfter(securityService.getAuthenticationProcessingFilter(), OAuth2AuthorizationRequestRedirectFilter.class);
+				http.addFilterBefore(securityService.getAuthenticationProcessingFilter(), OAuth2AuthorizationRequestRedirectFilter.class);
 			}
 		}
 		if(globalProperties.getEnableSu()) {
