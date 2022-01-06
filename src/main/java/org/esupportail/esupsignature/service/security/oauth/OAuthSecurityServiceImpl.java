@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -17,9 +16,6 @@ import org.springframework.security.oauth2.client.web.*;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
-import org.springframework.security.web.util.matcher.AndRequestMatcher;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -33,8 +29,9 @@ public class OAuthSecurityServiceImpl implements SecurityService {
 	@Resource
 	private RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
 
-	@Resource
-	private ClientRegistrationRepository clientRegistrationRepository;
+	public OAuthAuthenticationSuccessHandler getoAuthAuthenticationSuccessHandler() {
+		return oAuthAuthenticationSuccessHandler;
+	}
 
 	@Override
 	public String getTitle() {
@@ -53,45 +50,17 @@ public class OAuthSecurityServiceImpl implements SecurityService {
 
 	@Override
 	public LoginUrlAuthenticationEntryPoint getAuthenticationEntryPoint() {
-		return new LoginUrlAuthenticationEntryPoint("/oauth2/authorization/google");
+		return new LoginUrlAuthenticationEntryPoint("/oauth2/authorization/franceconnect");
 	}
 
 	@Override
 	public OAuth2LoginAuthenticationFilter getAuthenticationProcessingFilter() {
-		OAuth2LoginAuthenticationFilter auth2LoginAuthenticationFilter = new OAuth2LoginAuthenticationFilter(clientRegistrationRepository, authorizedClientService(clientRegistrationRepository), OAuth2LoginAuthenticationFilter.DEFAULT_FILTER_PROCESSES_URI);
-		auth2LoginAuthenticationFilter.setAuthenticationSuccessHandler(oAuthAuthenticationSuccessHandler);
-		auth2LoginAuthenticationFilter.setSessionAuthenticationStrategy(sessionAuthenticationStrategy);
-		auth2LoginAuthenticationFilter.setAuthorizationRequestRepository(authorizationRequestRepository());
-		auth2LoginAuthenticationFilter.setAuthenticationManager(oAuthAuthenticationManager());
-		RequestMatcher authenticationNullMatcher = request -> SecurityContextHolder.getContext().getAuthentication() == null;
-		auth2LoginAuthenticationFilter.setRequiresAuthenticationRequestMatcher(new AndRequestMatcher(new AntPathRequestMatcher("/login/oauth2/code/google"), authenticationNullMatcher));
-
-		return auth2LoginAuthenticationFilter;
+		return null;
 	}
 
 	@Override
 	public UserDetailsService getUserDetailsService() {
 		return null;
-	}
-	/* A GARDER POUR MULTIPLE AUTH OU FRANCE CONNECT
-	@Bean
-	public ClientRegistrationRepository clientRegistrationRepository() {
-        String clientId = "295837101524-b9kj77m2kp30ahr01kk5abaprr9r3h12.apps.googleusercontent.com";
-		String clientSecret = "OPeG_a0fifx1r5qcN5RONL_o";
-    	ClientRegistration registration = CommonOAuth2Provider.GOOGLE.getBuilder("google")
-		        .clientId(clientId)
-		        .clientSecret(clientSecret)
-		        .scope("profile", "email")
-				.redirectUriTemplate("http://esup-signature.univ-ville.fr/login/oauth2/code/google")
-		        .build();
-
-        return new InMemoryClientRegistrationRepository(Arrays.asList(registration));
-    }
-    */
-
-	public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
-		HttpSessionOAuth2AuthorizationRequestRepository repository = new HttpSessionOAuth2AuthorizationRequestRepository();
-		return repository; 
 	}
 
     public OAuth2AuthorizedClientService authorizedClientService(
@@ -99,6 +68,11 @@ public class OAuthSecurityServiceImpl implements SecurityService {
         return new InMemoryOAuth2AuthorizedClientService(clientRegistrationRepository);
     }
 
+	public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
+		HttpSessionOAuth2AuthorizationRequestRepository repository = new HttpSessionOAuth2AuthorizationRequestRepository();
+		return repository;
+	}
+	
     @Bean
     public OAuth2AuthorizedClientRepository authorizedClientRepository(
             OAuth2AuthorizedClientService authorizedClientService) {

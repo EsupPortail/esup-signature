@@ -11,6 +11,7 @@ public class WebSecurityProperties {
     private String groupToRoleFilterPattern;
     private Map<String, String> mappingGroupsRoles;
     private Map<String, String> groupMappingSpel;
+    private String franceConnectAcr = "eidas1";
 
     public String[] getWsAccessAuthorizeIps() {
         return wsAccessAuthorizeIps;
@@ -40,5 +41,13 @@ public class WebSecurityProperties {
 
     public void setGroupMappingSpel(Map<String, String> groupMappingSpel) {
         this.groupMappingSpel = groupMappingSpel;
+    }
+
+    public String getFranceConnectAcr() {
+        return franceConnectAcr;
+    }
+
+    public void setFranceConnectAcr(String franceConnectAcr) {
+        this.franceConnectAcr = franceConnectAcr;
     }
 }
