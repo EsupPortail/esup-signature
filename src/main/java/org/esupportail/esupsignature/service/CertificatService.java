@@ -9,6 +9,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.repository.CertificatRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,8 +30,12 @@ public class CertificatService {
     @Resource
     private UserService userService;
 
-    @Resource
     private UserKeystoreService userKeystoreService;
+
+    @Autowired(required = false)
+    public void setUserKeystoreService(UserKeystoreService userKeystoreService) {
+        this.userKeystoreService = userKeystoreService;
+    }
 
     @Resource
     private CertificatRepository certificatRepository;
@@ -64,15 +69,19 @@ public class CertificatService {
 
     @Transactional
     public void addCertificat(MultipartFile keystore, List<String> roles, String password) throws IOException, EsupSignatureKeystoreException {
-        Certificat certificat = new Certificat();
-        byte[] keystoreBytes = keystore.getBytes();
-        Pkcs12SignatureToken pkcs12SignatureToken = userKeystoreService.getPkcs12Token(new ByteArrayInputStream(keystoreBytes), password);
-        CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
-        certificat.setKeystore(documentService.createDocument(new ByteArrayInputStream(keystoreBytes), certificateToken.getSubject().getPrincipal().getName("CANONICAL"), keystore.getContentType()));
-        certificat.setRoles(roles);
-        certificat.setPassword(encryptPassword(password));
-        certificat.setExpireDate(certificateToken.getNotAfter());
-        certificatRepository.save(certificat);
+        if(userKeystoreService != null) {
+            Certificat certificat = new Certificat();
+            byte[] keystoreBytes = keystore.getBytes();
+            Pkcs12SignatureToken pkcs12SignatureToken = userKeystoreService.getPkcs12Token(new ByteArrayInputStream(keystoreBytes), password);
+            CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
+            certificat.setKeystore(documentService.createDocument(new ByteArrayInputStream(keystoreBytes), certificateToken.getSubject().getPrincipal().getName("CANONICAL"), keystore.getContentType()));
+            certificat.setRoles(roles);
+            certificat.setPassword(encryptPassword(password));
+            certificat.setExpireDate(certificateToken.getNotAfter());
+            certificatRepository.save(certificat);
+        } else {
+            logger.warn("impossible to add certificat without certificat verifier");
+        }
     }
 
     @Transactional

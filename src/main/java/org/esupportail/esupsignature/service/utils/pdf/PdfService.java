@@ -143,20 +143,20 @@ public class PdfService {
                 File fileSignImage = fileService.getEmptyImage();
                 signImage = fileService.addTextToImage(new FileInputStream(fileSignImage), signRequestParams, signType, user, newDate, fixFactor);
                 File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-                fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(137, 137, 137), signRequestParams.getExtraOnTop());
+                fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, fileWithWatermark, new Color(137, 137, 137), signRequestParams.getExtraOnTop());
                 signImage = new FileInputStream(fileWithWatermark);
             } else if (signRequestParams.getAddExtra()) {
                 signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType, user, newDate, fixFactor);
                 if (signRequestParams.getAddWatermark()) {
                     File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-                    fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64), signRequestParams.getExtraOnTop());
+                    fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, fileWithWatermark, new Color(141, 198, 64), signRequestParams.getExtraOnTop());
                     signImage = new FileInputStream(fileWithWatermark);
                 }
             } else if (signRequestParams.getTextPart() == null || signRequestParams.getTextPart().isEmpty()) {
                 signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
                 if (signRequestParams.getAddWatermark()) {
                     File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-                    fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64), signRequestParams.getExtraOnTop());
+                    fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, fileWithWatermark, new Color(141, 198, 64), signRequestParams.getExtraOnTop());
                     signImage = new FileInputStream(fileWithWatermark);
                 }
             }
@@ -197,7 +197,7 @@ public class PdfService {
             }
         } else if (signRequestParams.getTextPart() != null && !signRequestParams.getTextPart().isEmpty()) {
             int fontSize = (int) (signRequestParams.getFontSize() * signRequestParams.getSignScale() * .75);
-            PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("static/fonts/LiberationSans-Regular.ttf").getFile(), WinAnsiEncoding.INSTANCE);
+            PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), WinAnsiEncoding.INSTANCE);
             contentStream.beginText();
             contentStream.setFont(pdFont, fontSize);
             contentStream.newLineAtOffset(xAdjusted, (float) (yAdjusted + signRequestParams.getSignHeight() * .75 - fontSize));
@@ -435,8 +435,9 @@ public class PdfService {
         File file = fileService.inputStreamToTempFile(inputStream, "temp.pdf");
         if (!isPdfAComplient(new FileInputStream(file)) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
-            String defFile = PdfService.class.getResource("/PDFA_def.ps").getFile();
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dSubsetFonts=true -dPreserveAnnots=true -dShowAnnots=true -dPrinted=false -dNOSAFER -sColorConversionStrategy=UseDeviceIndependentColor -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -dCompatibilityLevel=1.7 -sDocumentUUID=" + UUID + " -d -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
+
+//            String defFile = PdfService.class.getClassLoader().getResource(pdfConfig.getPdfProperties().getPdfADefPath()).getFile();
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dSubsetFonts=true -dPreserveAnnots=true -dShowAnnots=true -dPrinted=false -dNOSAFER -sColorConversionStrategy=UseDeviceIndependentColor -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -dCompatibilityLevel=1.7 -sDocumentUUID=" + UUID + " -d -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + pdfConfig.getPdfADefPath() + "' '" + file.getAbsolutePath() + "'";
             //String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dPreserveAnnots=true -dShowAnnots=true -dPrinted=false -dDOPDFMARKS -dNOSAFER -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -sOutputFile='" + targetFile.getAbsolutePath() + "' -c '/PreserveAnnotTypes [/Text /UnderLine /Link /Stamp /FreeText /Squiggly /Underline] def' -f '" + file.getAbsolutePath() + "'";
             logger.info("GhostScript PDF/A convertion : " + cmd);
 
@@ -601,12 +602,12 @@ public class PdfService {
             PDDocument targetPDDocument = new PDDocument();
             PDPage newPage = null;
             if (template != null) {
-                PDDocument defaultNewPageTemplate = PDDocument.load(new ClassPathResource(template, PdfService.class).getFile());
+                PDDocument defaultNewPageTemplate = PDDocument.load(new ClassPathResource(template, PdfService.class).getInputStream());
                 if (defaultNewPageTemplate != null) {
                     newPage = defaultNewPageTemplate.getPage(0);
                 }
             } else {
-                PDDocument defaultNewPageTemplate = PDDocument.load(new ClassPathResource("/templates/pdf/defaultnewpage.pdf", PdfService.class).getFile());
+                PDDocument defaultNewPageTemplate = PDDocument.load(new ClassPathResource("/templates/pdf/defaultnewpage.pdf", PdfService.class).getInputStream());
                 if (defaultNewPageTemplate != null) {
                     newPage = defaultNewPageTemplate.getPage(0);
                 } else {
@@ -650,7 +651,7 @@ public class PdfService {
             PDDocument pdDocument = PDDocument.load(pdfFile);
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
             if(pdAcroForm != null) {
-                PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("static/fonts/LiberationSans-Regular.ttf").getFile(), WinAnsiEncoding.INSTANCE);
+                PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), WinAnsiEncoding.INSTANCE);
                 PDResources resources = pdAcroForm.getDefaultResources();
                 resources.put(COSName.getPDFName("LiberationSans"), pdFont);
                 pdAcroForm.setDefaultResources(resources);
@@ -760,7 +761,7 @@ public class PdfService {
             PDDocument pdDocument = PDDocument.load(pdfFile);
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
             if(pdAcroForm != null) {
-                PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("static/fonts/LiberationSans-Regular.ttf").getFile(), WinAnsiEncoding.INSTANCE);
+                PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), WinAnsiEncoding.INSTANCE);
                 PDResources resources = pdAcroForm.getDefaultResources();
                 resources.put(COSName.getPDFName("LiberationSans"), pdFont);
                 pdAcroForm.setDefaultResources(resources);

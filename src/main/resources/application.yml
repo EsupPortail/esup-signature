@@ -147,9 +147,6 @@ dss:
     server-signing-keystore-password: password
     server-signing-keystore-type: PKCS12
     tsp-server: http://tsa.belgium.be/connect
-    ks-filename: /path/toyour/keystore/oj_keystore.p12
-    ks-password: dss-password
-    ks-type: PKCS12
     lotl-country-code: EU
     lotl-url: https://ec.europa.eu/tools/lotl/eu-lotl.xml
     oj-url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG
@@ -159,7 +156,7 @@ fs:
 #    smb-password: password
 #    smb-test-uri: smb://smb.univ-ville.fr
     vfs-test-uri: /tmp
-    cmis-test-uri: https://esup-signature.univ-ville.fr/nuxeo
+#    cmis-test-uri: https://esup-signature.univ-ville.fr/nuxeo
 #    cmis-login: Administrator
 #    cmis-password: Administrator
 #    cmis-respository-id: default
@@ -192,6 +189,9 @@ security:
 #            for.esup-signature.user: "true"	
 
 server:
+    servlet:
+        session:
+            tracking-modes: COOKIE
     error:
         include-stacktrace: always
     port: 8080
@@ -200,6 +200,7 @@ server:
             enabled: true
         remoteip:
             remote-ip-header: X-Forwarded-For
+        basedir: ./temp
 
 sign:
     aes-key : "0000000000000000"

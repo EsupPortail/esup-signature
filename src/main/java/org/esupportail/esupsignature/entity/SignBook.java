@@ -12,6 +12,11 @@ import java.util.List;
 
 @Entity
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
+@Table(indexes =  {
+        @Index(name = "sign_book_create_by", columnList = "create_by_id"),
+        @Index(name = "sign_book_status", columnList = "status"),
+        @Index(name = "sign_book_live_workflow", columnList = "live_workflow_id")
+})
 public class SignBook {
 
 	@Id

@@ -67,8 +67,12 @@ public class DSSBeanConfig {
 		this.dssProperties = dssProperties;
 	}
 
-	@Autowired(required = false)
 	private ProxyConfig proxyConfig;
+
+	@Autowired(required = false)
+	public void setProxyConfig(ProxyConfig proxyConfig) {
+		this.proxyConfig = proxyConfig;
+	}
 
 	@PostConstruct
 	public void cachedCRLSourceInitialization() throws SQLException {
@@ -146,7 +150,7 @@ public class DSSBeanConfig {
 	@Bean
 	public KeyStoreCertificateSource ojContentKeyStore() {
 		try {
-			return new KeyStoreCertificateSource(new ClassPathResource("keystore.p12").getFile(), "PKCS12", "dss-password");
+			return new KeyStoreCertificateSource(new ClassPathResource("/keystore.p12").getInputStream(), "PKCS12", "dss-password");
 		} catch (IOException e) {
 			throw new DSSException("Unable to load the file " + "keystore.p12", e);
 		}
@@ -188,7 +192,7 @@ public class DSSBeanConfig {
 
 	@Bean
 	public File tlCacheDirectory() {
-		File rootFolder = new File(System.getProperty("java.io.tmpdir"));
+		File rootFolder = new File("./temp");
 		File tslCache = new File(rootFolder, "dss-tsl-loader");
 		if (tslCache.mkdirs()) {
 			logger.info("TL Cache folder : {}", tslCache.getAbsolutePath());

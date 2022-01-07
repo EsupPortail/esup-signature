@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="currentSessions" type="java.util.Map<String, java.util.List<org.springframework.session.MapSession>"*/-->
 <head th:replace="fragments/head"></head>
@@ -6,7 +6,7 @@
 <nav th:replace="fragments/nav"></nav>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="/fragments/sides/side-admin"></nav>
+        <nav th:insert="fragments/sides/side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Sessions courantes</li>

@@ -254,7 +254,7 @@ public class FileService {
 //			attributes.put(TextAttribute.TRACKING, 0.01);
 			Font font = null;
 			try {
-				font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.PLAIN).deriveFont((float) fontSize);
+				font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.PLAIN).deriveFont((float) fontSize);
 			} catch (FontFormatException e) {
 				e.printStackTrace();
 			}
@@ -398,11 +398,11 @@ public class FileService {
 		return fileSignImage;
 	}
 
-	private InputStream getFaImage(String faName) {
-		return FileService.class.getResourceAsStream("/static/images/"+ faName + ".png");
+	private InputStream getFaImage(String faName) throws IOException {
+		return new ClassPathResource("/static/images/"+ faName + ".png").getInputStream();
 	}
 
-	public InputStream getFaImageByIndex(int index) {
-		return FileService.class.getResourceAsStream("/static/images/"+ faImages[Math.abs(index) - 1] + ".png");
+	public InputStream getFaImageByIndex(int index) throws IOException {
+		return new ClassPathResource("/static/images/"+ faImages[Math.abs(index) - 1] + ".png").getInputStream();
 	}
 }

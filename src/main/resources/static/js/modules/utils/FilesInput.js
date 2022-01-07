@@ -36,7 +36,9 @@ export default class FilesInput extends EventFactory {
             this.input.on('fileloaded', e => this.uploadFile());
         }
         this.input.on('fileloaded', e => this.checkUniqueFile());
+        this.input.on('fileremoved', e => this.checkUniqueFile());
         this.input.on('fileclear', e => this.input.fileinput('unlock'));
+        this.input.on('filecleared', e => this.checkUniqueFile());
         $('#unique :checkbox').change(e => this.changerUploadMethod());
 
     }
@@ -178,14 +180,14 @@ export default class FilesInput extends EventFactory {
 
     checkUniqueFile() {
         let nbFiles = this.input.fileinput('getFilesCount', true);
-        if(nbFiles > 0) {
+        if(nbFiles > 1) {
             $('#unique').removeClass('d-none');
             $('#forceAllSign').removeClass('d-none');
             $('#forceAllSign2').removeClass('d-none');
         } else {
             $('#unique').addClass('d-none');
             $('#forceAllSign').addClass('d-none');
-            $('#forceAllSign2').removeClass('d-none');
+            $('#forceAllSign2').addClass('d-none');
         }
     }
 

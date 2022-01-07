@@ -291,7 +291,7 @@ public class UserService {
         if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 2) {
             List<PersonLdapLight> ldapSearchList = ldapPersonService.searchLight(searchString);
             if (ldapSearchList.size() > 0) {
-                List<PersonLdapLight> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdapLight::getDisplayName)).collect(Collectors.toList());
+                List<PersonLdapLight> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdapLight::getCn)).collect(Collectors.toList());
                 for (PersonLdapLight personLdapList : ldapList) {
                     if (personLdapList.getMail() != null) {
                         if (personLdaps.stream().noneMatch(personLdap -> personLdap.getMail().equals(personLdapList.getMail()))) {
@@ -374,9 +374,11 @@ public class UserService {
             if (domain.equals(globalProperties.getDomain())) {
                 return UserType.ldap;
             }
-            File whiteListFile = getDomainsWhiteList();
-            if (fileService.isFileContainsText(whiteListFile, domain)) {
-                return UserType.shib;
+            if(shibProperties.getDomainsWhiteListUrl() != null) {
+                File whiteListFile = getDomainsWhiteList();
+                if (fileService.isFileContainsText(whiteListFile, domain)) {
+                    return UserType.shib;
+                }
             }
         }
         return UserType.external;

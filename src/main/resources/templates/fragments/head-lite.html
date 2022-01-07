@@ -10,7 +10,7 @@
 		<link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
 		<link rel="stylesheet" th:href="@{/webjars/font-awesome/css/all.min.css}" />
 		<link rel="stylesheet" th:href="@{/webjars/google-code-prettify/bin/prettify.min.css}" />
-		<link rel="stylesheet" th:href="@{/css/app.css}" />
+		<link rel="stylesheet" th:href="'/css/app.css?version=' + ${versionApp}" />
 
 		<script th:src="@{/webjars/jquery/jquery.min.js}"></script>
 		<script th:src="@{/webjars/jquery-ui/jquery-ui.js}"></script>
@@ -23,5 +23,6 @@
 
 		<link rel="icon" type="image/png" th:href="@{/images/favicon.ico}" />
 
-		<title th:text="#{application.title}"></title>
+	<title th:text="#{application.title}"></title>
+
 </html>
