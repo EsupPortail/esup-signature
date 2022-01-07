@@ -4,12 +4,12 @@
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="signRequests" type="org.springframework.data.domain.Page<esupportail.esupsignature.entity.SignRequest>"*/-->
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
-<head th:replace="fragments/head"></head>
+<head th:replace="fragments/head :: head"></head>
 <body>
-<header th:replace="fragments/nav"></header>
+<header th:replace="fragments/nav :: nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/sides/side"></nav>
+        <nav th:replace="fragments/sides/side :: side"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/manage">Espace superviseurs</a></li>
@@ -172,7 +172,7 @@
                             <tfoot>
                             <tr>
                                 <td colspan="100%">
-                                    <nav th:replace="fragments/pagination"></nav>
+                                    <nav th:replace="fragments/pagination :: pagination"></nav>
                                 </td>
                             </tr>
                             </tfoot>
@@ -184,6 +184,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer"></footer>
+<footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>
