@@ -158,8 +158,6 @@
 		<!-- Webjars dependencies -->
 
 		<dependency>
-<<<<<<< HEAD
-=======
 			<groupId>org.webjars</groupId>
 			<artifactId>webjars-locator-core</artifactId>
 			<exclusions>
@@ -171,7 +169,6 @@
 		</dependency>
 
 		<dependency>
->>>>>>> 3e46de3cc3ab5590760e735438929cfc2851b582
 			<groupId>org.webjars.bower</groupId>
 			<artifactId>google-code-prettify</artifactId>
 			<version>1.0.5</version>
