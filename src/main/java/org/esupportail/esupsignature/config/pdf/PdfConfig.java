@@ -33,19 +33,25 @@ public class PdfConfig {
         return pdfProperties;
     }
 
+    private Path pdfADefPath;
+
+    public Path getPdfADefPath() {
+        return pdfADefPath;
+    }
+
     @PostConstruct
     public void setPdfColorProfileUrl() {
         try {
-            File pdfAFile = new File("PDFA_def.ps");
+            File pdfAFile = File.createTempFile("PDFA_def", "ps");
             OutputStream pdfAoutStream = new FileOutputStream(pdfAFile);
             pdfAoutStream.write(new ClassPathResource("/PDFA_def.ps").getInputStream().readAllBytes());
 
-            File iccFile = new File("srgb.icc");
+            File iccFile = File.createTempFile("srgb", "icc");
             OutputStream iccOutStream = new FileOutputStream(iccFile);
             iccOutStream.write(new ClassPathResource("/srgb.icc").getInputStream().readAllBytes());
-
             logger.info("iccPath : " + iccFile.getAbsolutePath());
             logger.info("pdfADefPath : " + pdfAFile.getAbsolutePath());
+            pdfADefPath = pdfAFile.toPath();
             List<String> lines = Files.readAllLines(Path.of(pdfAFile.getAbsolutePath()), StandardCharsets.UTF_8);
             lines.set(7, "/ICCProfile (" + iccFile.getAbsolutePath() + ") % Customise");
             Files.write(Path.of(pdfAFile.getAbsolutePath()), lines, StandardCharsets.UTF_8);

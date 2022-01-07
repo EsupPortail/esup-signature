@@ -24,13 +24,13 @@
 	</properties>
 	<repositories>
 		<repository>
+			<id>localrepository</id>
+			<url>file:///${pom.basedir}/src/libs</url>
+		</repository>
+		<repository>
 			<id>cefdigital</id>
 			<name>cefdigital</name>
 			<url>https://ec.europa.eu/cefdigital/artifact/content/repositories/esignaturedss/</url>
-		</repository>
-		<repository>
-			<id>localrepository</id>
-			<url>file:///${pom.basedir}/src/libs</url>
 		</repository>
 	</repositories>
 	<distributionManagement>
