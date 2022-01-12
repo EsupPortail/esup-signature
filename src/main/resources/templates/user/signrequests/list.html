@@ -48,7 +48,7 @@
                         </a>
                     </li>
                     <li>
-                        <a data-bs-toggle="modal" data-bs-target="#newFomModal" type="button"
+                        <a th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')') || #authorization.expression('hasRole(''ROLE_FRANCECONNECT'')')}" data-bs-toggle="modal" data-bs-target="#newFomModal" type="button"
                            class="btn-floating btn-lg bg-primary wave-effect">
                             <i class="fas fa-plus"></i>
                         </a>
