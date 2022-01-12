@@ -12,7 +12,6 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.*;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
@@ -69,9 +68,6 @@ public class SignRequestController {
 
     @Resource
     private SignService signService;
-
-    @Resource
-    private SignRequestRepository signRequestRepository;
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
@@ -345,7 +341,7 @@ public class SignRequestController {
 //        }
 //    }
 
-    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_ADMIN')")
     @PostMapping(value = "/fast-sign-request")
     public String createSignRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                     @RequestParam("signType") SignType signType,
@@ -366,7 +362,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests";
     }
 
-    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_ADMIN')")
     @PostMapping(value = "/send-sign-request")
     public String sendSignRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                   @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
