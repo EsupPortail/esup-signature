@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head"></head>
+<head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
     import {default as SelectUser} from '/js/modules/utils/SelectUser.js?version=[[${versionApp}]]';
     new SelectUser("recipientsEmails2", null, null, [[${_csrf}]]);
 </script>
 <body>
-<header th:replace="fragments/nav"></header>
+<header th:replace="fragments/nav :: nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/sides/side-sign"></nav>
+        <nav th:replace="fragments/sides/side-sign :: side-sign"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/signrequests">Tableau de bord</a></li>
@@ -218,6 +218,6 @@
     </div>
 </div>
 
-<footer th:replace="fragments/footer"></footer>
+<footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="version" type="java.lang.String"*/-->
-	<head>
+	<head th:fragment="head">
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<base href="/">
@@ -54,13 +54,15 @@
 		<script th:src="@{/webjars/bs-stepper/dist/js/bs-stepper.js}"></script>
 		<script th:src="@{/webjars/google-code-prettify/bin/prettify.min.js}"></script>
 
+		<script th:inline="javascript" type="module" th:if="${versionApp != null}">
+			sessionStorage.setItem("globalProperties", [[${globalPropertiesJson}]]);
+			import {GlobalUi} from '/js/modules/ui/GlobalUi.js?version=[[${versionApp}]]';
+			new GlobalUi([[${authUserEppn}]], [[${_csrf}]], [[${applicationEmail}]]);
+		</script>
+
 		<link rel="icon" type="image/png" th:href="@{/images/favicon.ico}" />
 
 		<title th:text="#{application.title}"></title>
+
 	</head>
-	<script th:inline="javascript" type="module" th:if="${versionApp != null}">
-		sessionStorage.setItem("globalProperties", [[${globalPropertiesJson}]]);
-		import {GlobalUi} from '/js/modules/ui/GlobalUi.js?version=[[${versionApp}]]';
-		new GlobalUi([[${authUserEppn}]], [[${_csrf}]], [[${applicationEmail}]]);
-	</script>
 </html>

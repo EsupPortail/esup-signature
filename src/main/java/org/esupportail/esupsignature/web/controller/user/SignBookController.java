@@ -192,7 +192,7 @@ public class SignBookController {
                                                     @RequestParam("multipartFiles") MultipartFile[] multipartFiles, Model model) throws EsupSignatureIOException {
         User authUser = userService.getUserByEppn(authUserEppn);
         logger.info("start add documents in " + name);
-        SignBook signBook = signRequestService.addDocsInNewSignBookSeparated(name, workflowName, multipartFiles, authUser);
+        SignBook signBook = signRequestService.addDocsInNewSignBookSeparated(name, name, workflowName, multipartFiles, authUser);
         return new String[]{"" + signBook.getId()};
     }
 

@@ -17,6 +17,8 @@ public class LiveWorkflow {
     @Version
     private Integer version;
 
+    private String title;
+
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @OrderColumn
     private List<LiveWorkflowStep> liveWorkflowSteps = new ArrayList<>();
@@ -40,6 +42,14 @@ public class LiveWorkflow {
 
     public Integer getVersion() {
         return version;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public void setVersion(Integer version) {

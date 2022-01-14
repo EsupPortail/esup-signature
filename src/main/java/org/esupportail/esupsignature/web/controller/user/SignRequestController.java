@@ -12,7 +12,6 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.*;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
@@ -69,9 +68,6 @@ public class SignRequestController {
 
     @Resource
     private SignService signService;
-
-    @Resource
-    private SignRequestRepository signRequestRepository;
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
@@ -345,7 +341,7 @@ public class SignRequestController {
 //        }
 //    }
 
-    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_ADMIN')")
     @PostMapping(value = "/fast-sign-request")
     public String createSignRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                     @RequestParam("signType") SignType signType,
@@ -366,7 +362,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests";
     }
 
-    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_ADMIN')")
     @PostMapping(value = "/send-sign-request")
     public String sendSignRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                   @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
@@ -382,6 +378,7 @@ public class SignRequestController {
                                   @RequestParam(value = "names", required = false) List<String> names,
                                   @RequestParam(value = "firstnames", required = false) List<String> firstnames,
                                   @RequestParam(value = "phones", required = false) List<String> phones,
+                                  @RequestParam(value = "title", required = false) String title,
                                   Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         User user = (User) model.getAttribute("user");
         User authUser = userService.getUserByEppn(authUserEppn);
@@ -390,7 +387,7 @@ public class SignRequestController {
         List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
         if (multipartFiles != null) {
             try {
-                Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, authUser, false, forceAllSign, null);
+                Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(title, multipartFiles, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, authUser, false, forceAllSign, null);
                 if (signBookStringMap.values().iterator().next() != null) {
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", signBookStringMap.values().toArray()[0].toString()));
                 } else {

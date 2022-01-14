@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head-lite"></head>
+<head th:replace="fragments/head-lite :: head-lite"></head>
 <body>
     <th:block th:if="${userEppn != null}">
-    <nav th:replace="fragments/nav"></nav>
+    <header th:replace="fragments/nav :: nav"></header>
     </th:block>
     <th:block th:unless="${userEppn != null}">
-    <nav th:replace="fragments/nav-empty"></nav>
+    <header th:replace="fragments/nav-empty :: nav-empty"></header>
     </th:block>
     <main role="main">
     <div class="card col-lg-10 mx-auto" style="top: 60px;">
@@ -81,6 +81,6 @@
         </div>
     </div>
     </main>
-    <footer th:replace="fragments/footer"></footer>
+    <footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>
