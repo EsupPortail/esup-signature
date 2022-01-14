@@ -7,16 +7,22 @@
                    th:data-id-signbook="${signRequest.parentSignBook.id}">
         </td>
         <td th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null}" th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signRequest.parentSignBook.liveWorkflow.workflow.description}"></td>
-        <td th:if="${signRequest.parentSignBook.liveWorkflow.workflow == null && signRequest.parentSignBook.title != ''}" th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signRequest.parentSignBook.title}"></td>
-        <td th:if="${signRequest.parentSignBook.liveWorkflow.workflow == null && signRequest.parentSignBook.title == ''}" th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="'Hors circuit'"></td>
+        <td th:if="${signRequest.parentSignBook.liveWorkflow.workflow == null && signRequest.parentSignBook.liveWorkflow.title != null}" th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signRequest.parentSignBook.liveWorkflow.title}"></td>
+        <td th:if="${signRequest.parentSignBook.liveWorkflow.workflow == null && signRequest.parentSignBook.liveWorkflow.title == null && signRequest.parentSignBook.title != ''}" th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signRequest.parentSignBook.title}"></td>
+        <td th:if="${signRequest.parentSignBook.liveWorkflow.workflow == null && signRequest.parentSignBook.liveWorkflow.title == ''}" th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signRequest.parentSignBook.liveWorkflow.title}"></td>
+        <td th:if="${signRequest.parentSignBook.liveWorkflow.workflow == null && signRequest.parentSignBook.liveWorkflow.title == null && signRequest.parentSignBook.title == ''}" th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="'Hors circuit'"></td>
         <td class="clickable-td text-break">
-                                    <span th:unless="${signBook.signRequests.size() > 1}">
-                                        <i class="fa fa-file"></i>
-                                        <span th:text="${signRequest.title}"></span>
-                                    </span>
-            <span th:if="${signBook.signRequests.size() > 1}">
+            <span th:unless="${signBook.signRequests.size() > 1}">
+                <i class="fa fa-file"></i>
+                <span th:text="${signBook.title}"></span>
+            </span>
+            <span th:if="${signBook.signRequests.size() > 1 && (signBook.liveWorkflow.title == null || signBook.liveWorkflow.title == signBook.title)}">
                                         <i class="fa fa-folder-open"></i>
                                         <span th:text="' Contient ' + ${signBook.signRequests.size()} + ' documents '"></span>
+                                     </span>
+            <span th:if="${signBook.signRequests.size() > 1 && signBook.liveWorkflow.title != null && signBook.liveWorkflow.title != signBook.title}">
+                                        <i class="fa fa-folder-open"></i>
+                                        <span th:text="${signBook.title}"></span>
                                      </span>
         </td>
         <td class="clickable-td d-none d-xxl-table-cell" th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></td>

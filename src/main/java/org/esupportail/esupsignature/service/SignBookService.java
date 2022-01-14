@@ -98,7 +98,7 @@ public class SignBookService {
         return signBookRepository.countByLiveWorkflowWorkflow(workflow);
     }
 
-    public SignBook createSignBook(String title, Workflow workflow, String prefix, String namingTemplate, User user, boolean external) {
+    public SignBook createSignBook(String title, String name, Workflow workflow, String prefix, String namingTemplate, User user, boolean external) {
         SignBook signBook = new SignBook();
         if(namingTemplate == null || namingTemplate.isEmpty()) {
             namingTemplate = globalProperties.getNamingTemplate();
@@ -113,14 +113,13 @@ public class SignBookService {
             order = signBookRepository.countByLiveWorkflowWorkflow(workflow);
         }
         signBook.setStatus(SignRequestStatus.draft);
-        signBook.setTitle(workflowName);
+        signBook.setTitle(title);
         signBook.setCreateBy(user);
         signBook.setCreateDate(new Date());
         signBook.setExternal(external);
-        signBook.setLiveWorkflow(liveWorkflowService.create());
+        signBook.setLiveWorkflow(liveWorkflowService.create(prefix));
         signBookRepository.save(signBook);
-        String name = generateName2(signBook, title, workflowName, order, user, namingTemplate);
-        signBook.setName(name);
+        signBook.setName(generateName2(signBook, name, workflowName, order, user, namingTemplate));
         return signBook;
     }
 

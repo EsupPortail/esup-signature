@@ -63,10 +63,11 @@ public class SignRequestWsController {
                        @Parameter(description = "Infos pour les des signataires externes", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = JsonExternalUserInfo.class)))) @RequestParam(value = "externalUsersInfos", required = false) List<JsonExternalUserInfo> externalUsersInfos,
                        @Parameter(description = "Type de signature", schema = @Schema(allowableValues = {"visa", "pdfImageStamp", "certSign", "nexuSign"}), examples = {@ExampleObject(value = "visa"), @ExampleObject(value = "pdfImageStamp"), @ExampleObject(value = "certSign"), @ExampleObject(value = "nexuSign")}) @RequestParam("signType") String signType,
                        @Parameter(description = "EPPN du créateur/propriétaire de la demande") @RequestParam String eppn,
+                       @Parameter(description = "Un titre (facultatif)") @RequestParam(value = "title", required = false) String title,
                        @RequestParam(required = false) @Parameter(description = "Emplacement final", example = "smb://drive.univ-ville.fr/forms-archive/") String targetUrl) {
         User user = userService.getByEppn(eppn);
         try {
-            Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, SignType.valueOf(signType), allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, user, true, forceAllSign, targetUrl);
+            Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(title, multipartFiles, SignType.valueOf(signType), allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, user, true, forceAllSign, targetUrl);
             return signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
         } catch (EsupSignatureException | EsupSignatureIOException | EsupSignatureFsException e) {
             logger.error(e.getMessage(), e);

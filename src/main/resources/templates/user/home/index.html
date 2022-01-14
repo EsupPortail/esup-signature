@@ -45,7 +45,8 @@
                                                 <span th:text="' Contient ' + ${signBook.signRequests.size()} + ' documents '"></span>
                                                 <i class="fas fa-caret-down"></i>
                                             </span>
-                                            <span th:unless="${signBook.signRequests.size() > 1}" th:text="${signBook.signRequests.get(0).title}"></span>
+                                            <span th:if="${signBook.signRequests.size() == 1 && signBook.liveWorkflow.title == null}" th:text="${signBook.signRequests.get(0).title}"></span>
+                                            <span th:if="${signBook.signRequests.size() == 1 && signBook.liveWorkflow.title != null}" th:text="${signBook.liveWorkflow.title}"></span>
                                         </td>
                                         <td class="text-break w-20 d-none d-md-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}">
                                         </td>

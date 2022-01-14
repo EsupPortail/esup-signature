@@ -59,10 +59,12 @@ public class WizardController {
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
                        @RequestParam(value = "forceAllSign", required = false) Boolean forceAllSign,
                        @RequestParam(value = "recipientsCCEmailsWiz", required = false) List<String> recipientsCCEmailsWiz,
+                       @RequestParam(value = "title", required = false) String title,
                        @RequestParam(value = "comment", required = false) String comment,
                        Model model) throws EsupSignatureFsException {
         User user = (User) model.getAttribute("user");
         SignBook signBook = signBookService.getById(id);
+        signBook.setTitle(title);
         signBook.setForceAllDocsSign(forceAllSign);
         if(comment != null && !comment.isEmpty()) {
             commentService.create(signBook.getSignRequests().get(0).getId(), comment, 0, 0, 0, null, true, null, userEppn);
