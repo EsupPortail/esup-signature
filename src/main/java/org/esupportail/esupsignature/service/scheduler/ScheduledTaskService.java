@@ -86,7 +86,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+//	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksTargets() {
 		logger.debug("scan all signRequest to export");
@@ -102,7 +102,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+//	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksToArchive() {
 		if(globalProperties.getArchiveUri() != null) {
@@ -122,7 +122,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+//	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksToClean() {
 		logger.debug("scan all signRequest to clean");
@@ -156,7 +156,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+//	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void sendAllEmailAlerts() throws EsupSignatureMailException {
 		List<User> users = userService.getAllUsers();

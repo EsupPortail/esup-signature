@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -17,6 +18,9 @@ import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -96,6 +100,71 @@ public class SignBookService {
     public int countSignBooksByWorkflow(Long workflowId) {
         Workflow workflow = workflowRepository.findById(workflowId).get();
         return signBookRepository.countByLiveWorkflowWorkflow(workflow);
+    }
+
+    @Transactional
+    public Page<SignBook> getSignBooks(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, Pageable pageable) {
+        Page<SignBook> signBooks = new PageImpl<>(new ArrayList<>());
+        if(statusFilter.isEmpty() || statusFilter.equals("all")) {
+            signBooks = signBookRepository.findByRecipientAndCreateByEppn(userEppn, userEppn, pageable);
+        } else if(statusFilter.equals("tosign"))  {
+            signBooks = signBookRepository.findToSign(userEppn, pageable);
+        } else if(statusFilter.equals("signedByMe")) {
+            signBooks = signBookRepository.findByRecipientAndActionType(userEppn, ActionType.signed, pageable);
+        } else if(statusFilter.equals("refusedByMe")) {
+            signBooks = signBookRepository.findByRecipientAndActionType(userEppn, ActionType.refused, pageable);
+        } else if(statusFilter.equals("followByMe")) {
+            signBooks = signBookRepository.findByViewersContaining(userService.getUserByEppn(userEppn), pageable);
+        } else if(statusFilter.equals("sharedSign")) {
+//            signBooks = signBookRepository.findByViewersContaining(userService.getUserByEppn(userEppn), pageable);
+            //TODO
+        } else if(statusFilter.equals("hided")) {
+            signBooks = signBookRepository.findByHidedByEppn(userEppn, pageable);
+        } else {
+            signBooks = signBookRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.valueOf(statusFilter), pageable);
+        }
+
+
+//        if (recipientsFilter != null && !recipientsFilter.equals("") && !recipientsFilter.equals("all")) {
+//            List<SignRequest> signRequestByRecipients = signRequestRepository.findByRecipient(recipientsFilter);
+//            for(SignRequest signRequest : signRequestByRecipients) {
+//                signBooks.getContent().removeIf(signBook -> !signBook.getSignRequests().contains(signRequest));
+//            }
+//        }
+//        if (workflowFilter != null && !workflowFilter.equals("") && !workflowFilter.equals("all")) {
+//            Set<SignRequest> signRequestByWorkflow = new HashSet<>();
+//            if(workflowFilter.equals("Hors circuit")) {
+//                signRequestByWorkflow.addAll(signRequestRepository.findByByParentSignBookTitleEmptyAndWorflowIsNull());
+//            } else {
+//                signRequestByWorkflow.addAll(signRequestRepository.findByWorkflowDescription(workflowFilter));
+//                signRequestByWorkflow.addAll(signRequestRepository.findByParentSignBookTitle(workflowFilter));
+//            }
+//            for(SignRequest signRequest : signRequestByWorkflow) {
+//                signBooks.getContent().removeIf(signBook -> !signBook.getSignRequests().contains(signRequest));
+//            }
+//        }
+//        if (docTitleFilter != null && !docTitleFilter.equals("") && !docTitleFilter.equals("all")) {
+//            List<SignRequest> signRequestByTitle = signRequestRepository.findByTitle(docTitleFilter);
+//            for(SignRequest signRequest : signRequestByTitle) {
+//                signBooks.getContent().removeIf(signBook -> !signBook.getSignRequests().contains(signRequest));
+//            }
+//        }
+        for(SignBook signBook : signBooks) {
+            for (SignRequest signRequest : signBook.getSignRequests()) {
+                if (signRequest.getEndDate() == null) {
+                    signRequest.setEndDate(getEndDate(signRequest));
+                }
+            }
+        }
+        return signBooks;
+    }
+
+    private Date getEndDate(SignRequest signRequest) {
+        List<Action> action = signRequest.getRecipientHasSigned().values().stream().filter(action1 -> !action1.getActionType().equals(ActionType.none)).sorted(Comparator.comparing(Action::getDate)).collect(Collectors.toList());
+        if(action.size() > 0) {
+            return action.get(0).getDate();
+        }
+        return null;
     }
 
     public SignBook createSignBook(String title, String name, Workflow workflow, String prefix, String namingTemplate, User user, boolean external) {
@@ -501,7 +570,7 @@ public class SignBookService {
     @Transactional
     public List<SignRequest> getSignRequestByViewer(String userEppn) {
         Set<SignRequest> signRequests = new HashSet<>();
-        List<SignBook> signBooks = signBookRepository.findByViewersContaining(userService.getUserByEppn(userEppn));
+        Page<SignBook> signBooks = signBookRepository.findByViewersContaining(userService.getUserByEppn(userEppn), null);
         for (SignBook signBook : signBooks) {
             signRequests.addAll(signBook.getSignRequests());
         }

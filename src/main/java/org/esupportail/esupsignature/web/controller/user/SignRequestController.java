@@ -143,7 +143,7 @@ public class SignRequestController {
         return "user/signrequests/list";
     }
 
-    public Page<SignBook> signRequestToSignBookPages(@PageableDefault(size = 10) @SortDefault(value = "createDate", direction = Direction.DESC) Pageable pageable,List<SignRequest> signRequests) {
+    public Page<SignBook> signRequestToSignBookPages(Pageable pageable, List<SignRequest> signRequests) {
         List<SignBook> signBooks = signRequests.stream().map(SignRequest::getParentSignBook).distinct().collect(Collectors.toList());
         return new PageImpl<>(signBooks.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signBooks.size());
     }

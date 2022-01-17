@@ -14,20 +14,30 @@ import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.esupportail.esupsignature.web.ws.json.JsonWorkflowStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Locale;
 
 @Controller
 @RequestMapping("/user/signbooks")
@@ -52,6 +62,59 @@ public class SignBookController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private FormService formService;
+
+    @Resource
+    private TemplateEngine templateEngine;
+
+    @GetMapping
+    public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                       @RequestParam(value = "statusFilter", required = false) String statusFilter,
+                       @RequestParam(value = "recipientsFilter", required = false) String recipientsFilter,
+                       @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
+                       @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
+                       @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
+        if(statusFilter == null) statusFilter = "all";
+        if(statusFilter.equals("all")) statusFilter = "";
+        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
+        model.addAttribute("statusFilter", statusFilter);
+        model.addAttribute("signBooks", signBooks);
+        model.addAttribute("statuses", SignRequestStatus.values());
+        model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
+        model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
+        model.addAttribute("recipientsFilter", recipientsFilter);
+//        model.addAttribute("signRequestRecipients", signRequestService.getRecipientsNameFromSignRequests(signRequests));
+        model.addAttribute("docTitleFilter", docTitleFilter);
+//        model.addAttribute("docTitles", new HashSet<>(signRequests.stream().map(SignRequest::getTitle).collect(Collectors.toList())));
+        model.addAttribute("workflowFilter", workflowFilter);
+//        LinkedHashSet<String> signRequestWorkflow = new LinkedHashSet<>();
+//        if(workflowFilter == null || workflowFilter.equals("all") || workflowFilter.equals("Hors circuit")) {
+//            signRequestWorkflow.add("Hors circuit");
+//        }
+//        signRequestWorkflow.addAll(signRequests.stream().filter(s -> s.getParentSignBook().getLiveWorkflow().getWorkflow() != null).map(s -> s.getParentSignBook().getLiveWorkflow().getWorkflow().getDescription()).collect(Collectors.toList()));
+//        signRequestWorkflow.addAll(signRequests.stream().filter(s -> (s.getParentSignBook().getLiveWorkflow().getWorkflow() == null || s.getParentSignBook().getLiveWorkflow().getWorkflow().getDescription() == null) && !s.getParentSignBook().getTitle().isEmpty()).map(s -> s.getParentSignBook().getTitle()).collect(Collectors.toList()));
+//        model.addAttribute("signRequestWorkflow", signRequestWorkflow);
+        return "user/signbooks/list";
+    }
+
+    @GetMapping(value = "/list-ws")
+    @ResponseBody
+    public String listWs(@ModelAttribute(name = "userEppn") String userEppn, @ModelAttribute(name = "authUserEppn") String authUserEppn,
+                         @RequestParam(value = "statusFilter", required = false) String statusFilter,
+                         @RequestParam(value = "recipientsFilter", required = false) String recipientsFilter,
+                         @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
+                         @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
+                         @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
+        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
+        model.addAttribute("signBooks", signBooks);
+        CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
+        final Context ctx = new Context(Locale.FRENCH);
+        ctx.setVariables(model.asMap());
+        ctx.setVariable("token", token);
+        return templateEngine.process("user/signrequests/includes/list-elem.html", ctx);
+    }
 
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
