@@ -36,8 +36,7 @@ import org.thymeleaf.context.Context;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 @Controller
 @RequestMapping("/user/signbooks")
@@ -78,24 +77,33 @@ public class SignBookController {
                        @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
         if(statusFilter == null) statusFilter = "all";
         if(statusFilter.equals("all")) statusFilter = "";
+        if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
+            workflowFilter = "%";
+        }
+        if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
+            docTitleFilter = "%";
+        }
+        if(recipientsFilter == null || recipientsFilter.isEmpty() || recipientsFilter.equals("all")) {
+            recipientsFilter = "%";
+        }
         Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("signBooks", signBooks);
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
-        model.addAttribute("recipientsFilter", recipientsFilter);
-//        model.addAttribute("signRequestRecipients", signRequestService.getRecipientsNameFromSignRequests(signRequests));
-        model.addAttribute("docTitleFilter", docTitleFilter);
-//        model.addAttribute("docTitles", new HashSet<>(signRequests.stream().map(SignRequest::getTitle).collect(Collectors.toList())));
         model.addAttribute("workflowFilter", workflowFilter);
-//        LinkedHashSet<String> signRequestWorkflow = new LinkedHashSet<>();
-//        if(workflowFilter == null || workflowFilter.equals("all") || workflowFilter.equals("Hors circuit")) {
-//            signRequestWorkflow.add("Hors circuit");
-//        }
-//        signRequestWorkflow.addAll(signRequests.stream().filter(s -> s.getParentSignBook().getLiveWorkflow().getWorkflow() != null).map(s -> s.getParentSignBook().getLiveWorkflow().getWorkflow().getDescription()).collect(Collectors.toList()));
-//        signRequestWorkflow.addAll(signRequests.stream().filter(s -> (s.getParentSignBook().getLiveWorkflow().getWorkflow() == null || s.getParentSignBook().getLiveWorkflow().getWorkflow().getDescription() == null) && !s.getParentSignBook().getTitle().isEmpty()).map(s -> s.getParentSignBook().getTitle()).collect(Collectors.toList()));
-//        model.addAttribute("signRequestWorkflow", signRequestWorkflow);
+        model.addAttribute("docTitleFilter", docTitleFilter);
+        model.addAttribute("recipientsFilter", recipientsFilter);
+        Set<String> docTitles = new HashSet<>(signBookService.getDocTitles(userEppn));
+        model.addAttribute("docTitles", docTitles);
+        LinkedHashSet<String> workflowNames = new LinkedHashSet<>();
+        if(workflowFilter.equals("%") || workflowFilter.equals("Hors circuit")) {
+            workflowNames.add("Hors circuit");
+        }
+        workflowNames.addAll(signBookService.getWorkflowNames(userEppn));
+        model.addAttribute("workflowNames", workflowNames);
+        model.addAttribute("signRequestRecipients", signBookService.getRecipientsNames(userEppn));
         return "user/signbooks/list";
     }
 
@@ -107,6 +115,14 @@ public class SignBookController {
                          @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
                          @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
                          @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
+        if(statusFilter == null) statusFilter = "all";
+        if(statusFilter.equals("all")) statusFilter = "";
+        if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
+            workflowFilter = "%";
+        }
+        if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
+            docTitleFilter = "%";
+        }
         Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
         model.addAttribute("signBooks", signBooks);
         CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
@@ -258,6 +274,4 @@ public class SignBookController {
         SignBook signBook = signRequestService.addDocsInNewSignBookSeparated(name, name, workflowName, multipartFiles, authUser);
         return new String[]{"" + signBook.getId()};
     }
-
-
 }

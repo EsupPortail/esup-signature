@@ -86,8 +86,8 @@
                                 <select id="workflowFilter" class="slim-select-filter sign-request-filter" data-placeholder="Circuit" data-allow-deselect="true">
                                     <option data-placeholder="true"></option>
                                     <option value="all">Tout</option>
-                                    <th:block th:each="workflow : ${signRequestWorkflow}">
-                                            <option th:value="${workflow}" th:selected="${workflowFilter == workflow}" th:text="${workflow}"></option>
+                                    <th:block th:each="workflow : ${workflowNames}">
+                                        <option th:value="${workflow}" th:selected="${workflowFilter == workflow}" th:text="${workflow}"></option>
                                     </th:block>
                                 </select>
                             </th>
@@ -107,7 +107,7 @@
                                     <option data-placeholder="true"></option>
                                     <option value="all">Tout</option>
                                     <th:block th:each="signRequestRecipient : ${signRequestRecipients}">
-                                        <option th:value="${signRequestRecipient.user.eppn}" th:selected="${recipientsFilter == signRequestRecipient.user.eppn}" th:text="${signRequestRecipient.user.firstname + ' ' + signRequestRecipient.user.name}"></option>
+                                        <option th:value="${signRequestRecipient.eppn}" th:selected="${recipientsFilter == signRequestRecipient.eppn}" th:text="${signRequestRecipient.firstname + ' ' + signRequestRecipient.name}"></option>
                                     </th:block>
                                 </select>
                             </th>
