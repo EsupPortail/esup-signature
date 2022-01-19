@@ -188,14 +188,11 @@ public class SignBookService {
 
     public List<User> getRecipientsNames(String userEppn) {
         return signBookRepository.findRecipientNames(userEppn);
-//        List<SignBook> signBooks = signBookRepository.findByRecipientAndCreateByEppn(userEppn);
-//        List<Recipient> recipientNames = new ArrayList<>();
-//        for (SignBook signBook : signBooks) {
-//            for(SignRequest signRequest : signBook.getSignRequests()) {
-//                recipientNames.addAll(signRequest.getRecipientHasSigned().keySet());
-//            }
+//        Set<User> recipientNames = new HashSet<>();
+//        for(Recipient recipient : recipients) {
+//            recipientNames.add(recipient.getUser());
 //        }
-//        return recipientNames.stream().filter(distinctByKey(r -> r.getUser().getId())).collect( Collectors.toList()).stream().map(Recipient::getUser).collect(Collectors.toList());
+//        return new ArrayList<>(recipientNames);
     }
 
     public static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
