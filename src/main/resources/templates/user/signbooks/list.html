@@ -7,8 +7,8 @@
 <!--/*@thymesVar id="infiniteScrolling" type="java.lang.Boolean"*/-->
 <head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
-    import {ListSignRequestUi} from '/js/modules/ui/signbooks/ListSignRequestUi.js?version=[[${versionApp}]]';
-    new ListSignRequestUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]]);
+    import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=[[${versionApp}]]';
+    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]]);
 </script>
 <body>
 <header th:replace="fragments/nav :: nav"></header>
