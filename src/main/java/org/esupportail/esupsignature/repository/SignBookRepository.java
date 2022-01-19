@@ -20,36 +20,43 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
 
     @Query("select distinct sb from SignBook sb " +
             "left join sb.viewers v " +
-            "left join sb.signRequests sr " +
-            "left join sr.recipientHasSigned rhs " +
+            "join sb.signRequests sr " +
+            "left join sb.liveWorkflow lw " +
+            "left join lw.liveWorkflowSteps lws " +
+            "left join lws.recipients r " +
             "where (sb.title like :workflowFilter or sb.liveWorkflow.title like :workflowFilter)" +
             "and (sb.name like :docTitleFilter or sb.title like :docTitleFilter or sr.title like :docTitleFilter or sb.liveWorkflow.title like :docTitleFilter)" +
-            "and (:userEppn in (key(rhs).user.eppn) or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
-            "and sr.hidedBy is empty " +
-            "and sb.status <> 'draft'")
+            "and (:userEppn in r.user.eppn  or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
+            "and sr.hidedBy is empty")
     Page<SignBook> findByRecipientAndCreateByEppn(String userEppn, String workflowFilter, String docTitleFilter, Pageable pageable);
+
+
+    @Query("select distinct sb from SignBook sb " +
+            "left join sb.viewers v " +
+            "join sb.signRequests sr " +
+            "left join sb.liveWorkflow lw " +
+            "left join lw.liveWorkflowSteps lws " +
+            "left join lws.recipients r " +
+            "where lw.workflow is null " +
+            "and (sb.title is null or sb.title = '') " +
+            "and (sb.liveWorkflow.title is null or sb.liveWorkflow.title = '') " +
+            "and :recipientUserEppn in r.user.eppn " +
+            "and (:userEppn in r.user.eppn  or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
+            "and sr.hidedBy is empty")
+    Page<SignBook> findByRecipientAndCreateByEppnAndTitleNull(String recipientUserEppn, String userEppn, Pageable pageable);
 
     @Query("select distinct sb from SignBook sb " +
             "left join sb.viewers v " +
             "left join sb.signRequests sr " +
-            "left join sr.recipientHasSigned rhs " +
+            "left join sb.liveWorkflow lw " +
+            "left join lw.liveWorkflowSteps lws " +
+            "left join lws.recipients r " +
             "where (sb.title like :workflowFilter or sb.liveWorkflow.title like :workflowFilter)" +
             "and (sb.name like :docTitleFilter or sb.title like :docTitleFilter or sr.title like :docTitleFilter or sb.liveWorkflow.title like :docTitleFilter)" +
-            "and :recipientUserEppn in (key(rhs).user.eppn) " +
-            "and (sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
-            "and sr.hidedBy is empty " +
-            "and sb.status <> 'draft'")
-    Page<SignBook> findByRecipientAndCreateByEppn(String recipientUserEppn, String userEppn, String workflowFilter, String docTitleFilter, Pageable pageable);
-
-    @Query("select distinct sb from SignBook sb " +
-            "join sb.signRequests sr " +
-            "join sr.recipientHasSigned rhs " +
-            "where sb.liveWorkflow.workflow is null " +
-            "and (sb.title is null or sb.title = '') " +
-            "and (sb.liveWorkflow.title is null or sb.liveWorkflow.title = '') " +
-            "and (key(rhs).user.eppn = :recipientUserEppn or sb.createBy.eppn = :userEppn) " +
+            "and r.user.eppn = :recipientUserEppn " +
+            "and (r.user.eppn = :userEppn or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
             "and sr.hidedBy is empty")
-    Page<SignBook> findByRecipientAndCreateByEppnAndTitleNull(String recipientUserEppn, String userEppn, Pageable pageable);
+    Page<SignBook> findByRecipientAndCreateByEppn(String recipientUserEppn, String userEppn, String workflowFilter, String docTitleFilter, Pageable pageable);
 
     @Query("select distinct sb from SignBook sb join sb.liveWorkflow.currentStep.recipients r where sb.status = 'pending' and r.user.eppn = :recipientUserEppn")
     Page<SignBook> findToSign(String recipientUserEppn, Pageable pageable);
@@ -103,7 +110,11 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "where (lw.title is null or lw.title = '') and sb.title is not null and sb.title <> '' and (key(rhs).user.eppn = :userEppn or sb.createBy.eppn = :userEppn)")
     Collection<String> findSignBookTitles(String userEppn);
 
-    @Query("select distinct key(rhs).user from SignBook sb left join sb.viewers v left join sb.signRequests sr left join sr.recipientHasSigned rhs " +
-            "where (:userEppn in (key(rhs).user.eppn) or sb.createBy.eppn = :userEppn or v.eppn = :userEppn)")
+    @Query("select distinct r.user from SignBook sb " +
+            "left join sb.viewers v " +
+            "left join sb.liveWorkflow lw " +
+            "left join lw.liveWorkflowSteps lws " +
+            "left join lws.recipients r " +
+            "where (:userEppn in r.user.eppn or sb.createBy.eppn = :userEppn or :userEppn in v.eppn)")
     List<User> findRecipientNames(String userEppn);
 }
