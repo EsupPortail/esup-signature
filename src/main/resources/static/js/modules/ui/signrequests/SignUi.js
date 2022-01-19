@@ -24,6 +24,7 @@ export class SignUi {
         this.gotoNext = false;
         this.certTypeSelect = $("#certType");
         this.nbSignRequests = nbSignRequests;
+        $("#password").hide();
         this.initListeners();
         if(status !== "exported") {
             this.initReportModal();
@@ -83,10 +84,10 @@ export class SignUi {
 
     togglePasswordField(){
         let value = $("#certType").val();
-        if(value === "etab") {
-            $("#password").hide();
-        } else {
+        if(value === "profil") {
             $("#password").show();
+        } else {
+            $("#password").hide();
         }
     }
 
