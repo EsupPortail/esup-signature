@@ -25,7 +25,7 @@ export class ListSignRequestUi {
         }
         this.csrf = new CsrfToken(csrf);
         this.signRequestTable = $("#signRequestTable");
-        this.page = 1;
+        this.page = 0;
         this.initListeners();
         this.massSignButtonHide = true;
         this.rowHeight = null;
@@ -46,7 +46,6 @@ export class ListSignRequestUi {
         $('#downloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         $('#menuDownloadMultipleButton').on("click", e => this.downloadMultiple());
         $('#menuDownloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
-        $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
         $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
@@ -137,6 +136,7 @@ export class ListSignRequestUi {
     detectEndDiv(e) {
         if ($(e.target).scrollTop() + $(e.target).innerHeight() + 1 >= $(e.target)[0].scrollHeight && (this.infiniteScrolling != null && this.infiniteScrolling)) {
             if(this.totalElementsToDisplay >= (this.page - 1) * 5 ) {
+                $('#listSignRequestTable').unbind('scroll');
                 $("#listSignRequestTable").addClass("wait");
                 $("#loader").show();
                 this.addToPage();
@@ -206,9 +206,10 @@ export class ListSignRequestUi {
 
     addToPage() {
         console.info("Add to page");
+
         this.page++;
         let self = this;
-        $.get("/user/signrequests/list-ws?statusFilter=" + this.statusFilter + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page, function (data) {
+        $.get("/user/signrequests/list-ws?statusFilter=" + this.statusFilter + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=10", function (data) {
             self.signRequestTable.append(data);
             let clickableRow = $(".clickable-row");
             clickableRow.unbind();
@@ -219,7 +220,7 @@ export class ListSignRequestUi {
             $("#listSignRequestTable").removeClass("wait");
             $("#loader").hide();
             self.refreshListeners();
-            // self.scaleList();
+            $('#listSignRequestTable').on('scroll', e => self.detectEndDiv(e));
         });
     }
 

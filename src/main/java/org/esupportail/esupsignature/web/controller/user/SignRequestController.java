@@ -155,7 +155,7 @@ public class SignRequestController {
                          @RequestParam(value = "recipientsFilter", required = false) String recipientsFilter,
                          @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
                          @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
-                         @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
+                         @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
         List<SignRequest> signRequests = signRequestService.getSignRequests(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
         model.addAttribute("signBooks", signRequestToSignBookPages(pageable, signRequests));
         CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
