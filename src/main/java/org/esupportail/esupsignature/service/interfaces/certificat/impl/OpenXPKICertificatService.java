@@ -8,6 +8,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.interfaces.certificat.CertificatService;
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
 import javax.security.auth.x500.X500Principal;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -28,13 +30,14 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class OpenXPKICertificatService implements CertificatService {
 
     private static final Logger logger = LoggerFactory.getLogger(OpenXPKICertificatService.class);
+
+    @Resource
+    private GlobalProperties globalProperties;
 
     @Override
     public Pkcs12SignatureToken generateTokenForUser(User user) {
@@ -43,8 +46,8 @@ public class OpenXPKICertificatService implements CertificatService {
             KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
             kpg.initialize(2048);
             KeyPair pair = kpg.generateKeyPair();
-            PKCS10CertificationRequestBuilder p10Builder = new JcaPKCS10CertificationRequestBuilder(
-                    new X500Principal("CN=Requested Test Certificate"), pair.getPublic());
+            X500Principal x500Principal = new X500Principal("CN=" + user.getFirstname() + " " + user.getName() + ", O=" + globalProperties.getDomain() + ", emailAddress=" + user.getEmail());
+            PKCS10CertificationRequestBuilder p10Builder = new JcaPKCS10CertificationRequestBuilder(x500Principal, pair.getPublic());
             JcaContentSignerBuilder csBuilder = new JcaContentSignerBuilder("SHA256withRSA");
             ContentSigner signer = csBuilder.build(pair.getPrivate());
             PKCS10CertificationRequest csr = p10Builder.build(signer);
@@ -64,23 +67,21 @@ public class OpenXPKICertificatService implements CertificatService {
             Root root = restTemplate.postForObject("http://192.168.0.25/rpc/enroll", requestEntity, Root.class);
             assert root != null;
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            List<Certificate> certificates = new ArrayList<>();
+            Certificate[] certificates = new Certificate[2];
             Certificate cert = cf.generateCertificate(new ByteArrayInputStream(root.result.data.certificate.getBytes()));
             Certificate chain = cf.generateCertificate(new ByteArrayInputStream(root.result.data.chain.getBytes()));
-            certificates.add(cert);
-//            certificates.add(chain);
+            certificates[0] = cert;
+            certificates[1] = chain;
             KeyStore pkcs12 = KeyStore.getInstance("PKCS12");
             pkcs12.load(null, null);
-            pkcs12.setKeyEntry("privatekeyalias", pair.getPrivate(), "entrypassphrase".toCharArray(), certificates.toArray(new Certificate[0]));
+            pkcs12.setKeyEntry("temp", pair.getPrivate(), "toto".toCharArray(), certificates);
+//            pkcs12.setCertificateEntry("temp", cert);
             ByteArrayOutputStream p12 = new ByteArrayOutputStream();
             pkcs12.store(p12, "toto".toCharArray());
+//            pkcs12.
             return new Pkcs12SignatureToken(p12.toByteArray(), new KeyStore.PasswordProtection("toto".toCharArray()));
-        } catch(NoSuchAlgorithmException | IOException | OperatorCreationException e) {
+        } catch(NoSuchAlgorithmException | IOException | OperatorCreationException | CertificateException | KeyStoreException e) {
             logger.error(e.getMessage(), e);
-        } catch(CertificateException e) {
-            e.printStackTrace();
-        } catch(KeyStoreException e) {
-            e.printStackTrace();
         }
         return null;
     }
