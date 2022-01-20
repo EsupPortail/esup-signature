@@ -207,6 +207,9 @@ export class WorkspacePdf {
             targetPageNumber = signPageNumber;
             this.firstInsertSign = false;
         }
+        if(localStorage.getItem('signNumber') != null) {
+            this.signImageNumber = localStorage.getItem('signNumber');
+        }
         this.signPosition.addSign(targetPageNumber, false, this.signImageNumber, forceSignNumber);
         if((this.signType === "nexuSign" || this.signType === "certSign") && !this.notSigned) {
             $("#addSignButton").attr("disabled", true);

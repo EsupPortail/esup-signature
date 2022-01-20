@@ -187,6 +187,9 @@ export class SignRequestParams  extends EventFactory {
     }
 
     restoreUserParams() {
+        if (localStorage.getItem('signNumber') != null) {
+            this.fireEvent("nextSign", localStorage.getItem('signNumber'));
+        }
         if (localStorage.getItem('addWatermark') != null) {
             if(localStorage.getItem('addWatermark') === "true") {
                 this.addWatermark = false;
