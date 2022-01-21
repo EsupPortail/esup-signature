@@ -206,10 +206,10 @@ export class ListSignBooksUi {
 
     addToPage() {
         console.info("Add to page");
-
         this.page++;
         let self = this;
-        $.get("/user/signbooks/list-ws?statusFilter=" + this.statusFilter + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=10", function (data) {
+        const urlParams = new URLSearchParams(window.location.search);
+        $.get("/user/signbooks/list-ws?statusFilter=" + this.statusFilter + "&sort=" + urlParams.get("sort") + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=10", function (data) {
             self.signRequestTable.append(data);
             let clickableRow = $(".clickable-row");
             clickableRow.unbind();
