@@ -129,7 +129,7 @@ public class SignBookController {
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariables(model.asMap());
         ctx.setVariable("token", token);
-        return templateEngine.process("user/signrequests/includes/list-elem.html", ctx);
+        return templateEngine.process("user/signbooks/includes/list-elem.html", ctx);
     }
 
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")

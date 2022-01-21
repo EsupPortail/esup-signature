@@ -209,7 +209,11 @@ export class ListSignBooksUi {
         this.page++;
         let self = this;
         const urlParams = new URLSearchParams(window.location.search);
-        $.get("/user/signbooks/list-ws?statusFilter=" + this.statusFilter + "&sort=" + urlParams.get("sort") + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=10", function (data) {
+        let sort = "";
+        if(urlParams.get("sort") != null) {
+            sort = urlParams.get("sort");
+        }
+        $.get("/user/signbooks/list-ws?statusFilter=" + this.statusFilter + "&sort=" + sort + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=10", function (data) {
             self.signRequestTable.append(data);
             let clickableRow = $(".clickable-row");
             clickableRow.unbind();
