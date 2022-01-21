@@ -5,7 +5,7 @@ import {Message} from "../../../prototypes/Message.js?version=@version@";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp) {
+    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
         this.isOtp = isOtp;
@@ -14,6 +14,7 @@ export class WorkspacePdf {
         this.dataId = dataId;
         this.formId = formId;
         this.signImageNumber = signImageNumber;
+        this.restore = restore;
         this.currentSignType = currentSignType;
         this.postits = postits;
         this.notSigned = notSigned;
@@ -210,7 +211,7 @@ export class WorkspacePdf {
         if(localStorage.getItem('signNumber') != null) {
             this.signImageNumber = localStorage.getItem('signNumber');
         }
-        this.signPosition.addSign(targetPageNumber, false, this.signImageNumber, forceSignNumber);
+        this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, forceSignNumber);
         if((this.signType === "nexuSign" || this.signType === "certSign") && !this.notSigned) {
             $("#addSignButton").attr("disabled", true);
         }
