@@ -75,7 +75,7 @@ public class ScheduledTaskService {
 		this.oJService = oJService;
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+//	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void scanAllWorkflowsSources() throws EsupSignatureFsException {
 		logger.debug("scan workflows sources");
@@ -175,7 +175,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+//	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void cleanWarningReadedSignRequests() {
 		if(globalProperties.getNbDaysBeforeDeleting() > -1) {

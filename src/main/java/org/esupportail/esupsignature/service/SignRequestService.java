@@ -1808,6 +1808,20 @@ public class SignRequestService {
 		}
 	}
 
+	public SignRequest startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String name, List<String> recipientEmails, List<String> allSignToCompletes, List<String> targetEmails) throws EsupSignatureFsException, EsupSignatureException, EsupSignatureIOException {
+		Workflow workflow = workflowService.getById(id);
+		User user = userService.getByEppn(createByEppn);
+		if(name == null || name.isEmpty()) {
+			name = workflow.getDescription();
+		}
+		SignBook signBook = signBookService.createSignBook(name, name, workflow, "", null, user, true);
+		signBook.getLiveWorkflow().setWorkflow(workflow);
+		SignRequest signRequest = createSignRequest(multipartFiles[0].getOriginalFilename(), signBook.getId(), createByEppn, createByEppn);
+		addDocsToSignRequest(signRequest, false, 0, new ArrayList<>(), multipartFiles);
+		initWorkflowAndPendingSignBook(signRequest.getId(), recipientEmails, allSignToCompletes, null, targetEmails, createByEppn, createByEppn);
+		return signRequest;
+	}
+
 	@Transactional
 	public void initWorkflowAndPendingSignBook(Long signRequestId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, String userEppn, String authUserEppn) throws EsupSignatureFsException, EsupSignatureException {
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();

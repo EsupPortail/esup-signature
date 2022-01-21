@@ -46,7 +46,7 @@ public class OpenXPKICertificatService implements CertificatService {
             KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
             kpg.initialize(2048);
             KeyPair pair = kpg.generateKeyPair();
-            X500Principal x500Principal = new X500Principal("CN=" + user.getFirstname() + " " + user.getName() + ", O=" + globalProperties.getDomain() + ", emailAddress=" + user.getEmail());
+            X500Principal x500Principal = new X500Principal("emailAddress=" + user.getEmail() + ", CN=" + user.getFirstname() + " " + user.getName() + ", O=" + globalProperties.getDomain() + ", OU=UNIVROUEN, C=FR");
             PKCS10CertificationRequestBuilder p10Builder = new JcaPKCS10CertificationRequestBuilder(x500Principal, pair.getPublic());
             JcaContentSignerBuilder csBuilder = new JcaContentSignerBuilder("SHA256withRSA");
             ContentSigner signer = csBuilder.build(pair.getPrivate());
@@ -64,7 +64,7 @@ public class OpenXPKICertificatService implements CertificatService {
             HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
             RestTemplate restTemplate = new RestTemplate();
-            Root root = restTemplate.postForObject("http://192.168.0.25/rpc/enroll", requestEntity, Root.class);
+            Root root = restTemplate.postForObject("http://10.0.131.23/rpc/enroll", requestEntity, Root.class);
             assert root != null;
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             Certificate[] certificates = new Certificate[2];
