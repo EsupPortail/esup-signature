@@ -408,10 +408,14 @@ export class SignRequestParams  extends EventFactory {
 
     show() {
         this.cross.css('opacity', '1');
+        this.cross.draggable("enable");
+        this.cross.css("z-index", 5);
     }
 
     hide() {
         this.cross.css('opacity', '0');
+        this.cross.draggable("disable");
+        this.cross.css("z-index", -1);
     }
 
     simulateDrop() {
