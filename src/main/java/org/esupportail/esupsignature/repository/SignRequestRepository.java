@@ -28,8 +28,6 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
 
     List<SignRequest> findByCreateByEppn(String createByEppn);
 
-    List<SignRequest> findByHidedByEppn(String hidedByEppn);
-
     List<SignRequest> findByCreateByEppnAndStatus(String createByEppn, SignRequestStatus status);
 
     Long countByCreateByEppnAndStatus(String createByEppn, SignRequestStatus status);

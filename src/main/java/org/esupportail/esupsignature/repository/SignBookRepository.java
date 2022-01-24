@@ -24,7 +24,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "where (sb.title like :workflowFilter or sb.liveWorkflow.title like :workflowFilter)" +
             "and (sb.name like :docTitleFilter or sb.title like :docTitleFilter or sr.title like :docTitleFilter or sb.liveWorkflow.title like :docTitleFilter)" +
             "and (:userEppn in r.user.eppn  or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
-            "and sr.hidedBy is empty " +
+            "and sb.hidedBy is empty " +
             "and size(sb.signRequests) > 0 " +
             "and sb.status <> 'deleted'")
     Page<SignBook> findByRecipientAndCreateByEppn(String userEppn, String workflowFilter, String docTitleFilter, Pageable pageable);
@@ -42,7 +42,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "and (sb.liveWorkflow.title is null or sb.liveWorkflow.title = '') " +
             "and :recipientUserEppn in (u.eppn) " +
             "and (:userEppn in (key(rhs).user.eppn) or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
-            "and sr.hidedBy is empty " +
+            "and sb.hidedBy is empty " +
             "and size(sb.signRequests) > 0 " +
             "and sb.status <> 'deleted'")
     Page<SignBook> findByRecipientAndCreateByEppnAndTitleNull(String recipientUserEppn, String userEppn, Pageable pageable);
@@ -59,7 +59,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "and (sb.name like :docTitleFilter or sb.title like :docTitleFilter or sr.title like :docTitleFilter or sb.liveWorkflow.title like :docTitleFilter)" +
             "and :recipientUserEppn in (u.eppn) " +
             "and (:userEppn in (key(rhs).user.eppn)  or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
-            "and sr.hidedBy is empty " +
+            "and sb.hidedBy is empty " +
             "and size(sb.signRequests) > 0 " +
             "and sb.status <> 'deleted'")
     Page<SignBook> findByRecipientAndCreateByEppn(String recipientUserEppn, String userEppn, String workflowFilter, String docTitleFilter, Pageable pageable);
@@ -70,6 +70,9 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("select distinct sb from SignBook sb join sb.liveWorkflow.currentStep.recipients r where size(sb.signRequests) = 0 and (r.user.eppn = :userEppn or sb.createBy.eppn = :userEppn)")
     Page<SignBook> findEmpty(String userEppn, Pageable pageable);
 
+    @Query("select count(distinct sb) from SignBook sb join sb.liveWorkflow.currentStep.recipients r where size(sb.signRequests) = 0 and (r.user.eppn = :userEppn or sb.createBy.eppn = :userEppn)")
+    Long countEmpty(String userEppn);
+
     @Query("select distinct sb from SignBook sb " +
             "join sb.signRequests sr " +
             "join sr.recipientHasSigned rhs " +
@@ -79,7 +82,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("select distinct sb from SignBook sb join sb.signRequests sr join sr.recipientHasSigned rhs where key(rhs).user.eppn = :recipientUserEppn")
     Page<SignBook> findByRecipient(String recipientUserEppn, Pageable pageable);
 
-    @Query("select distinct sb from SignBook sb join sb.signRequests sr join sr.hidedBy hb where hb.eppn = :hidedByEppn")
+    @Query("select distinct sb from SignBook sb join sb.hidedBy hb where hb.eppn = :hidedByEppn")
     Page<SignBook> findByHidedByEppn(String hidedByEppn, Pageable pageable);
 
     Page<SignBook> findByCreateByEppnAndStatusAndSignRequestsNotNull(String userEppn, SignRequestStatus status, Pageable pageable);

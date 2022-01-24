@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.repository.DataRepository;
+import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
@@ -165,6 +166,9 @@ public class SignRequestService {
 	@Resource
 	private PreAuthorizeService preAuthorizeService;
 
+	@Resource
+	private SignBookRepository signBookRepository;
+
 	public SignRequestService(GlobalProperties globalProperties) {
 		this.globalProperties = globalProperties;
 	}
@@ -210,8 +214,6 @@ public class SignRequestService {
 		Set<SignRequest> signRequests = new HashSet<>();
 		if (statusFilter != null && !statusFilter.isEmpty()) {
 			switch (statusFilter) {
-				case "hided":
-					return signRequestRepository.findByHidedByEppn(userEppn);
 				case "tosign":
 					signRequests.addAll(getToSignRequests(userEppn));
 					break;
@@ -245,7 +247,6 @@ public class SignRequestService {
 			signRequests.addAll(getSharedSignedSignRequests(userEppn));
 			signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.deleted).forEach(signRequests::remove);
 		}
-		signRequestRepository.findByHidedByEppn(userEppn).forEach(signRequests::remove);
 		return new ArrayList<>(signRequests);
 	}
 
@@ -1733,17 +1734,6 @@ public class SignRequestService {
 			attachmentRequire = true;
 		}
 		return attachmentRequire;
-	}
-
-	@Transactional
-	public void toggle(Long id, String userEpppn) {
-		SignRequest signRequest = getById(id);
-		User user = userService.getUserByEppn(userEpppn);
-		if(signRequest.getHidedBy().contains(user)) {
-			signRequest.getHidedBy().remove(user);
-		} else {
-			signRequest.getHidedBy().add(user);
-		}
 	}
 
 	@Transactional

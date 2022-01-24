@@ -645,4 +645,20 @@ public class SignBookService {
         return docTitles;
     }
 
+    @Transactional
+    public boolean toggle(Long id, String userEpppn) {
+        SignBook signBook = getById(id);
+        User user = userService.getUserByEppn(userEpppn);
+        if(signBook.getHidedBy().contains(user)) {
+            signBook.getHidedBy().remove(user);
+            return false;
+        } else {
+            signBook.getHidedBy().add(user);
+            return true;
+        }
+    }
+
+    public int countEmpty(String userEppn) {
+        return Math.toIntExact(signBookRepository.countEmpty(userEppn));
+    }
 }

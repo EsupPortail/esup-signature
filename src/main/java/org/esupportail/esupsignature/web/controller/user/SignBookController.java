@@ -89,6 +89,7 @@ public class SignBookController {
         Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("signBooks", signBooks);
+        model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
@@ -280,5 +281,17 @@ public class SignBookController {
         logger.info("start add documents in " + name);
         SignBook signBook = signRequestService.addDocsInNewSignBookSeparated(name, name, workflowName, multipartFiles, authUser);
         return new String[]{"" + signBook.getId()};
+    }
+
+    @PreAuthorize("@preAuthorizeService.signBookView(#id, #authUserEppn, #authUserEppn)")
+    @GetMapping(value = "/toggle/{id}", produces = "text/html")
+    public String toggle(@ModelAttribute("authUserEppn") String authUserEppn,
+                         @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+        if(signBookService.toggle(id, authUserEppn)) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La demande à été masquée"));
+        } else {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La demande est de nouveau visible"));
+        }
+        return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
     }
 }

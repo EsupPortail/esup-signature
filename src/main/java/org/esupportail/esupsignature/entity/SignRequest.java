@@ -78,9 +78,6 @@ public class SignRequest {
     @OrderColumn
     private List<Comment> comments = new ArrayList<>();
 
-    @ManyToMany
-    private List<User> hidedBy = new ArrayList<>();
-
     private Boolean warningReaded = false;
 
     private Date lastNotifDate;
@@ -214,14 +211,6 @@ public class SignRequest {
 
     public List<Comment> getComments() {
         return comments;
-    }
-
-    public List<User> getHidedBy() {
-        return hidedBy;
-    }
-
-    public void setHidedBy(List<User> hidedBy) {
-        this.hidedBy = hidedBy;
     }
 
     public Boolean getWarningReaded() {

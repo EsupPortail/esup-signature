@@ -84,10 +84,10 @@
                         <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                             <i class="fas fa-eye pr-2"></i> Consulter
                         </a>
-                        <a th:if="${!signRequest.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/toggle/' + ${signRequest.id} + '/?statusFilter=' + ${statusFilter}">
+                        <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">
                             <i class="fas fa-eye-slash pr-2"></i> Masquer
                         </a>
-                        <a th:if="${signRequest.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/toggle/' + ${signRequest.id} + '/?statusFilter=' + ${statusFilter}">
+                        <a th:if="${signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">
                             <i class="fas fa-eye-slash pr-2"></i> Afficher dans la liste
                         </a>
                         <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
@@ -178,10 +178,10 @@
                 </button>
                 <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signBook.id}">
                     <div class=" card-body">
-<!--                        <a th:if="${!signRequest.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">-->
+<!--                        <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">-->
 <!--                            <i class="fas fa-eye-slash pr-2"></i> Masquer-->
 <!--                        </a>-->
-<!--                        <a th:if="${signRequest.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">-->
+<!--                        <a th:if="${signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">-->
 <!--                            <i class="fas fa-eye-slash pr-2"></i> Afficher dans la liste-->
 <!--                        </a>-->
                         <a th:if="${signBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
