@@ -106,7 +106,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public Page<SignBook> getSignBooks(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, Pageable pageable) {
+    public Page<SignBook> getSignBooks(String userEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, Pageable pageable) {
         Page<SignBook> signBooks = new PageImpl<>(new ArrayList<>());
         if(statusFilter.isEmpty() || statusFilter.equals("all")) {
             if(!workflowFilter.equals("Hors circuit")) {
@@ -131,8 +131,10 @@ public class SignBookService {
             //TODO
         } else if(statusFilter.equals("hided")) {
             signBooks = signBookRepository.findByHidedByEppn(userEppn, pageable);
+        } else if(statusFilter.equals("empty")) {
+            signBooks = signBookRepository.findEmpty(userEppn, pageable);
         } else {
-            signBooks = signBookRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.valueOf(statusFilter), pageable);
+            signBooks = signBookRepository.findByCreateByEppnAndStatusAndSignRequestsNotNull(userEppn, SignRequestStatus.valueOf(statusFilter), pageable);
         }
 
         for(SignBook signBook : signBooks) {
@@ -173,7 +175,7 @@ public class SignBookService {
         } else if(statusFilter.equals("hided")) {
             signBooks = signBookRepository.findByHidedByEppn(userEppn, pageable);
         } else {
-            signBooks = signBookRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.valueOf(statusFilter), pageable);
+            signBooks = signBookRepository.findByCreateByEppnAndStatusAndSignRequestsNotNull(userEppn, SignRequestStatus.valueOf(statusFilter), pageable);
         }
 
         for(SignBook signBook : signBooks) {

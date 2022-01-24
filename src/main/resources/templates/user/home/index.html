@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
+<!--/*@thymesVar id="signBook" type="org.springframework.data.domain.Page<esupportail.esupsignature.entity.SignBook>"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="authUser" type="org.esupportail.esupsignature.entity.User"*/-->
 <head th:replace="fragments/head :: head"></head>
@@ -29,7 +29,7 @@
                     <div class="col-12 col-lg-10 card mb-2 mx-auto">
                         <div id="myDocs" class="card-body">
                             <h5 class="text-center"><b>Demandes à signer</b></h5>
-                            <table th:if="${signRequests.getNumberOfElements() > 0}"
+                            <table th:if="${signBooks.getNumberOfElements() > 0}"
                                    class="table table-sm table-borderless table-hover">
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooks}">
@@ -82,7 +82,7 @@
                                 </th:block>
                                 </tbody>
                             </table>
-                            <div th:unless="${signRequests.getNumberOfElements() > 0}"
+                            <div th:unless="${signBooks.getNumberOfElements() > 0}"
                                  class="alert alert-secondary">
                                 Aucun document à signer pour le moment
                             </div>

@@ -86,7 +86,7 @@ public class SignBookController {
         if(recipientsFilter == null || recipientsFilter.isEmpty() || recipientsFilter.equals("all")) {
             recipientsFilter = "%";
         }
-        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
+        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("signBooks", signBooks);
         model.addAttribute("statuses", SignRequestStatus.values());
@@ -123,7 +123,7 @@ public class SignBookController {
         if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
             docTitleFilter = "%";
         }
-        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
+        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
         model.addAttribute("signBooks", signBooks);
         CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
         final Context ctx = new Context(Locale.FRENCH);
@@ -145,11 +145,18 @@ public class SignBookController {
         boolean isDefinitive = signBookService.delete(id, authUserEppn);
         if(isDefinitive) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Le document a été supprimé définitivement"));
-            return "redirect:/user/signrequests";
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Le document a été placé dans la corbeille"));
-            return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
         }
+        return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+    }
+
+    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
+    @DeleteMapping(value = "/force-delete/{id}", produces = "text/html")
+    public String forceDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+        signBookService.deleteDefinitive(id);
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Le document a été supprimé définitivement"));
+        return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")

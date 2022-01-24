@@ -25,6 +25,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "and (sb.name like :docTitleFilter or sb.title like :docTitleFilter or sr.title like :docTitleFilter or sb.liveWorkflow.title like :docTitleFilter)" +
             "and (:userEppn in r.user.eppn  or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
             "and sr.hidedBy is empty " +
+            "and size(sb.signRequests) > 0 " +
             "and sb.status <> 'deleted'")
     Page<SignBook> findByRecipientAndCreateByEppn(String userEppn, String workflowFilter, String docTitleFilter, Pageable pageable);
 
@@ -42,6 +43,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "and :recipientUserEppn in (u.eppn) " +
             "and (:userEppn in (key(rhs).user.eppn) or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
             "and sr.hidedBy is empty " +
+            "and size(sb.signRequests) > 0 " +
             "and sb.status <> 'deleted'")
     Page<SignBook> findByRecipientAndCreateByEppnAndTitleNull(String recipientUserEppn, String userEppn, Pageable pageable);
 
@@ -58,11 +60,15 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "and :recipientUserEppn in (u.eppn) " +
             "and (:userEppn in (key(rhs).user.eppn)  or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
             "and sr.hidedBy is empty " +
+            "and size(sb.signRequests) > 0 " +
             "and sb.status <> 'deleted'")
     Page<SignBook> findByRecipientAndCreateByEppn(String recipientUserEppn, String userEppn, String workflowFilter, String docTitleFilter, Pageable pageable);
 
-    @Query("select distinct sb from SignBook sb join sb.liveWorkflow.currentStep.recipients r where sb.status = 'pending' and r.user.eppn = :recipientUserEppn")
-    Page<SignBook> findToSign(String recipientUserEppn, Pageable pageable);
+    @Query("select distinct sb from SignBook sb join sb.liveWorkflow.currentStep.recipients r where sb.status = 'pending' and size(sb.signRequests) > 0 and r.user.eppn = :userEppn")
+    Page<SignBook> findToSign(String userEppn, Pageable pageable);
+
+    @Query("select distinct sb from SignBook sb join sb.liveWorkflow.currentStep.recipients r where size(sb.signRequests) = 0 and (r.user.eppn = :userEppn or sb.createBy.eppn = :userEppn)")
+    Page<SignBook> findEmpty(String userEppn, Pageable pageable);
 
     @Query("select distinct sb from SignBook sb " +
             "join sb.signRequests sr " +
@@ -76,7 +82,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("select distinct sb from SignBook sb join sb.signRequests sr join sr.hidedBy hb where hb.eppn = :hidedByEppn")
     Page<SignBook> findByHidedByEppn(String hidedByEppn, Pageable pageable);
 
-    Page<SignBook> findByCreateByEppnAndStatus(String userEppn, SignRequestStatus status, Pageable pageable);
+    Page<SignBook> findByCreateByEppnAndStatusAndSignRequestsNotNull(String userEppn, SignRequestStatus status, Pageable pageable);
 
     List<SignBook> findByStatus(SignRequestStatus signRequestStatus);
 

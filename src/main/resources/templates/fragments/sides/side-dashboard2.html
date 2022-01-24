@@ -32,6 +32,7 @@
         </a>
         <div class="hr sidebar-label"><i class="fas fa-trash-alt me-1 sidebar-label"></i><span> Corbeille</span></div>
         <a th:classappend="${statusFilter == 'deleted'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks/?statusFilter=deleted">Demandes supprimées</a>
+        <a th:classappend="${statusFilter == 'empty'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks/?statusFilter=empty">Demandes vides</a>
     </div>
 </nav>
 </html>
