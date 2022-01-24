@@ -69,7 +69,7 @@
                             <td><span th:text="${field.name}"></span></td>
                             <td><input type="text" class="form-control" name="description" th:value="${field.description}"/></td>
                             <td>
-                                <select name="fieldType" class="form-control">
+                                <select name="fieldType" class="form-select">
                                     <th:block th:each="fieldType : ${T(org.esupportail.esupsignature.entity.enums.FieldType).values()}">
                                         <option th:value="${fieldType}" th:text="${fieldType.name()}" th:selected="${fieldType == field.type}"></option>
                                     </th:block>

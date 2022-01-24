@@ -7,8 +7,8 @@
 <!--/*@thymesVar id="infiniteScrolling" type="java.lang.Boolean"*/-->
 <head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
-    import {ListSignRequestUi} from '/js/modules/ui/signrequests/ListSignRequestUi.js?version=[[${versionApp}]]';
-    new ListSignRequestUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]]);
+    import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=[[${versionApp}]]';
+    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]]);
 </script>
 <body>
 <header th:replace="fragments/nav :: nav"></header>
@@ -82,16 +82,16 @@
                                     </div>
                                 </div>
                             </th>
-                            <th class="w-20 d-none d-xxl-table-cell text-center">
+                            <th class="d-none d-xxl-table-cell text-center" style="width: 10%;">
                                 <select id="workflowFilter" class="slim-select-filter sign-request-filter" data-placeholder="Circuit" data-allow-deselect="true">
                                     <option data-placeholder="true"></option>
                                     <option value="all">Tout</option>
-                                    <th:block th:each="workflow : ${signRequestWorkflow}">
-                                            <option th:value="${workflow}" th:selected="${workflowFilter == workflow}" th:text="${workflow}"></option>
+                                    <th:block th:each="workflow : ${workflowNames}">
+                                        <option th:value="${workflow}" th:selected="${workflowFilter == workflow}" th:text="${workflow}"></option>
                                     </th:block>
                                 </select>
                             </th>
-                            <th class="w-20 text-center">
+                            <th class="text-center" style="width: 10%;">
                                 <select id="docTitleFilter" class="slim-select-filter sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
                                     <option data-placeholder="true"></option>
                                     <option value="all">Tout</option>
@@ -107,7 +107,7 @@
                                     <option data-placeholder="true"></option>
                                     <option value="all">Tout</option>
                                     <th:block th:each="signRequestRecipient : ${signRequestRecipients}">
-                                        <option th:value="${signRequestRecipient.user.eppn}" th:selected="${recipientsFilter == signRequestRecipient.user.eppn}" th:text="${signRequestRecipient.user.firstname + ' ' + signRequestRecipient.user.name}"></option>
+                                        <option th:value="${signRequestRecipient.eppn}" th:selected="${recipientsFilter == signRequestRecipient.eppn}" th:text="${signRequestRecipient.firstname + ' ' + signRequestRecipient.name}"></option>
                                     </th:block>
                                 </select>
                             </th>
@@ -117,7 +117,7 @@
                         </tr>
                         </thead>
                         <tbody id="signRequestTable">
-                        <tr th:replace="user/signrequests/includes/list-elem"></tr>
+                        <tr th:replace="user/signbooks/includes/list-elem"></tr>
                         </tbody>
                         <tfoot>
                         <tr>

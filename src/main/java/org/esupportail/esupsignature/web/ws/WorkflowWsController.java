@@ -1,14 +1,19 @@
 package org.esupportail.esupsignature.web.ws;
 
-import org.esupportail.esupsignature.entity.User;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.WorkflowService;
-import org.springframework.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -17,22 +22,32 @@ import java.util.List;
 @RequestMapping("/ws/workflows")
 public class WorkflowWsController {
 
+    private static final Logger logger = LoggerFactory.getLogger(WorkflowWsController.class);
+
     @Resource
     private WorkflowService workflowService;
 
     @Resource
-    private UserService userService;
+    private SignRequestService signRequestService;
 
     @CrossOrigin
-    @PostMapping(value = "/new")
-    public ResponseEntity<String> create(@RequestParam Workflow workflow, @RequestParam String[] types, @RequestParam List<String> managers) {
+    @PostMapping(value = "/{id}/new")
+    @Operation(description = "Création d'une nouvelle instance d'un formulaire")
+    public Long start(@PathVariable Long id,
+                      @Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
+                      @RequestParam @Parameter(description = "Eppn du propriétaire du futur document") String createByEppn,
+                      @RequestParam(required = false) @Parameter(description = "Nom de la demande (facultatif)") String name,
+                      @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*email]") List<String> recipientEmails,
+                      @RequestParam(required = false) @Parameter(description = "Lites des numéros d'étape pour lesquelles tous les participants doivent signer", example = "[stepNumber]") List<String> allSignToCompletes,
+                      @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
+                      @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls
+    ) {
         try {
-            User user = userService.getByEppn(workflow.getCreateBy().getEppn());
-            workflow = workflowService.createWorkflow(workflow.getTitle(), workflow.getDescription(), user);
-            workflowService.update(workflow, user, types, managers);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (EsupSignatureException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            SignRequest signRequest = signRequestService.startWorkflow(id, multipartFiles, createByEppn, name, recipientEmails, allSignToCompletes, targetEmails);
+            return signRequest.getId();
+        } catch (EsupSignatureException | EsupSignatureFsException | EsupSignatureIOException e) {
+            logger.error(e.getMessage(), e);
+            return -1L;
         }
     }
 
@@ -48,23 +63,4 @@ public class WorkflowWsController {
         return workflowService.getAllWorkflows();
     }
 
-    @CrossOrigin
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
-        Workflow workflow = workflowService.getById(id);
-        try {
-            workflowService.delete(workflow);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (EsupSignatureException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @CrossOrigin
-    @PostMapping("/{id}")
-    public ResponseEntity<String> update(@RequestParam Workflow workflow, @RequestParam String[] types, @RequestParam List<String> managers) {
-        User user = userService.getByEppn(workflow.getCreateBy().getEppn());
-        workflowService.update(workflow, user, types, managers);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
 }

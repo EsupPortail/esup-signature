@@ -14,20 +14,29 @@ import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.esupportail.esupsignature.web.ws.json.JsonWorkflowStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
+import java.util.*;
 
 @Controller
 @RequestMapping("/user/signbooks")
@@ -53,6 +62,77 @@ public class SignBookController {
     @Resource
     private UserService userService;
 
+    @Resource
+    private FormService formService;
+
+    @Resource
+    private TemplateEngine templateEngine;
+
+    @GetMapping
+    public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                       @RequestParam(value = "statusFilter", required = false) String statusFilter,
+                       @RequestParam(value = "recipientsFilter", required = false) String recipientsFilter,
+                       @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
+                       @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
+                       @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
+        if(statusFilter == null) statusFilter = "all";
+        if(statusFilter.equals("all")) statusFilter = "";
+        if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
+            workflowFilter = "%";
+        }
+        if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
+            docTitleFilter = "%";
+        }
+        if(recipientsFilter == null || recipientsFilter.isEmpty() || recipientsFilter.equals("all")) {
+            recipientsFilter = "%";
+        }
+        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
+        model.addAttribute("statusFilter", statusFilter);
+        model.addAttribute("signBooks", signBooks);
+        model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
+        model.addAttribute("statuses", SignRequestStatus.values());
+        model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
+        model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
+        model.addAttribute("workflowFilter", workflowFilter);
+        model.addAttribute("docTitleFilter", docTitleFilter);
+        model.addAttribute("recipientsFilter", recipientsFilter);
+        Set<String> docTitles = new HashSet<>(signBookService.getDocTitles(userEppn));
+        model.addAttribute("docTitles", docTitles);
+        LinkedHashSet<String> workflowNames = new LinkedHashSet<>();
+        if(workflowFilter.equals("%") || workflowFilter.equals("Hors circuit")) {
+            workflowNames.add("Hors circuit");
+        }
+        workflowNames.addAll(signBookService.getWorkflowNames(userEppn));
+        model.addAttribute("workflowNames", workflowNames);
+        model.addAttribute("signRequestRecipients", signBookService.getRecipientsNames(userEppn));
+        return "user/signbooks/list";
+    }
+
+    @GetMapping(value = "/list-ws")
+    @ResponseBody
+    public String listWs(@ModelAttribute(name = "userEppn") String userEppn, @ModelAttribute(name = "authUserEppn") String authUserEppn,
+                         @RequestParam(value = "statusFilter", required = false) String statusFilter,
+                         @RequestParam(value = "recipientsFilter", required = false) String recipientsFilter,
+                         @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
+                         @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
+                         @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
+        if(statusFilter == null) statusFilter = "all";
+        if(statusFilter.equals("all")) statusFilter = "";
+        if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
+            workflowFilter = "%";
+        }
+        if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
+            docTitleFilter = "%";
+        }
+        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
+        model.addAttribute("signBooks", signBooks);
+        CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
+        final Context ctx = new Context(Locale.FRENCH);
+        ctx.setVariables(model.asMap());
+        ctx.setVariable("token", token);
+        return templateEngine.process("user/signbooks/includes/list-elem.html", ctx);
+    }
+
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
@@ -66,11 +146,18 @@ public class SignBookController {
         boolean isDefinitive = signBookService.delete(id, authUserEppn);
         if(isDefinitive) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Le document a été supprimé définitivement"));
-            return "redirect:/user/signrequests";
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Le document a été placé dans la corbeille"));
-            return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
         }
+        return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+    }
+
+    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
+    @DeleteMapping(value = "/force-delete/{id}", produces = "text/html")
+    public String forceDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+        signBookService.deleteDefinitive(id);
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Le document a été supprimé définitivement"));
+        return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
@@ -196,5 +283,15 @@ public class SignBookController {
         return new String[]{"" + signBook.getId()};
     }
 
-
+    @PreAuthorize("@preAuthorizeService.signBookView(#id, #authUserEppn, #authUserEppn)")
+    @GetMapping(value = "/toggle/{id}", produces = "text/html")
+    public String toggle(@ModelAttribute("authUserEppn") String authUserEppn,
+                         @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+        if(signBookService.toggle(id, authUserEppn)) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La demande à été masquée"));
+        } else {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La demande est de nouveau visible"));
+        }
+        return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+    }
 }

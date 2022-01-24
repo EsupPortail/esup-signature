@@ -1,6 +1,6 @@
 import {CsrfToken} from "../../../prototypes/CsrfToken.js?version=@version@";
 
-export class ListSignRequestUi {
+export class ListSignBooksUi {
 
     constructor(signRequests, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, infiniteScrolling, csrf) {
         console.info("Starting list sign UI");
@@ -164,7 +164,7 @@ export class ListSignRequestUi {
                         message : "<div id=\"loader\" class=\"loader\"></div> Suppression en cours"
                     });
                     $.ajax({
-                        url: "/user/signrequests/delete-multiple?" + self.csrf.parameterName + "=" + self.csrf.token,
+                        url: "/user/signbooks/delete-multiple?" + self.csrf.parameterName + "=" + self.csrf.token,
                         type: 'POST',
                         dataType: 'json',
                         contentType: "application/json",
@@ -187,7 +187,7 @@ export class ListSignRequestUi {
             i++;
         });
         if (ids.length > 0) {
-            window.open("/user/signrequests/download-multiple?ids=" + ids, "_blank");
+            window.open("/user/signbooks/download-multiple?ids=" + ids, "_blank");
         }
     }
 
@@ -200,16 +200,20 @@ export class ListSignRequestUi {
             i++;
         });
         if (ids.length > 0) {
-            window.open("/user/signrequests/download-multiple-with-report?ids=" + ids, "_blank");
+            window.open("/user/signbooks/download-multiple-with-report?ids=" + ids, "_blank");
         }
     }
 
     addToPage() {
         console.info("Add to page");
-
         this.page++;
         let self = this;
-        $.get("/user/signrequests/list-ws?statusFilter=" + this.statusFilter + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=10", function (data) {
+        const urlParams = new URLSearchParams(window.location.search);
+        let sort = "";
+        if(urlParams.get("sort") != null) {
+            sort = urlParams.get("sort");
+        }
+        $.get("/user/signbooks/list-ws?statusFilter=" + this.statusFilter + "&sort=" + sort + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=10", function (data) {
             self.signRequestTable.append(data);
             let clickableRow = $(".clickable-row");
             clickableRow.unbind();
@@ -232,7 +236,7 @@ export class ListSignRequestUi {
                 currentParams.set(filters.eq(i).attr('id'), filters.eq(i).val());
             }
         }
-        document.location.href = "/user/signrequests?" + currentParams.toString();
+        document.location.href = "/user/signbooks?" + currentParams.toString();
     }
 
     launchMassSign(comeFromDispatcher) {
@@ -282,7 +286,7 @@ export class ListSignRequestUi {
         this.reset();
         let self = this;
         $.ajax({
-            url: "/user/signrequests/mass-sign/?" + self.csrf.parameterName + "=" + self.csrf.token,
+            url: "/user/signbooks/mass-sign/?" + self.csrf.parameterName + "=" + self.csrf.token,
             type: 'POST',
             data: signRequestUrlParams,
             success: function() {

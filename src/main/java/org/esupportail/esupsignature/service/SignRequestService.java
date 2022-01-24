@@ -193,60 +193,21 @@ public class SignRequestService {
 
 	public List<SignRequest> getSignRequestsForCurrentUserByStatus(String userEppn, String authUserEppn, String statusFilter) {
 		List<SignRequest> signRequestList = new ArrayList<>();
-		List<SignRequest> signRequests = getSignRequestsByStatus(userEppn, statusFilter);
+		List<SignBook> signBooks = signBookService.getSignBooks(userEppn, statusFilter, null, null, null, Pageable.unpaged()).getContent();
 		if(!userEppn.equals(authUserEppn)) {
-			for(SignRequest signRequest: signRequests) {
-				if(userShareService.checkAllShareTypesForSignRequest(userEppn, authUserEppn, signRequest) || getSharedSignedSignRequests(authUserEppn).contains(signRequest)) {
-					signRequestList.add(signRequest);
+			for(SignBook signBook: signBooks) {
+				for(SignRequest signRequest : signBook.getSignRequests()) {
+					if(userShareService.checkAllShareTypesForSignRequest(userEppn, authUserEppn, signRequest) || getSharedSignedSignRequests(authUserEppn).contains(signRequest)) {
+						signRequestList.add(signRequest);
+					}
 				}
 			}
 		} else {
-			signRequestList.addAll(signRequests);
+			for(SignBook signBook: signBooks) {
+				signRequestList.addAll(signBook.getSignRequests());
+			}
 		}
 		return signRequestList.stream().sorted(Comparator.comparing(SignRequest::getId)).collect(Collectors.toList());
-	}
-
-	public List<SignRequest> getSignRequestsByStatus(String userEppn, String statusFilter) {
-		Set<SignRequest> signRequests = new HashSet<>();
-		if (statusFilter != null && !statusFilter.isEmpty()) {
-			switch (statusFilter) {
-				case "hided":
-					return signRequestRepository.findByHidedByEppn(userEppn);
-				case "tosign":
-					signRequests.addAll(getToSignRequests(userEppn));
-					break;
-				case "signedByMe":
-					signRequests.addAll(getSignRequestsSignedByUser(userEppn));
-					break;
-				case "refusedByMe":
-					signRequests.addAll(getSignRequestsRefusedByUser(userEppn));
-					break;
-				case "followByMe":
-					signRequests.addAll(signBookService.getSignRequestByViewer(userEppn));
-					break;
-				case "sharedSign":
-					signRequests.addAll(getSharedSignedSignRequests(userEppn));
-					break;
-				case "completed":
-					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.completed));
-					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.exported));
-					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.archived));
-					break;
-				default:
-					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.valueOf(statusFilter)));
-					break;
-			}
-		} else {
-			signRequests.addAll(signRequestRepository.findByCreateByEppn(userEppn));
-			signRequests.addAll(getToSignRequests(userEppn));
-			signRequests.addAll(getSignRequestsSignedByUser(userEppn));
-			signRequests.addAll(getSignRequestsRefusedByUser(userEppn));
-			signRequests.addAll(signBookService.getSignRequestByViewer(userEppn));
-			signRequests.addAll(getSharedSignedSignRequests(userEppn));
-			signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.deleted).forEach(signRequests::remove);
-		}
-		signRequestRepository.findByHidedByEppn(userEppn).forEach(signRequests::remove);
-		return new ArrayList<>(signRequests);
 	}
 
 	public Page<SignRequest> getSignRequestsByForm(Form form, Pageable pageable) {
@@ -1736,17 +1697,6 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void toggle(Long id, String userEpppn) {
-		SignRequest signRequest = getById(id);
-		User user = userService.getUserByEppn(userEpppn);
-		if(signRequest.getHidedBy().contains(user)) {
-			signRequest.getHidedBy().remove(user);
-		} else {
-			signRequest.getHidedBy().add(user);
-		}
-	}
-
-	@Transactional
 	public Reports validate(long signRequestId) throws IOException {
 		List<Document> documents = signService.getToSignDocuments(signRequestId);
 		if(documents.size() > 0) {
@@ -1806,6 +1756,20 @@ public class SignRequestService {
 		} else {
 			throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());
 		}
+	}
+
+	public SignRequest startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String name, List<String> recipientEmails, List<String> allSignToCompletes, List<String> targetEmails) throws EsupSignatureFsException, EsupSignatureException, EsupSignatureIOException {
+		Workflow workflow = workflowService.getById(id);
+		User user = userService.getByEppn(createByEppn);
+		if(name == null || name.isEmpty()) {
+			name = workflow.getDescription();
+		}
+		SignBook signBook = signBookService.createSignBook(name, name, workflow, "", null, user, true);
+		signBook.getLiveWorkflow().setWorkflow(workflow);
+		SignRequest signRequest = createSignRequest(multipartFiles[0].getOriginalFilename(), signBook.getId(), createByEppn, createByEppn);
+		addDocsToSignRequest(signRequest, false, 0, new ArrayList<>(), multipartFiles);
+		initWorkflowAndPendingSignBook(signRequest.getId(), recipientEmails, allSignToCompletes, null, targetEmails, createByEppn, createByEppn);
+		return signRequest;
 	}
 
 	@Transactional

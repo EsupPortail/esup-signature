@@ -89,7 +89,8 @@
         [[${isNotSigned}]],
         [[${attachmentAlert}]],
         [[${attachmentRequire}]],
-        [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]
+        [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]],
+        [[${globalProperties.keepSignRequestParams}]]
     );
 </script>
 <main role="main">
@@ -97,10 +98,10 @@
         <nav th:replace="fragments/sides/side-sign :: side-sign"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
-                <li th:if="${editable}" class="breadcrumb-item"><a href="/user/signrequests">Tableau
+                <li th:if="${editable}" class="breadcrumb-item"><a href="/user/signbooks">Tableau
                     de bord</a></li>
                 <li th:unless="${editable}" class="breadcrumb-item"><a
-                        href="/user/signrequests/?statusFilter=tosign">Documents à signer</a></li>
+                        href="/user/signbooks/?statusFilter=tosign">Documents à signer</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Demande : <span
                         th:text="${signRequest.title}"></span>&nbsp;du&nbsp;<span
                         th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
@@ -325,10 +326,11 @@
                         </button>
                     </div>
                 </div>
-
-                <select th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign}" id="certType" name="certType" class="form-control mt-2">
-                    <option th:if="${user.keystore != null}" value="profil">Utiliser le certificat lié à mon profil</option>
-                    <option th:if="${certificats.size() > 0}" value="etab">Utiliser le certificat de l'établissement</option>
+                <label for="certType">Si besoin choisir le certificat à utiliser</label>
+                <select th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign}" id="certType" name="certType" class="form-select mt-2">
+                    <option value="default">Certificat généré automatiquement </option>
+                    <option th:if="${user.keystore != null}" value="profil">Certificat lié à mon profil</option>
+                    <option th:if="${certificats.size() > 0}" value="etab">Certificat de l'établissement</option>
                 </select>
 
                 <input th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).certSign || user.keystore == null} ? 'd-none'"

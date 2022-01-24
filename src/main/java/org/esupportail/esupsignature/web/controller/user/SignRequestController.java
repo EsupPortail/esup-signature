@@ -24,26 +24,17 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
 
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
@@ -112,58 +103,6 @@ public class SignRequestController {
 
     @Resource
     private SedaExportService sedaExportService;
-
-    @GetMapping
-    public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
-                       @RequestParam(value = "statusFilter", required = false) String statusFilter,
-                       @RequestParam(value = "recipientsFilter", required = false) String recipientsFilter,
-                       @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
-                       @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
-                       @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
-        if(statusFilter == null) statusFilter = "all";
-        if(statusFilter.equals("all")) statusFilter = "";
-        List<SignRequest> signRequests = signRequestService.getSignRequests(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
-        model.addAttribute("statusFilter", statusFilter);
-        model.addAttribute("signBooks", signRequestToSignBookPages(pageable, signRequests));
-        model.addAttribute("statuses", SignRequestStatus.values());
-        model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
-        model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
-        model.addAttribute("recipientsFilter", recipientsFilter);
-        model.addAttribute("signRequestRecipients", signRequestService.getRecipientsNameFromSignRequests(signRequests));
-        model.addAttribute("docTitleFilter", docTitleFilter);
-        model.addAttribute("docTitles", new HashSet<>(signRequests.stream().map(SignRequest::getTitle).collect(Collectors.toList())));
-        model.addAttribute("workflowFilter", workflowFilter);
-        LinkedHashSet<String> signRequestWorkflow = new LinkedHashSet<>();
-        if(workflowFilter == null || workflowFilter.equals("all") || workflowFilter.equals("Hors circuit")) {
-            signRequestWorkflow.add("Hors circuit");
-        }
-        signRequestWorkflow.addAll(signRequests.stream().filter(s -> s.getParentSignBook().getLiveWorkflow().getWorkflow() != null).map(s -> s.getParentSignBook().getLiveWorkflow().getWorkflow().getDescription()).collect(Collectors.toList()));
-        signRequestWorkflow.addAll(signRequests.stream().filter(s -> (s.getParentSignBook().getLiveWorkflow().getWorkflow() == null || s.getParentSignBook().getLiveWorkflow().getWorkflow().getDescription() == null) && !s.getParentSignBook().getTitle().isEmpty()).map(s -> s.getParentSignBook().getTitle()).collect(Collectors.toList()));
-        model.addAttribute("signRequestWorkflow", signRequestWorkflow);
-        return "user/signrequests/list";
-    }
-
-    public Page<SignBook> signRequestToSignBookPages(@PageableDefault(size = 10) @SortDefault(value = "createDate", direction = Direction.DESC) Pageable pageable,List<SignRequest> signRequests) {
-        List<SignBook> signBooks = signRequests.stream().map(SignRequest::getParentSignBook).distinct().collect(Collectors.toList());
-        return new PageImpl<>(signBooks.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signBooks.size());
-    }
-
-    @GetMapping(value = "/list-ws")
-    @ResponseBody
-    public String listWs(@ModelAttribute(name = "userEppn") String userEppn, @ModelAttribute(name = "authUserEppn") String authUserEppn,
-                         @RequestParam(value = "statusFilter", required = false) String statusFilter,
-                         @RequestParam(value = "recipientsFilter", required = false) String recipientsFilter,
-                         @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
-                         @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
-                         @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
-        List<SignRequest> signRequests = signRequestService.getSignRequests(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
-        model.addAttribute("signBooks", signRequestToSignBookPages(pageable, signRequests));
-        CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
-        final Context ctx = new Context(Locale.FRENCH);
-        ctx.setVariables(model.asMap());
-        ctx.setVariable("token", token);
-        return templateEngine.process("user/signrequests/includes/list-elem.html", ctx);
-    }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
@@ -341,7 +280,7 @@ public class SignRequestController {
 //        }
 //    }
 
-    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_ADMIN')")
+    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
     @PostMapping(value = "/fast-sign-request")
     public String createSignRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                     @RequestParam("signType") SignType signType,
@@ -362,7 +301,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests";
     }
 
-    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_ADMIN')")
+    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
     @PostMapping(value = "/send-sign-request")
     public String sendSignRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                   @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
@@ -428,14 +367,6 @@ public class SignRequestController {
         signRequestService.restore(id, authUserEppn);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Restauration effectuée"));
         return "redirect:/user/signrequests/" + id;
-    }
-
-    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #authUserEppn, #authUserEppn)")
-    @GetMapping(value = "/toggle/{id}", produces = "text/html")
-    public String toggle(@ModelAttribute("authUserEppn") String authUserEppn,
-                         @PathVariable("id") Long id, @RequestParam(value = "statusFilter", required = false) String statusFilter) {
-        signRequestService.toggle(id, authUserEppn);
-        return "redirect:/user/signrequests/?statusFilter=" + statusFilter;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")

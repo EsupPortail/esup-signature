@@ -77,7 +77,7 @@
                                         </table>
                                     </td>
                                     <td class="status" style="width: 150px;">
-                                        <div th:if="${signRequest.parentSignBook != null}" th:replace="user/signrequests/includes/status :: status(signBook = ${signRequest.parentSignBook})"></div>
+                                        <div th:if="${signRequest.parentSignBook != null}" th:replace="user/signbooks/includes/status :: status(signBook = ${signRequest.parentSignBook})"></div>
                                     </td>
                                     <td>
                                         <div class="position-relative">

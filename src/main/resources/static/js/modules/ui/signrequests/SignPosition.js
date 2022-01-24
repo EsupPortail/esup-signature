@@ -63,6 +63,7 @@ export class SignPosition extends EventFactory {
                 signRequestParams.cross.css("background-image", "url('" + img + "')");
                 let sizes = this.getImageDimensions(img);
                 sizes.then(result => signRequestParams.changeSignSize(result));
+                localStorage.setItem('signNumber', imageNum);
             }
         } else if(imageNum < 0) {
             signRequestParams.signImageNumber = imageNum;

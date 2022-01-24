@@ -33,6 +33,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.interfaces.certificat.impl.OpenXPKICertificatService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
@@ -107,6 +108,9 @@ public class SignService {
 	@Resource
 	private ValidationService validationService;
 
+	@Resource
+	private OpenXPKICertificatService openXPKICertificatService;
+
 	@Transactional
 	public List<Document> getToSignDocuments(Long signRequestId) {
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
@@ -126,17 +130,16 @@ public class SignService {
 		for(Document document : getToSignDocuments(signRequest.getId())) {
 			toSignDocuments.add(document);
 		}
-		Pkcs12SignatureToken pkcs12SignatureToken = null;
+		Pkcs12SignatureToken pkcs12SignatureToken = openXPKICertificatService.generateTokenForUser(user);;
 		try {
 			if(user.getKeystore() != null && certType.equals("profil")) {
 				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
 			} else if(user.getKeystore() != null && certType.equals("auto")) {
 				Certificat certificat = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getCertificat();
 				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
-			} else {
+			} else if(certType.equals("etab")){
 				Certificat certificat = certificatService.getCertificatByUser(user.getEppn()).get(0);
 				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
-
 			}
 			CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(pkcs12SignatureToken);
