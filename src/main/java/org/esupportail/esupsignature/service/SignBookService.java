@@ -147,46 +147,46 @@ public class SignBookService {
         return signBooks;
     }
 
-    @Transactional
-    public List<SignBook> getSignBooks(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter) {
-        Pageable pageable = Pageable.unpaged();
-        Page<SignBook> signBooks = new PageImpl<>(new ArrayList<>());
-        if(statusFilter.isEmpty() || statusFilter.equals("all")) {
-            if(!workflowFilter.equals("Hors circuit")) {
-                if(recipientsFilter != null && !recipientsFilter.isEmpty()) {
-                    signBooks = signBookRepository.findByRecipientAndCreateByEppn(recipientsFilter, userEppn, workflowFilter, docTitleFilter, pageable);
-                } else {
-                    signBooks = signBookRepository.findByRecipientAndCreateByEppn(userEppn, workflowFilter, docTitleFilter, pageable);
-                }
-            } else {
-                signBooks = signBookRepository.findByRecipientAndCreateByEppnAndTitleNull(recipientsFilter, userEppn, pageable);
-            }
-        } else if(statusFilter.equals("tosign"))  {
-            signBooks = signBookRepository.findToSign(userEppn, pageable);
-        } else if(statusFilter.equals("signedByMe")) {
-            signBooks = signBookRepository.findByRecipientAndActionType(userEppn, ActionType.signed, pageable);
-        } else if(statusFilter.equals("refusedByMe")) {
-            signBooks = signBookRepository.findByRecipientAndActionType(userEppn, ActionType.refused, pageable);
-        } else if(statusFilter.equals("followByMe")) {
-            signBooks = signBookRepository.findByViewersContaining(userEppn, pageable);
-        } else if(statusFilter.equals("sharedSign")) {
-//            signBooks = signBookRepository.findByViewersContaining(userService.getUserByEppn(userEppn), pageable);
-            //TODO
-        } else if(statusFilter.equals("hided")) {
-            signBooks = signBookRepository.findByHidedByEppn(userEppn, pageable);
-        } else {
-            signBooks = signBookRepository.findByCreateByEppnAndStatusAndSignRequestsNotNull(userEppn, SignRequestStatus.valueOf(statusFilter), pageable);
-        }
-
-        for(SignBook signBook : signBooks) {
-            for (SignRequest signRequest : signBook.getSignRequests()) {
-                if (signRequest.getEndDate() == null) {
-                    signRequest.setEndDate(getEndDate(signRequest));
-                }
-            }
-        }
-        return signBooks.getContent();
-    }
+//    @Transactional
+//    public List<SignBook> getSignBooks(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter) {
+//        Pageable pageable = Pageable.unpaged();
+//        Page<SignBook> signBooks = new PageImpl<>(new ArrayList<>());
+//        if(statusFilter.isEmpty() || statusFilter.equals("all")) {
+//            if(!workflowFilter.equals("Hors circuit")) {
+//                if(recipientsFilter != null && !recipientsFilter.isEmpty()) {
+//                    signBooks = signBookRepository.findByRecipientAndCreateByEppn(recipientsFilter, userEppn, workflowFilter, docTitleFilter, pageable);
+//                } else {
+//                    signBooks = signBookRepository.findByRecipientAndCreateByEppn(userEppn, workflowFilter, docTitleFilter, pageable);
+//                }
+//            } else {
+//                signBooks = signBookRepository.findByRecipientAndCreateByEppnAndTitleNull(recipientsFilter, userEppn, pageable);
+//            }
+//        } else if(statusFilter.equals("tosign"))  {
+//            signBooks = signBookRepository.findToSign(userEppn, pageable);
+//        } else if(statusFilter.equals("signedByMe")) {
+//            signBooks = signBookRepository.findByRecipientAndActionType(userEppn, ActionType.signed, pageable);
+//        } else if(statusFilter.equals("refusedByMe")) {
+//            signBooks = signBookRepository.findByRecipientAndActionType(userEppn, ActionType.refused, pageable);
+//        } else if(statusFilter.equals("followByMe")) {
+//            signBooks = signBookRepository.findByViewersContaining(userEppn, pageable);
+//        } else if(statusFilter.equals("sharedSign")) {
+////            signBooks = signBookRepository.findByViewersContaining(userService.getUserByEppn(userEppn), pageable);
+//            //TODO
+//        } else if(statusFilter.equals("hided")) {
+//            signBooks = signBookRepository.findByHidedByEppn(userEppn, pageable);
+//        } else {
+//            signBooks = signBookRepository.findByCreateByEppnAndStatusAndSignRequestsNotNull(userEppn, SignRequestStatus.valueOf(statusFilter), pageable);
+//        }
+//
+//        for(SignBook signBook : signBooks) {
+//            for (SignRequest signRequest : signBook.getSignRequests()) {
+//                if (signRequest.getEndDate() == null) {
+//                    signRequest.setEndDate(getEndDate(signRequest));
+//                }
+//            }
+//        }
+//        return signBooks.getContent();
+//    }
 
     public List<User> getRecipientsNames(String userEppn) {
         return signBookRepository.findRecipientNames(userEppn);

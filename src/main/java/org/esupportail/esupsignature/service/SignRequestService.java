@@ -10,7 +10,6 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.repository.DataRepository;
-import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
@@ -166,9 +165,6 @@ public class SignRequestService {
 	@Resource
 	private PreAuthorizeService preAuthorizeService;
 
-	@Resource
-	private SignBookRepository signBookRepository;
-
 	public SignRequestService(GlobalProperties globalProperties) {
 		this.globalProperties = globalProperties;
 	}
@@ -197,57 +193,21 @@ public class SignRequestService {
 
 	public List<SignRequest> getSignRequestsForCurrentUserByStatus(String userEppn, String authUserEppn, String statusFilter) {
 		List<SignRequest> signRequestList = new ArrayList<>();
-		List<SignRequest> signRequests = getSignRequestsByStatus(userEppn, statusFilter);
+		List<SignBook> signBooks = signBookService.getSignBooks(userEppn, statusFilter, null, null, null, Pageable.unpaged()).getContent();
 		if(!userEppn.equals(authUserEppn)) {
-			for(SignRequest signRequest: signRequests) {
-				if(userShareService.checkAllShareTypesForSignRequest(userEppn, authUserEppn, signRequest) || getSharedSignedSignRequests(authUserEppn).contains(signRequest)) {
-					signRequestList.add(signRequest);
+			for(SignBook signBook: signBooks) {
+				for(SignRequest signRequest : signBook.getSignRequests()) {
+					if(userShareService.checkAllShareTypesForSignRequest(userEppn, authUserEppn, signRequest) || getSharedSignedSignRequests(authUserEppn).contains(signRequest)) {
+						signRequestList.add(signRequest);
+					}
 				}
 			}
 		} else {
-			signRequestList.addAll(signRequests);
+			for(SignBook signBook: signBooks) {
+				signRequestList.addAll(signBook.getSignRequests());
+			}
 		}
 		return signRequestList.stream().sorted(Comparator.comparing(SignRequest::getId)).collect(Collectors.toList());
-	}
-
-	public List<SignRequest> getSignRequestsByStatus(String userEppn, String statusFilter) {
-		Set<SignRequest> signRequests = new HashSet<>();
-		if (statusFilter != null && !statusFilter.isEmpty()) {
-			switch (statusFilter) {
-				case "tosign":
-					signRequests.addAll(getToSignRequests(userEppn));
-					break;
-				case "signedByMe":
-					signRequests.addAll(getSignRequestsSignedByUser(userEppn));
-					break;
-				case "refusedByMe":
-					signRequests.addAll(getSignRequestsRefusedByUser(userEppn));
-					break;
-				case "followByMe":
-					signRequests.addAll(signBookService.getSignRequestByViewer(userEppn));
-					break;
-				case "sharedSign":
-					signRequests.addAll(getSharedSignedSignRequests(userEppn));
-					break;
-				case "completed":
-					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.completed));
-					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.exported));
-					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.archived));
-					break;
-				default:
-					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.valueOf(statusFilter)));
-					break;
-			}
-		} else {
-			signRequests.addAll(signRequestRepository.findByCreateByEppn(userEppn));
-			signRequests.addAll(getToSignRequests(userEppn));
-			signRequests.addAll(getSignRequestsSignedByUser(userEppn));
-			signRequests.addAll(getSignRequestsRefusedByUser(userEppn));
-			signRequests.addAll(signBookService.getSignRequestByViewer(userEppn));
-			signRequests.addAll(getSharedSignedSignRequests(userEppn));
-			signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.deleted).forEach(signRequests::remove);
-		}
-		return new ArrayList<>(signRequests);
 	}
 
 	public Page<SignRequest> getSignRequestsByForm(Form form, Pageable pageable) {
