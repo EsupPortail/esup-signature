@@ -1,6 +1,6 @@
 <html th:remove="tag" lang="fr" xmlns:th="http://www.thymeleaf.org">
 <th:block th:each="signBook : ${signBooks}">
-    <tr th:if="${statusFilter != 'empty'}" th:with="signRequest = ${signBook.signRequests.get(0)}" th:data-href="'/admin/signrequests/' + ${signRequest.id}" data-bs-toggle="tooltip" th:title="${signBook.description}">
+    <tr th:if="${statusFilter != 'empty' && signBook.signRequests.size() > 0}" th:with="signRequest = ${signBook.signRequests.get(0)}" th:data-href="'/admin/signrequests/' + ${signRequest.id}" data-bs-toggle="tooltip" th:title="${signBook.description}">
         <td class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/admin/signrequests/' + ${signRequest.id}">
             <span th:if="${signBook.liveWorkflow.workflow != null}" th:text="${signBook.liveWorkflow.workflow.description}"></span>
             <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title != null}"   th:text="${signBook.liveWorkflow.title}"></span>

@@ -83,7 +83,7 @@ public class AdminSignRequestController {
 			@RequestParam(value = "messageError", required = false) String messageError,
 			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
 		Page<SignBook> signBooks;
-		if(statusFilter == null || statusFilter.isEmpty()) {
+		if(statusFilter == null || statusFilter.isEmpty() || statusFilter.equals("all")) {
 			signBooks = signBookRepository.findAll(pageable);
 		} else {
 			signBooks = signBookRepository.findByStatus(SignRequestStatus.valueOf(statusFilter), pageable);

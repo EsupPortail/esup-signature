@@ -22,7 +22,7 @@
                                 <option value="" data-placeholder="true">Choisir un statut</option>
                                 <option value="all">Tous</option>
                                 <th:block th:each="status : ${statuses}">
-                                    <option th:if="${status == statusFilter}" th:value="${status}"
+                                    <option th:if="${status.name == statusFilter}" th:value="${status}"
                                             selected="selected"
                                             th:text="#{'signbook.status.' + ${status}}"></option>
                                     <option th:unless="${status == statusFilter}" th:value="${status}"
@@ -60,13 +60,6 @@
                                     <tbody id="signRequestTable">
                                     <tr th:replace="admin/signbooks/includes/list-elem"></tr>
                                     </tbody>
-                                    <tfoot>
-                                    <tr>
-                                        <td colspan="100%">
-                                            <a id="more-sign-request" href="javascript:void(0);" th:if="${infiniteScrolling}">Afficher plus d'éléments</a>
-                                        </td>
-                                    </tr>
-                                    </tfoot>
                                 </table>
                         </div>
                     </div>
