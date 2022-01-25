@@ -116,6 +116,7 @@ public class SignRequestParamsService {
                 SignRequestParams signRequestParams = createSignRequestParams(signRequestParamses.get(i).getSignPageNumber(), signRequestParamses.get(i).getxPos(), signRequestParamses.get(i).getyPos());
                 signRequestParams.setSignImageNumber(signRequestParamses.get(i).getSignImageNumber());
                 signRequestParams.setSignPageNumber(signRequestParamses.get(i).getSignPageNumber());
+                signRequestParams.setSignScale(signRequestParamses.get(i).getSignScale());
                 signRequestParams.setxPos(signRequestParamses.get(i).getxPos());
                 signRequestParams.setyPos(signRequestParamses.get(i).getyPos());
                 signRequestParams.setSignWidth(signRequestParamses.get(i).getSignWidth());

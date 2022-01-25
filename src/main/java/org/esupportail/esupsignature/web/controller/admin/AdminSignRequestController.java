@@ -80,7 +80,6 @@ public class AdminSignRequestController {
 	public String list(
 			@RequestParam(value = "statusFilter", required = false) String statusFilter,
 			@RequestParam(value = "signBookId", required = false) Long signBookId,
-			@RequestParam(value = "messageError", required = false) String messageError,
 			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
 		Page<SignBook> signBooks;
 		if(statusFilter == null || statusFilter.isEmpty() || statusFilter.equals("all")) {
@@ -100,7 +99,7 @@ public class AdminSignRequestController {
 	public String show(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
 		SignRequest signRequest = signRequestService.getById(id);
 			model.addAttribute("signBooks", signBookService.getAllSignBooks());
-			Document toDisplayDocument = null;
+			Document toDisplayDocument;
 			if(signService.getToSignDocuments(signRequest.getId()).size() == 1) {
 				toDisplayDocument = signService.getToSignDocuments(signRequest.getId()).get(0);
 				if(toDisplayDocument.getContentType().equals("application/pdf")) {

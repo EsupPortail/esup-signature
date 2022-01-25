@@ -162,9 +162,6 @@ export class SignRequestParams  extends EventFactory {
                 this.refreshExtraDiv();
                 this.updateSize();
             }
-            // this.toggleExtra();
-            // this.refreshExtraDiv();
-            // this.updateSize();
         }
         if(this.isShare) {
             this.toggleMinimalTools();
