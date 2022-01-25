@@ -54,9 +54,6 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -786,6 +783,7 @@ public class SignRequestService {
 			SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
 			int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
 			signRequestParams.setSignDocumentNumber(docNumber);
+			signRequestParams.setComment(commentText);
 			signRequest.getSignRequestParams().add(signRequestParams);
 			signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getSignRequestParams().add(signRequestParams);
 		}

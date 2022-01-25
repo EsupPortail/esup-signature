@@ -164,26 +164,26 @@ export class WorkspacePdf {
 
     initSignFields() {
         for(let i = 0; i < this.currentSignRequestParamses.length; i++) {
-            let currentSignRequestParamses = this.currentSignRequestParamses[i];
+            let currentSignRequestParams = this.currentSignRequestParamses[i];
             let signSpaceDiv = $("#signSpace_" + i);
             if (signSpaceDiv.length) {
                 signSpaceDiv.remove();
             }
-            if (currentSignRequestParamses.signPageNumber === this.pdfViewer.pageNum && this.mode === "sign" && this.signable) {
-                let signSpaceHtml = "<div id='signSpace_" + i + "' title='Emplacement de signature' class='sign-field sign-space'></div>";
+            if (currentSignRequestParams.signPageNumber === this.pdfViewer.pageNum && this.mode === "sign" && this.signable) {
+                let signSpaceHtml = "<div id='signSpace_" + i + "' title='Emplacement de signature : " + currentSignRequestParams.comment + "' class='sign-field sign-space'></div>";
                 $("#pdf").append(signSpaceHtml);
                 signSpaceDiv = $("#signSpace_" + i);
-                if(currentSignRequestParamses.ready == null || !currentSignRequestParamses.ready) {
-                    signSpaceDiv.text("Cliquez ici pour ajouter votre signature");
+                if(currentSignRequestParams.ready == null || !currentSignRequestParams.ready) {
+                    signSpaceDiv.html("Cliquez ici pour ajouter votre signature<br>" + currentSignRequestParams.comment);
                 }
-                if (currentSignRequestParamses.ready) {
+                if (currentSignRequestParams.ready) {
                     signSpaceDiv.removeClass("sign-field");
                 }
                 signSpaceDiv.show();
-                signSpaceDiv.css("top", Math.round(currentSignRequestParamses.yPos * this.pdfViewer.scale));
-                signSpaceDiv.css("left", Math.round(currentSignRequestParamses.xPos * this.pdfViewer.scale));
-                signSpaceDiv.css("width", Math.round(currentSignRequestParamses.signWidth * this.pdfViewer.scale / .75) + "px");
-                signSpaceDiv.css("height", Math.round(currentSignRequestParamses.signHeight * this.pdfViewer.scale / .75) + "px");
+                signSpaceDiv.css("top", Math.round(currentSignRequestParams.yPos * this.pdfViewer.scale));
+                signSpaceDiv.css("left", Math.round(currentSignRequestParams.xPos * this.pdfViewer.scale));
+                signSpaceDiv.css("width", Math.round(currentSignRequestParams.signWidth * this.pdfViewer.scale / .75) + "px");
+                signSpaceDiv.css("height", Math.round(currentSignRequestParams.signHeight * this.pdfViewer.scale / .75) + "px");
                 signSpaceDiv.css("font-size", 12 *  this.pdfViewer.scale);
                 this.makeItDroppable(signSpaceDiv);
                 signSpaceDiv.on("click", e => this.addSign(i));
