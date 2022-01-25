@@ -661,4 +661,5 @@ public class SignBookService {
     public int countEmpty(String userEppn) {
         return Math.toIntExact(signBookRepository.countEmpty(userEppn));
     }
+
 }

@@ -425,20 +425,6 @@ public class SignRequestController {
         signRequestService.warningReaded(authUserEppn);
     }
 
-    @GetMapping(value = "/download-multiple-with-report", produces = "application/zip")
-    @ResponseBody
-    public void downloadMultipleWithReport(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) throws IOException {
-        httpServletResponse.setContentType("application/zip");
-        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
-        try {
-            signRequestService.getMultipleSignedDocumentsWithReport(ids, httpServletResponse);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        httpServletResponse.flushBuffer();
-    }
-
     @PreAuthorize("@preAuthorizeService.signRequestRecipent(#id, #authUserEppn)")
     @PostMapping(value = "/add-attachment/{id}")
     public String addAttachement(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
