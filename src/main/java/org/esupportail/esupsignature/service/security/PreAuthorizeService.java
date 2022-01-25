@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.service.security;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
@@ -15,7 +14,6 @@ import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @Transactional
@@ -77,7 +75,7 @@ public class PreAuthorizeService {
     public boolean signRequestRecipent(Long id, String userEppn) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         return (signRequest.getStatus().equals(SignRequestStatus.pending) &&
-                (isUserInRecipients(signRequest, userEppn) || signRequest.getCreateBy().getEppn().equals(userEppn)))
+                (signBookService.isUserInRecipients(signRequest, userEppn) || signRequest.getCreateBy().getEppn().equals(userEppn)))
                 || (signRequest.getStatus().equals(SignRequestStatus.draft) && signRequest.getCreateBy().getEppn().equals(userEppn));
     }
 
@@ -89,7 +87,7 @@ public class PreAuthorizeService {
     public boolean signRequestView(Long id, String userEppn, String authUserEppn) {
         Optional<SignRequest> signRequest = signRequestRepository.findById(id);
         if(signRequest.isPresent()) {
-            return checkUserViewRights(signRequest.get(), userEppn, authUserEppn) || checkUserSignRights(signRequest.get(), userEppn, authUserEppn);
+            return checkUserViewRights(signRequest.get(), userEppn, authUserEppn) || signBookService.checkUserSignRights(signRequest.get(), userEppn, authUserEppn);
         } else {
             return false;
         }
@@ -97,7 +95,7 @@ public class PreAuthorizeService {
 
     public boolean signRequestSign(Long id, String userEppn, String authUserEppn) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        return checkUserSignRights(signRequest, userEppn, authUserEppn);
+        return signBookService.checkUserSignRights(signRequest, userEppn, authUserEppn);
     }
 
     public boolean workflowOwner(Long id, String userEppn) {
@@ -121,20 +119,6 @@ public class PreAuthorizeService {
         User manager = userService.getByEppn(userEppn);
         return manager.getManagersRoles().contains(role);
     }
-    public boolean checkUserSignRights(SignRequest signRequest, String userEppn, String authUserEppn) {
-        if(userEppn.equals(authUserEppn) || userShareService.checkShareForSignRequest(userEppn, authUserEppn, signRequest, ShareType.sign)) {
-            if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
-                Optional<Recipient> recipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().getEppn().equals(userEppn)).findFirst();
-                if (recipient.isPresent()
-                        && (signRequest.getStatus().equals(SignRequestStatus.pending) || signRequest.getStatus().equals(SignRequestStatus.draft))
-                        && !signRequest.getRecipientHasSigned().isEmpty()
-                        && signRequest.getRecipientHasSigned().get(recipient.get()).getActionType().equals(ActionType.none)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 
     public User checkShareForSignRequest(SignRequest signRequest, String authUserEppn) {
         SignBook signBook = signRequest.getParentSignBook();
@@ -142,32 +126,20 @@ public class PreAuthorizeService {
             List<UserShare> userShares = userShareRepository.findByToUsersEppnInAndShareTypesContains(Collections.singletonList(authUserEppn), ShareType.sign);
             for (UserShare userShare : userShares) {
                 Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
-                if(userShare.getWorkflow().equals(workflow) && checkUserSignRights(signRequest, userShare.getUser().getEppn(), authUserEppn)) {
+                if(userShare.getWorkflow().equals(workflow) && signBookService.checkUserSignRights(signRequest, userShare.getUser().getEppn(), authUserEppn)) {
                     return userShare.getUser();
                 }
             }
             Data data = signBookService.getBySignBook(signBook);
             if(data !=  null) {
                 for (UserShare userShare : userShares) {
-                    if (userShare.getForm().equals(data.getForm()) && checkUserSignRights(signRequest, userShare.getUser().getEppn(), authUserEppn)) {
+                    if (userShare.getForm().equals(data.getForm()) && signBookService.checkUserSignRights(signRequest, userShare.getUser().getEppn(), authUserEppn)) {
                         return userShare.getUser();
                     }
                 }
             }
         }
         return null;
-    }
-
-    public boolean isUserInRecipients(SignRequest signRequest, String userEppn) {
-        boolean isInRecipients = false;
-        Set<Recipient> recipients = signRequest.getRecipientHasSigned().keySet();
-        for(Recipient recipient : recipients) {
-            if (recipient.getUser().getEppn().equals(userEppn)) {
-                isInRecipients = true;
-                break;
-            }
-        }
-        return isInRecipients;
     }
 
     public boolean checkUserViewRights(SignRequest signRequest, String userEppn, String authUserEppn) {

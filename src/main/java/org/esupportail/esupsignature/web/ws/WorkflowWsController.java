@@ -7,7 +7,7 @@ import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,7 @@ public class WorkflowWsController {
     private WorkflowService workflowService;
 
     @Resource
-    private SignRequestService signRequestService;
+    private SignBookService signBookService;
 
     @CrossOrigin
     @PostMapping(value = "/{id}/new")
@@ -43,7 +43,7 @@ public class WorkflowWsController {
                       @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls
     ) {
         try {
-            SignRequest signRequest = signRequestService.startWorkflow(id, multipartFiles, createByEppn, name, recipientEmails, allSignToCompletes, targetEmails);
+            SignRequest signRequest = signBookService.startWorkflow(id, multipartFiles, createByEppn, name, recipientEmails, allSignToCompletes, targetEmails);
             return signRequest.getId();
         } catch (EsupSignatureException | EsupSignatureFsException | EsupSignatureIOException e) {
             logger.error(e.getMessage(), e);
