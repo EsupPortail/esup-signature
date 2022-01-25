@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.DataService;
 import org.esupportail.esupsignature.service.FormService;
+import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
@@ -49,6 +50,9 @@ public class DataController {
 	private DataService dataService;
 
 	@Resource
+	private SignBookService signBookService;
+
+	@Resource
 	private FormService formService;
 
 	@Resource
@@ -70,7 +74,7 @@ public class DataController {
 		List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			Data data = dataService.addData(id, userEppn);
-			SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, externalUsersInfos, targetEmails, null, userEppn, authUserEppn, false);
+			SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, externalUsersInfos, targetEmails, null, userEppn, authUserEppn, false);
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Formulaire non autorisé"));

@@ -27,7 +27,7 @@
                 <div th:replace="fragments/new-modals :: new-modals"></div>
                 <div id="toSignList" class="d-flex col-12">
                     <div class="col-12 col-lg-10 card mb-2 mx-auto">
-                        <div id="myDocs" class="card-body">
+                        <div class="card-body">
                             <h5 class="text-center"><b>Demandes à signer</b></h5>
                             <table th:if="${signBooks.getNumberOfElements() > 0}"
                                    class="table table-sm table-borderless table-hover">
@@ -89,7 +89,7 @@
                         </div>
                     </div>
 <!--                    <div class="card mb-2" th:if="${datas.size() > 0}">-->
-<!--                        <div id="myDocs" class="card-body">-->
+<!--                        <div class="card-body">-->
 <!--                            <h5 class="text-center"><b>Bouillons</b></h5>-->
 <!--                            <table class="table table-sm table-borderless">-->
 <!--                                <tbody>-->

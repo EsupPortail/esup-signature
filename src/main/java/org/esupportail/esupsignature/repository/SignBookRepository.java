@@ -89,6 +89,8 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
 
     List<SignBook> findByStatus(SignRequestStatus signRequestStatus);
 
+    Page<SignBook> findByStatus(SignRequestStatus signRequestStatus, Pageable pageable);
+
     @Query("select sb from SignBook sb where sb.liveWorkflow.workflow.id = :workflowId")
     List<SignBook> findByWorkflowId(Long workflowId);
 
@@ -122,13 +124,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "where (lw.title is null or lw.title = '') and sb.title is not null and sb.title <> '' and (key(rhs).user.eppn = :userEppn or sb.createBy.eppn = :userEppn)")
     Collection<String> findSignBookTitles(String userEppn);
 
-//    @Query("select distinct r from Recipient r " +
-//            "left join LiveWorkflowStep lws on r member lws.recipients " +
-//            "left join LiveWorkflow lw on lws member lw.liveWorkflowSteps " +
-//            "left join SignBook sb on lw = sb.liveWorkflow " +
-//            "left join sb.viewers v " +
-//            "where (sb.createBy.eppn = :userEppn or :userEppn in v.eppn)")
-//    List<Recipient> findRecipientNames(String userEppn);
+    Page<SignBook> findAll(Pageable pageable);
 
     @Query("select distinct u from SignBook sb " +
             "left join sb.viewers v " +

@@ -63,6 +63,8 @@ public class SignRequestParams {
 
     private Integer fontSize = 12;
 
+    private String comment = "";
+
     public Long getId() {
         return id;
     }
@@ -277,5 +279,13 @@ public class SignRequestParams {
 
     public void setFontSize(Integer fontSize) {
         this.fontSize = fontSize;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }

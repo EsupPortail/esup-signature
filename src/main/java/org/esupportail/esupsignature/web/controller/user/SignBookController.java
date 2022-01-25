@@ -8,7 +8,9 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.esupportail.esupsignature.web.ws.json.JsonWorkflowStep;
@@ -36,6 +38,9 @@ import org.thymeleaf.context.Context;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.util.*;
 
 @Controller
@@ -43,6 +48,9 @@ import java.util.*;
 public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
+
+    @Resource
+    private PreAuthorizeService preAuthorizeService;
 
     @Resource
     private WorkflowService workflowService;
@@ -240,7 +248,7 @@ public class SignBookController {
     public String addWorkflow(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) throws EsupSignatureException {
         SignBook signBook = signBookService.getById(id);
-        signRequestService.addWorkflowToSignBook(signBook, authUserEppn, workflowSignBookId);
+        signBookService.addWorkflowToSignBook(signBook, authUserEppn, workflowSignBookId);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "/?form";
     }
 
@@ -249,14 +257,14 @@ public class SignBookController {
     public String addDocumentToNewSignRequest(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents");
-        signRequestService.addDocumentsToSignBook(id, multipartFiles, authUserEppn);
+        signBookService.addDocumentsToSignBook(id, multipartFiles, authUserEppn);
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @GetMapping(value = "/pending/{id}")
     public String pending(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws EsupSignatureException {
-        signRequestService.pendingSignBook(id, null, authUserEppn, authUserEppn, false);
+        signBookService.pendingSignBook(id, null, authUserEppn, authUserEppn, false);
         return "redirect:/user/signrequests/" + id;
     }
 
@@ -266,7 +274,7 @@ public class SignBookController {
                                              @PathVariable("name") String name,
                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents in " + name);
-        SignBook signBook = signRequestService.addDocsInNewSignBookGrouped(name, multipartFiles, authUserEppn);
+        SignBook signBook = signBookService.addDocsInNewSignBookGrouped(name, multipartFiles, authUserEppn);
         String[] ok = {"" + signBook.getId()};
         return ok;
     }
@@ -279,7 +287,7 @@ public class SignBookController {
                                                     @RequestParam("multipartFiles") MultipartFile[] multipartFiles, Model model) throws EsupSignatureIOException {
         User authUser = userService.getUserByEppn(authUserEppn);
         logger.info("start add documents in " + name);
-        SignBook signBook = signRequestService.addDocsInNewSignBookSeparated(name, name, workflowName, multipartFiles, authUser);
+        SignBook signBook = signBookService.addDocsInNewSignBookSeparated(name, name, workflowName, multipartFiles, authUser);
         return new String[]{"" + signBook.getId()};
     }
 
@@ -293,5 +301,61 @@ public class SignBookController {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La demande est de nouveau visible"));
         }
         return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+    }
+
+    @GetMapping(value = "/download-multiple", produces = "application/zip")
+    @ResponseBody
+    public void downloadMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) throws IOException {
+        httpServletResponse.setContentType("application/zip");
+        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
+        try {
+            signBookService.getMultipleSignedDocuments(ids, httpServletResponse);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        httpServletResponse.flushBuffer();
+    }
+
+    @ResponseBody
+    @PostMapping(value = "/mass-sign")
+    public ResponseEntity<String> massSign(@ModelAttribute("userEppn") String userEppn,
+                                           @ModelAttribute("authUserEppn") String authUserEppn,
+                                           @RequestParam String ids,
+                                           @RequestParam(value = "password", required = false) String password,
+                                           @RequestParam(value = "certType", required = false) String certType,
+                                           HttpSession httpSession) throws InterruptedException, EsupSignatureMailException, EsupSignatureException, IOException {
+        String error = signBookService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, certType);
+        if(error == null) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping(value = "/download-multiple-with-report", produces = "application/zip")
+    @ResponseBody
+    public void downloadMultipleWithReport(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) throws IOException {
+        httpServletResponse.setContentType("application/zip");
+        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
+        try {
+            signBookService.getMultipleSignedDocumentsWithReport(ids, httpServletResponse);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        httpServletResponse.flushBuffer();
+    }
+
+    @PostMapping(value = "/delete-multiple", consumes = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<Boolean> deleteMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<Long> ids, RedirectAttributes redirectAttributes) {
+        for(Long id : ids) {
+            if(preAuthorizeService.signBookManage(id, authUserEppn)) {
+                signBookService.delete(id, authUserEppn);
+            }
+        }
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+        return new ResponseEntity<>(true, HttpStatus.OK);
     }
 }

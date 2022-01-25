@@ -3,20 +3,18 @@ package org.esupportail.esupsignature.service.utils.file;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.SignRequestParams;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.service.DataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
-import org.springframework.util.FileCopyUtils;
 
+import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.xml.bind.DatatypeConverter;
@@ -36,21 +34,7 @@ public class FileService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
 
-	private String[] faImages = {"check-solid", "times-solid", "circle-regular", "minus-solid"};
-
-	public String readFileToString(String path) {
-		ResourceLoader resourceLoader = new DefaultResourceLoader();
-		Resource resource = resourceLoader.getResource(path);
-		return asString(resource);
-	}
-
-	public String asString(Resource resource) {
-		try (Reader reader = new InputStreamReader(resource.getInputStream(), java.nio.charset.StandardCharsets.UTF_8)) {
-			return FileCopyUtils.copyToString(reader);
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
-	}
+	private final String[] faImages = {"check-solid", "times-solid", "circle-regular", "minus-solid"};
 
 	public File inputStreamToTempFile(InputStream inputStream, String name) throws IOException {
 		File file = getTempFile("tmp_" + name);
@@ -405,4 +389,5 @@ public class FileService {
 	public InputStream getFaImageByIndex(int index) throws IOException {
 		return new ClassPathResource("/static/images/"+ faImages[Math.abs(index) - 1] + ".png").getInputStream();
 	}
+
 }

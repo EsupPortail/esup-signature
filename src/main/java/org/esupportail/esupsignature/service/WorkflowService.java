@@ -6,10 +6,12 @@ import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
+import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -48,7 +50,7 @@ public class WorkflowService {
     private LiveWorkflowService liveWorkflowService;
 
     @Resource
-    private SignBookService signBookService;
+    private LiveWorkflowStepService liveWorkflowStepService;
 
     @Resource
     private FsAccessFactoryService fsAccessFactoryService;
@@ -70,6 +72,9 @@ public class WorkflowService {
 
     @Resource
     private FieldService fieldService;
+
+    @Resource
+    private SignBookRepository signBookRepository;
 
     @PostConstruct
     public void initCreatorWorkflow() {
@@ -352,7 +357,7 @@ public class WorkflowService {
    }
 
     public void delete(Workflow workflow) throws EsupSignatureException {
-        List<SignBook> signBooks = signBookService.getSignBooksByWorkflow(workflow.getId());
+        List<SignBook> signBooks = signBookRepository.findByLiveWorkflowWorkflow(workflow);
         if(signBooks.stream().allMatch(signBook -> signBook.getStatus() == SignRequestStatus.draft || signBook.getStatus() == SignRequestStatus.deleted)) {
             List<LiveWorkflow> liveWorkflows = liveWorkflowService.getByWorkflow(workflow);
             for(LiveWorkflow liveWorkflow : liveWorkflows) {
@@ -516,17 +521,54 @@ public class WorkflowService {
         return;
     }
 
-    @Transactional
-    public void saveWorkflow(Long signBookId, String title, String description, User user) throws EsupSignatureException {
-        SignBook signBook = signBookService.getById(signBookId);
-        Workflow workflow = createWorkflow(title, description, user);
-        for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
-            List<String> recipientsEmails = new ArrayList<>();
-            for (Recipient recipient : liveWorkflowStep.getRecipients()) {
-                recipientsEmails.add(recipient.getUser().getEmail());
+
+    public void importWorkflow(SignBook signBook, Workflow workflow, List<JsonExternalUserInfo> externalUsersInfos) {
+        logger.info("import workflow steps in signBook " + signBook.getName() + " - " +signBook.getId());
+        for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
+            List<String> recipientEmails = new ArrayList<>();
+            for (User user : workflowStep.getUsers()) {
+                if (user.equals(userService.getCreatorUser())) {
+                    recipientEmails.add(signBook.getCreateBy().getEmail());
+                } else {
+                    recipientEmails.add(user.getEmail());
+                }
             }
-            WorkflowStep toSaveWorkflowStep = workflowStepService.createWorkflowStep("" , liveWorkflowStep.getAllSignToComplete(), liveWorkflowStep.getSignType(), recipientsEmails.toArray(String[]::new));
-            workflow.getWorkflowSteps().add(toSaveWorkflowStep);
+            LiveWorkflowStep newWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(workflowStep, workflowStep.getRepeatable(), workflowStep.getRepeatableSignType(), workflowStep.getMultiSign(), workflowStep.getAutoSign(), workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientEmails, externalUsersInfos);
+            signBook.getLiveWorkflow().getLiveWorkflowSteps().add(newWorkflowStep);
+        }
+        if(!(workflow instanceof DefaultWorkflow)) {
+            signBook.getLiveWorkflow().setWorkflow(workflow);
+        }
+        dispatchSignRequestParams(signBook);
+    }
+
+    public void dispatchSignRequestParams(SignBook signBook) {
+        for(SignRequest signRequest : signBook.getSignRequests()) {
+            if(signRequest.getSignRequestParams().size() > 0) {
+                for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+                    if (liveWorkflowStep.getWorkflowStep() != null) {
+                        WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
+                        if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
+                            for (SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
+                                for (SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
+                                    if (signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
+                                            && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
+                                            && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
+                                        liveWorkflowStep.getSignRequestParams().add(signRequestParams);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+                    if(liveWorkflowStep.getWorkflowStep() != null) {
+                        WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
+                        liveWorkflowStep.getSignRequestParams().addAll(workflowStep.getSignRequestParams());
+                    }
+                }
+            }
         }
     }
 

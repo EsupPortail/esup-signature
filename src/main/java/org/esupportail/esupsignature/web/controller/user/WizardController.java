@@ -100,7 +100,7 @@ public class WizardController {
             model.addAttribute("signBook", signBook);
             model.addAttribute("close", close);
             if(end != null && end) {
-                if(signRequestService.startLiveWorkflow(signBook, userEppn, authUserEppn, start)) {
+                if(signBookService.startLiveWorkflow(signBook, userEppn, authUserEppn, start)) {
                     return "user/wizard/wiz-save";
                 } else {
                     return "user/wizard/wizend";
@@ -123,7 +123,7 @@ public class WizardController {
         SignBook signBook = signBookService.getById(id);
         model.addAttribute("signBook", signBook);
         try {
-            workflowService.saveWorkflow(id, name, name, user);
+            signBookService.saveWorkflow(id, name, name, user);
         } catch (EsupSignatureException e) {
 //            eventService.publishEvent(new JsonMessage("error", "Un circuit de signature porte déjà ce nom"), "user", eventService.getClientIdByEppn(userEppn));
             return "user/wizard/wiz-save";

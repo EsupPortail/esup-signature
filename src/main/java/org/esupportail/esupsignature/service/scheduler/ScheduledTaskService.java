@@ -82,7 +82,7 @@ public class ScheduledTaskService {
 		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
 		User userScheduler = userService.getSchedulerUser();
 		for(Workflow workflow : workflows) {
-			signRequestService.importFilesFromSource(workflow.getId(), userScheduler, userScheduler);
+			signBookService.importFilesFromSource(workflow.getId(), userScheduler, userScheduler);
 		}
 	}
 
@@ -163,7 +163,7 @@ public class ScheduledTaskService {
 		for(User user : users) {
 			logger.trace("check email alert for " + user.getEppn());
 			if(userService.checkEmailAlert(user)) {
-				signRequestService.sendEmailAlertSummary(user);
+				signBookService.sendEmailAlertSummary(user);
 			}
 		}
 	}
