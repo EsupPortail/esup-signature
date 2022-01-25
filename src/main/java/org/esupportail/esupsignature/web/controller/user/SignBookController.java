@@ -8,7 +8,9 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.esupportail.esupsignature.web.ws.json.JsonWorkflowStep;
@@ -37,6 +39,7 @@ import org.thymeleaf.context.Context;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.*;
 
@@ -45,6 +48,9 @@ import java.util.*;
 public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
+
+    @Resource
+    private PreAuthorizeService preAuthorizeService;
 
     @Resource
     private WorkflowService workflowService;
@@ -311,6 +317,22 @@ public class SignBookController {
         httpServletResponse.flushBuffer();
     }
 
+    @ResponseBody
+    @PostMapping(value = "/mass-sign")
+    public ResponseEntity<String> massSign(@ModelAttribute("userEppn") String userEppn,
+                                           @ModelAttribute("authUserEppn") String authUserEppn,
+                                           @RequestParam String ids,
+                                           @RequestParam(value = "password", required = false) String password,
+                                           @RequestParam(value = "certType", required = false) String certType,
+                                           HttpSession httpSession) throws InterruptedException, EsupSignatureMailException, EsupSignatureException, IOException {
+        String error = signBookService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, certType);
+        if(error == null) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping(value = "/download-multiple-with-report", produces = "application/zip")
     @ResponseBody
     public void downloadMultipleWithReport(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) throws IOException {
@@ -323,5 +345,17 @@ public class SignBookController {
             e.printStackTrace();
         }
         httpServletResponse.flushBuffer();
+    }
+
+    @PostMapping(value = "/delete-multiple", consumes = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<Boolean> deleteMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<Long> ids, RedirectAttributes redirectAttributes) {
+        for(Long id : ids) {
+            if(preAuthorizeService.signBookManage(id, authUserEppn)) {
+                signBookService.delete(id, authUserEppn);
+            }
+        }
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+        return new ResponseEntity<>(true, HttpStatus.OK);
     }
 }

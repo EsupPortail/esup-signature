@@ -57,8 +57,10 @@ public class DataService {
 
     public void deleteBySignBook(SignBook signBook) {
         Data data = getBySignBook(signBook);
-        data.setForm(null);
-        dataRepository.delete(data);
+        if(data != null) {
+            data.setForm(null);
+            dataRepository.delete(data);
+        }
     }
 
     public Data updateDatas(Form form, Data data, @RequestParam Map<String, String> formDatas, User user, User authUser) {

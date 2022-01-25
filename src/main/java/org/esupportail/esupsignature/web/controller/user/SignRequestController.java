@@ -34,7 +34,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.thymeleaf.TemplateEngine;
 
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
@@ -78,9 +77,6 @@ public class SignRequestController {
     private SignRequestService signRequestService;
 
     @Resource
-    private FormService formService;
-
-    @Resource
     private WorkflowService workflowService;
 
     @Resource
@@ -97,9 +93,6 @@ public class SignRequestController {
 
     @Resource
     private OtpService otpService;
-
-    @Resource
-    private TemplateEngine templateEngine;
 
     @Resource
     private SedaExportService sedaExportService;
@@ -393,18 +386,6 @@ public class SignRequestController {
         }
     }
 
-    @PostMapping(value = "/delete-multiple", consumes = {"application/json"})
-    @ResponseBody
-    public ResponseEntity<Boolean> deleteMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<Long> ids, RedirectAttributes redirectAttributes) {
-        for(Long id : ids) {
-            if(preAuthorizeService.signBookManage(id, authUserEppn)) {
-                signBookService.delete(id, authUserEppn);
-            }
-        }
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
-        return new ResponseEntity<>(true, HttpStatus.OK);
-    }
-
     @GetMapping(value = "/warning-readed")
     @ResponseBody
     public void warningReaded(@ModelAttribute("authUserEppn") String authUserEppn) {
@@ -635,22 +616,6 @@ public class SignRequestController {
         commentService.deleteComment(commentId);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Le commentaire à bien été supprimé"));
         return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @ResponseBody
-    @PostMapping(value = "/mass-sign")
-    public ResponseEntity<String> massSign(@ModelAttribute("userEppn") String userEppn,
-                                           @ModelAttribute("authUserEppn") String authUserEppn,
-                                           @RequestParam String ids,
-                                           @RequestParam(value = "password", required = false) String password,
-                                           @RequestParam(value = "certType", required = false) String certType,
-                                           HttpSession httpSession) throws InterruptedException, EsupSignatureMailException, EsupSignatureException, IOException {
-        String error = signBookService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, certType);
-        if(error == null) {
-            return new ResponseEntity<>(HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
