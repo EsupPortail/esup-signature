@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
@@ -184,16 +183,5 @@ public class CustomErrorController implements ErrorController {
         catch (Exception ex) {
             return HttpStatus.INTERNAL_SERVER_ERROR;
         }
-    }
-
-    protected ModelAndView resolveErrorView(HttpServletRequest request, HttpServletResponse response, HttpStatus status,
-                                            Map<String, Object> model) {
-        for (ErrorViewResolver resolver : this.errorViewResolvers) {
-            ModelAndView modelAndView = resolver.resolveErrorView(request, status, model);
-            if (modelAndView != null) {
-                return modelAndView;
-            }
-        }
-        return null;
     }
 }

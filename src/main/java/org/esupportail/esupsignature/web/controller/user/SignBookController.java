@@ -297,6 +297,20 @@ public class SignBookController {
         return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
     }
 
+    @GetMapping(value = "/download-multiple", produces = "application/zip")
+    @ResponseBody
+    public void downloadMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) throws IOException {
+        httpServletResponse.setContentType("application/zip");
+        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
+        try {
+            signRequestService.getMultipleSignedDocuments(ids, httpServletResponse);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        httpServletResponse.flushBuffer();
+    }
+
     @GetMapping(value = "/download-multiple-with-report", produces = "application/zip")
     @ResponseBody
     public void downloadMultipleWithReport(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) throws IOException {

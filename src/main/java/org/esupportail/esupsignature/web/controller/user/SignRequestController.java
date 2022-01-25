@@ -405,20 +405,6 @@ public class SignRequestController {
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
-    @GetMapping(value = "/download-multiple", produces = "application/zip")
-    @ResponseBody
-    public void downloadMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) throws IOException {
-        httpServletResponse.setContentType("application/zip");
-        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
-        try {
-            signRequestService.getMultipleSignedDocuments(ids, httpServletResponse);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        httpServletResponse.flushBuffer();
-    }
-
     @GetMapping(value = "/warning-readed")
     @ResponseBody
     public void warningReaded(@ModelAttribute("authUserEppn") String authUserEppn) {
