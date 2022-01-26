@@ -247,4 +247,5 @@ springdoc:
     swagger-ui:
         enabled: true
         supported-submit-methods: []
+        disable-swagger-default-url: true
     packages-to-scan: org.esupportail.esupsignature.web.ws
