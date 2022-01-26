@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head"></head>
+<head th:replace="fragments/head :: head"></head>
 <body>
-<header th:replace="fragments/nav"></header>
+<header th:replace="fragments/nav :: nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/sides/side-manger"></nav>
+        <nav th:replace="fragments/sides/side-manger"></nav>
         <nav id="breadcrumb" class="breadcrumb-nav breadcrumb-nav-full" aria-label="breadcrumb">
             <ol class="breadcrumb col-12">
                 <li class="breadcrumb-item active"><a href="/manager">Liste des circuits de visas</a></li>
@@ -66,7 +66,7 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer"></footer>
+<footer th:replace="fragments/footer :: footer"></footer>
 <div th:replace="fragments/message"></div>
 </body>
 </html>

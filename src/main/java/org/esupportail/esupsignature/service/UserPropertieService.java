@@ -35,7 +35,7 @@ public class UserPropertieService {
             addPropertie(user, favoriteUser);
         } else {
             for(UserPropertie userPropertie : userProperties) {
-                if(userPropertie.getFavorites().containsKey(favoriteUser)) {
+                if(!userPropertie.getFavorites().containsKey(favoriteUser)) {
                     userPropertie.getFavorites().put(favoriteUser, new Date());
                     userPropertieRepository.save(userPropertie);
                 }

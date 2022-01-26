@@ -90,6 +90,7 @@ export class WizUi {
 
     gotoStep2(e) {
         let comment = $("#commentWiz");
+        let title = $("#titleWiz");
         let recipientsCCEmailsWiz=[];
         $('select[name="recipientsCCEmailsWiz"] option:selected').each(function() {
             recipientsCCEmailsWiz.push($(this).val());
@@ -99,7 +100,7 @@ export class WizUi {
         this.signBookId = e;
         $.ajax({
             type: "GET",
-            url: '/user/wizard/wiz-init-steps/' + this.signBookId + '?workflowId=' + this.workflowId + "&recipientsCCEmailsWiz=" + recipientsCCEmailsWiz + "&forceAllSign=" + forceAllSign + "&comment=" + encodeURIComponent(comment.val()),
+            url: '/user/wizard/wiz-init-steps/' + this.signBookId + '?workflowId=' + this.workflowId + "&recipientsCCEmailsWiz=" + recipientsCCEmailsWiz + "&forceAllSign=" + forceAllSign + "&comment=" + encodeURIComponent(comment.val()) + "&title=" + title.val(),
             dataType : 'html',
             cache: false,
             success : html => this.initWiz2(html)

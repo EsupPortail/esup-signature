@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.slf4j.Logger;
@@ -39,6 +40,9 @@ public class NexuProcessController implements Serializable {
 
 	@Resource
 	private SignService signService;
+
+	@Resource
+	private SignBookService signBookService;
 
 	@Resource
 	private SignRequestService signRequestService;
@@ -93,7 +97,7 @@ public class NexuProcessController implements Serializable {
 		abstractSignatureForm.setBase64SignatureValue(signatureValue.getSignatureValue());
 		SignDocumentResponse signDocumentResponse = signService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn, authUserEppn);
 		signRequestService.updateStatus(id, SignRequestStatus.signed, "Signature", "SUCCESS", userEppn, authUserEppn);
-		signRequestService.applyEndOfSignRules(id, userEppn, authUserEppn, SignType.nexuSign, "");
+		signBookService.applyEndOfSignRules(id, userEppn, authUserEppn, SignType.nexuSign, "");
 		httpSession.removeAttribute("abstractSignatureForm");
 		return signDocumentResponse;
 	}

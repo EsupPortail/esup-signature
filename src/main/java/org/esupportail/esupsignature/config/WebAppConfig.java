@@ -79,7 +79,7 @@ public class WebAppConfig implements WebMvcConfigurer {
 				.info(new Info().title("Esup Signature")
 						.description("Esup Signature REST API")
 						.version(globalProperties.getVersion())
-						.contact(new Contact().name("David Lemaignent, Valentin Hagnere").email("esup-signature@esup-portail.org"))
+						.contact(new Contact().name("David Lemaignent").email("esup-signature@esup-portail.org"))
 						.license(new License().name("Apache 2.0").url("http://www.apache.org/licenses/LICENSE-2.0")))
 				.externalDocs(new ExternalDocumentation()
 						.description("Wiki Esup Signature")

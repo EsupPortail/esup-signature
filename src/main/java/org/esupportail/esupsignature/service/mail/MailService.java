@@ -4,8 +4,12 @@ import org.apache.commons.lang.StringUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.mail.MailConfig;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
 import org.esupportail.esupsignature.service.security.otp.Otp;
@@ -73,6 +77,43 @@ public class MailService {
 
     @Resource
     private MessageSource messageSource;
+
+    @Resource
+    private UserShareService userShareService;
+
+    public void sendEmailAlerts(SignRequest signRequest, String userEppn, Data data, boolean forceSend) throws EsupSignatureMailException {
+        for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
+            User recipientUser = recipient.getUser();
+            if (!UserType.external.equals(recipientUser.getUserType())
+                    && (!recipientUser.getEppn().equals(userEppn) || forceSend)
+                    && (recipientUser.getEmailAlertFrequency() == null
+                    || recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately)
+                    || userService.checkEmailAlert(recipientUser))) {
+                sendSignRequestEmailAlert(signRequest, recipientUser, data);
+            }
+        }
+    }
+
+    public void sendSignRequestEmailAlert(SignRequest signRequest, User recipientUser, Data data) throws EsupSignatureMailException {
+        Date date = new Date();
+        Set<String> toEmails = new HashSet<>();
+        toEmails.add(recipientUser.getEmail());
+        SignBook signBook = signRequest.getParentSignBook();
+        Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
+        recipientUser.setLastSendAlertDate(date);
+        if(data != null && data.getForm() != null) {
+            for (UserShare userShare : userShareService.getUserSharesByUser(recipientUser.getEppn())) {
+                if (userShare.getShareTypes().contains(ShareType.sign)) {
+                    if ((data.getForm().equals(userShare.getForm())) || (workflow != null && workflow.equals(userShare.getWorkflow()))) {
+                        for (User toUser : userShare.getToUsers()) {
+                            toEmails.add(toUser.getEmail());
+                        }
+                    }
+                }
+            }
+        }
+        sendSignRequestAlert(new ArrayList<>(toEmails), signRequest);
+    }
 
     public void sendCompletedMail(SignBook signBook, String userEppn) throws EsupSignatureMailException {
         User user = userService.getUserByEppn(userEppn);

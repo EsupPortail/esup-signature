@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml">
+<head th:replace="fragments/head :: head"></head>
+<body>
+<header th:replace="fragments/nav :: nav"></header>
+<main role="main" class="">
+    <div class="wrapper">
+        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item active">Liste des demandes</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-body">
+                    <form action="/admin/signrequests" method="get">
+                        <div class="form-group mb-3">
+                            <div class="input-group">
+                            <span class="input-group-text" id="basic-addon1">Statut</span>
+                            <select class="form-select" name="statusFilter" id="statusFilter" onchange="submit();">
+                                <option value="" data-placeholder="true">Choisir un statut</option>
+                                <option value="all">Tous</option>
+                                <th:block th:each="status : ${statuses}">
+                                    <option th:if="${status.name == statusFilter}" th:value="${status}"
+                                            selected="selected"
+                                            th:text="#{'signbook.status.' + ${status}}"></option>
+                                    <option th:unless="${status == statusFilter}" th:value="${status}"
+                                            th:text="#{'signbook.status.' + ${status}}"></option>
+                                </th:block>
+                            </select>
+                            </div>
+                        </div>
+                    </form>
+                        <div class="card-body">
+                            <table class="table table-borderless table-hover">
+                                    <thead class="table-secondary">
+                                    <tr style="z-index: 2;">
+                                        <th class="d-none d-xxl-table-cell text-center" style="width: 10%;">
+                                            Circuit
+                                        </th>
+                                        <th class="text-center" style="width: 10%;">
+                                            Titre des documents
+                                        </th>
+                                        <th class="d-none d-xxl-table-cell"><a class="sorted" sd:pagination-sort="createBy">Crée par</a></th>
+                                        <th class="d-none d-xl-table-cell"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
+                                        <th class="d-none d-xl-table-cell">
+                                            <select id="recipientsFilter" class="slim-select-filter sign-request-filter" data-placeholder="Participants" data-allow-deselect="true">
+                                                <option data-placeholder="true"></option>
+                                                <option value="all">Tout</option>
+                                                <th:block th:each="signRequestRecipient : ${signRequestRecipients}">
+                                                    <option th:value="${signRequestRecipient.eppn}" th:selected="${recipientsFilter == signRequestRecipient.eppn}" th:text="${signRequestRecipient.firstname + ' ' + signRequestRecipient.name}"></option>
+                                                </th:block>
+                                            </select>
+                                        </th>
+                                        <th class="d-none d-md-table-cell"><a class="sorted" sd:pagination-sort="status">Statut</a></th>
+                                        <th >Actions</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="signRequestTable">
+                                    <tr th:replace="admin/signbooks/includes/list-elem"></tr>
+                                    </tbody>
+                                </table>
+                        </div>
+                    </div>
+                    <nav th:replace="fragments/pagination :: pagination"></nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer :: footer"></footer>
+</body>
+</html>

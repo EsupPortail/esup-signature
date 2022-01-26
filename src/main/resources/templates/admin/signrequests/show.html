@@ -3,17 +3,17 @@
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
 <!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
-<head th:replace="fragments/head"></head>
+<head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
     import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=[[${versionApp}]]';
     new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.originalDocuments}]], true, [[${_csrf}]], [[${signRequest.id}]]);
     new FilesInput($("#signedFiles"), "", "signedFiles", [[${signRequest.signedDocuments}]], true, [[${_csrf}]], [[${signRequest.id}]]);
 </script>
 <body>
-<header th:replace="fragments/nav"></header>
+<header th:replace="fragments/nav :: nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/sides/side-admin"></nav>
+        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
         <nav id="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin/signrequests">Liste

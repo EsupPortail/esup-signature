@@ -8,7 +8,9 @@ import org.esupportail.esupsignature.config.security.shib.DevShibProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
 import org.esupportail.esupsignature.service.security.*;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
+import org.esupportail.esupsignature.service.security.oauth.CustomAuthorizationRequestResolver;
 import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
+import org.esupportail.esupsignature.service.security.oauth.ValidatingOAuth2UserService;
 import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +35,13 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
@@ -42,6 +50,8 @@ import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.annotation.Resource;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Configuration
@@ -66,9 +76,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Resource
 	private WebSecurityProperties webSecurityProperties;
 
+	private final ClientRegistrationRepository clientRegistrationRepository;
+
 	private final List<SecurityService> securityServices = new ArrayList<>();
 
 	private final List<DevSecurityFilter> devSecurityFilters = new ArrayList<>();
+
+	public WebSecurityConfig(@Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository) {
+		this.clientRegistrationRepository = clientRegistrationRepository;
+	}
 
 	@Bean
 	@Order(1)
@@ -103,6 +119,26 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Bean
+	@Conditional(ClientsConfiguredCondition.class)
+	JwtDecoder jwtDecoder() {
+		ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("franceconnect");
+		SecretKeySpec key = new SecretKeySpec(registration.getClientSecret().getBytes(StandardCharsets.UTF_8), "HS256");
+		return NimbusJwtDecoder.withSecretKey(key).macAlgorithm(MacAlgorithm.HS256).build();
+	}
+
+	@Bean
+	@Conditional(ClientsConfiguredCondition.class)
+	public JwtDecoderFactory<ClientRegistration> jwtDecoderFactory() {
+		final JwtDecoder decoder = jwtDecoder();
+		return new JwtDecoderFactory<ClientRegistration>() {
+			@Override
+			public JwtDecoder createDecoder(ClientRegistration context) {
+				return decoder;
+			}
+		};
+	}
+
+	@Bean
 	@Order(4)
 	@ConditionalOnProperty(prefix = "security.shib.dev", name = "enable", havingValue = "true")
 	public DevClientRequestFilter devClientRequestFilter() {
@@ -127,9 +163,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		for(SecurityService securityService : securityServices) {
 			http.antMatcher("/**").authorizeRequests().antMatchers(securityService.getLoginUrl()).authenticated();
 			http.exceptionHandling().defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), new AntPathRequestMatcher(securityService.getLoginUrl()));
-			http.addFilterAfter(securityService.getAuthenticationProcessingFilter(), OAuth2AuthorizationRequestRedirectFilter.class);
 			if(securityService.getClass().equals(OAuthSecurityServiceImpl.class)) {
-				http.oauth2Client();
+				http.oauth2Login(oauth2 -> oauth2.loginPage("/"))
+						.oauth2Login()
+						.successHandler(((OAuthSecurityServiceImpl) securityService).getoAuthAuthenticationSuccessHandler())
+						.userInfoEndpoint().userService(new ValidatingOAuth2UserService(jwtDecoder()))
+						.and()
+						.authorizationEndpoint().authorizationRequestResolver(new CustomAuthorizationRequestResolver(clientRegistrationRepository, webSecurityProperties.getFranceConnectAcr()));
+			} else {
+				http.addFilterBefore(securityService.getAuthenticationProcessingFilter(), OAuth2AuthorizationRequestRedirectFilter.class);
 			}
 		}
 		if(globalProperties.getEnableSu()) {
@@ -142,7 +184,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				}
 			}
 		}
-		http.logout()
+		http.logout().invalidateHttpSession(true)
 				.logoutRequestMatcher(
 						new AntPathRequestMatcher("/logout")
 				)
@@ -214,8 +256,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.authorizeRequests()
 				.antMatchers("/").permitAll()
 				.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
-				.antMatchers("/user/", "/user/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP')")
-				.antMatchers("/ws-secure/", "/ws-secure/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP')")
+				.antMatchers("/user/", "/user/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP', 'ROLE_FRANCECONNECT')")
+				.antMatchers("/ws-secure/", "/ws-secure/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP', 'ROLE_FRANCECONNECT')")
 				.antMatchers("/public/", "/public/**").permitAll()
 				.antMatchers("/h2-console/**").access("hasRole('ROLE_ADMIN')");
 

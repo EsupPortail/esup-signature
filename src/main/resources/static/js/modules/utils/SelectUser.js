@@ -241,7 +241,7 @@ export default class SelectUser {
         let i = 0;
         for(let j = 0; j < response.length; j++) {
             let value = response[j];
-            if(!this.slimSelect.selected().includes(this.valuePrefix + value)) {
+            if(this.slimSelect.selected() != null && !this.slimSelect.selected().includes(this.valuePrefix + value)) {
                 let typeValue = {
                     text: value,
                     value: this.valuePrefix + value,

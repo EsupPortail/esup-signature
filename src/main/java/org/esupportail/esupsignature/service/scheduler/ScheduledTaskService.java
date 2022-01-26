@@ -75,18 +75,18 @@ public class ScheduledTaskService {
 		this.oJService = oJService;
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+//	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void scanAllWorkflowsSources() throws EsupSignatureFsException {
 		logger.debug("scan workflows sources");
 		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
 		User userScheduler = userService.getSchedulerUser();
 		for(Workflow workflow : workflows) {
-			signRequestService.importFilesFromSource(workflow.getId(), userScheduler, userScheduler);
+			signBookService.importFilesFromSource(workflow.getId(), userScheduler, userScheduler);
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+//	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksTargets() {
 		logger.debug("scan all signRequest to export");
@@ -102,7 +102,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+//	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksToArchive() {
 		if(globalProperties.getArchiveUri() != null) {
@@ -122,7 +122,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+//	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksToClean() {
 		logger.debug("scan all signRequest to clean");
@@ -156,14 +156,14 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+//	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void sendAllEmailAlerts() throws EsupSignatureMailException {
 		List<User> users = userService.getAllUsers();
 		for(User user : users) {
 			logger.trace("check email alert for " + user.getEppn());
 			if(userService.checkEmailAlert(user)) {
-				signRequestService.sendEmailAlertSummary(user);
+				signBookService.sendEmailAlertSummary(user);
 			}
 		}
 	}
@@ -175,7 +175,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+//	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void cleanWarningReadedSignRequests() {
 		if(globalProperties.getNbDaysBeforeDeleting() > -1) {

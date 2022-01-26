@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="certificats" type="java.util.List<org.esupportail.esupsignature.entity.Certificat>"*/-->
-<head th:replace="fragments/head"></head>
+<head th:replace="fragments/head :: head"></head>
 <body>
-<nav th:replace="fragments/nav"></nav>
+<header th:replace="fragments/nav :: nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/sides/side-admin"></nav>
+        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Logs</li>
@@ -68,7 +68,7 @@
                         </div>
                         <div class="form-group mb-3">
                             <label for="roleNames" class="col-form-label">Nom du role autorisé à acceder au formulaire</label>
-                            <select id="roleNames" class="form-control" type="text" name="roleNames" multiple>
+                            <select id="roleNames" class="form-select" type="text" name="roleNames" multiple>
                                 <th:block th:each="newRole : ${roles}">
                                     <option th:text="${newRole}" th:value="${newRole}"></option>
                                 </th:block>
@@ -88,6 +88,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer"></footer>
+<footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>
