@@ -24,15 +24,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -52,7 +48,10 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import javax.annotation.Resource;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Configuration
 @EnableWebSecurity(debug = false)
@@ -202,32 +201,32 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.headers().disable();
 	}
 
-	@Bean
-	public APIKeyFilter apiKeyFilter() {
-		APIKeyFilter filter = new APIKeyFilter();
-		filter.setAuthenticationManager(authentication -> {
-			if(authentication.getPrincipal() == null) {
-				throw new BadCredentialsException("Access Denied.");
-			}
-			String apiKey = (String) authentication.getPrincipal();
-			if (authentication.getPrincipal() != null && this.apiKey.equals(apiKey)) {
-				Collection<SimpleGrantedAuthority> oldAuthorities = (Collection<SimpleGrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-				SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_WS");
-				List<SimpleGrantedAuthority> updatedAuthorities = new ArrayList<>();
-				updatedAuthorities.add(authority);
-				updatedAuthorities.addAll(oldAuthorities);
-				SecurityContextHolder.getContext().setAuthentication(
-						new UsernamePasswordAuthenticationToken(
-								SecurityContextHolder.getContext().getAuthentication().getPrincipal(),
-								SecurityContextHolder.getContext().getAuthentication().getCredentials(),
-								updatedAuthorities));
-				return SecurityContextHolder.getContext().getAuthentication();
-			} else {
-				throw new BadCredentialsException("Access Denied.");
-			}
-		});
-		return filter;
-	}
+//	@Bean
+//	public APIKeyFilter apiKeyFilter() {
+//		APIKeyFilter filter = new APIKeyFilter();
+//		filter.setAuthenticationManager(authentication -> {
+//			if(authentication.getPrincipal() == null) {
+//				throw new BadCredentialsException("Access Denied.");
+//			}
+//			String apiKey = (String) authentication.getPrincipal();
+//			if (authentication.getPrincipal() != null && this.apiKey.equals(apiKey)) {
+//				Collection<SimpleGrantedAuthority> oldAuthorities = (Collection<SimpleGrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+//				SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_WS");
+//				List<SimpleGrantedAuthority> updatedAuthorities = new ArrayList<>();
+//				updatedAuthorities.add(authority);
+//				updatedAuthorities.addAll(oldAuthorities);
+//				SecurityContextHolder.getContext().setAuthentication(
+//						new UsernamePasswordAuthenticationToken(
+//								SecurityContextHolder.getContext().getAuthentication().getPrincipal(),
+//								SecurityContextHolder.getContext().getAuthentication().getCredentials(),
+//								updatedAuthorities));
+//				return SecurityContextHolder.getContext().getAuthentication();
+//			} else {
+//				throw new BadCredentialsException("Access Denied.");
+//			}
+//		});
+//		return filter;
+//	}
 
 	private void setAuthorizeRequests(HttpSecurity http) throws Exception {
 		http.logout().logoutSuccessUrl("/").permitAll();
