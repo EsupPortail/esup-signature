@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.security.oauth;
 
+import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,20 +16,19 @@ import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserServ
 import org.springframework.security.oauth2.client.web.*;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
-import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
 public class OAuthSecurityServiceImpl implements SecurityService {
-	
+
+	@Resource
+	private WebSecurityProperties webSecurityProperties;
+
 	@Resource
 	private OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler;
 	
-	@Resource
-	private RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
-
 	public OAuthAuthenticationSuccessHandler getoAuthAuthenticationSuccessHandler() {
 		return oAuthAuthenticationSuccessHandler;
 	}
@@ -45,7 +45,7 @@ public class OAuthSecurityServiceImpl implements SecurityService {
 
 	@Override
 	public String getLogoutUrl() {
-		return "";
+		return webSecurityProperties.getFranceConnectLogoutEndpoint();
 	}
 
 	@Override

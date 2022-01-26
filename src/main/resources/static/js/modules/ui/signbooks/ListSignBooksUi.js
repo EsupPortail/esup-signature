@@ -135,14 +135,10 @@ export class ListSignBooksUi {
 
     detectEndDiv(e) {
         if ($(e.target).scrollTop() + $(e.target).innerHeight() + 1 >= $(e.target)[0].scrollHeight && (this.infiniteScrolling != null && this.infiniteScrolling)) {
-            if(this.totalElementsToDisplay >= (this.page - 1) * 5 ) {
-                $('#listSignRequestTable').unbind('scroll');
-                $("#listSignRequestTable").addClass("wait");
-                $("#loader").show();
+            if(this.totalElementsToDisplay >= (this.page + 1) * 10 ) {
                 this.addToPage();
             } else {
-                let tfoot = this.signRequestTable.parent().children('tfoot').remove();
-                console.log(tfoot)
+                this.signRequestTable.parent().children('tfoot').remove();
             }
         }
     }
@@ -206,6 +202,9 @@ export class ListSignBooksUi {
 
     addToPage() {
         console.info("Add to page");
+        $('#listSignRequestTable').unbind('scroll');
+        $("#listSignRequestTable").addClass("wait");
+        $("#loader").show();
         this.page++;
         let self = this;
         const urlParams = new URLSearchParams(window.location.search);

@@ -39,7 +39,6 @@ import org.esupportail.esupsignature.service.utils.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -99,7 +98,7 @@ public class SignService {
 	@Resource
 	private Environment environment;
 
-	@Autowired(required=false)
+	@Resource
 	private UserKeystoreService userKeystoreService;
 
 	@Resource
@@ -309,17 +308,11 @@ public class SignService {
 			imageParameters.setImage(fileDocumentImage);
 			SignatureFieldParameters signatureFieldParameters = imageParameters.getFieldParameters();
 			signatureFieldParameters.setPage(signRequestParams.getSignPageNumber());
-//			signatureFieldParameters.setFieldId(signRequestParams.getPdSignatureFieldName());
 			imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
 			PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile, signRequestParams.getSignPageNumber());
-//			if(signRequestParams.getAddExtra()) {
-//				signRequestParams.setSignWidth(signRequestParams.getSignWidth() + 200);
-//			}
-			int widthAdjusted = Math.round((bufferedSignImage.getWidth() / 3 * fixFactor));
-			int heightAdjusted = Math.round((bufferedSignImage.getHeight() / 3 * fixFactor));
 
-			widthAdjusted = Math.round(signRequestParams.getSignWidth() * fixFactor);
-			heightAdjusted = Math.round(signRequestParams.getSignHeight() * fixFactor);
+			int widthAdjusted = Math.round(signRequestParams.getSignWidth() * fixFactor);
+			int heightAdjusted = Math.round(signRequestParams.getSignHeight() * fixFactor);
 
 			if(pdfParameters.getRotation() == 0) {
 				signatureFieldParameters.setWidth(widthAdjusted);
