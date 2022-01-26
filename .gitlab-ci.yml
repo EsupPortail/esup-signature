@@ -6,10 +6,10 @@ build:
     - sshpass -V
     - export SSHPASS=$CI_USER_PASS
     - sshpass -e scp -o StrictHostKeyChecking=no target/esup-signature.war gitlab-ci@runan:/home/gitlab-ci
-    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@runan sudo systemctl stop esup-signature.service
+    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@runan sudo systemctl stop esup-signature-test.service
     - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@runan rm /opt/esup-signature/esup-signature.war
     - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@runan cp /home/gitlab-ci/esup-signature.war /opt/esup-signature/
-    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@runan sudo systemctl restart esup-signature.service
+    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@runan sudo systemctl restart esup-signature-test.service
   only:
     - test
   tags:
