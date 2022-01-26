@@ -1,6 +1,7 @@
 build:
   stage: deploy
   script: 
+    - export JAVA_HOME='/opt/jdk-14.0.2/'
     - mvn clean package -DskipTests -Dspring.config.location=/opt/esup-signature/application.yml
     - sshpass -V
     - export SSHPASS=$CI_USER_PASS
