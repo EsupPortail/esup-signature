@@ -829,7 +829,7 @@
 				<configuration>
 					<executable>true</executable>
 					<jvmArguments>
-						-Xms256M
+						-Xms512M
 						-Xmx2048M
 					</jvmArguments>
 				</configuration>
