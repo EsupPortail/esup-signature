@@ -15,7 +15,7 @@ export class SignRequestParams  extends EventFactory {
         this.authUserName = authUserName;
         this.ready = null;
         this.isShare = userName !== authUserName;
-        this.restore = restore;
+        this.restore = false;
         this.isSign = isSign;
         this.isVisa = isVisa;
         this.isElec = isElec;
@@ -184,8 +184,7 @@ export class SignRequestParams  extends EventFactory {
         }
         if(this.isVisa) {
             if(!this.restore) {
-                this.toggleType();
-                this.toggleName();
+                this.toggleText();
             }
             this.refreshExtraDiv();
             this.updateSize();
@@ -512,7 +511,7 @@ export class SignRequestParams  extends EventFactory {
             this.refreshExtraDiv();
             this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
             this.signHeight += this.extraHeight;
-            if(!this.restoreExtra) {
+            if(!this.restoreExtra && this.restore) {
                 this.restoreUserParams();
                 this.restoreExtra = true;
             }
