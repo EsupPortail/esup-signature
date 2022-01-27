@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
-<div id="tools" class="tools" th:if="${toSignDocument != null}">
+<div th:fragment="tools" id="tools" class="tools" th:if="${toSignDocument != null}">
 	<div class="d-flex mb-1">
 		<a class="btn btn-light btn-outline-dark d-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
 		<i class="fas fa-info-circle"></i></a>

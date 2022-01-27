@@ -14,8 +14,6 @@ import org.esupportail.esupsignature.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -31,7 +29,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 @RequestMapping("/user/")
 @Controller
@@ -62,6 +59,9 @@ public class HomeController {
 
     @Resource
     private SignRequestService signRequestService;
+
+    @Resource
+    private SignBookService signBookService;
 
     @Resource
     private DataRepository dataRepository;
@@ -102,9 +102,7 @@ public class HomeController {
                 messages.addAll(messageService.getByUser(authUser));
             }
             model.addAttribute("messageNews", messages);
-            Page<SignRequest> signRequestPage = new PageImpl<>(signRequestService.getToSignRequests(userEppn), pageable, signRequestService.getToSignRequests(userEppn).size());
-            model.addAttribute("signRequests", signRequestPage);
-            model.addAttribute("signBooks", signRequestPage.stream().map(SignRequest::getParentSignBook).distinct().collect(Collectors.toList()));
+            model.addAttribute("signBooks", signBookService.getSignBooks(userEppn, "tosign", null, null, null, pageable));
             List<Data> datas = dataRepository.findByCreateByAndStatus(authUser, SignRequestStatus.draft);
             model.addAttribute("datas", datas);
             model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));

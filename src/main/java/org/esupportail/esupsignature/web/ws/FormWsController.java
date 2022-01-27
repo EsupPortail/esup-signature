@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.DataService;
+import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,9 @@ public class FormWsController {
 
     @Resource
     private DataService dataService;
+
+    @Resource
+    private SignBookService signBookService;
 
     @Resource
     private DataExportService dataExportService;
@@ -37,7 +41,7 @@ public class FormWsController {
     ) {
         Data data = dataService.addData(id, eppn);
         try {
-            SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, null, targetEmails, targetUrls, eppn, eppn, true);
+            SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, null, targetEmails, targetUrls, eppn, eppn, true);
             return signBook.getSignRequests().get(0).getId();
         } catch (EsupSignatureException | EsupSignatureIOException | EsupSignatureFsException e) {
             return -1L;

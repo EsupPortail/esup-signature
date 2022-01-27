@@ -953,11 +953,30 @@ height: 100%;
 .hr {
     align-items: center;
     display: flex;
-    text-align: center;
     font-weight: bold;
 }
 
 .hr::after {
+    border-top: 1px solid;
+    content: "";
+    flex: 1;
+    margin: 5px;
+}
+
+.hr {
+    align-items: center;
+    display: flex;
+    font-weight: bold;
+}
+
+.hr::after {
+    border-top: 1px solid;
+    content: "";
+    flex: 1;
+    margin: 5px;
+}
+
+.hr-center::before {
     border-top: 1px solid;
     content: "";
     flex: 1;
@@ -1963,4 +1982,20 @@ progress:before {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
+}
+
+.france-connect {
+    position: relative;
+    display: inline-block;
+}
+
+.france-connect img.image-hover {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 99;
+}
+.france-connect:hover img.image-hover {
+    display: inline;
 }

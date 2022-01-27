@@ -3,15 +3,17 @@ package org.esupportail.esupsignature.web.controller.admin;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Log;
+import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.DocumentRepository;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
+import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -23,8 +25,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -54,13 +58,11 @@ public class AdminSignRequestController {
 		return "adminsignrequests";
 	}
 
-	private SignRequestStatus statusFilter = null;
-
-	@Resource
-	private SignRequestRepository signRequestRepository;
-	
 	@Resource
 	private SignRequestService signRequestService;
+
+	@Resource
+	private SignBookRepository signBookRepository;
 
 	@Resource
 	private DocumentRepository documentRepository;
@@ -78,34 +80,26 @@ public class AdminSignRequestController {
 	public String list(
 			@RequestParam(value = "statusFilter", required = false) String statusFilter,
 			@RequestParam(value = "signBookId", required = false) Long signBookId,
-			@RequestParam(value = "messageError", required = false) String messageError,
 			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
-		if(statusFilter != null) {
-			if(statusFilter.equals("")) {
-				statusFilter = "all";
-			}
-			if(!statusFilter.equals("all")) {
-				this.statusFilter = SignRequestStatus.valueOf(statusFilter);
-			} else {
-				this.statusFilter = null;
-			}
+		Page<SignBook> signBooks;
+		if(statusFilter == null || statusFilter.isEmpty() || statusFilter.equals("all")) {
+			signBooks = signBookRepository.findAll(pageable);
+		} else {
+			signBooks = signBookRepository.findByStatus(SignRequestStatus.valueOf(statusFilter), pageable);
 		}
 
-		Page<SignRequest> signRequests = signRequestRepository.findBySignResquestByStatus(this.statusFilter,  pageable);
-
 		model.addAttribute("signBookId", signBookId);
-		model.addAttribute("signRequests", signRequests);
-		model.addAttribute("statusFilter", this.statusFilter);
+		model.addAttribute("signBooks", signBooks);
+		model.addAttribute("statusFilter", statusFilter);
 		model.addAttribute("statuses", SignRequestStatus.values());
-		return "admin/signrequests/list";
+		return "admin/signbooks/list";
 	}
 
 	@GetMapping(value = "/{id}")
 	public String show(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
-
-		SignRequest signRequest = signRequestRepository.findById(id).get();
+		SignRequest signRequest = signRequestService.getById(id);
 			model.addAttribute("signBooks", signBookService.getAllSignBooks());
-			Document toDisplayDocument = null;
+			Document toDisplayDocument;
 			if(signService.getToSignDocuments(signRequest.getId()).size() == 1) {
 				toDisplayDocument = signService.getToSignDocuments(signRequest.getId()).get(0);
 				if(toDisplayDocument.getContentType().equals("application/pdf")) {
@@ -131,14 +125,22 @@ public class AdminSignRequestController {
 	}
 
 	@DeleteMapping(value = "/{id}", produces = "text/html")
-	public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest request) {
-		SignRequest signRequest = signRequestRepository.findById(id).get();
-		signBookService.delete(signRequest.getParentSignBook().getId(), authUserEppn);
-		return "redirect:" + request.getHeader(HttpHeaders.REFERER);
+	public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+		signBookService.delete(id, authUserEppn);
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+	}
+
+	@DeleteMapping(value = "delete-definitive/{id}", produces = "text/html")
+	public String deleteDefinitive(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+		signBookService.deleteDefinitive(id);
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
 
 	@GetMapping(value = "/get-last-file/{id}")
-	public void getLastFile(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse response, Model model) {
+	@Transactional
+	public void getLastFile(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse response) {
 		List<Document> documents = signService.getToSignDocuments(id);
 		try {
 			if(documents.size() > 1) {
@@ -152,6 +154,13 @@ public class AdminSignRequestController {
 		} catch (Exception e) {
 			logger.error("get file error", e);
 		}
+	}
+
+	@GetMapping(value = "/restore/{id}", produces = "text/html")
+	public String restore(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+		signRequestService.restore(id, authUserEppn);
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Restauration effectuée"));
+		return "redirect:/user/signrequests/" + id;
 	}
 
 }

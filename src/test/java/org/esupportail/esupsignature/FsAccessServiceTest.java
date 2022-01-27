@@ -33,7 +33,7 @@ public class FsAccessServiceTest {
     @Test
     public void testSmbAccessImpl() throws EsupSignatureFsException {
         FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService("smb://test");
-        assumeTrue("SMB not configured", fsAccessService != null && fsAccessService.getUri() != null);
+        assumeTrue("SMB not configured", fsAccessService != null && fsAccessService.getUri() != null && !fsAccessService.getUri().isEmpty());
         try {
             if (fsAccessService.cd(fsAccessService.getUri()) == null) {
                 logger.error(fsAccessService.getDriveName() + " unable to change to / directory. Please check configuration");
@@ -51,7 +51,7 @@ public class FsAccessServiceTest {
     @Test
     public void testCmisAccessImpl() throws EsupSignatureFsException {
         FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService("cmis://test");
-        assumeTrue("cmis not configured", fsAccessService != null && fsAccessService.getUri() != null);
+        assumeTrue("cmis not configured", fsAccessService != null && fsAccessService.getUri() != null && !fsAccessService.getUri().isEmpty());
         try {
             if (fsAccessService.cd("/") == null) {
                 logger.error(fsAccessService.getDriveName() + " unable to change to / directory. Please check configuration");
@@ -68,7 +68,7 @@ public class FsAccessServiceTest {
     @Test
     public void testVfsAccessImpl() throws EsupSignatureFsException {
         FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService("ftp://test");
-        assumeTrue("vfs not configured", fsAccessService != null && fsAccessService.getUri() != null);
+        assumeTrue("vfs not configured", fsAccessService != null && fsAccessService.getUri() != null && !fsAccessService.getUri().isEmpty());
         try {
             if (fsAccessService.cd(fsAccessService.getUri()) == null) {
                 logger.error(fsAccessService.getDriveName() + " unable to change to / directory. Please check configuration");

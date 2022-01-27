@@ -180,7 +180,11 @@ export default class FilesInput extends EventFactory {
 
     checkUniqueFile() {
         let nbFiles = this.input.fileinput('getFilesCount', true);
-        if(nbFiles > 1) {
+        let compare = 1;
+        if(!this.async) {
+            compare = 0;
+        }
+        if(nbFiles > compare) {
             $('#unique').removeClass('d-none');
             $('#forceAllSign').removeClass('d-none');
             $('#forceAllSign2').removeClass('d-none');

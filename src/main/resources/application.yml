@@ -89,11 +89,25 @@ spring:
 #        oauth2:
 #            client:
 #                registration:
-#                    google:
-#                        client-id: *
-#                        client-secret: *
-#                        redirect-uri: https://esup-signature.univ-ville.fr/login/oauth2/code/google
-#                        scope: profile, email
+#                    franceconnect:
+#                        provider: franceconnect-idp
+#                        authorization-grant-type: authorization_code
+#                        client-id: <client_id>
+#                        client-secret: <client_secret>
+#                        client-authentication-method: client_secret_post
+#                        redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+#                        scope:
+#                            - openid
+#                            - family_name
+#                            - given_name
+#                            - email
+#                provider:
+#                    franceconnect-idp:
+#                        authorization-uri: https://fcp.integ01.dev-franceconnect.fr/api/v1/authorize
+#                        token-uri: https://fcp.integ01.dev-franceconnect.fr/api/v1/token
+#                        user-info-uri: https://fcp.integ01.dev-franceconnect.fr/api/v1/userinfo
+#                        user-name-attribute: sub
+#                        user-info-authentication-method: header
     servlet:
         multipart:
             enabled: true
@@ -146,7 +160,7 @@ dss:
     server-signing-keystore-filename: validate_service.p12
     server-signing-keystore-password: password
     server-signing-keystore-type: PKCS12
-    tsp-server: http://tsa.belgium.be/connect
+    tsp-server: http://timestamp.sectigo.com
     lotl-country-code: EU
     lotl-url: https://ec.europa.eu/tools/lotl/eu-lotl.xml
     oj-url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG
@@ -200,7 +214,9 @@ server:
             enabled: true
         remoteip:
             remote-ip-header: X-Forwarded-For
+            protocol-header: X-Forwarded-Proto
         basedir: ./temp
+    forward-headers-strategy: native
 
 sign:
     aes-key : "0000000000000000"
@@ -233,4 +249,5 @@ springdoc:
     swagger-ui:
         enabled: true
         supported-submit-methods: []
+        disable-swagger-default-url: true
     packages-to-scan: org.esupportail.esupsignature.web.ws

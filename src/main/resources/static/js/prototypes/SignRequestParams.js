@@ -162,9 +162,6 @@ export class SignRequestParams  extends EventFactory {
                 this.refreshExtraDiv();
                 this.updateSize();
             }
-            // this.toggleExtra();
-            // this.refreshExtraDiv();
-            // this.updateSize();
         }
         if(this.isShare) {
             this.toggleMinimalTools();
@@ -181,12 +178,15 @@ export class SignRequestParams  extends EventFactory {
             this.refreshExtraDiv();
             this.updateSize();
         }
-        if(this.isSign) {
+        if(this.isSign && this.restore) {
             this.restoreUserParams();
         }
     }
 
     restoreUserParams() {
+        if (localStorage.getItem('signNumber') != null) {
+            this.fireEvent("nextSign", localStorage.getItem('signNumber'));
+        }
         if (localStorage.getItem('addWatermark') != null) {
             if(localStorage.getItem('addWatermark') === "true") {
                 this.addWatermark = false;
@@ -405,10 +405,14 @@ export class SignRequestParams  extends EventFactory {
 
     show() {
         this.cross.css('opacity', '1');
+        this.cross.draggable("enable");
+        this.cross.css("z-index", 5);
     }
 
     hide() {
         this.cross.css('opacity', '0');
+        this.cross.draggable("disable");
+        this.cross.css("z-index", -1);
     }
 
     simulateDrop() {
