@@ -788,6 +788,16 @@
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}</finalName>
+		<resources>
+			<resource>
+				<directory>src/main/resources/</directory>
+				<targetPath>${project.build.directory}</targetPath>
+				<filtering>true</filtering>
+				<includes>
+					<include>${project.name}.conf</include>
+				</includes>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
@@ -819,8 +829,8 @@
 				<configuration>
 					<executable>true</executable>
 					<jvmArguments>
-						-Xms1024M
-						-Xmx1024M
+						-Xms512M
+						-Xmx2048M
 					</jvmArguments>
 				</configuration>
 				<executions>
