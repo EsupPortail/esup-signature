@@ -24,7 +24,6 @@
         <div id="content" class="content flex align-content-center">
             <div class="row">
                 <div th:replace="fragments/new :: new"></div>
-                <div th:replace="fragments/new-modals :: new-modals"></div>
                 <div id="toSignList" class="d-flex col-12">
                     <div class="col-12 col-lg-10 card mb-2 mx-auto">
                         <div class="card-body">
@@ -114,6 +113,7 @@
         </div>
     </div>
 </main>
+<div th:replace="fragments/new-modals :: new-modals"></div>
 <footer th:replace="fragments/footer :: footer"></footer>
 <div id="oldSignRequests" class="modal fade" role="dialog" th:if="${oldSignRequests.size() > 0}">
     <div class="modal-dialog">

@@ -106,7 +106,7 @@ public class SignRequestController {
 //            return "redirect:/user/";
 //        }
         if (signRequest.getLastNotifDate() == null) {
-            model.addAttribute("notifTime", 0);
+            model.addAttribute("notifTime", Integer.MAX_VALUE);
         } else {
             model.addAttribute("notifTime", Duration.between(signRequest.getLastNotifDate().toInstant(), new Date().toInstant()).toHours());
         }
