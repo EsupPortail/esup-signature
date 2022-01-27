@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.config.tomcat;
 
 import org.apache.catalina.connector.Connector;
+import org.apache.catalina.valves.RemoteIpValve;
 import org.apache.coyote.ajp.AbstractAjpProtocol;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -14,7 +15,6 @@ import java.net.URISyntaxException;
 
 @Configuration
 @EnableConfigurationProperties({TomcatAjpProperties.class, GlobalProperties.class})
-@ConditionalOnProperty(prefix = "tomcat.ajp", name = "port")
 public class TomcatAjpConfig {
 
     private final TomcatAjpProperties tomcatAjpProperties;
@@ -27,7 +27,8 @@ public class TomcatAjpConfig {
     }
 
     @Bean
-    public TomcatServletWebServerFactory servletContainer() throws URISyntaxException {
+    @ConditionalOnProperty(prefix = "tomcat.ajp", name = "port")
+    public TomcatServletWebServerFactory servletContainerAjp() throws URISyntaxException {
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         Connector ajpConnector = new Connector("AJP/1.3");
         ajpConnector.setPort(tomcatAjpProperties.getPort());
@@ -42,6 +43,14 @@ public class TomcatAjpConfig {
         ((AbstractAjpProtocol<?>) ajpConnector.getProtocolHandler()).setTomcatAuthentication(false);
         ((AbstractAjpProtocol<?>) ajpConnector.getProtocolHandler()).setMaxHeaderCount(400);
         tomcat.addAdditionalTomcatConnectors(ajpConnector);
+        return tomcat;
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "tomcat.ajp", name = "port", matchIfMissing = true)
+    public TomcatServletWebServerFactory servletContainer() {
+        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
+        tomcat.addEngineValves(new RemoteIpValve());
         return tomcat;
     }
 
