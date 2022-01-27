@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.config.tomcat;
 
 import org.apache.catalina.connector.Connector;
+import org.apache.catalina.valves.RemoteIpValve;
 import org.apache.coyote.ajp.AbstractAjpProtocol;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -29,6 +30,7 @@ public class TomcatAjpConfig {
     @Bean
     public TomcatServletWebServerFactory servletContainer() throws URISyntaxException {
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
+        tomcat.addContextValves(new RemoteIpValve());
         Connector ajpConnector = new Connector("AJP/1.3");
         ajpConnector.setPort(tomcatAjpProperties.getPort());
         ajpConnector.setAllowTrace(false);
