@@ -214,7 +214,9 @@ server:
             enabled: true
         remoteip:
             remote-ip-header: X-Forwarded-For
+            protocol-header: X-Forwarded-Proto
         basedir: ./temp
+    forward-headers-strategy: native
 
 sign:
     aes-key : "0000000000000000"
@@ -247,4 +249,5 @@ springdoc:
     swagger-ui:
         enabled: true
         supported-submit-methods: []
+        disable-swagger-default-url: true
     packages-to-scan: org.esupportail.esupsignature.web.ws
