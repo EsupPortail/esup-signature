@@ -159,6 +159,8 @@ export class SignRequestParams  extends EventFactory {
             if(this.isVisa) {
                 this.toggleMinimalTools();
                 this.toggleExtra();
+                this.toggleType();
+                this.toggleName();
                 this.refreshExtraDiv();
                 this.updateSize();
             }
