@@ -820,10 +820,6 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
 					<executable>true</executable>
-					<jvmArguments>
-						-Xms512m
-						-Xmx2g
-					</jvmArguments>
 				</configuration>
 				<executions>
 					<execution>
