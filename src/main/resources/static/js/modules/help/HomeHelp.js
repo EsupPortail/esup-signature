@@ -3,7 +3,7 @@ export class HomeHelp {
     constructor(doneTour) {
         this.doneTour = doneTour;
         this.intro = introJs();
-        this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'Passer', showStepNumbers: 'false', overlayOpacity: 1})
+        this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'Passer', showStepNumbers: 'false', overlayOpacity: 0.3})
         this.initListeners();
         this.initStep();
     }
@@ -29,9 +29,9 @@ export class HomeHelp {
             element: '#navbar-buttons',
             intro: "Voici les principaux éléments de navigation : " +
                 "<ul>" +
-                "<li>Dans les brouillons vous retrouvez les formulaires en cours d'édition.</li>" +
-                "<li>Dans le tableau de bord, la liste des demandes à signer, ou en cours de signature.</li>" +
-                "<li>Dans \"Outils\", vous pouvez créer vos propres circuits de signature ou vérifier des documents.</li>" +
+                "<li>\"Tableau de bord\" : la liste des demandes à signer, ou en cours de signature.</li>" +
+                "<li>\"Outils\" : vous pouvez créer vos propres circuits de signature ou contrôler des documents.</li>" +
+                "<li>\"Autorisation\" : pour rediriger vos demandes ou pour mettre en place une déléguation de siganture.</li>" +
                 "</ul>",
             highlightClass: 'intro-js-custom-highlight',
             position: 'auto'
@@ -39,7 +39,7 @@ export class HomeHelp {
 
         this.intro.addStep({
             element: '#user-buttons',
-            intro: "Vous pouvez modifier / compléter vos paramètres à tout moment en utilisant le bouton 'paramètres' en haut à droite.",
+            intro: "Vous pouvez accéder à votre profil pour insérer votre signature et modifier vos paramètres en cliquant sur votre nom en haut à droite, puis sur 'Modifier mes paramètres'.",
             position: 'left'
         });
         if($.trim($("#newfastSign").html()) !== '') {
@@ -56,6 +56,13 @@ export class HomeHelp {
                 position: 'right'
             });
         }
+        if($.trim($("#startWizardCustomButton").html()) !== '') {
+            this.intro.addStep({
+                element: '#startWizardCustomButton',
+                intro: "La demande personnalisée permet de déposer des documents puis de configurer manuellement un circuit",
+                position: 'right'
+            });
+        }
         if($.trim($("#newWizard").html()) !== '') {
             this.intro.addStep({
                 element: '#newWizard',
@@ -66,7 +73,7 @@ export class HomeHelp {
         if($.trim($("#newWorkflow").html()) !== '') {
             this.intro.addStep({
                 element: '#newWorkflow',
-                intro: "Les boutons <i class='fas fa-project-diagram fa-2x'></i> permettent de démarrer des circuits personnalisés ou pré-définis.",
+                intro: "Les boutons <i class='fas fa-project-diagram fa-2x' style=\"font-family: 'Font Awesome 5 Free' !important\"></i> permettent de démarrer des circuits personnalisés ou pré-définis.",
                 position: 'right'
             });
         }
@@ -74,7 +81,7 @@ export class HomeHelp {
         if($.trim($("#newForm").html()) !== '') {
             this.intro.addStep({
                 element: '#newForm',
-                intro: "Les boutons <i class='fas fa-file-alt fa-2x'></i> permettent de remplir un formulaire.",
+                intro: "Les boutons <i class='fas fa-file-alt fa-2x' style=\"font-family: 'Font Awesome 5 Free' !important\"></i> permettent de remplir un formulaire.",
                 position: 'right'
             });
         }
