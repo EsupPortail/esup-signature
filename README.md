@@ -1,4 +1,4 @@
-![ESUP-SIGNATURE](https://github.com/EsupPortail/esup-signature/blob/master/src/main/resources/static/images/logo.png)
+![ESUP-SIGNATURE](https://github.com/EsupPortail/esup-signature/raw/master/src/main/resources/static/images/logo.png)
 
 https://www.esup-portail.org/wiki/display/SIGN/
 
