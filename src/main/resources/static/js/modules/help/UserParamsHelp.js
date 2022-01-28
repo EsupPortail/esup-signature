@@ -3,7 +3,7 @@ export class UserParamsHelp {
     constructor(doneTour) {
         this.doneTour = doneTour;
         this.intro = introJs();
-        this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'Passer', showStepNumbers: 'false', overlayOpacity: 1})
+        this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'Passer', showStepNumbers: 'false', overlayOpacity: 0.8, disableInteraction: true})
         this.initListeners();
         this.initStep();
     }
@@ -60,9 +60,8 @@ export class UserParamsHelp {
             position: 'top'
         });
         this.intro.addStep({
-            element: '#saveButton',
-            intro: "Attention à bien enregistrer vos modifications ici.",
-            position: 'left'
+            intro: "Attention à bien enregistrer vos modifications avec le bouton en bas à droite.",
+            position: 'top'
         });
     }
 

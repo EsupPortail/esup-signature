@@ -512,7 +512,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
+    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
         User user = userService.getUserByEppn(userEppn);
         User authUser = userService.getUserByEppn(authUserEppn);
         Data data = dataService.getById(dataId);
@@ -555,6 +555,10 @@ public class SignBookService {
             workflow.setCounter(workflow.getCounter() + 1);
         } else {
             workflow.setCounter(0);
+        }
+        if(formDatas != null && formDatas.size() > 0) {
+//            Map<String, String> datas = formDatas.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> String.join(",", e.getValue())));
+            dataService.updateDatas(form, data, formDatas, user, authUser);
         }
         return signBook;
     }
