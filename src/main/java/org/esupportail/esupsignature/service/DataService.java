@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -63,7 +62,7 @@ public class DataService {
         }
     }
 
-    public Data updateDatas(Form form, Data data, @RequestParam Map<String, String> formDatas, User user, User authUser) {
+    public Data updateDatas(Form form, Data data, Map<String, String> formDatas, User user, User authUser) {
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user, data.getSignBook().getSignRequests().get(0));
         for(Field field : fields) {
             if(!field.getStepZero()) {

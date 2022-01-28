@@ -174,7 +174,9 @@ public class FormService {
 		if(multipartModel != null) {
 			Document oldModel = form.getDocument();
 			form.setDocument(null);
-			documentService.delete(oldModel.getId());
+			if(oldModel != null) {
+				documentService.delete(oldModel.getId());
+			}
 			try {
 				File tempDocument = fileService.inputStreamToTempFile(multipartModel.getInputStream(), multipartModel.getOriginalFilename());
 				List<Field> fields = getFields(new FileInputStream(tempDocument), form.getWorkflow());
