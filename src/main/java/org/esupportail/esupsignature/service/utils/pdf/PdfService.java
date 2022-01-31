@@ -671,8 +671,8 @@ public class PdfService {
                                     value = "Off";
                                 }
                                 pdRadioButton.setValue(value);
-                            } catch (NullPointerException e) {
-                                logger.debug("radio button is null");
+                            } catch (NullPointerException | IllegalArgumentException e) {
+                                logger.debug("radio value error", e);
                             }
                         } else if (pdField instanceof PDListBox) {
                             String value = datas.get(filedName);
