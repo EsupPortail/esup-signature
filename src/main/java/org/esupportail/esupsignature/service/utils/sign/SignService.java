@@ -129,7 +129,7 @@ public class SignService {
 		for(Document document : getToSignDocuments(signRequest.getId())) {
 			toSignDocuments.add(document);
 		}
-		Pkcs12SignatureToken pkcs12SignatureToken = openXPKICertificatService.generateTokenForUser(user);;
+		Pkcs12SignatureToken pkcs12SignatureToken = null;
 		try {
 			if(user.getKeystore() != null && certType.equals("profil")) {
 				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
@@ -139,6 +139,8 @@ public class SignService {
 			} else if(certType.equals("etab")){
 				Certificat certificat = certificatService.getCertificatByUser(user.getEppn()).get(0);
 				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
+			} else {
+				pkcs12SignatureToken = openXPKICertificatService.generateTokenForUser(user);
 			}
 			CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(pkcs12SignatureToken);
