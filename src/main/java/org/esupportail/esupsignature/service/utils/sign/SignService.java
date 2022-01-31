@@ -39,6 +39,7 @@ import org.esupportail.esupsignature.service.utils.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -107,8 +108,11 @@ public class SignService {
 	@Resource
 	private ValidationService validationService;
 
-	@Resource
 	private OpenXPKICertificatService openXPKICertificatService;
+
+	public SignService(@Autowired(required = false)  OpenXPKICertificatService openXPKICertificatService) {
+		this.openXPKICertificatService = openXPKICertificatService;
+	}
 
 	@Transactional
 	public List<Document> getToSignDocuments(Long signRequestId) {
@@ -139,8 +143,11 @@ public class SignService {
 			} else if(certType.equals("etab")){
 				Certificat certificat = certificatService.getCertificatByUser(user.getEppn()).get(0);
 				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
-			} else {
+			} else if (openXPKICertificatService != null) {
 				pkcs12SignatureToken = openXPKICertificatService.generateTokenForUser(user);
+			} else {
+//				logger.error("Aucun certificat disponible pour signer le document");
+				throw new EsupSignatureException("Aucun certificat disponible pour signer le document");
 			}
 			CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(pkcs12SignatureToken);

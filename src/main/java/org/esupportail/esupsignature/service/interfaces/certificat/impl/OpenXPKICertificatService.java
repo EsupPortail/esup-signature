@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.interfaces.certificat.impl;
 
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
+import org.apache.commons.text.RandomStringGenerator;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -13,6 +14,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.interfaces.certificat.CertificatService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -32,6 +34,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 
 @Service
+@ConditionalOnProperty("global.open-x-p-k-i-server-url")
 public class OpenXPKICertificatService implements CertificatService {
 
     private static final Logger logger = LoggerFactory.getLogger(OpenXPKICertificatService.class);
@@ -64,7 +67,7 @@ public class OpenXPKICertificatService implements CertificatService {
             HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
             RestTemplate restTemplate = new RestTemplate();
-            Root root = restTemplate.postForObject("http://10.0.131.23/rpc/enroll", requestEntity, Root.class);
+            Root root = restTemplate.postForObject(globalProperties.getOpenXPKIServerUrl(), requestEntity, Root.class);
             assert root != null;
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             Certificate[] certificates = new Certificate[2];
@@ -73,13 +76,14 @@ public class OpenXPKICertificatService implements CertificatService {
             certificates[0] = cert;
             certificates[1] = chain;
             KeyStore pkcs12 = KeyStore.getInstance("PKCS12");
+            RandomStringGenerator pwdGenerator = new RandomStringGenerator.Builder().withinRange(33, 45)
+                    .build();
+            char[] password = pwdGenerator.generate(8, 12).toCharArray();
             pkcs12.load(null, null);
-            pkcs12.setKeyEntry("temp", pair.getPrivate(), "toto".toCharArray(), certificates);
-//            pkcs12.setCertificateEntry("temp", cert);
+            pkcs12.setKeyEntry("temp", pair.getPrivate(), password, certificates);
             ByteArrayOutputStream p12 = new ByteArrayOutputStream();
-            pkcs12.store(p12, "toto".toCharArray());
-//            pkcs12.
-            return new Pkcs12SignatureToken(p12.toByteArray(), new KeyStore.PasswordProtection("toto".toCharArray()));
+            pkcs12.store(p12, password);
+            return new Pkcs12SignatureToken(p12.toByteArray(), new KeyStore.PasswordProtection(password));
         } catch(NoSuchAlgorithmException | IOException | OperatorCreationException | CertificateException | KeyStoreException e) {
             logger.error(e.getMessage(), e);
         }
