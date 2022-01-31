@@ -152,6 +152,8 @@ public class GlobalProperties {
      */
     private Boolean keepSignRequestParams = true;
 
+    private String openXPKIServerUrl;
+
     public String getRootUrl() {
         return rootUrl;
     }
@@ -392,4 +394,11 @@ public class GlobalProperties {
         this.keepSignRequestParams = keepSignRequestParams;
     }
 
+    public String getOpenXPKIServerUrl() {
+        return openXPKIServerUrl;
+    }
+
+    public void setOpenXPKIServerUrl(String openXPKIServerUrl) {
+        this.openXPKIServerUrl = openXPKIServerUrl;
+    }
 }

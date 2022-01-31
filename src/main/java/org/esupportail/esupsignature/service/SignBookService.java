@@ -1420,7 +1420,8 @@ public class SignBookService {
                         if (checkUserSignRights(signRequest, userEppn, authUserEppn)
                                 && user.getKeystore() == null
                                 && certificatService.getCertificatByUser(userEppn).size() == 0
-                                && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)) {
+                                && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)
+                                && globalProperties.getOpenXPKIServerUrl() == null) {
                             signRequestRef.setSignable(false);
                             throw new EsupSignatureUserException("Pour signer ce document merci d’ajouter un certificat à votre profil <a href='user/users' target='_blank'>Mes paramètres</a>");
                         }
