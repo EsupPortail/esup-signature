@@ -14,8 +14,9 @@ public class LiveWorkflowService {
     @Resource
     LiveWorkflowRepository liveWorkflowRepository;
 
-    public LiveWorkflow create() {
+    public LiveWorkflow create(String title) {
         LiveWorkflow liveWorkflow = new LiveWorkflow();
+        liveWorkflow.setTitle(title);
         liveWorkflowRepository.save(liveWorkflow);
         return liveWorkflow;
     }

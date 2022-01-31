@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageTree;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
@@ -84,6 +85,7 @@ public class SignRequestParamsService {
         List<SignRequestParams> signRequestParamsList = new ArrayList<>();
         try {
             PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
+            PDPageTree pdPages = docCatalog.getPages();
             PDAcroForm acroForm = docCatalog.getAcroForm();
             if(acroForm != null) {
                 Map<String, Integer> pageNrByAnnotDict = pdfService.getPageNumberByAnnotDict(pdDocument);
@@ -95,7 +97,9 @@ public class SignRequestParamsService {
                             continue;
                         }
                         String signFieldName = pdSignatureField.getPartialName();
-                        PDPage pdPage = pdDocument.getPage(pageNrByAnnotDict.get(signFieldName));
+                        int pageNum = pageNrByAnnotDict.get(signFieldName);
+                        int test = pdPages.getCount();
+                        PDPage pdPage = pdPages.get(pageNum);
                         SignRequestParams signRequestParams = createFromPdf(pdSignatureField, pageNrByAnnotDict.get(signFieldName) + 1, pdPage);
                         signRequestParamsList.add(signRequestParams);
                     }
@@ -116,6 +120,7 @@ public class SignRequestParamsService {
                 SignRequestParams signRequestParams = createSignRequestParams(signRequestParamses.get(i).getSignPageNumber(), signRequestParamses.get(i).getxPos(), signRequestParamses.get(i).getyPos());
                 signRequestParams.setSignImageNumber(signRequestParamses.get(i).getSignImageNumber());
                 signRequestParams.setSignPageNumber(signRequestParamses.get(i).getSignPageNumber());
+                signRequestParams.setSignScale(signRequestParamses.get(i).getSignScale());
                 signRequestParams.setxPos(signRequestParamses.get(i).getxPos());
                 signRequestParams.setyPos(signRequestParamses.get(i).getyPos());
                 signRequestParams.setSignWidth(signRequestParamses.get(i).getSignWidth());

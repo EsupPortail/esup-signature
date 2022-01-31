@@ -19,11 +19,8 @@ import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -36,8 +33,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 
-@ConditionalOnProperty(value = "app.scheduling.enable", havingValue = "true", matchIfMissing = true)
 @EnableScheduling
+@Profile("!dev")
 @Component
 @EnableConfigurationProperties(GlobalProperties.class)
 public class ScheduledTaskService {
@@ -82,7 +79,7 @@ public class ScheduledTaskService {
 		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
 		User userScheduler = userService.getSchedulerUser();
 		for(Workflow workflow : workflows) {
-			signRequestService.importFilesFromSource(workflow.getId(), userScheduler, userScheduler);
+			signBookService.importFilesFromSource(workflow.getId(), userScheduler, userScheduler);
 		}
 	}
 
@@ -163,7 +160,7 @@ public class ScheduledTaskService {
 		for(User user : users) {
 			logger.trace("check email alert for " + user.getEppn());
 			if(userService.checkEmailAlert(user)) {
-				signRequestService.sendEmailAlertSummary(user);
+				signBookService.sendEmailAlertSummary(user);
 			}
 		}
 	}
@@ -183,19 +180,6 @@ public class ScheduledTaskService {
 			for (SignRequest signRequest : signRequests) {
 				signBookService.delete(signRequest.getParentSignBook().getId(), "scheduler");
 			}
-		}
-	}
-
-	@Async
-	@EventListener(ApplicationReadyEvent.class)
-	public void init() throws EsupSignatureException {
-		logger.info("Checking Workflow classes...");
-		workflowService.copyClassWorkflowsIntoDatabase();
-		logger.info("Check done.");
-		if(oJService != null) {
-			logger.info("Updating DSS OJ...");
-			oJService.getCertificats();
-			logger.info("Update done.");
 		}
 	}
 

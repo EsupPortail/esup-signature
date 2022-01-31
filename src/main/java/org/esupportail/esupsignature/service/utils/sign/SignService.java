@@ -33,6 +33,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.interfaces.certificat.impl.OpenXPKICertificatService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
@@ -98,7 +99,7 @@ public class SignService {
 	@Resource
 	private Environment environment;
 
-	@Autowired(required=false)
+	@Resource
 	private UserKeystoreService userKeystoreService;
 
 	@Resource
@@ -106,6 +107,12 @@ public class SignService {
 
 	@Resource
 	private ValidationService validationService;
+
+	private OpenXPKICertificatService openXPKICertificatService;
+
+	public SignService(@Autowired(required = false)  OpenXPKICertificatService openXPKICertificatService) {
+		this.openXPKICertificatService = openXPKICertificatService;
+	}
 
 	@Transactional
 	public List<Document> getToSignDocuments(Long signRequestId) {
@@ -133,10 +140,14 @@ public class SignService {
 			} else if(user.getKeystore() != null && certType.equals("auto")) {
 				Certificat certificat = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getCertificat();
 				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
-			} else {
+			} else if(certType.equals("etab")){
 				Certificat certificat = certificatService.getCertificatByUser(user.getEppn()).get(0);
 				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
-
+			} else if (openXPKICertificatService != null) {
+				pkcs12SignatureToken = openXPKICertificatService.generateTokenForUser(user);
+			} else {
+//				logger.error("Aucun certificat disponible pour signer le document");
+				throw new EsupSignatureException("Aucun certificat disponible pour signer le document");
 			}
 			CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(pkcs12SignatureToken);
@@ -306,17 +317,11 @@ public class SignService {
 			imageParameters.setImage(fileDocumentImage);
 			SignatureFieldParameters signatureFieldParameters = imageParameters.getFieldParameters();
 			signatureFieldParameters.setPage(signRequestParams.getSignPageNumber());
-//			signatureFieldParameters.setFieldId(signRequestParams.getPdSignatureFieldName());
 			imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
 			PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile, signRequestParams.getSignPageNumber());
-//			if(signRequestParams.getAddExtra()) {
-//				signRequestParams.setSignWidth(signRequestParams.getSignWidth() + 200);
-//			}
-			int widthAdjusted = Math.round((bufferedSignImage.getWidth() / 3 * fixFactor));
-			int heightAdjusted = Math.round((bufferedSignImage.getHeight() / 3 * fixFactor));
 
-			widthAdjusted = Math.round(signRequestParams.getSignWidth() * fixFactor);
-			heightAdjusted = Math.round(signRequestParams.getSignHeight() * fixFactor);
+			int widthAdjusted = Math.round(signRequestParams.getSignWidth() * fixFactor);
+			int heightAdjusted = Math.round(signRequestParams.getSignHeight() * fixFactor);
 
 			if(pdfParameters.getRotation() == 0) {
 				signatureFieldParameters.setWidth(widthAdjusted);

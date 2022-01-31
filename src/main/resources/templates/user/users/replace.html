@@ -2,16 +2,16 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="userShare" type="org.esupportail.esupsignature.entity.UserShare"*/-->
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
-<head th:replace="fragments/head"></head>
+<head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
     import {default as ShareUi} from '/js/modules/ui/users/ShareUi.js?version=[[${versionApp}]]';
     new ShareUi();
 </script>
 <body>
-<nav th:replace="fragments/nav"></nav>
+<header th:replace="fragments/nav :: nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/sides/side-user"></nav>
+        <nav th:replace="fragments/sides/side-user :: side-user"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Délégations</li>
@@ -29,7 +29,7 @@
                     <div class="alert alert-success" th:if="${user.replaceByUser != null}">
                         Vos demandes sont redirigées vers <b th:text="${user.replaceByUser.name + ' ' + user.replaceByUser.firstname}"></b>
                         <div th:if="${signRequests.size() > 0}" class="m-2">
-                            <a onclick="return confirm('Merci de confirmer le transfert de toutes vos demandes')"
+                            <a onclick="return confirm('Merci de confirmer le transfert de toutes vos demandes. Les demandes ne pourront plus être récupérées')"
                                class="btn btn-primary" href="/user/users/replace/transfer">Tranférer toutes mes demandes en cours</a>
                         </div>
                         <form id="shareForm" th:action="'/user/users/replace/update'" method="post" class="m-2">
@@ -78,6 +78,6 @@
     </div>
 
 </main>
-<footer th:replace="fragments/footer"></footer>
+<footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

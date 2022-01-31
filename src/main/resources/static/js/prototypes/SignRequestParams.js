@@ -15,7 +15,7 @@ export class SignRequestParams  extends EventFactory {
         this.authUserName = authUserName;
         this.ready = null;
         this.isShare = userName !== authUserName;
-        this.restore = restore;
+        this.restore = false;
         this.isSign = isSign;
         this.isVisa = isVisa;
         this.isElec = isElec;
@@ -57,6 +57,7 @@ export class SignRequestParams  extends EventFactory {
         this.extraName = true;
         this.extraDate = true;
         this.isExtraText = true;
+        this.restoreExtra = false;
         this.init();
         this.initEventListeners();
     }
@@ -152,19 +153,41 @@ export class SignRequestParams  extends EventFactory {
         } else {
             this.toggleMinimalTools();
         }
+        if(this.restore) {
+            if(localStorage.getItem("zoom") != null) {
+                this.signScale = parseFloat(localStorage.getItem("zoom"));
+            }
+        }
         if(this.isVisa || this.isSign) {
             this.signHeight = 0;
-            this.cross.css('width', (this.signWidth * this.currentScale));
-            this.cross.css('height', (this.signHeight * this.currentScale));
+            this.cross.css('width', (this.signWidth * this.currentScale * this.signScale));
+            this.cross.css('height', (this.signHeight * this.currentScale * this.signScale));
             if(this.isVisa) {
                 this.toggleMinimalTools();
                 this.toggleExtra();
                 this.refreshExtraDiv();
                 this.updateSize();
             }
-            // this.toggleExtra();
-            // this.refreshExtraDiv();
-            // this.updateSize();
+        }
+        if(this.restore) {
+            if (localStorage.getItem('signNumber') != null) {
+                this.fireEvent("nextSign", localStorage.getItem('signNumber'));
+            }
+            if (!this.isVisa && localStorage.getItem('addExtra') != null) {
+                if (localStorage.getItem('addExtra') === "true") {
+                    this.addExtra = false;
+                    this.toggleExtra();
+                    this.restoreExtra = true;
+                }
+            }
+            this.restoreUserParams();
+        }
+        if(this.isVisa) {
+            if(!this.restore) {
+                this.toggleText();
+            }
+            this.refreshExtraDiv();
+            this.updateSize();
         }
         if(this.isShare) {
             this.toggleMinimalTools();
@@ -181,9 +204,6 @@ export class SignRequestParams  extends EventFactory {
             this.refreshExtraDiv();
             this.updateSize();
         }
-        if(this.isSign) {
-            this.restoreUserParams();
-        }
     }
 
     restoreUserParams() {
@@ -193,45 +213,31 @@ export class SignRequestParams  extends EventFactory {
                 this.toggleWatermark();
             }
         }
-        if (localStorage.getItem('addExtra') != null) {
-            if (localStorage.getItem('addExtra') === "true") {
-                this.addExtra = false;
-                this.toggleExtra();
-            }
-        }
-        if(localStorage.getItem("zoom") != null) {
-            this.signScale = parseFloat(localStorage.getItem("zoom"));
-            if(this.divExtra != null) {
-                this.refreshExtraDiv();
-            }
-        }
         if(this.addExtra) {
             if (localStorage.getItem('extraType') != null) {
-                if (localStorage.getItem('extraType') === "true") {
-                    if (this.divExtra != null) {
-                        this.extraType = false;
+                if (localStorage.getItem('extraType') === "false") {
+                    if (this.divExtra != null && this.extraType) {
                         this.toggleType();
                     }
                 }
             }
             if (localStorage.getItem('extraName') != null) {
-                if (localStorage.getItem('extraName') === "true") {
-                    this.extraName = false;
-                    this.toggleName();
+                if (localStorage.getItem('extraName') === "false") {
+                    if (this.divExtra != null && this.extraName) {
+                        this.toggleName();
+                    }
                 }
             }
             if (localStorage.getItem('extraText') != null) {
-                if (localStorage.getItem('extraText') === "true") {
-                    if (this.divExtra != null) {
-                        this.extraText = false;
+                if (localStorage.getItem('extraText') === "false") {
+                    if (this.divExtra != null && this.isExtraText) {
                         this.toggleText();
                     }
                 }
             }
             if (localStorage.getItem('extraDate') != null) {
                 if (localStorage.getItem('extraDate') === "false") {
-                    if (this.divExtra != null) {
-                        this.extraDate = true;
+                    if (this.divExtra != null && this.extraDate) {
                         this.toggleDate();
                     }
                 }
@@ -405,10 +411,14 @@ export class SignRequestParams  extends EventFactory {
 
     show() {
         this.cross.css('opacity', '1');
+        this.cross.draggable("enable");
+        this.cross.css("z-index", 5);
     }
 
     hide() {
         this.cross.css('opacity', '0');
+        this.cross.draggable("disable");
+        this.cross.css("z-index", -1);
     }
 
     simulateDrop() {
@@ -501,6 +511,10 @@ export class SignRequestParams  extends EventFactory {
             this.refreshExtraDiv();
             this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
             this.signHeight += this.extraHeight;
+            if(!this.restoreExtra && this.restore) {
+                this.restoreUserParams();
+                this.restoreExtra = true;
+            }
         } else {
             if(!this.extraOnTop) {
                 this.toggleExtraOnTop();
@@ -514,9 +528,9 @@ export class SignRequestParams  extends EventFactory {
             this.signHeight -= this.extraHeight;
             this.extraHeight = 0;
         }
-        this.toggleType();
-        this.toggleName();
-        this.toggleText();
+        // this.toggleType();
+        // this.toggleName();
+        // this.toggleText();
         this.updateSize();
         if(this.addExtra) {
             this.textareaExtra.focus();
@@ -569,8 +583,13 @@ export class SignRequestParams  extends EventFactory {
 
     toggleType() {
         if(!this.extraName && !this.extraDate && !this.isExtraText && this.extraType) return;
-        $("#extraTypeDiv_" + this.id).toggle();
-        $("#extraType_" + this.id).toggleClass("btn-outline-light");
+        if(this.extraType) {
+            $("#extraTypeDiv_" + this.id).hide();
+            $("#extraType_" + this.id).removeClass("btn-outline-light");
+        } else {
+            $("#extraTypeDiv_" + this.id).show();
+            $("#extraType_" + this.id).addClass("btn-outline-light");
+        }
         this.extraType = !this.extraType;
         this.updateSize();
         this.refreshExtraDiv();
@@ -581,8 +600,13 @@ export class SignRequestParams  extends EventFactory {
 
     toggleName() {
         if(!this.extraType && !this.extraDate && !this.isExtraText && this.extraName) return;
-        $("#extraNameDiv_" + this.id).toggle();
-        $("#extraName_" + this.id).toggleClass("btn-outline-light");
+        if(this.extraName) {
+            $("#extraNameDiv_" + this.id).hide();
+            $("#extraName_" + this.id).removeClass("btn-outline-light");
+        } else {
+            $("#extraNameDiv_" + this.id).show();
+            $("#extraName_" + this.id).addClass("btn-outline-light");
+        }
         this.extraName = !this.extraName;
         this.updateSize();
         this.refreshExtraDiv();
@@ -593,8 +617,13 @@ export class SignRequestParams  extends EventFactory {
 
     toggleDate() {
         if(!this.extraType && !this.extraName && !this.isExtraText && this.extraDate) return;
-        $("#extraDateDiv_" + this.id).toggle();
-        $("#extraDate_" + this.id).toggleClass("btn-outline-light");
+        if(this.extraDate) {
+            $("#extraDateDiv_" + this.id).hide();
+            $("#extraDate_" + this.id).removeClass("btn-outline-light");
+        } else {
+            $("#extraDateDiv_" + this.id).show();
+            $("#extraDate_" + this.id).addClass("btn-outline-light");
+        }
         this.extraDate = !this.extraDate;
         this.updateSize();
         this.refreshExtraDiv();
@@ -606,8 +635,13 @@ export class SignRequestParams  extends EventFactory {
     toggleText() {
         if(!this.extraType && !this.extraDate && !this.extraName && this.isExtraText) return;
         let textExtra = $("#textExtra_" + this.id);
-        textExtra.toggle();
-        this.textareaExtra.toggleClass("disabled");
+        if(this.isExtraText) {
+            textExtra.hide();
+            this.textareaExtra.removeClass("btn-outline-light");
+        } else {
+            textExtra.show();
+            this.textareaExtra.addClass("btn-outline-light");
+        }
         $("#extraText_" + this.id).toggleClass("btn-outline-light");
         if(this.extraText === "") {
             this.extraText = this.textareaExtra.val();
@@ -671,7 +705,7 @@ export class SignRequestParams  extends EventFactory {
         this.extraText = text;
         this.textareaExtra.val(text);
         let rows = parseInt(this.textareaExtra.attr("rows"));
-        if(lines.length != rows) {
+        if(lines.length !== rows) {
             this.textareaExtra.attr("rows", lines.length);
             this.updateSize();
         }

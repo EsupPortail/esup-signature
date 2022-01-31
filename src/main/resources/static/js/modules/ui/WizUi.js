@@ -85,13 +85,22 @@ export class WizUi {
         if(!this.workflowId) this.input = $("#multipartFiles_0");
         this.fileInput = new FilesInput(this.input, this.workflowName, this.workflowName, null, false, this.csrf, null);
         this.fileInput.addEventListener("uploaded", e => this.gotoStep2(e));
-        this.recipientCCSelect = new SelectUser("recipientsCCEmailsWiz", null, null, this.csrf);
+        let id = this.workflowId;
+        if(id == "") {
+            id = 0;
+        }
+        this.recipientCCSelect = new SelectUser("recipientsCCEmailsWiz" + id, null, null, this.csrf);
     }
 
     gotoStep2(e) {
         let comment = $("#commentWiz");
+        let title = $("#titleWiz");
+        let id = this.workflowId;
+        if(id == "") {
+            id = 0;
+        }
         let recipientsCCEmailsWiz=[];
-        $('select[name="recipientsCCEmailsWiz"] option:selected').each(function() {
+        $('select[name="recipientsCCEmailsWiz' + id + '"] option:selected').each(function() {
             recipientsCCEmailsWiz.push($(this).val());
         });
         let forceAllSign = $('input[name="forceAllSign2"]').is(":checked");
@@ -99,7 +108,7 @@ export class WizUi {
         this.signBookId = e;
         $.ajax({
             type: "GET",
-            url: '/user/wizard/wiz-init-steps/' + this.signBookId + '?workflowId=' + this.workflowId + "&recipientsCCEmailsWiz=" + recipientsCCEmailsWiz + "&forceAllSign=" + forceAllSign + "&comment=" + encodeURIComponent(comment.val()),
+            url: '/user/wizard/wiz-init-steps/' + this.signBookId + '?workflowId=' + this.workflowId + "&recipientsCCEmailsWiz=" + recipientsCCEmailsWiz + "&forceAllSign=" + forceAllSign + "&comment=" + encodeURIComponent(comment.val()) + "&title=" + title.val(),
             dataType : 'html',
             cache: false,
             success : html => this.initWiz2(html)

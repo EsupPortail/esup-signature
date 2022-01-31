@@ -5,16 +5,16 @@
 <!--/*@thymesVar id="signRequests" type="org.springframework.data.domain.Page<esupportail.esupsignature.entity.SignRequest>"*/-->
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <!--/*@thymesVar id="infiniteScrolling" type="java.lang.Boolean"*/-->
-<head th:replace="fragments/head"></head>
+<head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
-    import {ListSignRequestUi} from '/js/modules/ui/signrequests/ListSignRequestUi.js?version=[[${versionApp}]]';
-    new ListSignRequestUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]]);
+    import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=[[${versionApp}]]';
+    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]]);
 </script>
 <body>
-<header th:replace="fragments/nav"></header>
+<header th:replace="fragments/nav :: nav"></header>
 <main role="main" th:style="${infiniteScrolling} ? '' : 'padding-bottom: 0px;'">
     <div class="wrapper">
-        <nav th:insert="fragments/sides/side-dashboard"></nav>
+        <nav th:replace="fragments/sides/side-dashboard :: side-dashboard"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item active">Tableau de bord</li>
@@ -48,7 +48,7 @@
                         </a>
                     </li>
                     <li>
-                        <a data-bs-toggle="modal" data-bs-target="#newFomModal" type="button"
+                        <a th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')') || #authorization.expression('hasRole(''ROLE_FRANCECONNECT'')')}" data-bs-toggle="modal" data-bs-target="#newFomModal" type="button"
                            class="btn-floating btn-lg bg-primary wave-effect">
                             <i class="fas fa-plus"></i>
                         </a>
@@ -56,7 +56,7 @@
                 </ul>
             </div>
             <div class="card col-sm-9 col-md-10 col-xl-11">
-                <div id="myDocs" class="card-body">
+                <div class="card-body">
                     <div id="listSignRequestTable" class="table-fix-head">
                         <div id="loader" class="loader" style="position: fixed; left: 50%; top: 40%; z-index:100000000; display: none;"></div>
                         <table class="table table-borderless table-hover">
@@ -82,16 +82,16 @@
                                     </div>
                                 </div>
                             </th>
-                            <th class="w-20 d-none d-xxl-table-cell text-center">
+                            <th class="d-none d-xxl-table-cell text-center" style="width: 10%;">
                                 <select id="workflowFilter" class="slim-select-filter sign-request-filter" data-placeholder="Circuit" data-allow-deselect="true">
                                     <option data-placeholder="true"></option>
                                     <option value="all">Tout</option>
-                                    <th:block th:each="workflow : ${signRequestWorkflow}">
-                                            <option th:value="${workflow}" th:selected="${workflowFilter == workflow}" th:text="${workflow}"></option>
+                                    <th:block th:each="workflow : ${workflowNames}">
+                                        <option th:value="${workflow}" th:selected="${workflowFilter == workflow}" th:text="${workflow}"></option>
                                     </th:block>
                                 </select>
                             </th>
-                            <th class="w-20 text-center">
+                            <th class="text-center" style="width: 10%;">
                                 <select id="docTitleFilter" class="slim-select-filter sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
                                     <option data-placeholder="true"></option>
                                     <option value="all">Tout</option>
@@ -107,7 +107,7 @@
                                     <option data-placeholder="true"></option>
                                     <option value="all">Tout</option>
                                     <th:block th:each="signRequestRecipient : ${signRequestRecipients}">
-                                        <option th:value="${signRequestRecipient.user.eppn}" th:selected="${recipientsFilter == signRequestRecipient.user.eppn}" th:text="${signRequestRecipient.user.firstname + ' ' + signRequestRecipient.user.name}"></option>
+                                        <option th:value="${signRequestRecipient.eppn}" th:selected="${recipientsFilter == signRequestRecipient.eppn}" th:text="${signRequestRecipient.firstname + ' ' + signRequestRecipient.name}"></option>
                                     </th:block>
                                 </select>
                             </th>
@@ -117,7 +117,7 @@
                         </tr>
                         </thead>
                         <tbody id="signRequestTable">
-                        <tr th:replace="user/signrequests/includes/list-elem"></tr>
+                        <tr th:replace="user/signbooks/includes/list-elem"></tr>
                         </tbody>
                         <tfoot>
                         <tr>
@@ -130,7 +130,7 @@
                     </div>
                 </div>
             </div>
-            <nav  th:unless="${infiniteScrolling}" th:include="fragments/pagination"></nav>
+            <nav  th:unless="${infiniteScrolling}" th:include="fragments/pagination :: pagination"></nav>
         </div>
     </div>
 </main>
@@ -173,7 +173,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div th:replace="fragments/new"></div>
+                <div th:replace="fragments/new :: new"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -205,7 +205,7 @@
         </div>
     </div>
 </div>
-<div th:replace="fragments/new-modals"></div>
-<footer th:replace="fragments/footer"></footer>
+<div th:replace="fragments/new-modals :: new-modals"></div>
+<footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

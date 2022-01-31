@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
-<head th:replace="fragments/head"></head>
+<head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
     import {WorkflowUi} from '/js/modules/ui/workflows/WorkflowUi.js?version=[[${versionApp}]]';
     new WorkflowUi();
 </script>
 <body>
-<nav th:replace="fragments/nav"></nav>
+<header th:replace="fragments/nav :: nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/sides/side-admin"></nav>
+        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin/workflows">Liste des circuits</a></li>
@@ -36,7 +36,8 @@
             <br>
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
-                    <h2>Nombre de demandes pour ce circuit : <span th:text="${nbSignRequests}"></span></h2>
+                    <h3>WORKFLOW ID : <input type="text" readonly disabled th:value="${workflow.id}"></h3>
+                    <div class="alert alert-info">Nombre de demandes pour ce circuit : <span th:text="${nbSignRequests}"></span></div>
                     <form th:object="${workflow}" th:action="'/admin/workflows/update'" method="post" id="updateSignBook">
                         <input type="hidden" th:field="*{id}">
                         <div class="form-group mb-3">
@@ -236,6 +237,6 @@
         </div>
     </div>
 </div>
-<footer th:replace="fragments/footer"></footer>
+<footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

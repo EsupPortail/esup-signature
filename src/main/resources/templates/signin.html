@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="securityServices" type="java.util.List<org.esupportail.esupsignature.service.security.SecurityService>"*/-->
-<head th:replace="fragments/head"></head>
+<head th:replace="fragments/head :: head"></head>
 <body>
-<nav th:replace="fragments/nav-empty"></nav>
+<header th:replace="fragments/nav-empty :: nav-empty"></header>
 <main role="main">
     <div class="card col-lg-10 mx-auto" style="top: 60px;">
         <div class="card-body text-center">
@@ -22,7 +22,7 @@
                 <div th:class="${globalProperties.enableCaptcha} ? 'd-none' : ''" id="loginBlock">
                     <h3>Se connecter avec :</h3>
                     <th:block th:each="securityConfig : ${securityServices}">
-                        <button type="button" th:data-url="${securityConfig.loginUrl} + '?redirect=' + ${redirect}"
+                        <button th:if="${securityConfig.title != 'FranceConnect'}" type="button" th:data-url="${securityConfig.loginUrl} + '?redirect=' + ${redirect}"
                                 onclick="location.href=this.getAttribute('data-url')" th:text="${securityConfig.title}"
                                 class="btn btn-primary btn-lg col-6 m-3"></button>
                     </th:block>
@@ -48,7 +48,7 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer"></footer>
+<footer th:replace="fragments/footer :: footer"></footer>
 <script th:if="${globalProperties.enableCaptcha}">
     $(function() {
         let myCaptcha = new jCaptcha({

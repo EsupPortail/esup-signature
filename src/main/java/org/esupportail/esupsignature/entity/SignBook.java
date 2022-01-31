@@ -70,6 +70,9 @@ public class SignBook {
     @ManyToMany
     private List<User> viewers = new ArrayList<>();
 
+    @ManyToMany
+    private List<User> hidedBy = new ArrayList<>();
+
     private Boolean forceAllDocsSign = false;
 
     public Long getId() {
@@ -206,5 +209,13 @@ public class SignBook {
 
     public void setForceAllDocsSign(Boolean forceAllDocsSign) {
         this.forceAllDocsSign = forceAllDocsSign;
+    }
+
+    public List<User> getHidedBy() {
+        return hidedBy;
+    }
+
+    public void setHidedBy(List<User> hidedBy) {
+        this.hidedBy = hidedBy;
     }
 }

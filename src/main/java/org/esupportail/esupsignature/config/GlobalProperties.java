@@ -83,7 +83,7 @@ public class GlobalProperties {
     /**
      * Nombre d'heure minimum entre deux relances manuelles
      */
-    private int hoursBeforeRefreshNotif = 24;
+    private Integer hoursBeforeRefreshNotif = 24;
     /**
      * Activer le scrolling infini sur le tableau de bord (sinon pagination)
      */
@@ -146,6 +146,13 @@ public class GlobalProperties {
      * Nombre de jours après alerte pour suppression des demandes en attente (-1 non actif)
      */
     private Integer nbDaysBeforeDeleting = -1;
+
+    /**
+     *  Conserver la configuration de la signature entre deux signatures
+     */
+    private Boolean keepSignRequestParams = true;
+
+    private String openXPKIServerUrl;
 
     public String getRootUrl() {
         return rootUrl;
@@ -295,7 +302,7 @@ public class GlobalProperties {
         return hoursBeforeRefreshNotif;
     }
 
-    public void setHoursBeforeRefreshNotif(int hoursBeforeRefreshNotif) {
+    public void setHoursBeforeRefreshNotif(Integer hoursBeforeRefreshNotif) {
         this.hoursBeforeRefreshNotif = hoursBeforeRefreshNotif;
     }
 
@@ -303,7 +310,7 @@ public class GlobalProperties {
         return shareMode;
     }
 
-    public void setShareMode(int shareMode) {
+    public void setShareMode(Integer shareMode) {
         this.shareMode = shareMode;
     }
 
@@ -377,5 +384,21 @@ public class GlobalProperties {
 
     public void setNbDaysBeforeDeleting(Integer nbDaysBeforeDeleting) {
         this.nbDaysBeforeDeleting = nbDaysBeforeDeleting;
+    }
+
+    public Boolean getKeepSignRequestParams() {
+        return keepSignRequestParams;
+    }
+
+    public void setKeepSignRequestParams(Boolean keepSignRequestParams) {
+        this.keepSignRequestParams = keepSignRequestParams;
+    }
+
+    public String getOpenXPKIServerUrl() {
+        return openXPKIServerUrl;
+    }
+
+    public void setOpenXPKIServerUrl(String openXPKIServerUrl) {
+        this.openXPKIServerUrl = openXPKIServerUrl;
     }
 }

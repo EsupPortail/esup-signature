@@ -281,13 +281,17 @@ export class GlobalUi {
                 && !url.match("/manager/+[\\w\\W]+")
                 && !url.match("^/user/$")
                 && !url.match("^/user/signrequests$")
-                && !url.match("/user/signrequests/+[\\w\\W]+")) {
+                && !url.match("/user/signrequests/+[\\w\\W]+")
+                && !url.match("^/user/signbooks$")
+                && !url.match("/user/signbooks/+[\\w\\W]+")) {
                 console.info("auto display side bar : show");
                 this.hideSideBar();
                 this.disableSideBarButton();
             }
             if(url.match("^/user/workflows/+[\\w\\W]+")
-                || url.match("^/user/signbooks/+[\\w\\W]+")
+                || url.match("^/user/signbooks$")
+                || url.match("^/user/signbooks/$")
+                || url.match("/user/signbooks/+[\\w\\W]+")
                 || url.match("^/user/signrequests$")
                 || url.match("^/user/signrequests/$")
                 || url.match("/user/signrequests/+[\\w\\W]+")) {
