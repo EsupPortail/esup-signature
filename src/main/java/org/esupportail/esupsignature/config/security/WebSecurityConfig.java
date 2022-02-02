@@ -283,11 +283,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Bean
-//	@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base", "security.cas.service"})
 	@ConditionalOnProperty(value="global.enable-su",havingValue = "true")
 	public SwitchUserFilter switchUserFilter() {
 		SwitchUserFilter switchUserFilter = new SwitchUserFilter();
-		switchUserFilter.setUserDetailsService(new InMemoryUserDetailsManager());
+		switchUserFilter.setUserDetailsService(userDetailsService());
 		switchUserFilter.setSwitchUserUrl("/admin/su-login");
 		switchUserFilter.setSwitchFailureUrl("/error");
 		switchUserFilter.setExitUserUrl("/su-logout");
