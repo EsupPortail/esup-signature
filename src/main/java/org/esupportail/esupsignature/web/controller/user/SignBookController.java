@@ -132,6 +132,9 @@ public class SignBookController {
         if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
             docTitleFilter = "%";
         }
+        if(recipientsFilter == null || recipientsFilter.isEmpty() || recipientsFilter.equals("all")) {
+            recipientsFilter = "%";
+        }
         Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
         model.addAttribute("signBooks", signBooks);
         CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);

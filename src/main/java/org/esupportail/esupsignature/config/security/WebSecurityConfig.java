@@ -40,6 +40,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
+import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 import org.springframework.security.web.session.ConcurrentSessionFilter;
@@ -283,15 +284,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Bean
-//	@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base", "security.cas.service"})
 	@ConditionalOnProperty(value="global.enable-su",havingValue = "true")
 	public SwitchUserFilter switchUserFilter() {
 		SwitchUserFilter switchUserFilter = new SwitchUserFilter();
-		switchUserFilter.setUserDetailsService(new InMemoryUserDetailsManager());
+		switchUserFilter.setUserDetailsService(userDetailsService());
 		switchUserFilter.setSwitchUserUrl("/admin/su-login");
-		switchUserFilter.setSwitchFailureUrl("/error");
 		switchUserFilter.setExitUserUrl("/su-logout");
 		switchUserFilter.setTargetUrl("/");
+		switchUserFilter.setFailureHandler(new ExceptionMappingAuthenticationFailureHandler());
 		return switchUserFilter;
 	}
 
