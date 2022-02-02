@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserPropertieService {
@@ -51,23 +52,14 @@ public class UserPropertieService {
     }
 
     public List<String> getFavoritesEmails(String userEppn) {
-        Set<String> favoriteUserEmails = new HashSet<>();
         List<UserPropertie> userProperties = getUserProperties(userEppn);
-        if(userProperties != null && userProperties.size() > 0) {
-            for(UserPropertie userPropertie : userProperties) {
-                Map<User, Date> favorites = userPropertie.getFavorites();
-                if (favorites.size() > 0) {
-                    List<Map.Entry<User, Date>> entrySet = new ArrayList<>(favorites.entrySet());
-                    entrySet.sort(Map.Entry.<User, Date>comparingByValue().reversed());
-                    for (int i = 0; i < Math.min(entrySet.size(), 5); i++) {
-                        if(entrySet.get(i).getKey().getReplaceByUser() == null) {
-                            favoriteUserEmails.add(entrySet.get(i).getKey().getEmail());
-                        }
-                    }
-                }
-            }
+        Map<User, Date> favorites = new HashMap<>();
+        for(UserPropertie userPropertie : userProperties) {
+            favorites.putAll(userPropertie.getFavorites());
         }
-        return new ArrayList<>(favoriteUserEmails);
+        List<Map.Entry<User, Date>> entrySet = new ArrayList<>(favorites.entrySet());
+        entrySet.sort(Map.Entry.<User, Date>comparingByValue().reversed());
+        return entrySet.stream().map(Map.Entry::getKey).map(User::getEmail).limit(5).collect(Collectors.toList());
     }
 
     public List<UserPropertie> getUserProperties(String userEppn) {
