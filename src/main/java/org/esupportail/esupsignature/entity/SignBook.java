@@ -75,6 +75,10 @@ public class SignBook {
 
     private Boolean forceAllDocsSign = false;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
+    private Date endDate;
+
     public Long getId() {
         return id;
     }
@@ -217,5 +221,13 @@ public class SignBook {
 
     public void setHidedBy(List<User> hidedBy) {
         this.hidedBy = hidedBy;
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
     }
 }

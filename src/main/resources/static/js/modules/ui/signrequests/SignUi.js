@@ -25,6 +25,7 @@ export class SignUi {
         this.certTypeSelect = $("#certType");
         this.nbSignRequests = nbSignRequests;
         $("#password").hide();
+        this.togglePasswordField();
         this.initListeners();
         if(status !== "exported") {
             this.initReportModal();
