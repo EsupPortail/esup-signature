@@ -200,9 +200,16 @@ public class SignBookService {
         }
 
         for(SignBook signBook : signBooks) {
-            for (SignRequest signRequest : signBook.getSignRequests()) {
-                if (signRequest.getEndDate() == null) {
-                    signRequest.setEndDate(signRequestService.getEndDate(signRequest));
+            if(signBook.getEndDate() == null &&
+                    (signBook.getStatus().equals(SignRequestStatus.completed)
+                    || signBook.getStatus().equals(SignRequestStatus.exported)
+                    || signBook.getStatus().equals(SignRequestStatus.refused)
+                    || signBook.getStatus().equals(SignRequestStatus.signed)
+                    || signBook.getStatus().equals(SignRequestStatus.archived)
+                    || signBook.getStatus().equals(SignRequestStatus.deleted))) {
+                List<Action> actions = signBook.getSignRequests().stream().map(SignRequest::getRecipientHasSigned).map(Map::values).flatMap(Collection::stream).filter(action -> action.getDate() != null).sorted(Comparator.comparing(Action::getDate).reversed()).collect(Collectors.toList());
+                if(actions.size() > 0) {
+                    signBook.setEndDate(actions.get(0).getDate());
                 }
             }
         }
@@ -512,7 +519,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
+    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
         User user = userService.getUserByEppn(userEppn);
         User authUser = userService.getUserByEppn(authUserEppn);
         Data data = dataService.getById(dataId);
@@ -555,6 +562,10 @@ public class SignBookService {
             workflow.setCounter(workflow.getCounter() + 1);
         } else {
             workflow.setCounter(0);
+        }
+        if(formDatas != null && formDatas.size() > 0) {
+//            Map<String, String> datas = formDatas.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> String.join(",", e.getValue())));
+            dataService.updateDatas(form, data, formDatas, user, authUser);
         }
         return signBook;
     }
@@ -629,7 +640,7 @@ public class SignBookService {
         }
         String name = fileService.getNameOnly(multipartFiles[0].getOriginalFilename());
         if(title == null || title.isEmpty()) {
-            title = name;
+            title = "";
         }
         SignBook signBook = addDocsInNewSignBookSeparated(title, name, "Demande simple", multipartFiles, user);
         signBook.setForceAllDocsSign(forceAllSign);
@@ -1416,7 +1427,8 @@ public class SignBookService {
                         if (checkUserSignRights(signRequest, userEppn, authUserEppn)
                                 && user.getKeystore() == null
                                 && certificatService.getCertificatByUser(userEppn).size() == 0
-                                && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)) {
+                                && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)
+                                && globalProperties.getOpenXPKIServerUrl() == null) {
                             signRequestRef.setSignable(false);
                             throw new EsupSignatureUserException("Pour signer ce document merci d’ajouter un certificat à votre profil <a href='user/users' target='_blank'>Mes paramètres</a>");
                         }

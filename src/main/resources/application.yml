@@ -170,7 +170,7 @@ fs:
 #    smb-password: password
 #    smb-test-uri: smb://smb.univ-ville.fr
     vfs-test-uri: /tmp
-    cmis-test-uri: https://esup-signature.univ-ville.fr/nuxeo
+#    cmis-test-uri: https://esup-signature.univ-ville.fr/nuxeo
 #    cmis-login: Administrator
 #    cmis-password: Administrator
 #    cmis-respository-id: default
@@ -214,9 +214,7 @@ server:
             enabled: true
         remoteip:
             remote-ip-header: X-Forwarded-For
-            protocol-header: X-Forwarded-Proto
         basedir: ./temp
-    forward-headers-strategy: native
 
 sign:
     aes-key : "0000000000000000"

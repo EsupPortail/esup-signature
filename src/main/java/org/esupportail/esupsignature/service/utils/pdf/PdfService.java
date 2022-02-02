@@ -671,8 +671,8 @@ public class PdfService {
                                     value = "Off";
                                 }
                                 pdRadioButton.setValue(value);
-                            } catch (NullPointerException e) {
-                                logger.debug("radio button is null");
+                            } catch (NullPointerException | IllegalArgumentException e) {
+                                logger.debug("radio value error", e);
                             }
                         } else if (pdField instanceof PDListBox) {
                             String value = datas.get(filedName);
@@ -882,12 +882,12 @@ public class PdfService {
 
     int determineSafe(PDDocument document, PDAnnotationWidget widget) throws IOException {
         COSDictionary widgetObject = widget.getCOSObject();
-        PDPageTree pages = document.getPages();
+        PDPageTree pages = document.getDocumentCatalog().getPages();
         for (int i = 0; i < pages.getCount(); i++) {
             for (PDAnnotation annotation : pages.get(i).getAnnotations()) {
                 COSDictionary annotationObject = annotation.getCOSObject();
                 if (annotationObject.equals(widgetObject)) {
-                    return i + 1;
+                    return i;
                 }
             }
         }

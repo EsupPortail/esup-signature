@@ -95,14 +95,14 @@ public class UserController {
     		@RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, RedirectAttributes redirectAttributes) throws Exception {
 		userService.updateUser(authUserEppn, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Vos paramètres ont été enregistrés"));
-		return "redirect:/user/users";
+		return "redirect:/user/users/";
     }
 
 	@GetMapping("/delete-sign/{id}")
 	public String deleteSign(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes) {
 		userService.deleteSign(authUserEppn, id);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Signature supprimée"));
-		return "redirect:/user/users";
+		return "redirect:/user/users/";
 	}
 
 	@PostMapping(value = "/view-cert")
@@ -113,7 +113,7 @@ public class UserController {
         	logger.error("open keystore fail", e);
         	redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Mauvais mot de passe"));
 		}
-        return "redirect:/user/users";
+        return "redirect:/user/users/";
     }
 
 	@GetMapping(value = "/remove-keystore")
@@ -121,7 +121,7 @@ public class UserController {
 		User authUser = userService.getUserByEppn(authUserEppn);
 		authUser.setKeystore(null);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le magasin de clés à bien été supprimé"));
-		return "redirect:/user/users";
+		return "redirect:/user/users/";
 	}
 
 	@GetMapping(value="/search-user")
@@ -222,7 +222,7 @@ public class UserController {
 	@GetMapping("/set-default-sign-image/{signImageNumber}")
 	public String setDefaultSignImage(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signImageNumber") Integer signImageNumber) {
     	userService.setDefaultSignImage(authUserEppn, signImageNumber);
-		return "redirect:/user/users";
+		return "redirect:/user/users/";
 	}
 
 	@GetMapping("/replace")
