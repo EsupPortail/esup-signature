@@ -8,29 +8,29 @@
         </td>
         <td class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/user/signrequests/' + ${signRequest.id}">
             <span th:if="${signBook.liveWorkflow.workflow != null}" th:text="${signBook.liveWorkflow.workflow.description}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title != null}"   th:text="${signBook.liveWorkflow.title}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == null && signBook.title != ''}"  th:text="${signBook.title}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == ''}"   th:text="${signBook.liveWorkflow.title}"></span>
+            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title != null}" th:text="${signBook.liveWorkflow.title}"></span>
+            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == null && signBook.title != ''}" th:text="${signBook.title}"></span>
+            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == ''}" th:text="${signBook.liveWorkflow.title}"></span>
             <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == null && signBook.title == ''}"   th:text="'Hors circuit'"></span>
         </td>
         <td class="clickable-td text-break overflow-hidden">
             <th:block th:if="${signBook.signRequests.size() == 1}">
                 <i class="fa fa-file"></i>
                 <th:block th:if="${signBook.title != null && signBook.title != ''}">
-                    <span th:if="${signBook.liveWorkflow.title != null && signBook.title != signBook.liveWorkflow.title}"
+                    <span th:if="${signBook.liveWorkflow.title != null && signBook.title != signBook.liveWorkflow.title && signBook.liveWorkflow.workflow != null && signBook.title != signBook.liveWorkflow.workflow.description}"
                           th:text="${signBook.title}"></span>
                     <span th:if="${(signBook.liveWorkflow.title == null || signBook.title == signBook.liveWorkflow.title) && signBook.name != ''}"
                           th:text="${signBook.name}"></span>
-                    <span th:if="${signBook.title == signBook.liveWorkflow.title || signBook.name == ''}"
+                    <span th:if="${(signBook.liveWorkflow.workflow != null && signBook.title == signBook.liveWorkflow.workflow.description) || signBook.title == signBook.liveWorkflow.title || signBook.name == ''}"
                           th:text="${signBook.signRequests.get(0).title}"></span>
                 </th:block>
-                <th:block th:unless="${signBook.title != null && signBook.title != ''}">
+                <th:block th:unless="${signBook.title != null && signBook.title != '' && signBook.liveWorkflow.workflow != null}">
                     <span th:text="${signBook.signRequests.get(0).title}"></span>
                 </th:block>
             </th:block>
             <th:block th:if="${signBook.signRequests.size() > 1}">
                 <i class="fa fa-folder-open"></i>
-                <span th:if="${signBook.liveWorkflow.title == null || signBook.liveWorkflow.title == signBook.title}"
+                <span th:if="${signBook.liveWorkflow.title == null || signBook.liveWorkflow.title == signBook.title || signBook.title.isEmpty()}"
                       th:text="' Contient ' + ${signBook.signRequests.size()} + ' documents '"></span>
                 <span th:if="${signBook.liveWorkflow.title != null && signBook.liveWorkflow.title != signBook.title}"
                       th:text="${signBook.title}"></span>
