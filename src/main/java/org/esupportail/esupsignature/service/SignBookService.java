@@ -640,7 +640,7 @@ public class SignBookService {
         }
         String name = fileService.getNameOnly(multipartFiles[0].getOriginalFilename());
         if(title == null || title.isEmpty()) {
-            title = name;
+            title = "";
         }
         SignBook signBook = addDocsInNewSignBookSeparated(title, name, "Demande simple", multipartFiles, user);
         signBook.setForceAllDocsSign(forceAllSign);
