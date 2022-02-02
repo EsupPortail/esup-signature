@@ -200,9 +200,16 @@ public class SignBookService {
         }
 
         for(SignBook signBook : signBooks) {
-            for (SignRequest signRequest : signBook.getSignRequests()) {
-                if (signRequest.getEndDate() == null) {
-                    signRequest.setEndDate(signRequestService.getEndDate(signRequest));
+            if(signBook.getEndDate() == null &&
+                    (signBook.getStatus().equals(SignRequestStatus.completed)
+                    || signBook.getStatus().equals(SignRequestStatus.exported)
+                    || signBook.getStatus().equals(SignRequestStatus.refused)
+                    || signBook.getStatus().equals(SignRequestStatus.signed)
+                    || signBook.getStatus().equals(SignRequestStatus.archived)
+                    || signBook.getStatus().equals(SignRequestStatus.deleted))) {
+                List<Action> actions = signBook.getSignRequests().stream().map(SignRequest::getRecipientHasSigned).map(Map::values).flatMap(Collection::stream).filter(action -> action.getDate() != null).sorted(Comparator.comparing(Action::getDate).reversed()).collect(Collectors.toList());
+                if(actions.size() > 0) {
+                    signBook.setEndDate(actions.get(0).getDate());
                 }
             }
         }
