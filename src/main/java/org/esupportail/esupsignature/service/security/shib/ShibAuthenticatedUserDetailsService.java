@@ -100,10 +100,10 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 					grantedAuthorities.add(simpleGrantedAuthority);
 					logger.debug("loading authorities : " + simpleGrantedAuthority.getAuthority());
 				}
-//				if (ldapGroupService != null && ldapGroupService.getDomain().equals(token.getName().split("@")[1])) {
-//					ldapGroups.addAll(ldapGroupService.getGroups(token.getName()));
-//					ldapGroupService.addLdapRoles(grantedAuthorities, new ArrayList<>(ldapGroups), groupPrefixRoleName, mappingGroupesRoles);
-//				}
+				if (ldapGroupService != null && ldapGroupService.getDomain().equals(token.getName().split("@")[1])) {
+					ldapGroups.addAll(ldapGroupService.getGroups(token.getName()));
+					ldapGroupService.addLdapRoles(grantedAuthorities, new ArrayList<>(ldapGroups), groupPrefixRoleName, mappingGroupesRoles);
+				}
 			} catch (Exception e) {
 				logger.warn("unable to find authorities", e);
 			}

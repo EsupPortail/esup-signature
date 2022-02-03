@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface GroupLdapRepository extends LdapRepository<GroupLdap> {
-    
+
 }
