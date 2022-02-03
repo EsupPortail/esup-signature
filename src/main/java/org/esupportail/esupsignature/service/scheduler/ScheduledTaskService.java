@@ -26,10 +26,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.List;
 
 @EnableScheduling
@@ -92,63 +88,25 @@ public class ScheduledTaskService {
 				if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
 					signRequestService.sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getName(), signBook.getLiveWorkflow().getTargets(), "scheduler");
 				}
-			} catch (EsupSignatureFsException | EsupSignatureException e) {
+			} catch(EsupSignatureFsException | EsupSignatureException e) {
 				logger.error(e.getMessage());
 			}
 		}
 	}
 
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
-	@Transactional
 	public void scanAllSignbooksToArchive() {
-		if(globalProperties.getArchiveUri() != null) {
-			logger.debug("scan all signRequest to archive");
-			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
-			signBooks.addAll(signBookRepository.findByStatus(SignRequestStatus.exported));
-			for (SignBook signBook : signBooks) {
-				try {
-					if(signBook.getStatus().equals(SignRequestStatus.completed) && signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
-						continue;
-					}
-					signRequestService.archiveSignRequests(signBook.getSignRequests(), "scheduler");
-				} catch (EsupSignatureFsException | EsupSignatureException e) {
-					logger.error(e.getMessage());
-				}
-			}
+		if(globalProperties.getEnableScheduledCleanup()) {
+			signBookService.setEnableArchiveTask(true);
+			signBookService.initArchive();
 		}
 	}
 
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
-	@Transactional
 	public void scanAllSignbooksToClean() {
-		logger.debug("scan all signRequest to clean");
-		if(globalProperties.getDelayBeforeCleaning() > -1) {
-			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.archived);
-			for (SignBook signBook : signBooks) {
-				signRequestService.cleanFiles(signBook, "scheduler");
-			}
-		} else {
-			logger.debug("cleaning documents was skipped because neg value");
-		}
-		if(globalProperties.getTrashKeepDelay() > -1) {
-			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.deleted);
-			int i = 0;
-			for (SignBook signBook : signBooks) {
-				if (signBook.getUpdateDate() != null) {
-					LocalDateTime deleteDate = LocalDateTime.ofInstant(signBook.getUpdateDate().toInstant(), ZoneId.systemDefault());
-					LocalDateTime nowDate = LocalDateTime.ofInstant(new Date().toInstant(), ZoneId.systemDefault());
-					long nbDays = ChronoUnit.DAYS.between(deleteDate, nowDate);
-					if (Math.abs(nbDays) >= globalProperties.getTrashKeepDelay()) {
-						signBookService.deleteDefinitive(signBook.getId());
-						i++;
-					}
-				}
-			}
-			if(i > 0) {
-				logger.info(i + " item are deleted");
-			}
-		} else {
-			logger.debug("cleaning trashes was skipped because neg value");
+		if(globalProperties.getEnableScheduledCleanup()) {
+			signBookService.setEnableCleanTask(true);
+			signBookService.initCleanning();
 		}
 	}
 

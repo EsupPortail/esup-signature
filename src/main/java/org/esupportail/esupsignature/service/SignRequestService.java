@@ -492,50 +492,24 @@ public class SignRequestService {
 		}
 	}
 
-	public void archiveSignRequests(List<SignRequest> signRequests, String authUserEppn) throws EsupSignatureFsException, EsupSignatureException {
-		if(globalProperties.getArchiveUri() != null) {
-			logger.info("start archiving documents");
-			boolean result = true;
-			for(SignRequest signRequest : signRequests) {
-				Document signedFile = signRequest.getLastSignedDocument();
-				String subPath = "/" + signRequest.getParentSignBook().getTitle().replaceAll("\\W+", "_") + "/";
-				if(signRequest.getExportedDocumentURI() == null) {
-					String name;
-					if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate() != null) {
-						name = generateName(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTitle(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName(), 0, userService.getSystemUser(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate());
-					} else {
-						name = signRequest.getTitle().replaceAll("\\W+", "_");
-					}
-					String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath, signedFile.getId() + "_" + name);
-					if(documentUri != null) {
-						signRequest.setExportedDocumentURI(documentUri);
-						updateStatus(signRequest.getId(), SignRequestStatus.archived, "Exporté vers l'archivage", "SUCCESS", authUserEppn, authUserEppn);
-					} else {
-						logger.error("unable to archive " + subPath + name);
-						result = false;
-					}
-				}
-			}
-			if(result) {
-				signRequests.get(0).getParentSignBook().setStatus(SignRequestStatus.archived);
-			}
-		} else {
-			logger.debug("archive document was skipped");
-		}
-	}
-
 	public void cleanDocuments(SignRequest signRequest, String authUserEppn) {
 		Date cleanDate = getEndDate(signRequest);
 		Calendar cal = Calendar.getInstance();
-		cal.setTime(cleanDate);
-		cal.add(Calendar.DATE, globalProperties.getDelayBeforeCleaning());
-		cleanDate = cal.getTime();
-		if (signRequest.getExportedDocumentURI() != null
-				&& new Date().after(cleanDate) && signRequest.getSignedDocuments().size() > 0) {
-			clearAllDocuments(signRequest);
-			updateStatus(signRequest.getId(), SignRequestStatus.exported, "Fichiers nettoyés", "SUCCESS", authUserEppn, authUserEppn);
+		if(cleanDate != null) {
+			cal.setTime(cleanDate);
+			cal.add(Calendar.DATE, globalProperties.getDelayBeforeCleaning());
+			Date test = cal.getTime();
+			Date now = new Date();
+			if(signRequest.getExportedDocumentURI() != null
+					&& test.getTime()< now.getTime()
+					&& signRequest.getSignedDocuments().size() > 0) {
+				clearAllDocuments(signRequest);
+				updateStatus(signRequest.getId(), SignRequestStatus.exported, "Fichiers nettoyés", "SUCCESS", authUserEppn, authUserEppn);
+			} else {
+				logger.debug("cleanning documents was skipped because date");
+			}
 		} else {
-			logger.debug("cleanning documents was skipped because date");
+			logger.error("no end date for signrequest " + signRequest.getId());
 		}
 	}
 
