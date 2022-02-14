@@ -21,6 +21,7 @@
                             <th>Nom du formulaire</th>
                             <th>Consulter la liste des demandes</th>
                             <th>Export des données</th>
+                            <th>Envoi du formulaire</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -31,8 +32,14 @@
                                     <a type="button" th:href="'user/manage/form/' + ${form.id}"
                                        class="btn btn-sm btn-primary"><i class="fas fa-list"></i> Liste des demandes</a>
                                 </td>
-                                <td><a type="button" th:href="'user/manage/form/' + ${form.id} + '/datas/csv'"
-                                       class="btn btn-sm btn-primary"><i class="fas fa-file-export"></i></a></td>
+                                <td>
+                                    <a type="button" th:href="'user/manage/form/' + ${form.id} + '/datas/csv'"
+                                       class="btn btn-sm btn-primary"><i class="fas fa-file-export"></i> Export des données</a>
+                                </td>
+                                <td>
+                                    <a type="button" th:href="'user/manage/form/' + ${form.id} + '/start?createByEmail=david.lemaignent@univ-rouen.fr'"
+                                       class="btn btn-sm btn-primary"><i class="fas fa-paper-plane"></i> Envoyer le formulaire</a>
+                                </td>
                             </tr>
                         </th:block>
                         </tbody>

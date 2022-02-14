@@ -155,9 +155,9 @@ public class DataService {
     }
 
     @Transactional
-    public Data addData(Long id, String authUserEppn) {
+    public Data addData(Long formId, String authUserEppn) {
         User authUser = userService.getUserByEppn(authUserEppn);
-        Form form = formService.getById(id);
+        Form form = formService.getById(formId);
         Data data = new Data();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
         data.setName(form.getTitle() + "_" + format.format(new Date()));

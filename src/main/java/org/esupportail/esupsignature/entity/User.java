@@ -315,6 +315,7 @@ public class User {
         this.replaceEndDate = replaceEndDate;
     }
 
+    @JsonIgnore
     public User getCurrentReplaceUser() {
         Date checkDate = new Date();
         if((replaceBeginDate == null
