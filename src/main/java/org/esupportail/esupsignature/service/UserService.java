@@ -585,4 +585,17 @@ public class UserService {
         }
     }
 
+    public String tryGetEppnFromLdap(Authentication auth) {
+        String eppn = auth.getName();
+        if(ldapPersonService != null) {
+            List<PersonLdap> personLdaps = ldapPersonService.getPersonLdap(auth.getName());
+            if(personLdaps.size() > 0) {
+                eppn = personLdaps.get(0).getEduPersonPrincipalName();
+                if (eppn == null) {
+                    eppn = buildEppn(auth.getName());
+                }
+            }
+        }
+        return eppn;
+    }
 }

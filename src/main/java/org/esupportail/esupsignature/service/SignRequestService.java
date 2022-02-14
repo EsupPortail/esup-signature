@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import com.google.zxing.WriterException;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -822,6 +823,29 @@ public class SignRequestService {
 					document = signRequest.getOriginalDocuments().get(0);
 				}
 				return fileService.getFileResponse(document.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), document.getFileName(), document.getContentType());
+			}
+		} else {
+			FsFile fsFile = getLastSignedFsFile(signRequest);
+			return fileService.getFileResponse(fsFile.getInputStream().readAllBytes(), fsFile.getName(), fsFile.getContentType());
+		}
+	}
+
+	@Transactional
+	public Map<String, Object> getToSignFileResponseWithCode(Long signRequestId) throws SQLException, EsupSignatureFsException, IOException, EsupSignatureException, WriterException {
+		SignRequest signRequest = getById(signRequestId);
+		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
+			List<Document> documents = signService.getToSignDocuments(signRequest.getId());
+			if (documents.size() > 1) {
+				return null;
+			} else {
+				Document document;
+				if(documents.size() > 0) {
+					document = documents.get(0);
+				} else {
+					document = signRequest.getOriginalDocuments().get(0);
+				}
+				InputStream inputStream = pdfService.addQrCode(signRequest, document.getBigFile().getBinaryFile().getBinaryStream());
+				return fileService.getFileResponse(inputStream.readAllBytes(), document.getFileName(), document.getContentType());
 			}
 		} else {
 			FsFile fsFile = getLastSignedFsFile(signRequest);
