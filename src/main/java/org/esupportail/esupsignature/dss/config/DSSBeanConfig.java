@@ -53,6 +53,7 @@ import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.SQLException;
 
 @Component
@@ -63,14 +64,10 @@ public class DSSBeanConfig {
 
 	private final DSSProperties dssProperties;
 
-	public DSSBeanConfig(DSSProperties dssProperties) {
+	private final ProxyConfig proxyConfig;
+
+	public DSSBeanConfig(DSSProperties dssProperties, @Autowired(required = false) ProxyConfig proxyConfig) {
 		this.dssProperties = dssProperties;
-	}
-
-	private ProxyConfig proxyConfig;
-
-	@Autowired(required = false)
-	public void setProxyConfig(ProxyConfig proxyConfig) {
 		this.proxyConfig = proxyConfig;
 	}
 
@@ -191,9 +188,9 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public File tlCacheDirectory() {
-		File rootFolder = new File("./temp");
-		File tslCache = new File(rootFolder, "dss-tsl-loader");
+	public File tlCacheDirectory() throws IOException {
+		File tslCache = Files.createTempDirectory("dss-tsl-loader").toFile();
+		logger.info("dssPath : " + tslCache.getAbsolutePath());
 		if (tslCache.mkdirs()) {
 			logger.info("TL Cache folder : {}", tslCache.getAbsolutePath());
 		}
