@@ -673,7 +673,7 @@ public class SignRequestService {
 						tempUser.setFirstname(jsonExternalUserInfo.getFirstname());
 						tempUser.setName(jsonExternalUserInfo.getName());
 						if(jsonExternalUserInfo.getPhone() != null) {
-							tempUser.setEppn(jsonExternalUserInfo.getPhone());
+							tempUser.setPhone(jsonExternalUserInfo.getPhone());
 						}
 					}
 				}

@@ -34,7 +34,7 @@
     import {Nexu} from '/js/modules/ui/signrequests/Nexu.js?version=[[${versionApp}]]';
     import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=[[${versionApp}]]';
     import {SignRequestHelp} from '/js/modules/help/SignRequestHelp.js?version=[[${versionApp}]]';
-    let help = new SignRequestHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]]);
+    let help = new SignRequestHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]], [[${user.userType.name() == 'external' ? 'otp' : 'user'}]]);
     help.autoStart();
     let signable = [[${signable}]];
     let editable = [[${editable}]];
@@ -665,7 +665,7 @@
      aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form th:action="'/'+${user.userType == T(org.esupportail.esupsignature.entity.enums.UserType).external ? 'otp' : 'user'}+'/signrequests/refuse/' + ${signRequest.id}" method="post">
+            <form th:action="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/signrequests/refuse/' + ${signRequest.id}" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title" id="refuseModalLabel">Refuser la demande de signature</h3>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -696,7 +696,7 @@
      aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form th:action="'/'+${user.userType == T(org.esupportail.esupsignature.entity.enums.UserType).external ? 'otp' : 'user'}+'/signrequests/refuse/' + ${signRequest.id}" method="post">
+            <form th:action="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/signrequests/refuse/' + ${signRequest.id}" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title" id="detailsModalLabel">Details de la demande</h3>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

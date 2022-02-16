@@ -119,7 +119,7 @@ public class OtpSignRequestController {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
         }
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
-        model.addAttribute("signable", true);
+        model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("editable", false);
         model.addAttribute("isNotSigned", signService.isNotSigned(signRequest));
         model.addAttribute("isTempUsers", false);
@@ -156,9 +156,9 @@ public class OtpSignRequestController {
         signBookService.refuse(id, comment, userEppn, authUserEppn);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
         if(redirect.equals("end")) {
-            return "redirect:/user/signrequests/";
+            return "redirect:/otp/signrequests/";
         } else {
-            return "redirect:/user/signrequests/" + redirect;
+            return "redirect:/otp/signrequests/" + redirect;
         }
     }
 
@@ -171,7 +171,7 @@ public class OtpSignRequestController {
         logger.info("start add attachment");
         signRequestService.addAttachement(multipartFiles, link, id);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La piece jointe à bien été ajoutée"));
-        return "redirect:/user/signrequests/" + id;
+        return "redirect:/otp/signrequests/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
@@ -180,7 +180,7 @@ public class OtpSignRequestController {
         logger.info("start remove attachment");
         signRequestService.removeAttachement(id, attachementId, redirectAttributes);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La pieces jointe a été supprimée"));
-        return "redirect:/user/signrequests/" + id;
+        return "redirect:/otp/signrequests/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
@@ -208,7 +208,7 @@ public class OtpSignRequestController {
         } else {
             model.addAttribute("message", new JsonMessage("error", "Ajout d'emplacement non autorisé"));
         }
-        return "redirect:/user/signrequests/" + id;
+        return "redirect:/otp/signrequests/" + id;
     }
 
 }

@@ -56,14 +56,15 @@ public class OtpAccessController {
         model.addAttribute("urlId", urlId);
         Otp otp = otpService.getOtp(urlId);
         if(otp != null) {
-            if(!otp.isSmsSended() && smsService != null) {
+            User user = userService.getUserByEmail(otp.getEmail());
+            if(!otp.isSmsSended() && smsService != null && user.getPhone() != null) {
                 Pattern pattern = Pattern.compile("^(\\d{2}[- .]?){5}$");
-                Matcher matcher = pattern.matcher(otp.getPhoneNumber());
+                Matcher matcher = pattern.matcher(user.getPhone());
                 if(matcher.matches()) {
                     String password = otpService.generateOtpPassword(urlId);
                     logger.info("sending password by sms : " + password + " to " + otp.getPhoneNumber());
                     try {
-                        smsService.sendSms(otp.getPhoneNumber(), "Votre code de connexion esup-signature " + password);
+                        smsService.sendSms(user.getPhone(), "Votre code de connexion esup-signature " + password);
                     } catch(EsupSignatureException e) {
                         logger.error(e.getMessage(), e);
                     }

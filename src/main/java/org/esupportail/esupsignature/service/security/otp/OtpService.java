@@ -81,7 +81,7 @@ public class OtpService {
 
     public void removeOtpFromCache(String searchString) {
         for (Map.Entry<String, Otp> otpEntry : otpCache.asMap().entrySet()) {
-            if(otpEntry.getValue().getEmail().equals(searchString) || otpEntry.getValue().getPhoneNumber().equals(searchString)) {
+            if(otpEntry.getValue().getEmail().equals(searchString) || (otpEntry.getValue().getPhoneNumber() != null && otpEntry.getValue().getPhoneNumber().equals(searchString))) {
                 clearOTP(otpEntry.getKey());
             }
         }

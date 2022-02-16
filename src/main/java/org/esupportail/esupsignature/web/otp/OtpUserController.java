@@ -3,6 +3,8 @@ package org.esupportail.esupsignature.web.otp;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +21,8 @@ import java.util.Arrays;
 @RequestMapping("/otp/users")
 @Controller
 public class OtpUserController {
+
+    private static final Logger logger = LoggerFactory.getLogger(OtpUserController.class);
 
     @Resource
     private UserService userService;
@@ -58,4 +62,13 @@ public class OtpUserController {
         userService.setDefaultSignImage(authUserEppn, signImageNumber);
         return "redirect:/otp/users/";
     }
+
+    @GetMapping("/mark-intro-as-read/{name}")
+    public String markIntroAsRead(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String name, HttpServletRequest httpServletRequest) {
+        logger.info("user " + authUserEppn + " mark intro " + name + " as read");
+        userService.disableIntro(authUserEppn, name);
+        String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+        return "redirect:" + referer;
+    }
+
 }

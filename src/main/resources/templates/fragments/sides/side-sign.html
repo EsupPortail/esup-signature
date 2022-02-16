@@ -3,7 +3,7 @@
 <!--/*@thymesVar id="toSignDocument" type="org.esupportail.esupsignature.entity.Document"*/-->
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <nav th:fragment="side-sign" id="sidebar" class="scrollbar-lite">
-    <div th:unless="${user.userType == T(org.esupportail.esupsignature.entity.enums.UserType).external}" class="ms-1 mt-3 d-none d-lg-block">
+    <div th:unless="${user.userType.name() == 'external'}" class="ms-1 mt-3 d-none d-lg-block">
         <div class="hr sidebar-label">Statut</div>
         <div class="card card-body bg-light">
             <th:block th:if="${signRequest != null}">

@@ -92,7 +92,6 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("managedFormsSize", formService.getFormByManagersContains(authUserEppn).size());
             model.addAttribute("infiniteScrolling", globalProperties.getInfiniteScrolling());
             model.addAttribute("validationToolsEnabled", validationService != null);
-            System.err.println("globalAttributs Controller " + httpServletRequest.getRequestURI());
             model.addAttribute("globalProperties", myGlobalProperties);
             ObjectMapper objectMapper = new ObjectMapper();
             model.addAttribute("globalPropertiesJson", objectMapper.writer().writeValueAsString(myGlobalProperties));

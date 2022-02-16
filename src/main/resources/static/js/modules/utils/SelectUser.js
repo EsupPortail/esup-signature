@@ -212,6 +212,9 @@ export default class SelectUser {
     appendTempUser(e) {
         let name = '#tempUsers-' + this.selectField.attr("id");
         let tempUsersDiv = $(name);
+        if(e.phone == null) {
+            e.phone = "";
+        }
         tempUsersDiv.append(
             "<div class='alert alert-primary' id='externalUserInfos_" + e.email + "'>" +
             "<b>Destinataire externe : <span>"+ e.email +"</span></b>" +
@@ -221,7 +224,7 @@ export default class SelectUser {
             "<div class=\"d-flex col-10\"><label for=\"firstname\" class='col-2'>Prénom</label>" +
             "<input id=\"firstnames\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\""+ e.firstname +"\" required></div>" +
             "<div class=\"d-flex col-10\"><label for=\"phones\" class='col-2'>Mobile</label>" +
-            "<input id=\"phones\" class=\"form-control \" type=\"text\" name=\"phones\" value=''></div>" +
+            "<input id=\"phones\" class=\"form-control \" type=\"text\" name=\"phones\" value=\""+ e.phone +"\"></div>" +
             "</div>");
     }
 
