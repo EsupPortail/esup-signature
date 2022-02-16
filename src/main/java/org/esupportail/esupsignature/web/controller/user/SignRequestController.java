@@ -1,9 +1,5 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.zxing.WriterException;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -11,24 +7,18 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UiParams;
-import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -38,7 +28,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
-import javax.persistence.NoResultException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -46,7 +35,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -88,25 +76,12 @@ public class SignRequestController {
     private LogService logService;
 
     @Resource
-    private DocumentService documentService;
-
-    @Resource
-    private CommentService commentService;
-
-    @Resource
     private OtpService otpService;
-
-    @Resource
-    private SedaExportService sedaExportService;
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
-    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession, RedirectAttributes redirectAttributes) throws IOException, EsupSignatureException {
+    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureException {
         SignRequest signRequest = signBookService.getSignRequestsFullById(id, userEppn, authUserEppn);
-//        if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
-//            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande supprimée"));
-//            return "redirect:/user/";
-//        }
         if (signRequest.getLastNotifDate() == null) {
             model.addAttribute("notifTime", Integer.MAX_VALUE);
         } else {
@@ -211,31 +186,6 @@ public class SignRequestController {
         return "user/signrequests/details";
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
-    @ResponseBody
-    @PostMapping(value = "/sign/{id}")
-    public ResponseEntity<String> sign(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                               @RequestParam(value = "signRequestParams") String signRequestParamsJsonString,
-                               @RequestParam(value = "comment", required = false) String comment,
-                               @RequestParam(value = "formData", required = false) String formData,
-                               @RequestParam(value = "password", required = false) String password,
-                               @RequestParam(value = "certType", required = false) String certType,
-                                       HttpSession httpSession) {
-        Object userShareString = httpSession.getAttribute("userShareId");
-        Long userShareId = null;
-        if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
-        try {
-            boolean result = signBookService.initSign(id, signRequestParamsJsonString, comment, formData, password, certType, userShareId, userEppn, authUserEppn);
-            if(!result) {
-                return ResponseEntity.status(HttpStatus.OK).body("initNexu");
-            }
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
-
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @ResponseBody
     @PostMapping(value = "/add-docs/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -248,21 +198,6 @@ public class SignRequestController {
             i++;
         }
         return new String[]{"ok"};
-    }
-
-    @ResponseBody
-    @PostMapping(value = "/remove-doc/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String removeDocument(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws JSONException {
-        logger.info("remove document " + id);
-        JSONObject result = new JSONObject();
-        Document document = documentService.getById(id);
-        SignRequest signRequest = signRequestService.getById(document.getParentId());
-        if(signRequest.getCreateBy().getEppn().equals(authUserEppn)) {
-            signRequest.getOriginalDocuments().remove(document);
-        } else {
-            result.put("error", "Non autorisé");
-        }
-        return result.toString();
     }
 
 //    @GetMapping("/sign-by-token/{token}")
@@ -388,12 +323,6 @@ public class SignRequestController {
         }
     }
 
-    @GetMapping(value = "/warning-readed")
-    @ResponseBody
-    public void warningReaded(@ModelAttribute("authUserEppn") String authUserEppn) {
-        signRequestService.warningReaded(authUserEppn);
-    }
-
     @PreAuthorize("@preAuthorizeService.signRequestRecipent(#id, #authUserEppn)")
     @PostMapping(value = "/add-attachment/{id}")
     public String addAttachement(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
@@ -442,85 +371,6 @@ public class SignRequestController {
         } catch (Exception e) {
             logger.error("get file error", e);
         }
-    }
-
-    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
-    @GetMapping(value = "/get-last-file/{id}")
-    public ResponseEntity<Void> getLastFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
-        try {
-            Map<String, Object> fileResponse = signRequestService.getToSignFileResponse(id);
-            if(fileResponse != null) {
-                httpServletResponse.setContentType(fileResponse.get("contentType").toString());
-                httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
-                IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
-            }
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error("get file error", e);
-        }
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
-    @GetMapping(value = "/print-with-code/{id}")
-    public ResponseEntity<Void> printWithCode(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
-        try {
-            Map<String, Object> fileResponse = signRequestService.getToSignFileResponseWithCode(id);
-            if (fileResponse != null) {
-                httpServletResponse.setContentType(fileResponse.get("contentType").toString());
-                httpServletResponse.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
-                IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
-            }
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (NoResultException | IOException | EsupSignatureFsException | SQLException | EsupSignatureException | WriterException e) {
-            logger.error(e.getMessage(), e);
-        }
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
-    @GetMapping(value = "/get-last-files/{id}", produces = "application/zip")
-    @ResponseBody
-    public ResponseEntity<Void> getLastFiles(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureFsException {
-        httpServletResponse.setContentType("application/zip");
-        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
-        signBookService.getMultipleSignedDocuments(Collections.singletonList(id), httpServletResponse);
-        httpServletResponse.flushBuffer();
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
-    @GetMapping(value = "/get-last-file-report/{id}")
-    public ResponseEntity<Void> getLastFileReport(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
-        try {
-            signBookService.getToSignFileReportResponse(id, httpServletResponse);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error("get file error", e);
-        }
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @GetMapping(value = "/get-file/{id}")
-    public ResponseEntity<Void> getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException, SQLException, EsupSignatureFsException {
-        Document document = documentService.getById(id);
-        if(signRequestService.getById(document.getParentId()) != null) {
-            if(preAuthorizeService.signRequestView(document.getParentId(), userEppn, authUserEppn)) {
-                Map<String, Object> fileResponse = signRequestService.getFileResponse(id);
-                if(fileResponse != null) {
-                    httpServletResponse.setContentType(fileResponse.get("contentType").toString());
-                    httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
-                    IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
-                }
-                return new ResponseEntity<>(HttpStatus.OK);
-            } else {
-                logger.warn(userEppn + " try access document " + id + " without permission");
-            }
-        } else {
-            logger.warn("document is not present in signResquest");
-        }
-        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
@@ -594,26 +444,13 @@ public class SignRequestController {
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
-    @GetMapping(value = "/is-temp-users/{id}")
-    @ResponseBody
-    public List<User> isTempUsers(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                              @RequestParam(required = false) String recipientEmails) throws JsonProcessingException {
-        SignRequest signRequest = signRequestService.getById(id);
-        ObjectMapper objectMapper = new ObjectMapper();
-        TypeReference<List<String>> type = new TypeReference<>(){};
-        List<String> recipientList = objectMapper.readValue(recipientEmails, type);
-        return userService.getTempUsers(signRequest, recipientList);
-    }
-
-    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
-    @GetMapping(value = "/send-otp/{id}/{recipientId}")
+    @PostMapping(value = "/send-otp/{id}/{recipientId}")
     public String sendOtp(@ModelAttribute("authUserEppn") String authUserEppn,
                           @PathVariable("id") Long id,
                           @PathVariable("recipientId") Long recipientId,
+                          @RequestParam("phone") String phone,
                           RedirectAttributes redirectAttributes) throws Exception {
-        User newUser = userService.getById(recipientId);
-        if(newUser.getUserType().equals(UserType.external)) {
-            otpService.generateOtpForSignRequest(id, newUser);
+        if(otpService.generateOtpForSignRequest(id, recipientId, phone)){
             redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Demande OTP envoyée"));
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Problème d'envoi OTP"));
@@ -627,25 +464,6 @@ public class SignRequestController {
         signRequestService.replayNotif(id);
         redirectAttributes.addFlashAttribute("message", new JsonMessage ("success", "Votre relance a bien été envoyée"));
         return "redirect:/user/signrequests/" + id;
-    }
-
-    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
-    @DeleteMapping(value = "/delete-comment/{id}/{commentId}")
-    public ResponseEntity<Void> deleteComments(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("commentId") Long commentId,  RedirectAttributes redirectAttributes) {
-        commentService.deleteComment(commentId);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Le commentaire à bien été supprimé"));
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
-    @GetMapping(value = "/get-seda/{id}")
-    public ResponseEntity<Void> getSeda(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException {
-        SignRequest signRequest = signRequestService.getById(id);
-        InputStream inputStream = sedaExportService.generateSip(id);
-        httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(signRequest.getTitle() + ".zip", StandardCharsets.UTF_8.toString()));
-        httpServletResponse.setContentType("application/zip");
-        IOUtils.copy(inputStream, httpServletResponse.getOutputStream());
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }

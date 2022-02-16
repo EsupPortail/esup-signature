@@ -741,7 +741,7 @@ public class SignBookService {
                     for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
                         if (recipient.getUser().getUserType().equals(UserType.external)) {
                             try {
-                                otpService.generateOtpForSignRequest(signRequest.getId(), recipient.getUser());
+                                otpService.generateOtpForSignRequest(signRequest.getId(), recipient.getUser().getId(), null);
                             } catch (EsupSignatureMailException e) {
                                 throw new EsupSignatureException(e.getMessage());
                             }

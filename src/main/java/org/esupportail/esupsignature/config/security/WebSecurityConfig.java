@@ -194,7 +194,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.csrf()
 				.ignoringAntMatchers("/ws/**")
 				.ignoringAntMatchers("/user/nexu-sign/**")
-				.ignoringAntMatchers("/otp/**")
+				.ignoringAntMatchers("/otp-access/**")
 				.ignoringAntMatchers("/log/**")
 				.ignoringAntMatchers("/actuator/**")
 				.ignoringAntMatchers("/h2-console/**");
@@ -251,15 +251,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			http.authorizeRequests().antMatchers("/ws/**").denyAll();
 			http.authorizeRequests().antMatchers("/actuator/**").denyAll();
 		}
-		http.authorizeRequests().antMatchers("/otp/**").permitAll();
-		http.authorizeRequests().antMatchers("/error").permitAll();
 		http.authorizeRequests()
 				.antMatchers("/").permitAll()
 				.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
-				.antMatchers("/user/", "/user/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP', 'ROLE_FRANCECONNECT')")
+				.antMatchers("/user/", "/user/**").access("hasAnyRole('ROLE_USER')")
+				.antMatchers("/otp-access/**").permitAll()
+				.antMatchers("/otp/", "/otp/**").access("hasAnyRole('ROLE_OTP', 'ROLE_FRANCECONNECT')")
 				.antMatchers("/ws-secure/", "/ws-secure/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP', 'ROLE_FRANCECONNECT')")
 				.antMatchers("/public/", "/public/**").permitAll()
-				.antMatchers("/h2-console/**").access("hasRole('ROLE_ADMIN')");
+				.antMatchers("/error").permitAll();
 
 	}
 

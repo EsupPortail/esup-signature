@@ -672,7 +672,9 @@ public class SignRequestService {
 						JsonExternalUserInfo jsonExternalUserInfo = externalUsersInfos.stream().filter(jsonExternalUserInfo1 -> jsonExternalUserInfo1.getEmail().equals(tempUser.getEmail())).findFirst().get();
 						tempUser.setFirstname(jsonExternalUserInfo.getFirstname());
 						tempUser.setName(jsonExternalUserInfo.getName());
-						tempUser.setEppn(jsonExternalUserInfo.getPhone());
+						if(jsonExternalUserInfo.getPhone() != null) {
+							tempUser.setEppn(jsonExternalUserInfo.getPhone());
+						}
 					}
 				}
 			} else {
@@ -886,7 +888,7 @@ public class SignRequestService {
 			List<Recipient> recipients = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients();
 			for(Recipient recipient : recipients) {
 				User user = recipient.getUser();
-				if(userService.findPersonLdapByUser(user) != null) {
+				if(userService.findPersonLdapByUser(user) != null || user.getUserType().equals(UserType.external)) {
 					recipientNotPresentsignRequests.remove(signRequest);
 				}
 			}

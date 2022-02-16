@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 
-@ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller", "org.esupportail.esupsignature.web.wssecure"})
+@ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller", "org.esupportail.esupsignature.web.otp", "org.esupportail.esupsignature.web.wssecure"})
 public class SecurityControllerAdvice {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityControllerAdvice.class);

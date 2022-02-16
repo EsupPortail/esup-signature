@@ -536,7 +536,9 @@ public class UserService {
                 jsonExternalUserInfo.setEmail(emails.get(i));
                 jsonExternalUserInfo.setName(names.get(i));
                 jsonExternalUserInfo.setFirstname(firstnames.get(i));
-                jsonExternalUserInfo.setPhone(phones.get(i));
+                if(phones.size() > i + 1) {
+                    jsonExternalUserInfo.setPhone(phones.get(i));
+                }
                 externalUsersInfos.add(jsonExternalUserInfo);
             }
         }

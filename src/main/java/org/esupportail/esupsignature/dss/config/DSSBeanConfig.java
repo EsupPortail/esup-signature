@@ -63,14 +63,10 @@ public class DSSBeanConfig {
 
 	private final DSSProperties dssProperties;
 
-	public DSSBeanConfig(DSSProperties dssProperties) {
+	private final ProxyConfig proxyConfig;
+
+	public DSSBeanConfig(DSSProperties dssProperties, @Autowired(required = false) ProxyConfig proxyConfig) {
 		this.dssProperties = dssProperties;
-	}
-
-	private ProxyConfig proxyConfig;
-
-	@Autowired(required = false)
-	public void setProxyConfig(ProxyConfig proxyConfig) {
 		this.proxyConfig = proxyConfig;
 	}
 
@@ -192,8 +188,9 @@ public class DSSBeanConfig {
 
 	@Bean
 	public File tlCacheDirectory() {
-		File rootFolder = new File("./temp");
-		File tslCache = new File(rootFolder, "dss-tsl-loader");
+		String tmpDirectory = System.getProperty("java.io.tmpdir");
+		File tslCache = new File(tmpDirectory, "dss-tsl-loader");
+		logger.info("dssPath : " + tslCache.getAbsolutePath());
 		if (tslCache.mkdirs()) {
 			logger.info("TL Cache folder : {}", tslCache.getAbsolutePath());
 		}

@@ -16,7 +16,9 @@ export default class UserUi {
 
     initListeners() {
         this.userSignatureCrop.addEventListener("started", e => this.userSignaturePad.clear());
-        this.emailAlertFrequencySelect.addEventListener("change", e => this.checkAlertFrequency());
+        if(this.emailAlertFrequencySelect != null) {
+            this.emailAlertFrequencySelect.addEventListener("change", e => this.checkAlertFrequency());
+        }
         $('[id^="deleteSign_"]').each(function() {
             $(this).on('click', function (e){
                 e.preventDefault();
@@ -32,16 +34,18 @@ export default class UserUi {
     }
 
     checkAlertFrequency() {
-        let selectedValue = this.emailAlertFrequencySelect.options[this.emailAlertFrequencySelect.selectedIndex].value;
-        if (selectedValue === 'daily') {
-            this.emailAlertDay.style.display = "none";
-            this.emailAlertHour.style.display = "flex";
-        } else if (selectedValue === 'weekly') {
-            this.emailAlertDay.style.display = "flex";
-            this.emailAlertHour.style.display = "none";
-        } else {
-            this.emailAlertDay.style.display = "none";
-            this.emailAlertHour.style.display = "none";
+        if(this.emailAlertFrequencySelect != null) {
+            let selectedValue = this.emailAlertFrequencySelect.options[this.emailAlertFrequencySelect.selectedIndex].value;
+            if(selectedValue === 'daily') {
+                this.emailAlertDay.style.display = "none";
+                this.emailAlertHour.style.display = "flex";
+            } else if(selectedValue === 'weekly') {
+                this.emailAlertDay.style.display = "flex";
+                this.emailAlertHour.style.display = "none";
+            } else {
+                this.emailAlertDay.style.display = "none";
+                this.emailAlertHour.style.display = "none";
+            }
         }
     }
 }

@@ -28,7 +28,6 @@ public class User {
 	
 	private String name;
 
-	
 	private String firstname;
 	
     @Column(unique=true)
@@ -38,6 +37,9 @@ public class User {
     @Column(unique=true)
     @NotNull
     private String email;
+
+    @Column(unique=true)
+    private String phone;
 
     @ElementCollection(targetClass=String.class)
     private List<String> managersRoles = new ArrayList<>();
@@ -154,6 +156,14 @@ public class User {
 
 	public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public List<String> getManagersRoles() {

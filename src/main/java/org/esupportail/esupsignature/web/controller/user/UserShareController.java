@@ -21,7 +21,7 @@ import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @CrossOrigin(origins = "*")
-@RequestMapping("user/users/shares")
+@RequestMapping("/user/users/shares")
 @Controller
 @ConditionalOnExpression("${global.share-mode} > 0")
 public class UserShareController {

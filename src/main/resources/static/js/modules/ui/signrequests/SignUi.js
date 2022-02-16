@@ -60,7 +60,7 @@ export class SignUi {
     initReportModal() {
         let self = this;
         $.ajax({
-            url: "/user/validation/short/" + self.signRequestId,
+            url: "/ws-secure/validation/short/" + self.signRequestId,
             type: 'GET',
             success: function (data, textStatus, xhr) {
                 let modal = "<div class=\"modal fade\" id=\"reportModal\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">" +
@@ -180,7 +180,7 @@ export class SignUi {
         this.reset();
         let self = this;
         $.ajax({
-            url: "/user/signrequests/sign/" + this.signRequestId + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
+            url: "/ws-secure/signrequests/sign/" + this.signRequestId + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
             type: 'POST',
             data: signRequestUrlParams,
             success: function(data, textStatus, xhr) {

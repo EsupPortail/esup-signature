@@ -20,12 +20,12 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 
-@ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
+@ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller", "org.esupportail.esupsignature.web.otp"})
 @EnableConfigurationProperties(GlobalProperties.class)
 public class GlobalAttributsControllerAdvice {
 
@@ -75,7 +75,7 @@ public class GlobalAttributsControllerAdvice {
     }
 
     @ModelAttribute
-    public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, JsonProcessingException {
+    public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) throws JsonProcessingException {
         if(userEppn != null) {
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
@@ -92,6 +92,7 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("managedFormsSize", formService.getFormByManagersContains(authUserEppn).size());
             model.addAttribute("infiniteScrolling", globalProperties.getInfiniteScrolling());
             model.addAttribute("validationToolsEnabled", validationService != null);
+            System.err.println("globalAttributs Controller " + httpServletRequest.getRequestURI());
             model.addAttribute("globalProperties", myGlobalProperties);
             ObjectMapper objectMapper = new ObjectMapper();
             model.addAttribute("globalPropertiesJson", objectMapper.writer().writeValueAsString(myGlobalProperties));
@@ -141,7 +142,6 @@ public class GlobalAttributsControllerAdvice {
         if (roles.contains("ROLE_CREATE_AUTOSIGN")) {
             myGlobalProperties.setHideAutoSign(false);
         }
-
         if (roles.contains("ROLE_NO_CREATE_SIGNREQUEST")) {
             myGlobalProperties.setHideSendSignRequest(true);
         }

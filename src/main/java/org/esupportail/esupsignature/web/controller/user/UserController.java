@@ -7,7 +7,6 @@ import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
-import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.ldap.AliasLdap;
 import org.esupportail.esupsignature.service.ldap.LdapAliasService;
 import org.esupportail.esupsignature.service.ldap.PersonLdapLight;
@@ -30,7 +29,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
-@RequestMapping("user/users")
+@RequestMapping("/user/users")
 @Controller
 public class UserController {
 
@@ -44,11 +43,13 @@ public class UserController {
 	@Resource
 	private FormService formService;
 
-	private UserKeystoreService userKeystoreService;
+	private final UserKeystoreService userKeystoreService;
 
-	@Autowired(required=false)
-	public void setUserKeystoreService(UserKeystoreService userKeystoreService) {
+	private final LdapAliasService ldapAliasService;
+
+	public UserController(@Autowired(required=false)UserKeystoreService userKeystoreService, @Autowired(required = false) LdapAliasService ldapAliasService) {
 		this.userKeystoreService = userKeystoreService;
+		this.ldapAliasService = ldapAliasService;
 	}
 
 	@Resource
@@ -66,14 +67,8 @@ public class UserController {
 	@Resource
 	private MessageService messageService;
 
-	@Autowired(required = false)
-	private LdapAliasService ldapAliasService;
-
 	@Resource
 	UserListService userListService;
-
-	@Autowired(required = false)
-	private SmsService smsService;
 
     @GetMapping
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
