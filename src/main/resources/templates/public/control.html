@@ -8,8 +8,11 @@
 <main role="main">
     <div class="col-10 mx-auto" style="margin-top: 60px">
         <th:block th:if="${signRequest}">
-            <div class="alert alert-primary mb-1">
-                <h5>Contrôle de document : <span th:text="${signRequest.token}"></span></h5>
+            <div class="alert alert-light mb-1">
+                <h5>Contrôle du document : <span th:text="${signRequest.token}"></span></h5>
+            </div>
+            <div th:if="${viewAccess}" class="alert alert-info mb-1">
+                Vous avez accès à cette demande : <a th:href="'/user/signrequests/' + ${signRequest.id}">Voir la demande</a>
             </div>
             <th:block th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
                 <div class="alert alert-success mb-1">

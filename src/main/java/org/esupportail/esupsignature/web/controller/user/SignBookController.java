@@ -42,6 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/user/signbooks")
@@ -112,7 +113,7 @@ public class SignBookController {
         }
         workflowNames.addAll(signBookService.getWorkflowNames(userEppn));
         model.addAttribute("workflowNames", workflowNames);
-        model.addAttribute("signRequestRecipients", signBookService.getRecipientsNames(userEppn));
+        model.addAttribute("signRequestRecipients", signBookService.getRecipientsNames(userEppn).stream().filter(Objects::nonNull).collect(Collectors.toList()));
         return "user/signbooks/list";
     }
 
@@ -156,9 +157,9 @@ public class SignBookController {
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
         boolean isDefinitive = signBookService.delete(id, authUserEppn);
         if(isDefinitive) {
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Le document a été supprimé définitivement"));
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été supprimé définitivement"));
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Le document a été placé dans la corbeille"));
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été placé dans la corbeille"));
         }
         return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
     }
@@ -167,7 +168,7 @@ public class SignBookController {
     @DeleteMapping(value = "/force-delete/{id}", produces = "text/html")
     public String forceDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
         signBookService.deleteDefinitive(id);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Le document a été supprimé définitivement"));
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été supprimé définitivement"));
         return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
     }
 

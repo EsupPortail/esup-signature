@@ -55,7 +55,7 @@ export default class FilesInput extends EventFactory {
         if (documents != null) {
             documents.forEach(function (document) {
                 let type;
-                urls.push("/user/signrequests/get-file/" + document.id);
+                urls.push("/ws-secure/signrequests/get-file/" + document.id);
                 switch (document.contentType.split('/')[1]) {
                     case "pdf" :
                         type = "pdf";
@@ -71,7 +71,7 @@ export default class FilesInput extends EventFactory {
                 }
                 let deleteUrl = "";
                 if(!readOnly) {
-                    deleteUrl = "/user/signrequests/remove-doc/" + document.id + "/?" + csrf.parameterName + "=" + csrf.token;
+                    deleteUrl = "/ws-secure/signrequests/remove-doc/" + document.id + "/?" + csrf.parameterName + "=" + csrf.token;
                 }
                 let preview = new DocumentPreview(
                     type,
@@ -80,7 +80,7 @@ export default class FilesInput extends EventFactory {
                     document.fileName,
                     deleteUrl,
                     document.id,
-                    "/user/signrequests/get-file/" + document.id,
+                    "/ws-secure/signrequests/get-file/" + document.id,
                     document.fileName
                     );
                 previews.push(preview);

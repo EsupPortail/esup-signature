@@ -42,11 +42,12 @@ public class PdfConfig {
     @PostConstruct
     public void setPdfColorProfileUrl() {
         try {
-            File pdfAFile = File.createTempFile("PDFA_def", "ps");
+            String tmpDirectory = System.getProperty("java.io.tmpdir");
+            File pdfAFile = new File(tmpDirectory, "PDFA_def.ps");
             OutputStream pdfAoutStream = new FileOutputStream(pdfAFile);
             pdfAoutStream.write(new ClassPathResource("/PDFA_def.ps").getInputStream().readAllBytes());
 
-            File iccFile = File.createTempFile("srgb", "icc");
+            File iccFile = new File(tmpDirectory, "srgb.icc");
             OutputStream iccOutStream = new FileOutputStream(iccFile);
             iccOutStream.write(new ClassPathResource("/srgb.icc").getInputStream().readAllBytes());
             logger.info("iccPath : " + iccFile.getAbsolutePath());

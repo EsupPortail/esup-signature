@@ -183,10 +183,13 @@
                                 </tbody>
                             </table>
                         </div>
-                        <label>
-                            <strong>Modèle de nommage pour l'export des documents</strong>
+                        <div class="form-group mb-3">
+                            <label>
+                                <strong>Modèle de nommage pour l'export des documents</strong>
+                            </label>
                             <input class="form-control" type="text" th:field="*{targetNamingTemplate}" value="" autocomplete="off">
-                        </label>
+
+                        </div>
                     </form>
                     <form id="importFormSetup" th:action="'/admin/workflows/import/' + ${workflow.id} + '/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
                         <label class="form-label">Importer une configuration</label>

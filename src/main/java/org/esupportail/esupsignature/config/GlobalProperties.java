@@ -17,6 +17,10 @@ public class GlobalProperties {
      */
     private String domain;
     /**
+     * Activer ou non l’archivage et le nettoyage automatique. false par défaut
+     */
+    private Boolean enableScheduledCleanup = false;
+    /**
      * Chemin d'écoute de NexU
      */
     private String nexuUrl = "http://localhost:9795";
@@ -171,6 +175,14 @@ public class GlobalProperties {
 
     public void setDomain(String domain) {
         this.domain = domain;
+    }
+
+    public Boolean getEnableScheduledCleanup() {
+        return enableScheduledCleanup;
+    }
+
+    public void setEnableScheduledCleanup(Boolean enableScheduledCleanup) {
+        this.enableScheduledCleanup = enableScheduledCleanup;
     }
 
     public String getNexuUrl() {
