@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -76,11 +77,12 @@ public class GlobalAttributsControllerAdvice {
 
     @ModelAttribute
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) throws JsonProcessingException {
+        System.err.println(httpServletRequest.getRequestURI());
         if(userEppn != null) {
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
             User user = userService.getUserByEppn(userEppn);
-            parseRoles(user, myGlobalProperties);
+            parseRoles(userEppn, myGlobalProperties);
             model.addAttribute("user", user);
             model.addAttribute("authUser", userService.getUserByEppn(authUserEppn));
             model.addAttribute("keystoreFileName", user.getKeystoreFileName());
@@ -123,7 +125,9 @@ public class GlobalAttributsControllerAdvice {
         model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
     }
 
-    public void parseRoles(User user, GlobalProperties myGlobalProperties) {
+    @Transactional
+    public void parseRoles(String userEppn, GlobalProperties myGlobalProperties) {
+        User user = userService.getByEppn(userEppn);
         List<String> roles = user.getRoles();
         if (!Collections.disjoint(roles, globalProperties.getHideSendSignExceptRoles()))
             myGlobalProperties.setHideSendSignRequest(!globalProperties.getHideSendSignRequest());

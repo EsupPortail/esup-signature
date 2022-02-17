@@ -552,6 +552,12 @@ public class UserService {
         user.getRoles().addAll(roles);
     }
 
+    @Transactional
+    public void updatePhone(String userEppn, String phone) {
+        User user = getUserByEppn(userEppn);
+        user.setPhone(phone);
+    }
+
     public List<String> getAllRoles() {
         return userRepository.getAllRoles();
     }

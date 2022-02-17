@@ -190,10 +190,14 @@ export class SignUi {
                     if (self.gotoNext) {
                         document.location.href = $("#nextSignRequestButton").attr('href');
                     } else {
-                        if (self.nbSignRequests > 1 || !self.globalProperties.returnToHomeAfterSign) {
-                            document.location.href = "/user/signrequests/" + self.signRequestId;
+                        if(self.isOtp) {
+                            if(self.nbSignRequests > 1 || !self.globalProperties.returnToHomeAfterSign) {
+                                document.location.href = "/user/signrequests/" + self.signRequestId;
+                            } else {
+                                document.location.href = "/user/";
+                            }
                         } else {
-                            document.location.href = "/user/";
+                            document.location.href = "/otp/signrequests/" + self.signRequestId;
                         }
                     }
                 }

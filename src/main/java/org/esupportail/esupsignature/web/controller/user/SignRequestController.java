@@ -223,12 +223,11 @@ public class SignRequestController {
                 return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
             } catch (EsupSignatureException e) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
-                return "redirect:" + request.getHeader(HttpHeaders.REFERER);
             }
         } else {
             logger.warn("no file to import");
         }
-        return "redirect:/user/signrequests";
+        return "redirect:" + request.getHeader(HttpHeaders.REFERER);
     }
 
     @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
@@ -248,7 +247,7 @@ public class SignRequestController {
                                   @RequestParam(value = "firstnames", required = false) List<String> firstnames,
                                   @RequestParam(value = "phones", required = false) List<String> phones,
                                   @RequestParam(value = "title", required = false) String title,
-                                  Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
+                                  Model model, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws EsupSignatureIOException {
         User user = (User) model.getAttribute("user");
         User authUser = userService.getUserByEppn(authUserEppn);
         recipientsEmails = recipientsEmails.stream().distinct().collect(Collectors.toList());
@@ -276,7 +275,8 @@ public class SignRequestController {
             logger.warn("no file to import");
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error","Pas de fichier à importer"));
         }
-        return "redirect:/user/signrequests";
+        String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+        return "redirect:" + referer;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
@@ -285,7 +285,7 @@ public class SignRequestController {
         signBookService.refuse(id, comment, userEppn, authUserEppn);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
         if(redirect.equals("end")) {
-            return "redirect:/user/signrequests/";
+            return "redirect:/user/signbooks/";
         } else {
             return "redirect:/user/signrequests/" + redirect;
         }

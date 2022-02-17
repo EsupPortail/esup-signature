@@ -33,7 +33,7 @@ export default class SelectUser {
         this.slimSelect = new SlimSelect({
             select: "#" + selectName,
             data: this.favorites,
-            placeholder: 'Choisir un ou plusieurs participants',
+            placeholder: 'Choisir une ou plusieurs personnes',
             searchText: 'Aucun résultat',
             searchPlaceholder: 'Rechercher',
             searchHighlight: false,

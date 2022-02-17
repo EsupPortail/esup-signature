@@ -286,7 +286,7 @@ public class SignBookService {
                 throw new EsupSignaturePdfException("Impossible de charger le document suite à une erreur interne", e);
             }
         } else {
-            throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());
+            throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type : <br><b>" + fileService.getContentTypeDescription(multipartFiles[0].getContentType()) + "</b>");
         }
     }
 
@@ -649,8 +649,7 @@ public class SignBookService {
     public Map<SignBook, String> sendSignRequest(String title, MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser, boolean forceSendEmail, Boolean forceAllSign, String targetUrl) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
         if(forceAllSign == null) forceAllSign = false;
         if (!signService.checkSignTypeDocType(signType, multipartFiles[0])) {
-            throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());
-        }
+            throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type : <br><b>" + fileService.getContentTypeDescription(multipartFiles[0].getContentType()) + "</b>");        }
         String name = fileService.getNameOnly(multipartFiles[0].getOriginalFilename());
         if(title == null || title.isEmpty()) {
             title = "";

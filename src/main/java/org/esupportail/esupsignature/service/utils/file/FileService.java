@@ -3,18 +3,18 @@ package org.esupportail.esupsignature.service.utils.file;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.entity.*;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.mime.MimeTypes;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.service.DataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.xml.bind.DatatypeConverter;
@@ -388,6 +388,20 @@ public class FileService {
 
 	public InputStream getFaImageByIndex(int index) throws IOException {
 		return new ClassPathResource("/static/images/"+ faImages[Math.abs(index) - 1] + ".png").getInputStream();
+	}
+
+	public String getContentTypeDescription(String contentType) {
+		String type = contentType;
+		MimeTypes mimeTypes = MimeTypes.getDefaultMimeTypes();
+		try {
+			String mimeDesc = mimeTypes.forName(contentType).getDescription();
+			if(!mimeDesc.equals("")) {
+				type = mimeDesc;
+			}
+		} catch(TikaException e) {
+			logger.debug(e.getMessage());
+		}
+		return type;
 	}
 
 }

@@ -50,6 +50,11 @@ public class OtpAccessController {
 
     @Resource
     private SmsService smsService;
+//
+//    @GetMapping
+//    public String signin() {
+//        return "otp/end";
+//    }
 
     @GetMapping(value = "/{urlId}")
     public String signin(@PathVariable String urlId, Model model) {
@@ -93,7 +98,7 @@ public class OtpAccessController {
                 Matcher matcher = pattern.matcher(phone);
                 if(matcher.matches()) {
                     String password = otpService.generateOtpPassword(urlId);
-                    logger.info("sending password by sms : " + password + " to " + otp.getPhoneNumber());
+                    logger.info("sending password by sms : " + password + " to " + phone);
                     try {
                         smsService.sendSms(phone, "Votre code de connexion esup-signature " + password);
                     } catch(EsupSignatureException e) {
@@ -122,7 +127,7 @@ public class OtpAccessController {
                 otp.setSmsSended(true);
                 logger.info("otp success for : " + urlId);
                 User user = userService.getUserByEmail(otp.getEmail());
-                user.setPhone(otp.getPhoneNumber());
+                userService.updatePhone(user.getEppn(), otp.getPhoneNumber());
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(user.getEppn(), "");
                 Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
                 SecurityContext securityContext = SecurityContextHolder.getContext();
