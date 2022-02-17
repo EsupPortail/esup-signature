@@ -303,7 +303,6 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 		Document document = targetFolder.createDocument(prop, stream, VersioningState.NONE, null, null, null, cmisSession.getDefaultContext());
 		HashMap<String, String> m = new HashMap<String, String>();
         m.put("cmis:name",filename);
-        //m.put("cmis:createdBy","toto");
         document.updateProperties(m);
 		return true;
 	}
