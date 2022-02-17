@@ -5,8 +5,12 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @Controller
@@ -21,21 +26,34 @@ import java.util.List;
 @RequestMapping("/public")
 public class PublicController {
 
-    @Resource
-    LogService logService;
-
-    @Resource
-    SignRequestService signRequestService;
-
     private final BuildProperties buildProperties;
 
+    @Resource
+    private LogService logService;
+
+    @Resource
+    private SignRequestService signRequestService;
+
+    @Resource
+    private UserService userService;
+
+    @Resource
+    private PreAuthorizeService preAuthorizeService;
 
     public PublicController(@Autowired(required = false) BuildProperties buildProperties) {
         this.buildProperties = buildProperties;
     }
 
     @GetMapping(value = "/control/{token}")
-    public String control(@PathVariable String token, Model model) throws EsupSignatureFsException {
+    public String control(@PathVariable String token, Model model, HttpSession httpSession) throws EsupSignatureFsException {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String eppn = null;
+        if (auth != null && !auth.getName().equals("anonymousUser")) {
+            eppn = userService.tryGetEppnFromLdap(auth);
+            if(httpSession.getAttribute("suEppn") != null) {
+                eppn = httpSession.getAttribute("suEppn").toString();
+            }
+        }
         if (buildProperties != null) {
             model.addAttribute("version", buildProperties.getVersion());
         }
@@ -48,6 +66,9 @@ public class PublicController {
             model.addAttribute("signRequest", signRequest);
             model.addAttribute("signedDocument", signRequestService.getLastSignedFile(signRequest.getId()));
             model.addAttribute("logs", logs);
+            if(eppn != null) {
+                model.addAttribute("viewAccess", preAuthorizeService.checkUserViewRights(signRequest, eppn, eppn));
+            }
         }
         return "public/control";
     }

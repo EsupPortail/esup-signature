@@ -40,7 +40,7 @@ export class WorkspacePdf {
             }
         }
         if (this.isPdf) {
-            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, editable, currentStepNumber, currentStepId, this.forcePageNum, fields, false);
+            this.pdfViewer = new PdfViewer('/ws-secure/signrequests/get-last-file/' + id, signable, editable, currentStepNumber, currentStepId, this.forcePageNum, fields, false);
         }
         this.signPosition = new SignPosition(
             signType,
@@ -141,7 +141,7 @@ export class WorkspacePdf {
             $(this).on('click', function (e) {
                 e.preventDefault();
                 let target = e.currentTarget;
-                bootbox.confirm("Confimez la suppression de la pièce jointe ?", function (result) {
+                bootbox.confirm("Confirmez-vous la suppression de la pièce jointe ?", function (result) {
                     if (result) {
                         location.href = $(target).attr('href');
                     }
@@ -570,7 +570,7 @@ export class WorkspacePdf {
                                 if (result) {
                                     $.ajax({
                                         method: 'DELETE',
-                                        url: "/user/signrequests/delete-comment/" + self.signRequestId + "/" + comment.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
+                                        url: "/ws-secure/signrequests/delete-comment/" + self.signRequestId + "/" + comment.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
                                         success: function () {
                                             document.location.reload();
                                         }
@@ -606,7 +606,7 @@ export class WorkspacePdf {
                             if (result) {
                                 $.ajax({
                                     method: 'DELETE',
-                                    url: "/user/signrequests/delete-comment/" + self.signRequestId + "/" + spot.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
+                                    url: "/ws-secure/signrequests/delete-comment/" + self.signRequestId + "/" + spot.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
                                     success: function () {
                                         document.location.reload();
                                     }

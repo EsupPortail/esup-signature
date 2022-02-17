@@ -3,8 +3,9 @@
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div th:fragment="tools" id="tools" class="tools" th:if="${toSignDocument != null}">
 	<div class="d-flex mb-1">
-		<a class="btn btn-light btn-outline-dark d-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
-		<i class="fas fa-info-circle"></i></a>
+		<a th:unless="${user.userType.name() == 'external'}" class="btn btn-light btn-outline-dark d-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
+			<i class="fas fa-info-circle"></i>
+		</a>
 		<div class="border ms-3 me-3 d-none d-lg-block ms-1"></div>
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf'}">
 			<button id="zoomout" title="Zoom arrière" class="btn btn-light btn-outline-dark"><i

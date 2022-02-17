@@ -59,9 +59,6 @@ public class ValidationController {
 		
 	@Resource
 	private ValidationService validationService;
-	
-	@Resource
-	private FileService fileService;
 
 	@Resource
 	private PdfService pdfService;
@@ -243,18 +240,6 @@ public class ValidationController {
 			return new DiagnosticData(xmlDiagData);
 		} catch (Exception e) {
 			logger.error("An error occurred while generating DiagnosticData from XML : " + e.getMessage(), e);
-		}
-		return null;
-	}
-
-	@GetMapping(value = "/short/{id}")
-	@ResponseBody
-	public String shortValidateDocument(@PathVariable(name="id") long id) throws IOException {
-		File file = signRequestService.getToValidateFile(id);
-		Reports reports = validationService.validate(new FileInputStream(file), null);
-		if(reports != null) {
-			String xmlSimpleReport = reports.getXmlSimpleReport();
-			return xsltService.generateShortReport(xmlSimpleReport);
 		}
 		return null;
 	}

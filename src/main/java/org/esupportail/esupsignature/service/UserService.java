@@ -536,7 +536,9 @@ public class UserService {
                 jsonExternalUserInfo.setEmail(emails.get(i));
                 jsonExternalUserInfo.setName(names.get(i));
                 jsonExternalUserInfo.setFirstname(firstnames.get(i));
-                jsonExternalUserInfo.setPhone(phones.get(i));
+                if(phones.size() >= i + 1) {
+                    jsonExternalUserInfo.setPhone(phones.get(i));
+                }
                 externalUsersInfos.add(jsonExternalUserInfo);
             }
         }
@@ -548,6 +550,12 @@ public class UserService {
         User user = getUserByEppn(userEppn);
         user.getRoles().clear();
         user.getRoles().addAll(roles);
+    }
+
+    @Transactional
+    public void updatePhone(String userEppn, String phone) {
+        User user = getUserByEppn(userEppn);
+        user.setPhone(phone);
     }
 
     public List<String> getAllRoles() {
@@ -585,4 +593,17 @@ public class UserService {
         }
     }
 
+    public String tryGetEppnFromLdap(Authentication auth) {
+        String eppn = auth.getName();
+        if(ldapPersonService != null) {
+            List<PersonLdap> personLdaps = ldapPersonService.getPersonLdap(auth.getName());
+            if(personLdaps.size() > 0) {
+                eppn = personLdaps.get(0).getEduPersonPrincipalName();
+                if (eppn == null) {
+                    eppn = buildEppn(auth.getName());
+                }
+            }
+        }
+        return eppn;
+    }
 }

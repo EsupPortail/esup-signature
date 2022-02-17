@@ -25,7 +25,7 @@
         </a>
         <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between">
             <ul id="navbar-buttons" class="navbar-nav" th:if="${#authorization.expression('isAuthenticated()')}">
-                <li class="nav-item text-white">
+                <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
                             href="/user/" class="btn btn-transparent text-left me-1">
                         <i class="fas fa-home"></i> <span class="nav-item-label d-none d-xxl-inline">Accueil</span>
@@ -80,7 +80,7 @@
 <!--                            <i class="fas fa-paper-plane"></i><span class="nav-item-label d-none d-xl-inline"> Demander une signature</span>-->
 <!--                        </a>-->
                         <div th:unless="${globalProperties.hideWizard}" class="dropdown-divider"></div>
-                        <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/">
+                        <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/'">
                             <i class="fas fa-user-cog"></i> Modifier mes paramètres
                         </a>
                         <div class="dropdown-divider"></div>
@@ -250,7 +250,7 @@
             </table>
             <a th:unless="${isUserOnSu}" class="btn btn-sm btn-light btn-outline-dark"
                aria-label="Paramètres utilisateur "
-               title="Paramètres" href="/user/users/">
+               title="Paramètres" th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/'">
                 <i class="fas fa-user-cog"></i> Modifier mes paramètres
             </a>
             <hr>
