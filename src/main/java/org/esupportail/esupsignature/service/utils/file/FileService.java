@@ -249,8 +249,9 @@ public class FileService {
 			int lineHeight = Math.round(fontSize + fontSize * .5f);
 			if(signRequestParams.getExtraType()) {
 				String typeSign = "Signature calligraphique";
-				if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) typeSign = "Visa";
-				if (signType.equals(SignType.certSign) || signType.equals(SignType.nexuSign)) typeSign = "Signature électronique";
+				if(signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) typeSign = "Visa";
+				if(signType.equals(SignType.certSign) || signType.equals(SignType.nexuSign)) typeSign = "Signature électronique";
+				if(user.getRoles().contains("ROLE_OTP")) typeSign = "Signature OTP : " + user.getPhone();
 				graphics2D.drawString(typeSign, widthOffset, fm.getHeight());
 				lineCount++;
 			}

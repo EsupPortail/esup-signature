@@ -2,7 +2,7 @@ import {EventFactory} from "../modules/utils/EventFactory.js";
 
 export class SignRequestParams  extends EventFactory {
 
-    constructor(signRequestParams, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp) {
+    constructor(signRequestParams, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone) {
         super();
         this.signRequestParams = signRequestParams;
         Object.assign(this, signRequestParams);
@@ -10,6 +10,7 @@ export class SignRequestParams  extends EventFactory {
         this.currentScale = parseFloat(scale);
         this.signPageNumber = 1;
         this.isOtp = isOtp;
+        this.phone = phone;
         if(page != null) this.signPageNumber = page;
         this.userName = userName;
         this.authUserName = authUserName;
@@ -204,6 +205,15 @@ export class SignRequestParams  extends EventFactory {
             this.refreshExtraDiv();
             this.updateSize();
         }
+
+        if(this.isOtp){
+            this.toggleExtra();
+            this.toggleText()
+            $("#extraTypeDiv_" + this.id).html("<span>Signature OTP : " + this.phone + "<br></span>");
+            $("#extraTools_" + this.id).remove();
+            $("#crossTools_" + this.id).css("top", "-45px");
+        }
+
     }
 
     restoreUserParams() {

@@ -62,22 +62,23 @@ public class OtpAccessController {
         Otp otp = otpService.getOtp(urlId);
         if(otp != null) {
             User user = userService.getUserByEmail(otp.getEmail());
-            if(!otp.isSmsSended() && smsService != null && user.getPhone() != null) {
-                Pattern pattern = Pattern.compile("^(\\d{2}[- .]?){5}$");
-                Matcher matcher = pattern.matcher(user.getPhone());
-                if(matcher.matches()) {
-                    String password = otpService.generateOtpPassword(urlId);
-                    logger.info("sending password by sms : " + password + " to " + otp.getPhoneNumber());
-                    try {
-                        smsService.sendSms(user.getPhone(), "Votre code de connexion esup-signature " + password);
-                    } catch(EsupSignatureException e) {
-                        logger.error(e.getMessage(), e);
+            if(!otp.isSmsSended() && smsService != null) {
+                if(user.getPhone() != null && !user.getPhone().isEmpty()) {
+                    Pattern pattern = Pattern.compile("^(\\d{2}[- .]?){5}$");
+                    Matcher matcher = pattern.matcher(user.getPhone());
+                    if(matcher.matches()) {
+                        String password = otpService.generateOtpPassword(urlId);
+                        logger.info("sending password by sms : " + password + " to " + otp.getPhoneNumber());
+                        try {
+                            smsService.sendSms(user.getPhone(), "Votre code de connexion esup-signature " + password);
+                        } catch(EsupSignatureException e) {
+                            logger.error(e.getMessage(), e);
+                        }
+                        otp.setSmsSended(true);
+                        return "otp/signin";
                     }
-                    otp.setSmsSended(true);
-                } else {
-                    return "otp/enter-phonenumber";
                 }
-                return "otp/signin";
+                return "otp/enter-phonenumber";
             }
         }
         return "redirect:/otp-access/expired";
