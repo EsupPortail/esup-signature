@@ -460,10 +460,13 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @PostMapping(value = "/replay-notif/{id}")
-    public String replayNotif(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureMailException {
-        signRequestService.replayNotif(id);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage ("success", "Votre relance a bien été envoyée"));
-        return "redirect:/user/signrequests/" + id;
+    public String replayNotif(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws EsupSignatureMailException {
+        if(signRequestService.replayNotif(id)) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre relance a bien été envoyée"));
+        } else {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Votre relance n'a pas été envoyée car une autre relance a déjà été émise"));
+        }
+        return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
     }
 
 }

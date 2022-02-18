@@ -54,6 +54,7 @@ import java.nio.ByteBuffer;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -867,13 +868,16 @@ public class SignRequestService {
 		return new ArrayList<>(signRequest.getAttachments());
 	}
 
-	public void replayNotif(Long id) throws EsupSignatureMailException {
+	public boolean replayNotif(Long id) throws EsupSignatureMailException {
 		SignRequest signRequest = this.getById(id);
 		List<String> recipientEmails = new ArrayList<>();
 		getCurrentRecipients(signRequest).forEach(r -> recipientEmails.add(r.getUser().getEmail()));
-		if(recipientEmails.size() > 0) {
-			mailService.sendSignRequestAlert(recipientEmails, signRequest);
+		long notifTime = Duration.between(signRequest.getLastNotifDate().toInstant(), new Date().toInstant()).toHours();
+		if(recipientEmails.size() > 0 && notifTime >= globalProperties.getHoursBeforeRefreshNotif() && signRequest.getStatus().equals(SignRequestStatus.pending)) {
+			mailService.sendSignRequestReplayAlert(recipientEmails, signRequest);
+			return true;
 		}
+		return false;
 	}
 
 	private List<Recipient> getCurrentRecipients(SignRequest signRequest) {

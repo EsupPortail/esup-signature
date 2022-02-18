@@ -274,6 +274,38 @@ public class MailService {
 
     }
 
+    public void sendSignRequestReplayAlert(List<String> recipientsEmails, SignRequest signRequest) throws EsupSignatureMailException {
+        if (!checkMailSender()) {
+            return;
+        }
+        final Context ctx = new Context(Locale.FRENCH);
+
+        PersonLdap personLdap = userService.findPersonLdapByUser(signRequest.getCreateBy());
+        if(personLdap != null) {
+            OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
+            ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
+        }
+        ctx.setVariable("signRequest", signRequest);
+        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("userService", userService);
+        setTemplate(ctx);
+        try {
+            MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
+            String htmlContent = templateEngine.process("mail/email-replay-alert.html", ctx);
+            addInLineImages(mimeMessage, htmlContent);
+            mimeMessage.setSubject("Relance pour la signature d'un document");
+            mimeMessage.setFrom(mailConfig.getMailFrom());
+            mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
+            logger.info("send email alert for " + recipientsEmails.get(0));
+            mailSender.send(mimeMessage.getMimeMessage());
+            signRequest.setLastNotifDate(new Date());
+        } catch (MessagingException e) {
+            logger.error("unable to send ALERT email", e);
+            throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
+        }
+
+    }
+
     public void sendCCtAlert(List<String> recipientsEmails, SignRequest signRequest) throws EsupSignatureMailException {
         if (!checkMailSender() || recipientsEmails.size() == 0) {
             return;

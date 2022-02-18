@@ -87,6 +87,12 @@
                         <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                             <i class="fas fa-eye pr-2"></i> Consulter
                         </a>
+                        <form th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
+                              th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
+                            <button type="submit" class="btn btn-transparent text-dark text-left col-12">
+                                <i class="fas fa-bullhorn"></i> <span class="d-none d-xxl-inline">Relancer</span>
+                            </button>
+                        </form>
                         <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">
                             <i class="fas fa-eye-slash pr-2"></i> Masquer
                         </a>
