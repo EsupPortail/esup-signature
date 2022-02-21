@@ -10,6 +10,7 @@ export class SignUi {
         this.signRequestId = id;
         this.percent = 0;
         this.getProgressTimer = null;
+        this.isOtp = isOtp;
         this.wait = $('#wait');
         this.workspace = null;
         this.signForm = document.getElementById("signForm");
@@ -190,7 +191,7 @@ export class SignUi {
                     if (self.gotoNext) {
                         document.location.href = $("#nextSignRequestButton").attr('href');
                     } else {
-                        if(self.isOtp) {
+                        if(self.isOtp== null || !self.isOtp) {
                             if(self.nbSignRequests > 1 || !self.globalProperties.returnToHomeAfterSign) {
                                 document.location.href = "/user/signrequests/" + self.signRequestId;
                             } else {
