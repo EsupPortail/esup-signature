@@ -29,6 +29,7 @@
             </div>
             <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
                 <input type="hidden" name="id" th:value="${authUser.id}"/>
+
                 <div class="card mb-1 col-lg-10 mx-auto">
                     <div class="card-body">
                         <h5 class="text-center"><b>Paramètres de signature calligraphique</b></h5>
@@ -138,6 +139,8 @@
                         <input type="hidden" th:field="*{signImageBase64}"/>
                     </div>
                 </div>
+
+<!--                <div th:replace="fragments/signrequestparams :: signrequestparam"></div>-->
 
                 <div th:unless="${user.userType.name() == 'external'}" class="card mb-1 col-lg-10 mx-auto" th:if="${validationToolsEnabled && !globalProperties.disableCertStorage}">
                     <div class="card-body">

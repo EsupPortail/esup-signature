@@ -90,14 +90,6 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastSendAlertDate = new Date(0);
 
-    public EmailAlertFrequency getEmailAlertFrequency() {
-        return this.emailAlertFrequency;
-    }
-
-    public void setEmailAlertFrequency(EmailAlertFrequency emailAlertFrequency) {
-        this.emailAlertFrequency = emailAlertFrequency;
-    }
-
     @ElementCollection
     private List<String> roles = new ArrayList<>();
 
@@ -109,6 +101,9 @@ public class User {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date replaceEndDate;
+
+    @OneToOne
+    private SignRequestParams favoriteSignRequestParams;
 
 	public Long getId() {
         return this.id;
@@ -278,6 +273,13 @@ public class User {
         this.lastSendAlertDate = lastSendAlertDate;
     }
 
+    public EmailAlertFrequency getEmailAlertFrequency() {
+        return this.emailAlertFrequency;
+    }
+
+    public void setEmailAlertFrequency(EmailAlertFrequency emailAlertFrequency) {
+        this.emailAlertFrequency = emailAlertFrequency;
+    }
     public List<String> getRoles() {
         return roles;
     }
@@ -323,6 +325,14 @@ public class User {
 
     public void setReplaceEndDate(Date replaceEndDate) {
         this.replaceEndDate = replaceEndDate;
+    }
+
+    public SignRequestParams getFavoriteSignRequestParams() {
+        return favoriteSignRequestParams;
+    }
+
+    public void setFavoriteSignRequestParams(SignRequestParams favoriteSignRequestParams) {
+        this.favoriteSignRequestParams = favoriteSignRequestParams;
     }
 
     @JsonIgnore

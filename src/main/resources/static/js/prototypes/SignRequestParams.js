@@ -2,7 +2,7 @@ import {EventFactory} from "../modules/utils/EventFactory.js";
 
 export class SignRequestParams  extends EventFactory {
 
-    constructor(signRequestParams, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone) {
+    constructor(signRequestParams, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone, light) {
         super();
         this.signRequestParams = signRequestParams;
         Object.assign(this, signRequestParams);
@@ -11,6 +11,7 @@ export class SignRequestParams  extends EventFactory {
         this.signPageNumber = 1;
         this.isOtp = isOtp;
         this.phone = phone;
+        this.light = light;
         if(page != null) this.signPageNumber = page;
         this.userName = userName;
         this.authUserName = authUserName;
@@ -59,8 +60,18 @@ export class SignRequestParams  extends EventFactory {
         this.extraDate = true;
         this.isExtraText = true;
         this.restoreExtra = false;
-        this.init();
+        if(light) {
+            this.initLight();
+        } else {
+            this.init();
+        }
         this.initEventListeners();
+    }
+
+    initLight() {
+        this.cross = $("#cross");
+        this.border = $("#borders");
+        this.tools = $("#tools");
     }
 
     init() {
@@ -287,15 +298,16 @@ export class SignRequestParams  extends EventFactory {
 
     initEventListeners() {
         let self = this;
-        this.cross.on("mousedown click", function (e) {
-            e.stopPropagation();
-            self.wantUnlock();
-        });
+        if(self.light == null || !self.light) {
+            this.cross.on("mousedown click", function(e) {
+                e.stopPropagation();
+                self.wantUnlock();
+            });
 
-        $("#crossTools_" + this.id).on("click", function (e){
-            e.stopPropagation();
-        });
-
+            $("#crossTools_" + this.id).on("click", function(e) {
+                e.stopPropagation();
+            });
+        }
         $("#signDrop_" + this.id).on("click", e => this.deleteSign());
         $("#signNextImage_" + this.id).on("click", e => this.nextSignImage());
         $("#signPrevImage_" + this.id).on("click", e => this.prevSignImage());
@@ -564,8 +576,10 @@ export class SignRequestParams  extends EventFactory {
             this.refreshExtraDiv();
             this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
             this.signHeight = this.originalHeight * this.signScale + this.extraHeight
-            this.cross.css("width",  this.signWidth * this.currentScale + "px");
-            this.cross.css("height",  this.signHeight * this.currentScale + "px");
+            if(this.light == null || !this.light) {
+                this.cross.css("width", this.signWidth * this.currentScale + "px");
+                this.cross.css("height", this.signHeight * this.currentScale + "px");
+            }
             this.divExtra.addClass("div-extra-top");
             this.divExtra.removeClass("div-extra-right");
         } else {
@@ -579,7 +593,9 @@ export class SignRequestParams  extends EventFactory {
             this.refreshExtraDiv();
             this.signWidth = parseInt(this.cross.css("width")) / this.currentScale * 2;
             this.extraWidth = this.signWidth /2;
-            this.cross.css("width",  this.signWidth * this.currentScale + "px");
+            if(this.light == null || !this.light) {
+                this.cross.css("width", this.signWidth * this.currentScale + "px");
+            }
             this.divExtra.css("width", this.extraWidth * this.currentScale + "px");
             this.divExtra.addClass("div-extra-right");
             this.divExtra.removeClass("div-extra-top");
@@ -667,18 +683,20 @@ export class SignRequestParams  extends EventFactory {
     }
 
     updateSize() {
-        if(this.extraOnTop) {
-            this.signHeight -= this.extraHeight;
-            this.extraHeight = 0;
-            this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
-            this.signHeight += this.extraHeight;
-            this.cross.css("height", this.signHeight * this.currentScale + "px");
-        } else {
-            this.signWidth -= this.extraWidth;
-            this.extraWidth = Math.round(this.originalWidth * this.signScale);
-            this.signWidth += this.extraWidth;
-            this.cross.css("width", this.signWidth * this.currentScale + "px");
-            this.divExtra.css("width", this.extraWidth * this.currentScale + "px");
+        if(this.light == null || !this.light) {
+            if(this.extraOnTop) {
+                this.signHeight -= this.extraHeight;
+                this.extraHeight = 0;
+                this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
+                this.signHeight += this.extraHeight;
+                this.cross.css("height", this.signHeight * this.currentScale + "px");
+            } else {
+                this.signWidth -= this.extraWidth;
+                this.extraWidth = Math.round(this.originalWidth * this.signScale);
+                this.signWidth += this.extraWidth;
+                this.cross.css("width", this.signWidth * this.currentScale + "px");
+                this.divExtra.css("width", this.extraWidth * this.currentScale + "px");
+            }
         }
     }
 
