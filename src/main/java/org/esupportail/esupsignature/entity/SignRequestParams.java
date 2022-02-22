@@ -65,6 +65,8 @@ public class SignRequestParams {
 
     private String comment = "";
 
+    private Boolean restoreExtra = false;
+
     public Long getId() {
         return id;
     }

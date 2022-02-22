@@ -826,7 +826,7 @@
         </div>
     </div>
     <script th:inline="javascript" type="module">
-        import {default as UserUi} from '/js/modules/ui/users/UserUi.js?version=[[${versionApp}]]';
+        import {UserUi} from '/js/modules/ui/users/UserUi.js?version=[[${versionApp}]]';
         new UserUi();
         $("#add-sign-image").show();
     </script>

@@ -1,9 +1,10 @@
 import {UserSignaturePad} from "./UserSignaturePad.js?version=@version@";
 import {UserSignatureCrop} from "./UserSignatureCrop.js?version=@version@";
+import {SignRequestParams} from '../../../prototypes/SignRequestParams.js?version=@version@';
 
-export default class UserUi {
+export class UserUi {
 
-    constructor() {
+    constructor(userName, signRequestParams) {
         console.log('Starting user UI');
         this.emailAlertFrequencySelect = document.getElementById("emailAlertFrequency_id");
         this.emailAlertDay = document.getElementById("emailAlertDay");
@@ -11,10 +12,14 @@ export default class UserUi {
         this.userSignaturePad = new UserSignaturePad();
         this.userSignatureCrop = new UserSignatureCrop();
         this.checkAlertFrequency();
+        console.log(signRequestParams);
+        this.signRequestParams =  new SignRequestParams(signRequestParams, 0, 1, 1, userName, userName, false, true, false, true, false, null, true);
         this.initListeners();
     }
 
     initListeners() {
+        $("#saveButton").on('click', e => this.save());
+
         this.userSignatureCrop.addEventListener("started", e => this.userSignaturePad.clear());
         if(this.emailAlertFrequencySelect != null) {
             this.emailAlertFrequencySelect.addEventListener("change", e => this.checkAlertFrequency());
@@ -31,6 +36,13 @@ export default class UserUi {
             });
         });
 
+    }
+
+    save() {
+        this.userSignaturePad.checkSignatureUpdate();
+        // alert(this.signRequestParams.addExtra);
+        $("#sign-request-params").val(JSON.stringify(this.signRequestParams));
+        $("#userParamsForm").submit();
     }
 
     checkAlertFrequency() {

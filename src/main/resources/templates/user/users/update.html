@@ -3,9 +3,9 @@
 <!--/*@thymesVar id="user" type="org.esupportail.esupsignature.entity.User"*/-->
 <head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
-    import {default as UserUi} from '/js/modules/ui/users/UserUi.js?version=[[${versionApp}]]';
+    import {UserUi} from '/js/modules/ui/users/UserUi.js?version=[[${versionApp}]]';
     import {UserParamsHelp} from '/js/modules/help/UserParamsHelp.js?version=[[${versionApp}]]';
-    new UserUi();
+    new UserUi([[${user.firstname + ' ' + user.name}]], [[${user.favoriteSignRequestParams}]]);
     let help = new UserParamsHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).userParamsHelp)}]]);
     help.autoStart();
 </script>
@@ -29,7 +29,7 @@
             </div>
             <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
                 <input type="hidden" name="id" th:value="${authUser.id}"/>
-
+                <input type="hidden" id="sign-request-params" name="signRequestParamsJsonString" />
                 <div class="card mb-1 col-lg-10 mx-auto">
                     <div class="card-body">
                         <h5 class="text-center"><b>Paramètres de signature calligraphique</b></h5>
@@ -140,7 +140,7 @@
                     </div>
                 </div>
 
-<!--                <div th:replace="fragments/signrequestparams :: signrequestparam"></div>-->
+                <div th:replace="fragments/signrequestparams :: signrequestparam"></div>
 
                 <div th:unless="${user.userType.name() == 'external'}" class="card mb-1 col-lg-10 mx-auto" th:if="${validationToolsEnabled && !globalProperties.disableCertStorage}">
                     <div class="card-body">

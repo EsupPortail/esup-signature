@@ -40,29 +40,30 @@ export class SignRequestParams  extends EventFactory {
         this.extraWidth = 0;
         this.extraHeight = 0;
         this.signFieldPresent = true;
+        this.savedText = "";
         if(signRequestParams == null) {
             this.xPos = (parseInt($("#pdf").css("width")) / 2 / scale) - (this.signWidth * scale / 2);
             let mid = $(window).scrollTop() + Math.floor($(window).height() / 2);
             this.yPos = Math.round(mid / scale) - (this.signHeight * scale / 2);
             this.signFieldPresent = false;
         }
-        this.addWatermark = false;
-        this.addExtra = false;
-        this.extraText = "";
-        this.signScale = 1;
-        this.red = 0;
-        this.green = 0;
-        this.blue = 0;
-        this.fontSize = 12;
-        this.extraOnTop = true;
-        this.extraType = true;
-        this.extraName = true;
-        this.extraDate = true;
-        this.isExtraText = true;
-        this.restoreExtra = false;
         if(light) {
             this.initLight();
         } else {
+            this.addWatermark = false;
+            this.addExtra = false;
+            this.extraText = "";
+            this.signScale = 1;
+            this.red = 0;
+            this.green = 0;
+            this.blue = 0;
+            this.fontSize = 12;
+            this.extraOnTop = true;
+            this.extraType = true;
+            this.extraName = true;
+            this.extraDate = true;
+            this.isExtraText = true;
+            this.restoreExtra = false;
             this.init();
         }
         this.initEventListeners();
@@ -72,6 +73,25 @@ export class SignRequestParams  extends EventFactory {
         this.cross = $("#cross");
         this.border = $("#borders");
         this.tools = $("#tools");
+        let text = this.extraText;
+        this.addExtra = !this.addExtra;
+        this.toggleExtra();
+        this.extraType = !this.extraType;
+        this.toggleType();
+        this.extraName = !this.extraName;
+        this.toggleName();
+        this.extraDate = !this.extraDate;
+        this.toggleDate();
+        this.extraText = text;
+        this.isExtraText = !(this.extraText !== "");
+        this.toggleText();
+        this.textareaExtra.val(text);
+        this.extraOnTop = !this.extraOnTop;
+        this.toggleExtraOnTop();
+        this.addWatermark = !this.addWatermark;
+        this.toggleWatermark();
+        this.toggleWatermark();
+        this.toggleWatermark();
     }
 
     init() {
@@ -662,18 +682,22 @@ export class SignRequestParams  extends EventFactory {
         if(!this.extraType && !this.extraDate && !this.extraName && this.isExtraText) return;
         let textExtra = $("#textExtra_" + this.id);
         if(this.isExtraText) {
+            $("#extraText_" + this.id).removeClass("btn-outline-light");
             textExtra.hide();
-            this.textareaExtra.removeClass("btn-outline-light");
+            this.savedText = this.textareaExtra.val();
+            this.textareaExtra.val("");
+            this.extraText = "";
         } else {
             textExtra.show();
-            this.textareaExtra.addClass("btn-outline-light");
+            $("#extraText_" + this.id).addClass("btn-outline-light");
+            this.extraText = this.savedText;
+            this.textareaExtra.val(this.savedText);
         }
-        $("#extraText_" + this.id).toggleClass("btn-outline-light");
-        if(this.extraText === "") {
-            this.extraText = this.textareaExtra.val();
-        } else {
-            this.extraText = "";
-        }
+        // if(this.extraText === "") {
+        //     this.extraText = this.textareaExtra.val();
+        // } else {
+        //     this.extraText = "";
+        // }
         this.isExtraText = !this.isExtraText;
         this.updateSize();
         this.refreshExtraDiv();
