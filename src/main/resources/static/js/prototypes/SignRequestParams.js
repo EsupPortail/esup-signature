@@ -603,39 +603,41 @@ export class SignRequestParams  extends EventFactory {
         if(this.addWatermark) {
             this.cross.toggleClass("watermark-width watermark-height")
         }
-        if(!this.extraOnTop) {
-            this.divExtra.addClass("d-none");
-            this.signWidth -= this.extraWidth;
-            this.extraWidth = 0;
-            // this.updateSize();
-            this.divExtra.removeClass("d-none");
-            this.extraOnTop = true;
-            this.refreshExtraDiv();
-            this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
-            this.signHeight = this.originalHeight * this.signScale + this.extraHeight
-            if(this.light == null || !this.light) {
-                this.cross.css("width", this.signWidth * this.currentScale + "px");
-                this.cross.css("height", this.signHeight * this.currentScale + "px");
+        if(this.divExtra != null) {
+            if(!this.extraOnTop) {
+                this.divExtra.addClass("d-none");
+                this.signWidth -= this.extraWidth;
+                this.extraWidth = 0;
+                // this.updateSize();
+                this.divExtra.removeClass("d-none");
+                this.extraOnTop = true;
+                this.refreshExtraDiv();
+                this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
+                this.signHeight = this.originalHeight * this.signScale + this.extraHeight
+                if(this.light == null || !this.light) {
+                    this.cross.css("width", this.signWidth * this.currentScale + "px");
+                    this.cross.css("height", this.signHeight * this.currentScale + "px");
+                }
+                this.divExtra.addClass("div-extra-top");
+                this.divExtra.removeClass("div-extra-right");
+            } else {
+                $("#signExtraOnTop_" + this.id).removeClass("disabled");
+                this.divExtra.addClass("d-none");
+                this.signHeight -= this.extraHeight;
+                this.extraHeight = 0;
+                this.updateSize();
+                this.divExtra.removeClass("d-none");
+                this.extraOnTop = false;
+                this.refreshExtraDiv();
+                this.signWidth = parseInt(this.cross.css("width")) / this.currentScale * 2;
+                this.extraWidth = this.signWidth / 2;
+                if(this.light == null || !this.light) {
+                    this.cross.css("width", this.signWidth * this.currentScale + "px");
+                }
+                this.divExtra.css("width", this.extraWidth * this.currentScale + "px");
+                this.divExtra.addClass("div-extra-right");
+                this.divExtra.removeClass("div-extra-top");
             }
-            this.divExtra.addClass("div-extra-top");
-            this.divExtra.removeClass("div-extra-right");
-        } else {
-            $("#signExtraOnTop_" + this.id).removeClass("disabled");
-            this.divExtra.addClass("d-none");
-            this.signHeight -= this.extraHeight;
-            this.extraHeight = 0;
-            this.updateSize();
-            this.divExtra.removeClass("d-none");
-            this.extraOnTop = false;
-            this.refreshExtraDiv();
-            this.signWidth = parseInt(this.cross.css("width")) / this.currentScale * 2;
-            this.extraWidth = this.signWidth /2;
-            if(this.light == null || !this.light) {
-                this.cross.css("width", this.signWidth * this.currentScale + "px");
-            }
-            this.divExtra.css("width", this.extraWidth * this.currentScale + "px");
-            this.divExtra.addClass("div-extra-right");
-            this.divExtra.removeClass("div-extra-top");
         }
         // this.updateSize();
     }
@@ -738,7 +740,9 @@ export class SignRequestParams  extends EventFactory {
                 this.extraWidth = Math.round(this.originalWidth * this.signScale);
                 this.signWidth += this.extraWidth;
                 this.cross.css("width", this.signWidth * this.currentScale + "px");
-                this.divExtra.css("width", this.extraWidth * this.currentScale + "px");
+                if(this.divExtra != null) {
+                    this.divExtra.css("width", this.extraWidth * this.currentScale + "px");
+                }
             }
         }
     }

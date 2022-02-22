@@ -11,9 +11,13 @@ export class UserUi {
         this.emailAlertHour = document.getElementById("emailAlertHour");
         this.userSignaturePad = new UserSignaturePad();
         this.userSignatureCrop = new UserSignatureCrop();
-        this.saveSignRequestParams = false;
+        this.saveSignRequestParams = true;
         this.checkAlertFrequency();
         console.log(signRequestParams);
+        if(signRequestParams != null) {
+            this.saveSignRequestParams = false;
+            this.toggleSaveSignRequest();
+        }
         this.signRequestParams =  new SignRequestParams(signRequestParams, 0, 1, 1, userName, userName, false, true, false, true, false, null, true);
         this.initListeners();
     }
@@ -42,10 +46,10 @@ export class UserUi {
     toggleSaveSignRequest() {
         if(this.saveSignRequestParams) {
             this.saveSignRequestParams = false;
-            $("#signRequestParamsForm").show();
+            $("#signRequestParamsForm").removeClass("d-none");
         } else {
             this.saveSignRequestParams = true;
-            $("#signRequestParamsForm").hide();
+            $("#signRequestParamsForm").addClass("d-none");
         }
 
     }

@@ -253,7 +253,7 @@ public class UserService {
     @Transactional
     public void updateUser(String authUserEppn, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, String signRequestParamsJsonString) throws IOException {
         User authUser = getByEppn(authUserEppn);
-        if(signRequestParamsJsonString != null) {
+        if(signRequestParamsJsonString != null && !signRequestParamsJsonString.isEmpty()) {
             ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             SignRequestParams signRequestParams = objectMapper.readValue(signRequestParamsJsonString, SignRequestParams.class);
             signRequestParams.setxPos(0);
@@ -270,6 +270,12 @@ public class UserService {
                 authUser.getFavoriteSignRequestParams().setExtraName(signRequestParams.getExtraName());
                 authUser.getFavoriteSignRequestParams().setExtraText(signRequestParams.getExtraText());
                 authUser.getFavoriteSignRequestParams().setExtraOnTop(signRequestParams.getExtraOnTop());
+            }
+        } else {
+            if(authUser.getFavoriteSignRequestParams() != null) {
+                SignRequestParams signRequestParams = authUser.getFavoriteSignRequestParams();
+                authUser.setFavoriteSignRequestParams(null);
+                signRequestParamsRepository.delete(signRequestParams);
             }
         }
         if(multipartKeystore != null && !multipartKeystore.isEmpty() && !globalProperties.getDisableCertStorage()) {
