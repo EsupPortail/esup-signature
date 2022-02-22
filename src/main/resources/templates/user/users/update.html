@@ -140,7 +140,19 @@
                     </div>
                 </div>
 
-                <div th:replace="fragments/signrequestparams :: signrequestparam"></div>
+                <div class="card  mb-1 col-lg-10 mx-auto">
+                    <div class="card-header bg-white mx-auto">
+                        <h5>Configuration de la signature par défaut</h5>
+                        <div id="saveSignRequestParams" class="form-check form-switch form-switch-md">
+                            <input class="form-check-input" type="checkbox" name="saveSignRequestParams">
+                            <label class="form-check-label">Enregistrer automatiquement mes paramètres après chaque signature</label>
+                        </div>
+                    </div>
+                    <div class="card-body mx-auto" style="min-height: 400px;">
+
+                        <div th:replace="fragments/signrequestparams :: signrequestparam"></div>
+                    </div>
+                </div>
 
                 <div th:unless="${user.userType.name() == 'external'}" class="card mb-1 col-lg-10 mx-auto" th:if="${validationToolsEnabled && !globalProperties.disableCertStorage}">
                     <div class="card-body">

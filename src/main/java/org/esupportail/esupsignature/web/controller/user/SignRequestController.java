@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -115,6 +116,7 @@ public class SignRequestController {
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
         model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
+        model.addAttribute("favoriteSignRequestParamsJson", userService.getFavoriteSignRequestParamsJson(userEppn));
         if(!signRequest.getStatus().equals(SignRequestStatus.draft)) {
             try {
                 Object userShareString = httpSession.getAttribute("userShareId");

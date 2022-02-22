@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -630,5 +631,11 @@ public class UserService {
             }
         }
         return eppn;
+    }
+
+    public String getFavoriteSignRequestParamsJson(String userEppn) throws JsonProcessingException {
+        User user = getUserByEppn(userEppn);
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writer().writeValueAsString(user.getFavoriteSignRequestParams());
     }
 }

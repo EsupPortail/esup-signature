@@ -11,6 +11,7 @@ export class UserUi {
         this.emailAlertHour = document.getElementById("emailAlertHour");
         this.userSignaturePad = new UserSignaturePad();
         this.userSignatureCrop = new UserSignatureCrop();
+        this.saveSignRequestParams = false;
         this.checkAlertFrequency();
         console.log(signRequestParams);
         this.signRequestParams =  new SignRequestParams(signRequestParams, 0, 1, 1, userName, userName, false, true, false, true, false, null, true);
@@ -22,7 +23,7 @@ export class UserUi {
 
         this.userSignatureCrop.addEventListener("started", e => this.userSignaturePad.clear());
         if(this.emailAlertFrequencySelect != null) {
-            this.emailAlertFrequencySelect.addEventListener("change", e => this.checkAlertFrequency());
+            this.emailAlertFrequencySelect.addEventListener("change", e => this.checkAlertFrequency(e));
         }
         $('[id^="deleteSign_"]').each(function() {
             $(this).on('click', function (e){
@@ -35,13 +36,26 @@ export class UserUi {
                 })
             });
         });
+        $("#saveSignRequestParams").on("click", e => this.toggleSaveSignRequest(e));
+    }
+
+    toggleSaveSignRequest() {
+        if(this.saveSignRequestParams) {
+            this.saveSignRequestParams = false;
+            $("#signRequestParamsForm").show();
+        } else {
+            this.saveSignRequestParams = true;
+            $("#signRequestParamsForm").hide();
+        }
 
     }
 
     save() {
         this.userSignaturePad.checkSignatureUpdate();
         // alert(this.signRequestParams.addExtra);
-        $("#sign-request-params").val(JSON.stringify(this.signRequestParams));
+        if(!this.saveSignRequestParams) {
+            $("#sign-request-params").val(JSON.stringify(this.signRequestParams));
+        }
         $("#userParamsForm").submit();
     }
 

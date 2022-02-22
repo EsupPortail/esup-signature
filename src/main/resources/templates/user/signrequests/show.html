@@ -42,6 +42,7 @@
     if (signable && currentSignType === 'nexuSign') {
         new Nexu(null, null);
     }
+    sessionStorage.setItem("favoriteSignRequestParams", [[${favoriteSignRequestParamsJson}]]);
     new SignUi(
         [[${signRequest.id}]],
         [# th:if="${signRequest.data != null}"]
@@ -90,7 +91,7 @@
         [[${attachmentAlert}]],
         [[${attachmentRequire}]],
         [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]],
-        [[${globalProperties.keepSignRequestParams}]],
+        [[${user.favoriteSignRequestParams == true} ? true : false]],
         [[${user.phone}]]
     );
 </script>

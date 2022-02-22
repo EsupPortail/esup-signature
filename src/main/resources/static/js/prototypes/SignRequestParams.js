@@ -50,44 +50,55 @@ export class SignRequestParams  extends EventFactory {
         if(light) {
             this.initLight();
         } else {
-            this.addWatermark = false;
-            this.addExtra = false;
-            this.extraText = "";
             this.signScale = 1;
             this.red = 0;
             this.green = 0;
             this.blue = 0;
             this.fontSize = 12;
-            this.extraOnTop = true;
-            this.extraType = true;
-            this.extraName = true;
-            this.extraDate = true;
-            this.isExtraText = true;
             this.restoreExtra = false;
+            if(restore) {
+                this.addExtra = false;
+                this.addWatermark = false;
+                this.extraText = "";
+                this.extraOnTop = true;
+                this.extraType = true;
+                this.extraName = true;
+                this.extraDate = true;
+                this.isExtraText = true;
+            }
             this.init();
+            if(!restore) {
+                this.restoreFromFavorite();
+            }
         }
         this.initEventListeners();
-    }
+   }
 
     initLight() {
         this.cross = $("#cross");
         this.border = $("#borders");
         this.tools = $("#tools");
+        this.restoreFromFavorite();
+    }
+
+    restoreFromFavorite() {
         let text = this.extraText;
         this.addExtra = !this.addExtra;
         this.toggleExtra();
-        this.extraType = !this.extraType;
-        this.toggleType();
-        this.extraName = !this.extraName;
-        this.toggleName();
-        this.extraDate = !this.extraDate;
-        this.toggleDate();
-        this.extraText = text;
-        this.isExtraText = !(this.extraText !== "");
-        this.toggleText();
-        this.textareaExtra.val(text);
-        this.extraOnTop = !this.extraOnTop;
-        this.toggleExtraOnTop();
+        if(this.divExtra != null) {
+            this.extraOnTop = !this.extraOnTop;
+            this.toggleExtraOnTop();
+            this.extraType = !this.extraType;
+            this.toggleType();
+            this.extraName = !this.extraName;
+            this.toggleName();
+            this.extraDate = !this.extraDate;
+            this.toggleDate();
+            this.extraText = text;
+            this.isExtraText = !(this.extraText !== "");
+            this.toggleText();
+            this.textareaExtra.val(text);
+        }
         this.addWatermark = !this.addWatermark;
         this.toggleWatermark();
         this.toggleWatermark();
@@ -342,7 +353,6 @@ export class SignRequestParams  extends EventFactory {
         $("#extraName_" + this.id).on("click", e => this.toggleName());
         $("#extraDate_" + this.id).on("click", e => this.toggleDate());
         $("#extraText_" + this.id).on("click", e => this.toggleText());
-
     }
 
     applyCurrentSignRequestParams() {
@@ -391,7 +401,12 @@ export class SignRequestParams  extends EventFactory {
         let yNew = Math.round((y / this.currentScale * scale));
         this.cross.css("width", newWidth + "px");
         this.cross.css("height", newHeight + "px");
-        this.cross.css('background-size', newWidth);
+        if(this.extraOnTop) {
+            this.cross.css('background-size', newWidth);
+        } else {
+            this.cross.css('background-size', newWidth / 2);
+        }
+        this.divExtra.css("width", this.extraWidth * scale + "px");
         this.cross.css('left', xNew + 'px');
         this.cross.css('top', yNew + 'px');
         this.currentScale = scale;
@@ -445,6 +460,7 @@ export class SignRequestParams  extends EventFactory {
             this.cross.css('width', (this.signWidth * this.currentScale));
             this.cross.css('height', (this.signHeight * this.currentScale));
             this.cross.css('background-size', (this.signWidth - this.extraWidth) * this.currentScale);
+            this.updateSize();
         } else {
             this.signWidth = Math.round(parseInt(this.cross.css("width")) / this.currentScale);
             this.signHeight = Math.round(parseInt(this.cross.css("height")) / this.currentScale);
@@ -561,10 +577,11 @@ export class SignRequestParams  extends EventFactory {
             if(!this.extraOnTop) {
                 this.toggleExtraOnTop();
             }
-
             $("#signExtra_" + this.id).removeClass("btn-outline-light");
             $("#signExtraOnTop_" + this.id).attr("disabled", true);
-            this.divExtra.addClass("d-none");
+            if(this.divExtra != null) {
+                this.divExtra.addClass("d-none");
+            }
             $("#extraTools_" + this.id).addClass("d-none");
             $("#crossTools_" + this.id).css("top", "-45px");
             this.signHeight -= this.extraHeight;
@@ -679,7 +696,7 @@ export class SignRequestParams  extends EventFactory {
     }
 
     toggleText() {
-        if(!this.extraType && !this.extraDate && !this.extraName && this.isExtraText) return;
+        if((!this.extraType && !this.extraDate && !this.extraName && this.isExtraText) || this.divExtra == null) return;
         let textExtra = $("#textExtra_" + this.id);
         if(this.isExtraText) {
             $("#extraText_" + this.id).removeClass("btn-outline-light");
@@ -711,7 +728,9 @@ export class SignRequestParams  extends EventFactory {
             if(this.extraOnTop) {
                 this.signHeight -= this.extraHeight;
                 this.extraHeight = 0;
-                this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
+                if(this.divExtra != null) {
+                    this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
+                }
                 this.signHeight += this.extraHeight;
                 this.cross.css("height", this.signHeight * this.currentScale + "px");
             } else {
@@ -735,31 +754,36 @@ export class SignRequestParams  extends EventFactory {
     }
 
     refreshExtraDiv() {
-        let maxLines = 2;
-        if(this.extraOnTop) maxLines = 1;
-        if(!this.extraName) maxLines++;
-        if(!this.extraDate) maxLines++;
-        if(!this.extraType) maxLines++;
-        let fontSize = this.fontSize * this.currentScale * this.signScale;
-        this.divExtra.css("font-size", Math.round(fontSize));
-        let text = this.textareaExtra.val();
-        let lines = text.split(/\r|\r\n|\n/);
-        text = "";
-        if(lines.length > maxLines) {
-            lines.pop();
-        }
-        for(let i = 0; i < lines.length; i++) {
-            text += lines[i].substring(0, 20);
-            if(i < lines.length - 1) {
-                text += "\n";
+        if(this.divExtra != null) {
+            let maxLines = 2;
+            if(this.extraOnTop) maxLines = 1;
+            if(!this.extraName) maxLines++;
+            if(!this.extraDate) maxLines++;
+            if(!this.extraType) maxLines++;
+            let fontSize = this.fontSize * this.currentScale * this.signScale;
+            this.divExtra.css("font-size", Math.round(fontSize));
+            let text = this.textareaExtra.val();
+            let lines = text.split(/\r|\r\n|\n/);
+            text = "";
+            if(lines.length > maxLines) {
+                lines.pop();
             }
-        }
-        this.extraText = text;
-        this.textareaExtra.val(text);
-        let rows = parseInt(this.textareaExtra.attr("rows"));
-        if(lines.length !== rows) {
-            this.textareaExtra.attr("rows", lines.length);
-            this.updateSize();
+            for(let i = 0; i < lines.length; i++) {
+                text += lines[i].substring(0, 20);
+                if(i < lines.length - 1) {
+                    text += "\n";
+                }
+            }
+            this.extraText = text;
+            this.textareaExtra.val(text);
+            let rows = parseInt(this.textareaExtra.attr("rows"));
+            if(lines.length !== rows) {
+                this.textareaExtra.attr("rows", lines.length);
+                this.updateSize();
+            }
+            if(this.light) {
+                this.divExtra.css("font-size", "unset");
+            }
         }
     }
 
