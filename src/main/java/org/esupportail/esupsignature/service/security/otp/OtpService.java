@@ -108,8 +108,8 @@ public class OtpService {
             return otpCache.getUnchecked(urlId);
         }catch (Exception e){
             logger.warn("error on get otp : " + e.getMessage());
-            return null;
         }
+        return null;
     }
 
     public void clearOTP(String urlId){

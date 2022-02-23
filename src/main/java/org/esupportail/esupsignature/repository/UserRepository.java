@@ -17,4 +17,5 @@ public interface UserRepository extends CrudRepository<User, Long>  {
     List<User> findByManagersRolesIn(List<String> role);
     Long countByEppn(String eppn);
     Long countByEmail(String email);
+    User findByPhone(String phone);
 }
