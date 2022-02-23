@@ -258,6 +258,8 @@ public class UserService {
             SignRequestParams signRequestParams = objectMapper.readValue(signRequestParamsJsonString, SignRequestParams.class);
             signRequestParams.setxPos(0);
             signRequestParams.setyPos(0);
+            signRequestParams.setSignWidth(300);
+            signRequestParams.setSignHeight(150);
             if(authUser.getFavoriteSignRequestParams() == null) {
                 signRequestParamsRepository.save(signRequestParams);
                 authUser.setFavoriteSignRequestParams(signRequestParams);

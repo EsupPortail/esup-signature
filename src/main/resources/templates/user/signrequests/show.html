@@ -5,7 +5,7 @@
 <!--/*@thymesVar id="postits" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <!--/*@thymesVar id="signatureIds" type="java.util.List<String>"*/-->
-<!--/*@thymesVar id="currentSignType" type="java.lang.Boolean"*/-->
+<!--/*@thymesVar id="currentSignType" type="org.esupportail.esupsignature.entity.enums.SignType"*/-->
 <!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
@@ -736,7 +736,7 @@
     </div>
 </div>
 <div th:replace="user/signrequests/includes/modals/attachment :: attachment"></div>
-<th:block th:if="${signable == false && signImages != null && signImages.size() == 0}">
+<th:block th:if="${signable == true && signImages != null && signImages.size() == 0 && currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
     <div id="add-sign-image" class="modal" role="dialog" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">

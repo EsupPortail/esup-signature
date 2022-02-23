@@ -13,9 +13,8 @@ export class UserUi {
         this.userSignatureCrop = new UserSignatureCrop();
         this.saveSignRequestParams = true;
         this.checkAlertFrequency();
-        console.log(signRequestParams);
         if(signRequestParams != null) {
-            this.saveSignRequestParams = false;
+            this.saveSignRequestParams = true;
             this.toggleSaveSignRequest();
         }
         this.signRequestParams =  new SignRequestParams(signRequestParams, 0, 1, 1, userName, userName, false, true, false, true, false, null, true);

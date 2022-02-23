@@ -285,6 +285,10 @@ public class SignRequestService {
 		return signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >= signBook.getLiveWorkflow().getCurrentStepNumber() + 2;
 	}
 
+	public boolean isMoreWorkflowStep(SignBook signBook) {
+		return signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >= signBook.getLiveWorkflow().getCurrentStepNumber() + 1 && signBook.getLiveWorkflow().getCurrentStepNumber() > -1;
+	}
+
 	public boolean isStepAllSignDone(SignBook signBook) {
 		LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
 		return (!liveWorkflowStep.getAllSignToComplete() || isWorkflowStepFullSigned(liveWorkflowStep)) && !isMoreWorkflowStep(signBook);
@@ -305,11 +309,6 @@ public class SignRequestService {
 			return signBook.getLiveWorkflow().getCurrentStepNumber() > -1;
 		}
 		return false;
-	}
-
-	public boolean isMoreWorkflowStep(SignBook signBook) {
-		int test = signBook.getLiveWorkflow().getCurrentStepNumber();
-		return signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >= signBook.getLiveWorkflow().getCurrentStepNumber() + 1 && test > -1;
 	}
 
 //	public void serverSign(SignRequest signRequest) throws EsupSignatureException {

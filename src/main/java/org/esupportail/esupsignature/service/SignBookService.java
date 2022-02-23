@@ -1041,7 +1041,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public void refuse(Long signRequestId, String comment, String userEppn, String authUserEppn) throws EsupSignatureMailException {
+    public void refuse(Long signRequestId, String comment, String userEppn, String authUserEppn) throws EsupSignatureMailException, EsupSignatureException {
         SignRequest signRequest = signRequestService.getById(signRequestId);
         SignBook signBook = signRequest.getParentSignBook();
         if(signBook.getSignRequests().size() > 1 && (signBook.getForceAllDocsSign() == null || !signBook.getForceAllDocsSign())) {
@@ -1060,7 +1060,11 @@ public class SignBookService {
             signRequests.remove(signRequest);
             boolean test = signRequests.stream().noneMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.pending));
             if(test) {
-                updateStatus(signBook, SignRequestStatus.completed, "La demande est terminée un des documents à été refusé", "WARN", comment, userEppn, authUserEppn);
+                if(signRequestService.isMoreWorkflowStep(signRequest.getParentSignBook())) {
+                    nextStepAndPending(signBook.getId(), null, userEppn, authUserEppn);
+                } else {
+                    updateStatus(signBook, SignRequestStatus.completed, "La demande est terminée un des documents à été refusé", "WARN", comment, userEppn, authUserEppn);
+                }
             }
         } else {
             refuseSignBook(signRequest.getParentSignBook(), comment, userEppn, authUserEppn);

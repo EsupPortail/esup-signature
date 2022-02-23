@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -283,7 +282,7 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
     @PostMapping(value = "/refuse/{id}")
-    public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, @RequestParam(value = "redirect") String redirect, RedirectAttributes redirectAttributes) throws EsupSignatureMailException {
+    public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, @RequestParam(value = "redirect") String redirect, RedirectAttributes redirectAttributes) throws EsupSignatureMailException, EsupSignatureException {
         signBookService.refuse(id, comment, userEppn, authUserEppn);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
         if(redirect.equals("end")) {

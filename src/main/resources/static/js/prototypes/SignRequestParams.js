@@ -266,6 +266,13 @@ export class SignRequestParams  extends EventFactory {
             }
         }
         if(this.addExtra) {
+            if (localStorage.getItem('extraOnTop') != null) {
+                if (localStorage.getItem('extraOnTop') === "false") {
+                    if (this.divExtra != null && this.extraOnTop) {
+                        this.toggleExtraOnTop();
+                    }
+                }
+            }
             if (localStorage.getItem('extraType') != null) {
                 if (localStorage.getItem('extraType') === "false") {
                     if (this.divExtra != null && this.extraType) {
@@ -637,6 +644,9 @@ export class SignRequestParams  extends EventFactory {
                 this.divExtra.css("width", this.extraWidth * this.currentScale + "px");
                 this.divExtra.addClass("div-extra-right");
                 this.divExtra.removeClass("div-extra-top");
+            }
+            if(!this.firstLaunch) {
+                localStorage.setItem('extraOnTop', this.extraOnTop);
             }
         }
         // this.updateSize();
