@@ -13,6 +13,7 @@ public interface FormRepository extends CrudRepository<Form, Long> {
 	@Query("select distinct f from Form f join f.managers m where m = :email and (f.deleted is null or f.deleted = false)")
 	List<Form> findFormByManagersContainsAndDeletedIsNullOrDeletedIsFalse(@Param("email") String email);
 	List<Form> findDistinctByAuthorizedShareTypesIsNotNullAndDeletedIsNullOrDeletedIsFalse();
+	@Query("select distinct f from Form f where f.name = :name and (f.deleted is null or f.deleted = false)")
 	List<Form> findFormByNameAndDeletedIsNullOrDeletedIsFalse(String name);
 	@Query("select distinct f from Form f where (f.deleted is null or f.deleted = false) and f.activeVersion = true and (f.publicUsage = true or :role member of f.roles) order by f.name")
 	List<Form> findAuthorizedForms(String role);
