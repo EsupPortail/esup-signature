@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.service.*;
+import org.hibernate.LazyInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -127,31 +128,35 @@ public class GlobalAttributsControllerAdvice {
     @Transactional
     public void parseRoles(String userEppn, GlobalProperties myGlobalProperties) {
         User user = userService.getByEppn(userEppn);
-        List<String> roles = user.getRoles();
-        if (!Collections.disjoint(roles, globalProperties.getHideSendSignExceptRoles()))
-            myGlobalProperties.setHideSendSignRequest(!globalProperties.getHideSendSignRequest());
-        if (!Collections.disjoint(roles, globalProperties.getHideWizardExceptRoles()))
-            myGlobalProperties.setHideWizard(!globalProperties.getHideWizard());
-        if (!Collections.disjoint(roles, globalProperties.getHideAutoSignExceptRoles()))
-            myGlobalProperties.setHideAutoSign(!globalProperties.getHideAutoSign());
+        try {
+            List<String> roles = user.getRoles();
+            if(!Collections.disjoint(roles, globalProperties.getHideSendSignExceptRoles()))
+                myGlobalProperties.setHideSendSignRequest(!globalProperties.getHideSendSignRequest());
+            if(!Collections.disjoint(roles, globalProperties.getHideWizardExceptRoles()))
+                myGlobalProperties.setHideWizard(!globalProperties.getHideWizard());
+            if(!Collections.disjoint(roles, globalProperties.getHideAutoSignExceptRoles()))
+                myGlobalProperties.setHideAutoSign(!globalProperties.getHideAutoSign());
 
-        if (roles.contains("ROLE_CREATE_SIGNREQUEST")) {
-            myGlobalProperties.setHideSendSignRequest(false);
-        }
-        if (roles.contains("ROLE_CREATE_WIZARD")) {
-            myGlobalProperties.setHideWizard(false);
-        }
-        if (roles.contains("ROLE_CREATE_AUTOSIGN")) {
-            myGlobalProperties.setHideAutoSign(false);
-        }
-        if (roles.contains("ROLE_NO_CREATE_SIGNREQUEST")) {
-            myGlobalProperties.setHideSendSignRequest(true);
-        }
-        if (roles.contains("ROLE_NO_CREATE_WIZARD")) {
-            myGlobalProperties.setHideWizard(true);
-        }
-        if (roles.contains("ROLE_NO_CREATE_AUTOSIGN")) {
-            myGlobalProperties.setHideAutoSign(true);
+            if(roles.contains("ROLE_CREATE_SIGNREQUEST")) {
+                myGlobalProperties.setHideSendSignRequest(false);
+            }
+            if(roles.contains("ROLE_CREATE_WIZARD")) {
+                myGlobalProperties.setHideWizard(false);
+            }
+            if(roles.contains("ROLE_CREATE_AUTOSIGN")) {
+                myGlobalProperties.setHideAutoSign(false);
+            }
+            if(roles.contains("ROLE_NO_CREATE_SIGNREQUEST")) {
+                myGlobalProperties.setHideSendSignRequest(true);
+            }
+            if(roles.contains("ROLE_NO_CREATE_WIZARD")) {
+                myGlobalProperties.setHideWizard(true);
+            }
+            if(roles.contains("ROLE_NO_CREATE_AUTOSIGN")) {
+                myGlobalProperties.setHideAutoSign(true);
+            }
+        } catch(LazyInitializationException e) {
+            logger.error("enable to find roles", e);
         }
     }
 }

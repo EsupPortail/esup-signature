@@ -1,5 +1,8 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
 import org.esupportail.esupsignature.entity.*;
@@ -7,6 +10,7 @@ import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
+import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.ldap.*;
 import org.esupportail.esupsignature.service.utils.file.FileService;
@@ -72,6 +76,9 @@ public class UserService {
     @Resource
     private DocumentService documentService;
 
+    @Resource
+    private SignRequestParamsRepository signRequestParamsRepository;
+
     public User getById(Long id) {
         return userRepository.findById(id).get();
     }
@@ -112,6 +119,10 @@ public class UserService {
         } else {
             return createUserWithEmail(email);
         }
+    }
+
+    public User getUserByPhone(String phone) {
+        return userRepository.findByPhone(phone);
     }
 
     @Transactional
@@ -244,8 +255,35 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUser(String authUserEppn, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore) throws IOException {
+    public void updateUser(String authUserEppn, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, String signRequestParamsJsonString) throws IOException {
         User authUser = getByEppn(authUserEppn);
+        if(signRequestParamsJsonString != null && !signRequestParamsJsonString.isEmpty()) {
+            ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            SignRequestParams signRequestParams = objectMapper.readValue(signRequestParamsJsonString, SignRequestParams.class);
+            signRequestParams.setxPos(0);
+            signRequestParams.setyPos(0);
+            signRequestParams.setSignWidth(300);
+            signRequestParams.setSignHeight(150);
+            if(authUser.getFavoriteSignRequestParams() == null) {
+                signRequestParamsRepository.save(signRequestParams);
+                authUser.setFavoriteSignRequestParams(signRequestParams);
+            } else {
+                //affectation
+                authUser.getFavoriteSignRequestParams().setAddExtra(signRequestParams.getAddExtra());
+                authUser.getFavoriteSignRequestParams().setAddWatermark(signRequestParams.getAddWatermark());
+                authUser.getFavoriteSignRequestParams().setExtraType(signRequestParams.getExtraType());
+                authUser.getFavoriteSignRequestParams().setExtraDate(signRequestParams.getExtraDate());
+                authUser.getFavoriteSignRequestParams().setExtraName(signRequestParams.getExtraName());
+                authUser.getFavoriteSignRequestParams().setExtraText(signRequestParams.getExtraText());
+                authUser.getFavoriteSignRequestParams().setExtraOnTop(signRequestParams.getExtraOnTop());
+            }
+        } else {
+            if(authUser.getFavoriteSignRequestParams() != null) {
+                SignRequestParams signRequestParams = authUser.getFavoriteSignRequestParams();
+                authUser.setFavoriteSignRequestParams(null);
+                signRequestParamsRepository.delete(signRequestParams);
+            }
+        }
         if(multipartKeystore != null && !multipartKeystore.isEmpty() && !globalProperties.getDisableCertStorage()) {
             if(authUser.getKeystore() != null) {
                 documentService.delete(authUser.getKeystore());
@@ -605,5 +643,11 @@ public class UserService {
             }
         }
         return eppn;
+    }
+
+    public String getFavoriteSignRequestParamsJson(String userEppn) throws JsonProcessingException {
+        User user = getUserByEppn(userEppn);
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writer().writeValueAsString(user.getFavoriteSignRequestParams());
     }
 }

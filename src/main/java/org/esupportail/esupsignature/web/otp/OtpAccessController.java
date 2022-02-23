@@ -62,22 +62,23 @@ public class OtpAccessController {
         Otp otp = otpService.getOtp(urlId);
         if(otp != null) {
             User user = userService.getUserByEmail(otp.getEmail());
-            if(!otp.isSmsSended() && smsService != null && user.getPhone() != null) {
-                Pattern pattern = Pattern.compile("^(\\d{2}[- .]?){5}$");
-                Matcher matcher = pattern.matcher(user.getPhone());
-                if(matcher.matches()) {
-                    String password = otpService.generateOtpPassword(urlId);
-                    logger.info("sending password by sms : " + password + " to " + otp.getPhoneNumber());
-                    try {
-                        smsService.sendSms(user.getPhone(), "Votre code de connexion esup-signature " + password);
-                    } catch(EsupSignatureException e) {
-                        logger.error(e.getMessage(), e);
+            if(!otp.isSmsSended() && smsService != null) {
+                if(user.getPhone() != null && !user.getPhone().isEmpty()) {
+                    Pattern pattern = Pattern.compile("^(\\d{2}[- .]?){5}$");
+                    Matcher matcher = pattern.matcher(user.getPhone());
+                    if(matcher.matches()) {
+                        String password = otpService.generateOtpPassword(urlId);
+                        logger.info("sending password by sms : " + password + " to " + otp.getPhoneNumber());
+                        try {
+                            smsService.sendSms(user.getPhone(), "Votre code de connexion esup-signature " + password);
+                        } catch(EsupSignatureException e) {
+                            logger.error(e.getMessage(), e);
+                        }
+                        otp.setSmsSended(true);
+                        return "otp/signin";
                     }
-                    otp.setSmsSended(true);
-                } else {
-                    return "otp/enter-phonenumber";
                 }
-                return "otp/signin";
+                return "otp/enter-phonenumber";
             }
         }
         return "redirect:/otp-access/expired";
@@ -93,26 +94,33 @@ public class OtpAccessController {
         model.addAttribute("urlId", urlId);
         Otp otp = otpService.getOtp(urlId);
         if(otp != null) {
-            if(!otp.isSmsSended() && smsService != null) {
-                Pattern pattern = Pattern.compile("^(\\d{2}[- .]?){5}$");
-                Matcher matcher = pattern.matcher(phone);
-                if(matcher.matches()) {
-                    String password = otpService.generateOtpPassword(urlId);
-                    logger.info("sending password by sms : " + password + " to " + phone);
-                    try {
-                        smsService.sendSms(phone, "Votre code de connexion esup-signature " + password);
-                    } catch(EsupSignatureException e) {
-                        logger.error(e.getMessage(), e);
+            User user = userService.getUserByEmail(otp.getEmail());
+            User userTest = userService.getUserByPhone(phone);
+            if (userTest == null || user.getEppn().equals(userTest.getEppn())) {
+                if(!otp.isSmsSended() && smsService != null) {
+                    Pattern pattern = Pattern.compile("^(\\d{2}[- .]?){5}$");
+                    Matcher matcher = pattern.matcher(phone);
+                    if(matcher.matches()) {
+                        String password = otpService.generateOtpPassword(urlId);
+                        logger.info("sending password by sms : " + password + " to " + phone);
+                        try {
+                            smsService.sendSms(phone, "Votre code de connexion esup-signature " + password);
+                        } catch(EsupSignatureException e) {
+                            logger.error(e.getMessage(), e);
+                        }
+                        otp.setPhoneNumber(phone);
+                        return "otp/signin";
+                    } else {
+                        redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Numéro de mobile incorrect"));
+                        return "redirect:/otp-access/" + urlId;
                     }
-                    otp.setPhoneNumber(phone);
-                    return "otp/signin";
-                } else {
-                    redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Numéro de mobile incorrect"));
-                    return "redirect:/otp-access/" + urlId;
                 }
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Merci de saisir le code reçu par SMS"));
+                return "redirect:/otp-access/" + urlId;
+            } else {
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Ce numéro ne peut pas être utilisé"));
+                return "redirect:/otp-access/" + urlId;
             }
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Merci de saisir le code reçu par SMS"));
-            return "redirect:/otp-access/" + urlId;
         } else {
             return "redirect:/denied/" + urlId;
         }
