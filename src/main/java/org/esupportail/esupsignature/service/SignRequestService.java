@@ -54,6 +54,7 @@ import java.nio.ByteBuffer;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -284,6 +285,10 @@ public class SignRequestService {
 		return signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >= signBook.getLiveWorkflow().getCurrentStepNumber() + 2;
 	}
 
+	public boolean isMoreWorkflowStep(SignBook signBook) {
+		return signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >= signBook.getLiveWorkflow().getCurrentStepNumber() + 1 && signBook.getLiveWorkflow().getCurrentStepNumber() > -1;
+	}
+
 	public boolean isStepAllSignDone(SignBook signBook) {
 		LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
 		return (!liveWorkflowStep.getAllSignToComplete() || isWorkflowStepFullSigned(liveWorkflowStep)) && !isMoreWorkflowStep(signBook);
@@ -304,11 +309,6 @@ public class SignRequestService {
 			return signBook.getLiveWorkflow().getCurrentStepNumber() > -1;
 		}
 		return false;
-	}
-
-	public boolean isMoreWorkflowStep(SignBook signBook) {
-		int test = signBook.getLiveWorkflow().getCurrentStepNumber();
-		return signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >= signBook.getLiveWorkflow().getCurrentStepNumber() + 1 && test > -1;
 	}
 
 //	public void serverSign(SignRequest signRequest) throws EsupSignatureException {
@@ -867,13 +867,16 @@ public class SignRequestService {
 		return new ArrayList<>(signRequest.getAttachments());
 	}
 
-	public void replayNotif(Long id) throws EsupSignatureMailException {
+	public boolean replayNotif(Long id) throws EsupSignatureMailException {
 		SignRequest signRequest = this.getById(id);
 		List<String> recipientEmails = new ArrayList<>();
 		getCurrentRecipients(signRequest).forEach(r -> recipientEmails.add(r.getUser().getEmail()));
-		if(recipientEmails.size() > 0) {
-			mailService.sendSignRequestAlert(recipientEmails, signRequest);
+		long notifTime = Duration.between(signRequest.getLastNotifDate().toInstant(), new Date().toInstant()).toHours();
+		if(recipientEmails.size() > 0 && notifTime >= globalProperties.getHoursBeforeRefreshNotif() && signRequest.getStatus().equals(SignRequestStatus.pending)) {
+			mailService.sendSignRequestReplayAlert(recipientEmails, signRequest);
+			return true;
 		}
+		return false;
 	}
 
 	private List<Recipient> getCurrentRecipients(SignRequest signRequest) {

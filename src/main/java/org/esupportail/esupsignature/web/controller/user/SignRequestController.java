@@ -115,6 +115,7 @@ public class SignRequestController {
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
         model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
+        model.addAttribute("favoriteSignRequestParamsJson", userService.getFavoriteSignRequestParamsJson(userEppn));
         if(!signRequest.getStatus().equals(SignRequestStatus.draft)) {
             try {
                 Object userShareString = httpSession.getAttribute("userShareId");
@@ -281,7 +282,7 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
     @PostMapping(value = "/refuse/{id}")
-    public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, @RequestParam(value = "redirect") String redirect, RedirectAttributes redirectAttributes) throws EsupSignatureMailException {
+    public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, @RequestParam(value = "redirect") String redirect, RedirectAttributes redirectAttributes) throws EsupSignatureMailException, EsupSignatureException {
         signBookService.refuse(id, comment, userEppn, authUserEppn);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
         if(redirect.equals("end")) {
@@ -460,10 +461,13 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @PostMapping(value = "/replay-notif/{id}")
-    public String replayNotif(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureMailException {
-        signRequestService.replayNotif(id);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage ("success", "Votre relance a bien été envoyée"));
-        return "redirect:/user/signrequests/" + id;
+    public String replayNotif(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws EsupSignatureMailException {
+        if(signRequestService.replayNotif(id)) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre relance a bien été envoyée"));
+        } else {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Votre relance n'a pas été envoyée car une autre relance a déjà été émise"));
+        }
+        return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
     }
 
 }

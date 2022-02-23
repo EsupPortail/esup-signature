@@ -4,18 +4,19 @@ import {Step} from "../../../prototypes/Step.js?version=@version@";
 
 export class SignUi {
 
-    constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, isPdf, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned, attachmentAlert, attachmentRequire, isOtp, restore) {
+    constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, isPdf, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
         console.info("Starting sign UI");
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.signRequestId = id;
         this.percent = 0;
         this.getProgressTimer = null;
+        this.isOtp = isOtp;
         this.wait = $('#wait');
         this.workspace = null;
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
         this.isPdf = isPdf;
-        this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, currentSignType, fields, stepRepeatable, status, this.csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore);
+        this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, currentSignType, fields, stepRepeatable, status, this.csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone);
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
         this.signModal = $('#signModal');
@@ -190,7 +191,7 @@ export class SignUi {
                     if (self.gotoNext) {
                         document.location.href = $("#nextSignRequestButton").attr('href');
                     } else {
-                        if(self.isOtp) {
+                        if(self.isOtp== null || !self.isOtp) {
                             if(self.nbSignRequests > 1 || !self.globalProperties.returnToHomeAfterSign) {
                                 document.location.href = "/user/signrequests/" + self.signRequestId;
                             } else {
