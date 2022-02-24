@@ -5,18 +5,12 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
-import org.apache.catalina.Context;
-import org.apache.catalina.webresources.ExtractingRoot;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
-import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
-import org.springframework.core.env.Profiles;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
@@ -24,8 +18,6 @@ import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.thymeleaf.dialect.springdata.SpringDataDialect;
 import org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect;
-
-import javax.annotation.Resource;
 
 @Configuration 
 @ComponentScan
@@ -39,9 +31,6 @@ public class WebAppConfig implements WebMvcConfigurer {
 	public WebAppConfig(GlobalProperties globalProperties) {
 		this.globalProperties = globalProperties;
 	}
-
-	@Resource
-	Environment environment;
 
     @Bean
     public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
@@ -57,24 +46,6 @@ public class WebAppConfig implements WebMvcConfigurer {
     public SpringSecurityDialect springSecurityDialect() {
         return new SpringSecurityDialect();
     }
-
-	@Bean
-	TomcatServletWebServerFactory tomcatFactory() {
-		return new TomcatServletWebServerFactory() {
-
-			@Override
-			protected void postProcessContext(Context context) {
-				context.setResources(new ExtractingRoot());
-			}
-		};
-	}
-
-	@Bean
-	public WebServerFactoryCustomizer<TomcatServletWebServerFactory> servletContainerCustomizer() {
-		boolean reloadable = environment.acceptsProfiles(Profiles.of("dev"));
-		return container -> container.addContextCustomizers(
-				cntxt -> cntxt.setReloadable(false));
-	}
 
 	@Bean
 	public CommonsMultipartResolver multipartResolver() {
