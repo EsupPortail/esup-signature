@@ -14,11 +14,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
-import org.springframework.core.env.Profiles;
 
 import javax.annotation.Resource;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 @Configuration
 @EnableConfigurationProperties({TomcatAjpProperties.class, GlobalProperties.class})
@@ -73,9 +73,9 @@ public class TomcatConfig {
 
     @Bean
     public WebServerFactoryCustomizer<TomcatServletWebServerFactory> servletContainerCustomizer() {
-        boolean reloadable = environment.acceptsProfiles(Profiles.of("dev"));
+        boolean reloadable = List.of(environment.getActiveProfiles()).contains("dev");
         return container -> container.addContextCustomizers(
-                cntxt -> cntxt.setReloadable(false));
+                cntxt -> cntxt.setReloadable(reloadable));
     }
 
 }
