@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -45,6 +46,7 @@ public class TomcatConfig {
     @ConditionalOnProperty(prefix = "tomcat.ajp", name = "port")
     public TomcatServletWebServerFactory servletContainer() throws URISyntaxException {
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
+        tomcat.addContextCustomizers(cntxt -> cntxt.setReloadable(false));
         Connector ajpConnector = new Connector("AJP/1.3");
         ajpConnector.setPort(tomcatAjpProperties.getPort());
         ajpConnector.setAllowTrace(false);
@@ -79,9 +81,21 @@ public class TomcatConfig {
     public WebServerFactoryCustomizer<TomcatServletWebServerFactory> servletContainerCustomizer() {
         final boolean reloadable = List.of(environment.getActiveProfiles()).contains("dev");
         logger.warn("SetReloadable to " + reloadable);
-        return container -> container.addContextCustomizers(
-                cntxt -> cntxt.setReloadable(reloadable)
-        );
+        WebServerFactoryCustomizer<TomcatServletWebServerFactory> webServerFactoryCustomizer = new WebServerFactoryCustomizer<>() {
+
+            @Override
+            public void customize(TomcatServletWebServerFactory container) {
+                container.addContextCustomizers(
+                        new TomcatContextCustomizer() {
+                            @Override
+                            public void customize(Context cntxt) {
+                                cntxt.setReloadable(false);
+                            }
+                        });
+            }
+        };
+
+        return webServerFactoryCustomizer;
     }
 
 }
