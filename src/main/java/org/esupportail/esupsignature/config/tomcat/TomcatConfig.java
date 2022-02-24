@@ -5,12 +5,14 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.webresources.ExtractingRoot;
 import org.apache.coyote.ajp.AbstractAjpProtocol;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 
@@ -35,6 +37,7 @@ public class TomcatConfig {
     }
 
     @Bean
+    @Order(1)
     @ConditionalOnProperty(prefix = "tomcat.ajp", name = "port")
     public TomcatServletWebServerFactory servletContainer() throws URISyntaxException {
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
@@ -56,7 +59,8 @@ public class TomcatConfig {
 
 
     @Bean
-    @ConditionalOnProperty(prefix = "tomcat.ajp", name = "port", matchIfMissing = true)
+    @Order(2)
+    @ConditionalOnMissingBean(TomcatServletWebServerFactory.class)
     TomcatServletWebServerFactory tomcatFactory() {
         return new TomcatServletWebServerFactory() {
 
