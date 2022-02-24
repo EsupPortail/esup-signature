@@ -5,6 +5,8 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.webresources.ExtractingRoot;
 import org.apache.coyote.ajp.AbstractAjpProtocol;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -23,6 +25,8 @@ import java.util.List;
 @Configuration
 @EnableConfigurationProperties({TomcatAjpProperties.class, GlobalProperties.class})
 public class TomcatConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(TomcatConfig.class);
 
     @Resource
     Environment environment;
@@ -73,9 +77,11 @@ public class TomcatConfig {
 
     @Bean
     public WebServerFactoryCustomizer<TomcatServletWebServerFactory> servletContainerCustomizer() {
-        boolean reloadable = List.of(environment.getActiveProfiles()).contains("dev");
+        final boolean reloadable = List.of(environment.getActiveProfiles()).contains("dev");
+        logger.warn("SetReloadable to " + reloadable);
         return container -> container.addContextCustomizers(
-                cntxt -> cntxt.setReloadable(reloadable));
+                cntxt -> cntxt.setReloadable(reloadable)
+        );
     }
 
 }
