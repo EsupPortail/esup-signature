@@ -10,9 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
-import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -21,7 +19,6 @@ import org.springframework.core.env.Environment;
 import javax.annotation.Resource;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 
 @Configuration
 @EnableConfigurationProperties({TomcatAjpProperties.class, GlobalProperties.class})
@@ -45,7 +42,13 @@ public class TomcatConfig {
     @Order(1)
     @ConditionalOnProperty(prefix = "tomcat.ajp", name = "port")
     public TomcatServletWebServerFactory servletContainer() throws URISyntaxException {
-        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
+        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
+            @Override
+            protected void postProcessContext(Context context) {
+                context.setResources(new ExtractingRoot());
+                context.setReloadable(false);
+            }
+        };
         tomcat.addContextCustomizers(cntxt -> cntxt.setReloadable(false));
         Connector ajpConnector = new Connector("AJP/1.3");
         ajpConnector.setPort(tomcatAjpProperties.getPort());
@@ -63,39 +66,17 @@ public class TomcatConfig {
         return tomcat;
     }
 
-
     @Bean
     @Order(2)
     @ConditionalOnMissingBean(TomcatServletWebServerFactory.class)
-    TomcatServletWebServerFactory tomcatFactory() {
+    public TomcatServletWebServerFactory tomcatFactory() {
         return new TomcatServletWebServerFactory() {
-
             @Override
             protected void postProcessContext(Context context) {
                 context.setResources(new ExtractingRoot());
+                context.setReloadable(false);
             }
         };
-    }
-
-    @Bean
-    public WebServerFactoryCustomizer<TomcatServletWebServerFactory> servletContainerCustomizer() {
-        final boolean reloadable = List.of(environment.getActiveProfiles()).contains("dev");
-        logger.warn("SetReloadable to " + reloadable);
-        WebServerFactoryCustomizer<TomcatServletWebServerFactory> webServerFactoryCustomizer = new WebServerFactoryCustomizer<>() {
-
-            @Override
-            public void customize(TomcatServletWebServerFactory container) {
-                container.addContextCustomizers(
-                        new TomcatContextCustomizer() {
-                            @Override
-                            public void customize(Context cntxt) {
-                                cntxt.setReloadable(false);
-                            }
-                        });
-            }
-        };
-
-        return webServerFactoryCustomizer;
     }
 
 }
