@@ -18,6 +18,7 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
@@ -79,6 +80,8 @@ public class GlobalAttributsControllerAdvice {
     @ModelAttribute
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) throws JsonProcessingException {
         if(userEppn != null) {
+            StopWatch stopWatch = new StopWatch();
+            stopWatch.start();
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
             User user = userService.getUserByEppn(userEppn);
@@ -121,8 +124,11 @@ public class GlobalAttributsControllerAdvice {
             } catch (IOException e) {
                 logger.debug("enable to get dss status");
             }
+            stopWatch.stop();
+            logger.info("GA time : " + stopWatch.getTotalTimeSeconds());
         }
         model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
+
     }
 
     @Transactional
