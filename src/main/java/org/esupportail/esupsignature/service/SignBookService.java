@@ -1076,7 +1076,8 @@ public class SignBookService {
         addLiveStep(signRequest.getParentSignBook().getId(), recipientsEmails, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), allSignToComplete, signType, false, null, true, false, authUserEppn);
     }
 
-    public SignRequest startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String name, List<String> recipientEmails, List<String> allSignToCompletes, List<String> targetEmails) throws EsupSignatureFsException, EsupSignatureException, EsupSignatureIOException {
+    @Transactional
+    public SignRequest startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String name, List<String> recipientEmails, List<String> allSignToCompletes, List<String> targetEmails, List<String> targetUrls) throws EsupSignatureFsException, EsupSignatureException, EsupSignatureIOException {
         Workflow workflow = workflowService.getById(id);
         User user = userService.getByEppn(createByEppn);
         if(name == null || name.isEmpty()) {
@@ -1087,6 +1088,9 @@ public class SignBookService {
         SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), signBook, createByEppn, createByEppn);
         signRequestService.addDocsToSignRequest(signRequest, false, 0, new ArrayList<>(), multipartFiles);
         initWorkflowAndPendingSignBook(signRequest.getId(), recipientEmails, allSignToCompletes, null, targetEmails, createByEppn, createByEppn);
+        for(String targetUrl : targetUrls) {
+            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
+        }
         return signRequest;
     }
 

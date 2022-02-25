@@ -43,7 +43,7 @@ public class WorkflowWsController {
                       @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls
     ) {
         try {
-            SignRequest signRequest = signBookService.startWorkflow(id, multipartFiles, createByEppn, name, recipientEmails, allSignToCompletes, targetEmails);
+            SignRequest signRequest = signBookService.startWorkflow(id, multipartFiles, createByEppn, name, recipientEmails, allSignToCompletes, targetEmails, targetUrls);
             return signRequest.getId();
         } catch (EsupSignatureException | EsupSignatureFsException | EsupSignatureIOException e) {
             logger.error(e.getMessage(), e);
