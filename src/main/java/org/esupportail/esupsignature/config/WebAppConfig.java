@@ -46,7 +46,7 @@ public class WebAppConfig implements WebMvcConfigurer {
     public SpringSecurityDialect springSecurityDialect() {
         return new SpringSecurityDialect();
     }
-    
+
 	@Bean
 	public CommonsMultipartResolver multipartResolver() {
 		CommonsMultipartResolver commonsMultipartResolver = new CommonsMultipartResolver();
