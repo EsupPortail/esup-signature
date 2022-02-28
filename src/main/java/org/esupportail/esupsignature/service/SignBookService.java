@@ -498,20 +498,65 @@ public class SignBookService {
     }
 
 
-    public Set<String> getDocTitles(String userEppn) {
+    public List<String> getAllDocTitles(String userEppn) {
         Set<String> docTitles = new HashSet<>();
-        docTitles.addAll(signBookRepository.findDocTitles(userEppn));
-        docTitles.addAll(signBookRepository.findDocNames(userEppn));
-        docTitles.addAll(signBookRepository.findSignRequestTitles(userEppn));
-        return docTitles;
+        for(SignBook signBook : signBookRepository.findByCreateByEppn(userEppn)) {
+            docTitles.add(getSignBookTitle(signBook));
+        }
+        return docTitles.stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
-    public Collection<String> getWorkflowNames(String userEppn) {
+    public List<String> getDocTitles(List<SignBook> signBooks) {
         Set<String> docTitles = new HashSet<>();
-        docTitles.addAll(signBookRepository.findLiveWorkflowTitles(userEppn));
-        docTitles.addAll(signBookRepository.findWorkflowTitles(userEppn));
-        docTitles.addAll(signBookRepository.findSignBookTitles(userEppn));
-        return docTitles;
+        for(SignBook signBook : signBooks) {
+            docTitles.add(getSignBookTitle(signBook));
+        }
+//        docTitles.addAll(signBookRepository.findDocNames(userEppn));
+//        docTitles.addAll(signBookRepository.findSignRequestTitles(userEppn));
+        return docTitles.stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+    }
+
+    public String getSignBookTitle(SignBook signBook) {
+        if(signBook.getTitle() != null && !signBook.getTitle().isEmpty() && signBook.getLiveWorkflow().getWorkflow() != null && !signBook.getTitle().equals(signBook.getLiveWorkflow().getWorkflow().getDescription())){
+            return signBook.getTitle();
+        }
+        if(signBook.getName().isEmpty()) {
+            return signBook.getSignRequests().get(0).getTitle();
+        } else {
+            return signBook.getName();
+        }
+    }
+
+    public List<String> getWorkflowNames(String userEppn) {
+        Set<String> workflowNames = new HashSet<>();
+        workflowNames.addAll(signBookRepository.findLiveWorkflowTitles(userEppn));
+        workflowNames.addAll(signBookRepository.findWorkflowTitles(userEppn));
+        workflowNames.addAll(signBookRepository.findSignBookTitles(userEppn));
+        return workflowNames.stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+    }
+
+    public String getSignBookWorkflowName(SignBook signBook) {
+        if(signBook.getLiveWorkflow().getWorkflow() != null) {
+            if(signBook.getLiveWorkflow().getWorkflow().getDescription() != null && signBook.getLiveWorkflow().getWorkflow().getDescription().isEmpty()) {
+                return signBook.getLiveWorkflow().getWorkflow().getDescription();
+            } else {
+                return signBook.getLiveWorkflow().getWorkflow().getName();
+            }
+        } else {
+            if(signBook.getLiveWorkflow().getTitle() != null) {
+                return signBook.getLiveWorkflow().getTitle();
+            } else {
+                return signBook.getTitle();
+            }
+        }
+    }
+
+    public List<String> getWorkflowNames(List<SignBook> signBooks) {
+        Set<String> workflowNames = new HashSet<>();
+        for(SignBook signBook : signBooks) {
+            workflowNames.add(getSignBookWorkflowName(signBook));
+        }
+        return workflowNames.stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
     @Transactional
