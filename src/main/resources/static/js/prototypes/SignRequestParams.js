@@ -455,6 +455,8 @@ export class SignRequestParams  extends EventFactory {
     prevSignImage() {
         if(this.signImageNumber > 0) {
             this.fireEvent("prevSign", ["ok"]);
+        } else {
+            this.fireEvent("lastSign", ["ok"]);
         }
     }
 

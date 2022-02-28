@@ -84,8 +84,7 @@ public class SignBookController {
                        @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
                        @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
                        @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
-        if(statusFilter == null) statusFilter = "all";
-        if(statusFilter.equals("all")) statusFilter = "";
+        if(statusFilter == null || statusFilter.equals("all")) statusFilter = "";
         if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
             workflowFilter = "%";
         }
@@ -105,13 +104,17 @@ public class SignBookController {
         model.addAttribute("workflowFilter", workflowFilter);
         model.addAttribute("docTitleFilter", docTitleFilter);
         model.addAttribute("recipientsFilter", recipientsFilter);
-        Set<String> docTitles = new HashSet<>(signBookService.getDocTitles(userEppn));
-        model.addAttribute("docTitles", docTitles);
         LinkedHashSet<String> workflowNames = new LinkedHashSet<>();
-        if(workflowFilter.equals("%") || workflowFilter.equals("Hors circuit")) {
-            workflowNames.add("Hors circuit");
+        if(statusFilter.isEmpty() && workflowFilter.equals("%") && docTitleFilter.equals("%") && recipientsFilter.equals("%")) {
+            model.addAttribute("docTitles", signBookService.getAllDocTitles(userEppn));
+            if(workflowFilter.equals("%") || workflowFilter.equals("Hors circuit")) {
+                workflowNames.add("Hors circuit");
+            }
+            workflowNames.addAll(signBookService.getWorkflowNames(userEppn));
+        } else {
+            model.addAttribute("docTitles", signBookService.getDocTitles(signBooks.getContent()));
+            workflowNames.addAll(signBookService.getWorkflowNames(signBooks.getContent()));
         }
-        workflowNames.addAll(signBookService.getWorkflowNames(userEppn));
         model.addAttribute("workflowNames", workflowNames);
         model.addAttribute("signRequestRecipients", signBookService.getRecipientsNames(userEppn).stream().filter(Objects::nonNull).collect(Collectors.toList()));
         return "user/signbooks/list";
@@ -125,8 +128,7 @@ public class SignBookController {
                          @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
                          @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
                          @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
-        if(statusFilter == null) statusFilter = "all";
-        if(statusFilter.equals("all")) statusFilter = "";
+        if(statusFilter == null || statusFilter.equals("all")) statusFilter = "";
         if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
             workflowFilter = "%";
         }

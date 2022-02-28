@@ -15,7 +15,7 @@
         </td>
         <td class="clickable-td text-break overflow-hidden">
             <th:block th:if="${signBook.signRequests.size() == 1}">
-                <i class="fa fa-file"></i>
+                <i class="fa fa-file-alt"></i>
                 <th:block th:if="${signBook.title != null && signBook.title != ''}">
                     <span th:if="${signBook.liveWorkflow.title != null && signBook.title != signBook.liveWorkflow.title && signBook.liveWorkflow.workflow != null && signBook.title != signBook.liveWorkflow.workflow.description}"
                           th:text="${signBook.title}"></span>

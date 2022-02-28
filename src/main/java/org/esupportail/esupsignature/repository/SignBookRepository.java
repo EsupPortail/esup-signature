@@ -13,15 +13,16 @@ import java.util.List;
 
 public interface SignBookRepository extends CrudRepository<SignBook, Long> {
 
-    Page<SignBook> findByCreateByEppn(String userEppn, Pageable pageable);
+    List<SignBook> findByCreateByEppn(String userEppn);
 
     @Query("select distinct sb from SignBook sb " +
             "left join sb.viewers v " +
             "join sb.signRequests sr " +
             "left join sb.liveWorkflow lw " +
+            "left join lw.workflow w " +
             "left join lw.liveWorkflowSteps lws " +
             "left join lws.recipients r " +
-            "where (sb.title like :workflowFilter or sb.liveWorkflow.title like :workflowFilter)" +
+            "where (sb.title like :workflowFilter or sb.liveWorkflow.title like :workflowFilter or w.description like :workflowFilter)" +
             "and (sb.name like :docTitleFilter or sb.title like :docTitleFilter or sr.title like :docTitleFilter or sb.liveWorkflow.title like :docTitleFilter)" +
             "and (:userEppn in r.user.eppn  or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
             "and sb.hidedBy is empty " +
@@ -79,9 +80,6 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "where key(rhs).user.eppn = :recipientUserEppn and rhs.actionType = :actionType")
     Page<SignBook> findByRecipientAndActionType(String recipientUserEppn, ActionType actionType, Pageable pageable);
 
-    @Query("select distinct sb from SignBook sb join sb.signRequests sr join sr.recipientHasSigned rhs where key(rhs).user.eppn = :recipientUserEppn")
-    Page<SignBook> findByRecipient(String recipientUserEppn, Pageable pageable);
-
     @Query("select distinct sb from SignBook sb join sb.hidedBy hb where hb.eppn = :hidedByEppn")
     Page<SignBook> findByHidedByEppn(String hidedByEppn, Pageable pageable);
 
@@ -100,25 +98,17 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("select count(sb) from SignBook sb where sb.liveWorkflow.workflow = :workflow")
     int countByLiveWorkflowWorkflow(Workflow workflow);
 
-    List<SignBook> findByLiveWorkflowAndStatus(LiveWorkflow liveWorkflow, SignRequestStatus signRequestStatus);
-
     @Query("select sb from SignBook sb join sb.viewers u where u.eppn = :userEppn")
     Page<SignBook> findByViewersContaining(String userEppn, Pageable pageable);
-
-    @Query("select distinct sb.title from SignBook sb join sb.signRequests sr left join sr.recipientHasSigned rhs where sb.title is not null and sb.title <> '' and (key(rhs).user.eppn = :userEppn or sb.createBy.eppn = :userEppn)")
-    Collection<String> findDocTitles(String userEppn);
-
-    @Query("select distinct sb.name from SignBook sb join sb.signRequests sr left join sr.recipientHasSigned rhs where sb.name is not null and sb.name <> '' and (key(rhs).user.eppn = :userEppn or sb.createBy.eppn = :userEppn)")
-    Collection<String> findDocNames(String userEppn);
-
-    @Query("select distinct sr.title from SignBook sb join sb.signRequests sr left join sr.recipientHasSigned rhs where sr.title is not null and sr.title <> '' and (key(rhs).user.eppn = :userEppn or sb.createBy.eppn = :userEppn)")
-    Collection<String> findSignRequestTitles(String userEppn);
 
     @Query("select distinct lw.title from SignBook sb join sb.liveWorkflow lw join sb.signRequests sr left join sr.recipientHasSigned rhs where lw.title is not null and lw.title <> '' and (key(rhs).user.eppn = :userEppn or sb.createBy.eppn = :userEppn)")
     Collection<String> findLiveWorkflowTitles(String userEppn);
 
     @Query("select distinct w.description from SignBook sb join sb.liveWorkflow lw join lw.workflow w join sb.signRequests sr left join sr.recipientHasSigned rhs where w.description is not null and w.description <> '' and (key(rhs).user.eppn = :userEppn or sb.createBy.eppn = :userEppn)")
     Collection<String> findWorkflowTitles(String userEppn);
+
+    @Query("select w from SignBook sb join sb.liveWorkflow lw join lw.workflow w join sb.signRequests sr left join sr.recipientHasSigned rhs where w.description is not null and w.description <> '' and (key(rhs).user.eppn = :userEppn or sb.createBy.eppn = :userEppn)")
+    List<Workflow> findWorkflow(String userEppn);
 
     @Query("select distinct sb.title from SignBook sb join sb.liveWorkflow lw left join lw.workflow w join sb.signRequests sr left join sr.recipientHasSigned rhs " +
             "where (lw.title is null or lw.title = '') and sb.title is not null and sb.title <> '' and (key(rhs).user.eppn = :userEppn or sb.createBy.eppn = :userEppn)")
