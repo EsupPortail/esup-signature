@@ -500,10 +500,11 @@ public class SignBookService {
 
     public List<String> getAllDocTitles(String userEppn) {
         Set<String> docTitles = new HashSet<>();
+        docTitles.add("");
         for(SignBook signBook : signBookRepository.findByCreateByEppn(userEppn)) {
             docTitles.add(getSignBookTitle(signBook));
         }
-        return docTitles.stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+        return docTitles.stream().filter(s -> !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
     public List<String> getDocTitles(List<SignBook> signBooks) {
@@ -513,7 +514,7 @@ public class SignBookService {
         }
 //        docTitles.addAll(signBookRepository.findDocNames(userEppn));
 //        docTitles.addAll(signBookRepository.findSignRequestTitles(userEppn));
-        return docTitles.stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+        return docTitles.stream().filter(s -> !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
     public String getSignBookTitle(SignBook signBook) {
@@ -532,7 +533,7 @@ public class SignBookService {
         workflowNames.addAll(signBookRepository.findLiveWorkflowTitles(userEppn));
         workflowNames.addAll(signBookRepository.findWorkflowTitles(userEppn));
         workflowNames.addAll(signBookRepository.findSignBookTitles(userEppn));
-        return workflowNames.stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+        return workflowNames.stream().filter(s -> !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
     public String getSignBookWorkflowName(SignBook signBook) {
@@ -556,7 +557,7 @@ public class SignBookService {
         for(SignBook signBook : signBooks) {
             workflowNames.add(getSignBookWorkflowName(signBook));
         }
-        return workflowNames.stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+        return workflowNames.stream().filter(s -> !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
     @Transactional
