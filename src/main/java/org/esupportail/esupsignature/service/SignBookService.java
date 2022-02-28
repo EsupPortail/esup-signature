@@ -520,7 +520,7 @@ public class SignBookService {
         if(signBook.getTitle() != null && !signBook.getTitle().isEmpty() && signBook.getLiveWorkflow().getWorkflow() != null && !signBook.getTitle().equals(signBook.getLiveWorkflow().getWorkflow().getDescription())){
             return signBook.getTitle();
         }
-        if(signBook.getName().isEmpty()) {
+        if(signBook.getName().isEmpty() && signBook.getSignRequests().size() > 0) {
             return signBook.getSignRequests().get(0).getTitle();
         } else {
             return signBook.getName();
