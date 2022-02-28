@@ -87,7 +87,11 @@ public class FileService {
 
 	public File getTempFile(String name) {
 		try {
-			File tempFile = File.createTempFile(getNameOnly(name), getExtension(name));
+			StringBuilder prefix = new StringBuilder(getNameOnly(name));
+			while(prefix.length() < 3) {
+				prefix.append("_");
+			}
+			File tempFile = File.createTempFile(prefix.toString(), getExtension(name));
 			tempFile.deleteOnExit();
 			return tempFile;
 		} catch (IOException e) {
