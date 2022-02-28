@@ -55,16 +55,21 @@ export class SignPosition extends EventFactory {
     }
 
     changeSignImage(imageNum, signRequestParams) {
-        if(imageNum != null && imageNum >= 0 && this.signImages != null && imageNum <= this.signImages.length - 1) {
-            signRequestParams.signImageNumber = imageNum;
-            console.debug("debug - " + "change sign image to " + imageNum);
-            let img = null;
-            if(this.signImages[imageNum] != null) {
-                img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[imageNum];
-                signRequestParams.cross.css("background-image", "url('" + img + "')");
-                let sizes = this.getImageDimensions(img);
-                sizes.then(result => signRequestParams.changeSignSize(result));
-                localStorage.setItem('signNumber', imageNum);
+        if(imageNum != null && imageNum >= 0) {
+            if(this.signImages != null) {
+                if(imageNum > this.signImages.length - 1) {
+                    imageNum = 0;
+                }
+                signRequestParams.signImageNumber = imageNum;
+                console.debug("debug - " + "change sign image to " + imageNum);
+                let img = null;
+                if(this.signImages[imageNum] != null) {
+                    img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[imageNum];
+                    signRequestParams.cross.css("background-image", "url('" + img + "')");
+                    let sizes = this.getImageDimensions(img);
+                    sizes.then(result => signRequestParams.changeSignSize(result));
+                    localStorage.setItem('signNumber', imageNum);
+                }
             }
         } else if(imageNum < 0) {
             signRequestParams.signImageNumber = imageNum;
@@ -151,6 +156,7 @@ export class SignPosition extends EventFactory {
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(id));
         this.signRequestParamses.get(id).addEventListener("nextSign", e => this.changeSignImage(parseInt(this.signRequestParamses.get(id).signImageNumber) + 1, this.signRequestParamses.get(id)));
         this.signRequestParamses.get(id).addEventListener("prevSign", e => this.changeSignImage(parseInt(this.signRequestParamses.get(id).signImageNumber) - 1, this.signRequestParamses.get(id)));
+        this.signRequestParamses.get(id).addEventListener("lastSign", e => this.changeSignImage(this.signImages.length - 1, this.signRequestParamses.get(id)));
         this.signRequestParamses.get(id).addEventListener("changeColor", e => this.changeSignColor(e, this.signRequestParamses.get(id), id));
         if(signImageNumber != null && signImageNumber >= 0) {
             this.signRequestParamses.get(id).cross.addClass("drop-sign");

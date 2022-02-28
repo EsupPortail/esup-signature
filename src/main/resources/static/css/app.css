@@ -559,6 +559,8 @@ th .ss-content {
     background-position: bottom left;
     background-repeat: no-repeat;
     cursor: move;
+    -webkit-transition: background-image 0.2s ease-in-out;
+    transition: background-image 0.2s ease-in-out;
 }
 
 .sign-textarea {
