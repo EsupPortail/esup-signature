@@ -66,7 +66,7 @@ public class TomcatConfig {
             public void customize(TomcatServletWebServerFactory container) {
                 container.addContextCustomizers(
                         cntxt -> {
-                            cntxt.setReloadable(false);
+                            cntxt.setReloadable(reloadable);
                             cntxt.setResources(new ExtractingRoot());
                         }
                 );
