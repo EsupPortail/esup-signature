@@ -15,24 +15,24 @@
 			new Toast([[${message}]]);
 		</script>
 		<th:block th:each="messageNew : ${messageNews}">
-			<div th:id="'toast-message-' + ${messageNew.id}" class="toast toast-es toast-xl bg-white" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="999999999">
-				<div class="toast-header pt-3">
-					<h4 class="me-auto">Information !</h4>
-					<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close">
+		<div th:id="'toast-message-' + ${messageNew.id}" class="toast toast-es toast-xl bg-white" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="999999999">
+			<div class="toast-header pt-3">
+				<h4 class="me-auto">Information !</h4>
+				<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close">
 
-					</button>
-				</div>
-				<div class="toast-body toast-body-news">
-					<div th:utext="${messageNew.text}"></div>
-				</div>
-				<div class="toast-footer">
-					<button th:id="'markAsReadButton_' + ${messageNew.id}" class="btn btn-success me-2 mb-2 float-end" data-bs-dismiss="toast" aria-label="Close">
-					<i class="fa fa-eye-slash"></i>
-						Marquer comme lu
-					</button>
-				</div>
-				<progress id="progress-message" class="progress-bar bg-white"></progress>
+				</button>
 			</div>
+			<div class="toast-body toast-body-news">
+				<div th:utext="${messageNew.text}"></div>
+			</div>
+			<div class="toast-footer">
+				<button th:id="'markAsReadButton_' + ${messageNew.id}" class="btn btn-success me-2 mb-2 float-end" data-bs-dismiss="toast" aria-label="Close">
+				<i class="fa fa-eye-slash"></i>
+					Marquer comme lu
+				</button>
+			</div>
+			<progress id="progress-message" class="progress-bar bg-white"></progress>
+		</div>
 		</th:block>
 		<div id="toast-error" class="toast toast-es toast-sm bg-danger" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000" >
 			<div class="toast-body">
