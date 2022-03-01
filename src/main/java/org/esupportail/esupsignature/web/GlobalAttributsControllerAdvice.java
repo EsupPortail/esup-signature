@@ -125,7 +125,7 @@ public class GlobalAttributsControllerAdvice {
                 logger.debug("enable to get dss status");
             }
             stopWatch.stop();
-            logger.info("GA time : " + stopWatch.getTotalTimeSeconds());
+            logger.debug("GA time : " + stopWatch.getTotalTimeSeconds());
         }
         model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
 
