@@ -17,9 +17,9 @@
             <th:block th:if="${signBook.signRequests.size() == 1}">
                 <i class="fa fa-file-alt"></i>
                 <th:block th:if="${signBook.title != null && signBook.title != ''}">
-                    <span th:if="${signBook.liveWorkflow.title != null && signBook.title != signBook.liveWorkflow.title && signBook.liveWorkflow.workflow != null && signBook.title != signBook.liveWorkflow.workflow.description}"
+                    <span th:if="${signBook.liveWorkflow.title != null && signBook.title != signBook.liveWorkflow.title && signBook.liveWorkflow.workflow != null && signBook.title != signBook.liveWorkflow.workflow.description && signBook.title != signBook.liveWorkflow.workflow.title}"
                           th:text="${signBook.title}"></span>
-                    <span th:if="${(signBook.liveWorkflow.title == null || signBook.title == signBook.liveWorkflow.title) && signBook.name != ''}"
+                    <span th:if="${(signBook.liveWorkflow.title == null || signBook.liveWorkflow.title == ''  || signBook.title == signBook.liveWorkflow.title) && signBook.name != ''}"
                           th:text="${signBook.name}"></span>
                     <span th:if="${(signBook.liveWorkflow.workflow != null && signBook.title == signBook.liveWorkflow.workflow.description) || signBook.title == signBook.liveWorkflow.title || signBook.name == ''}"
                           th:text="${signBook.signRequests.get(0).title}"></span>
