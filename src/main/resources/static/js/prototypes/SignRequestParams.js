@@ -67,7 +67,7 @@ export class SignRequestParams  extends EventFactory {
                 this.isExtraText = true;
             }
             this.init();
-            if(!restore) {
+            if(!restore && isSign) {
                 this.restoreFromFavorite();
             }
         }
@@ -212,7 +212,7 @@ export class SignRequestParams  extends EventFactory {
                 this.updateSize();
             }
         }
-        if(this.restore) {
+        if(this.restore && this.isSign) {
             if (localStorage.getItem('signNumber') != null) {
                 this.fireEvent("nextSign", localStorage.getItem('signNumber'));
             }
