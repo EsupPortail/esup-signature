@@ -386,7 +386,6 @@ public class FormService {
 		return formRepository.findFormByNameAndDeletedIsNullOrDeletedIsFalse(name);
 	}
 
-
 	public List<Form> getFormByManagersContains(String eppn) {
 		User user = userService.getUserByEppn(eppn);
 		return formRepository.findFormByManagersContainsAndDeletedIsNullOrDeletedIsFalse(user.getEmail());

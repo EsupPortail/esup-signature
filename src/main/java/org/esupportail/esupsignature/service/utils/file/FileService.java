@@ -3,18 +3,18 @@ package org.esupportail.esupsignature.service.utils.file;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.entity.*;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.mime.MimeTypes;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.service.DataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.xml.bind.DatatypeConverter;
@@ -87,7 +87,11 @@ public class FileService {
 
 	public File getTempFile(String name) {
 		try {
-			File tempFile = File.createTempFile(getNameOnly(name), getExtension(name));
+			StringBuilder prefix = new StringBuilder(getNameOnly(name));
+			while(prefix.length() < 3) {
+				prefix.append("_");
+			}
+			File tempFile = File.createTempFile(prefix.toString(), getExtension(name));
 			tempFile.deleteOnExit();
 			return tempFile;
 		} catch (IOException e) {
@@ -249,8 +253,9 @@ public class FileService {
 			int lineHeight = Math.round(fontSize + fontSize * .5f);
 			if(signRequestParams.getExtraType()) {
 				String typeSign = "Signature calligraphique";
-				if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) typeSign = "Visa";
-				if (signType.equals(SignType.certSign) || signType.equals(SignType.nexuSign)) typeSign = "Signature électronique";
+				if(signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) typeSign = "Visa";
+				if(signType.equals(SignType.certSign) || signType.equals(SignType.nexuSign)) typeSign = "Signature électronique";
+				if(user.getRoles().contains("ROLE_OTP")) typeSign = "Signature OTP : " + user.getPhone();
 				graphics2D.drawString(typeSign, widthOffset, fm.getHeight());
 				lineCount++;
 			}
@@ -388,6 +393,20 @@ public class FileService {
 
 	public InputStream getFaImageByIndex(int index) throws IOException {
 		return new ClassPathResource("/static/images/"+ faImages[Math.abs(index) - 1] + ".png").getInputStream();
+	}
+
+	public String getContentTypeDescription(String contentType) {
+		String type = contentType;
+		MimeTypes mimeTypes = MimeTypes.getDefaultMimeTypes();
+		try {
+			String mimeDesc = mimeTypes.forName(contentType).getDescription();
+			if(!mimeDesc.equals("")) {
+				type = mimeDesc;
+			}
+		} catch(TikaException e) {
+			logger.debug(e.getMessage());
+		}
+		return type;
 	}
 
 }

@@ -3,7 +3,7 @@
 <head th:replace="fragments/head-lite :: head-lite"></head>
 <body>
     <th:block th:if="${userEppn != null}">
-    <header th:replace="fragments/nav :: nav"></header>
+    <header th:replace="fragments/nav-empty :: nav-empty"></header>
     </th:block>
     <th:block th:unless="${userEppn != null}">
     <header th:replace="fragments/nav-empty :: nav-empty"></header>

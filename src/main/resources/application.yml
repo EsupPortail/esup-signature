@@ -49,7 +49,7 @@ management:
 
 spring:
     session:
-      jdbc:
+        jdbc:
           initialize-schema: always
           save-mode: always
     data:

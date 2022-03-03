@@ -22,7 +22,7 @@ export class HomeUi {
             if(oldSignRequests.length) {
                 oldSignRequests.modal('show');
                 $("#warningReaded").on('click', function () {
-                    $.get("/user/signrequests/warning-readed");
+                    $.get("/ws-secure/signrequests/warning-readed");
                 });
 
             }

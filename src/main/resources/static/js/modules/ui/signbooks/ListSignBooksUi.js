@@ -157,7 +157,14 @@ export class ListSignBooksUi {
                 if(result) {
                     bootbox.dialog({
                         closeButton : false,
-                        message : "<div id=\"loader\" class=\"loader\"></div> Suppression en cours"
+                        message : "<h5>Suppression en cours</h5>" +
+                            "<div class=\"text-center\">" +
+                            "<div id=\"signSpinner\" class=\"justify-content-center mx-auto\">\n" +
+                            "   <div class=\"spinner-border mx-auto\" role=\"status\" style=\"width: 3rem; height: 3rem;\">\n" +
+                            "       <span class=\"sr-only\">En cours...</span>\n" +
+                            "   </div>\n" +
+                            "</div> " +
+                            "</div> "
                     });
                     $.ajax({
                         url: "/user/signbooks/delete-multiple?" + self.csrf.parameterName + "=" + self.csrf.token,

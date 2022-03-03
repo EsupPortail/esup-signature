@@ -25,10 +25,10 @@
                         <i class="fas fa-ellipsis-v"></i>
                     </a>
                     <ul id="endCollapse" class="list-unstyled">
-                        <li><a class="btn-floating bg-primary waves-effect" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
+                        <li><a class="btn-floating bg-primary waves-effect" th:href="'/ws-secure/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
                             <i class="fas fa-download"></i>
                         </a></li>
-                        <li><a title="Export SEDA" class="btn-floating bg-primary aves-effect" th:href="'/user/signrequests/get-seda/' + ${id}">
+                        <li><a title="Export SEDA" class="btn-floating bg-primary aves-effect" th:href="'/ws-secure/signrequests/get-seda/' + ${id}">
                             <i class="fas fa-file-export"></i>
                         </a></li>
                         <li><a th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="btn-floating bg-primary waves-effect" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
@@ -103,7 +103,7 @@
 <div class="modal fade" id="refuseModal" tabindex="-1" role="dialog" aria-labelledby="refuseModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form th:action="'/user/signrequests/refuse/' + ${id}" method="post">
+            <form th:action="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/signrequests/refuse/' + ${id}" method="post">
                 <div class="modal-header">
                     <h5 class="modal-title" id="refuseModalLabel">Refuser la demande de signature</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">

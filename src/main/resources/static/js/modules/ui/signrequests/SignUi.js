@@ -4,18 +4,19 @@ import {Step} from "../../../prototypes/Step.js?version=@version@";
 
 export class SignUi {
 
-    constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, isPdf, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned, attachmentAlert, attachmentRequire, isOtp, restore) {
+    constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, isPdf, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
         console.info("Starting sign UI");
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.signRequestId = id;
         this.percent = 0;
         this.getProgressTimer = null;
+        this.isOtp = isOtp;
         this.wait = $('#wait');
         this.workspace = null;
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
         this.isPdf = isPdf;
-        this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, currentSignType, fields, stepRepeatable, status, this.csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore);
+        this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, currentSignType, fields, stepRepeatable, status, this.csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone);
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
         this.signModal = $('#signModal');
@@ -60,7 +61,7 @@ export class SignUi {
     initReportModal() {
         let self = this;
         $.ajax({
-            url: "/user/validation/short/" + self.signRequestId,
+            url: "/ws-secure/validation/short/" + self.signRequestId,
             type: 'GET',
             success: function (data, textStatus, xhr) {
                 let modal = "<div class=\"modal fade\" id=\"reportModal\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">" +
@@ -180,7 +181,7 @@ export class SignUi {
         this.reset();
         let self = this;
         $.ajax({
-            url: "/user/signrequests/sign/" + this.signRequestId + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
+            url: "/ws-secure/signrequests/sign/" + this.signRequestId + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
             type: 'POST',
             data: signRequestUrlParams,
             success: function(data, textStatus, xhr) {
@@ -190,10 +191,14 @@ export class SignUi {
                     if (self.gotoNext) {
                         document.location.href = $("#nextSignRequestButton").attr('href');
                     } else {
-                        if (self.nbSignRequests > 1 || !self.globalProperties.returnToHomeAfterSign) {
-                            document.location.href = "/user/signrequests/" + self.signRequestId;
+                        if(self.isOtp== null || !self.isOtp) {
+                            if(self.nbSignRequests > 1 || !self.globalProperties.returnToHomeAfterSign) {
+                                document.location.href = "/user/signrequests/" + self.signRequestId;
+                            } else {
+                                document.location.href = "/user/";
+                            }
                         } else {
-                            document.location.href = "/user/";
+                            document.location.href = "/otp/signrequests/" + self.signRequestId;
                         }
                     }
                 }

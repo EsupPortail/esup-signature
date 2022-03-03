@@ -1,10 +1,15 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.Form;
-import org.esupportail.esupsignature.service.FormService;
-import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
+import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -16,10 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -27,7 +30,9 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RequestMapping("user/manage")
 @Controller
@@ -41,10 +46,19 @@ public class ManageController {
     private DataExportService dataExportService;
 
     @Resource
+    private DataService dataService;
+
+    @Resource
+    private SignBookService signBookService;
+
+    @Resource
     private FormService formService;
 
     @Resource
     private SignRequestService signRequestService;
+
+    @Resource
+    private UserService userService;
 
     @GetMapping
     public String index(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
@@ -78,5 +92,22 @@ public class ManageController {
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+
+    @GetMapping("/form/{id}/start")
+    @PreAuthorize("@preAuthorizeService.formManage(#id, #authUserEppn)")
+    public String show(@PathVariable("id") Long id, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam String createByEmail, RedirectAttributes redirectAttributes) {
+        User creator = userService.getUserByEmail(createByEmail);
+        Data data = dataService.addData(id, creator.getEppn());
+        try {
+            Map<String, String> datas = new HashMap<>();
+            signBookService.sendForSign(data.getId(), null, null, null, null, null, creator.getEppn(), creator.getEppn(), true, datas);
+        } catch (EsupSignatureException | EsupSignatureIOException | EsupSignatureFsException e) {
+            logger.error("error on create form instance", e);
+        }
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Nouveau formulaire envoyé"));
+        return "redirect:/user/manage";
+    }
+
 
 }

@@ -6,14 +6,14 @@
 <main role="main">
     <div class="wrapper">
         <div id="content" class="content">
-            <h1>Signature OTP</h1>
-            <form th:action="'/otp-access'" method="post">
+            <h1>Signature OTP - Merci de saisir votre numéro de mobile</h1>
+            <form th:action="'/otp-access/phone'" method="post">
                 <div class="col-4">
-                <input name="urlId" type="hidden" th:value="${urlId}">
+                    <input name="urlId" type="hidden" th:value="${urlId}">
                     <div class="mb-3">
-                <input name="password" type="password" class="form-control" maxlength="6" placeholder="Saisir le code reçu par SMS" autofocus>
+                        <input name="phone" type="text" class="form-control" maxlength="10" placeholder="Numéro de mobile" autofocus>
                     </div>
-                <input type="submit" class="btn btn-success" value="Valider">
+                    <input type="submit" class="btn btn-success" value="Valider">
                 </div>
             </form>
         </div>

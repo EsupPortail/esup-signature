@@ -31,17 +31,23 @@ import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -54,6 +60,9 @@ public class SignBookService {
     private static final Logger logger = LoggerFactory.getLogger(SignBookService.class);
 
     private final GlobalProperties globalProperties;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Resource
     private MessageSource messageSource;
@@ -150,6 +159,10 @@ public class SignBookService {
 
     @Resource
     private CertificatService certificatService;
+
+    private boolean enableArchiveTask = false;
+
+    private boolean enableCleanTask = false;
 
     public SignBookService(GlobalProperties globalProperties) {
         this.globalProperties = globalProperties;
@@ -273,7 +286,7 @@ public class SignBookService {
                 throw new EsupSignaturePdfException("Impossible de charger le document suite à une erreur interne", e);
             }
         } else {
-            throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());
+            throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type : <br><b>" + fileService.getContentTypeDescription(multipartFiles[0].getContentType()) + "</b>");
         }
     }
 
@@ -485,20 +498,66 @@ public class SignBookService {
     }
 
 
-    public Set<String> getDocTitles(String userEppn) {
+    public List<String> getAllDocTitles(String userEppn) {
         Set<String> docTitles = new HashSet<>();
-        docTitles.addAll(signBookRepository.findDocTitles(userEppn));
-        docTitles.addAll(signBookRepository.findDocNames(userEppn));
-        docTitles.addAll(signBookRepository.findSignRequestTitles(userEppn));
-        return docTitles;
+        docTitles.add("");
+        for(SignBook signBook : signBookRepository.findByCreateByEppn(userEppn)) {
+            docTitles.add(getSignBookTitle(signBook));
+        }
+        return docTitles.stream().filter(s -> !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
-    public Collection<String> getWorkflowNames(String userEppn) {
+    public List<String> getDocTitles(List<SignBook> signBooks) {
         Set<String> docTitles = new HashSet<>();
-        docTitles.addAll(signBookRepository.findLiveWorkflowTitles(userEppn));
-        docTitles.addAll(signBookRepository.findWorkflowTitles(userEppn));
-        docTitles.addAll(signBookRepository.findSignBookTitles(userEppn));
-        return docTitles;
+        for(SignBook signBook : signBooks) {
+            docTitles.add(getSignBookTitle(signBook));
+        }
+//        docTitles.addAll(signBookRepository.findDocNames(userEppn));
+//        docTitles.addAll(signBookRepository.findSignRequestTitles(userEppn));
+        return docTitles.stream().filter(s -> !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+    }
+
+    public String getSignBookTitle(SignBook signBook) {
+        if(signBook.getTitle() != null && !signBook.getTitle().isEmpty() && signBook.getLiveWorkflow().getWorkflow() != null && !signBook.getTitle().equals(signBook.getLiveWorkflow().getWorkflow().getDescription())){
+            return signBook.getTitle();
+        }
+        if(signBook.getName().isEmpty() && signBook.getSignRequests().size() > 0) {
+            return signBook.getSignRequests().get(0).getTitle();
+        } else {
+            return signBook.getName();
+        }
+    }
+
+    public List<String> getWorkflowNames(String userEppn) {
+        Set<String> workflowNames = new HashSet<>();
+        workflowNames.addAll(signBookRepository.findLiveWorkflowTitles(userEppn));
+        workflowNames.addAll(signBookRepository.findWorkflowTitles(userEppn));
+        workflowNames.addAll(signBookRepository.findSignBookTitles(userEppn));
+        return workflowNames.stream().filter(s -> !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+    }
+
+    public String getSignBookWorkflowName(SignBook signBook) {
+        if(signBook.getLiveWorkflow().getWorkflow() != null) {
+            if(signBook.getLiveWorkflow().getWorkflow().getDescription() != null && signBook.getLiveWorkflow().getWorkflow().getDescription().isEmpty()) {
+                return signBook.getLiveWorkflow().getWorkflow().getDescription();
+            } else {
+                return signBook.getLiveWorkflow().getWorkflow().getName();
+            }
+        } else {
+            if(signBook.getLiveWorkflow().getTitle() != null) {
+                return signBook.getLiveWorkflow().getTitle();
+            } else {
+                return signBook.getTitle();
+            }
+        }
+    }
+
+    public List<String> getWorkflowNames(List<SignBook> signBooks) {
+        Set<String> workflowNames = new HashSet<>();
+        for(SignBook signBook : signBooks) {
+            workflowNames.add(getSignBookWorkflowName(signBook));
+        }
+        return workflowNames.stream().filter(s -> !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
     @Transactional
@@ -636,8 +695,7 @@ public class SignBookService {
     public Map<SignBook, String> sendSignRequest(String title, MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser, boolean forceSendEmail, Boolean forceAllSign, String targetUrl) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
         if(forceAllSign == null) forceAllSign = false;
         if (!signService.checkSignTypeDocType(signType, multipartFiles[0])) {
-            throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());
-        }
+            throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type : <br><b>" + fileService.getContentTypeDescription(multipartFiles[0].getContentType()) + "</b>");        }
         String name = fileService.getNameOnly(multipartFiles[0].getOriginalFilename());
         if(title == null || title.isEmpty()) {
             title = "";
@@ -728,7 +786,7 @@ public class SignBookService {
                     for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
                         if (recipient.getUser().getUserType().equals(UserType.external)) {
                             try {
-                                otpService.generateOtpForSignRequest(signRequest.getId(), recipient.getUser());
+                                otpService.generateOtpForSignRequest(signRequest.getId(), recipient.getUser().getId(), null);
                             } catch (EsupSignatureMailException e) {
                                 throw new EsupSignatureException(e.getMessage());
                             }
@@ -1029,7 +1087,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public void refuse(Long signRequestId, String comment, String userEppn, String authUserEppn) throws EsupSignatureMailException {
+    public void refuse(Long signRequestId, String comment, String userEppn, String authUserEppn) throws EsupSignatureMailException, EsupSignatureException {
         SignRequest signRequest = signRequestService.getById(signRequestId);
         SignBook signBook = signRequest.getParentSignBook();
         if(signBook.getSignRequests().size() > 1 && (signBook.getForceAllDocsSign() == null || !signBook.getForceAllDocsSign())) {
@@ -1048,7 +1106,11 @@ public class SignBookService {
             signRequests.remove(signRequest);
             boolean test = signRequests.stream().noneMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.pending));
             if(test) {
-                updateStatus(signBook, SignRequestStatus.completed, "La demande est terminée un des documents à été refusé", "WARN", comment, userEppn, authUserEppn);
+                if(signRequestService.isMoreWorkflowStep(signRequest.getParentSignBook())) {
+                    nextStepAndPending(signBook.getId(), null, userEppn, authUserEppn);
+                } else {
+                    updateStatus(signBook, SignRequestStatus.completed, "La demande est terminée un des documents à été refusé", "WARN", comment, userEppn, authUserEppn);
+                }
             }
         } else {
             refuseSignBook(signRequest.getParentSignBook(), comment, userEppn, authUserEppn);
@@ -1060,7 +1122,8 @@ public class SignBookService {
         addLiveStep(signRequest.getParentSignBook().getId(), recipientsEmails, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), allSignToComplete, signType, false, null, true, false, authUserEppn);
     }
 
-    public SignRequest startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String name, List<String> recipientEmails, List<String> allSignToCompletes, List<String> targetEmails) throws EsupSignatureFsException, EsupSignatureException, EsupSignatureIOException {
+    @Transactional
+    public SignRequest startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String name, List<String> recipientEmails, List<String> allSignToCompletes, List<String> targetEmails, List<String> targetUrls) throws EsupSignatureFsException, EsupSignatureException, EsupSignatureIOException {
         Workflow workflow = workflowService.getById(id);
         User user = userService.getByEppn(createByEppn);
         if(name == null || name.isEmpty()) {
@@ -1071,6 +1134,9 @@ public class SignBookService {
         SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), signBook, createByEppn, createByEppn);
         signRequestService.addDocsToSignRequest(signRequest, false, 0, new ArrayList<>(), multipartFiles);
         initWorkflowAndPendingSignBook(signRequest.getId(), recipientEmails, allSignToCompletes, null, targetEmails, createByEppn, createByEppn);
+        for(String targetUrl : targetUrls) {
+            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
+        }
         return signRequest;
     }
 
@@ -1436,10 +1502,9 @@ public class SignBookService {
                             signImages.add(fileService.getBase64Image(signImage));
                         }
                     } else {
-                        if (signRequest.getSignable() && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp)) {
+                        if (signRequest.getSignable() && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType() != null && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp) || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign))) {
                             signRequestRef.setSignable(false);
-                            throw new EsupSignatureUserException("Pour signer ce document merci d'ajouter une image de votre signature dans <a href='user/users' target='_blank'>Mes paramètres</a>");
-
+//                            throw new EsupSignatureUserException("Pour signer ce document merci d'ajouter une image de votre signature dans <a href='user/users' target='_blank'>Mes paramètres</a>");
                         }
                     }
                 }
@@ -1448,4 +1513,132 @@ public class SignBookService {
         return signImages;
     }
 
+    @Transactional
+    public void archiveSignRequests(Long signBookId, String authUserEppn) throws EsupSignatureFsException, EsupSignatureException {
+        if(globalProperties.getArchiveUri() != null) {
+            logger.info("start archiving documents");
+            boolean result = true;
+            SignBook signBook = getById(signBookId);
+            for(SignRequest signRequest : signBook.getSignRequests()) {
+                Document signedFile = signRequest.getLastSignedDocument();
+                String subPath = "/" + signRequest.getParentSignBook().getTitle().replaceAll("\\W+", "_") + "/";
+                if(signRequest.getExportedDocumentURI() == null) {
+                    String name;
+                    if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate() != null) {
+                        name = signRequestService.generateName(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTitle(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName(), 0, userService.getSystemUser(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate());
+                    } else {
+                        name = signRequest.getTitle().replaceAll("\\W+", "_");
+                    }
+                    String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath, signedFile.getId() + "_" + name);
+                    if(documentUri != null) {
+                        signRequest.setExportedDocumentURI(documentUri);
+                        signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.archived, "Exporté vers l'archivage", "SUCCESS", authUserEppn, authUserEppn);
+                    } else {
+                        logger.error("unable to archive " + subPath + name);
+                        result = false;
+                    }
+                }
+            }
+            if(result) {
+                signBook.setStatus(SignRequestStatus.archived);
+            }
+        } else {
+            logger.debug("archive document was skipped");
+        }
+    }
+
+    @Transactional
+    public boolean needToBeExported(Long signBookId) {
+        SignBook signBook = getById(signBookId);
+        return signBook.getStatus().equals(SignRequestStatus.completed) && signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0;
+    }
+
+    @Transactional
+    @Async
+    public void initCleanning() {
+        logger.debug("scan all signRequest to clean");
+        if(globalProperties.getDelayBeforeCleaning() > -1) {
+            logger.info("start cleanning documents");
+            List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.archived);
+            for (SignBook signBook : signBooks) {
+                logger.info("clean signbook : " + signBook.getId());
+                signRequestService.cleanFiles(signBook, "scheduler");
+                if(!enableCleanTask) {
+                    logger.info("cleanning stopped");
+                    return;
+                }
+            }
+            logger.info("cleanning documents done");
+        } else {
+            logger.debug("cleaning documents was skipped because neg value");
+        }
+        if(globalProperties.getTrashKeepDelay() > -1) {
+            List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.deleted);
+            int i = 0;
+            for (SignBook signBook : signBooks) {
+                if (signBook.getUpdateDate() != null) {
+                    LocalDateTime deleteDate = LocalDateTime.ofInstant(signBook.getUpdateDate().toInstant(), ZoneId.systemDefault());
+                    LocalDateTime nowDate = LocalDateTime.ofInstant(new Date().toInstant(), ZoneId.systemDefault());
+                    long nbDays = ChronoUnit.DAYS.between(deleteDate, nowDate);
+                    if (Math.abs(nbDays) >= globalProperties.getTrashKeepDelay()) {
+                        deleteDefinitive(signBook.getId());
+                        i++;
+                    }
+                }
+            }
+            if(i > 0) {
+                logger.info(i + " item are deleted");
+            }
+        } else {
+            logger.debug("cleaning trashes was skipped because neg value");
+        }
+        entityManager.createNativeQuery("VACUUM FULL").executeUpdate();
+        setEnableCleanTask(false);
+    }
+
+    @Transactional
+    @Async
+    public void initArchive() {
+        if(globalProperties.getArchiveUri() != null) {
+            logger.debug("scan all signRequest to archive");
+            List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
+            signBooks.addAll(signBookRepository.findByStatus(SignRequestStatus.refused));
+            signBooks.addAll(signBookRepository.findByStatus(SignRequestStatus.exported));
+            for(SignBook signBook : signBooks) {
+                try {
+                    if(needToBeExported(signBook.getId())) {
+                        continue;
+                    }
+                    archiveSignRequests(signBook.getId(), "scheduler");
+                } catch(EsupSignatureFsException | EsupSignatureException e) {
+                    logger.error(e.getMessage());
+                }
+                if(!enableArchiveTask) {
+                    logger.info("archiving stopped");
+                    return;
+                }
+            }
+        }
+        setEnableArchiveTask(true);
+    }
+
+    public GlobalProperties getGlobalProperties() {
+        return globalProperties;
+    }
+
+    public boolean isEnableArchiveTask() {
+        return enableArchiveTask;
+    }
+
+    public void setEnableArchiveTask(boolean enableArchiveTask) {
+        this.enableArchiveTask = enableArchiveTask;
+    }
+
+    public boolean isEnableCleanTask() {
+        return enableCleanTask;
+    }
+
+    public void setEnableCleanTask(boolean enableCleanTask) {
+        this.enableCleanTask = enableCleanTask;
+    }
 }

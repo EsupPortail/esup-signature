@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/ws-secure/users")
-public class UserWsController {
+public class UserWsSecureController {
 
     @Resource
     private UserPropertieService userPropertieService;

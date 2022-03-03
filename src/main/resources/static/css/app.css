@@ -559,6 +559,8 @@ th .ss-content {
     background-position: bottom left;
     background-repeat: no-repeat;
     cursor: move;
+    -webkit-transition: background-image 0.2s ease-in-out;
+    transition: background-image 0.2s ease-in-out;
 }
 
 .sign-textarea {
@@ -680,7 +682,7 @@ th .ss-content {
     top: 81px;
     padding-top: 5px;
     background-color: white;
-    width: calc(100vw - 275px);
+    width: 100%;
     z-index: 1028;
     position: fixed;
     padding-left: 10px;
@@ -1708,11 +1710,11 @@ input:focus, textarea:focus, select:focus {
 
 }
 
-@media (max-width: 992px) {
-    .tools {
-        width: calc(100vw - 75px);
-    }
-}
+/*@media (max-width: 992px) {*/
+/*    .tools {*/
+/*        width: calc(100vw - 75px);*/
+/*    }*/
+/*}*/
 
 @media (max-width: 319px) {
     body {

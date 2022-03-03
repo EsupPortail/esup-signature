@@ -15,11 +15,11 @@
         </td>
         <td class="clickable-td text-break overflow-hidden">
             <th:block th:if="${signBook.signRequests.size() == 1}">
-                <i class="fa fa-file"></i>
+                <i class="fa fa-file-alt"></i>
                 <th:block th:if="${signBook.title != null && signBook.title != ''}">
-                    <span th:if="${signBook.liveWorkflow.title != null && signBook.title != signBook.liveWorkflow.title && signBook.liveWorkflow.workflow != null && signBook.title != signBook.liveWorkflow.workflow.description}"
+                    <span th:if="${signBook.liveWorkflow.title != null && signBook.title != signBook.liveWorkflow.title && signBook.liveWorkflow.workflow != null && signBook.title != signBook.liveWorkflow.workflow.description && signBook.title != signBook.liveWorkflow.workflow.title}"
                           th:text="${signBook.title}"></span>
-                    <span th:if="${(signBook.liveWorkflow.title == null || signBook.title == signBook.liveWorkflow.title) && signBook.name != ''}"
+                    <span th:if="${(signBook.liveWorkflow.title == null || signBook.liveWorkflow.title == ''  || signBook.title == signBook.liveWorkflow.title) && signBook.name != ''}"
                           th:text="${signBook.name}"></span>
                     <span th:if="${(signBook.liveWorkflow.workflow != null && signBook.title == signBook.liveWorkflow.workflow.description) || signBook.title == signBook.liveWorkflow.title || signBook.name == ''}"
                           th:text="${signBook.signRequests.get(0).title}"></span>
@@ -87,6 +87,12 @@
                         <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                             <i class="fas fa-eye pr-2"></i> Consulter
                         </a>
+                        <form th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
+                              th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
+                            <button type="submit" class="btn btn-transparent text-dark text-left col-12">
+                                <i class="fas fa-bullhorn"></i> <span class="d-none d-xxl-inline">Relancer</span>
+                            </button>
+                        </form>
                         <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">
                             <i class="fas fa-eye-slash pr-2"></i> Masquer
                         </a>
@@ -94,11 +100,11 @@
                             <i class="fas fa-eye-slash pr-2"></i> Afficher dans la liste
                         </a>
                         <a target="_blank" th:if="${signBook.signRequests.size() > 1 && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
-                           th:href="'/user/signrequests/get-last-files/' + ${signBook.id}">
+                           th:href="'/ws-secure/signrequests/get-last-files/' + ${signBook.id}">
                             <i class="fas fa-download pr-2"></i> Télécharger tout
                         </a>
                         <a target="_blank" th:if="${signBook.signRequests.size() == 1 && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
-                           th:href="'/user/signrequests/get-last-file/' + ${signRequest.id}">
+                           th:href="'/ws-secure/signrequests/get-last-file/' + ${signRequest.id}">
                             <i class="fas fa-download pr-2"></i> Télécharger
                         </a>
                         <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && signBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'/user/signrequests/restore/' + ${signRequest.id}" role="button" title="Restaurer">

@@ -5,10 +5,11 @@ import {Message} from "../../../prototypes/Message.js?version=@version@";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore) {
+    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
         this.isOtp = isOtp;
+        this.phone = phone;
         this.changeModeSelector = null;
         this.action = action;
         this.dataId = dataId;
@@ -40,14 +41,14 @@ export class WorkspacePdf {
             }
         }
         if (this.isPdf) {
-            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, editable, currentStepNumber, currentStepId, this.forcePageNum, fields, false);
+            this.pdfViewer = new PdfViewer('/ws-secure/signrequests/get-last-file/' + id, signable, editable, currentStepNumber, currentStepId, this.forcePageNum, fields, false);
         }
         this.signPosition = new SignPosition(
             signType,
             currentSignRequestParamses,
             signImageNumber,
             signImages,
-            userName, authUserName, signable, this.forcePageNum, this.isOtp);
+            userName, authUserName, signable, this.forcePageNum, this.isOtp, this.phone);
         this.currentSignRequestParamses = this.signPosition.currentSignRequestParamses;
         this.mode = 'sign';
         this.wheelDetector = new WheelDetector();
@@ -141,7 +142,7 @@ export class WorkspacePdf {
             $(this).on('click', function (e) {
                 e.preventDefault();
                 let target = e.currentTarget;
-                bootbox.confirm("Confimez la suppression de la pièce jointe ?", function (result) {
+                bootbox.confirm("Confirmez-vous la suppression de la pièce jointe ?", function (result) {
                     if (result) {
                         location.href = $(target).attr('href');
                     }
@@ -570,7 +571,7 @@ export class WorkspacePdf {
                                 if (result) {
                                     $.ajax({
                                         method: 'DELETE',
-                                        url: "/user/signrequests/delete-comment/" + self.signRequestId + "/" + comment.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
+                                        url: "/ws-secure/signrequests/delete-comment/" + self.signRequestId + "/" + comment.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
                                         success: function () {
                                             document.location.reload();
                                         }
@@ -606,7 +607,7 @@ export class WorkspacePdf {
                             if (result) {
                                 $.ajax({
                                     method: 'DELETE',
-                                    url: "/user/signrequests/delete-comment/" + self.signRequestId + "/" + spot.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
+                                    url: "/ws-secure/signrequests/delete-comment/" + self.signRequestId + "/" + spot.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
                                     success: function () {
                                         document.location.reload();
                                     }
@@ -640,7 +641,7 @@ export class WorkspacePdf {
             $("#postit :input").each(function () {
                 $(this).removeAttr('disabled');
             });
-            $("#postit :select").each(function () {
+            postitForm.children('select[name="spotStepNumber"]').each(function () {
                 $(this).removeAttr('disabled');
             });
         }
