@@ -641,7 +641,7 @@ export class WorkspacePdf {
             $("#postit :input").each(function () {
                 $(this).removeAttr('disabled');
             });
-            $("#postit :select").each(function () {
+            $("#postit").children('select[name="spotStepNumber"]').each(function () {
                 $(this).removeAttr('disabled');
             });
         }
