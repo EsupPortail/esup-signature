@@ -6,7 +6,6 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.OJService;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.service.*;
 import org.hibernate.LazyInitializationException;
 import org.slf4j.Logger;
@@ -110,12 +109,7 @@ public class GlobalAttributsControllerAdvice {
             } else {
                 model.addAttribute("versionApp", "dev");
             }
-            List<SignType> signTypes = signTypeService.getAuthorizedSignTypes();
-            if (userKeystoreService == null) {
-                signTypes.remove(SignType.certSign);
-                signTypes.remove(SignType.nexuSign);
-            }
-            model.addAttribute("signTypes", signTypes);
+            model.addAttribute("signTypes", signTypeService.getAuthorizedSignTypes());
             model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
             model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
             model.addAttribute("nbToSign", signRequestService.nbToSignSignRequests(userEppn));
