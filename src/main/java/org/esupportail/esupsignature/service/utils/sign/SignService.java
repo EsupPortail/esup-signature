@@ -129,10 +129,7 @@ public class SignService {
 	public void certSign(SignRequest signRequest, User user, String password, String certType, boolean visual) throws EsupSignatureException, InterruptedException {
 		logger.info("start certSign for signRequest : " + signRequest.getId());
 		SignatureForm signatureForm;
-		List<Document> toSignDocuments = new ArrayList<>();
-		for(Document document : getToSignDocuments(signRequest.getId())) {
-			toSignDocuments.add(document);
-		}
+		List<Document> toSignDocuments = new ArrayList<>(getToSignDocuments(signRequest.getId()));
 		Pkcs12SignatureToken pkcs12SignatureToken = null;
 		try {
 			if(user.getKeystore() != null && certType.equals("profil")) {
@@ -178,6 +175,8 @@ public class SignService {
 			parameters.setCertificateChain(certificateTokenChain);
 			parameters.setSignatureLevel(signatureDocumentForm.getSignatureLevel());
 			parameters.bLevel().setSigningDate(signatureDocumentForm.getSigningDate());
+//			signatureDocumentForm.setContentTimestamp(DssUtils.fromTimestampToken(getContentTimestamp((SignatureDocumentForm) signatureDocumentForm)));
+//			signatureDocumentForm.setAddContentTimestamp(true);
 			DSSDocument dssDocument;
 			if(signatureDocumentForm instanceof SignatureMultipleDocumentsForm) {
 				dssDocument = certSignDocument((SignatureMultipleDocumentsForm) signatureDocumentForm, parameters, pkcs12SignatureToken);
