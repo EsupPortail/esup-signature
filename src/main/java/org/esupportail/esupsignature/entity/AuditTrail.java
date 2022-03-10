@@ -10,8 +10,6 @@ public class AuditTrail {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private Long signRequestId;
-
     private String token;
 
     @OneToMany
@@ -31,14 +29,6 @@ public class AuditTrail {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getSignRequestId() {
-        return signRequestId;
-    }
-
-    public void setSignRequestId(Long signRequestId) {
-        this.signRequestId = signRequestId;
     }
 
     public String getToken() {

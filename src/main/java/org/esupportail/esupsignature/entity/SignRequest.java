@@ -85,6 +85,9 @@ public class SignRequest {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
+    @OneToOne(cascade = CascadeType.DETACH)
+    private AuditTrail auditTrail;
+
     @JsonIgnore
     @Transient
     transient Boolean signable = false;

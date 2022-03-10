@@ -718,7 +718,11 @@ public class SignRequestService {
 	@Transactional
 	public Document getLastSignedFile(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
-		return signRequest.getSignedDocuments().get(signRequest.getSignedDocuments().size() - 1);
+		if(signRequest.getSignedDocuments().size() > 0) {
+			return signRequest.getSignedDocuments().get(signRequest.getSignedDocuments().size() - 1);
+		} else {
+			return null;
+		}
 	}
 
 	@Transactional
