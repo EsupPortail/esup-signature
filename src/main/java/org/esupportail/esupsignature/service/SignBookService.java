@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.europa.esig.dss.diagnostic.DiagnosticData;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -66,6 +67,9 @@ public class SignBookService {
 
     @Resource
     private MessageSource messageSource;
+
+    @Resource
+    private AuditTrailService auditTrailService;
 
     @Resource
     private SignBookRepository signBookRepository;
@@ -838,8 +842,8 @@ public class SignBookService {
                 throw new EsupSignatureException(e.getMessage());
             }
         }
-        updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", "SUCCESS", "", userEppn, userEppn);
         signRequestService.completeSignRequests(signBook.getSignRequests(), userEppn);
+        updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", "SUCCESS", "", userEppn, userEppn);
     }
 
     public List<SignRequest> getSignRequestsForCurrentUserByStatus(String userEppn, String authUserEppn, String statusFilter) {
@@ -964,6 +968,9 @@ public class SignBookService {
     }
 
     public void sign(SignRequest signRequest, String password, String certType, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, User user, User authUser, Long userShareId, String comment) throws EsupSignatureException, IOException, InterruptedException, EsupSignatureMailException {
+        if(signRequest.getAuditTrail() == null) {
+            signRequest.setAuditTrail(auditTrailService.create(signRequest.getToken()));
+        }
         User signerUser = user;
         if(userShareId != null) {
             UserShare userShare = userShareService.getById(userShareId);
@@ -1003,17 +1010,27 @@ public class SignBookService {
                 throw new EsupSignatureException("Il manque une signature !");
             }
             List<Log> lastSignLogs = new ArrayList<>();
+            Date date = new Date();
             if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
                 for(SignRequestParams signRequestParams : signRequestParamses) {
-                    signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, 1, signerUser);
+                    signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, 1, signerUser, date);
                     lastSignLogs.add(signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn()));
                 }
             }
             if ((signRequestService.isStepAllSignDone(signRequest.getParentSignBook()))) {
                 signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest, lastSignLogs), signRequest.getToken());
             }
-            applyEndOfSignRules(signRequest.getId(), user.getEppn(), authUser.getEppn(), signType, comment);
-            documentService.addSignedFile(signRequest, signedInputStream, signRequest.getTitle() + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType());
+            byte[] signedBytes = signedInputStream.readAllBytes();
+            auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), "Signature simple", "Pas de timestamp", date, null);
+            boolean isComplete = applyEndOfSignRules(signRequest.getId(), user.getEppn(), authUser.getEppn(), signType, comment);
+            Document signedDocument = documentService.addSignedFile(signRequest, new ByteArrayInputStream(signedBytes), signRequest.getTitle() + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType());
+            if(isComplete) {
+                try {
+                    auditTrailService.closeAuditTrail(signRequest.getToken(), signedDocument, new ByteArrayInputStream(signedBytes));
+                } catch(IOException e) {
+                    throw new EsupSignatureException(e.getMessage());
+                }
+            }
         } else {
             if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
                 signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
@@ -1024,14 +1041,26 @@ public class SignBookService {
             if(signRequestParamses.size() == 0 && visual) {
                 throw new EsupSignatureException("Il manque une signature !");
             }
-            signService.certSign(signRequest, signerUser, password, certType, visual);
-            applyEndOfSignRules(signRequest.getId(), user.getEppn(), authUser.getEppn(), SignType.certSign, comment);
+            Document signedDocument = signService.certSign(signRequest, signerUser, password, certType, visual);
+            Reports reports = validationService.validate(signedDocument.getInputStream(), null);
+            DiagnosticData diagnosticData = reports.getDiagnosticData();
+            String certificat = new ArrayList<>(diagnosticData.getAllSignatures()).get(diagnosticData.getAllSignatures().size() - 1).getSigningCertificate().toString();
+            String timestamp = diagnosticData.getTimestampList().get(0).getSigningCertificate().toString();
+            auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), certificat, timestamp, reports.getSimpleReport().getValidationTime(), null);
+            boolean isComplete = applyEndOfSignRules(signRequest.getId(), user.getEppn(), authUser.getEppn(), SignType.certSign, comment);
+            if(isComplete) {
+                try {
+                    auditTrailService.closeAuditTrail(signRequest.getToken(), signedDocument, signedDocument.getInputStream());
+                } catch(IOException e) {
+                    throw new EsupSignatureException(e.getMessage());
+                }
+            }
         }
         customMetricsService.incValue("esup-signature.signrequests", "signed");
     }
 
     @Transactional
-    public void applyEndOfSignRules(Long signRequestId, String userEppn, String authUserEppn, SignType signType, String comment) throws EsupSignatureException {
+    public boolean applyEndOfSignRules(Long signRequestId, String userEppn, String authUserEppn, SignType signType, String comment) throws EsupSignatureException {
         SignRequest signRequest = signRequestService.getById(signRequestId);
         if ( signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) ) {
             if(comment != null && !comment.isEmpty()) {
@@ -1059,11 +1088,13 @@ public class SignBookService {
                     pendingSignBook(signRequest.getParentSignBook().getId(), null, userEppn, authUserEppn, false);
                 } else {
                     completeSignBook(signRequest.getParentSignBook().getId(), authUserEppn);
+                    return true;
                 }
             }
         } else {
             signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.pending, "Demande incomplète", "SUCCESS", userEppn, authUserEppn);
         }
+        return false;
     }
 
     public void refuseSignBook(SignBook signBook, String comment, String userEppn, String authUserEppn) throws EsupSignatureMailException {

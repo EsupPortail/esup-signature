@@ -91,6 +91,9 @@ public class SignRequestService {
 	private UserService userService;
 
 	@Resource
+	private AuditTrailService auditTrailService;
+
+	@Resource
 	private DataService dataService;
 
 	@Resource
@@ -381,12 +384,12 @@ public class SignRequestService {
 		}
 	}
 
-	public void completeSignRequest(Long id, String userEppn, String authUserEppn) {
+	public void completeSignRequest(Long id, String userEppn, String authUserEppn) throws EsupSignatureException {
 		SignRequest signRequest = getById(id);
 		completeSignRequest(signRequest, userEppn, authUserEppn);
 	}
 
-	private void completeSignRequest(SignRequest signRequest, String userEppn, String authUserEppn) {
+	private void completeSignRequest(SignRequest signRequest, String userEppn, String authUserEppn) throws EsupSignatureException {
 		if (signRequest.getCreateBy().getEppn().equals(userEppn) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
 			completeSignRequests(Arrays.asList(signRequest), authUserEppn);
 		} else {
@@ -394,7 +397,7 @@ public class SignRequestService {
 		}
 	}
 
-	public void completeSignRequests(List<SignRequest> signRequests, String authUserEppn) {
+	public void completeSignRequests(List<SignRequest> signRequests, String authUserEppn) throws EsupSignatureException {
 		for(SignRequest signRequest : signRequests) {
 			if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
 				updateStatus(signRequest.getId(), SignRequestStatus.completed, "Terminé", "SUCCESS", authUserEppn, authUserEppn);

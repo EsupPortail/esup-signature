@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -10,10 +11,11 @@ public class AuditTrail {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Column(unique=true)
     private String token;
 
     @OneToMany
-    private List<AuditStep> auditSteps;
+    private List<AuditStep> auditSteps = new ArrayList<>();
 
     private String documentId;
 

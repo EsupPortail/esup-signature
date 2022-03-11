@@ -21,8 +21,10 @@ public class AuditStep {
 
     private String email;
 
+    @Column(columnDefinition = "TEXT")
     private String signCertificat;
 
+    @Column(columnDefinition = "TEXT")
     private String timeStampCertificat;
 
     @Temporal(TemporalType.TIMESTAMP)

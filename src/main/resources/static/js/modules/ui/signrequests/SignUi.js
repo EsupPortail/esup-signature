@@ -150,15 +150,24 @@ export class SignUi {
         }
         if(this.workspace != null) {
             let signRequestParamses = Array.from(this.workspace.signPosition.signRequestParamses.values());
-            for(let i = 0 ; i < signRequestParamses.length; i++) {
-                // nullify to avoid circular error on stringify...
-                signRequestParamses[i].cross = null;
-            }
-            // let visual = !(this.workspace.signPosition.signType === "hiddenVisa") && this.isPdf;
             this.signRequestUrlParams = {
                 'password' : $("#password").val(),
                 'certType' : $("#certType").val(),
-                'signRequestParams' : JSON.stringify(signRequestParamses),
+                'signRequestParams' : JSON.stringify(signRequestParamses, function replacer(key, value) {
+                    if (this &&
+                        (key === "events"
+                        || key === "cross"
+                        || key === "defaultTools"
+                        || key === "tools"
+                        || key === "signColorPicker"
+                        || key === "textareaExtra"
+                        || key === "divExtra"
+                        || key === "border"
+                        || key === "textareaPart")) {
+                        return undefined;
+                    }
+                    return value;
+                }),
                 // 'visual' : visual,
                 'comment' : this.signComment.val(),
                 'formData' : JSON.stringify(formData)

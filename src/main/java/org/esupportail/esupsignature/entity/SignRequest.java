@@ -291,6 +291,14 @@ public class SignRequest {
         this.recipientHasSigned = recipientHasSigned;
     }
 
+    public AuditTrail getAuditTrail() {
+        return auditTrail;
+    }
+
+    public void setAuditTrail(AuditTrail auditTrail) {
+        this.auditTrail = auditTrail;
+    }
+
     @JsonIgnore
     public Document getLastSignedDocument() {
         if(this.getSignedDocuments().size() > 0) {
