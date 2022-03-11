@@ -266,7 +266,7 @@ export class SignRequestParams  extends EventFactory {
             }
         }
         if(this.addExtra) {
-            if (localStorage.getItem('extraOnTop') != null) {
+            if (!this.isVisa && localStorage.getItem('extraOnTop') != null) {
                 if (localStorage.getItem('extraOnTop') === "false") {
                     if (this.divExtra != null && this.extraOnTop) {
                         this.toggleExtraOnTop();
