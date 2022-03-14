@@ -6,5 +6,6 @@ import org.springframework.data.repository.CrudRepository;
 public interface AuditTrailRepository extends CrudRepository<AuditTrail, Long>  {
 
     AuditTrail findByToken(String token);
+    AuditTrail findByDocumentCheckSum(String checksum);
 
 }

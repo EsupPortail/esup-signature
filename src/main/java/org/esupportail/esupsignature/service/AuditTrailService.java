@@ -78,4 +78,9 @@ public class AuditTrailService {
         return auditStep;
     }
 
+    @Transactional
+    public AuditTrail getAuditTrailFromCheksum(String checkSum) {
+        return auditTrailRepository.findByDocumentCheckSum(checkSum);
+    }
+
 }

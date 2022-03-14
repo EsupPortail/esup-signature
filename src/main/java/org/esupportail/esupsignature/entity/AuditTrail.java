@@ -23,6 +23,8 @@ public class AuditTrail {
 
     private String documentType;
 
+    private Long documentSize;
+
     private String documentCheckSum;
 
     public Long getId() {
@@ -71,6 +73,14 @@ public class AuditTrail {
 
     public void setDocumentType(String documentType) {
         this.documentType = documentType;
+    }
+
+    public Long getDocumentSize() {
+        return documentSize;
+    }
+
+    public void setDocumentSize(Long documentSize) {
+        this.documentSize = documentSize;
     }
 
     public String getDocumentCheckSum() {

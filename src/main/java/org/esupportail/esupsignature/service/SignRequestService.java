@@ -145,7 +145,7 @@ public class SignRequestService {
 		return null;
 	}
 
-	public List<SignRequest> getSignRequestsByToken(String token) {
+	public SignRequest getSignRequestByToken(String token) {
 		return signRequestRepository.findByToken(token);
 	}
 

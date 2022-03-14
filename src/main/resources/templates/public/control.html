@@ -7,60 +7,113 @@
 <header th:replace="fragments/nav-empty :: nav-empty"></header>
 <main role="main">
     <div class="col-10 mx-auto" style="margin-top: 60px">
+        <div class="alert alert-primary mb-1">
+            <h5>Verification de la conformité du document signé : <span th:text="${token}"></span></h5>
+        </div>
+        <div th:if="${error}" class="alert alert-danger mb-1">
+            <h5>Le document que vous avez fournis n'est pas conforme : </h5>
+            <ul>
+                <li>Soit vous n'avez pas selectionné le bon document</li>
+                <li>Soit le document a été modifié depuis qu'il a été signé</li>
+            </ul>
+        </div>
         <th:block th:if="${signRequest}">
-            <div class="alert alert-light mb-1">
-                <h5>Contrôle du document : <span th:text="${signRequest.token}"></span></h5>
-            </div>
-            <div th:if="${viewAccess}" class="alert alert-info mb-1">
-                Vous avez accès à cette demande : <a th:href="'/user/signrequests/' + ${signRequest.id}">Voir la demande</a>
-            </div>
             <th:block th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
                 <div class="alert alert-success mb-1">
-                    <h5>Le document a été signé par :</h5>
-                    <ul th:each="userHasSigned : ${usersHasSigned}">
-                        <li th:text="${userHasSigned.firstname} + ' ' + ${userHasSigned.name}"></li>
-                    </ul>
-                </div>
-                <div class="card mb-1">
-                    <div class="card-header"><h5>Informations générales sur le document</h5></div>
-                    <div class="card-body">
-                        <dl class="row border-bottom m-0">
-                            <dt class="col-lg-5">Nom de document</dt>
-                            <dd th:text="${signedDocument.fileName}"></dd>
-                        </dl>
-                        <dl class="row border-bottom m-0">
-                            <dt class="col-lg-5">Statut du document</dt>
-                            <dd>Signé</dd>
-                        </dl>
+                    <h5>Le document est conforme</h5>
+                    <div th:if="${viewAccess}">
+                        Vous avez accès à cette demande : <a th:href="'/user/signrequests/' + ${signRequest.id}">Voir la demande</a>
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-header"><h5>Actions réalisées sur le document</h5></div>
+                <div class="card mb-1">
+                    <div class="card-header"><h5>Dossier de preuves</h5></div>
                     <div class="card-body">
-                        <table class="table table-sm table-hover">
-                            <thead class="table-secondary">
-                            <tr>
-                                <th>Date</th>
-                                <th>Nom</th>
-                                <th>Action</th>
-                                <th>Caratéristiques de la signature</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <th:block th:each="log, iterator : ${logs}">
-                                <tr th:if="${logs.size() > iterator.index + 1 && (logs[iterator.index + 1].finalStatus == 'checked' || logs[iterator.index + 1].finalStatus == 'signed')}">
-                                    <td class="text-left"><span
-                                            th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
-                                    <td class="text-left"><span th:text="${log.user.firstname} + ' ' + ${log.user.name}"></span></td>
-                                    <td class="text-left"><span
-                                            th:text="#{'signbook.status.' + ${logs[iterator.index + 1].finalStatus}}"></span></td>
-                                    <td class="text-left"><span th:if="${log.action == 'Apposition de la signature'}"
-                                                                th:text="'Apposition d`un visuel en page ' + ${log.pageNumber} + ' aux coordonnées (' + ${log.posX} + ', ' + ${log.posY} + ')'"></span>
-                                    </td>
+                        <div class="row">
+                        <div class="alert alert-light border-secondary col-5 mx-auto">
+                            <h4>Informations générales sur le document</h4>
+                            <dl class="row border-bottom m-0">
+                                <dt class="col-lg-5">Nom de document : </dt>
+                                <dd th:text="${auditTrail.documentName}"></dd>
+                            </dl>
+                            <dl class="row border-bottom m-0">
+                                <dt class="col-lg-5">Type de document : </dt>
+                                <dd th:text="${auditTrail.documentType}"></dd>
+                            </dl>
+                            <dl class="row border-bottom m-0">
+                                <dt class="col-lg-5">Taille : </dt>
+                                <dd th:text="${size}"></dd>
+                            </dl>
+                        </div>
+                        <div class="alert alert-light border-secondary col-5 mx-auto">
+
+                            <h4>Signatures</h4>
+                            <table class="table table-sm table-hover">
+                                <thead class="table-secondary">
+                                <tr>
+                                    <th></th>
+                                    <th>Date</th>
+                                    <th>Nom</th>
+                                    <th>Email</th>
                                 </tr>
-                            </th:block>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                <th:block th:each="auditStep, iterator : ${auditTrail.auditSteps}">
+                                    <tr data-bs-toggle="collapse" data-bs-target="#collapseExample" style="cursor: pointer;" title="Cliquez ici pour afficher le detail">
+                                        <td><i class="fas fa-plus"></i></td>
+                                        <td class="text-left"><span
+                                                th:text="${#dates.format(auditStep.timeStampDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
+                                        <td class="text-left"><span th:text="${auditStep.firstname} + ' ' + ${auditStep.name}"></span></td>
+                                        <td class="text-left"><span
+                                                th:text="${auditStep.email}"></span></td>
+                                    </tr>
+                                    <tr class="collapse" id="collapseExample">
+                                        <td colspan="6">
+                                            <dl class="row border-bottom m-0">
+                                                <dt class="col-lg-5">Authetification : </dt>
+                                                <dd th:text="${auditStep.authenticationDetails}"></dd>
+                                            </dl>
+                                            <dl class="row border-bottom m-0">
+                                                <dt class="col-lg-5">Certificat signature : </dt>
+                                                <dd th:text="${auditStep.signCertificat}"></dd>
+                                            </dl>
+                                            <dl class="row border-bottom m-0">
+                                                <dt class="col-lg-5">Certificat timestamp : </dt>
+                                                <dd th:text="${auditStep.timeStampCertificat}"></dd>
+                                            </dl>
+                                        </td>
+                                    </tr>
+                                </th:block>
+                                </tbody>
+                            </table>
+                        </div>
+                            <div class="alert alert-light border-secondary col-11 mx-auto mt-4">
+                                <h4>Journal des actions</h4>
+                                <table class="table table-sm table-hover">
+                                    <thead class="table-secondary">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Nom</th>
+                                        <th>Action</th>
+                                        <th>Caratéristiques de la signature</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <th:block th:each="log, iterator : ${logs}">
+                                        <tr th:if="${logs.size() > iterator.index + 1 && (logs[iterator.index + 1].finalStatus == 'checked' || logs[iterator.index + 1].finalStatus == 'signed')}">
+                                            <td class="text-left"><span
+                                                    th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
+                                            <td class="text-left"><span th:text="${log.user.firstname} + ' ' + ${log.user.name}"></span></td>
+                                            <td class="text-left"><span
+                                                    th:text="#{'signbook.status.' + ${logs[iterator.index + 1].finalStatus}}"></span></td>
+                                            <td class="text-left"><span th:if="${log.action == 'Apposition de la signature'}"
+                                                                        th:text="'Apposition d`un visuel en page ' + ${log.pageNumber} + ' aux coordonnées (' + ${log.posX} + ', ' + ${log.posY} + ')'"></span>
+                                            </td>
+                                        </tr>
+                                    </th:block>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </th:block>
@@ -79,7 +132,13 @@
             </th:block>
         </th:block>
         <th:block th:unless="${signRequest}">
-            <h6>Document introuvable</h6>
+            <div class="alert alert-light border-secondary">
+                <h5>Merci de déposer le document à contrôler</h5>
+            <form th:action="'/public/control/' + ${token} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
+                <input required class="form-control mb-2" data-buttontext="Choisir fichier" id="multipartFile" name="multipartFile" type="file">
+                <input class="btn btn-success" type="submit">
+            </form>
+            </div>
         </th:block>
     </div>
 </main>
