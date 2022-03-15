@@ -102,7 +102,7 @@ public class PdfService {
         this.globalProperties = globalProperties;
     }
 
-    public InputStream stampImage(InputStream inputStream, SignRequest signRequest, SignRequestParams signRequestParams, int j, User user) {
+    public InputStream stampImage(InputStream inputStream, SignRequest signRequest, SignRequestParams signRequestParams, int j, User user, Date date) {
         double fixFactor = .75;
         SignType signType = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
         PdfParameters pdfParameters;
@@ -115,14 +115,14 @@ public class PdfService {
                 int i = 1;
                 for(PDPage pdPage : pdDocument.getPages()) {
                     if(i != signRequestParams.getSignPageNumber() || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp)) {
-                        stampImageToPage(signRequest, signRequestParams, user, fixFactor, signType, pdfParameters, pdDocument, pdPage, i);
+                        stampImageToPage(signRequest, signRequestParams, user, fixFactor, signType, pdfParameters, pdDocument, pdPage, i, date);
                     }
                     i++;
                 }
             } else {
                 if(j > 0) {
                     PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
-                    stampImageToPage(signRequest, signRequestParams, user, fixFactor, signType, pdfParameters, pdDocument, pdPage, signRequestParams.getSignPageNumber());
+                    stampImageToPage(signRequest, signRequestParams, user, fixFactor, signType, pdfParameters, pdDocument, pdPage, signRequestParams.getSignPageNumber(), date);
                 }
             }
             
@@ -137,8 +137,7 @@ public class PdfService {
         return null;
     }
 
-    private void stampImageToPage(SignRequest signRequest, SignRequestParams signRequestParams, User user, double fixFactor, SignType signType, PdfParameters pdfParameters, PDDocument pdDocument, PDPage pdPage, int pageNumber) throws IOException {
-        Date newDate = new Date();
+    private void stampImageToPage(SignRequest signRequest, SignRequestParams signRequestParams, User user, double fixFactor, SignType signType, PdfParameters pdfParameters, PDDocument pdDocument, PDPage pdPage, int pageNumber, Date newDate) throws IOException {
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
         InputStream signImage = null;
         if (signRequestParams.getSignImageNumber() < 0) {

@@ -6,7 +6,6 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.OJService;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.service.*;
 import org.hibernate.LazyInitializationException;
 import org.slf4j.Logger;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -63,22 +61,18 @@ public class GlobalAttributsControllerAdvice {
 
     private final ValidationService validationService;
 
-    private final UserKeystoreService userKeystoreService;
-
     public GlobalAttributsControllerAdvice(GlobalProperties globalProperties,
                                            @Autowired(required = false) BuildProperties buildProperties,
                                            ValidationService validationService,
-                                           UserKeystoreService userKeystoreService,
                                            Environment environment) {
         this.globalProperties = globalProperties;
         this.buildProperties = buildProperties;
         this.validationService = validationService;
-        this.userKeystoreService = userKeystoreService;
         this.environment = environment;
     }
 
     @ModelAttribute
-    public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) throws JsonProcessingException {
+    public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) throws JsonProcessingException {
         if(userEppn != null) {
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
@@ -110,12 +104,7 @@ public class GlobalAttributsControllerAdvice {
             } else {
                 model.addAttribute("versionApp", "dev");
             }
-            List<SignType> signTypes = signTypeService.getAuthorizedSignTypes();
-            if (userKeystoreService == null) {
-                signTypes.remove(SignType.certSign);
-                signTypes.remove(SignType.nexuSign);
-            }
-            model.addAttribute("signTypes", signTypes);
+            model.addAttribute("signTypes", signTypeService.getAuthorizedSignTypes());
             model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
             model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
             model.addAttribute("nbToSign", signRequestService.nbToSignSignRequests(userEppn));

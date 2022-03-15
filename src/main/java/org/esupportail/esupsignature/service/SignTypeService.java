@@ -19,12 +19,11 @@ public class SignTypeService {
     }
 
     public List<SignType> getAuthorizedSignTypes() {
-        List<SignType> signTypes = new ArrayList<>();
-        for(SignType signType : SignType.values()) {
-            if(!globalProperties.getDisableCertStorage() || !signType.equals(SignType.certSign)) {
-                signTypes.add(signType);
-            }
+        List<SignType> signTypes = new ArrayList<>(List.of(SignType.values()));
+        if(globalProperties.getDisableCertStorage() && (globalProperties.getOpenXPKIServerUrl() == null || globalProperties.getOpenXPKIServerUrl().isEmpty())) {
+            signTypes.remove(SignType.certSign);
         }
         return signTypes;
     }
+
 }

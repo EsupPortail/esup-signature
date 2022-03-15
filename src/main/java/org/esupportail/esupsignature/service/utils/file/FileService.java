@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.utils.file;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -407,6 +408,10 @@ public class FileService {
 			logger.debug(e.getMessage());
 		}
 		return type;
+	}
+
+	public String getFileChecksum(InputStream inputStream) throws IOException {
+		return DigestUtils.sha3_256Hex(inputStream);
 	}
 
 }

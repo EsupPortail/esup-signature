@@ -384,7 +384,7 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @GetMapping(value = "/complete/{id}")
-    public String complete(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
+    public String complete(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws EsupSignatureException {
         signRequestService.completeSignRequest(id, userEppn, authUserEppn);
         return "redirect:/user/signrequests/" + id + "/?form";
     }

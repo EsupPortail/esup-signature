@@ -44,7 +44,7 @@ public class UserController {
 
 	private final LdapAliasService ldapAliasService;
 
-	public UserController(@Autowired(required=false)UserKeystoreService userKeystoreService, @Autowired(required = false) LdapAliasService ldapAliasService) {
+	public UserController(@Autowired(required=false) UserKeystoreService userKeystoreService, @Autowired(required = false) LdapAliasService ldapAliasService) {
 		this.userKeystoreService = userKeystoreService;
 		this.ldapAliasService = ldapAliasService;
 	}

@@ -91,6 +91,9 @@ public class SignRequestService {
 	private UserService userService;
 
 	@Resource
+	private AuditTrailService auditTrailService;
+
+	@Resource
 	private DataService dataService;
 
 	@Resource
@@ -142,7 +145,7 @@ public class SignRequestService {
 		return null;
 	}
 
-	public List<SignRequest> getSignRequestsByToken(String token) {
+	public SignRequest getSignRequestByToken(String token) {
 		return signRequestRepository.findByToken(token);
 	}
 
@@ -381,12 +384,12 @@ public class SignRequestService {
 		}
 	}
 
-	public void completeSignRequest(Long id, String userEppn, String authUserEppn) {
+	public void completeSignRequest(Long id, String userEppn, String authUserEppn) throws EsupSignatureException {
 		SignRequest signRequest = getById(id);
 		completeSignRequest(signRequest, userEppn, authUserEppn);
 	}
 
-	private void completeSignRequest(SignRequest signRequest, String userEppn, String authUserEppn) {
+	private void completeSignRequest(SignRequest signRequest, String userEppn, String authUserEppn) throws EsupSignatureException {
 		if (signRequest.getCreateBy().getEppn().equals(userEppn) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
 			completeSignRequests(Arrays.asList(signRequest), authUserEppn);
 		} else {
@@ -394,7 +397,7 @@ public class SignRequestService {
 		}
 	}
 
-	public void completeSignRequests(List<SignRequest> signRequests, String authUserEppn) {
+	public void completeSignRequests(List<SignRequest> signRequests, String authUserEppn) throws EsupSignatureException {
 		for(SignRequest signRequest : signRequests) {
 			if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
 				updateStatus(signRequest.getId(), SignRequestStatus.completed, "Terminé", "SUCCESS", authUserEppn, authUserEppn);
@@ -718,7 +721,11 @@ public class SignRequestService {
 	@Transactional
 	public Document getLastSignedFile(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
-		return signRequest.getSignedDocuments().get(signRequest.getSignedDocuments().size() - 1);
+		if(signRequest.getSignedDocuments().size() > 0) {
+			return signRequest.getSignedDocuments().get(signRequest.getSignedDocuments().size() - 1);
+		} else {
+			return null;
+		}
 	}
 
 	@Transactional
@@ -856,7 +863,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Map<String, Object> getFileResponse(Long documentId) throws SQLException, EsupSignatureFsException, IOException {
+	public Map<String, Object> getFileResponse(Long documentId) throws SQLException, IOException {
 		Document document = documentService.getById(documentId);
 		return fileService.getFileResponse(document.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), document.getFileName(), document.getContentType());
 	}
@@ -870,7 +877,12 @@ public class SignRequestService {
 	public boolean replayNotif(Long id) throws EsupSignatureMailException {
 		SignRequest signRequest = this.getById(id);
 		List<String> recipientEmails = new ArrayList<>();
-		getCurrentRecipients(signRequest).forEach(r -> recipientEmails.add(r.getUser().getEmail()));
+		List<Recipient> recipients = getCurrentRecipients(signRequest);
+		for(Recipient recipient : recipients) {
+			if(recipient.getUser() != null  && recipient.getUser().getEmail() != null) {
+				recipientEmails.add(recipient.getUser().getEmail());
+			}
+		}
 		long notifTime = Duration.between(signRequest.getLastNotifDate().toInstant(), new Date().toInstant()).toHours();
 		if(recipientEmails.size() > 0 && notifTime >= globalProperties.getHoursBeforeRefreshNotif() && signRequest.getStatus().equals(SignRequestStatus.pending)) {
 			mailService.sendSignRequestReplayAlert(recipientEmails, signRequest);
