@@ -863,7 +863,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Map<String, Object> getFileResponse(Long documentId) throws SQLException, EsupSignatureFsException, IOException {
+	public Map<String, Object> getFileResponse(Long documentId) throws SQLException, IOException {
 		Document document = documentService.getById(documentId);
 		return fileService.getFileResponse(document.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), document.getFileName(), document.getContentType());
 	}
@@ -877,7 +877,12 @@ public class SignRequestService {
 	public boolean replayNotif(Long id) throws EsupSignatureMailException {
 		SignRequest signRequest = this.getById(id);
 		List<String> recipientEmails = new ArrayList<>();
-		getCurrentRecipients(signRequest).forEach(r -> recipientEmails.add(r.getUser().getEmail()));
+		List<Recipient> recipients = getCurrentRecipients(signRequest);
+		for(Recipient recipient : recipients) {
+			if(recipient.getUser() != null  && recipient.getUser().getEmail() != null) {
+				recipientEmails.add(recipient.getUser().getEmail());
+			}
+		}
 		long notifTime = Duration.between(signRequest.getLastNotifDate().toInstant(), new Date().toInstant()).toHours();
 		if(recipientEmails.size() > 0 && notifTime >= globalProperties.getHoursBeforeRefreshNotif() && signRequest.getStatus().equals(SignRequestStatus.pending)) {
 			mailService.sendSignRequestReplayAlert(recipientEmails, signRequest);
