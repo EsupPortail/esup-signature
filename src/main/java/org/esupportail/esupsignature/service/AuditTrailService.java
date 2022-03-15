@@ -47,6 +47,7 @@ public class AuditTrailService {
         auditTrail.setDocumentCheckSum(fileService.getFileChecksum(inputStream));
         auditTrail.setDocumentName(document.getFileName());
         auditTrail.setDocumentType(document.getContentType());
+        auditTrail.setDocumentSize(document.getSize());
         auditTrail.setDocumentId(document.getId().toString());
     }
 
@@ -64,6 +65,7 @@ public class AuditTrailService {
         auditStep.setName(user.getName());
         auditStep.setFirstname(user.getFirstname());
         auditStep.setEmail(user.getEmail());
+        auditStep.setLogin(user.getEppn());
         auditStep.setSignCertificat(certificat);
         auditStep.setTimeStampCertificat(timeStampCertificat);
         auditStep.setTimeStampDate(timeStampDate);

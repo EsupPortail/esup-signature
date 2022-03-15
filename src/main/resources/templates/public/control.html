@@ -69,7 +69,11 @@
                                     <tr class="collapse" id="collapseExample">
                                         <td colspan="6">
                                             <dl class="row border-bottom m-0">
-                                                <dt class="col-lg-5">Authetification : </dt>
+                                                <dt class="col-lg-5">Login : </dt>
+                                                <dd th:text="${auditStep.authenticationDetails}"></dd>
+                                            </dl>
+                                            <dl class="row border-bottom m-0">
+                                                <dt class="col-lg-5">Authentification : </dt>
                                                 <dd th:text="${auditStep.authenticationDetails}"></dd>
                                             </dl>
                                             <dl class="row border-bottom m-0">
