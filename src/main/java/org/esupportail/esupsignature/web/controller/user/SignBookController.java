@@ -105,16 +105,15 @@ public class SignBookController {
         model.addAttribute("docTitleFilter", docTitleFilter);
         model.addAttribute("recipientsFilter", recipientsFilter);
         LinkedHashSet<String> workflowNames = new LinkedHashSet<>();
-        if(statusFilter.isEmpty() && workflowFilter.equals("%") && docTitleFilter.equals("%") && recipientsFilter.equals("%")) {
-            model.addAttribute("docTitles", signBookService.getAllDocTitles(userEppn));
-            if(workflowFilter.equals("%") || workflowFilter.equals("Hors circuit")) {
-                workflowNames.add("Hors circuit");
-            }
+        LinkedHashSet<String> docTitles = new LinkedHashSet<>();
+        if(statusFilter.isEmpty() && (workflowFilter.equals("%") || workflowFilter.equals("Hors circuit")) && docTitleFilter.equals("%") && recipientsFilter.equals("%")) {
+            docTitles.addAll(signBookService.getAllDocTitles(userEppn));
             workflowNames.addAll(signBookService.getWorkflowNames(userEppn));
         } else {
-            model.addAttribute("docTitles", signBookService.getDocTitles(signBooks.getContent()));
-            workflowNames.addAll(signBookService.getWorkflowNames(signBooks.getContent()));
+            docTitles.addAll(signBooks.stream().map(SignBook::getSubject).collect(Collectors.toList()));
+            workflowNames.addAll(signBooks.stream().map(SignBook::getWorkflowName).collect(Collectors.toList()));
         }
+        model.addAttribute("docTitles", docTitles);
         model.addAttribute("workflowNames", workflowNames);
         model.addAttribute("signRequestRecipients", signBookService.getRecipientsNames(userEppn).stream().filter(Objects::nonNull).collect(Collectors.toList()));
         return "user/signbooks/list";
@@ -286,14 +285,14 @@ public class SignBookController {
     }
 
     @ResponseBody
-    @PostMapping(value = "/add-docs-in-sign-book-unique/{workflowName}/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/add-docs-in-sign-book-unique/{workflowName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Object addDocumentToNewSignRequestUnique(@ModelAttribute("authUserEppn") String authUserEppn,
-                                                    @PathVariable("name") String name,
                                                     @PathVariable("workflowName") String workflowName,
-                                                    @RequestParam("multipartFiles") MultipartFile[] multipartFiles, Model model) throws EsupSignatureIOException {
+                                                    @RequestParam(value = "title", required = false) String title,
+                                                    @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         User authUser = userService.getUserByEppn(authUserEppn);
-        logger.info("start add documents in " + name);
-        SignBook signBook = signBookService.addDocsInNewSignBookSeparated(name, name, workflowName, multipartFiles, authUser);
+        logger.info("start add documents in " + workflowName);
+        SignBook signBook = signBookService.addDocsInNewSignBookSeparated(title, workflowName, multipartFiles, authUser);
         return new String[]{"" + signBook.getId()};
     }
 

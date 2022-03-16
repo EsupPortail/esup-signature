@@ -1959,3 +1959,8 @@ progress:before {
 .france-connect:hover img.image-hover {
     display: inline;
 }
+
+.stop-scrolling {
+    height: 100%;
+    overflow: hidden;
+}

@@ -26,6 +26,10 @@ public class SignBook {
 	@Version
     private Integer version;
 
+    private String subject;
+
+    private String workflowName;
+
 	private String name;
 
     private String title;
@@ -46,8 +50,6 @@ public class SignBook {
 
     private String updateBy;
     
-    private Boolean external = false;
-
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
@@ -93,6 +95,22 @@ public class SignBook {
 
     public void setVersion(Integer version) {
         this.version = version;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
+    public String getWorkflowName() {
+        return workflowName;
+    }
+
+    public void setWorkflowName(String workflowName) {
+        this.workflowName = workflowName;
     }
 
     public String getName() {
@@ -149,14 +167,6 @@ public class SignBook {
 
     public void setUpdateBy(String updateBy) {
         this.updateBy = updateBy;
-    }
-
-    public Boolean getExternal() {
-        return external;
-    }
-
-    public void setExternal(Boolean external) {
-        this.external = external;
     }
 
     public SignRequestStatus getStatus() {

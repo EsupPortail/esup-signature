@@ -89,7 +89,7 @@ export class GlobalUi {
         $("#sendSignRequestForm").submit(e => this.disableSendButton(e));
         let csrf = this.csrf;
         $("#startWizardCustomButton").on('click', function(e) {
-            let wizUi = new WizUi("", $("#wizFrameCustom"), "Demande personnalisée", csrf);
+            let wizUi = new WizUi("", $("#wizFrameCustom"), "", csrf);
             wizUi.startByDocs();
         });
 

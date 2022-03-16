@@ -84,7 +84,6 @@ public class DocumentService {
 	}
 
 	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile, String name) throws EsupSignatureException, EsupSignatureFsException {
-		assert !name.isEmpty();
 		String documentUri;
 		FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(targetUrl);
 		if(fsAccessService != null) {
@@ -92,7 +91,7 @@ public class DocumentService {
 				fsAccessService.createURITree(targetUrl);
 				InputStream inputStream = signedFile.getInputStream();
 				if(name == null) {
-					name = signedFile.getFileName().replaceAll("\\W+", "_");
+					name = signedFile.getFileName();
 				} else {
 					name = name + "." + fileService.getExtension(signedFile.getFileName());
 				}

@@ -161,6 +161,11 @@ public class GlobalProperties {
      */
     private String openXPKIServerUrl;
 
+    /**
+     *  Lancer automatiquement les mises à jour au démarrage
+     */
+    private Boolean autoUpgrade = true;
+
     public String getRootUrl() {
         return rootUrl;
     }
@@ -415,5 +420,13 @@ public class GlobalProperties {
 
     public void setOpenXPKIServerUrl(String openXPKIServerUrl) {
         this.openXPKIServerUrl = openXPKIServerUrl;
+    }
+
+    public Boolean getAutoUpgrade() {
+        return autoUpgrade;
+    }
+
+    public void setAutoUpgrade(Boolean autoUpgrade) {
+        this.autoUpgrade = autoUpgrade;
     }
 }

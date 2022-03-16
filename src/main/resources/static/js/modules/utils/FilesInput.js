@@ -13,6 +13,9 @@ export default class FilesInput extends EventFactory {
         }
         console.info("enable complete file input for : " + name);
         this.workflowName = workflowName;
+        if(workflowName === "") {
+            this.workflowName = "custom";
+        }
         this.csrf = new CsrfToken(csrf);
         this.async = false;
         this.uploadUrl = null;
@@ -22,9 +25,10 @@ export default class FilesInput extends EventFactory {
         } else {
             if(workflowName != null) {
                 this.async = false;
-                this.uploadUrl = '/user/signbooks/add-docs-in-sign-book-unique/' + this.workflowName + '/' + this.name + '?' + this.csrf.parameterName + '=' + this.csrf.token;
+                this.uploadUrl = '/user/signbooks/add-docs-in-sign-book-unique/' + this.workflowName + '?' + this.csrf.parameterName + '=' + this.csrf.token;
             }
         }
+        this.title = $("#titleWiz");
         this.initFileInput(documents, readOnly);
         this.initListeners();
     }
@@ -40,6 +44,10 @@ export default class FilesInput extends EventFactory {
         this.input.on('fileclear', e => this.input.fileinput('unlock'));
         this.input.on('filecleared', e => this.checkUniqueFile());
         $('#unique :checkbox').change(e => this.changerUploadMethod());
+        let self = this;
+        this.title.focusout(function(){
+            self.changerUploadMethod(self.title.val())
+        });
 
     }
 
@@ -168,12 +176,21 @@ export default class FilesInput extends EventFactory {
 
     fileUpload() {
         console.info("file upload");
-        this.input.fileinput('upload');
         let self = this;
-        this.input.on('filebatchuploadsuccess', function(event, data) {
-            console.info("submit form");
-            self.fireEvent("uploaded", data.response);
-        });
+        let title = $("#titleWiz");
+        if(this.workflowName === "custom" && title.val() === "") {
+            $(window).on('scroll', function(e){
+                window.scrollTo(0,0);
+            });
+            $("#titleWizSubmit").click();
+
+        } else {
+            this.input.fileinput('upload');
+            this.input.on('filebatchuploadsuccess', function(event, data) {
+                console.info("submit form");
+                self.fireEvent("uploaded", data.response);
+            });
+        }
     }
 
 
@@ -195,18 +212,18 @@ export default class FilesInput extends EventFactory {
         }
     }
 
-    changerUploadMethod () {
+    changerUploadMethod(title) {
         console.group('change upload url');
         if ($('#unique :checkbox').is(":checked")){
             console.info('to group mode');
             this.input.fileinput('refresh', {
-                uploadUrl: '/user/signbooks/add-docs-in-sign-book-group/' + this.name + '?'+ this.csrf.parameterName + '=' + this.csrf.token
+                uploadUrl: '/user/signbooks/add-docs-in-sign-book-group/' + this.name + '?title=' + title + "&" + this.csrf.parameterName + '=' + this.csrf.token
             });
         } else {
             console.info('to unique mode');
             this.input.fileinput('refresh', {
-                uploadUrl: '/user/signbooks/add-docs-in-sign-book-unique/' + this.workflowName + '/' + this.name + '?'+ this.csrf.parameterName + '=' + this.csrf.token
-        });
+                uploadUrl: '/user/signbooks/add-docs-in-sign-book-unique/' + this.workflowName + '?title=' + title + "&" + this.csrf.parameterName + '=' + this.csrf.token
+            });
         }
         console.groupEnd();
     }
