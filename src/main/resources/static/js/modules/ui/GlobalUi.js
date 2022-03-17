@@ -121,6 +121,10 @@ export class GlobalUi {
             let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", csrf);
             wizUi.startByRecipients();
         });
+        $("#start-wizard-button2").on('click', function(e) {
+            let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", csrf);
+            wizUi.startByRecipients();
+        });
         $("#user-toggle").on("click", function (e){
             e.stopPropagation();
         });

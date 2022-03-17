@@ -43,15 +43,14 @@
                     </a>
                     <hr class="newHr d-none">
                     <h5 class="newToggled d-none">Circuits</h5>
-<!--                    <a th:unless="${globalProperties.hideWizard}" role="button" class="globalButton btn btn-material btn-light text-center me-2 mb-2 overflow-hidden align-bottom p-0 workflow-button" data-bs-toggle="modal"-->
-<!--                        data-bs-target="#wizModal" style="width: 150px; height: 200px;"-->
-<!--                        title="Ajoutez des documents et créez un nouveau circuit à l'aide de l'assitant"-->
-<!--                        onclick="$('#wizIframe').attr('src', '/user/wizard/wiz1');">-->
-<!--                        <div class="crop">-->
-<!--                            <i class="fas fa-magic fa-4x "></i>-->
-<!--                        </div>-->
-<!--                        <h6>Assistant de création de demande</h6>-->
-<!--                    </a>-->
+                    <a th:unless="${globalProperties.hideWizardWorkflow}" id="start-wizard-button2" role="button" class="globalButton btn btn-material btn-light text-center me-2 mb-2 overflow-hidden align-bottom p-0 workflow-button" data-bs-toggle="modal"
+                        data-bs-target="#wizModal" style="width: 150px; height: 200px;"
+                        title="Créer un circuit personnel à l'aide de l'assistant" >
+                        <div class="crop">
+                            <i class="fas fa-magic fa-4x "></i>
+                        </div>
+                        <h6>Assistant de création de circuit</h6>
+                    </a>
                     <div class="d-inline-block" id="newWorkflow">
                         <th:block th:each="workflow : ${workflows}">
                             <a role="button" class="start-wizard-workflow-button btn btn-material btn-light text-center me-2 mb-2 overflow-hidden p-0 workflow-button"
