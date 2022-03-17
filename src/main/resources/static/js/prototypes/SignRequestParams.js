@@ -30,6 +30,7 @@ export class SignRequestParams  extends EventFactory {
         this.textPart = "";
         this.signColorPicker = null;
         this.pdSignatureFieldName = null;
+        this.restoreExtraOnTop = false;
         this.allPages = false;
         this.signImageNumber = 0;
         this.originalWidth = 150;
@@ -57,6 +58,7 @@ export class SignRequestParams  extends EventFactory {
             this.restoreExtra = false;
             if(restore) {
                 this.addExtra = false;
+                this.addImage = true;
                 this.addWatermark = false;
                 this.extraText = "";
                 this.extraOnTop = true;
@@ -161,7 +163,9 @@ export class SignRequestParams  extends EventFactory {
                     }
                     self.extraHeight = self.extraHeight / self.signScale * newScale;
                     self.signScale = newScale;
-                    self.cross.css('background-size', Math.round(ui.size.width - self.extraWidth * self.currentScale) + "px");
+                    if(self.addImage) {
+                        self.cross.css('background-size', Math.round(ui.size.width - self.extraWidth * self.currentScale) + "px");
+                    }
                     if (self.addExtra) {
                         self.refreshExtraDiv();
                     }
@@ -300,6 +304,12 @@ export class SignRequestParams  extends EventFactory {
                 }
             }
         }
+        if (localStorage.getItem('addImage') != null) {
+            if(localStorage.getItem('addImage') === "false") {
+                this.addImage = true;
+                this.toggleImage();
+            }
+        }
     }
 
     getNewScale(self, ui) {
@@ -351,6 +361,7 @@ export class SignRequestParams  extends EventFactory {
         $("#hideMoreTools_" + this.id).on("click", e => this.hideMoreTools());
         $("#watermark_" + this.id).on("click", e => this.toggleWatermark());
         $("#allPages_" + this.id).on("click", e => this.toggleAllPages());
+        $("#signImage_" + this.id).on("click", e => this.toggleImage());
         $("#signExtra_" + this.id).on("click", e => this.toggleExtra());
         $("#signExtraOnTop_" + this.id).on("click", e => this.toggleExtraOnTop());
 
@@ -406,10 +417,12 @@ export class SignRequestParams  extends EventFactory {
         let yNew = Math.round((y / this.currentScale * scale));
         this.cross.css("width", newWidth + "px");
         this.cross.css("height", newHeight + "px");
-        if(this.extraOnTop) {
-            this.cross.css('background-size', newWidth);
-        } else {
-            this.cross.css('background-size', newWidth / 2);
+        if(this.addImage) {
+            if(this.extraOnTop) {
+                this.cross.css('background-size', newWidth);
+            } else {
+                this.cross.css('background-size', newWidth / 2);
+            }
         }
         this.divExtra.css("width", this.extraWidth * scale + "px");
         this.cross.css('left', xNew + 'px');
@@ -466,7 +479,9 @@ export class SignRequestParams  extends EventFactory {
             this.signHeight = Math.round(this.originalHeight * this.signScale) + this.extraHeight;
             this.cross.css('width', (this.signWidth * this.currentScale));
             this.cross.css('height', (this.signHeight * this.currentScale));
-            this.cross.css('background-size', (this.signWidth - this.extraWidth) * this.currentScale);
+            if(this.addImage) {
+                this.cross.css('background-size', (this.signWidth - this.extraWidth) * this.currentScale);
+            }
             this.updateSize();
         } else {
             this.signWidth = Math.round(parseInt(this.cross.css("width")) / this.currentScale);
@@ -548,11 +563,59 @@ export class SignRequestParams  extends EventFactory {
         }
     }
 
+    toggleImage() {
+        console.log("toggle sign image");
+        if(this.addImage) {
+            if(this.extraOnTop) {
+                this.restoreExtraOnTop = true;
+                this.toggleExtraOnTop();
+            }
+            this.divExtra.removeClass("div-extra-right");
+            this.divExtra.addClass("div-extra-top");
+            this.signImageNumber = 0;
+            this.extraWidth = 0;
+            this.signWidth = this.signWidth / 2;
+            this.cross.css('background-size', 0);
+            $("#signImage_" + this.id).removeClass("btn-outline-light");
+            $("#signExtra_" + this.id).attr("disabled", true);
+            $("#signExtraOnTop_" + this.id).attr("disabled", true);
+            $("#signPrevImage_" + this.id).attr("disabled", true);
+            $("#signNextImage_" + this.id).attr("disabled", true);
+            localStorage.setItem('addImage', false);
+        } else {
+            if(!this.extraOnTop) {
+                this.divExtra.removeClass("div-extra-top");
+                this.divExtra.addClass("div-extra-right");
+            }
+            this.signImageNumber = 0;
+            this.extraWidth = this.signWidth;
+            this.signWidth = this.signWidth * 2;
+            this.cross.css('background-size', (this.signWidth - this.extraWidth) * this.currentScale);
+            $("#signImage_" + this.id).addClass("btn-outline-light");
+            $("#signExtra_" + this.id).attr("disabled", false);
+            $("#signExtraOnTop_" + this.id).attr("disabled", false);
+            $("#signPrevImage_" + this.id).attr("disabled", false);
+            $("#signNextImage_" + this.id).attr("disabled", false);
+            if(this.restoreExtraOnTop) {
+                this.restoreExtraOnTop = false;
+                this.toggleExtraOnTop();
+            }
+            localStorage.setItem('addExtra', true);
+        }
+        this.addImage = !this.addImage;
+        this.refreshExtraDiv()
+        this.updateSize();
+        if(!this.firstLaunch) {
+        }
+    }
+
+
     toggleExtra() {
         this.addExtra = !this.addExtra;
         let self = this;
         if(this.addExtra) {
             $("#signExtra_" + this.id).addClass("btn-outline-light");
+            $("#signImage_" + this.id).attr("disabled", false);
             $("#signExtraOnTop_" + this.id).removeAttr("disabled");
             if(this.divExtra == null) {
                 this.typeSign = "Signature calligraphique";
@@ -584,6 +647,7 @@ export class SignRequestParams  extends EventFactory {
             if(!this.extraOnTop) {
                 this.toggleExtraOnTop();
             }
+            $("#signImage_" + this.id).attr("disabled", true);
             $("#signExtra_" + this.id).removeClass("btn-outline-light");
             $("#signExtraOnTop_" + this.id).attr("disabled", true);
             if(this.divExtra != null) {
@@ -747,7 +811,9 @@ export class SignRequestParams  extends EventFactory {
                 this.cross.css("height", this.signHeight * this.currentScale + "px");
             } else {
                 this.signWidth -= this.extraWidth;
-                this.extraWidth = Math.round(this.originalWidth * this.signScale);
+                if(this.addImage) {
+                    this.extraWidth = Math.round(this.originalWidth * this.signScale);
+                }
                 this.signWidth += this.extraWidth;
                 this.cross.css("width", this.signWidth * this.currentScale + "px");
                 if(this.divExtra != null) {

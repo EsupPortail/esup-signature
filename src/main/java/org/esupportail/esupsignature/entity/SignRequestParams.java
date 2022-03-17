@@ -37,6 +37,8 @@ public class SignRequestParams {
 
     private Boolean allPages = false;
 
+    private Boolean addImage = true;
+
     private Boolean addExtra = false;
 
     private Boolean extraType = false;
@@ -177,6 +179,14 @@ public class SignRequestParams {
 
     public void setAllPages(Boolean allPages) {
         this.allPages = allPages;
+    }
+
+    public Boolean getAddImage() {
+        return addImage;
+    }
+
+    public void setAddImage(Boolean addImage) {
+        this.addImage = addImage;
     }
 
     public Boolean getAddExtra() {

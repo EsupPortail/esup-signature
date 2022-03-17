@@ -143,26 +143,18 @@ public class PdfService {
         if (signRequestParams.getSignImageNumber() < 0) {
             signImage = fileService.getFaImageByIndex(signRequestParams.getSignImageNumber());
         } else {
-            if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) {
+            if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) || !signRequestParams.getAddImage()) {
                 File fileSignImage = fileService.getEmptyImage();
                 signImage = fileService.addTextToImage(new FileInputStream(fileSignImage), signRequestParams, signType, user, newDate, fixFactor);
+            } else if (signRequestParams.getAddExtra()) {
+                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType, user, newDate, fixFactor);
+            } else if (signRequestParams.getTextPart() == null || signRequestParams.getTextPart().isEmpty()) {
+                signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
+            }
+            if (signRequestParams.getAddWatermark()) {
                 File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
                 fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, fileWithWatermark, new Color(137, 137, 137), signRequestParams.getExtraOnTop());
                 signImage = new FileInputStream(fileWithWatermark);
-            } else if (signRequestParams.getAddExtra()) {
-                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType, user, newDate, fixFactor);
-                if (signRequestParams.getAddWatermark()) {
-                    File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-                    fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, fileWithWatermark, new Color(141, 198, 64), signRequestParams.getExtraOnTop());
-                    signImage = new FileInputStream(fileWithWatermark);
-                }
-            } else if (signRequestParams.getTextPart() == null || signRequestParams.getTextPart().isEmpty()) {
-                signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
-                if (signRequestParams.getAddWatermark()) {
-                    File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-                    fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, fileWithWatermark, new Color(141, 198, 64), signRequestParams.getExtraOnTop());
-                    signImage = new FileInputStream(fileWithWatermark);
-                }
             }
         }
 
