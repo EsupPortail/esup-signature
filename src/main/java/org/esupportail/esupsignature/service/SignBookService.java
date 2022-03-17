@@ -277,11 +277,13 @@ public class SignBookService {
 
 
     @Transactional
-    public SignBook addFastSignRequestInNewSignBook(MultipartFile[] multipartFiles, SignType signType, User user, String authUserEppn) throws EsupSignatureException {
+    public SignBook addFastSignRequestInNewSignBook(MultipartFile[] multipartFiles, SignType signType, String userEppn, String authUserEppn) throws EsupSignatureException {
+        User user = userService.getUserByEppn(userEppn);
+        logger.info("création rapide demande de signature par " + user.getFirstname() + " " + user.getName());
         if (signService.checkSignTypeDocType(signType, multipartFiles[0])) {
             try {
                 String name = fileService.getNameOnly(multipartFiles[0].getOriginalFilename());
-                SignBook signBook = addDocsInNewSignBookSeparated(name, "Auto signature", multipartFiles, user);
+                SignBook signBook = addDocsInNewSignBookSeparated(name, "Auto signature", multipartFiles, userEppn);
                 signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(null,false, null,true, false, false, signType, Collections.singletonList(user.getEmail()), null));
                 signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
                 workflowService.dispatchSignRequestParams(signBook);
@@ -677,7 +679,8 @@ public class SignBookService {
         }
     }
 
-    public SignBook addDocsInNewSignBookSeparated(String title, String workflowName, MultipartFile[] multipartFiles, User authUser) throws EsupSignatureIOException {
+    public SignBook addDocsInNewSignBookSeparated(String title, String workflowName, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
+        User authUser = userService.getUserByEppn(authUserEppn);
         Workflow workflow = workflowRepository.findByName(workflowName);
         SignBook signBook;
         if (workflow == null) {
@@ -714,7 +717,7 @@ public class SignBookService {
             }
             title = title.substring(0, title.length() - 1);
         }
-        SignBook signBook = addDocsInNewSignBookSeparated(title, "Demande simple", multipartFiles, user);
+        SignBook signBook = addDocsInNewSignBookSeparated(title, "Demande simple", multipartFiles, user.getEppn());
         signBook.setForceAllDocsSign(forceAllSign);
         try {
             sendCCEmail(signBook.getId(), recipientsCCEmails);

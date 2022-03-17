@@ -23,7 +23,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "left join sb.liveWorkflow lw " +
             "left join lw.liveWorkflowSteps lws " +
             "left join lws.recipients r " +
-            "where sb.workflowName like :workflowFilter)" +
+            "where (sb.workflowName like :workflowFilter)" +
             "and (sb.subject like :docTitleFilter)" +
             "and (:userEppn in r.user.eppn  or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
             "and sb.hidedBy is empty " +

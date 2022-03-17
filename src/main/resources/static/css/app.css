@@ -1960,7 +1960,6 @@ progress:before {
     display: inline;
 }
 
-.stop-scrolling {
-    height: 100%;
-    overflow: hidden;
+.file-drop-zone {
+    min-height: revert;
 }

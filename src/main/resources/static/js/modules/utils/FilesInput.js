@@ -25,7 +25,7 @@ export default class FilesInput extends EventFactory {
         } else {
             if(workflowName != null) {
                 this.async = false;
-                this.uploadUrl = '/user/signbooks/add-docs-in-sign-book-unique/' + this.workflowName + '?' + this.csrf.parameterName + '=' + this.csrf.token;
+                this.uploadUrl = '/ws-secure/signrequests/start-workflow/' + this.workflowName + '?' + this.csrf.parameterName + '=' + this.csrf.token;
             }
         }
         this.title = $("#titleWiz");
@@ -43,19 +43,12 @@ export default class FilesInput extends EventFactory {
         this.input.on('fileremoved', e => this.checkUniqueFile());
         this.input.on('fileclear', e => this.input.fileinput('unlock'));
         this.input.on('filecleared', e => this.checkUniqueFile());
-        $('#unique :checkbox').change(e => this.changerUploadMethod());
-        let self = this;
-        this.title.focusout(function(){
-            self.changerUploadMethod(self.title.val())
-        });
-
     }
 
     uploadFile() {
         this.input.fileinput('upload');
     }
 
-    // [# th:if="${signRequest.status != ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} || user.eppn != signRequest.createBy || signRequest.signedDocuments.size() > 0}"]
     initFileInput(documents, readOnly) {
         let urls = [];
         let previews = [];
@@ -164,10 +157,7 @@ export default class FilesInput extends EventFactory {
             fileActionSettings: {
                 showDrag: false,
                 showZoom: function(config) {
-                    if (config.type === 'pdf' || config.type === 'image') {
-                        return true;
-                    }
-                    return false;
+                    return config.type === 'pdf' || config.type === 'image';
                 },
                 showRemove: !readOnly
             }
@@ -193,8 +183,6 @@ export default class FilesInput extends EventFactory {
         }
     }
 
-
-
     checkUniqueFile() {
         let nbFiles = this.input.fileinput('getFilesCount', true);
         let compare = 1;
@@ -210,22 +198,6 @@ export default class FilesInput extends EventFactory {
             $('#forceAllSign').addClass('d-none');
             $('#forceAllSign2').addClass('d-none');
         }
-    }
-
-    changerUploadMethod(title) {
-        console.group('change upload url');
-        if ($('#unique :checkbox').is(":checked")){
-            console.info('to group mode');
-            this.input.fileinput('refresh', {
-                uploadUrl: '/user/signbooks/add-docs-in-sign-book-group/' + this.name + '?title=' + title + "&" + this.csrf.parameterName + '=' + this.csrf.token
-            });
-        } else {
-            console.info('to unique mode');
-            this.input.fileinput('refresh', {
-                uploadUrl: '/user/signbooks/add-docs-in-sign-book-unique/' + this.workflowName + '?title=' + title + "&" + this.csrf.parameterName + '=' + this.csrf.token
-            });
-        }
-        console.groupEnd();
     }
 
 }

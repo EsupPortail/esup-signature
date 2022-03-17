@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.web.controller.user;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -23,7 +22,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -41,7 +39,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Controller
@@ -159,10 +160,15 @@ public class SignBookController {
         boolean isDefinitive = signBookService.delete(id, authUserEppn);
         if(isDefinitive) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été supprimé définitivement"));
+            if(httpServletRequest.getHeader(HttpHeaders.REFERER).contains("signrequests")) {
+                return "redirect:/user/signbooks";
+            } else {
+                return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+            }
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été placé dans la corbeille"));
+            return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
         }
-        return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
@@ -271,29 +277,6 @@ public class SignBookController {
     public String pending(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws EsupSignatureException {
         signBookService.pendingSignBook(id, null, authUserEppn, authUserEppn, false);
         return "redirect:/user/signrequests/" + id;
-    }
-
-    @ResponseBody
-    @PostMapping(value = "/add-docs-in-sign-book-group/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentInSignBookGroup(@ModelAttribute("authUserEppn") String authUserEppn,
-                                             @PathVariable("name") String name,
-                                             @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
-        logger.info("start add documents in " + name);
-        SignBook signBook = signBookService.addDocsInNewSignBookGrouped(name, multipartFiles, authUserEppn);
-        String[] ok = {"" + signBook.getId()};
-        return ok;
-    }
-
-    @ResponseBody
-    @PostMapping(value = "/add-docs-in-sign-book-unique/{workflowName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentToNewSignRequestUnique(@ModelAttribute("authUserEppn") String authUserEppn,
-                                                    @PathVariable("workflowName") String workflowName,
-                                                    @RequestParam(value = "title", required = false) String title,
-                                                    @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
-        User authUser = userService.getUserByEppn(authUserEppn);
-        logger.info("start add documents in " + workflowName);
-        SignBook signBook = signBookService.addDocsInNewSignBookSeparated(title, workflowName, multipartFiles, authUser);
-        return new String[]{"" + signBook.getId()};
     }
 
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #authUserEppn, #authUserEppn)")
