@@ -334,7 +334,7 @@
                         </button>
                     </div>
                 </div>
-                <label for="certType">Si besoin choisir le certificat à utiliser</label>
+                <label for="certType" th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign}">Si besoin choisir le certificat à utiliser</label>
                 <select th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign}" id="certType" name="certType" class="form-select mt-2">
                     <option th:if="${globalProperties.openXPKIServerUrl != null}" value="default">Certificat généré automatiquement </option>
                     <option th:if="${user.keystore != null}" value="profil">Certificat lié à mon profil</option>

@@ -3,9 +3,11 @@ package org.esupportail.esupsignature.web.wssecure;
 import com.google.zxing.WriterException;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.CommentService;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.SignBookService;
@@ -22,6 +24,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
@@ -205,6 +208,25 @@ public class SignRequestWsSecureController {
             logger.error(e.getMessage(), e);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+    @ResponseBody
+    @PostMapping(value = "/start-workflow/{workflowName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Object addDocumentToNewSignRequestUnique(@ModelAttribute("authUserEppn") String authUserEppn,
+                                                    @PathVariable("workflowName") String workflowName,
+                                                    @RequestParam(value = "title", required = false) String title,
+                                                    @RequestParam(value = "unique", required = false) Boolean unique,
+                                                    @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles) throws EsupSignatureIOException {
+        logger.info("start add documents in " + workflowName);
+        SignBook signBook;
+        if(unique != null && unique) {
+            signBook = signBookService.addDocsInNewSignBookGrouped(title, multipartFiles, authUserEppn);
+
+        } else {
+            signBook = signBookService.addDocsInNewSignBookSeparated(title, workflowName, multipartFiles, authUserEppn);
+        }
+        return new String[]{"" + signBook.getId()};
     }
 
 }

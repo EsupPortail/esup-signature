@@ -99,7 +99,7 @@ public class LiveWorkflowStepService {
     @Transactional
     public void addNewStepToSignBook(Long signBookId, SignType signType, Boolean allSignToComplete, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, String authUserEppn) {
         SignBook signBook = signBookRepository.findById(signBookId).get();
-        logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
+        logger.info("add new workflow step to signBook " + signBook.getSubject() + " - " + signBook.getId());
         LiveWorkflowStep liveWorkflowStep = createLiveWorkflowStep(null,false, null,true, false, allSignToComplete, signType, recipientsEmails, externalUsersInfos);
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
         if(recipientsEmails != null) {

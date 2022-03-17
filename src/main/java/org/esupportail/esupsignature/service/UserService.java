@@ -146,6 +146,7 @@ public class UserService {
     }
 
     public String buildEppn(String uid) {
+        uid = uid.trim().toLowerCase();
         if (uid.split("@").length == 1
                 && !(uid.equals("creator") || uid.equals("system") || uid.equals("scheduler") || uid.equals("generic") )) {
             uid = uid + "@" + globalProperties.getDomain();

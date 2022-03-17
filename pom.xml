@@ -12,7 +12,7 @@
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.18.3-SNAPSHOT</version>
+	<version>1.19-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
@@ -229,6 +229,11 @@
 					<artifactId>bootstrap</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars.npm</groupId>
+			<artifactId>flatted</artifactId>
+			<version>3.2.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars.bowergithub.ajaxorg</groupId>
@@ -725,11 +730,6 @@
 			<version>3.6</version>
 		</dependency>
 		<dependency>
-			<groupId>ch.rasc</groupId>
-			<artifactId>sse-eventbus</artifactId>
-			<version>1.1.9</version>
-		</dependency>
-		<dependency>
 			<groupId>com.jcraft</groupId>
 			<artifactId>jsch</artifactId>
 			<version>0.1.55</version>
@@ -737,7 +737,7 @@
 		<dependency>
 			<groupId>de.codecentric</groupId>
 			<artifactId>spring-boot-admin-client</artifactId>
-			<version>2.5.4</version>
+			<version>2.6.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.maven</groupId>
@@ -830,6 +830,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
+					<mainClass>${start-class}</mainClass>
 					<executable>true</executable>
 				</configuration>
 				<executions>

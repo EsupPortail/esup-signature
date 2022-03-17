@@ -2,10 +2,9 @@ import {EventFactory} from "../modules/utils/EventFactory.js";
 
 export class SignRequestParams  extends EventFactory {
 
-    constructor(signRequestParams, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone, light) {
+    constructor(signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone, light) {
         super();
-        this.signRequestParams = signRequestParams;
-        Object.assign(this, signRequestParams);
+        Object.assign(this, signRequestParamsModel);
         this.id = id;
         this.currentScale = parseFloat(scale);
         this.signPageNumber = 1;
@@ -41,7 +40,7 @@ export class SignRequestParams  extends EventFactory {
         this.extraHeight = 0;
         this.signFieldPresent = true;
         this.savedText = "";
-        if(signRequestParams == null) {
+        if(signRequestParamsModel == null) {
             this.xPos = (parseInt($("#pdf").css("width")) / 2 / scale) - (this.signWidth * scale / 2);
             let mid = $(window).scrollTop() + Math.floor($(window).height() / 2);
             this.yPos = Math.round(mid / scale) - (this.signHeight * scale / 2);
@@ -77,7 +76,7 @@ export class SignRequestParams  extends EventFactory {
     initLight() {
         this.cross = $("#cross");
         this.border = $("#borders");
-        this.tools = $("#tools");
+        this.tools = $("#crossTools");
         this.restoreFromFavorite();
     }
 
@@ -109,8 +108,7 @@ export class SignRequestParams  extends EventFactory {
         let divName = "cross_" + this.id;
         let div = "<div id='"+ divName +"' class='cross'></div>";
         $("#pdf").prepend(div);
-        let cross = $("#" + divName);
-        this.cross = cross;
+        this.cross = $("#" + divName);
         this.cross.css("position", "absolute");
         this.cross.css("z-index", "5");
         this.cross.attr("data-id", this.id);
@@ -178,13 +176,13 @@ export class SignRequestParams  extends EventFactory {
         });
 
         let border = "<div id='border_" + this.id +"' class='static-border' style='width: 100%; height: 100%;'></div>"
-        cross.prepend(border);
+        this.cross.prepend(border);
         this.border = $("#border_" + this.id);
         this.border.css("pointer-events", "none");
 
         let tools = this.getTools()
         tools.removeClass("d-none");
-        cross.prepend(tools);
+        this.cross.prepend(tools);
         this.tools = tools;
 
         this.extraWidth = 0;
@@ -266,7 +264,7 @@ export class SignRequestParams  extends EventFactory {
             }
         }
         if(this.addExtra) {
-            if (localStorage.getItem('extraOnTop') != null) {
+            if (!this.isVisa && localStorage.getItem('extraOnTop') != null) {
                 if (localStorage.getItem('extraOnTop') === "false") {
                     if (this.divExtra != null && this.extraOnTop) {
                         this.toggleExtraOnTop();

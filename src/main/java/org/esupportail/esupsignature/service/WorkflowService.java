@@ -523,7 +523,7 @@ public class WorkflowService {
 
 
     public void importWorkflow(SignBook signBook, Workflow workflow, List<JsonExternalUserInfo> externalUsersInfos) {
-        logger.info("import workflow steps in signBook " + signBook.getName() + " - " +signBook.getId());
+        logger.info("import workflow steps in signBook " + signBook.getSubject() + " - " + signBook.getId());
         for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
             List<String> recipientEmails = new ArrayList<>();
             for (User user : workflowStep.getUsers()) {
