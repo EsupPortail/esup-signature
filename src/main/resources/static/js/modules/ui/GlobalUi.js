@@ -409,7 +409,10 @@ export class GlobalUi {
                 select: '#' + selectName,
                 hideSelectedOption: false,
                 placeholder: $(this).attr('data-placeholder'),
-                closeOnSelect: true
+                closeOnSelect: true,
+                searchFilter: (option, search) => {
+                    return option.text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").indexOf(search.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")) !== -1
+                }
             });
         })
 
