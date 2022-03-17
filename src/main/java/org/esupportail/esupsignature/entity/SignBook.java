@@ -30,8 +30,10 @@ public class SignBook {
 
     private String workflowName;
 
+    @Deprecated
 	private String name;
 
+    @Deprecated
     private String title;
 
     @Column(columnDefinition = "TEXT")
@@ -113,20 +115,14 @@ public class SignBook {
         this.workflowName = workflowName;
     }
 
+    @Deprecated
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
+    @Deprecated
     public String getTitle() {
         return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public String getDescription() {

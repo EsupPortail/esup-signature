@@ -125,12 +125,7 @@
     </tr>
     <tr th:if="${statusFilter == 'empty'}" th:title="${signBook.description}">
         <td></td>
-        <td class="clickable-td text-break d-none d-xxl-table-cell">
-            <span th:if="${signBook.liveWorkflow.workflow != null}" th:text="${signBook.liveWorkflow.workflow.description}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title != null}"   th:text="${signBook.liveWorkflow.title}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == null && signBook.title != ''}"  th:text="${signBook.title}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == ''}"   th:text="${signBook.liveWorkflow.title}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == null && signBook.title == ''}"   th:text="'Hors circuit'"></span>
+        <td class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signBook.workflowName}">
         </td>
         <td class="clickable-td text-break">
             Ne contient aucun document
@@ -162,7 +157,7 @@
         </td>
         <td>
             <div class="position-relative">
-                <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signBook.title}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="collapse">
+                <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signBook.subject}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="collapse">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
                 <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signBook.id}">

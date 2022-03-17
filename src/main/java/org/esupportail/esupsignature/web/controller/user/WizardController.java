@@ -41,9 +41,6 @@ public class WizardController {
     @Resource
     private SignRequestService signRequestService;
 
-    @Resource
-    private CommentService commentService;
-
     @GetMapping(value = "/wiz-start-by-docs", produces = "text/html")
     public String wiz2(@RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
         if (workflowId != null) {
@@ -58,19 +55,16 @@ public class WizardController {
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
                        @RequestParam(value = "forceAllSign", required = false) Boolean forceAllSign,
                        @RequestParam(value = "recipientsCCEmailsWiz", required = false) List<String> recipientsCCEmailsWiz,
-                       @RequestParam(value = "title", required = false) String title,
                        @RequestParam(value = "comment", required = false) String comment,
                        Model model) {
-        User user = (User) model.getAttribute("user");
         SignBook signBook = signBookService.getById(id);
-        signBook.setTitle(title);
         signBook.setDescription(comment);
         signBook.setForceAllDocsSign(forceAllSign);
         signBookService.addViewers(id, recipientsCCEmailsWiz);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             model.addAttribute("signBook", signBook);
             if (workflowId != null) {
-                signBookService.initSignBook(id, workflowId, user);
+                signBookService.initSignBook(id, workflowId, userEppn);
                 model.addAttribute("isTempUsers", signRequestService.isTempUsers(signBook.getSignRequests().get(0).getId()));
                 return "user/wizard/wiz-setup-workflow";
             }
@@ -110,11 +104,6 @@ public class WizardController {
         return "user/wizard/wiz-init-steps";
     }
 
-//    @GetMapping(value = "/wiz-save/{id}")
-//    public String saveForm(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model) {
-//        SignBook signBook = signBookService.getById(id);
-//    }
-
     @PostMapping(value = "/wiz-save/{id}")
     public String saveWorkflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
                                @RequestParam(name="name") String name,
@@ -125,7 +114,6 @@ public class WizardController {
         try {
             signBookService.saveWorkflow(id, name, name, user);
         } catch (EsupSignatureException e) {
-//            eventService.publishEvent(new JsonMessage("error", "Un circuit de signature porte déjà ce nom"), "user", eventService.getClientIdByEppn(userEppn));
             return "user/wizard/wiz-save";
         }
         return "user/wizard/wizend";
@@ -176,7 +164,6 @@ public class WizardController {
         } else {
             Workflow workflow = workflowService.getById(id);
             model.addAttribute("workflow", workflow);
-//            eventService.publishEvent(new JsonMessage("error", "Un circuit de signature porte déjà ce nom"), "user", eventService.getClientIdByEppn(userEppn));
             return "user/wizard/wiz-save-workflow";
         }
     }
@@ -209,7 +196,6 @@ public class WizardController {
     public String wizRedirect(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureException {
         SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
-//            signBookService.startLiveWorkflow(signBook, userEppn, userEppn, false);
             if(signBook.getLiveWorkflow().getCurrentStep() == null) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande"));
             }
@@ -233,7 +219,5 @@ public class WizardController {
         }
         return "redirect:/user/";
     }
-
-
 
 }

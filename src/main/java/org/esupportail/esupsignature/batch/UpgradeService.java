@@ -50,7 +50,7 @@ public class UpgradeService {
                     appliVersionRepository.save(appliVersion);
                 }
             } else {
-                logger.info("##### Esup-signature is higher than " + update + " #####");
+                logger.debug("##### Esup-signature is higher than " + update + ", skip update #####");
             }
         }
         logger.info("##### Esup-signature is up-to-date #####");

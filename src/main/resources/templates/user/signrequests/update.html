@@ -14,7 +14,7 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/signrequests">Tableau de bord</a></li>
-                <li class="breadcrumb-item"><a th:href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:text="${signBook.title}"></a></li>
+                <li class="breadcrumb-item"><a th:href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:text="${signBook.subject}"></a></li>
                 <li class="breadcrumb-item active" aria-current="page">Edition</span>
                 </li>
             </ol>

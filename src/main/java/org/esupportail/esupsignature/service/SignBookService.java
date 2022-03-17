@@ -330,13 +330,15 @@ public class SignBookService {
     }
 
     @Transactional
-    public void initSignBook(Long signBookId, Long id, User user) {
+    public void initSignBook(Long signBookId, Long id, String userEppn) {
+        User user = userService.getUserByEppn(userEppn);
         SignBook signBook = getById(signBookId);
-        Workflow workflow = workflowRepository.findById(id).get();
-        signBook.setTitle(workflow.getDescription());
-        signBook.getLiveWorkflow().setWorkflow(workflow);
-        for(Target target : workflow.getTargets()) {
-            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetUri()));
+        if(user.equals(signBook.getCreateBy())) {
+            Workflow workflow = workflowRepository.findById(id).get();
+            signBook.getLiveWorkflow().setWorkflow(workflow);
+            for(Target target : workflow.getTargets()) {
+                signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetUri()));
+            }
         }
     }
 
@@ -515,30 +517,6 @@ public class SignBookService {
 
     public List<String> getWorkflowNames(String userEppn) {
         List<String> workflowNames = signBookRepository.findWorkflowNames(userEppn);
-        return workflowNames.stream().filter(s -> !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
-    }
-
-    public String getSignBookWorkflowName(SignBook signBook) {
-        if(signBook.getLiveWorkflow().getWorkflow() != null) {
-            if(signBook.getLiveWorkflow().getWorkflow().getDescription() != null && signBook.getLiveWorkflow().getWorkflow().getDescription().isEmpty()) {
-                return signBook.getLiveWorkflow().getWorkflow().getDescription();
-            } else {
-                return signBook.getLiveWorkflow().getWorkflow().getName();
-            }
-        } else {
-            if(signBook.getLiveWorkflow().getTitle() != null) {
-                return signBook.getLiveWorkflow().getTitle();
-            } else {
-                return signBook.getTitle();
-            }
-        }
-    }
-
-    public List<String> getWorkflowNames(List<SignBook> signBooks) {
-        Set<String> workflowNames = new HashSet<>();
-        for(SignBook signBook : signBooks) {
-            workflowNames.add(getSignBookWorkflowName(signBook));
-        }
         return workflowNames.stream().filter(s -> !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
@@ -1618,7 +1596,7 @@ public class SignBookService {
             SignBook signBook = getById(signBookId);
             for(SignRequest signRequest : signBook.getSignRequests()) {
                 Document signedFile = signRequest.getLastSignedDocument();
-                String subPath = "/" + signRequest.getParentSignBook().getTitle() + "/";
+                String subPath = "/" + signRequest.getParentSignBook().getWorkflowName() + "/";
                 if(signRequest.getExportedDocumentURI() == null) {
                     String name = generateName(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() , userService.getSystemUser());
                     String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath, signedFile.getId() + "_" + name);

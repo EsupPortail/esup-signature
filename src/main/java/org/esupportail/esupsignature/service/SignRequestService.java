@@ -212,7 +212,7 @@ public class SignRequestService {
 		signRequest.setStatus(SignRequestStatus.draft);
 		signRequestRepository.save(signRequest);
 		signBook.getSignRequests().add(signRequest);
-		updateStatus(signRequest.getId(), SignRequestStatus.draft, "Création de la demande " + signBook.getTitle(), "SUCCESS", userEppn, authUserEppn);
+		updateStatus(signRequest.getId(), SignRequestStatus.draft, "Création de la demande " + signBook.getSubject(), "SUCCESS", userEppn, authUserEppn);
 		return signRequest;
 	}
 
