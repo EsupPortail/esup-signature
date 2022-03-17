@@ -20,133 +20,41 @@ package org.esupportail.esupsignature.entity;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Configurable
 @Entity
 public class AppliVersion {
-	
-	String esupSignatureVersion;
 
-
-	public String getEsupSignatureVersion() {
-        return this.esupSignatureVersion;
-    }
-
-	public void setEsupSignatureVersion(String esupSignatureVersion) {
-        this.esupSignatureVersion = esupSignatureVersion;
-    }
-
-	@PersistenceContext
-    transient EntityManager entityManager;
-
-	public static final List<String> fieldNames4OrderClauseFilter = java.util.Arrays.asList("esupSignatureVersion");
-
-	public static final EntityManager entityManager() {
-        EntityManager em = new AppliVersion().entityManager;
-        if (em == null) throw new IllegalStateException("Entity manager has not been injected (is the Spring Aspects JAR configured as an AJC/AJDT aspects library?)");
-        return em;
-    }
-
-	public static long countAppliVersions() {
-        return entityManager().createQuery("SELECT COUNT(o) FROM AppliVersion o", Long.class).getSingleResult();
-    }
-
-	public static List<AppliVersion> findAllAppliVersions() {
-        return entityManager().createQuery("SELECT o FROM AppliVersion o", AppliVersion.class).getResultList();
-    }
-
-	public static List<AppliVersion> findAllAppliVersions(String sortFieldName, String sortOrder) {
-        String jpaQuery = "SELECT o FROM AppliVersion o";
-        if (fieldNames4OrderClauseFilter.contains(sortFieldName)) {
-            jpaQuery = jpaQuery + " ORDER BY " + sortFieldName;
-            if ("ASC".equalsIgnoreCase(sortOrder) || "DESC".equalsIgnoreCase(sortOrder)) {
-                jpaQuery = jpaQuery + " " + sortOrder;
-            }
-        }
-        return entityManager().createQuery(jpaQuery, AppliVersion.class).getResultList();
-    }
-
-	public static AppliVersion findAppliVersion(Long id) {
-        if (id == null) return null;
-        return entityManager().find(AppliVersion.class, id);
-    }
-
-	public static List<AppliVersion> findAppliVersionEntries(int firstResult, int maxResults) {
-        return entityManager().createQuery("SELECT o FROM AppliVersion o", AppliVersion.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
-    }
-
-	public static List<AppliVersion> findAppliVersionEntries(int firstResult, int maxResults, String sortFieldName, String sortOrder) {
-        String jpaQuery = "SELECT o FROM AppliVersion o";
-        if (fieldNames4OrderClauseFilter.contains(sortFieldName)) {
-            jpaQuery = jpaQuery + " ORDER BY " + sortFieldName;
-            if ("ASC".equalsIgnoreCase(sortOrder) || "DESC".equalsIgnoreCase(sortOrder)) {
-                jpaQuery = jpaQuery + " " + sortOrder;
-            }
-        }
-        return entityManager().createQuery(jpaQuery, AppliVersion.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
-    }
-
-
-    public void persist() {
-        if (this.entityManager == null) this.entityManager = entityManager();
-        this.entityManager.persist(this);
-    }
-
-
-    public void remove() {
-        if (this.entityManager == null) this.entityManager = entityManager();
-        if (this.entityManager.contains(this)) {
-            this.entityManager.remove(this);
-        } else {
-            AppliVersion attached = AppliVersion.findAppliVersion(this.id);
-            this.entityManager.remove(attached);
-        }
-    }
-
-
-    public void flush() {
-        if (this.entityManager == null) this.entityManager = entityManager();
-        this.entityManager.flush();
-    }
-
-
-    public void clear() {
-        if (this.entityManager == null) this.entityManager = entityManager();
-        this.entityManager.clear();
-    }
-
-
-    public AppliVersion merge() {
-        if (this.entityManager == null) this.entityManager = entityManager();
-        AppliVersion merged = this.entityManager.merge(this);
-        this.entityManager.flush();
-        return merged;
-    }
-
-	@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
     private Long id;
 
-	@Version
-    @Column(name = "version")
+    @Version
     private Integer version;
 
-	public Long getId() {
-        return this.id;
+	String esupSignatureVersion;
+
+    public Long getId() {
+        return id;
     }
 
-	public void setId(Long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-	public Integer getVersion() {
-        return this.version;
+    public Integer getVersion() {
+        return version;
     }
 
-	public void setVersion(Integer version) {
+    public void setVersion(Integer version) {
         this.version = version;
     }
 
+    public String getEsupSignatureVersion() {
+        return esupSignatureVersion;
+    }
+
+    public void setEsupSignatureVersion(String esupSignatureVersion) {
+        this.esupSignatureVersion = esupSignatureVersion;
+    }
 }

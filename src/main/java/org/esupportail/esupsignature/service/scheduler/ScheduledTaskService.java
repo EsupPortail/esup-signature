@@ -13,13 +13,13 @@ import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -29,7 +29,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @EnableScheduling
-//@Profile("!dev")
+@Profile("!dev")
 @Component
 @EnableConfigurationProperties(GlobalProperties.class)
 public class ScheduledTaskService {
@@ -43,9 +43,6 @@ public class ScheduledTaskService {
 
 	@Resource
 	private SignBookService signBookService;
-
-	@Resource
-	private SignRequestService signRequestService;
 
 	@Resource
 	private WorkflowService workflowService;
@@ -86,7 +83,7 @@ public class ScheduledTaskService {
 		for(SignBook signBook : signBooks) {
 			try {
 				if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
-					signRequestService.sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getName(), signBook.getLiveWorkflow().getTargets(), "scheduler");
+					signBookService.sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getSubject(), signBook.getLiveWorkflow().getTargets(), "scheduler");
 				}
 			} catch(EsupSignatureFsException | EsupSignatureException e) {
 				logger.error(e.getMessage());

@@ -57,7 +57,7 @@
                     <form id="formUpdate" th:action="'/admin/forms'" th:object="${form}" th:method="'put'">
                         <input type="hidden" th:field="*{id}">
                         <div class="form-group mb-3">
-                            <label for="name">Titre (titre affiché aux utilisateurs)</label>
+                            <label for="title">Titre (titre affiché aux utilisateurs)</label>
                             <input id="title" class="form-control" type="text" th:field="*{title}"/>
                         </div>
                         <div class="form-group mb-3">
