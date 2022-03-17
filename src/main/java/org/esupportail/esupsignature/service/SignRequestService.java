@@ -6,7 +6,6 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ActionType;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -38,11 +37,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -53,8 +49,6 @@ import java.io.*;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -204,9 +198,9 @@ public class SignRequestService {
 		SignRequest signRequest = new SignRequest();
 		if(name == null || name.isEmpty()) {
 			if (signBook.getSignRequests().size() == 0) {
-				signRequest.setTitle(signBook.getName());
+				signRequest.setTitle(signBook.getSubject());
 			} else {
-				signRequest.setTitle(signBook.getName() + "_" + signBook.getSignRequests().size());
+				signRequest.setTitle(signBook.getSubject() + "_" + signBook.getSignRequests().size());
 			}
 		} else {
 			signRequest.setTitle(name);
@@ -441,7 +435,7 @@ public class SignRequestService {
 			nbDocOnDataBase += signRequest.getSignedDocuments().size();
 		}
 		if(nbDocOnDataBase == 0) {
-			logger.info(signBook.getName() + " cleaned");
+			logger.info(signBook.getSubject() + " :  " + signBook.getId() + " cleaned");
 			signBook.setStatus(SignRequestStatus.cleaned);
 		}
 	}

@@ -83,7 +83,7 @@ public class ScheduledTaskService {
 		for(SignBook signBook : signBooks) {
 			try {
 				if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
-					signBookService.sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getName(), signBook.getLiveWorkflow().getTargets(), "scheduler");
+					signBookService.sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getSubject(), signBook.getLiveWorkflow().getTargets(), "scheduler");
 				}
 			} catch(EsupSignatureFsException | EsupSignatureException e) {
 				logger.error(e.getMessage());

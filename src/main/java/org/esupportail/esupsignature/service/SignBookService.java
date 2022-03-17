@@ -333,7 +333,6 @@ public class SignBookService {
     public void initSignBook(Long signBookId, Long id, User user) {
         SignBook signBook = getById(signBookId);
         Workflow workflow = workflowRepository.findById(id).get();
-        signBook.setName(workflow.getName() + "_" + new Date() + "_" + user.getEppn());
         signBook.setTitle(workflow.getDescription());
         signBook.getLiveWorkflow().setWorkflow(workflow);
         for(Target target : workflow.getTargets()) {
@@ -514,27 +513,6 @@ public class SignBookService {
         return docTitles.stream().filter(s -> !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
-    public List<String> getDocTitles(List<SignBook> signBooks) {
-        Set<String> docTitles = new HashSet<>();
-        for(SignBook signBook : signBooks) {
-            docTitles.add(getSignBookTitle(signBook));
-        }
-//        docTitles.addAll(signBookRepository.findDocNames(userEppn));
-//        docTitles.addAll(signBookRepository.findSignRequestTitles(userEppn));
-        return docTitles.stream().filter(s -> !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
-    }
-
-    public String getSignBookTitle(SignBook signBook) {
-        if(signBook.getTitle() != null && !signBook.getTitle().isEmpty() && signBook.getLiveWorkflow().getWorkflow() != null && !signBook.getTitle().equals(signBook.getLiveWorkflow().getWorkflow().getDescription())){
-            return signBook.getTitle();
-        }
-        if(signBook.getName().isEmpty() && signBook.getSignRequests().size() > 0) {
-            return signBook.getSignRequests().get(0).getTitle();
-        } else {
-            return signBook.getName();
-        }
-    }
-
     public List<String> getWorkflowNames(String userEppn) {
         List<String> workflowNames = signBookRepository.findWorkflowNames(userEppn);
         return workflowNames.stream().filter(s -> !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
@@ -701,7 +679,7 @@ public class SignBookService {
         SignBook signBook = createSignBook(title, null, "", authUser);
         SignRequest signRequest = signRequestService.createSignRequest(null, signBook, authUserEppn, authUserEppn);
         signRequestService.addDocsToSignRequest(signRequest, true, 0, new ArrayList<>(), multipartFiles);
-        logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
+        logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getSubject() + " - " + signBook.getId());
         return signBook;
     }
 
@@ -1432,7 +1410,7 @@ public class SignBookService {
             SignBook signBook = getById(id);
             for (SignRequest signRequest : signBook.getSignRequests()) {
                 if(signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived))
-                    documents.put(getZipWithDocAndReport(signRequest), signBook.getName());
+                    documents.put(getZipWithDocAndReport(signRequest), signBook.getSubject());
             }
         }
         ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
