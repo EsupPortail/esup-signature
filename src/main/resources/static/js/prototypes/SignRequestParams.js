@@ -339,7 +339,7 @@ export class SignRequestParams  extends EventFactory {
                 }
             }
         }
-        if (localStorage.getItem('addImage') != null && this.signImages.length > 0) {
+        if (localStorage.getItem('addImage') != null && (localStorage.getItem('addImage') === "false" || localStorage.getItem('addImage') === "true") && this.signImages.length > 0) {
             if(localStorage.getItem('addImage') === "false") {
                 this.addImage = true;
                 this.toggleImage();
