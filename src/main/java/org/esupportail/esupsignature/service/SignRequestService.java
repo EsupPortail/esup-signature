@@ -794,7 +794,10 @@ public class SignRequestService {
 				recipientEmails.add(recipient.getUser().getEmail());
 			}
 		}
-		long notifTime = Duration.between(signRequest.getLastNotifDate().toInstant(), new Date().toInstant()).toHours();
+		long notifTime = Long.MAX_VALUE;
+		if(signRequest.getLastNotifDate() != null) {
+			notifTime = Duration.between(signRequest.getLastNotifDate().toInstant(), new Date().toInstant()).toHours();
+		}
 		if(recipientEmails.size() > 0 && notifTime >= globalProperties.getHoursBeforeRefreshNotif() && signRequest.getStatus().equals(SignRequestStatus.pending)) {
 			mailService.sendSignRequestReplayAlert(recipientEmails, signRequest);
 			return true;
