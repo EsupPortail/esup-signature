@@ -121,6 +121,10 @@ export class GlobalUi {
             let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", csrf);
             wizUi.startByRecipients();
         });
+        $("#start-wizard-button2").on('click', function(e) {
+            let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", csrf);
+            wizUi.startByRecipients();
+        });
         $("#user-toggle").on("click", function (e){
             e.stopPropagation();
         });
@@ -409,7 +413,10 @@ export class GlobalUi {
                 select: '#' + selectName,
                 hideSelectedOption: false,
                 placeholder: $(this).attr('data-placeholder'),
-                closeOnSelect: true
+                closeOnSelect: true,
+                searchFilter: (option, search) => {
+                    return option.text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").indexOf(search.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")) !== -1
+                }
             });
         })
 

@@ -84,6 +84,11 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("select distinct sb from SignBook sb join sb.hidedBy hb where hb.eppn = :hidedByEppn")
     Page<SignBook> findByHidedByEppn(String hidedByEppn, Pageable pageable);
 
+    @Query("select distinct sb from SignBook sb " +
+            "where sb.createBy.eppn = :userEppn " +
+            "and sb.hidedBy is empty " +
+            "and size(sb.signRequests) > 0 " +
+            "and sb.status = :status")
     Page<SignBook> findByCreateByEppnAndStatusAndSignRequestsNotNull(String userEppn, SignRequestStatus status, Pageable pageable);
 
     List<SignBook> findByStatus(SignRequestStatus signRequestStatus);
