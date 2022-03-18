@@ -151,9 +151,15 @@ export class SignPosition extends EventFactory {
             }
         }
         if(signImageNumber != null) {
-            let favoriteSignRequestParams = null;
+            let favoriteSignRequestParams = currentSignRequestParams;
             if(signImageNumber >= 0) {
-                favoriteSignRequestParams = JSON.parse(sessionStorage.getItem("favoriteSignRequestParams"));
+                if(JSON.parse(sessionStorage.getItem("favoriteSignRequestParams")) != null) {
+                    favoriteSignRequestParams = JSON.parse(sessionStorage.getItem("favoriteSignRequestParams"));
+                    if(currentSignRequestParams != null) {
+                        favoriteSignRequestParams.posX = currentSignRequestParams.posX;
+                        favoriteSignRequestParams.posY = currentSignRequestParams.posY;
+                    }
+                }
                 this.signRequestParamses.set(id, new SignRequestParams(favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone));
             } else {
                 this.signRequestParamses.set(id, new SignRequestParams(favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, false, false, this.signType === "visa", this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone));
