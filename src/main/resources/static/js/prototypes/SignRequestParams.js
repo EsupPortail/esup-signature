@@ -346,6 +346,10 @@ export class SignRequestParams  extends EventFactory {
             } else {
                 $("#signImage_" + this.id).addClass("btn-outline-light");
             }
+        } else {
+            if(!this.addExtra) {
+                $("#signImage_" + this.id).attr("disabled", true);
+            }
         }
     }
 
