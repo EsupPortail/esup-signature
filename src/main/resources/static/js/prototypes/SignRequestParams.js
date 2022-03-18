@@ -1,11 +1,13 @@
-import {EventFactory} from "../modules/utils/EventFactory.js";
+import {EventFactory} from "../modules/utils/EventFactory.js?version=@version@";
+import {Color} from "../modules/utils/Color.js?version=@version@";
 
 export class SignRequestParams  extends EventFactory {
 
-    constructor(signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone, light) {
+    constructor(signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone, light, signImages) {
         super();
         Object.assign(this, signRequestParamsModel);
         this.id = id;
+        this.signImages = signImages;
         this.currentScale = parseFloat(scale);
         this.signPageNumber = 1;
         this.isOtp = isOtp;
@@ -74,6 +76,36 @@ export class SignRequestParams  extends EventFactory {
         }
         this.initEventListeners();
    }
+
+    initEventListeners() {
+        let self = this;
+        if(self.light == null || !self.light) {
+            this.cross.on("mousedown click", function(e) {
+                e.stopPropagation();
+                self.wantUnlock();
+            });
+
+            $("#crossTools_" + this.id).on("click", function(e) {
+                e.stopPropagation();
+            });
+        }
+        $("#signDrop_" + this.id).on("click", e => this.deleteSign());
+        $("#signNextImage_" + this.id).on("click", e => this.changeSignImage(parseInt(this.signImageNumber) + 1));
+        $("#signPrevImage_" + this.id).on("click", e => this.prevSignImage());
+        $("#displayMoreTools_" + this.id).on("click", e => this.displayMoreTools());
+        $("#hideMoreTools_" + this.id).on("click", e => this.hideMoreTools());
+        $("#watermark_" + this.id).on("click", e => this.toggleWatermark());
+        $("#allPages_" + this.id).on("click", e => this.toggleAllPages());
+        $("#signImage_" + this.id).on("click", e => this.toggleImage());
+        $("#signExtra_" + this.id).on("click", e => this.toggleExtra());
+        $("#signExtraOnTop_" + this.id).on("click", e => this.toggleExtraOnTop());
+
+        $("#extraType_" + this.id).on("click", e => this.toggleType());
+        $("#extraName_" + this.id).on("click", e => this.toggleName());
+        $("#extraDate_" + this.id).on("click", e => this.toggleDate());
+        $("#extraText_" + this.id).on("click", e => this.toggleText());
+
+    }
 
     initLight() {
         this.cross = $("#cross");
@@ -342,35 +374,6 @@ export class SignRequestParams  extends EventFactory {
         });
     }
 
-    initEventListeners() {
-        let self = this;
-        if(self.light == null || !self.light) {
-            this.cross.on("mousedown click", function(e) {
-                e.stopPropagation();
-                self.wantUnlock();
-            });
-
-            $("#crossTools_" + this.id).on("click", function(e) {
-                e.stopPropagation();
-            });
-        }
-        $("#signDrop_" + this.id).on("click", e => this.deleteSign());
-        $("#signNextImage_" + this.id).on("click", e => this.nextSignImage());
-        $("#signPrevImage_" + this.id).on("click", e => this.prevSignImage());
-        $("#displayMoreTools_" + this.id).on("click", e => this.displayMoreTools());
-        $("#hideMoreTools_" + this.id).on("click", e => this.hideMoreTools());
-        $("#watermark_" + this.id).on("click", e => this.toggleWatermark());
-        $("#allPages_" + this.id).on("click", e => this.toggleAllPages());
-        $("#signImage_" + this.id).on("click", e => this.toggleImage());
-        $("#signExtra_" + this.id).on("click", e => this.toggleExtra());
-        $("#signExtraOnTop_" + this.id).on("click", e => this.toggleExtraOnTop());
-
-        $("#extraType_" + this.id).on("click", e => this.toggleType());
-        $("#extraName_" + this.id).on("click", e => this.toggleName());
-        $("#extraDate_" + this.id).on("click", e => this.toggleDate());
-        $("#extraText_" + this.id).on("click", e => this.toggleText());
-    }
-
     applyCurrentSignRequestParams() {
         this.cross.css('top', this.yPos * this.currentScale + 'px');
         this.cross.css('left', this.xPos * this.currentScale + 'px');
@@ -459,15 +462,12 @@ export class SignRequestParams  extends EventFactory {
         }
     }
 
-    nextSignImage() {
-        this.fireEvent("nextSign", ["ok"]);
-    }
 
     prevSignImage() {
         if(this.signImageNumber > 0) {
-            this.fireEvent("prevSign", ["ok"]);
+            this.changeSignImage(parseInt(this.signImageNumber) - 1)
         } else {
-            this.fireEvent("lastSign", ["ok"]);
+            this.changeSignImage(this.signImages.length - 1)
         }
     }
 
@@ -529,7 +529,7 @@ export class SignRequestParams  extends EventFactory {
             showPaletteOnly: true,
             hideAfterPaletteSelect: true,
             preferredFormat: "hex",
-            change: color => this.fireEvent("changeColor", [color])
+            change: color => this.changeSignColor(color)
         });
     }
 
@@ -601,6 +601,7 @@ export class SignRequestParams  extends EventFactory {
                 this.toggleExtraOnTop();
             }
             localStorage.setItem('addExtra', true);
+            localStorage.setItem('addImage', true);
         }
         this.addImage = !this.addImage;
         this.refreshExtraDiv()
@@ -938,4 +939,70 @@ export class SignRequestParams  extends EventFactory {
         this.cross.css("width", this.textareaPart.css("width"));
         this.cross.css("height", this.textareaPart.css("height"));
     }
+
+    changeSignImage(imageNum) {
+        if(imageNum != null && imageNum >= 0) {
+            if(this.signImages != null) {
+                if(imageNum > this.signImages.length - 1) {
+                    imageNum = 0;
+                }
+                this.signImageNumber = imageNum;
+                console.debug("debug - " + "change sign image to " + imageNum);
+                let img = null;
+                if(this.signImages[imageNum] != null) {
+                    img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[imageNum];
+                    this.cross.css("background-image", "url('" + img + "')");
+                    let sizes = this.getImageDimensions(img);
+                    sizes.then(result => this.changeSignSize(result));
+                    localStorage.setItem('signNumber', imageNum);
+                }
+            }
+        } else if(imageNum < 0) {
+            this.signImageNumber = imageNum;
+            let self = this;
+            this.convertImgToBase64URL('/images/' + this.faImages[Math.abs(imageNum) - 1] + '.png', function(img) {
+                this.cross.css("background-image", "url('" + img + "')");
+                let sizes = self.getImageDimensions(img);
+                sizes.then(result => this.changeSignSize(result));
+            });
+            this.addExtra = true;
+            this.extraOnTop = true;
+            this.toggleExtra();
+        }
+    }
+
+    getImageDimensions(file) {
+        return new Promise (function (resolved) {
+            if(file != null) {
+                let i = new Image();
+                i.onload = function(){
+                    resolved({w: i.width / 3, h: i.height / 3})
+                };
+                i.src = file
+            } else {
+                resolved({w: 200, h: 75})
+            }
+        })
+    }
+
+    changeSignColor(color) {
+        console.info("change color to : " + color);
+        const rgb = Color.hexToRgb(color);
+
+        this.red = rgb[0];
+        this.green = rgb[1];
+        this.blue = rgb[2];
+
+        let cross = this.cross;
+        if (this.signImages[this.signImageNumber] != null) {
+            let img = "data:image/jpeg;charset=utf-8;base64" +
+                ", " + this.signImages[this.signImageNumber];
+            Color.changeColInUri(img, "#000000", color).then(function (e) {
+                cross.css("background-image", "url('" + e + "')");
+            })
+        }
+        let textExtra = $("#divExtra_" + this.id);
+        textExtra.css({"color" : color + ""});
+    }
+
 }
