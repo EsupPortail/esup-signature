@@ -1,5 +1,6 @@
 import {EventFactory} from "../modules/utils/EventFactory.js?version=@version@";
 import {Color} from "../modules/utils/Color.js?version=@version@";
+import {UserUi} from '../modules/ui/users/UserUi.js?version=@version@';
 
 export class SignRequestParams  extends EventFactory {
 
@@ -58,9 +59,10 @@ export class SignRequestParams  extends EventFactory {
             this.blue = 0;
             this.fontSize = 12;
             this.restoreExtra = false;
+            this.addImage = true;
+
             if(restore) {
                 this.addExtra = false;
-                this.addImage = true;
                 this.addWatermark = false;
                 this.extraText = "";
                 this.extraOnTop = true;
@@ -336,10 +338,12 @@ export class SignRequestParams  extends EventFactory {
                 }
             }
         }
-        if (localStorage.getItem('addImage') != null) {
+        if (localStorage.getItem('addImage') != null && this.signImages.length > 0) {
             if(localStorage.getItem('addImage') === "false") {
                 this.addImage = true;
                 this.toggleImage();
+            } else {
+                $("#signImage_" + this.id).addClass("btn-outline-light");
             }
         }
     }
@@ -955,6 +959,17 @@ export class SignRequestParams  extends EventFactory {
                     let sizes = this.getImageDimensions(img);
                     sizes.then(result => this.changeSignSize(result));
                     localStorage.setItem('signNumber', imageNum);
+                } else {
+                    this.changeSignSize({ w: 150, h: 75});
+                    let saveAddImage = localStorage.getItem("addImage");
+                    this.toggleImage();
+                    localStorage.setItem("addImage", saveAddImage);
+                    let signImageBtn = $("#signImage_" + this.id);
+                    signImageBtn.unbind();
+                    signImageBtn.on('click', function(){
+                        new UserUi();
+                        $("#add-sign-image").modal("show");
+                    });
                 }
             }
         } else if(imageNum < 0) {

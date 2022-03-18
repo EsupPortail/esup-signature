@@ -55,7 +55,6 @@ export class UserUi {
 
     save() {
         this.userSignaturePad.checkSignatureUpdate();
-        // alert(this.signRequestParams.addExtra);
         if(!this.saveSignRequestParams) {
             $("#sign-request-params").val(JSON.stringify(this.signRequestParams));
         }
