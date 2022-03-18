@@ -8,6 +8,7 @@ export class SignRequestParams  extends EventFactory {
         super();
         Object.assign(this, signRequestParamsModel);
         this.id = id;
+        this.userUI = null;
         this.signImages = signImages;
         this.currentScale = parseFloat(scale);
         this.signPageNumber = 1;
@@ -967,7 +968,9 @@ export class SignRequestParams  extends EventFactory {
                     let signImageBtn = $("#signImage_" + this.id);
                     signImageBtn.unbind();
                     signImageBtn.on('click', function(){
-                        new UserUi();
+                        if(this.userUI == null) {
+                            this.userUI = new UserUi();
+                        }
                         $("#add-sign-image").modal("show");
                     });
                 }
