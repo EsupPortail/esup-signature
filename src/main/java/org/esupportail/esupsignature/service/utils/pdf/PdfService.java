@@ -76,6 +76,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 @Service
@@ -506,18 +507,23 @@ public class PdfService {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    output.append(line + "\n");
+                    output.append(line).append("\n");
+                    break;
                 }
 
-                int exitVal = process.waitFor();
-                if (exitVal == 0) {
+                boolean exitVal = process.waitFor(10, TimeUnit.SECONDS);
+                if (exitVal) {
                     logger.info("Convert success");
                     logger.debug(output.toString());
                 } else {
                     logger.warn("Convert fail");
                     logger.warn(cmd);
                     logger.warn(output.toString());
-                    throw new EsupSignatureSignException("PDF/A convertion failure");
+//                    throw new EsupSignatureSignException("PDF/A convertion failure");
+                    logger.error("PDF/A convertion failure : document will be signed without convertion");
+                    FileInputStream fileInputStream = new FileInputStream(file);
+                    file.delete();
+                    return fileInputStream;
                 }
             } catch (InterruptedException e) {
                 logger.error("GhostScript launcs error : check installation or path", e);
