@@ -967,6 +967,9 @@ export class SignRequestParams  extends EventFactory {
                 } else {
                     this.changeSignSize({ w: 150, h: 75});
                     let saveAddImage = localStorage.getItem("addImage");
+                    if(this.divExtra == null) {
+                        this.toggleExtra();
+                    }
                     this.toggleImage();
                     localStorage.setItem("addImage", saveAddImage);
                     let signImageBtn = $("#signImage_" + this.id);
