@@ -297,7 +297,7 @@ public class SignService {
 		InMemoryDocument fileDocumentImage;
 		if(user.getSignImages().size() > signRequestParams.getSignImageNumber() || user.getEppn().equals("system")) {
 			InputStream inputStream;
-			if(user.getSignImages().size() > signRequestParams.getSignImageNumber()) {
+			if(user.getSignImages().size() > signRequestParams.getSignImageNumber() && signRequestParams.getAddImage()) {
 				inputStream = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
 			} else {
 				inputStream = new ClassPathResource("/static/images/empty-sign.png").getInputStream();

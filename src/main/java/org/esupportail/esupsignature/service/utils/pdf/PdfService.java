@@ -76,6 +76,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 @Service
@@ -143,26 +144,18 @@ public class PdfService {
         if (signRequestParams.getSignImageNumber() < 0) {
             signImage = fileService.getFaImageByIndex(signRequestParams.getSignImageNumber());
         } else {
-            if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) {
+            if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) || !signRequestParams.getAddImage()) {
                 File fileSignImage = fileService.getEmptyImage();
                 signImage = fileService.addTextToImage(new FileInputStream(fileSignImage), signRequestParams, signType, user, newDate, fixFactor);
+            } else if (signRequestParams.getAddExtra()) {
+                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType, user, newDate, fixFactor);
+            } else if (signRequestParams.getTextPart() == null || signRequestParams.getTextPart().isEmpty()) {
+                signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
+            }
+            if (signRequestParams.getAddWatermark()) {
                 File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
                 fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, fileWithWatermark, new Color(137, 137, 137), signRequestParams.getExtraOnTop());
                 signImage = new FileInputStream(fileWithWatermark);
-            } else if (signRequestParams.getAddExtra()) {
-                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType, user, newDate, fixFactor);
-                if (signRequestParams.getAddWatermark()) {
-                    File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-                    fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, fileWithWatermark, new Color(141, 198, 64), signRequestParams.getExtraOnTop());
-                    signImage = new FileInputStream(fileWithWatermark);
-                }
-            } else if (signRequestParams.getTextPart() == null || signRequestParams.getTextPart().isEmpty()) {
-                signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
-                if (signRequestParams.getAddWatermark()) {
-                    File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-                    fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, fileWithWatermark, new Color(141, 198, 64), signRequestParams.getExtraOnTop());
-                    signImage = new FileInputStream(fileWithWatermark);
-                }
             }
         }
 
@@ -514,18 +507,23 @@ public class PdfService {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    output.append(line + "\n");
+                    output.append(line).append("\n");
+                    break;
                 }
 
-                int exitVal = process.waitFor();
-                if (exitVal == 0) {
+                boolean exitVal = process.waitFor(10, TimeUnit.SECONDS);
+                if (exitVal) {
                     logger.info("Convert success");
                     logger.debug(output.toString());
                 } else {
                     logger.warn("Convert fail");
                     logger.warn(cmd);
                     logger.warn(output.toString());
-                    throw new EsupSignatureSignException("PDF/A convertion failure");
+//                    throw new EsupSignatureSignException("PDF/A convertion failure");
+                    logger.error("PDF/A convertion failure : document will be signed without convertion");
+                    FileInputStream fileInputStream = new FileInputStream(file);
+                    file.delete();
+                    return fileInputStream;
                 }
             } catch (InterruptedException e) {
                 logger.error("GhostScript launcs error : check installation or path", e);
