@@ -521,6 +521,7 @@ public class PdfService {
                     logger.warn(output.toString());
 //                    throw new EsupSignatureSignException("PDF/A convertion failure");
                     logger.error("PDF/A convertion failure : document will be signed without convertion");
+                    process.destroy();
                     FileInputStream fileInputStream = new FileInputStream(file);
                     file.delete();
                     return fileInputStream;
