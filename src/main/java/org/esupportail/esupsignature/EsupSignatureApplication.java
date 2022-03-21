@@ -9,6 +9,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContext;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.SessionTrackingMode;
@@ -17,17 +18,14 @@ import java.util.Collections;
 @SpringBootApplication
 public class EsupSignatureApplication extends SpringBootServletInitializer implements CommandLineRunner {
 
-	private final ApplicationContext applicationContext;
+	@Resource
+	private ApplicationContext applicationContext;
 
-	private final GlobalProperties globalProperties;
+	@Resource
+	private GlobalProperties globalProperties;
 
-	private final UpgradeService upgradeService;
-
-	public EsupSignatureApplication(ApplicationContext applicationContext, GlobalProperties globalProperties, UpgradeService upgradeService) {
-		this.applicationContext = applicationContext;
-		this.globalProperties = globalProperties;
-		this.upgradeService = upgradeService;
-	}
+	@Resource
+	private UpgradeService upgradeService;
 
 	@Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
