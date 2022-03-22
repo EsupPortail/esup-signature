@@ -38,8 +38,9 @@ import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.validation.SignaturePolicyProvider;
 import eu.europa.esig.dss.xades.signature.XAdESService;
-import org.apache.http.conn.ssl.TrustAllStrategy;
+import org.apache.hc.client5.http.ssl.TrustAllStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +86,7 @@ public class DSSBeanConfig {
 		OnlineTSPSource tspSource = new OnlineTSPSource(dssProperties.getTspServer());
 		TimestampDataLoader timestampDataLoader = new TimestampDataLoader();
 		timestampDataLoader.setTimeoutConnection(10000);
-		timestampDataLoader.setTrustStrategy(new TrustAllStrategy());
+		timestampDataLoader.setTrustStrategy(TrustAllStrategy.INSTANCE);
 		if(proxyConfig != null) {
 			timestampDataLoader.setProxyConfig(proxyConfig);
 		}
@@ -208,15 +209,21 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public CertificateVerifier certificateVerifier(OnlineOCSPSource onlineOcspSource, CommonsDataLoader dataLoader, TrustedListsCertificateSource trustedListSource) {
+	public CertificateVerifier certificateVerifier(OnlineOCSPSource onlineOcspSource, TrustedListsCertificateSource trustedListSource) {
 		CommonCertificateVerifier certificateVerifier = new CommonCertificateVerifier();
 		certificateVerifier.setCrlSource(cachedCRLSource());
 		certificateVerifier.setOcspSource(onlineOcspSource);
-		certificateVerifier.setDataLoader(dataLoader);
 		certificateVerifier.setTrustedCertSources(trustedListSource);
 		certificateVerifier.setAlertOnMissingRevocationData(new ExceptionOnStatusAlert());
 		certificateVerifier.setCheckRevocationForUntrustedChains(false);
 		return certificateVerifier;
+	}
+
+	@Bean
+	public SignaturePolicyProvider signaturePolicyProvider() {
+		SignaturePolicyProvider signaturePolicyProvider = new SignaturePolicyProvider();
+		signaturePolicyProvider.setDataLoader(trustAllDataLoader());
+		return signaturePolicyProvider;
 	}
 
 	@Bean
