@@ -4,6 +4,7 @@ import eu.europa.esig.dss.enumerations.TokenExtractionStrategy;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.validation.CertificateVerifier;
+import eu.europa.esig.dss.validation.SignaturePolicyProvider;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import eu.europa.esig.dss.validation.reports.Reports;
@@ -33,6 +34,9 @@ public class ValidationService {
     }
 
     @Resource
+    protected SignaturePolicyProvider signaturePolicyProvider;
+
+    @Resource
     private org.springframework.core.io.Resource defaultPolicy;
 
     public Reports validate(InputStream docInputStream, InputStream signInputStream) {
@@ -55,9 +59,11 @@ public class ValidationService {
             if(certificateVerifier != null) {
                 documentValidator.setCertificateVerifier(certificateVerifier);
             }
+            documentValidator.setSignaturePolicyProvider(new SignaturePolicyProvider());
             documentValidator.setTokenExtractionStrategy(TokenExtractionStrategy.NONE);
             documentValidator.setLocale(Locale.FRENCH);
             documentValidator.setValidationLevel(ValidationLevel.LONG_TERM_DATA);
+            documentValidator.setSignaturePolicyProvider(signaturePolicyProvider);
             Reports reports = null;
             try (InputStream is = defaultPolicy.getInputStream()) {
                 reports = documentValidator.validateDocument(is);

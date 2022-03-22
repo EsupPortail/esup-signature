@@ -6,6 +6,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Collections;
+
 @Configuration
 @EnableConfigurationProperties(DSSProxyProperties.class)
 public class ProxyConfiguration {
@@ -28,7 +30,7 @@ public class ProxyConfiguration {
 			httpProperties.setPort(dssProxyProperties.getHttpPort());
 			httpProperties.setUser(dssProxyProperties.getHttpUser());
 			httpProperties.setPassword(dssProxyProperties.getHttpPassword());
-			httpProperties.setExcludedHosts(dssProxyProperties.getHttpExcludedHosts());
+			httpProperties.setExcludedHosts(Collections.singleton(dssProxyProperties.getHttpExcludedHosts()));
 			config.setHttpProperties(httpProperties);
 		}
 		if (dssProxyProperties.isHttpsEnabled()) {
@@ -37,7 +39,7 @@ public class ProxyConfiguration {
 			httpsProperties.setPort(dssProxyProperties.getHttpsPort());
 			httpsProperties.setUser(dssProxyProperties.getHttpsUser());
 			httpsProperties.setPassword(dssProxyProperties.getHttpsPassword());
-			httpsProperties.setExcludedHosts(dssProxyProperties.getHttpsExcludedHosts());
+			httpsProperties.setExcludedHosts(Collections.singleton(dssProxyProperties.getHttpsExcludedHosts()));
 			config.setHttpsProperties(httpsProperties);
 		}
 		return config;

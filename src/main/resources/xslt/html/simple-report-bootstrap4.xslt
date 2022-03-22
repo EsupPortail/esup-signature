@@ -57,7 +57,7 @@
         <div>
             <xsl:attribute name="class">card mb-3</xsl:attribute>
             <div>
-                <xsl:attribute name="class">card-header bg-<xsl:value-of select="$cardStyle" /> text-white</xsl:attribute>
+                <xsl:attribute name="class">card-header bg-<xsl:value-of select="$cardStyle" /> text-dark</xsl:attribute>
                 <xsl:attribute name="data-bs-target">#collapseSig<xsl:value-of select="$idToken" /></xsl:attribute>
                 <xsl:attribute name="data-bs-toggle">collapse</xsl:attribute>
 
@@ -357,7 +357,7 @@
                             <xsl:attribute name="data-bs-toggle">collapse</xsl:attribute>
                             <xsl:attribute name="aria-expanded">false</xsl:attribute>
 
-                            Timestamps <span class="badge bg-light"><xsl:value-of select="count(dss:Timestamps/dss:Timestamp)" /></span>
+                            Timestamps <span class="badge bg-light text-dark"><xsl:value-of select="count(dss:Timestamps/dss:Timestamp)" /></span>
                         </div>
                         <div>
                             <xsl:attribute name="class">card-body collapse pb-1</xsl:attribute>
