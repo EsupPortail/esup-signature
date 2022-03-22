@@ -121,7 +121,11 @@ public class UpgradeService {
                                         if(signBook.getSignRequests().get(0).getTitle() != null && signBook.getSignRequests().get(0).getTitle().isEmpty()) {
                                             signBook.setSubject(signBook.getSignRequests().get(0).getTitle());
                                         } else {
-                                            signBook.setSubject(fileService.getNameOnly(signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName()));
+                                            if(signBook.getSignRequests().get(0).getOriginalDocuments().size() > 0) {
+                                                signBook.setSubject(fileService.getNameOnly(signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName()));
+                                            } else {
+                                                signBook.setSubject("Sans titre");
+                                            }
                                         }
                                     } else {
                                         signBook.setSubject("Sans titre");
