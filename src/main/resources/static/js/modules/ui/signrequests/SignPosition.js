@@ -37,22 +37,6 @@ export class SignPosition extends EventFactory {
         }
     }
 
-    convertImgToBase64URL(url, callback, outputFormat){
-        let img = new Image();
-        img.crossOrigin = 'Anonymous';
-        img.onload = function(){
-            let canvas = document.createElement('CANVAS'),
-                ctx = canvas.getContext('2d'), dataURL;
-            canvas.height = img.height;
-            canvas.width = img.width;
-            ctx.drawImage(img, 0, 0);
-            dataURL = canvas.toDataURL(outputFormat);
-            callback(dataURL);
-            canvas = null;
-        };
-        img.src = url;
-    }
-
     updateScales(scale) {
         console.info("update sign scale from " + this.currentScale + " to " + scale);
         this.signRequestParamses.forEach(function (signRequestParams){
