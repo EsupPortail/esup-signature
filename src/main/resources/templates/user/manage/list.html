@@ -37,7 +37,7 @@
                                        class="btn btn-sm btn-primary"><i class="fas fa-file-export"></i> Export des données</a>
                                 </td>
                                 <td>
-                                    <a type="button" th:href="'user/manage/form/' + ${form.id} + '/start?createByEmail=david.lemaignent@univ-rouen.fr'"
+                                    <a type="button" th:href="'user/manage/form/' + ${form.id} + '/start?createByEmail=' + ${user.email}"
                                        class="btn btn-sm btn-primary"><i class="fas fa-paper-plane"></i> Envoyer le formulaire</a>
                                 </td>
                             </tr>
