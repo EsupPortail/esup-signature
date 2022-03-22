@@ -135,7 +135,10 @@ public class OtpAccessController {
                 otp.setSmsSended(true);
                 logger.info("otp success for : " + urlId);
                 User user = userService.getUserByEmail(otp.getEmail());
-                userService.updatePhone(user.getEppn(), otp.getPhoneNumber());
+                //TODO fix update phone
+                if(otp.getPhoneNumber() != null) {
+                    userService.updatePhone(user.getEppn(), otp.getPhoneNumber());
+                }
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(user.getEppn(), "");
                 Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
                 SecurityContext securityContext = SecurityContextHolder.getContext();

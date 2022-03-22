@@ -198,7 +198,11 @@ export class PdfViewer extends EventFactory {
         this.pdfPageView.scale = this.scale;
         this.pdfPageView.rotation = this.rotation;
         this.pdfPageView.setPdfPage(page);
-        this.pdfPageView.draw().then(e => this.postRender());
+        let self = this;
+        this.pdfPageView.eventBus.on("annotationlayerrendered", function() {
+            self.postRender()
+        });
+        this.pdfPageView.draw();
     }
 
     postRender() {
@@ -217,10 +221,10 @@ export class PdfViewer extends EventFactory {
                 if (isField) {
                     if (this.dataFields != null && !this.disableAllFields) {
                         console.info("render fields");
-                        this.page.getAnnotations().then(items => this.renderPdfFormWithFields(items)).then(this.annotationLinkTargetBlank());
+                        this.page.getAnnotations().then(items => this.renderPdfFormWithFields(items)).then(e => this.annotationLinkTargetBlank());
                     }
                 } else {
-                    this.page.getAnnotations().then(items => this.renderPdfForm(items)).then(this.annotationLinkTargetBlank());
+                    this.page.getAnnotations().then(items => this.renderPdfForm(items)).then(e => this.annotationLinkTargetBlank());
                 }
                 resolve("Réussite");
             }
