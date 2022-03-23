@@ -55,6 +55,10 @@ public class DocumentService {
 		document.setContentType(contentType);
 		BigFile bigFile = new BigFile();
 		long size = inputStream.available();
+		if(size == 0) {
+			logger.error("upload aborted cause file size is 0");
+			throw new IOException("File size is 0");
+		}
 		bigFileService.setBinaryFileStream(bigFile, inputStream, size);
 		document.setBigFile(bigFile);
 		document.setSize(size);
