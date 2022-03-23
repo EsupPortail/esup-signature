@@ -585,7 +585,7 @@ public class SignBookService {
             try {
                 signRequestService.addDocsToSignRequest(signRequest, true, i, new ArrayList<>(), multipartFile);
             } catch (EsupSignatureIOException e) {
-                logger.error("revert signbook creation due to error : " + e.getMessage());
+                logger.warn("revert signbook creation due to error : " + e.getMessage(), e);
                 deleteDefinitive(signBookId);
                 throw new EsupSignatureIOException(e.getMessage(), e);
             }
@@ -1390,6 +1390,12 @@ public class SignBookService {
                 && signRequest.getOriginalDocuments().size() > 0
                 && needToSign(signRequest, userEppn)) {
             signRequest.setSignable(true);
+            for(Document document : signRequest.getOriginalDocuments()) {
+                if(document.getSize() == 0) {
+                    signRequest.setSignable(false);
+                    break;
+                }
+            }
         }
         User user = userService.getUserByEppn(userEppn);
         if ((signRequest.getStatus().equals(SignRequestStatus.pending)

@@ -1,14 +1,13 @@
 package org.esupportail.esupsignature.service.interfaces.sms.impl;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
 import org.esupportail.esupsignature.config.sms.SmsProperties;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
@@ -36,15 +35,15 @@ public class SMSUSmsService implements SmsService {
 
     @Override
     public void sendSms(String phoneNumber, String message) throws EsupSignatureException {
-        CredentialsProvider provider = new BasicCredentialsProvider();
-        UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(smsProperties.getUsername(), smsProperties.getPassword());
-        provider.setCredentials(AuthScope.ANY, credentials);
+        BasicCredentialsProvider provider = new BasicCredentialsProvider();
+        UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(smsProperties.getUsername(), smsProperties.getPassword().toCharArray());
+        provider.setCredentials(new AuthScope(null, null, -1, null, null), credentials);
         HttpClient client = HttpClientBuilder.create()
                 .setDefaultCredentialsProvider(provider)
                 .build();
         try {
-            HttpResponse response = client.execute(new HttpGet(smsProperties.getUrl() + "/?action=SendSms&phoneNumber=" + phoneNumber + "&message=" + URLEncoder.encode(message, Charset.defaultCharset())));
-            int statusCode = response.getStatusLine().getStatusCode();
+            HttpResponse response = client.execute(new HttpGet(smsProperties.getUrl() + "?action=SendSms&phoneNumber=" + phoneNumber + "&message=" + URLEncoder.encode(message, Charset.defaultCharset())));
+            int statusCode = response.getCode();
             if (statusCode != HttpStatus.SC_OK) {
                 throw new EsupSignatureException("Problème d'envoi sms");
             } else {
@@ -58,13 +57,13 @@ public class SMSUSmsService implements SmsService {
 
     @Override
     public boolean testSms() throws IOException {
-        CredentialsProvider provider = new BasicCredentialsProvider();
-        UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(smsProperties.getUsername(), smsProperties.getPassword());
-        provider.setCredentials(AuthScope.ANY, credentials);
+        BasicCredentialsProvider provider = new BasicCredentialsProvider();
+        UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(smsProperties.getUsername(), smsProperties.getPassword().toCharArray());
+        provider.setCredentials(new AuthScope(null, null, -1, null, null), credentials);
         HttpClient client = HttpClientBuilder.create()
                 .setDefaultCredentialsProvider(provider)
                 .build();
         HttpResponse response = client.execute(new HttpGet(smsProperties.getUrl()));
-        return response.getStatusLine().getStatusCode() == HttpStatus.SC_OK;
+        return response.getCode() == HttpStatus.SC_OK;
     }
 }

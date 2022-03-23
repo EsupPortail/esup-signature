@@ -248,10 +248,10 @@ public class SignRequestService {
 				signRequest.getOriginalDocuments().add(document);
 				document.setParentId(signRequest.getId());
 			} catch (IOException e) {
-				logger.error("error on adding files");
+				logger.warn("error on adding files");
 				throw new EsupSignatureIOException("Erreur lors de l'ajout des fichiers", e);
 			} catch (EsupSignatureException e) {
-				logger.error("error on converting files");
+				logger.warn("error on converting files");
 				throw new EsupSignatureIOException("Erreur lors de la conversion du document", e);
 			}
 		}

@@ -37,22 +37,6 @@ export class SignPosition extends EventFactory {
         }
     }
 
-    convertImgToBase64URL(url, callback, outputFormat){
-        let img = new Image();
-        img.crossOrigin = 'Anonymous';
-        img.onload = function(){
-            let canvas = document.createElement('CANVAS'),
-                ctx = canvas.getContext('2d'), dataURL;
-            canvas.height = img.height;
-            canvas.width = img.width;
-            ctx.drawImage(img, 0, 0);
-            dataURL = canvas.toDataURL(outputFormat);
-            callback(dataURL);
-            canvas = null;
-        };
-        img.src = url;
-    }
-
     updateScales(scale) {
         console.info("update sign scale from " + this.currentScale + " to " + scale);
         this.signRequestParamses.forEach(function (signRequestParams){
@@ -94,11 +78,11 @@ export class SignPosition extends EventFactory {
                 }
                 this.signRequestParamses.set(id, new SignRequestParams(favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, this.signImages));
             } else {
-                this.signRequestParamses.set(id, new SignRequestParams(favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, false, false, this.signType === "visa", this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phonefalse, this.signImages));
+                this.signRequestParamses.set(id, new SignRequestParams(favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, false, false, this.signType === "visa", this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, this.signImages));
             }
             this.signRequestParamses.get(id).changeSignImage(signImageNumber);
         } else {
-            this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page, this.userName, this.authUserName, restore, signImageNumber != null && signImageNumber >= 0, this.signType === "visa", this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phonefalse, this.signImages));
+            this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page, this.userName, this.authUserName, restore, signImageNumber != null && signImageNumber >= 0, this.signType === "visa", this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, this.signImages));
         }
         this.signRequestParamses.get(id).addEventListener("unlock", e => this.lockSigns());
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(id));

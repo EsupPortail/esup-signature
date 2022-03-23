@@ -9,6 +9,7 @@ export class SignRequestParams  extends EventFactory {
         Object.assign(this, signRequestParamsModel);
         this.id = id;
         this.userUI = null;
+        this.faImages = ["check-solid", "times-solid", "circle-regular", "minus-solid"];
         this.signImages = signImages;
         this.currentScale = parseFloat(scale);
         this.signPageNumber = 1;
@@ -303,7 +304,7 @@ export class SignRequestParams  extends EventFactory {
             }
         }
         if(this.addExtra) {
-            if (!this.isVisa && localStorage.getItem('extraOnTop') != null) {
+            if (localStorage.getItem('extraOnTop') != null) {
                 if (localStorage.getItem('extraOnTop') === "false") {
                     if (this.divExtra != null && this.extraOnTop) {
                         this.toggleExtraOnTop();
@@ -986,9 +987,9 @@ export class SignRequestParams  extends EventFactory {
             this.signImageNumber = imageNum;
             let self = this;
             this.convertImgToBase64URL('/images/' + this.faImages[Math.abs(imageNum) - 1] + '.png', function(img) {
-                this.cross.css("background-image", "url('" + img + "')");
+                self.cross.css("background-image", "url('" + img + "')");
                 let sizes = self.getImageDimensions(img);
-                sizes.then(result => this.changeSignSize(result));
+                sizes.then(result => self.changeSignSize(result));
             });
             this.addExtra = true;
             this.extraOnTop = true;
@@ -1028,6 +1029,22 @@ export class SignRequestParams  extends EventFactory {
         }
         let textExtra = $("#divExtra_" + this.id);
         textExtra.css({"color" : color + ""});
+    }
+
+    convertImgToBase64URL(url, callback, outputFormat){
+        let img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.onload = function(){
+            let canvas = document.createElement('CANVAS'),
+                ctx = canvas.getContext('2d'), dataURL;
+            canvas.height = img.height;
+            canvas.width = img.width;
+            ctx.drawImage(img, 0, 0);
+            dataURL = canvas.toDataURL(outputFormat);
+            callback(dataURL);
+            canvas = null;
+        };
+        img.src = url;
     }
 
 }
