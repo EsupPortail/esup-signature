@@ -76,7 +76,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 
 @Service
@@ -427,8 +426,7 @@ public class PdfService {
 
             PDFAIdentificationSchema pdfaIdentificationSchema = xmpMetadata.createAndAddPFAIdentificationSchema();
             pdfaIdentificationSchema.setConformance("B");
-            pdfaIdentificationSchema.setPart(pdfConfig.getPdfProperties().getPdfALevel());
-            pdfaIdentificationSchema.setAboutAsSimple("");
+            pdfaIdentificationSchema.setPart(2);
 
             PDFTextStripper pdfTextStripper = new PDFTextStripper();
             DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
@@ -473,7 +471,6 @@ public class PdfService {
                     pdAnnotation.setPrinted(true);
                 }
             }
-
             pdDocument.setDocumentInformation(info);
             pdDocument.save(out);
             pdDocument.close();
@@ -488,10 +485,7 @@ public class PdfService {
         File file = fileService.inputStreamToTempFile(inputStream, "temp.pdf");
         if (!isPdfAComplient(new FileInputStream(file)) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
-
-//            String defFile = PdfService.class.getClassLoader().getResource(pdfConfig.getPdfProperties().getPdfADefPath()).getFile();
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dSubsetFonts=true -dPreserveAnnots=true -dShowAnnots=true -dPrinted=false -dNOSAFER -sColorConversionStrategy=UseDeviceIndependentColor -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -dCompatibilityLevel=1.7 -sDocumentUUID=" + UUID + " -d -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + pdfConfig.getPdfADefPath() + "' '" + file.getAbsolutePath() + "'";
-            //String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dPreserveAnnots=true -dShowAnnots=true -dPrinted=false -dDOPDFMARKS -dNOSAFER -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -sOutputFile='" + targetFile.getAbsolutePath() + "' -c '/PreserveAnnotTypes [/Text /UnderLine /Link /Stamp /FreeText /Squiggly /Underline] def' -f '" + file.getAbsolutePath() + "'";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=2 -dBATCH -dNOPAUSE -dSubsetFonts=false -dEmbedAllFonts=true -dAlignToPixels=0 -dGridFitTT=2 -dCompatibilityLevel=1.4 -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + pdfConfig.getPdfADefPath() + "' '" + file.getAbsolutePath() + "'";
             logger.info("GhostScript PDF/A convertion : " + cmd);
 
             ProcessBuilder processBuilder = new ProcessBuilder();
@@ -503,18 +497,16 @@ public class PdfService {
             //processBuilder.directory(new File("/tmp"));
             try {
                 Process process = processBuilder.start();
+                int exitVal = process.waitFor();
                 StringBuilder output = new StringBuilder();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 String line;
                 while ((line = reader.readLine()) != null) {
                     output.append(line).append("\n");
-                    break;
                 }
-
-                boolean exitVal = process.waitFor(10, TimeUnit.SECONDS);
-                if (exitVal) {
+                if (exitVal == 0) {
                     logger.info("Convert success");
-                    logger.debug(output.toString());
+                    logger.info(output.toString());
                 } else {
                     logger.warn("Convert fail");
                     logger.warn(cmd);
