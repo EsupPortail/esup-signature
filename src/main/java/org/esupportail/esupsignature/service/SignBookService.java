@@ -1390,6 +1390,12 @@ public class SignBookService {
                 && signRequest.getOriginalDocuments().size() > 0
                 && needToSign(signRequest, userEppn)) {
             signRequest.setSignable(true);
+            for(Document document : signRequest.getOriginalDocuments()) {
+                if(document.getSize() == 0) {
+                    signRequest.setSignable(false);
+                    break;
+                }
+            }
         }
         User user = userService.getUserByEppn(userEppn);
         if ((signRequest.getStatus().equals(SignRequestStatus.pending)

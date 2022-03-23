@@ -219,7 +219,7 @@
                     Le document contenu dans cette demande de signature a été archivé. Vous avez la posibilité de le télécharger à l'aide du bouton en bas à droite.
                 </div>
             </th:block>
-            <div th:if="${(toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace"
+            <div th:if="${signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace"
                  class="workspace alert alert-secondary row">
                 <div class="card col-lg-10 mx-auto mb-1">
                     <div class="card-body">
@@ -243,6 +243,9 @@
                     new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.originalDocuments}]], true, [[${_csrf}]]);
                     new FilesInput($("#signedFiles"), "", "signedFiles", [[${signRequest.signedDocuments}]], true, [[${_csrf}]]);
                 </script>
+            </div>
+            <div th:if="${!signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" class="workspace alert alert-danger">
+                Un document de cette demande est corrompu. Merci de supprimer la demande et d'en émettre une nouvelle à l'aide d'un fichier valide.
             </div>
             <div th:if="${toSignDocument == null && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="alert alert-danger">
                 <h4>La demande de signature a été supprimée</h4>
