@@ -54,7 +54,7 @@ public class PdfConfig {
             logger.info("pdfADefPath : " + pdfAFile.getAbsolutePath());
             pdfADefPath = pdfAFile.toPath();
             List<String> lines = Files.readAllLines(Path.of(pdfAFile.getAbsolutePath()), StandardCharsets.UTF_8);
-            lines.set(7, "/ICCProfile (" + iccFile.getAbsolutePath() + ") % Customise");
+            lines.set(11, "/ICCProfile (" + iccFile.getAbsolutePath() + ") % Customise");
             Files.write(Path.of(pdfAFile.getAbsolutePath()), lines, StandardCharsets.UTF_8);
         } catch (IOException e) {
             logger.error("PDFA_def.ps read error", e);
