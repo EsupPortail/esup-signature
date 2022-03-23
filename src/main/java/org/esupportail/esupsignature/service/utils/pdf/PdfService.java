@@ -506,7 +506,7 @@ public class PdfService {
                 }
                 if (exitVal == 0) {
                     logger.info("Convert success");
-                    logger.debug(output.toString());
+                    logger.info(output.toString());
                 } else {
                     logger.warn("Convert fail");
                     logger.warn(cmd);
