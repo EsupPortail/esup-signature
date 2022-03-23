@@ -56,7 +56,7 @@ public class DocumentService {
 		BigFile bigFile = new BigFile();
 		long size = inputStream.available();
 		if(size == 0) {
-			logger.error("upload aborted cause file size is 0");
+			logger.warn("upload aborted cause file size is 0");
 			throw new IOException("File size is 0");
 		}
 		bigFileService.setBinaryFileStream(bigFile, inputStream, size);
