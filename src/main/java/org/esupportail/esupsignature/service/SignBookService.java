@@ -585,7 +585,7 @@ public class SignBookService {
             try {
                 signRequestService.addDocsToSignRequest(signRequest, true, i, new ArrayList<>(), multipartFile);
             } catch (EsupSignatureIOException e) {
-                logger.error("revert signbook creation due to error : " + e.getMessage());
+                logger.warn("revert signbook creation due to error : " + e.getMessage(), e);
                 deleteDefinitive(signBookId);
                 throw new EsupSignatureIOException(e.getMessage(), e);
             }
