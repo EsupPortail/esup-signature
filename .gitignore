@@ -3,8 +3,11 @@
 !src/
 !src/**
 src/main/resources/application-dev.yml
+src/main/resources/application-docker.yml
 src/main/resources/static/downloads/nexu-bundle.zip
 !LICENCE
 !README.md
 !NOTICE
 !pom.xml
+!Dockerfile
+!docker-compose.yml
