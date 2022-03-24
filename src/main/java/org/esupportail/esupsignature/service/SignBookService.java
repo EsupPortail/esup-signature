@@ -1089,8 +1089,10 @@ public class SignBookService {
         SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), signBook, createByEppn, createByEppn);
         signRequestService.addDocsToSignRequest(signRequest, false, 0, new ArrayList<>(), multipartFiles);
         initWorkflowAndPendingSignBook(signRequest.getId(), recipientEmails, allSignToCompletes, null, targetEmails, createByEppn, createByEppn);
-        for(String targetUrl : targetUrls) {
-            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
+        if(targetUrls != null) {
+            for(String targetUrl : targetUrls) {
+                signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
+            }
         }
         return signRequest;
     }
