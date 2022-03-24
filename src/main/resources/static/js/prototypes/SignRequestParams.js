@@ -345,7 +345,11 @@ export class SignRequestParams  extends EventFactory {
                 this.addImage = true;
                 this.toggleImage();
             } else {
-                $("#signImage_" + this.id).addClass("btn-outline-light");
+                let signImageBtn = $("#signImage_" + this.id);
+                signImageBtn.addClass("btn-outline-light");
+                if(!this.addExtra) {
+                    signImageBtn.attr("disabled", true);
+                }
             }
         } else {
             if(!this.addExtra) {
@@ -437,7 +441,9 @@ export class SignRequestParams  extends EventFactory {
                 this.cross.css('background-size', newWidth / 2);
             }
         }
-        this.divExtra.css("width", this.extraWidth * scale + "px");
+        if(this.addExtra) {
+            this.divExtra.css("width", this.extraWidth * scale + "px");
+        }
         this.cross.css('left', xNew + 'px');
         this.cross.css('top', yNew + 'px');
         this.currentScale = scale;
@@ -576,22 +582,27 @@ export class SignRequestParams  extends EventFactory {
     toggleImage() {
         console.log("toggle sign image");
         if(this.addImage) {
-            if(this.extraOnTop) {
-                this.restoreExtraOnTop = true;
-                this.toggleExtraOnTop();
+            if(this.addExtra) {
+                if(this.extraOnTop) {
+                    this.restoreExtraOnTop = true;
+                    this.toggleExtraOnTop();
+                }
+                this.divExtra.removeClass("div-extra-right");
+                this.divExtra.addClass("div-extra-top");
+                this.signImageNumber = 0;
+                this.extraWidth = 0;
+                this.signWidth = this.signWidth / 2;
+                this.cross.css('background-size', 0);
+                $("#signImage_" + this.id).removeClass("btn-outline-light");
+                $("#signExtra_" + this.id).attr("disabled", true);
+                $("#signExtraOnTop_" + this.id).attr("disabled", true);
+                $("#signPrevImage_" + this.id).attr("disabled", true);
+                $("#signNextImage_" + this.id).attr("disabled", true);
+                localStorage.setItem('addImage', false);
+                this.addImage = !this.addImage;
+                this.refreshExtraDiv()
+                this.updateSize();
             }
-            this.divExtra.removeClass("div-extra-right");
-            this.divExtra.addClass("div-extra-top");
-            this.signImageNumber = 0;
-            this.extraWidth = 0;
-            this.signWidth = this.signWidth / 2;
-            this.cross.css('background-size', 0);
-            $("#signImage_" + this.id).removeClass("btn-outline-light");
-            $("#signExtra_" + this.id).attr("disabled", true);
-            $("#signExtraOnTop_" + this.id).attr("disabled", true);
-            $("#signPrevImage_" + this.id).attr("disabled", true);
-            $("#signNextImage_" + this.id).attr("disabled", true);
-            localStorage.setItem('addImage', false);
         } else {
             if(!this.extraOnTop) {
                 this.divExtra.removeClass("div-extra-top");
@@ -612,12 +623,11 @@ export class SignRequestParams  extends EventFactory {
             }
             localStorage.setItem('addExtra', true);
             localStorage.setItem('addImage', true);
+            this.addImage = !this.addImage;
+            this.refreshExtraDiv()
+            this.updateSize();
         }
-        this.addImage = !this.addImage;
-        this.refreshExtraDiv()
-        this.updateSize();
-        if(!this.firstLaunch) {
-        }
+
     }
 
 
