@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature;
 
-import org.esupportail.esupsignature.batch.UpgradeService;
+import org.esupportail.esupsignature.service.utils.upgrade.UpgradeService;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
