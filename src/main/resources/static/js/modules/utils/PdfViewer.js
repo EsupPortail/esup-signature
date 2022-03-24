@@ -200,7 +200,10 @@ export class PdfViewer extends EventFactory {
         this.pdfPageView.setPdfPage(page);
         let self = this;
         this.pdfPageView.eventBus.on("annotationlayerrendered", function() {
-            self.postRender()
+            $(".annotationLayer").each(function() {
+                $(this).addClass("d-none");
+            });
+            self.postRender();
         });
         this.pdfPageView.draw();
     }
@@ -610,21 +613,24 @@ export class PdfViewer extends EventFactory {
                     }
                 }
             }
-
         }
         this.fireEvent('fieldsReady', ['ok']);
         console.debug("debug - " + ">>End compute field");
+        $(".annotationLayer").each(function() {
+            $(this).removeClass("d-none");
+        });
     }
 
     isFieldEnable(dataField) {
-        let isIncludeCurrentStep = false;
-        for (let i = 0; i < dataField.workflowSteps.length; i++) {
-            if (dataField.workflowSteps[i].id === this.currentStepId) {
-                isIncludeCurrentStep = true;
-                break;
-            }
-        }
-        return (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero)) && this.editable;
+        return dataField.editable;
+        // let isIncludeCurrentStep = false;
+        // for (let i = 0; i < dataField.workflowSteps.length; i++) {
+        //     if (dataField.workflowSteps[i].id === this.currentStepId) {
+        //         isIncludeCurrentStep = true;
+        //         break;
+        //     }
+        // }
+        // return (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero));
     }
 
     renderPdfForm(items) {
