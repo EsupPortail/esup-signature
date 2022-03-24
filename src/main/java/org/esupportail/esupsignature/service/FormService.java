@@ -128,7 +128,7 @@ public class FormService {
 	}
 
 	@Transactional
-	public void updateForm(Long id, Form updateForm, List<String> managers, String[] types) {
+	public void updateForm(Long id, Form updateForm, List<String> managers, String[] types, boolean updateWorkflow) {
 		Form form = getById(id);
 		form.setPdfDisplay(updateForm.getPdfDisplay());
 		form.getManagers().clear();
@@ -140,12 +140,14 @@ public class FormService {
 		form.getRoles().clear();
 		form.getRoles().addAll(updateForm.getRoles());
 		form.setPreFillType(updateForm.getPreFillType());
-		if(updateForm.getWorkflow() == null) {
-			for(Field field : form.getFields()) {
-				field.getWorkflowSteps().clear();
+		if(updateWorkflow) {
+			if(updateForm.getWorkflow() == null) {
+				for(Field field : form.getFields()) {
+					field.getWorkflowSteps().clear();
+				}
 			}
+			form.setWorkflow(updateForm.getWorkflow());
 		}
-		form.setWorkflow(updateForm.getWorkflow());
 		form.setDescription(updateForm.getDescription());
 		form.setMessage(updateForm.getMessage());
 		form.setPublicUsage(updateForm.getPublicUsage());
@@ -472,8 +474,7 @@ public class FormService {
 		formSetup.setName(form.getName());
 		formSetup.setTitle(form.getTitle());
 		formSetup.setWorkflow(null);
-		updateForm(id, formSetup, formSetup.getManagers(), formSetup.getAuthorizedShareTypes().stream().map(Enum::name).collect(Collectors.toList()).toArray(String[]::new));
-		return;
+		updateForm(id, formSetup, formSetup.getManagers(), formSetup.getAuthorizedShareTypes().stream().map(Enum::name).collect(Collectors.toList()).toArray(String[]::new), false);
 	}
 
 	public void nullifyForm(Form form) {

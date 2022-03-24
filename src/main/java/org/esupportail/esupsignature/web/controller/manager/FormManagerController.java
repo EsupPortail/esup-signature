@@ -164,7 +164,7 @@ public class FormManagerController {
                              RedirectAttributes redirectAttributes) {
         updateForm.setPublicUsage(false);
         updateForm.setAction("");
-        formService.updateForm(updateForm.getId(), updateForm, managers, types);
+        formService.updateForm(updateForm.getId(), updateForm, managers, types, true);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
         return "redirect:/manager/forms/update/" + updateForm.getId();
     }

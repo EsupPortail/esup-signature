@@ -610,7 +610,7 @@ public class SignRequestService {
 				if (!"".equals(data.getForm().getPreFillType()) && signRequest.getParentSignBook().getLiveWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getUsers().contains(user)) {
 					prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user, signRequest);
 					for (Field field : prefilledFields) {
-						if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() == null
+						if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() == null
 								|| !field.getWorkflowSteps().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep())) {
 							field.setDefaultValue("");
 						}
@@ -624,6 +624,20 @@ public class SignRequestService {
 			if (data.getDatas().get(field.getName()) != null
 					&& !data.getDatas().get(field.getName()).isEmpty()) {
 				field.setDefaultValue(data.getDatas().get(field.getName()));
+			}
+			for(WorkflowStep workflowStep : field.getWorkflowSteps()) {
+				Optional<LiveWorkflowStep> liveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().filter(l -> l.getWorkflowStep().equals(workflowStep)).findFirst();
+				if(liveWorkflowStep.isPresent()) {
+					if(liveWorkflowStep.get().getRecipients().stream().anyMatch(recipient -> recipient.getUser().getEppn().equals(userEppn))
+						&& liveWorkflowStep.get().equals(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep())) {
+						field.setEditable(true);
+						break;
+					} else{
+						field.setEditable(false);
+					}
+				} else {
+					field.setEditable(false);
+				}
 			}
 		}
 		return prefilledFields;
