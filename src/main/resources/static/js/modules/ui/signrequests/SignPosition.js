@@ -89,6 +89,9 @@ export class SignPosition extends EventFactory {
         if(signImageNumber != null && signImageNumber >= 0) {
             this.signRequestParamses.get(id).cross.addClass("drop-sign");
         }
+        if(signImageNumber < 0) {
+            $("#signImage_" + id).addClass("d-none");
+        }
         this.signRequestParamses.get(id).simulateDrop();
         this.id++;
         return this.signRequestParamses.get(id);
