@@ -1399,7 +1399,10 @@ public class SignBookService {
         }
         User user = userService.getUserByEppn(userEppn);
         if ((signRequest.getStatus().equals(SignRequestStatus.pending)
-                && (isUserInRecipients(signRequest, userEppn) || signRequest.getCreateBy().getEppn().equals(userEppn))) || (signRequest.getStatus().equals(SignRequestStatus.draft) && signRequest.getCreateBy().getEppn().equals(user.getEppn()))
+                && (isUserInRecipients(signRequest, userEppn)
+                || signRequest.getCreateBy().getEppn().equals(userEppn)))
+                || (signRequest.getStatus().equals(SignRequestStatus.draft)
+                && signRequest.getCreateBy().getEppn().equals(user.getEppn()))
         ) {
             signRequest.setEditable(true);
         }
@@ -1409,6 +1412,18 @@ public class SignBookService {
     public boolean isUserInRecipients(SignRequest signRequest, String userEppn) {
         boolean isInRecipients = false;
         Set<Recipient> recipients = signRequest.getRecipientHasSigned().keySet();
+        for(Recipient recipient : recipients) {
+            if (recipient.getUser().getEppn().equals(userEppn)) {
+                isInRecipients = true;
+                break;
+            }
+        }
+        return isInRecipients;
+    }
+
+    public boolean isUserInRecipientsAtCurrentStep(SignRequest signRequest, String userEppn) {
+        boolean isInRecipients = false;
+        List<Recipient> recipients = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients();
         for(Recipient recipient : recipients) {
             if (recipient.getUser().getEppn().equals(userEppn)) {
                 isInRecipients = true;

@@ -72,7 +72,9 @@ public class DefaultPreFill implements PreFill {
 									result.append(ouList.get(0).get("value"));
 								}
 							} else {
-								result.append(ldapValues.get(returnValue.trim()).toString());
+								if(ldapValues.get(returnValue.trim()) != null) {
+									result.append(ldapValues.get(returnValue.trim()).toString());
+								}
 							}
 							if(returnValues.length > 1) {
 								result.append(separator);
