@@ -37,6 +37,10 @@ public class GlobalProperties {
      */
     private Boolean hideWizard;
     /**
+     * Masquer la tuile Créer une demande personnalisée
+     */
+    private Boolean hideWizardWorkflow = true;
+    /**
      * Masquer la tuile Auto-signature
      */
     private Boolean hideAutoSign;
@@ -152,14 +156,19 @@ public class GlobalProperties {
     private Integer nbDaysBeforeDeleting = -1;
 
     /**
-     *  Conserver la configuration de la signature entre deux signatures
-     */
-    private Boolean keepSignRequestParams = true;
-
-    /**
      *  Url du serveur openXPKI
      */
     private String openXPKIServerUrl;
+
+    /**
+     *  Lancer automatiquement les mises à jour au démarrage
+     */
+    private Boolean autoUpgrade = true;
+
+    /**
+     *  Upload des PDF seuls
+     */
+    private Boolean pdfOnly = false;
 
     public String getRootUrl() {
         return rootUrl;
@@ -215,6 +224,14 @@ public class GlobalProperties {
 
     public void setHideWizard(Boolean hideWizard) {
         this.hideWizard = hideWizard;
+    }
+
+    public Boolean getHideWizardWorkflow() {
+        return hideWizardWorkflow;
+    }
+
+    public void setHideWizardWorkflow(Boolean hideWizardWorkflow) {
+        this.hideWizardWorkflow = hideWizardWorkflow;
     }
 
     public Boolean getHideAutoSign() {
@@ -401,19 +418,27 @@ public class GlobalProperties {
         this.nbDaysBeforeDeleting = nbDaysBeforeDeleting;
     }
 
-    public Boolean getKeepSignRequestParams() {
-        return keepSignRequestParams;
-    }
-
-    public void setKeepSignRequestParams(Boolean keepSignRequestParams) {
-        this.keepSignRequestParams = keepSignRequestParams;
-    }
-
     public String getOpenXPKIServerUrl() {
         return openXPKIServerUrl;
     }
 
     public void setOpenXPKIServerUrl(String openXPKIServerUrl) {
         this.openXPKIServerUrl = openXPKIServerUrl;
+    }
+
+    public Boolean getAutoUpgrade() {
+        return autoUpgrade;
+    }
+
+    public void setAutoUpgrade(Boolean autoUpgrade) {
+        this.autoUpgrade = autoUpgrade;
+    }
+
+    public Boolean getPdfOnly() {
+        return pdfOnly;
+    }
+
+    public void setPdfOnly(Boolean pdfOnly) {
+        this.pdfOnly = pdfOnly;
     }
 }

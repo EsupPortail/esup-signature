@@ -89,7 +89,7 @@ export class GlobalUi {
         $("#sendSignRequestForm").submit(e => this.disableSendButton(e));
         let csrf = this.csrf;
         $("#startWizardCustomButton").on('click', function(e) {
-            let wizUi = new WizUi("", $("#wizFrameCustom"), "Demande personnalisée", csrf);
+            let wizUi = new WizUi("", $("#wizFrameCustom"), "", csrf);
             wizUi.startByDocs();
         });
 
@@ -118,6 +118,10 @@ export class GlobalUi {
         });
 
         $("#start-wizard-button").on('click', function(e) {
+            let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", csrf);
+            wizUi.startByRecipients();
+        });
+        $("#start-wizard-button2").on('click', function(e) {
             let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", csrf);
             wizUi.startByRecipients();
         });
@@ -409,7 +413,10 @@ export class GlobalUi {
                 select: '#' + selectName,
                 hideSelectedOption: false,
                 placeholder: $(this).attr('data-placeholder'),
-                closeOnSelect: true
+                closeOnSelect: true,
+                searchFilter: (option, search) => {
+                    return option.text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").indexOf(search.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")) !== -1
+                }
             });
         })
 

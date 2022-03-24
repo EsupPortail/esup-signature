@@ -215,12 +215,10 @@ public class SignRequestController {
     @PostMapping(value = "/fast-sign-request")
     public String createSignRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                     @RequestParam("signType") SignType signType,
-                                    HttpServletRequest request, Model model, RedirectAttributes redirectAttributes) {
-        User user = (User) model.getAttribute("user");
-        logger.info("création rapide demande de signature par " + user.getFirstname() + " " + user.getName());
+                                    HttpServletRequest request, RedirectAttributes redirectAttributes) {
         if (multipartFiles != null) {
             try {
-                SignBook signBook = signBookService.addFastSignRequestInNewSignBook(multipartFiles, signType, user, authUserEppn);
+                SignBook signBook = signBookService.addFastSignRequestInNewSignBook(multipartFiles, signType, userEppn, authUserEppn);
                 return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
             } catch (EsupSignatureException e) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
@@ -384,7 +382,7 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @GetMapping(value = "/complete/{id}")
-    public String complete(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
+    public String complete(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws EsupSignatureException {
         signRequestService.completeSignRequest(id, userEppn, authUserEppn);
         return "redirect:/user/signrequests/" + id + "/?form";
     }

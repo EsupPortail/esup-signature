@@ -85,6 +85,9 @@ public class SignRequest {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
+    @OneToOne(cascade = CascadeType.DETACH)
+    private AuditTrail auditTrail;
+
     @JsonIgnore
     @Transient
     transient Boolean signable = false;
@@ -286,6 +289,14 @@ public class SignRequest {
 
     public void setRecipientHasSigned(Map<Recipient, Action> recipientHasSigned) {
         this.recipientHasSigned = recipientHasSigned;
+    }
+
+    public AuditTrail getAuditTrail() {
+        return auditTrail;
+    }
+
+    public void setAuditTrail(AuditTrail auditTrail) {
+        this.auditTrail = auditTrail;
     }
 
     @JsonIgnore

@@ -10,7 +10,6 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,10 +25,9 @@ public class UserKeystoreService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(UserKeystoreService.class);
 
-	private CertificateVerifier certificateVerifier;
+	private final CertificateVerifier certificateVerifier;
 
-	@Autowired
-	public void setCertificateVerifier(CertificateVerifier certificateVerifier) {
+	public UserKeystoreService(CertificateVerifier certificateVerifier) {
 		this.certificateVerifier = certificateVerifier;
 	}
 
@@ -86,7 +84,12 @@ public class UserKeystoreService {
 		CertificateReports certificateReports = certificateValidator.validate();
 		certInfo += "\nRevocation : " + certificateReports.getSimpleReport().getCertificateRevocationReason(certificateToken.getDSSId().asXmlId());
 		certInfo += "\nDate de révocation : " + certificateReports.getSimpleReport().getCertificateRevocationDate(certificateToken.getDSSId().asXmlId());
+		certInfo = getString(certInfo, pkcs12SignatureToken);
+		pkcs12SignatureToken.close();
+		return certInfo;
+	}
 
+	private String getString(String certInfo, Pkcs12SignatureToken pkcs12SignatureToken) {
 		CertificateToken[] certificateTokens = getCertificateTokenChain(pkcs12SignatureToken);
 		for(CertificateToken token : certificateTokens) {
 			X509Certificate cert = token.getCertificate();
@@ -94,7 +97,6 @@ public class UserKeystoreService {
 				+ "\n" + cert.getSubjectX500Principal()
 				+ "\n" + cert.getSerialNumber();
 		}
-		pkcs12SignatureToken.close();
 		return certInfo;
 	}
 

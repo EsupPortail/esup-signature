@@ -648,7 +648,6 @@ export class WorkspacePdf {
         this.initFormAction();
         this.initSignFields();
         $("div[id^='cross_']").each((index, e) => this.toggleSign(e));
-
     }
 
     makeItDroppable(signSpaceDiv) {

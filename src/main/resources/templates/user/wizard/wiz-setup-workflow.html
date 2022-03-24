@@ -27,7 +27,7 @@
         <p th:unless="${signBook.liveWorkflow.workflow.workflowSteps.size() > 0}">Après la validation, vous pourrez télécharger le document</p>
         <div th:if="${signBook.liveWorkflow.workflow.workflowSteps.size() > 0}">
             <p>
-                Le circuit "<span th:text="${signBook.liveWorkflow.workflow.title}"></span>" comporte <span
+                Le circuit "<span th:text="${signBook.liveWorkflow.workflow.description}"></span>" comporte <span
                     th:text="${signBook.liveWorkflow.workflow.workflowSteps.size()}"></span> étape<span th:if="${signBook.liveWorkflow.workflow.workflowSteps.size()} > 1">s</span>
             </p>
             <ul class="list-group">

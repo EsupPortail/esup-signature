@@ -219,7 +219,7 @@
                     Le document contenu dans cette demande de signature a été archivé. Vous avez la posibilité de le télécharger à l'aide du bouton en bas à droite.
                 </div>
             </th:block>
-            <div th:if="${(toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace"
+            <div th:if="${signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace"
                  class="workspace alert alert-secondary row">
                 <div class="card col-lg-10 mx-auto mb-1">
                     <div class="card-body">
@@ -243,6 +243,9 @@
                     new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.originalDocuments}]], true, [[${_csrf}]]);
                     new FilesInput($("#signedFiles"), "", "signedFiles", [[${signRequest.signedDocuments}]], true, [[${_csrf}]]);
                 </script>
+            </div>
+            <div th:if="${!signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" class="workspace alert alert-danger">
+                Un document de cette demande est corrompu. Merci de supprimer la demande et d'en émettre une nouvelle à l'aide d'un fichier valide.
             </div>
             <div th:if="${toSignDocument == null && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="alert alert-danger">
                 <h4>La demande de signature a été supprimée</h4>
@@ -334,7 +337,7 @@
                         </button>
                     </div>
                 </div>
-                <label for="certType">Si besoin choisir le certificat à utiliser</label>
+                <label for="certType" th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign}">Si besoin choisir le certificat à utiliser</label>
                 <select th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign}" id="certType" name="certType" class="form-select mt-2">
                     <option th:if="${globalProperties.openXPKIServerUrl != null}" value="default">Certificat généré automatiquement </option>
                     <option th:if="${user.keystore != null}" value="profil">Certificat lié à mon profil</option>
@@ -736,102 +739,99 @@
     </div>
 </div>
 <div th:replace="user/signrequests/includes/modals/attachment :: attachment"></div>
-<th:block th:if="${signable == false && signImages != null && signImages.size() == 0 && currentSignType != null && currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-    <div id="add-sign-image" class="modal" role="dialog" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
-                <input type="hidden" name="id" th:value="${authUser.id}"/>
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Pour signer ce document merci d’ajouter une image de votre signature</h5>
-                </div>
-                <div class="modal-body">
-                    <div class="text-center">
-                        <label class="col-form-label">
-                            <strong>Vous pouvez choisir une image provenant de votre ordinateur</strong>
-                            <button data-bs-target="#collapseHelpSignImage" data-bs-toggle="collapse"
-                                    type="button"
-                                    class="btn btn-sm btn-transparent">
-                                <i class="fas fa-info-circle text-info"></i>
-                            </button>
-                            <div class="collapse" id="collapseHelpSignImage">
-                                <div class="alert alert-info">
-                                    <small> Après avoir sélectionné une image, vous pourrez ajuster sa
-                                        taille pour
-                                        que la signature entre dans le carré blanc. Si votre signature
-                                        est grande
-                                        (contient un tampon par exemple), il est possible
-                                        d’élargir
-                                        le carré blanc (la signature prendra plus de place sur le
-                                        document) <br/>
-                                        Une image de la signature sera toujours nécessaire pour signer
-                                        un PDF
-                                    </small>
-                                </div>
-                            </div>
-                        </label>
-                        <div class="mx-auto mb-1" style="width: 600px;">
-                            <input type="file" class="form-control" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
-                            <label class="custom-file-label" for="vanilla-upload">
-                                Choisissez une nouvelle image
-                            </label>
-                        </div>
-                        <br/>
-                        <label id="signPadLabel" class="col-form-label"><strong>Vous pouvez dessiner une signature dans le rectangle ci dessous</strong></label>
-                        <div id="signPad">
-                            <canvas id="canvas" style="border: 1px solid black;"></canvas>
-                            <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
-                                Valider la signature
-                            </button>
-                            <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                            <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
-                                Réinitialiser
-                            </button>
-                            <div>
-                            </div>
-                        </div>
-                        <div id="signCrop" class="mx-auto">
-                            <div id="crop-div" class="alert alert-light text-dark text-center" style="display: none;">
-                                <div class="d-flex justify-content-center">
-                                    <button type="button" id="zoomout"
-                                            class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
-                                        <i
-                                                class="fas fa-search-minus"></i></button>
-                                    <button type="button" id="zoomin"
-                                            class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
-                                        <i
-                                                class="fas fa-search-plus"></i></button>
-                                    <button type="button"
-                                            class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
-                                            data-deg="90"><i class="fas fa-undo"></i></button>
-                                    <button type="button"
-                                            class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
-                                            data-deg="-90"><i class="fas fa-redo"></i></button>
-                                </div>
-                                <div id="vanilla-crop" class="mt-2"></div>
-                            </div>
-                        </div>
-                        <input type="hidden" id="signImageBase64" name="signImageBase64" value="">
+<div id="add-sign-image" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
+        <input type="hidden" name="id" th:value="${authUser.id}"/>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajout d'une image de signature</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <div class="alert alert-warning">
+                        Vous n'avez pas encore d'image de signature dans votre profil. Merci de retenter l'opération après l'enregistrement de votre image.
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <a id="saveButton"
-                       class="btn btn-success">
-                        <i class="fas fa-save"></i> Enregistrer la signature
-                    </a>
+                    <label class="col-form-label">
+                        <strong>Vous pouvez choisir une image provenant de votre ordinateur</strong>
+                        <button data-bs-target="#collapseHelpSignImage" data-bs-toggle="collapse"
+                                type="button"
+                                class="btn btn-sm btn-transparent">
+                            <i class="fas fa-info-circle text-info"></i>
+                        </button>
+                        <div class="collapse" id="collapseHelpSignImage">
+                            <div class="alert alert-info">
+                                <small> Après avoir sélectionné une image, vous pourrez ajuster sa
+                                    taille pour
+                                    que la signature entre dans le carré blanc. Si votre signature
+                                    est grande
+                                    (contient un tampon par exemple), il est possible
+                                    d’élargir
+                                    le carré blanc (la signature prendra plus de place sur le
+                                    document) <br/>
+                                    Une image de la signature sera toujours nécessaire pour signer
+                                    un PDF
+                                </small>
+                            </div>
+                        </div>
+                    </label>
+                    <div class="mx-auto mb-1" style="width: 600px;">
+                        <input type="file" class="form-control" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
+                        <label class="custom-file-label" for="vanilla-upload">
+                            Choisissez une nouvelle image
+                        </label>
+                    </div>
+                    <br/>
+                    <label id="signPadLabel" class="col-form-label"><strong>Vous pouvez dessiner une signature dans le rectangle ci dessous</strong></label>
+                    <div id="signPad">
+                        <canvas id="canvas" style="border: 1px solid black;"></canvas>
+                        <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
+                            Valider la signature
+                        </button>
+                        <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
+                            Réinitialiser
+                        </button>
+                        <div>
+                        </div>
+                    </div>
+                    <div id="signCrop" class="mx-auto">
+                        <div id="crop-div" class="alert alert-light text-dark text-center" style="display: none;">
+                            <div class="d-flex justify-content-center">
+                                <button type="button" id="zoomout"
+                                        class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
+                                    <i
+                                            class="fas fa-search-minus"></i></button>
+                                <button type="button" id="zoomin"
+                                        class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
+                                    <i
+                                            class="fas fa-search-plus"></i></button>
+                                <button type="button"
+                                        class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
+                                        data-deg="90"><i class="fas fa-undo"></i></button>
+                                <button type="button"
+                                        class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
+                                        data-deg="-90"><i class="fas fa-redo"></i></button>
+                            </div>
+                            <div id="vanilla-crop" class="mt-2"></div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="signImageBase64" name="signImageBase64" value="">
                 </div>
             </div>
-            </form>
+            <div class="modal-footer">
+                <a id="saveButton"
+                   class="btn btn-success">
+                    <i class="fas fa-save"></i> Enregistrer la signature
+                </a>
+            </div>
         </div>
+        </form>
     </div>
-    <script th:inline="javascript" type="module">
-        import {UserUi} from '/js/modules/ui/users/UserUi.js?version=[[${versionApp}]]';
-        new UserUi();
-        $("#add-sign-image").show();
-    </script>
-</th:block>
+</div>
 <footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

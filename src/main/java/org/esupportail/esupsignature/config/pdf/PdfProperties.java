@@ -7,6 +7,7 @@ public class PdfProperties {
 
     private int pdfToImageDpi = 72;
     private String pathToGS = "/usr/bin/gs";
+    private String pathToFonts = "/usr/share/fonts";
     private boolean convertToPdfA = true;
     private int pdfALevel = 2;
 
@@ -24,6 +25,14 @@ public class PdfProperties {
 
     public void setPathToGS(String pathToGS) {
         this.pathToGS = pathToGS;
+    }
+
+    public String getPathToFonts() {
+        return pathToFonts;
+    }
+
+    public void setPathToFonts(String pathToFonts) {
+        this.pathToFonts = pathToFonts;
     }
 
     public boolean isConvertToPdfA() {

@@ -156,7 +156,7 @@ dss:
     cache-data-source-url: jdbc:hsqldb:mem:cachedb
     cache-password:
     cache-username: sa
-    default-validation-policy: policy/custom-constraint.xml
+    default-validation-policy: policy/constraint.xml
     server-signing-keystore-filename: validate_service.p12
     server-signing-keystore-password: password
     server-signing-keystore-type: PKCS12
@@ -180,6 +180,7 @@ pdf:
     convert-to-pdf-a: true
     pdf-a-level: 2
     path-to-g-s: /usr/bin/gs
+    path-to-fonts : /usr/share/fonts
     pdf-to-image-dpi: 72
 
 security:

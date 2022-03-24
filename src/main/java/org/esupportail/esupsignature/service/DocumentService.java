@@ -55,6 +55,10 @@ public class DocumentService {
 		document.setContentType(contentType);
 		BigFile bigFile = new BigFile();
 		long size = inputStream.available();
+		if(size == 0) {
+			logger.warn("upload aborted cause file size is 0");
+			throw new IOException("File size is 0");
+		}
 		bigFileService.setBinaryFileStream(bigFile, inputStream, size);
 		document.setBigFile(bigFile);
 		document.setSize(size);
@@ -84,7 +88,6 @@ public class DocumentService {
 	}
 
 	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile, String name) throws EsupSignatureException, EsupSignatureFsException {
-		assert !name.isEmpty();
 		String documentUri;
 		FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(targetUrl);
 		if(fsAccessService != null) {
@@ -92,7 +95,7 @@ public class DocumentService {
 				fsAccessService.createURITree(targetUrl);
 				InputStream inputStream = signedFile.getInputStream();
 				if(name == null) {
-					name = signedFile.getFileName().replaceAll("\\W+", "_");
+					name = signedFile.getFileName();
 				} else {
 					name = name + "." + fileService.getExtension(signedFile.getFileName());
 				}
