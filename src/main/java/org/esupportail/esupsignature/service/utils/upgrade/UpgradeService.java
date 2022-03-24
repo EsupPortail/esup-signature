@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.batch;
+package org.esupportail.esupsignature.service.utils.upgrade;
 
 import org.esupportail.esupsignature.entity.AppliVersion;
 import org.esupportail.esupsignature.entity.SignBook;

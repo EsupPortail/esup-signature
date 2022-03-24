@@ -36,6 +36,9 @@ public class Field {
 
 	private Boolean readOnly = false;
 
+	@Transient
+	private Boolean editable = false;
+
 	@ManyToMany
 	private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
@@ -244,5 +247,13 @@ public class Field {
 
 	public void setFavorisable(Boolean favorisable) {
 		this.favorisable = favorisable;
+	}
+
+	public Boolean getEditable() {
+		return editable;
+	}
+
+	public void setEditable(Boolean editable) {
+		this.editable = editable;
 	}
 }

@@ -194,7 +194,7 @@ public class FormAdminController {
 							 @RequestParam(required = false) List<String> managers,
 							 @RequestParam(value = "types", required = false) String[] types,
 							 RedirectAttributes redirectAttributes) {
-		formService.updateForm(updateForm.getId(), updateForm, managers, types);
+		formService.updateForm(updateForm.getId(), updateForm, managers, types, true);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
 		return "redirect:/admin/forms/update/" + updateForm.getId();
 	}

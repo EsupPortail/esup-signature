@@ -156,11 +156,6 @@ public class GlobalProperties {
     private Integer nbDaysBeforeDeleting = -1;
 
     /**
-     *  Conserver la configuration de la signature entre deux signatures
-     */
-    private Boolean keepSignRequestParams = true;
-
-    /**
      *  Url du serveur openXPKI
      */
     private String openXPKIServerUrl;
@@ -421,14 +416,6 @@ public class GlobalProperties {
 
     public void setNbDaysBeforeDeleting(Integer nbDaysBeforeDeleting) {
         this.nbDaysBeforeDeleting = nbDaysBeforeDeleting;
-    }
-
-    public Boolean getKeepSignRequestParams() {
-        return keepSignRequestParams;
-    }
-
-    public void setKeepSignRequestParams(Boolean keepSignRequestParams) {
-        this.keepSignRequestParams = keepSignRequestParams;
     }
 
     public String getOpenXPKIServerUrl() {
