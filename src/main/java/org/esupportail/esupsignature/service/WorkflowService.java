@@ -559,6 +559,8 @@ public class WorkflowService {
                                 }
                             }
                         }
+                    } else {
+                        signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(0).getSignRequestParams().addAll(signRequest.getSignRequestParams());
                     }
                 }
             } else {
