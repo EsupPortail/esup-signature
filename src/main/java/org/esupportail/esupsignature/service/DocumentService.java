@@ -97,7 +97,9 @@ public class DocumentService {
 				if(name == null) {
 					name = signedFile.getFileName();
 				} else {
-					name = name + "." + fileService.getExtension(signedFile.getFileName());
+					if(!fileService.getExtension(name).equals(fileService.getExtension(signedFile.getFileName()))) {
+						name = name + "." + fileService.getExtension(signedFile.getFileName());
+					}
 				}
 				logger.info("send to " + documentIOType.name() + " in " + targetUrl + "/" + name);
 				if (fsAccessService.putFile(targetUrl, name, inputStream, UploadActionType.OVERRIDE)) {

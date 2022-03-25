@@ -301,7 +301,6 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 
 	@Override
 	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) {
-		filename = filename.replaceAll("\\W+", "_");
 		boolean success = false;
 		SmbFile newFile = null;
 		try {
