@@ -106,7 +106,7 @@ export class WizUi {
                 contentType: false,
                 success: result => self.gotoStep2(result),
                 error: function(request, status, error) {
-                    alert(error);
+                    alert(request.responseText);
                 }
             } );
         });
