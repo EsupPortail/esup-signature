@@ -90,6 +90,7 @@ export default class FilesInput extends EventFactory {
         this.input.fileinput({
             language: "fr",
             showCaption: false,
+            minFileSize: 1,
             showClose: false,
             showBrowse: !readOnly,
             showUpload: false,
