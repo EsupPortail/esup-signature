@@ -186,8 +186,13 @@ public class UserService {
                 String name = personLdaps.get(0).getSn();
                 String firstName = personLdaps.get(0).getGivenName();
                 return createUser(eppn, name, firstName, mail, UserType.ldap, false);
+            } else {
+                logger.warn(mail + " not found in ldap when search by email");
             }
+        } else {
+            logger.warn("no ldap service available");
         }
+
         UserType userType = checkMailDomain(mail);
         if (userType.equals(UserType.external)) {
             logger.info("ldap user not found : " + mail + ". Creating temp acccount");
@@ -410,10 +415,11 @@ public class UserService {
         String[] emailSplit = email.split("@");
         if (emailSplit.length > 1) {
             String domain = emailSplit[1];
-            if (domain.equals(globalProperties.getDomain())) {
+            if (domain.equals(globalProperties.getDomain()) && ldapPersonService != null) {
                 return UserType.ldap;
-            }
-            if(shibProperties.getDomainsWhiteListUrl() != null) {
+            } else if(domain.equals(globalProperties.getDomain())) {
+                return UserType.shib;
+            } else if(shibProperties.getDomainsWhiteListUrl() != null) {
                 File whiteListFile = getDomainsWhiteList();
                 if (fileService.isFileContainsText(whiteListFile, domain)) {
                     return UserType.shib;

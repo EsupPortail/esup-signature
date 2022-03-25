@@ -246,7 +246,8 @@ public class SignRequestController {
                                   @RequestParam(value = "firstnames", required = false) List<String> firstnames,
                                   @RequestParam(value = "phones", required = false) List<String> phones,
                                   @RequestParam(value = "title", required = false) String title,
-                                  Model model, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws EsupSignatureIOException {
+                                  Model model, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
+        String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
         User user = (User) model.getAttribute("user");
         User authUser = userService.getUserByEppn(authUserEppn);
         recipientsEmails = recipientsEmails.stream().distinct().collect(Collectors.toList());
@@ -254,7 +255,14 @@ public class SignRequestController {
         List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
         if (multipartFiles != null) {
             try {
-                Map<SignBook, String> signBookStringMap = signBookService.sendSignRequest(title, multipartFiles, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, authUser, false, forceAllSign, null);
+                Map<SignBook, String> signBookStringMap = null;
+                try {
+                    signBookStringMap = signBookService.sendSignRequest(title, multipartFiles, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, authUser, false, forceAllSign, null);
+                } catch(EsupSignatureIOException e) {
+                    logger.warn("error on send signrequest, redirect to home");
+                    redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+                    return "redirect:" + referer;
+                }
                 if (signBookStringMap.values().iterator().next() != null) {
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", signBookStringMap.values().toArray()[0].toString()));
                 } else {
@@ -274,7 +282,6 @@ public class SignRequestController {
             logger.warn("no file to import");
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error","Pas de fichier à importer"));
         }
-        String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
         return "redirect:" + referer;
     }
 
@@ -313,7 +320,7 @@ public class SignRequestController {
         if(signRequest.getParentSignBook().getSignRequests().size() > 1) {
             signRequestService.deleteDefinitive(id);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
-            return "redirect:/user/signbooks/" + signRequest.getParentSignBook().getId();
+            return "redirect:/user/signbooks/";
 
         } else {
             signBookService.deleteDefinitive(signRequest.getParentSignBook().getId());

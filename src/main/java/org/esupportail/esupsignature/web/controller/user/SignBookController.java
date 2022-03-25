@@ -266,10 +266,15 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @PostMapping(value = "/add-docs/{id}")
     public String addDocumentToNewSignRequest(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
+                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles) {
         logger.info("start add documents");
-        signBookService.addDocumentsToSignBook(id, multipartFiles, authUserEppn);
-        return "redirect:/user/signrequests/" + id + "/?form";
+        try {
+            signBookService.addDocumentsToSignBook(id, multipartFiles, authUserEppn);
+            return "redirect:/user/signrequests/" + id + "/?form";
+        } catch(EsupSignatureIOException e) {
+            logger.warn("redirect to home");
+        }
+        return "redirect:/user/";
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
