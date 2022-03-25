@@ -282,7 +282,7 @@ public class SignBookService {
         signBook.setLiveWorkflow(liveWorkflowService.create(workflowName));
         signBook.setSubject(subject);
         signBookRepository.save(signBook);
-        subject = generateName(signBook, workflow, user);
+        subject = generateName(signBook, workflow, user, false);
         signBook.setSubject(subject);
         return signBook;
     }
@@ -942,13 +942,16 @@ public class SignBookService {
                 for(SignRequestParams signRequestParams : signRequestParamses) {
                     signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, 1, signerUser, date);
                     lastSignLogs.add(signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn()));
+                    auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), "Signature simple", "Pas de timestamp", date, null, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
                 }
+            } else {
+                auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), "Signature simple", "Pas de timestamp", date, null, null, null, null);
             }
             if ((signRequestService.isStepAllSignDone(signRequest.getParentSignBook()))) {
                 signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest, lastSignLogs), signRequest.getToken());
             }
             byte[] signedBytes = signedInputStream.readAllBytes();
-            auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), "Signature simple", "Pas de timestamp", date, null);
+
             boolean isComplete = applyEndOfSignRules(signRequest.getId(), user.getEppn(), authUser.getEppn(), signType, comment);
             Document signedDocument = documentService.addSignedFile(signRequest, new ByteArrayInputStream(signedBytes), signRequest.getTitle() + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType());
             if(isComplete) {
@@ -973,7 +976,8 @@ public class SignBookService {
             DiagnosticData diagnosticData = reports.getDiagnosticData();
             String certificat = new ArrayList<>(diagnosticData.getAllSignatures()).get(diagnosticData.getAllSignatures().size() - 1).getSigningCertificate().toString();
             String timestamp = diagnosticData.getTimestampList().get(0).getSigningCertificate().toString();
-            auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), certificat, timestamp, reports.getSimpleReport().getValidationTime(), null);
+            SignRequestParams signRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0);
+            auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), certificat, timestamp, reports.getSimpleReport().getValidationTime(), null, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
             boolean isComplete = applyEndOfSignRules(signRequest.getId(), user.getEppn(), authUser.getEppn(), SignType.certSign, comment);
             if(isComplete) {
                 try {
@@ -1545,7 +1549,7 @@ public class SignBookService {
                                             documentService.exportDocument(documentIOType, targetUrl, attachment, null);
                                         }
                                     }
-                                    String name = generateName(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), userService.getSystemUser());
+                                    String name = generateName(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), userService.getSystemUser(), true);
                                     documentService.exportDocument(documentIOType, targetUrl, signedFile, name);
                                     target.setTargetOk(true);
                                 } catch (EsupSignatureFsException e) {
@@ -1579,7 +1583,7 @@ public class SignBookService {
                 Document signedFile = signRequest.getLastSignedDocument();
                 String subPath = "/" + signRequest.getParentSignBook().getWorkflowName() + "/";
                 if(signRequest.getExportedDocumentURI() == null) {
-                    String name = generateName(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() , userService.getSystemUser());
+                    String name = generateName(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() , userService.getSystemUser(), true);
                     String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath, signedFile.getId() + "_" + name);
                     if(documentUri != null) {
                         signRequest.setExportedDocumentURI(documentUri);
@@ -1693,10 +1697,20 @@ public class SignBookService {
         this.enableCleanTask = enableCleanTask;
     }
 
-    public String generateName(SignBook signBook, Workflow workflow, User user) {
+    public String generateName(SignBook signBook, Workflow workflow, User user, Boolean target) {
         String template = globalProperties.getNamingTemplate();
-        if(workflow != null && workflow.getNamingTemplate() != null && !workflow.getNamingTemplate().isEmpty()) {
-            template = workflow.getNamingTemplate();
+        if(workflow != null) {
+            if(target) {
+                if(workflow.getTargetNamingTemplate() != null && !workflow.getTargetNamingTemplate().isEmpty()) {
+                    template = workflow.getNamingTemplate();
+                } else {
+                    template = "[signedFileName]";
+                }
+            } else {
+                if(workflow.getNamingTemplate() != null && !workflow.getNamingTemplate().isEmpty()) {
+                    template = workflow.getNamingTemplate();
+                }
+            }
         }
         if((signBook.getSubject() == null || signBook.getSubject().isEmpty())) {
             if(workflow == null) {
@@ -1725,6 +1739,18 @@ public class SignBookService {
         }
         if(template.contains("[title]")) {
             template = template.replace("[title]", signBook.getSubject());
+        }
+        if(template.contains("[originalFileName]")) {
+            template = template.replace("[originalFileName]", signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName());
+        }
+        if(template.contains("[signedFileName]")) {
+            template = template.replace("[signedFileName]", signBook.getSignRequests().get(0).getSignedDocuments().get(0).getFileName());
+        }
+        if(template.contains("[fileNameOnly]")) {
+            template = template.replace("[fileNameOnly]", fileService.getNameOnly(signBook.getSignRequests().get(0).getSignedDocuments().get(0).getFileName()));
+        }
+        if(template.contains("[fileExtension]")) {
+            template = template.replace("[fileExtension]", fileService.getExtension(signBook.getSignRequests().get(0).getSignedDocuments().get(0).getFileName()));
         }
         if(template.contains("[worflowName]")) {
             template = template.replace("[worflowName]", signBook.getWorkflowName());

@@ -52,19 +52,22 @@ public class AuditTrailService {
     }
 
     @Transactional
-    public void addAuditStep(String token, String userEppn, String certificat, String timeStampCertificat, Date timeStampDate, Boolean allScrolled) {
+    public void addAuditStep(String token, String userEppn, String certificat, String timeStampCertificat, Date timeStampDate, Boolean allScrolled, Integer page, Integer posX, Integer posY) {
         AuditTrail auditTrail = auditTrailRepository.findByToken(token);
-        AuditStep auditStep = createAuditStep(userEppn, certificat, timeStampCertificat, timeStampDate, allScrolled);
+        AuditStep auditStep = createAuditStep(userEppn, certificat, timeStampCertificat, timeStampDate, allScrolled, page, posX, posY);
         auditTrail.getAuditSteps().add(auditStep);
     }
 
     @Transactional
-    public AuditStep createAuditStep(String userEppn, String certificat, String timeStampCertificat, Date timeStampDate, Boolean allScrolled) {
+    public AuditStep createAuditStep(String userEppn, String certificat, String timeStampCertificat, Date timeStampDate, Boolean allScrolled, Integer page, Integer posX, Integer posY) {
         User user = userService.getUserByEppn(userEppn);
         AuditStep auditStep = new AuditStep();
         auditStep.setName(user.getName());
         auditStep.setFirstname(user.getFirstname());
         auditStep.setEmail(user.getEmail());
+        auditStep.setPage(page);
+        auditStep.setPosX(posX);
+        auditStep.setPosY(posY);
         auditStep.setLogin(user.getEppn());
         auditStep.setSignCertificat(certificat);
         auditStep.setTimeStampCertificat(timeStampCertificat);

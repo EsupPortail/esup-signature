@@ -21,6 +21,12 @@ public class AuditStep {
 
     private String email;
 
+    private Integer page;
+
+    private Integer posX;
+
+    private Integer posY;
+
     @Column(columnDefinition = "TEXT")
     private String signCertificat;
 
@@ -79,6 +85,30 @@ public class AuditStep {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Integer getPage() {
+        return page;
+    }
+
+    public void setPage(Integer page) {
+        this.page = page;
+    }
+
+    public Integer getPosX() {
+        return posX;
+    }
+
+    public void setPosX(Integer posX) {
+        this.posX = posX;
+    }
+
+    public Integer getPosY() {
+        return posY;
+    }
+
+    public void setPosY(Integer posY) {
+        this.posY = posY;
     }
 
     public String getSignCertificat() {
