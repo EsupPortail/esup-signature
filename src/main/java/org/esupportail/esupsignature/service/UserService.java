@@ -415,10 +415,11 @@ public class UserService {
         String[] emailSplit = email.split("@");
         if (emailSplit.length > 1) {
             String domain = emailSplit[1];
-            if (domain.equals(globalProperties.getDomain())) {
+            if (domain.equals(globalProperties.getDomain()) && ldapPersonService != null) {
                 return UserType.ldap;
-            }
-            if(shibProperties.getDomainsWhiteListUrl() != null) {
+            } else if(domain.equals(globalProperties.getDomain())) {
+                return UserType.shib;
+            } else if(shibProperties.getDomainsWhiteListUrl() != null) {
                 File whiteListFile = getDomainsWhiteList();
                 if (fileService.isFileContainsText(whiteListFile, domain)) {
                     return UserType.shib;

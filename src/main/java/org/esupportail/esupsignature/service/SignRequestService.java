@@ -624,8 +624,10 @@ public class SignRequestService {
 			}
 		}
 		for (Field field : prefilledFields) {
-			if (data.getDatas().get(field.getName()) != null
-					&& !data.getDatas().get(field.getName()).isEmpty()) {
+			if (field.getName() != null
+				&& data.getDatas().size() > 0
+				&& data.getDatas().get(field.getName()) != null
+				&& !data.getDatas().get(field.getName()).isEmpty()) {
 				field.setDefaultValue(data.getDatas().get(field.getName()));
 			}
 			for(WorkflowStep workflowStep : field.getWorkflowSteps()) {
