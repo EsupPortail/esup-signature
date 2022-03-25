@@ -217,16 +217,21 @@ public class SignRequestWsSecureController {
                                                     @PathVariable("workflowName") String workflowName,
                                                     @RequestParam(value = "title", required = false) String title,
                                                     @RequestParam(value = "unique", required = false) Boolean unique,
-                                                    @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles) throws EsupSignatureIOException {
+                                                    @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles) {
         logger.info("start add documents in " + workflowName);
-        SignBook signBook;
-        if(unique != null && unique) {
-            signBook = signBookService.addDocsInNewSignBookGrouped(title, multipartFiles, authUserEppn);
 
-        } else {
-            signBook = signBookService.addDocsInNewSignBookSeparated(title, workflowName, multipartFiles, authUserEppn);
-        }
-        return new String[]{"" + signBook.getId()};
+            try {
+                SignBook signBook;
+                if(unique != null && unique) {
+                    signBook = signBookService.addDocsInNewSignBookGrouped(title, multipartFiles, authUserEppn);
+                } else {
+                    signBook = signBookService.addDocsInNewSignBookSeparated(title, workflowName, multipartFiles, authUserEppn);
+                }
+                return new String[]{"" + signBook.getId()};
+            } catch(EsupSignatureIOException e) {
+                logger.warn("signbook not created");
+            }
+        return new ResponseEntity<>("Un problème est survenu car le document est corrompu. Merci d'essayer avec un document valide", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

@@ -222,7 +222,7 @@ public class SignRequestService {
 				byte[] bytes = multipartFile.getInputStream().readAllBytes();
 				String contentType = multipartFile.getContentType();
 				InputStream inputStream = new ByteArrayInputStream(bytes);
-				if (multipartFiles.length == 1) {
+				if (multipartFiles.length == 1 && bytes.length > 0) {
 					if("application/pdf".equals(multipartFiles[0].getContentType()) && scanSignatureFields) {
 						bytes = pdfService.normalizeGS(new ByteArrayInputStream(bytes)).readAllBytes();
 						List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
@@ -243,10 +243,13 @@ public class SignRequestService {
 						contentType = "application/pdf";
 						inputStream = new ByteArrayInputStream(bytes);
 					}
+					Document document = documentService.createDocument(inputStream, multipartFile.getOriginalFilename(), contentType);
+					signRequest.getOriginalDocuments().add(document);
+					document.setParentId(signRequest.getId());
+				} else {
+					logger.warn("file size is 0");
+					throw new EsupSignatureIOException("Erreur lors de l'ajout des fichiers");
 				}
-				Document document = documentService.createDocument(inputStream, multipartFile.getOriginalFilename(), contentType);
-				signRequest.getOriginalDocuments().add(document);
-				document.setParentId(signRequest.getId());
 			} catch (IOException e) {
 				logger.warn("error on adding files");
 				throw new EsupSignatureIOException("Erreur lors de l'ajout des fichiers", e);
@@ -266,7 +269,7 @@ public class SignRequestService {
 				document.setParentId(signRequest.getId());
 				file.delete();
 			} catch (IOException e) {
-				throw new EsupSignatureIOException("", e);
+				throw new EsupSignatureIOException(e.getMessage(), e);
 			}
 		}
 	}

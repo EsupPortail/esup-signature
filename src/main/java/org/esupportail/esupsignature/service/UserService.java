@@ -186,8 +186,13 @@ public class UserService {
                 String name = personLdaps.get(0).getSn();
                 String firstName = personLdaps.get(0).getGivenName();
                 return createUser(eppn, name, firstName, mail, UserType.ldap, false);
+            } else {
+                logger.warn(mail + " not found in ldap when search by email");
             }
+        } else {
+            logger.warn("no ldap service available");
         }
+
         UserType userType = checkMailDomain(mail);
         if (userType.equals(UserType.external)) {
             logger.info("ldap user not found : " + mail + ". Creating temp acccount");

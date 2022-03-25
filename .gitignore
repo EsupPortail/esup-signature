@@ -9,5 +9,3 @@ src/main/resources/static/downloads/nexu-bundle.zip
 !README.md
 !NOTICE
 !pom.xml
-!Dockerfile
-!docker-compose.yml
