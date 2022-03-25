@@ -320,7 +320,7 @@ public class SignRequestController {
         if(signRequest.getParentSignBook().getSignRequests().size() > 1) {
             signRequestService.deleteDefinitive(id);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
-            return "redirect:/user/signbooks/" + signRequest.getParentSignBook().getId();
+            return "redirect:/user/signbooks/";
 
         } else {
             signBookService.deleteDefinitive(signRequest.getParentSignBook().getId());
