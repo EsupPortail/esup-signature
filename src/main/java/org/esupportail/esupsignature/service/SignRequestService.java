@@ -631,7 +631,7 @@ public class SignRequestService {
 				field.setDefaultValue(data.getDatas().get(field.getName()));
 			}
 			for(WorkflowStep workflowStep : field.getWorkflowSteps()) {
-				Optional<LiveWorkflowStep> liveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().filter(l -> l.getWorkflowStep().equals(workflowStep)).findFirst();
+				Optional<LiveWorkflowStep> liveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().filter(l -> workflowStep.equals(l.getWorkflowStep())).findFirst();
 				if(liveWorkflowStep.isPresent()) {
 					if(liveWorkflowStep.get().getRecipients().stream().anyMatch(recipient -> recipient.getUser().getEppn().equals(userEppn))
 						&& liveWorkflowStep.get().equals(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep())) {
