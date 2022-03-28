@@ -266,13 +266,13 @@ export class WorkspacePdf {
         console.info("init form");
         let inputs = $("#signForm :input");
         $.each(inputs, (index, e) => this.listenForChange(e));
-         if (this.mode === 'read' || this.mode === 'comment') {
+        if (this.mode === 'read' || this.mode === 'comment') {
             this.disableForm();
         }
-
     }
 
     listenForChange(input) {
+        $(input).unbind();
         $(input).change(e => this.saveData());
     }
 

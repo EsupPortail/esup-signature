@@ -116,19 +116,15 @@ public class UpgradeService {
                                     && !signBook.getName().equals("Demande personnalisée".replaceAll("\\W+", "_"))) {
                                 signBook.setSubject(signBook.getName());
                             } else {
-                                if(signBook.getSignRequests().get(0).getTitle() != null && !signBook.getSignRequests().get(0).getTitle().isEmpty()) {
-                                    if(signBook.getSignRequests().size() > 0) {
-                                        if(signBook.getSignRequests().get(0).getTitle() != null && signBook.getSignRequests().get(0).getTitle().isEmpty()) {
-                                            signBook.setSubject(signBook.getSignRequests().get(0).getTitle());
-                                        } else {
-                                            if(signBook.getSignRequests().get(0).getOriginalDocuments().size() > 0) {
-                                                signBook.setSubject(fileService.getNameOnly(signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName()));
-                                            } else {
-                                                signBook.setSubject("Sans titre");
-                                            }
-                                        }
+                                if(signBook.getSignRequests().size() > 0) {
+                                    if(signBook.getSignRequests().get(0).getTitle() != null && signBook.getSignRequests().get(0).getTitle().isEmpty()) {
+                                        signBook.setSubject(signBook.getSignRequests().get(0).getTitle());
                                     } else {
-                                        signBook.setSubject("Sans titre");
+                                        if(signBook.getSignRequests().get(0).getOriginalDocuments().size() > 0) {
+                                            signBook.setSubject(fileService.getNameOnly(signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName()));
+                                        } else {
+                                            signBook.setSubject("Sans titre");
+                                        }
                                     }
                                 } else {
                                     signBook.setSubject("Sans titre");

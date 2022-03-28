@@ -80,7 +80,6 @@ public class DataService {
                 formDatas.put(savedDataKeys, "");
             }
         }
-
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
         data.setName(form.getTitle() + "_" + format.format(new Date()));
         data.getDatas().putAll(formDatas);
