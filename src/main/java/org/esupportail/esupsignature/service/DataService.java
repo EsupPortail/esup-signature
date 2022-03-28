@@ -81,6 +81,12 @@ public class DataService {
             }
         }
 
+        for(Map.Entry<String, String> stringStringEntry : formDatas.entrySet()) {
+
+            logger.info("adding : " + stringStringEntry.getKey() + " = " + stringStringEntry.getValue());
+
+        }
+
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
         data.setName(form.getTitle() + "_" + format.format(new Date()));
         data.getDatas().putAll(formDatas);

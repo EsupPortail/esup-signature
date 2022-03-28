@@ -41,12 +41,12 @@
                     <form th:object="${workflow}" th:action="'/admin/workflows/update'" method="post" id="updateSignBook">
                         <input type="hidden" th:field="*{id}">
                         <div class="form-group mb-3">
-                            <label><strong>Titre</strong></label>
-                            <input class="form-control" type="text" th:field="*{title}" value="" autocomplete="on">
+                            <label for="description"><strong>Titre</strong></label>
+                            <input class="form-control" type="text" th:field="*{description}" value="" autocomplete="on">
                         </div>
                         <div class="form-group mb-3">
-                            <label><strong>Description</strong></label>
-                            <input class="form-control" type="text" th:field="*{description}" value="" autocomplete="on">
+                            <label for="title"><strong>Prefix</strong> (utilisé lors de l'import de documents dans le circuit)</label>
+                            <input class="form-control" type="text" th:field="*{title}" value="" autocomplete="on">
                         </div>
                         <div class="form-group mb-3">
                             <label>
