@@ -496,7 +496,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
+    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas, InputStream formReplaceInputStream) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
         User user = userService.getUserByEppn(userEppn);
         User authUser = userService.getUserByEppn(authUserEppn);
         Data data = dataService.getById(dataId);
@@ -508,7 +508,12 @@ public class SignBookService {
         Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientsEmails, allSignToCompletes, user.getEppn(), false);
         SignBook signBook = createSignBook(form.getTitle(), modelWorkflow, null, user);
         SignRequest signRequest = signRequestService.createSignRequest(signBook.getSubject(), signBook, user.getEppn(), authUser.getEppn());
-        InputStream inputStream = dataService.generateFile(data);
+        InputStream inputStream;
+        try {
+            inputStream = dataService.generateFile(data, formReplaceInputStream);
+        } catch(IOException e) {
+            throw new EsupSignatureException("Ce formulaire ne peut pas être instancié car il ne possède pas de modèle");
+        }
         if(computedWorkflow.getWorkflowSteps().size() == 0) {
             try {
                 inputStream = pdfService.convertGS(inputStream, signRequest.getToken());

@@ -108,16 +108,19 @@ public class DataService {
         return cloneData;
     }
 
-    public InputStream generateFile(Data data) {
+    public InputStream generateFile(Data data, InputStream inputStream) throws IOException {
         Form form = data.getForm();
-        if(form.getDocument() != null) {
+        if(inputStream != null && inputStream.available() > 0) {
+            return pdfService.fill(inputStream, data.getDatas(), false);
+        } else  if(form.getDocument() != null) {
             return pdfService.fill(form.getDocument().getInputStream(), data.getDatas(), false);
         } else {
-            try {
-                return pdfService.generatePdfFromData(data);
-            } catch (IOException e) {
-                logger.error("pdf generation error", e);
-            }
+            logger.error("no pdf model");
+//            try {
+//                return pdfService.generatePdfFromData(data);
+//            } catch (IOException e) {
+//                logger.error("pdf generation error", e);
+//            }
         }
         return null;
     }

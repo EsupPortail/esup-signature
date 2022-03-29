@@ -132,12 +132,14 @@ public class FormAdminController {
 
 	@PostMapping()
 	public String postForm(@RequestParam("name") String name,
+						   @RequestParam("name") String title,
+						   @RequestParam Long workflowId,
 						   @RequestParam("fieldNames[]") String[] fieldNames,
+						   @RequestParam("fieldTypes[]") String[] fieldTypes,
 						   @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
 		try {
-			Form form = formService.createForm(null, name, null, null, null, null, publicUsage, fieldNames);
-			return "redirect:/admin/forms/" + form.getId();
-
+			Form form = formService.createForm(null, name, title, workflowId, null, null, publicUsage, fieldNames, fieldTypes);
+			return "redirect:/admin/forms/" + form.getId() + "/fields";
 		} catch (EsupSignatureException e) {
 			logger.error(e.getMessage());
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));

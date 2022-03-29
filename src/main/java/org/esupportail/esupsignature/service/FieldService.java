@@ -34,11 +34,11 @@ public class FieldService {
 	}
 
 	@Transactional
-	public Field createField(String fieldName, Workflow workflow) {
+	public Field createField(String fieldName, Workflow workflow, FieldType fieldType) {
 		Field field = new Field();
 		field.setName(fieldName);
 		field.setLabel(fieldName);
-		field.setType(FieldType.text);
+		field.setType(fieldType);
 		if(workflow != null && workflow.getWorkflowSteps().size() > 0) {
 			field.getWorkflowSteps().add(workflow.getWorkflowSteps().get(0));
 		}
