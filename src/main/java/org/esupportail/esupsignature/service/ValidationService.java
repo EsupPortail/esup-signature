@@ -71,8 +71,8 @@ public class ValidationService {
                 logger.error("Unable to parse policy : " + e.getMessage(), e);
             }
             return reports;
-        } catch (DSSException | IOException e) {
-            logger.error("Unable to read document : " + e.getMessage(), e);
+        } catch (DSSException | UnsupportedOperationException | IOException e) {
+            logger.warn("Unable to read document : " + e.getMessage());
         }
         return null;
     }
