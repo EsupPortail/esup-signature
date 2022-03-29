@@ -1095,7 +1095,9 @@ public class SignBookService {
         initWorkflowAndPendingSignBook(signRequest.getId(), recipientEmails, allSignToCompletes, null, targetEmails, createByEppn, createByEppn);
         if(targetUrls != null) {
             for(String targetUrl : targetUrls) {
-                signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
+                if(signBook.getLiveWorkflow().getTargets().stream().noneMatch(target -> target.getTargetUri().equals(targetUrl))) {
+                    signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
+                }
             }
         }
         return signRequest;

@@ -59,7 +59,6 @@ export class WorkspacePdf {
         this.commentCursor = this.getCommentPointer("\uf075");
         this.nextCommand = "none";
         this.initChangeModeSelector();
-        this.initListeners();
         this.initDataFields(fields);
         this.wsTabs = $("#ws-tabs");
         if ((formId == null && workflow == null) || currentSignRequestParamses.length === 0) {
@@ -81,13 +80,13 @@ export class WorkspacePdf {
         }
         let root = document.querySelector(':root');
         root.setAttribute("style", "scroll-behavior: auto;");
+        this.initListeners();
     }
 
     initListeners() {
         if (this.isPdf) {
             $('#prev').on('click', e => this.pdfViewer.prevPage());
             $('#next').on('click', e => this.pdfViewer.nextPage());
-            $('#saveCommentButton').on('click', e => this.saveComment());
             $('#addCommentButton').on('click', e => this.enableCommentAdd(e));
             $('#addSpotButton').on('click', e => this.enableSpotAdd(e));
             $("#spotStepNumber").on('change', e => this.changeSpotStep());
@@ -209,7 +208,7 @@ export class WorkspacePdf {
             targetPageNumber = signPageNumber;
             this.firstInsertSign = false;
         }
-        if(localStorage.getItem('signNumber') != null) {
+        if(localStorage.getItem('signNumber') != null && this.restore) {
             this.signImageNumber = localStorage.getItem('signNumber');
         }
         this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, forceSignNumber);
@@ -807,7 +806,6 @@ export class WorkspacePdf {
             $(this).show();
             $(this).css('width', '0px');
         })
-        $('#hideCommentButton').on('click', e => this.hideComment(e));
         this.showAllPostits();
     }
 
@@ -927,9 +925,14 @@ export class WorkspacePdf {
     }
 
     enableCommentAdd(e) {
+        let saveCommentButton = $('#saveCommentButton');
+        let hideCommentButton = $('#hideCommentButton');
+        saveCommentButton.unbind();
+        hideCommentButton.unbind();
         $('#pdf').mousemove(e => this.moveAction(e));
-        $("#addCommentButton").toggleClass("btn-primary");
-        $("#addCommentButton").toggleClass("btn-outline-dark");
+        let addCommentButton = $("#addCommentButton");
+        addCommentButton.toggleClass("btn-primary");
+        addCommentButton.toggleClass("btn-outline-dark");
         $("#addSpotButton").removeClass("btn-outline-dark");
         this.hideComment(e);
         if (this.addCommentEnabled) {
@@ -945,12 +948,19 @@ export class WorkspacePdf {
             $("#postitComment").attr("required", true);
         }
         this.addSpotEnabled = false;
+        saveCommentButton.on('click', e => this.saveComment());
+        hideCommentButton.on('click', e => this.hideComment(e));
     }
 
     enableSpotAdd(e) {
+        let saveCommentButton = $('#saveCommentButton');
+        let hideCommentButton = $('#hideCommentButton');
+        saveCommentButton.unbind();
+        hideCommentButton.unbind();
         $("#addCommentButton").removeClass("btn-outline-dark");
-        $("#addSpotButton").toggleClass("btn-primary");
-        $("#addSpotButton").toggleClass("btn-outline-dark");
+        let addSpotButton = $("#addSpotButton");
+        addSpotButton.toggleClass("btn-primary");
+        addSpotButton.toggleClass("btn-outline-dark");
         this.hideComment(e);
         if (this.addSpotEnabled) {
             this.addSpotEnabled = false;
@@ -965,6 +975,8 @@ export class WorkspacePdf {
             this.displaySpotPointer();
         }
         this.addCommentEnabled = false;
+        saveCommentButton.on('click', e => this.saveComment());
+        hideCommentButton.on('click', e => this.hideComment(e));
     }
 
     displayCommentPointer() {
