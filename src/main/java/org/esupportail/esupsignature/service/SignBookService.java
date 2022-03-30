@@ -1100,12 +1100,18 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignRequest startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String title, List<String> recipientEmails, List<String> allSignToCompletes, List<String> targetEmails, List<String> targetUrls) throws EsupSignatureFsException, EsupSignatureException, EsupSignatureIOException {
+    public SignRequest startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String title, List<String> recipientEmails, List<String> allSignToCompletes, List<String> targetEmails, List<String> targetUrls, String signRequestParamsJsonString) throws EsupSignatureFsException, EsupSignatureException, EsupSignatureIOException {
+        List<SignRequestParams> signRequestParamses = new ArrayList<>();
+        if (signRequestParamsJsonString != null) {
+            signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
+            signRequestParamsRepository.saveAll(signRequestParamses);
+        }
         Workflow workflow = workflowService.getById(id);
         User user = userService.getByEppn(createByEppn);
         SignBook signBook = createSignBook(title, workflow, "", user);
         signBook.getLiveWorkflow().setWorkflow(workflow);
         SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), signBook, createByEppn, createByEppn);
+        signRequest.getSignRequestParams().addAll(signRequestParamses);
         signRequestService.addDocsToSignRequest(signRequest, false, 0, new ArrayList<>(), multipartFiles);
         initWorkflowAndPendingSignBook(signRequest.getId(), recipientEmails, allSignToCompletes, null, targetEmails, createByEppn, createByEppn);
         if(targetUrls != null) {
