@@ -63,7 +63,11 @@ public class PublicController {
         }
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && !auth.getName().equals("anonymousUser")) {
-            if(httpSession.getAttribute("suEppn") != null) {
+            String eppn = userService.tryGetEppnFromLdap(auth);
+            if(eppn != null && userService.getUserByEppn(eppn) != null) {
+                model.addAttribute("signRequest", signRequest);
+                model.addAttribute("auditTrail", auditTrailService.getAuditTrailByToken(signRequest.getToken()));
+                setControlValues(model, signRequest, eppn);
             }
         }
         if (buildProperties != null) {
@@ -76,7 +80,7 @@ public class PublicController {
     @PostMapping(value = "/control/{token}")
     public String checkFile(@PathVariable String token, @RequestParam(value = "multipartFile") MultipartFile multipartFile,
                             Model model, HttpSession httpSession) throws IOException {
-                String checksum = fileService.getFileChecksum(multipartFile.getInputStream());
+        String checksum = fileService.getFileChecksum(multipartFile.getInputStream());
         AuditTrail auditTrail = auditTrailService.getAuditTrailFromCheksum(checksum);
         if(auditTrail != null && auditTrail.getToken().equals(token)) {
             SignRequest signRequest = signRequestService.getSignRequestByToken(token);
@@ -96,22 +100,26 @@ public class PublicController {
             }
             model.addAttribute("auditTrail", auditTrail);
             if(signRequest != null) {
-                List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
-                model.addAttribute("usersHasSigned", signRequestService.checkUserResponseSigned(signRequest));
-                model.addAttribute("usersHasRefused", signRequestService.checkUserResponseRefused(signRequest));
-                model.addAttribute("signRequest", signRequest);
-                Document signedDocument = signRequestService.getLastSignedFile(signRequest.getId());
-                model.addAttribute("signedDocument", signedDocument);
-                model.addAttribute("size", FileUtils.byteCountToDisplaySize(signedDocument.getSize()));
-                model.addAttribute("logs", logs);
-                if(eppn != null) {
-                    model.addAttribute("viewAccess", preAuthorizeService.checkUserViewRights(signRequest, eppn, eppn));
-                }
+                setControlValues(model, signRequest, eppn);
             }
         } else {
             model.addAttribute("error", true);
             return "public/control";
         }
         return "public/control";
+    }
+
+    private void setControlValues(Model model, SignRequest signRequest, String eppn) {
+        List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
+        model.addAttribute("usersHasSigned", signRequestService.checkUserResponseSigned(signRequest));
+        model.addAttribute("usersHasRefused", signRequestService.checkUserResponseRefused(signRequest));
+        model.addAttribute("signRequest", signRequest);
+        Document signedDocument = signRequestService.getLastSignedFile(signRequest.getId());
+        model.addAttribute("signedDocument", signedDocument);
+        model.addAttribute("size", FileUtils.byteCountToDisplaySize(signedDocument.getSize()));
+        model.addAttribute("logs", logs);
+        if(eppn != null) {
+            model.addAttribute("viewAccess", preAuthorizeService.checkUserViewRights(signRequest, eppn, eppn));
+        }
     }
 }
