@@ -101,7 +101,7 @@ public class FormManagerController {
                            @RequestParam("fieldNames[]") String[] fieldNames,
                            @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
         try {
-            Form form = formService.createForm(null, name, null, null, null, null, publicUsage, fieldNames);
+            Form form = formService.createForm(null, name, null, null, null, null, publicUsage, fieldNames, null);
             return "redirect:/manager/forms/" + form.getId();
 
         } catch (EsupSignatureException e) {

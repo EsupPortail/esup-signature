@@ -45,6 +45,7 @@ import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.pdf.PdfConfig;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
@@ -626,10 +627,10 @@ public class PdfService {
     }
 
     public InputStream generatePdfFromData(Data data) throws IOException {
-        PDDocument doc = new PDDocument();
+        PDDocument pdDocument = new PDDocument();
         PDPage page = new PDPage();
-        doc.addPage(page);
-        PDPageContentStream contents = new PDPageContentStream(doc, page);
+        pdDocument.addPage(page);
+        PDPageContentStream contents = new PDPageContentStream(pdDocument, page);
         contents.beginText();
         PDFont font = PDType1Font.HELVETICA_BOLD;
         contents.setFont(font, 15);
@@ -640,11 +641,29 @@ public class PdfService {
             contents.newLine();
             contents.showText(entry.getKey() + " : " + entry.getValue());
         }
+        PDAcroForm form = new PDAcroForm(pdDocument);
+        pdDocument.getDocumentCatalog().setAcroForm(form);
+        PDResources resources = new PDResources();
+        resources.put(COSName.getPDFName("Helv"), font);
+        form.setDefaultResources(resources);
+        for(Field field : data.getForm().getFields()) {
+            PDTerminalField pdTerminalField;
+            if(field.getType().equals(FieldType.checkbox)) {
+                pdTerminalField = new PDCheckBox(form);
+            }else if(field.getType().equals(FieldType.radio)) {
+                pdTerminalField = new PDRadioButton(form);
+            } else {
+                pdTerminalField = new PDTextField(form);
+            }
+            pdTerminalField.setPartialName(field.getName());
+
+            form.getFields().add(pdTerminalField);
+        }
         contents.endText();
         contents.close();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        doc.save(out);
-        doc.close();
+        pdDocument.save(out);
+        pdDocument.close();
         return  new ByteArrayInputStream(out.toByteArray());
     }
 

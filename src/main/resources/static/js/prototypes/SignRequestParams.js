@@ -46,10 +46,11 @@ export class SignRequestParams  extends EventFactory {
         this.extraHeight = 0;
         this.signFieldPresent = true;
         this.savedText = "";
-        if(signRequestParamsModel == null) {
+        let testScroll = document.documentElement.scrollTop;
+        if(testScroll > 0 && this.xPos === 0 && this.yPos === 0) {
             this.xPos = (parseInt($("#pdf").css("width")) / 2 / scale) - (this.signWidth * scale / 2);
             let mid = $(window).scrollTop() + Math.floor($(window).height() / 2);
-            this.yPos = Math.round(mid / scale) - (this.signHeight * scale / 2);
+            this.yPos = Math.round(mid / scale) - (this.signHeight * scale / 2) - (200 / scale) ;
             this.signFieldPresent = false;
         }
         if(light) {
@@ -520,12 +521,17 @@ export class SignRequestParams  extends EventFactory {
     simulateDrop() {
         let x = this.xPos * this.currentScale;
         let y = this.yPos * this.currentScale;
+        this.cross.on("dragstop", function(){
+            window.scrollTo(0, y / 2);
+            $(this).unbind("dragstop");
+        });
         this.cross.simulate("drag", {
             handle: "corner",
             moves: 1,
             dx: x,
             dy: y
         });
+
     }
 
     displayMoreTools() {

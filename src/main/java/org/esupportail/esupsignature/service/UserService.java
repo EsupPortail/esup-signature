@@ -391,6 +391,11 @@ public class UserService {
             List<PersonLdap> personLdaps =  ldapPersonService.getPersonLdapRepository().findByEduPersonPrincipalName(user.getEppn());
             if (personLdaps.size() > 0) {
                 personLdap = personLdaps.get(0);
+            } else {
+                personLdaps =  ldapPersonService.getPersonLdap(user.getEppn().split("@")[0]);
+                if (personLdaps.size() > 0) {
+                    personLdap = personLdaps.get(0);
+                }
             }
         } else {
             personLdap = getPersonLdapFromUser(user);

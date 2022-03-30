@@ -75,7 +75,7 @@ public class DSSBeanConfig {
 		OnlineTSPSource tspSource = new OnlineTSPSource(dssProperties.getTspServer());
 		TimestampDataLoader timestampDataLoader = new TimestampDataLoader();
 		timestampDataLoader.setTimeoutConnection(10000);
-//		timestampDataLoader.setTrustStrategy(TrustAllStrategy.INSTANCE);
+		timestampDataLoader.setTrustStrategy(TrustAllStrategy.INSTANCE);
 		if(proxyConfig != null) {
 			timestampDataLoader.setProxyConfig(proxyConfig);
 		}
