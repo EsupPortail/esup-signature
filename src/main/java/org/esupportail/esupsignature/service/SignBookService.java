@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
@@ -172,6 +173,9 @@ public class SignBookService {
     private boolean enableArchiveTask = false;
 
     private boolean enableCleanTask = false;
+
+    @Resource
+    private SignRequestParamsRepository signRequestParamsRepository;
 
     public SignBookService(GlobalProperties globalProperties) {
         this.globalProperties = globalProperties;
@@ -496,7 +500,12 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas, InputStream formReplaceInputStream) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
+    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas, InputStream formReplaceInputStream, String signRequestParamsJsonString) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
+        List<SignRequestParams> signRequestParamses = new ArrayList<>();
+        if (signRequestParamsJsonString != null) {
+            signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
+            signRequestParamsRepository.saveAll(signRequestParamses);
+        }
         User user = userService.getUserByEppn(userEppn);
         User authUser = userService.getUserByEppn(authUserEppn);
         Data data = dataService.getById(dataId);
@@ -508,6 +517,7 @@ public class SignBookService {
         Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientsEmails, allSignToCompletes, user.getEppn(), false);
         SignBook signBook = createSignBook(form.getTitle(), modelWorkflow, null, user);
         SignRequest signRequest = signRequestService.createSignRequest(signBook.getSubject(), signBook, user.getEppn(), authUser.getEppn());
+        signRequest.getSignRequestParams().addAll(signRequestParamses);
         InputStream inputStream;
         try {
             inputStream = dataService.generateFile(data, formReplaceInputStream);
