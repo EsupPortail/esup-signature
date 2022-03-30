@@ -88,4 +88,9 @@ public class AuditTrailService {
         return auditTrailRepository.findByDocumentCheckSum(checkSum);
     }
 
+    @Transactional
+    public AuditTrail getAuditTrailByToken(String token) {
+        return auditTrailRepository.findByToken(token);
+    }
+
 }
