@@ -60,7 +60,7 @@ public class SignRequestParamsService {
         try {
             signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
         } catch (JsonProcessingException e) {
-            logger.warn("no signRequestParams returned");
+            logger.warn("no signRequestParams returned", e);
         }
         return signRequestParamses;
     }

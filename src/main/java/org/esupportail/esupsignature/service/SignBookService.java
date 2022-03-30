@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
@@ -172,6 +173,9 @@ public class SignBookService {
     private boolean enableArchiveTask = false;
 
     private boolean enableCleanTask = false;
+
+    @Resource
+    private SignRequestParamsRepository signRequestParamsRepository;
 
     public SignBookService(GlobalProperties globalProperties) {
         this.globalProperties = globalProperties;
@@ -496,7 +500,12 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
+    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas, InputStream formReplaceInputStream, String signRequestParamsJsonString) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
+        List<SignRequestParams> signRequestParamses = new ArrayList<>();
+        if (signRequestParamsJsonString != null) {
+            signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
+            signRequestParamsRepository.saveAll(signRequestParamses);
+        }
         User user = userService.getUserByEppn(userEppn);
         User authUser = userService.getUserByEppn(authUserEppn);
         Data data = dataService.getById(dataId);
@@ -508,7 +517,13 @@ public class SignBookService {
         Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientsEmails, allSignToCompletes, user.getEppn(), false);
         SignBook signBook = createSignBook(form.getTitle(), modelWorkflow, null, user);
         SignRequest signRequest = signRequestService.createSignRequest(signBook.getSubject(), signBook, user.getEppn(), authUser.getEppn());
-        InputStream inputStream = dataService.generateFile(data);
+        signRequest.getSignRequestParams().addAll(signRequestParamses);
+        InputStream inputStream;
+        try {
+            inputStream = dataService.generateFile(data, formReplaceInputStream);
+        } catch(IOException e) {
+            throw new EsupSignatureException("Ce formulaire ne peut pas être instancié car il ne possède pas de modèle");
+        }
         if(computedWorkflow.getWorkflowSteps().size() == 0) {
             try {
                 inputStream = pdfService.convertGS(inputStream, signRequest.getToken());
@@ -1085,17 +1100,25 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignRequest startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String title, List<String> recipientEmails, List<String> allSignToCompletes, List<String> targetEmails, List<String> targetUrls) throws EsupSignatureFsException, EsupSignatureException, EsupSignatureIOException {
+    public SignRequest startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String title, List<String> recipientEmails, List<String> allSignToCompletes, List<String> targetEmails, List<String> targetUrls, String signRequestParamsJsonString) throws EsupSignatureFsException, EsupSignatureException, EsupSignatureIOException {
+        List<SignRequestParams> signRequestParamses = new ArrayList<>();
+        if (signRequestParamsJsonString != null) {
+            signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
+            signRequestParamsRepository.saveAll(signRequestParamses);
+        }
         Workflow workflow = workflowService.getById(id);
         User user = userService.getByEppn(createByEppn);
         SignBook signBook = createSignBook(title, workflow, "", user);
         signBook.getLiveWorkflow().setWorkflow(workflow);
         SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), signBook, createByEppn, createByEppn);
+        signRequest.getSignRequestParams().addAll(signRequestParamses);
         signRequestService.addDocsToSignRequest(signRequest, false, 0, new ArrayList<>(), multipartFiles);
         initWorkflowAndPendingSignBook(signRequest.getId(), recipientEmails, allSignToCompletes, null, targetEmails, createByEppn, createByEppn);
         if(targetUrls != null) {
             for(String targetUrl : targetUrls) {
-                signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
+                if(signBook.getLiveWorkflow().getTargets().stream().noneMatch(target -> target.getTargetUri().equals(targetUrl))) {
+                    signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
+                }
             }
         }
         return signRequest;
