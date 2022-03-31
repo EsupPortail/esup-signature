@@ -61,12 +61,15 @@ public class PublicController {
         if(signRequest == null) {
             return "error";
         }
+        AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
+        Document signedDocument = signRequestService.getLastSignedFile(signRequest.getId());
+        model.addAttribute("size", FileUtils.byteCountToDisplaySize(signedDocument.getSize()));
+        model.addAttribute("auditTrail", auditTrail);
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && !auth.getName().equals("anonymousUser")) {
             String eppn = userService.tryGetEppnFromLdap(auth);
             if(eppn != null && userService.getUserByEppn(eppn) != null) {
                 model.addAttribute("signRequest", signRequest);
-                model.addAttribute("auditTrail", auditTrailService.getAuditTrailByToken(signRequest.getToken()));
                 setControlValues(model, signRequest, eppn);
             }
         }
