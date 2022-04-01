@@ -47,7 +47,7 @@ export class SignRequestParams  extends EventFactory {
         this.signFieldPresent = true;
         this.savedText = "";
         let testScroll = document.documentElement.scrollTop;
-        if(testScroll > 0 && this.xPos === 0 && this.yPos === 0) {
+        if(testScroll > 0 && (this.xPos == null || this.xPos === 0) && (this.yPos == null || this.yPos === 0)) {
             this.xPos = (parseInt($("#pdf").css("width")) / 2 / scale) - (this.signWidth * scale / 2);
             let mid = $(window).scrollTop() + Math.floor($(window).height() / 2);
             this.yPos = Math.round(mid / scale) - (this.signHeight * scale / 2) - (200 / scale) ;
