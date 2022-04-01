@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -354,7 +355,7 @@ public class UserService {
                     personLdaps.add(getPersonLdapLightFromUser(user));
                 }
             }
-        }catch (IllegalArgumentException e) {
+        }catch (InvalidDataAccessApiUsageException e) {
             logger.debug(e.getMessage(), e);
         }
         return personLdaps;
