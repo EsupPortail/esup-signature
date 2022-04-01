@@ -328,31 +328,34 @@ public class UserService {
 
     public List<PersonLdapLight> getPersonLdapsLight(String searchString) {
         List<PersonLdapLight> personLdaps = new ArrayList<>();
-        searchString = searchString.replace("\\", "");
-        Set<User> users = new HashSet<>();
-        users.addAll(userRepository.findByEppnStartingWith(searchString));
-        users.addAll(userRepository.findByNameStartingWithIgnoreCase(searchString));
-        users.addAll(userRepository.findByEmailStartingWith(searchString));
-        if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 2) {
-            List<PersonLdapLight> ldapSearchList = ldapPersonService.searchLight(searchString);
-            if (ldapSearchList.size() > 0) {
-                List<PersonLdapLight> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdapLight::getCn)).collect(Collectors.toList());
-                for (PersonLdapLight personLdapList : ldapList) {
-                    if (personLdapList.getMail() != null) {
-                        if (personLdaps.stream().noneMatch(personLdap -> personLdap.getMail().equals(personLdapList.getMail()))) {
-                            personLdaps.add(personLdapList);
+        try {
+            Set<User> users = new HashSet<>();
+            users.addAll(userRepository.findByEppnStartingWith(searchString));
+            users.addAll(userRepository.findByNameStartingWithIgnoreCase(searchString));
+            users.addAll(userRepository.findByEmailStartingWith(searchString));
+            if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 2) {
+                List<PersonLdapLight> ldapSearchList = ldapPersonService.searchLight(searchString);
+                if (ldapSearchList.size() > 0) {
+                    List<PersonLdapLight> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdapLight::getCn)).collect(Collectors.toList());
+                    for (PersonLdapLight personLdapList : ldapList) {
+                        if (personLdapList.getMail() != null) {
+                            if (personLdaps.stream().noneMatch(personLdap -> personLdap.getMail().equals(personLdapList.getMail()))) {
+                                personLdaps.add(personLdapList);
+                            }
                         }
                     }
                 }
             }
-        }
-        for (User user : users) {
-            if(user.getReplaceByUser() != null) {
-                personLdaps.remove(personLdaps.stream().filter(personLdap -> personLdap.getMail().equals(user.getEmail())).findFirst().get());
+            for (User user : users) {
+                if (user.getReplaceByUser() != null) {
+                    personLdaps.remove(personLdaps.stream().filter(personLdap -> personLdap.getMail().equals(user.getEmail())).findFirst().get());
+                }
+                if (personLdaps.stream().noneMatch(personLdapLight -> personLdapLight.getMail().equals(user.getEmail()))) {
+                    personLdaps.add(getPersonLdapLightFromUser(user));
+                }
             }
-            if(personLdaps.stream().noneMatch(personLdapLight -> personLdapLight.getMail().equals(user.getEmail()))) {
-                personLdaps.add(getPersonLdapLightFromUser(user));
-            }
+        }catch (IllegalArgumentException e) {
+            logger.debug(e.getMessage(), e);
         }
         return personLdaps;
     }
