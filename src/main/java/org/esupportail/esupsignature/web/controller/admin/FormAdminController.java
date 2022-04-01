@@ -109,6 +109,7 @@ public class FormAdminController {
 				srpMap.put(signRequestParams.getId(), form.getWorkflow().getWorkflowSteps().indexOf(workflowStep) + 1);
 			}
 		}
+		form.setTotalPageCount(formService.getTotalPagesCount(id));
 		model.addAttribute("form", form);
 		model.addAttribute("srpMap", srpMap);
 		model.addAttribute("workflow", form.getWorkflow());
@@ -128,6 +129,26 @@ public class FormAdminController {
 		}
 		formService.setSignRequestParamsSteps(id, signRequestParamsSteps);
 		return "redirect:/admin/forms/" + id + "/signs";
+	}
+
+	@PostMapping("/add-signrequestparams/{id}")
+	public String addSignRequestParams(@PathVariable("id") Long id,
+								   Integer step,
+								   Integer signPageNumber,
+								   Integer xPos,
+								   Integer yPos,
+								   RedirectAttributes redirectAttributes) throws JsonProcessingException {
+		formService.addSignRequestParamsSteps(id, step, signPageNumber, xPos, yPos);
+		return "redirect:/admin/forms/" + id + "/signs";
+	}
+
+	@DeleteMapping("/remove-signRequestParams/{formId}/{id}")
+	public String removeSignRequestParams(@PathVariable("formId") Long formId,
+									   @PathVariable("id") Long id,
+									   RedirectAttributes redirectAttributes) throws JsonProcessingException {
+		formService.removeSignRequestParamsSteps(formId, id);
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Champ signature supprimé"));
+		return "redirect:/admin/forms/" + formId + "/signs";
 	}
 
 	@PostMapping()

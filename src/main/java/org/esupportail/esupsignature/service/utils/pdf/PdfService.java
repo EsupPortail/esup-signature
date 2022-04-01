@@ -537,7 +537,7 @@ public class PdfService {
     public InputStream normalizeGS(InputStream inputStream) throws IOException, EsupSignatureException {
         File file = fileService.inputStreamToTempFile(inputStream, "temp.pdf");
         Reports reports = validationService.validate(new FileInputStream(file), null);
-        if (isPdfAComplient(new FileInputStream(file)) && reports.getSimpleReport().getSignatureIdList().size() == 0) {
+        if (!isPdfAComplient(new FileInputStream(file)) && (reports == null || reports.getSimpleReport().getSignatureIdList().size() == 0)) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
             String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite -d -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + file.getAbsolutePath() + "'";
             logger.info("GhostScript PDF/A convertion : " + cmd);
@@ -817,8 +817,6 @@ public class PdfService {
                 PDFieldTree fields = new PDFieldTree(pdAcroForm);
                 pdDocument.close();
                 return fields;
-            } else {
-                throw new EsupSignatureException("Le document ne contient pas de formulaire");
             }
         } catch (IOException e) {
             logger.error("file read error", e);
