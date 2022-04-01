@@ -9,8 +9,11 @@ import java.util.List;
 public interface UserRepository extends CrudRepository<User, Long>  {
     List<User> findByEmail(String email);
     List<User> findByEppn(String eppn);
+    @Query("select u from User u where u.eppn like :eppn%")
     List<User> findByEppnStartingWith(String eppn);
+    @Query("select u from User u where u.name like :name%")
     List<User> findByNameStartingWithIgnoreCase(String name);
+    @Query("select u from User u where u.email like :email%")
     List<User> findByEmailStartingWith(String email);
     @Query(value = "select distinct roles from user_roles", nativeQuery = true)
     List<String> getAllRoles();
