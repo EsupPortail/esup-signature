@@ -70,6 +70,9 @@ public class Form {
 	@Column(columnDefinition = "TEXT")
 	private String action;
 
+	@Transient
+	private Integer totalPageCount;
+
 	public Long getId() {
 		return id;
 	}
@@ -228,5 +231,13 @@ public class Form {
 
 	public void setMessageToDisplay(String messageToDisplay) {
 		this.messageToDisplay = messageToDisplay;
+	}
+
+	public Integer getTotalPageCount() {
+		return totalPageCount;
+	}
+
+	public void setTotalPageCount(Integer totalPageCount) {
+		this.totalPageCount = totalPageCount;
 	}
 }

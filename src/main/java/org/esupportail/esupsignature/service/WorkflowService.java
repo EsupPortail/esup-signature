@@ -561,7 +561,7 @@ public class WorkflowService {
                                         }
                                 }
                             } else {
-                                if(signRequest.getSignRequestParams().size() > 0) {
+                                if(signRequest.getSignRequestParams().size() > i) {
                                     liveWorkflowStep.getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
                                 }
                             }

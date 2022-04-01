@@ -459,6 +459,26 @@ public class FormService {
 	}
 
 	@Transactional
+	public void addSignRequestParamsSteps(Long formId, Integer step, Integer signPageNumber, Integer xPos, Integer yPos) {
+		Form form = getById(formId);
+		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(signPageNumber, xPos, yPos);
+		form.getSignRequestParams().add(signRequestParams);
+		form.getWorkflow().getWorkflowSteps().get(step - 1).getSignRequestParams().add(signRequestParams);
+	}
+
+	@Transactional
+	public void removeSignRequestParamsSteps(Long formId, Long id) {
+		Form form = getById(formId);
+		SignRequestParams signRequestParams = signRequestParamsService.getById(id);
+		form.getSignRequestParams().removeIf(signRequestParams1 -> signRequestParams1.equals(signRequestParams));
+		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
+			workflowStep.getSignRequestParams().remove(signRequestParams);
+		}
+		signRequestParamsService.delete(id);
+
+	}
+
+	@Transactional
     public InputStream getJsonFormSetup(Long id) throws IOException {
 		Form form = getById(id);
 		File jsonFile = fileService.getTempFile("json");
@@ -490,5 +510,11 @@ public class FormService {
 		for(Data data : datas) {
 			data.setForm(null);
 		}
+	}
+
+	@Transactional
+	public int getTotalPagesCount(Long id) {
+		Form form = getById(id);
+		return pdfService.getPdfParameters(form.getDocument().getInputStream(), 1).getTotalNumberOfPages();
 	}
 }
