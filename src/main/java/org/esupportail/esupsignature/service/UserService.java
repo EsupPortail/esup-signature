@@ -328,6 +328,7 @@ public class UserService {
 
     public List<PersonLdapLight> getPersonLdapsLight(String searchString) {
         List<PersonLdapLight> personLdaps = new ArrayList<>();
+        searchString = searchString.replace("\\", "");
         Set<User> users = new HashSet<>();
         users.addAll(userRepository.findByEppnStartingWith(searchString));
         users.addAll(userRepository.findByNameStartingWithIgnoreCase(searchString));
