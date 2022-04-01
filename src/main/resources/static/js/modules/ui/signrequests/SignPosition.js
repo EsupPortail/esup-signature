@@ -72,8 +72,8 @@ export class SignPosition extends EventFactory {
                 if(JSON.parse(sessionStorage.getItem("favoriteSignRequestParams")) != null) {
                     favoriteSignRequestParams = JSON.parse(sessionStorage.getItem("favoriteSignRequestParams"));
                     if(currentSignRequestParams != null) {
-                        favoriteSignRequestParams.posX = currentSignRequestParams.posX;
-                        favoriteSignRequestParams.posY = currentSignRequestParams.posY;
+                        favoriteSignRequestParams.xPos = currentSignRequestParams.xPos;
+                        favoriteSignRequestParams.yPos = currentSignRequestParams.yPos;
                     }
                 }
                 this.signRequestParamses.set(id, new SignRequestParams(favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, this.signImages));

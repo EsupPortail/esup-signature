@@ -98,17 +98,17 @@
                                         <th>Date</th>
                                         <th>Nom</th>
                                         <th>Action</th>
-                                        <th>Caratéristiques de la signature</th>
+                                        <th>Commentaire</th>
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <th:block th:each="log, iterator : ${logs}">
-                                        <tr th:if="${logs.size() > iterator.index + 1 && (logs[iterator.index + 1].finalStatus == 'checked' || logs[iterator.index + 1].finalStatus == 'signed')}">
+                                    <th:block th:each="log : ${logs}">
+                                        <tr>
                                             <td class="text-left"><span
                                                     th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
                                             <td class="text-left"><span th:text="${log.user.firstname} + ' ' + ${log.user.name}"></span></td>
                                             <td class="text-left"><span
-                                                    th:text="#{'signbook.status.' + ${logs[iterator.index + 1].finalStatus}}"></span></td>
+                                                    th:text="#{'signbook.status.' + ${log.finalStatus}}"></span></td>
                                             <td class="text-left"><span th:if="${log.action == 'Apposition de la signature'}"
                                                                         th:text="'Apposition d`un visuel en page ' + ${log.pageNumber} + ' aux coordonnées (' + ${log.posX} + ', ' + ${log.posY} + ')'"></span>
                                             </td>
@@ -136,8 +136,23 @@
             </th:block>
         </th:block>
         <th:block th:unless="${signRequest}">
+            <div class="alert alert-success mx-auto mt-1 mb-1">
+                <h4>Le document à été signé par cette plateforme</h4>
+                <dl class="row border-bottom m-0">
+                    <dt class="col-lg-5">Nom de document : </dt>
+                    <dd th:text="${auditTrail.documentName}"></dd>
+                </dl>
+                <dl class="row border-bottom m-0">
+                    <dt class="col-lg-5">Type de document : </dt>
+                    <dd th:text="${auditTrail.documentType}"></dd>
+                </dl>
+                <dl class="row border-bottom m-0">
+                    <dt class="col-lg-5">Taille : </dt>
+                    <dd th:text="${size}"></dd>
+                </dl>
+            </div>
             <div class="alert alert-light border-secondary">
-                <h5>Merci de déposer le document à contrôler</h5>
+                <h5>Merci de déposer le document à contrôler pour vérifier ça conformité et accéder aux informations détaillées</h5>
             <form th:action="'/public/control/' + ${token} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                 <input required class="form-control mb-2" data-buttontext="Choisir fichier" id="multipartFile" name="multipartFile" type="file">
                 <input class="btn btn-success" type="submit">

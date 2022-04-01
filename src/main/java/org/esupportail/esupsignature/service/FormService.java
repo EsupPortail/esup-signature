@@ -97,10 +97,9 @@ public class FormService {
 
 	@Transactional
 	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage) throws IOException, EsupSignatureException {
-		Workflow workflow = workflowRepository.findById(workflowId).get();
 		byte[] bytes = multipartFile.getInputStream().readAllBytes();
 		Document document = documentService.createDocument(new ByteArrayInputStream(bytes), multipartFile.getOriginalFilename(), multipartFile.getContentType());
-		Form form = createForm(document, name, title, workflow, prefillType, roleNames, publicUsage);
+		Form form = createForm(document, name, title, workflowId, prefillType, roleNames, publicUsage, null, null);
 		try {
 			updateSignRequestParams(form.getId(), new ByteArrayInputStream(bytes));
 		} catch (EsupSignatureIOException e) {
@@ -222,15 +221,22 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form createForm(Document document, String name, String title, Workflow workflow, String prefillType, List<String> roleNames, Boolean publicUsage, String... fieldNames) throws IOException, EsupSignatureException {
+	public Form createForm(Document document, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String[] fieldNames, String[] fieldTypes) throws IOException, EsupSignatureException {
+		Workflow workflow = workflowRepository.findById(workflowId).get();
 		Form form = new Form();
 		form.setName(name);
 		form.setTitle(title);
 		form.setActiveVersion(true);
 		form.setVersion(1);
-		if (document == null && fieldNames.length > 0) {
+		if (document == null && fieldNames != null && fieldNames.length > 0) {
+			int i = 0;
 			for(String fieldName : fieldNames) {
-				form.getFields().add(fieldService.createField(fieldName, workflow));
+				if(fieldTypes != null && fieldTypes.length > 0) {
+					form.getFields().add(fieldService.createField(fieldName, workflow, FieldType.valueOf(fieldTypes[i])));
+				}else {
+					form.getFields().add(fieldService.createField(fieldName, workflow, FieldType.text));
+				}
+				i++;
 			}
 		} else {
 			form.setFields(getFields(document.getInputStream(), workflow));
@@ -243,7 +249,12 @@ public class FormService {
 		form.setWorkflow(workflow);
 		if(publicUsage == null) publicUsage = false;
 		form.setPublicUsage(publicUsage);
-		document.setParentId(form.getId());
+		if(document != null) {
+			document.setParentId(form.getId());
+		}
+		if(fieldTypes != null) {
+			form.setPdfDisplay(false);
+		}
 		formRepository.save(form);
 		return form;
 	}
@@ -259,7 +270,7 @@ public class FormService {
 				logger.info(pdField.getFullyQualifiedName() + " finded");
 				int page = pageNrByAnnotDict.get(pdField.getPartialName());
 				if (pdField instanceof PDTextField) {
-					Field field = fieldService.createField(pdField.getPartialName(), workflow);
+					Field field = fieldService.createField(pdField.getPartialName(), workflow, FieldType.text);
 					field.setLabel(pdField.getAlternateFieldName());
 					field.setRequired(pdField.isRequired());
 					field.setReadOnly(pdField.isReadOnly());
@@ -298,10 +309,9 @@ public class FormService {
 					fields.add(field);
 					logger.info(field.getName() + " added");
 				} else if (pdField instanceof PDCheckBox) {
-					Field field = fieldService.createField(pdField.getPartialName(), workflow);
+					Field field = fieldService.createField(pdField.getPartialName(), workflow, FieldType.checkbox);
 					field.setRequired(pdField.isRequired());
 					field.setReadOnly(pdField.isReadOnly());
-					field.setType(FieldType.checkbox);
 					field.setLabel(pdField.getAlternateFieldName());
 					PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
 					parseField(field, pdField, pdAnnotationWidget, page);
@@ -313,8 +323,7 @@ public class FormService {
 						if(pdAnnotationWidget.getRectangle() == null) {
 							continue;
 						}
-						Field field = fieldService.createField(pdField.getPartialName(), workflow);
-						field.setType(FieldType.radio);
+						Field field = fieldService.createField(pdField.getPartialName(), workflow, FieldType.radio);
 						field.setRequired(pdField.isRequired());
 						field.setReadOnly(pdField.isReadOnly());
 						field.setLabel(pdField.getAlternateFieldName());
@@ -324,8 +333,7 @@ public class FormService {
 						break;
 					}
 				} else if (pdField instanceof PDChoice) {
-					Field field = fieldService.createField(pdField.getPartialName(), workflow);
-					field.setType(FieldType.select);
+					Field field = fieldService.createField(pdField.getPartialName(), workflow, FieldType.select);
 					field.setRequired(pdField.isRequired());
 					field.setReadOnly(pdField.isReadOnly());
 					PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
