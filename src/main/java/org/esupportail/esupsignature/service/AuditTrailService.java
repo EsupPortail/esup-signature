@@ -75,9 +75,13 @@ public class AuditTrailService {
         auditStep.setAllScrolled(allScrolled);
         Map<String, String> authenticationDetails = new HashMap<>();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        authenticationDetails.put("name", authentication.getName());
-        authenticationDetails.put("credential", authentication.getCredentials().toString());
-        authenticationDetails.put("type", authentication.getClass().getTypeName());
+        if(authentication != null) {
+            authenticationDetails.put("name", authentication.getName());
+            if(authentication.getCredentials() != null){
+                authenticationDetails.put("credential", authentication.getCredentials().toString());
+            }
+            authenticationDetails.put("type", authentication.getClass().getTypeName());
+        }
         auditStep.setAuthenticationDetails(authenticationDetails);
         auditStepRepository.save(auditStep);
         return auditStep;

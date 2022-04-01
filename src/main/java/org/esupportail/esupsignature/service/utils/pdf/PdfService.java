@@ -540,7 +540,7 @@ public class PdfService {
         if (!isPdfAComplient(new FileInputStream(file)) && (reports == null || reports.getSimpleReport().getSignatureIdList().size() == 0)) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
             String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite -d -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + file.getAbsolutePath() + "'";
-            logger.info("GhostScript PDF/A convertion : " + cmd);
+            logger.info("GhostScript PDF/A conversion : " + cmd);
 
             ProcessBuilder processBuilder = new ProcessBuilder();
             if(SystemUtils.IS_OS_WINDOWS) {
@@ -607,10 +607,10 @@ public class PdfService {
             ValidationResult validationResult = validator.validate(parser);
             if (validationResult.isCompliant()) {
                 result.add("success");
-                result.add("File is complient with PDF/A-" + validationResult.getPDFAFlavour().getId() + " !");
+                result.add("File is compliant with PDF/A-" + validationResult.getPDFAFlavour().getId() + " !");
             } else {
                 result.add("danger");
-                result.add("File is not complient with PDF/A-" + validationResult.getPDFAFlavour().getId() + " !");
+                result.add("File is not compliant with PDF/A-" + validationResult.getPDFAFlavour().getId() + " !");
                 if (fillResults) {
                     for (TestAssertion test : validationResult.getTestAssertions()) {
                         result.add(test.getRuleId().getClause() + " : " + test.getMessage());
