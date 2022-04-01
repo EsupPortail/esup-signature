@@ -817,8 +817,6 @@ public class PdfService {
                 PDFieldTree fields = new PDFieldTree(pdAcroForm);
                 pdDocument.close();
                 return fields;
-            } else {
-                throw new EsupSignatureException("Le document ne contient pas de formulaire");
             }
         } catch (IOException e) {
             logger.error("file read error", e);
