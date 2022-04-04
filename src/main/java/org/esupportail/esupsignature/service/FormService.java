@@ -228,15 +228,17 @@ public class FormService {
 		form.setTitle(title);
 		form.setActiveVersion(true);
 		form.setVersion(1);
-		if (document == null && fieldNames != null && fieldNames.length > 0) {
-			int i = 0;
-			for(String fieldName : fieldNames) {
-				if(fieldTypes != null && fieldTypes.length > 0) {
-					form.getFields().add(fieldService.createField(fieldName, workflow, FieldType.valueOf(fieldTypes[i])));
-				}else {
-					form.getFields().add(fieldService.createField(fieldName, workflow, FieldType.text));
+		if (document == null) {
+			if(fieldNames != null && fieldNames.length > 0) {
+				int i = 0;
+				for (String fieldName : fieldNames) {
+					if (fieldTypes != null && fieldTypes.length > 0) {
+						form.getFields().add(fieldService.createField(fieldName, workflow, FieldType.valueOf(fieldTypes[i])));
+					} else {
+						form.getFields().add(fieldService.createField(fieldName, workflow, FieldType.text));
+					}
+					i++;
 				}
-				i++;
 			}
 		} else {
 			form.setFields(getFields(document.getInputStream(), workflow));

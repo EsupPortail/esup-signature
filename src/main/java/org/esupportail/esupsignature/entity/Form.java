@@ -71,7 +71,7 @@ public class Form {
 	private String action;
 
 	@Transient
-	private Integer totalPageCount;
+	private Integer totalPageCount = 1;
 
 	public Long getId() {
 		return id;
