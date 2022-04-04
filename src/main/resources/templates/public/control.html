@@ -25,7 +25,7 @@
                         Vous avez accès à cette demande : <a th:href="'/user/signrequests/' + ${signRequest.id}">Voir la demande</a>
                     </div>
                 </div>
-                <div class="card mb-1">
+                <div class="card mb-1" th:if="${auditTrail != null}">
                     <div class="card-header"><h5>Dossier de preuves</h5></div>
                     <div class="card-body">
                         <div class="row">

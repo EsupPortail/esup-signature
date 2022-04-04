@@ -109,7 +109,9 @@ public class FormAdminController {
 				srpMap.put(signRequestParams.getId(), form.getWorkflow().getWorkflowSteps().indexOf(workflowStep) + 1);
 			}
 		}
-		form.setTotalPageCount(formService.getTotalPagesCount(id));
+		if(form.getDocument() != null) {
+			form.setTotalPageCount(formService.getTotalPagesCount(id));
+		}
 		model.addAttribute("form", form);
 		model.addAttribute("srpMap", srpMap);
 		model.addAttribute("workflow", form.getWorkflow());
