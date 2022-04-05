@@ -1621,6 +1621,20 @@ public class SignBookService {
     }
 
     @Transactional
+    public void cleanFiles(Long signBookId, String authUserEppn) {
+        SignBook signBook = getById(signBookId);
+        int nbDocOnDataBase = 0;
+        for(SignRequest signRequest : signBook.getSignRequests()) {
+            signRequestService.cleanDocuments(signRequest, authUserEppn);
+            nbDocOnDataBase += signRequest.getSignedDocuments().size();
+        }
+        if(nbDocOnDataBase == 0) {
+            logger.info(signBook.getSubject() + " :  " + signBook.getId() + " cleaned");
+            signBook.setStatus(SignRequestStatus.cleaned);
+        }
+    }
+
+    @Transactional
     public boolean needToBeExported(Long signBookId) {
         SignBook signBook = getById(signBookId);
         return signBook.getStatus().equals(SignRequestStatus.completed) && signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0;

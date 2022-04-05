@@ -131,7 +131,7 @@ public class LdapExtValue implements ExtValue {
 	@Override
 	public Map<String, Object> initValues(User user, SignRequest signRequest) {
 		Map<String, Object> values = new HashMap<>();
-		if(user != null) {
+		if(user != null && user.getEppn() != null) {
 			PersonLdap personLdap = userService.findPersonLdapByUser(user);
 			if (personLdap != null) {
 				ObjectMapper oMapper = new ObjectMapper();
