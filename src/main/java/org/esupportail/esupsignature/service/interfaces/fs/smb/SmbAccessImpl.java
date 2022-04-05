@@ -304,7 +304,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		boolean success = false;
 		SmbFile newFile = null;
 		try {
-			URI uri = new URI(dir);
+			URI uri = new URI(dir.replace(" ", "%20")).normalize();
 			if(uri.getScheme().equals("smb")) {
 				newFile = new SmbFile(dir + "/" + filename, this.cifsContext);
 			}

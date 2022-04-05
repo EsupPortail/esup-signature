@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
-import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.scheduler.TaskService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,23 +27,22 @@ public class TasksController {
     }
 
     @Resource
-    private SignBookService signBookService;
+    private TaskService taskService;
 
     @GetMapping
     public String scheduler(Model model) {
-        model.addAttribute("isEnableArchiveTask", signBookService.isEnableArchiveTask());
-        model.addAttribute("isEnableCleanTask", signBookService.isEnableCleanTask());
+        model.addAttribute("isEnableArchiveTask", taskService.isEnableArchiveTask());
+        model.addAttribute("isEnableCleanTask", taskService.isEnableCleanTask());
         return "admin/tasks";
     }
 
     @PostMapping("/run-archive")
     public String runArchive(RedirectAttributes redirectAttributes) {
-        if(!signBookService.isEnableArchiveTask()) {
-            signBookService.setEnableArchiveTask(true);
-            signBookService.initArchive();
+        if(!taskService.isEnableArchiveTask()) {
+            taskService.initArchive();
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Archivage démarré"));
         } else {
-            signBookService.setEnableArchiveTask(false);
+            taskService.setEnableArchiveTask(false);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Archivage arrêté"));
         }
         return "redirect:/admin/tasks";
@@ -51,12 +50,11 @@ public class TasksController {
 
     @PostMapping("/run-clean")
     public String runClean(RedirectAttributes redirectAttributes) {
-        if(!signBookService.isEnableCleanTask()) {
-            signBookService.setEnableCleanTask(true);
-            signBookService.initCleanning();
+        if(!taskService.isEnableCleanTask()) {
+            taskService.initCleanning();
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Nettoyage démarré"));
         } else {
-            signBookService.setEnableCleanTask(false);
+            taskService.setEnableCleanTask(false);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Nettoyage arrêté"));
         }
         return "redirect:/admin/tasks";
