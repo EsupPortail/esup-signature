@@ -7,7 +7,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -33,9 +32,6 @@ public class TaskService {
 
     @Resource
     private SignBookService signBookService;
-
-    @Resource
-    private SignRequestService signRequestService;
 
     @Resource
     private SignBookRepository signBookRepository;
@@ -70,7 +66,7 @@ public class TaskService {
             List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.archived);
             for (SignBook signBook : signBooks) {
                 logger.info("clean signbook : " + signBook.getId());
-                signRequestService.cleanFiles(signBook, "scheduler");
+                signBookService.cleanFiles(signBook.getId(), "scheduler");
                 if(!isEnableCleanTask()) {
                     logger.info("cleanning stopped");
                     return;
