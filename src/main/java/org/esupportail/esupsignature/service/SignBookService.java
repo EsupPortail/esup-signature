@@ -465,14 +465,13 @@ public class SignBookService {
 
 
     public List<String> getAllDocTitles(String userEppn) {
-        Set<String> docTitles = new HashSet<>();
-        docTitles.addAll(signBookRepository.findSubjects(userEppn));
-        return docTitles.stream().filter(s -> !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+        Set<String> docTitles = new HashSet<>(signBookRepository.findSubjects(userEppn));
+        return docTitles.stream().filter(s -> s != null && !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
     public List<String> getWorkflowNames(String userEppn) {
         List<String> workflowNames = signBookRepository.findWorkflowNames(userEppn);
-        return workflowNames.stream().filter(s -> !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+        return workflowNames.stream().filter(s -> s != null && !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
     @Transactional
