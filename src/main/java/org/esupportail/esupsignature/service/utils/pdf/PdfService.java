@@ -995,4 +995,13 @@ public class PdfService {
 //        }
         return pageNrByAnnotDict;
     }
+
+    public boolean isAcroForm(ByteArrayInputStream byteArrayInputStream) throws IOException {
+        PDDocument pdDocument = PDDocument.load(byteArrayInputStream);
+        PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+        if(pdAcroForm != null && pdAcroForm.getFields().size() > 0) {
+            return true;
+        }
+        return false;
+    }
 }
