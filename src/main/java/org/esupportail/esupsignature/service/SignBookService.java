@@ -36,7 +36,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
@@ -1598,16 +1597,18 @@ public class SignBookService {
             SignBook signBook = getById(signBookId);
             for(SignRequest signRequest : signBook.getSignRequests()) {
                 Document signedFile = signRequest.getLastSignedDocument();
-                String subPath = "/" + signRequest.getParentSignBook().getWorkflowName() + "/";
-                if(signRequest.getExportedDocumentURI() == null) {
-                    String name = generateName(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() , userService.getSystemUser(), true);
-                    String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath, signedFile.getId() + "_" + name);
-                    if(documentUri != null) {
-                        signRequest.setExportedDocumentURI(documentUri);
-                        signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.archived, "Exporté vers l'archivage", "SUCCESS", authUserEppn, authUserEppn);
-                    } else {
-                        logger.error("unable to archive " + subPath + name);
-                        result = false;
+                if(signedFile != null) {
+                    String subPath = "/" + signRequest.getParentSignBook().getWorkflowName() + "/";
+                    if (signRequest.getExportedDocumentURI() == null) {
+                        String name = generateName(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), userService.getSystemUser(), true);
+                        String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath, signedFile.getId() + "_" + name);
+                        if (documentUri != null) {
+                            signRequest.setExportedDocumentURI(documentUri);
+                            signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.archived, "Exporté vers l'archivage", "SUCCESS", authUserEppn, authUserEppn);
+                        } else {
+                            logger.error("unable to archive " + subPath + name);
+                            result = false;
+                        }
                     }
                 }
             }
@@ -1672,7 +1673,11 @@ public class SignBookService {
             template = template.replace("[originalFileName]", signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName());
         }
         if(template.contains("[signedFileName]")) {
-            template = template.replace("[signedFileName]", signBook.getSignRequests().get(0).getSignedDocuments().get(0).getFileName());
+            if(signBook.getSignRequests().get(0).getSignedDocuments().size() > 0) {
+                template = template.replace("[signedFileName]", signBook.getSignRequests().get(0).getSignedDocuments().get(0).getFileName());
+            } else {
+                template = template.replace("[signedFileName]", signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName());
+            }
         }
         if(template.contains("[fileNameOnly]")) {
             template = template.replace("[fileNameOnly]", fileService.getNameOnly(signBook.getSignRequests().get(0).getSignedDocuments().get(0).getFileName()));
