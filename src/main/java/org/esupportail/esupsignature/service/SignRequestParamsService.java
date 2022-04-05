@@ -16,6 +16,7 @@ import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -173,6 +174,12 @@ public class SignRequestParamsService {
         signRequestParams.setyPos(yPos);
         signRequestParamsRepository.save(signRequestParams);
         return signRequestParams;
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        SignRequestParams signRequestParams = getById(id);
+        signRequestParamsRepository.delete(signRequestParams);
     }
 
 }

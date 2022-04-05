@@ -35,16 +35,14 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.*;
@@ -52,9 +50,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -67,9 +62,6 @@ public class SignBookService {
     private static final Logger logger = LoggerFactory.getLogger(SignBookService.class);
 
     private final GlobalProperties globalProperties;
-
-    @PersistenceContext
-    private EntityManager entityManager;
 
     @Resource
     private MessageSource messageSource;
@@ -170,12 +162,12 @@ public class SignBookService {
     @Resource
     private CertificatService certificatService;
 
-    private boolean enableArchiveTask = false;
-
-    private boolean enableCleanTask = false;
-
     @Resource
     private SignRequestParamsRepository signRequestParamsRepository;
+
+    public GlobalProperties getGlobalProperties() {
+        return globalProperties;
+    }
 
     public SignBookService(GlobalProperties globalProperties) {
         this.globalProperties = globalProperties;
@@ -304,10 +296,11 @@ public class SignBookService {
         }
     }
 
+    @Transactional
     public SignBook getById(Long id) {
         Optional<SignBook> signBook = signBookRepository.findById(id);
         if(signBook.isPresent()) {
-            signBook.get().setLogs(getLogsFromSignBook(signBook.get()));
+//            signBook.get().setLogs(getLogsFromSignBook(signBook.get()));
             return signBook.get();
         }
         return null;
@@ -405,6 +398,7 @@ public class SignBookService {
         }
     }
 
+    @Transactional
     public List<Log> getLogsFromSignBook(SignBook signBook) {
         List<Log> logs = new ArrayList<>();
         for (SignRequest signRequest : signBook.getSignRequests()) {
@@ -1629,95 +1623,6 @@ public class SignBookService {
     public boolean needToBeExported(Long signBookId) {
         SignBook signBook = getById(signBookId);
         return signBook.getStatus().equals(SignRequestStatus.completed) && signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0;
-    }
-
-    @Transactional
-    @Async
-    public void initCleanning() {
-        logger.debug("scan all signRequest to clean");
-        if(globalProperties.getDelayBeforeCleaning() > -1) {
-            logger.info("start cleanning documents");
-            List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.archived);
-            for (SignBook signBook : signBooks) {
-                logger.info("clean signbook : " + signBook.getId());
-                signRequestService.cleanFiles(signBook, "scheduler");
-                if(!enableCleanTask) {
-                    logger.info("cleanning stopped");
-                    return;
-                }
-            }
-            logger.info("cleanning documents done");
-        } else {
-            logger.debug("cleaning documents was skipped because neg value");
-        }
-        if(globalProperties.getTrashKeepDelay() > -1) {
-            List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.deleted);
-            int i = 0;
-            for (SignBook signBook : signBooks) {
-                if (signBook.getUpdateDate() != null) {
-                    LocalDateTime deleteDate = LocalDateTime.ofInstant(signBook.getUpdateDate().toInstant(), ZoneId.systemDefault());
-                    LocalDateTime nowDate = LocalDateTime.ofInstant(new Date().toInstant(), ZoneId.systemDefault());
-                    long nbDays = ChronoUnit.DAYS.between(deleteDate, nowDate);
-                    if (Math.abs(nbDays) >= globalProperties.getTrashKeepDelay()) {
-                        deleteDefinitive(signBook.getId());
-                        i++;
-                    }
-                }
-            }
-            if(i > 0) {
-                logger.info(i + " item are deleted");
-            }
-        } else {
-            logger.debug("cleaning trashes was skipped because neg value");
-        }
-        entityManager.createNativeQuery("VACUUM FULL").executeUpdate();
-        setEnableCleanTask(false);
-    }
-
-    @Transactional
-    @Async
-    public void initArchive() {
-        if(globalProperties.getArchiveUri() != null) {
-            logger.debug("scan all signRequest to archive");
-            List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
-            signBooks.addAll(signBookRepository.findByStatus(SignRequestStatus.refused));
-            signBooks.addAll(signBookRepository.findByStatus(SignRequestStatus.exported));
-            for(SignBook signBook : signBooks) {
-                try {
-                    if(needToBeExported(signBook.getId())) {
-                        continue;
-                    }
-                    archiveSignRequests(signBook.getId(), "scheduler");
-                } catch(EsupSignatureFsException | EsupSignatureException e) {
-                    logger.error(e.getMessage());
-                }
-                if(!enableArchiveTask) {
-                    logger.info("archiving stopped");
-                    return;
-                }
-            }
-        }
-        setEnableArchiveTask(true);
-    }
-
-    public GlobalProperties getGlobalProperties() {
-        return globalProperties;
-    }
-
-    public boolean isEnableArchiveTask() {
-        return enableArchiveTask;
-    }
-
-    public void setEnableArchiveTask(boolean enableArchiveTask) {
-        this.enableArchiveTask = enableArchiveTask;
-    }
-
-    public boolean isEnableCleanTask() {
-        return enableCleanTask;
-    }
-
-    public void setEnableCleanTask(boolean enableCleanTask) {
-        this.enableCleanTask = enableCleanTask;
     }
 
     public String generateName(SignBook signBook, Workflow workflow, User user, Boolean target) {

@@ -26,6 +26,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 @EnableScheduling
@@ -43,6 +45,9 @@ public class ScheduledTaskService {
 
 	@Resource
 	private SignBookService signBookService;
+
+	@Resource
+	private TaskService taskService;
 
 	@Resource
 	private WorkflowService workflowService;
@@ -94,16 +99,27 @@ public class ScheduledTaskService {
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	public void scanAllSignbooksToArchive() {
 		if(globalProperties.getEnableScheduledCleanup()) {
-			signBookService.setEnableArchiveTask(true);
-			signBookService.initArchive();
+			SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
+			Date date = new Date(System.currentTimeMillis());
+			System.out.println(formatter.format(date));
+			logger.info("init archive : " + formatter.format(date));
+			taskService.initArchive();
+			Date date2 = new Date(System.currentTimeMillis());
+			logger.info("end archive" + formatter.format(date2));
+
 		}
 	}
 
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	public void scanAllSignbooksToClean() {
 		if(globalProperties.getEnableScheduledCleanup()) {
-			signBookService.setEnableCleanTask(true);
-			signBookService.initCleanning();
+			SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
+			Date date = new Date(System.currentTimeMillis());
+			System.out.println(formatter.format(date));
+			logger.info("init clean : " + formatter.format(date));
+			taskService.initCleanning();
+			Date date2 = new Date(System.currentTimeMillis());
+			logger.info("end clean : " + formatter.format(date2));
 		}
 	}
 
@@ -128,7 +144,7 @@ public class ScheduledTaskService {
 
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
-	public void cleanWarningReadedSignRequests() {
+	public void cleanWarningReadSignRequests() {
 		if(globalProperties.getNbDaysBeforeDeleting() > -1) {
 			List<SignRequest> signRequests = signRequestRepository.findByOlderPendingAndWarningReaded(globalProperties.getNbDaysBeforeDeleting());
 			for (SignRequest signRequest : signRequests) {
