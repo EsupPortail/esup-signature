@@ -79,6 +79,7 @@ export class SignRequestParams  extends EventFactory {
                 this.restoreFromFavorite();
             }
         }
+        this.stringLength = 1;
         this.initEventListeners();
    }
 
@@ -875,8 +876,19 @@ export class SignRequestParams  extends EventFactory {
             if(lines.length > maxLines) {
                 lines.pop();
             }
+
             for(let i = 0; i < lines.length; i++) {
-                text += lines[i].substring(0, 20);
+                let c = document.createElement("canvas");
+                let ctx = c.getContext("2d");
+                ctx.font = fontSize + "px Gravity";
+                let txt = lines[i];
+                console.log(ctx.measureText(txt).width + " " + this.textareaExtra.css("width"));
+                if(ctx.measureText(txt).width < (parseInt(this.textareaExtra.css("width")) - (ctx.measureText(txt).width / txt.length) * 2)) {
+                    text += txt;
+                    this.stringLength = txt.length;
+                } else {
+                    text += txt.substring(0, this.stringLength);
+                }
                 if(i < lines.length - 1) {
                     text += "\n";
                 }

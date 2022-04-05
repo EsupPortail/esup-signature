@@ -1,6 +1,8 @@
 package org.esupportail.esupsignature.service.security.cas;
 
 import org.esupportail.esupsignature.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
@@ -17,6 +19,8 @@ import java.io.IOException;
 @Service
 public class CasAuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 
+	private static final Logger logger = LoggerFactory.getLogger(CasAuthenticationSuccessHandler.class);
+
 	@Resource
 	private UserService userService;
 
@@ -24,6 +28,7 @@ public class CasAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
+		logger.info("authentication success for " + authentication.getName());
         userService.createUserWithAuthentication(authentication);
 		httpServletRequest.getSession().setAttribute("securityServiceName", "CasSecurityServiceImpl");
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpServletRequest.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
