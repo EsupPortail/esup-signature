@@ -200,7 +200,7 @@ public class SignBookController {
             }
             model.addAttribute("signable", signRequest.getSignable());
             model.addAttribute("comments", logService.getLogs(signRequest.getId()));
-            model.addAttribute("logs", signBook.getLogs());
+            model.addAttribute("logs", signBookService.getLogsFromSignBook(signBook));
             model.addAttribute("allSteps", signBookService.getAllSteps(signBook));
             model.addAttribute("workflows", workflowService.getWorkflowsByUser(authUserEppn, authUserEppn));
             return "user/signrequests/update";
