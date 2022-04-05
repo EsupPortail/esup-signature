@@ -212,7 +212,7 @@ public class UserService {
         } else {
             authName = authentication.getName();
         }
-        logger.info("controle de l'utilisateur " + authName);
+        logger.info("user control for " + authName);
         List<PersonLdap> personLdaps =  Objects.requireNonNull(ldapPersonService).getPersonLdap(authName);
         String eppn = personLdaps.get(0).getEduPersonPrincipalName();
         if (eppn == null) {
