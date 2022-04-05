@@ -13,7 +13,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.repository.DataRepository;
-import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
@@ -59,16 +58,17 @@ public class SignRequestService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignRequestService.class);
 
+	private final GlobalProperties globalProperties;
+
+	public SignRequestService(GlobalProperties globalProperties) {
+		this.globalProperties = globalProperties;
+	}
+
 	@Resource
 	private SignRequestRepository signRequestRepository;
 
 	@Resource
-	private SignBookRepository signBookRepository;
-
-	@Resource
 	private ActionService actionService;
-
-	private final GlobalProperties globalProperties;
 
 	@Resource
 	private PdfService pdfService;
@@ -117,10 +117,6 @@ public class SignRequestService {
 
 	@Resource
 	private ValidationService validationService;
-
-	public SignRequestService(GlobalProperties globalProperties) {
-		this.globalProperties = globalProperties;
-	}
 
 	@PostConstruct
 	public void initSignrequestMetrics() {
@@ -428,18 +424,6 @@ public class SignRequestService {
 			}
 		} else {
 			logger.error("no end date for signrequest " + signRequest.getId());
-		}
-	}
-
-	public void cleanFiles(SignBook signBook, String authUserEppn) {
-		int nbDocOnDataBase = 0;
-		for(SignRequest signRequest : signBook.getSignRequests()) {
-			cleanDocuments(signRequest, authUserEppn);
-			nbDocOnDataBase += signRequest.getSignedDocuments().size();
-		}
-		if(nbDocOnDataBase == 0) {
-			logger.info(signBook.getSubject() + " :  " + signBook.getId() + " cleaned");
-			signBook.setStatus(SignRequestStatus.cleaned);
 		}
 	}
 

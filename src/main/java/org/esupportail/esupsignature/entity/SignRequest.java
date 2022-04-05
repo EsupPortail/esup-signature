@@ -39,6 +39,7 @@ public class SignRequest {
     @ManyToOne
     private User createBy;
 
+    @Column(columnDefinition = "TEXT")
     private String exportedDocumentURI;
 
     @JsonIgnore
