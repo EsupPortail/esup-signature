@@ -99,6 +99,7 @@
                             <div class="form-group mb-3">
                                 <label class="form-label"for="recipientsEmails">Choisir les participants</label>
                                 <select class="select-users" data-check="true" name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple" required="required">
+                                    <option data-placeholder="true"></option>
                                 </select>
                                 <div id="tempUsers-recipientsEmails"></div>
                             </div>
@@ -296,6 +297,7 @@
                                             <label><span th:text="'Merci de saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span></label>
                                             <select class="select-users" th:id="'recipientEmailsSelect-' + ${form.id} + '_' + ${iterator.index + 1}"
                                                     multiple="multiple" name="recipientEmails" required="required" th:maxlength="${step.maxRecipients}">
+                                                <option data-placeholder="true"></option>
                                                 <th:block th:each="user : ${step.users}">
                                                     <option th:if="${user.email != null && user.email != 'generic'}" selected="selected"
                                                             th:text="${user.email}"
