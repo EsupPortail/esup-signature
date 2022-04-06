@@ -35,7 +35,7 @@ public class CasAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
 		if(defaultSavedRequest != null) {
 			String queryString = defaultSavedRequest.getQueryString();
 			if (queryString != null && queryString.split("=")[0].equals("redirect")) {
-				this.redirectStrategy.sendRedirect(httpServletRequest, httpServletResponse, queryString.split("=")[1]);
+				this.redirectStrategy.sendRedirect(httpServletRequest, httpServletResponse, queryString.split("=", 2)[1]);
 				return;
 			}
 		}
