@@ -1,8 +1,8 @@
 build:
   stage: deploy
   script: 
-    - export JAVA_HOME='/opt/jdk-14.0.2/'
-    - mvn clean package -DskipTests -Dspring.config.location=/opt/esup-signature/application.yml
+    - export JAVA_HOME='/opt/jdk-17.0.2/'
+    - mvn clean package -Dspring.config.location=/opt/esup-signature/application.yml
     - sshpass -V
     - export SSHPASS=$CI_USER_PASS
     - sshpass -e scp -o StrictHostKeyChecking=no target/esup-signature.war gitlab-ci@runan:/home/gitlab-ci
