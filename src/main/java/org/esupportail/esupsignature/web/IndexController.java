@@ -96,7 +96,7 @@ public class IndexController {
 				model.addAttribute("securityServices", securityServices);
 				model.addAttribute("globalProperties", globalProperties);
 				if(defaultSavedRequest != null) {
-					model.addAttribute("redirect", defaultSavedRequest.getRequestURL());
+					model.addAttribute("redirect", defaultSavedRequest.getRequestURL() + "?" + defaultSavedRequest.getQueryString());
 				}
 				return "signin";
 			} else {
