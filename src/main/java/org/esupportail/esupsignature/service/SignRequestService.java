@@ -219,8 +219,10 @@ public class SignRequestService {
 				String contentType = multipartFile.getContentType();
 				InputStream inputStream = new ByteArrayInputStream(bytes);
 				if (multipartFiles.length == 1 && bytes.length > 0) {
-					if("application/pdf".equals(multipartFiles[0].getContentType()) && scanSignatureFields && !pdfService.isAcroForm(new ByteArrayInputStream(bytes))) {
-						bytes = pdfService.normalizeGS(new ByteArrayInputStream(bytes)).readAllBytes();
+					if("application/pdf".equals(multipartFiles[0].getContentType()) && scanSignatureFields) {
+						if(!pdfService.isAcroForm(new ByteArrayInputStream(bytes))) {
+							bytes = pdfService.normalizeGS(new ByteArrayInputStream(bytes)).readAllBytes();
+						}
 						List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
 						if(signRequestParamses.size() == 0) {
 							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), docNumber);
