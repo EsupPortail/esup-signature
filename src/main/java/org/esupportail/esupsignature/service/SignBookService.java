@@ -610,7 +610,7 @@ public class SignBookService {
             }
             signBook = createSignBook(title, null, workflowName, authUser);
         } else {
-            if(workflow.getCreateBy().equals(authUser)) {
+            if(workflow.getCreateBy().equals(authUser) && (title == null || title.isEmpty())) {
                 title = fileService.getNameOnly(multipartFiles[0].getOriginalFilename());
             }
             signBook = createSignBook(title, workflow, null, authUser);
