@@ -240,22 +240,24 @@ export default class SelectUser {
     }
 
     setFavorites(response) {
-        let typeValues = [];
-        let i = 0;
-        for(let j = 0; j < response.length; j++) {
-            let value = response[j];
-            if(this.slimSelect.selected() != null && !this.slimSelect.selected().includes(this.valuePrefix + value)) {
-                let typeValue = {
-                    text: value,
-                    value: this.valuePrefix + value,
-                };
-                typeValues[i] = typeValue;
-                i++;
+        if(response.length > 0) {
+            let typeValues = [];
+            let i = 0;
+            for (let j = 0; j < response.length; j++) {
+                let value = response[j];
+                if (this.slimSelect.selected() != null && !this.slimSelect.selected().includes(this.valuePrefix + value)) {
+                    let typeValue = {
+                        text: value,
+                        value: this.valuePrefix + value,
+                    };
+                    typeValues[i] = typeValue;
+                    i++;
+                }
             }
+            this.favorites = typeValues;
+            this.slimSelect.setData(this.favorites);
+            this.slimSelect.set();
         }
-        this.favorites = typeValues;
-        this.slimSelect.setData(this.favorites);
-        this.slimSelect.set();
     }
 
     populateWithFavorites() {
