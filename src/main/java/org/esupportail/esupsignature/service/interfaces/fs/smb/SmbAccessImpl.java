@@ -31,7 +31,6 @@ import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.fs.UploadActionType;
 import org.esupportail.esupsignature.service.utils.file.FileService;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -139,7 +138,6 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		return null;
 	}
 
-	@NotNull
 	private SmbFile getSmbFileFromPath(String path) throws URISyntaxException, MalformedURLException, UnsupportedEncodingException {
 		SmbFile smbFile;
 		int pos = path.lastIndexOf('/') + 1;

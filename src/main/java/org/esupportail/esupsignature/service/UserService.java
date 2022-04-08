@@ -447,13 +447,15 @@ public class UserService {
     public List<User> getTempUsersFromRecipientList(List<String> recipientsEmails) {
         List<User> tempUsers = new ArrayList<>();
         for (String recipientEmail : recipientsEmails) {
-            if(recipientEmail.contains("*")) {
-                recipientEmail = recipientEmail.split("\\*")[1];
-            }
-            if(!recipientEmail.contains(globalProperties.getDomain())) {
-                User recipientUser = getUserByEmail(recipientEmail);
-                if (recipientUser.getUserType().equals(UserType.external)) {
-                    tempUsers.add(recipientUser);
+            if(recipientEmail != null) {
+                if (recipientEmail.contains("*")) {
+                    recipientEmail = recipientEmail.split("\\*")[1];
+                }
+                if (!recipientEmail.contains(globalProperties.getDomain())) {
+                    User recipientUser = getUserByEmail(recipientEmail);
+                    if (recipientUser.getUserType().equals(UserType.external)) {
+                        tempUsers.add(recipientUser);
+                    }
                 }
             }
         }

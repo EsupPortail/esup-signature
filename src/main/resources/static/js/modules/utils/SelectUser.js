@@ -136,7 +136,6 @@ export default class SelectUser {
                 $(this).hide();
             }
         })
-
         if(this.csrf) {
             let csrf = this.csrf;
             $.ajax({

@@ -46,14 +46,15 @@ public class FormWsController {
                       @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
                       @RequestParam(required = false) @Parameter(description = "Paramètres de signature", example = "[{\"xPos\":100, \"yPos\":100, \"signPageNumber\":1}, {\"xPos\":200, \"yPos\":200, \"signPageNumber\":1}]") String signRequestParamsJsonString,
                       @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls,
-                      @RequestParam(required = false) @Parameter(description = "Données par défaut à remplir dans le formulaire", example = "{'field1' : 'toto, 'field2' : 'tata'}") String formDatas
+                      @RequestParam(required = false) @Parameter(description = "Données par défaut à remplir dans le formulaire", example = "{'field1' : 'toto, 'field2' : 'tata'}") String formDatas,
+                      @RequestParam(required = false) @Parameter(description = "Titre") String title
     ) {
         Data data = dataService.addData(id, eppn);
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             TypeReference<Map<String, String>> type = new TypeReference<>(){};
             Map<String, String> datas = objectMapper.readValue(formDatas, type);
-            SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, null, targetEmails, targetUrls, eppn, eppn, true, datas, null, signRequestParamsJsonString);
+            SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, null, targetEmails, targetUrls, eppn, eppn, true, datas, null, signRequestParamsJsonString, title);
             return signBook.getSignRequests().get(0).getId();
         } catch (EsupSignatureException | EsupSignatureIOException | EsupSignatureFsException | JsonProcessingException e) {
             return -1L;
@@ -71,7 +72,8 @@ public class FormWsController {
                              @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
                              @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls,
                              @RequestParam(required = false) @Parameter(description = "Paramètres de signature", example = "[{\"xPos\":100, \"yPos\":100, \"signPageNumber\":1}, {\"xPos\":200, \"yPos\":200, \"signPageNumber\":1}]") String signRequestParamsJsonString,
-                             @RequestParam(required = false) @Parameter(description = "Données par défaut à remplir dans le formulaire", example = "{'field1' : 'toto, 'field2' : 'tata'}") String formDatas
+                             @RequestParam(required = false) @Parameter(description = "Données par défaut à remplir dans le formulaire", example = "{'field1' : 'toto, 'field2' : 'tata'}") String formDatas,
+                             @RequestParam(required = false) @Parameter(description = "Titre") String title
     ) {
         Data data = dataService.addData(id, createByEppn);
         try {
@@ -81,7 +83,7 @@ public class FormWsController {
             if(formDatas != null) {
                 datas.putAll(objectMapper.readValue(formDatas, type));
             }
-            SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, null, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), signRequestParamsJsonString);
+            SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, null, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), signRequestParamsJsonString, title);
             return signBook.getSignRequests().get(0).getId();
         } catch (EsupSignatureException | EsupSignatureIOException | EsupSignatureFsException | IOException e) {
             return -1L;

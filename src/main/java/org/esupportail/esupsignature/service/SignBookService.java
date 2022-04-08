@@ -492,7 +492,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas, InputStream formReplaceInputStream, String signRequestParamsJsonString) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
+    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas, InputStream formReplaceInputStream, String signRequestParamsJsonString, String title) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
         if (signRequestParamsJsonString != null) {
             signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
@@ -507,6 +507,9 @@ public class SignBookService {
         Form form = data.getForm();
         Workflow modelWorkflow = data.getForm().getWorkflow();
         Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientsEmails, allSignToCompletes, user.getEppn(), false);
+        if(title == null || title.isEmpty()) {
+            title = form.getTitle();
+        }
         SignBook signBook = createSignBook(form.getTitle(), modelWorkflow, null, user);
         SignRequest signRequest = signRequestService.createSignRequest(signBook.getSubject(), signBook, user.getEppn(), authUser.getEppn());
         signRequest.getSignRequestParams().addAll(signRequestParamses);
