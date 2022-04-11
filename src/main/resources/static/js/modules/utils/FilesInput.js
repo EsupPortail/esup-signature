@@ -99,7 +99,7 @@ export default class FilesInput extends EventFactory {
             browseOnZoneClick: !readOnly,
             uploadUrl: this.uploadUrl,
             uploadAsync: this.async,
-            theme: 'explorer-fa',
+            theme: 'explorer-fas',
             pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
             initialPreview: urls,
             initialPreviewConfig : previews,

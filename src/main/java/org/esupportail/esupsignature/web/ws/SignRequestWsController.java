@@ -88,6 +88,13 @@ public class SignRequestWsController {
     }
 
     @CrossOrigin
+    @GetMapping(value = "/status/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(description = "Récupération du statut d'une demande de signature")
+    public String getStatus(@Parameter(description = "Identifiant de la demande") @PathVariable Long id) {
+        return signRequestService.getStatus(id);
+    }
+
+    @CrossOrigin
     @DeleteMapping("/{id}")
     @Operation(description = "Supprimer une demande de signature")
     public ResponseEntity<String> delete(@PathVariable Long id) {

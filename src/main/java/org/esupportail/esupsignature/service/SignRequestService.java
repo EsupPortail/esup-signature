@@ -110,6 +110,9 @@ public class SignRequestService {
 	private PreFillService preFillService;
 
 	@Resource
+	private AuditTrailService auditTrailService;
+
+	@Resource
 	private LogService logService;
 
 	@Resource
@@ -132,6 +135,19 @@ public class SignRequestService {
 				signRequest.get().setData(data);
 			}
 			return signRequest.get();
+		}
+		return null;
+	}
+
+	public String getStatus(long id) {
+		SignRequest signRequest = getById(id);
+		if(signRequest != null){
+			return signRequest.getStatus().name();
+		} else {
+			List<Log> logs = logService.getBySignRequest(id);
+			if(logs.size() > 0) {
+				return "fully-deleted";
+			}
 		}
 		return null;
 	}
