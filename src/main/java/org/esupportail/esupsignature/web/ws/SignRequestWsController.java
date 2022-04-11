@@ -22,6 +22,7 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -91,7 +92,7 @@ public class SignRequestWsController {
     @GetMapping(value = "/status/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(description = "Récupération du statut d'une demande de signature")
     public String getStatus(@Parameter(description = "Identifiant de la demande") @PathVariable Long id) {
-        return signRequestService.getStatus(id);
+        return JSONObject.quote(signRequestService.getStatus(id));
     }
 
     @CrossOrigin
