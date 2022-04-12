@@ -194,7 +194,7 @@ public class SignBookService {
                 signBooks = signBookRepository.findByRecipientAndCreateByEppn(userEppn, workflowFilter, docTitleFilter, pageable);
             }
         } else if(statusFilter.equals("tosign"))  {
-            signBooks = signBookRepository.findToSign(userEppn, pageable);
+            signBooks = signBookRepository.findToSign(userEppn, workflowFilter, docTitleFilter, pageable);
         } else if(statusFilter.equals("signedByMe")) {
             signBooks = signBookRepository.findByRecipientAndActionType(userEppn, ActionType.signed, pageable);
         } else if(statusFilter.equals("refusedByMe")) {
