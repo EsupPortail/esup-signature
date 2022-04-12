@@ -155,7 +155,7 @@ public class FormAdminController {
 
 	@PostMapping()
 	public String postForm(@RequestParam("name") String name,
-						   @RequestParam("name") String title,
+						   @RequestParam("title") String title,
 						   @RequestParam Long workflowId,
 						   @RequestParam("fieldNames[]") String[] fieldNames,
 						   @RequestParam("fieldTypes[]") String[] fieldTypes,
