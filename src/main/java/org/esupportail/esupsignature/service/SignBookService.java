@@ -47,8 +47,13 @@ import javax.servlet.http.HttpSession;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -185,16 +190,34 @@ public class SignBookService {
     }
 
     @Transactional
-    public Page<SignBook> getSignBooks(String userEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, Pageable pageable) {
+    public Page<SignBook> getSignBooks(String userEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(9999, Calendar.DECEMBER, 31);
+        Date startDateFilter = new Date(0);
+        Date endDateFilter = calendar.getTime();
+        if(dateFilter != null && !dateFilter.isEmpty()) {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            Date formattedDate = null;
+            try {
+                formattedDate = formatter.parse(dateFilter);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            LocalDateTime nowLocalDateTime = formattedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            LocalDateTime startLocalDateTime = nowLocalDateTime.with(LocalTime.of(0, 0, 0));
+            LocalDateTime endLocalDateTime = nowLocalDateTime.with(LocalTime.of(23, 59, 59));
+            startDateFilter = Timestamp.valueOf(startLocalDateTime);
+            endDateFilter = Timestamp.valueOf(endLocalDateTime);
+        }
         Page<SignBook> signBooks = new PageImpl<>(new ArrayList<>());
         if(statusFilter.isEmpty() || statusFilter.equals("all")) {
             if(recipientsFilter != null && !recipientsFilter.equals("%") && !recipientsFilter.isEmpty()) {
-                signBooks = signBookRepository.findByRecipientAndCreateByEppn(recipientsFilter, userEppn, workflowFilter, docTitleFilter, pageable);
+                signBooks = signBookRepository.findByRecipientAndCreateByEppn(recipientsFilter, userEppn, workflowFilter, docTitleFilter, creatorFilter, startDateFilter, endDateFilter, pageable);
             } else {
-                signBooks = signBookRepository.findByRecipientAndCreateByEppn(userEppn, workflowFilter, docTitleFilter, pageable);
+                signBooks = signBookRepository.findByRecipientAndCreateByEppn(userEppn, workflowFilter, docTitleFilter, creatorFilter, startDateFilter, endDateFilter, pageable);
             }
         } else if(statusFilter.equals("tosign"))  {
-            signBooks = signBookRepository.findToSign(userEppn, workflowFilter, docTitleFilter, pageable);
+            signBooks = signBookRepository.findToSign(userEppn, workflowFilter, docTitleFilter, creatorFilter, startDateFilter, endDateFilter, pageable);
         } else if(statusFilter.equals("signedByMe")) {
             signBooks = signBookRepository.findByRecipientAndActionType(userEppn, ActionType.signed, pageable);
         } else if(statusFilter.equals("refusedByMe")) {
@@ -644,6 +667,7 @@ public class SignBookService {
             }
             title = title.substring(0, title.length() - 1);
         }
+        logger.info(title);
         SignBook signBook = addDocsInNewSignBookSeparated(title, "Demande simple", multipartFiles, user.getEppn());
         signBook.setForceAllDocsSign(forceAllSign);
         try {
@@ -788,7 +812,7 @@ public class SignBookService {
 
     public List<SignRequest> getSignRequestsForCurrentUserByStatus(String userEppn, String authUserEppn, String statusFilter) {
         List<SignRequest> signRequestList = new ArrayList<>();
-        List<SignBook> signBooks = getSignBooks(userEppn, statusFilter, null, null, null, Pageable.unpaged()).getContent();
+        List<SignBook> signBooks = getSignBooks(userEppn, statusFilter, null, null, null, null, null, Pageable.unpaged()).getContent();
         if(!userEppn.equals(authUserEppn)) {
             for(SignBook signBook: signBooks) {
                 for(SignRequest signRequest : signBook.getSignRequests()) {
@@ -1750,5 +1774,9 @@ public class SignBookService {
             }
         }
         return template;
+    }
+
+    public List<User> getCreators(String userEppn, String workflowFilter, String docTitleFilter, String creatorFilter) {
+        return signBookRepository.findUserByRecipientAndCreateByEppn(userEppn, workflowFilter, docTitleFilter, creatorFilter);
     }
 }
