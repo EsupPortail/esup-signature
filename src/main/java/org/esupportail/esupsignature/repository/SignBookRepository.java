@@ -1,6 +1,8 @@
 package org.esupportail.esupsignature.repository;
 
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.data.domain.Page;
@@ -9,13 +11,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 public interface SignBookRepository extends CrudRepository<SignBook, Long> {
 
-    List<SignBook> findByCreateByEppn(String userEppn);
-
-    List<SignBook> findBySubject(String userEppn);
+    List<SignBook> findBySubject(String subject);
 
     @Query("select distinct sb from SignBook sb " +
             "left join sb.viewers v " +
@@ -28,8 +29,25 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "and (:userEppn in r.user.eppn  or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
             "and sb.hidedBy is empty " +
             "and size(sb.signRequests) > 0 " +
-            "and sb.status <> 'deleted'")
-    Page<SignBook> findByRecipientAndCreateByEppn(String userEppn, String workflowFilter, String docTitleFilter, Pageable pageable);
+            "and sb.status <> 'deleted' " +
+            "and sb.createBy.eppn like :creatorFilter " +
+            "and (sb.createDate between :startDateFilter and :endDateFilter)")
+    Page<SignBook> findByRecipientAndCreateByEppn(String userEppn, String workflowFilter, String docTitleFilter, String creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
+
+    @Query("select distinct sb.createBy from SignBook sb " +
+            "left join sb.viewers v " +
+            "join sb.signRequests sr " +
+            "left join sb.liveWorkflow lw " +
+            "left join lw.liveWorkflowSteps lws " +
+            "left join lws.recipients r " +
+            "where (sb.workflowName like :workflowFilter) " +
+            "and (sb.subject like :docTitleFilter) " +
+            "and (:userEppn in r.user.eppn  or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
+            "and sb.hidedBy is empty " +
+            "and size(sb.signRequests) > 0 " +
+            "and sb.status <> 'deleted'" +
+            "and sb.createBy.eppn like :creatorFilter")
+    List<User> findUserByRecipientAndCreateByEppn(String userEppn, String workflowFilter, String docTitleFilter, String creatorFilter);
 
     @Query("select distinct sb from SignBook sb " +
             "left join sb.viewers v " +
@@ -45,14 +63,18 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "and (:userEppn in (key(rhs).user.eppn)  or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
             "and sb.hidedBy is empty " +
             "and size(sb.signRequests) > 0 " +
-            "and sb.status <> 'deleted'")
-    Page<SignBook> findByRecipientAndCreateByEppn(String recipientUserEppn, String userEppn, String workflowFilter, String docTitleFilter, Pageable pageable);
+            "and sb.status <> 'deleted' " +
+            "and sb.createBy.eppn like :creatorFilter " +
+            "and (sb.createDate between :startDateFilter and :endDateFilter)")
+    Page<SignBook> findByRecipientAndCreateByEppn(String recipientUserEppn, String userEppn, String workflowFilter, String docTitleFilter, String creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     @Query("select distinct sb from SignBook sb join sb.liveWorkflow.currentStep.recipients r " +
             "where (sb.workflowName like :workflowFilter) " +
             "and (sb.subject like :docTitleFilter) " +
-            "and sb.status = 'pending' and size(sb.signRequests) > 0 and r.user.eppn = :userEppn ")
-    Page<SignBook> findToSign(String userEppn, String workflowFilter, String docTitleFilter, Pageable pageable);
+            "and sb.status = 'pending' and size(sb.signRequests) > 0 and r.user.eppn = :userEppn " +
+            "and sb.createBy.eppn like :creatorFilter " +
+            "and (sb.createDate between :startDateFilter and :endDateFilter)")
+    Page<SignBook> findToSign(String userEppn, String workflowFilter, String docTitleFilter, String creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     @Query("select distinct sb from SignBook sb join sb.liveWorkflow.currentStep.recipients r where size(sb.signRequests) = 0 and (r.user.eppn = :userEppn or sb.createBy.eppn = :userEppn)")
     Page<SignBook> findEmpty(String userEppn, Pageable pageable);
