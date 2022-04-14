@@ -1525,6 +1525,9 @@ public class SignBookService {
                         try {
                             for (SignRequest signRequest : signRequests) {
                                 for (String email : targetUrl.split(";")) {
+                                    if(email.contains(":")) {
+                                        email = email.split(":")[1];
+                                    }
                                     User user = userService.getUserByEmail(email);
                                     if(!signRequest.getParentSignBook().getViewers().contains(user)) {
                                         signRequest.getParentSignBook().getViewers().add(user);
