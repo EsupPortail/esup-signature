@@ -1524,10 +1524,7 @@ public class SignBookService {
                         logger.info("send by email to " + targetUrl);
                         try {
                             for (SignRequest signRequest : signRequests) {
-                                for (String email : targetUrl.split(";")) {
-                                    if(email.contains(":")) {
-                                        email = email.split(":")[1];
-                                    }
+                                for (String email : targetUrl.replace("mailto:", "").split(",")) {
                                     User user = userService.getUserByEmail(email);
                                     if(!signRequest.getParentSignBook().getViewers().contains(user)) {
                                         signRequest.getParentSignBook().getViewers().add(user);
