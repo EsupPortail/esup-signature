@@ -153,6 +153,4 @@ public class LdapExtValue implements ExtValue {
 		return values;
 	}
 
-
-
 }

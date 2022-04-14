@@ -109,6 +109,7 @@
                                 </div>
                             </label>
                             <select id="managersSelect" class="select-users" multiple="multiple" name="managers">
+                                <option data-placeholder="true"></option>
                                 <th:block th:each="manager : ${form.managers}">
                                     <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
                                 </th:block>

@@ -129,6 +129,10 @@ spring:
             static-locations: classpath:/static
     mvc:
         static-path-pattern: /**
+        hiddenmethod:
+            filter :
+                enabled: true
+
 
 ldap:
     search-base: ou=people

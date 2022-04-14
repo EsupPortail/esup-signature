@@ -185,15 +185,17 @@
                         <div class="form-group mb-3">
                             <label for="selectUsers">Choix des utilisateurs</label>
                             <select id="selectUsers" class="select-users" name="userIds" multiple="multiple"
-                                    required="required"></select>
+                                    required="required">
+                                <option data-placeholder="true"></option>
+                            </select>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="selectUsers">Date de début</label>
-                            <input type="datetime-local" name="beginDate" class="form-control">
+                            <label for="beginDate">Date de début</label>
+                            <input type="datetime-local" id="beginDate" name="beginDate" class="form-control">
                         </div>
                         <div class="form-group mb-3">
-                            <label for="selectUsers">Date de fin</label>
-                            <input type="datetime-local" name="endDate" class="form-control">
+                            <label for="endDate">Date de fin</label>
+                            <input type="datetime-local" id="endDate" name="endDate" class="form-control">
                         </div>
                     </div>
                     <div class="modal-footer">
