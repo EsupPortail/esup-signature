@@ -10,7 +10,6 @@ import org.esupportail.esupsignature.service.ldap.LdapOrganizationalUnitService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -111,7 +110,6 @@ public class LdapExtValue implements ExtValue {
 		return mapList;
 	}
 
-	@NotNull
 	private List<Map<String, Object>> getMapsOfOU(String searchString, String name) {
 		List<Map<String, Object>> resultMap = new ArrayList<>();
 		List<OrganizationalUnitLdap> organizationalUnitLdaps = ldapOrganizationalUnitService.getOrganizationalUnitLdaps(searchString);

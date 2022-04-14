@@ -447,7 +447,7 @@ input:checked + .slider:before {
 .slim-select-no-hack {
 }
 
-.ss-main .ss-single-selected .placeholder .ss-disabled {
+.ss-main .ss-single-selected .placeholder {
     color: black !important;
 }
 

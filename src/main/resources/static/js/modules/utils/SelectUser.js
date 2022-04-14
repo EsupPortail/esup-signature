@@ -30,10 +30,16 @@ export default class SelectUser {
     createUserSelect(selectName, valuePrefix) {
         let controller = new AbortController();
         let signal = controller.signal;
+        let placeHolder;
+        if(this.limit > 1) {
+            placeHolder = "Choisir une ou plusieurs personnes";
+        } else {
+            placeHolder = "Choisir une personne";
+        }
         this.slimSelect = new SlimSelect({
             select: "#" + selectName,
             data: this.favorites,
-            placeholder: 'Choisir une ou plusieurs personnes',
+            placeholder: placeHolder,
             searchText: 'Aucun résultat',
             searchPlaceholder: 'Rechercher',
             searchHighlight: false,
@@ -117,7 +123,12 @@ export default class SelectUser {
                 $('#end').show();
             }
         }
-        let recipientEmails = this.slimSelect.selected();
+        let recipientEmails;
+        if(Array.isArray(this.slimSelect.selected())) {
+            recipientEmails = this.slimSelect.selected();
+        } else {
+            recipientEmails = new Array(this.slimSelect.selected());
+        }
         $('[id^="allSignToComplete-"]').each(function(){
             if (recipientEmails.length > 1) {
                 $(this).show();
@@ -125,7 +136,6 @@ export default class SelectUser {
                 $(this).hide();
             }
         })
-
         if(this.csrf) {
             let csrf = this.csrf;
             $.ajax({

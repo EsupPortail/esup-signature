@@ -96,23 +96,16 @@ public class AdminSignRequestController {
 	}
 
 	@GetMapping(value = "/{id}")
+	@Transactional
 	public String show(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
 		SignRequest signRequest = signRequestService.getById(id);
-			model.addAttribute("signBooks", signBookService.getAllSignBooks());
-			Document toDisplayDocument;
-			if(signService.getToSignDocuments(signRequest.getId()).size() == 1) {
-				toDisplayDocument = signService.getToSignDocuments(signRequest.getId()).get(0);
-				if(toDisplayDocument.getContentType().equals("application/pdf")) {
-				}
-				model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
-				model.addAttribute("documentId", toDisplayDocument.getId());
-			}
-			List<Log> logs = logService.getBySignRequestId(signRequest.getId());
-			model.addAttribute("logs", logs);
-			model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
-			model.addAttribute("signRequest", signRequest);
-			model.addAttribute("itemId", id);
-			return "admin/signrequests/show";
+		List<Log> logs = logService.getBySignRequestId(signRequest.getId());
+		model.addAttribute("logs", logs);
+		model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
+		model.addAttribute("signRequest", signRequest);
+		model.addAttribute("originalDocuments", signRequest.getOriginalDocuments());
+		model.addAttribute("signedDocuments", signRequest.getSignedDocuments());
+		return "admin/signrequests/show";
 	}
 
 	@GetMapping(value = "/getfile/{id}")

@@ -155,7 +155,7 @@ public class FormAdminController {
 
 	@PostMapping()
 	public String postForm(@RequestParam("name") String name,
-						   @RequestParam("name") String title,
+						   @RequestParam("title") String title,
 						   @RequestParam Long workflowId,
 						   @RequestParam("fieldNames[]") String[] fieldNames,
 						   @RequestParam("fieldTypes[]") String[] fieldTypes,
@@ -168,6 +168,14 @@ public class FormAdminController {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
 			return "redirect:/admin/forms/";
 		}
+	}
+
+	@PostMapping("/add-field/{id}")
+	public String addField(@PathVariable("id") long id,
+						   @RequestParam("fieldNames[]") String[] fieldNames,
+						   @RequestParam("fieldTypes[]") String[] fieldTypes) {
+		formService.addField(id, fieldNames, fieldTypes);
+		return "redirect:/admin/forms/" + id + "/fields";
 	}
 
 	@PostMapping("generate")

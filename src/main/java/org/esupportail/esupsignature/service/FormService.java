@@ -261,6 +261,22 @@ public class FormService {
 		return form;
 	}
 
+	@Transactional
+	public void addField(Long formId, String[] fieldNames, String[] fieldTypes) {
+		Form form = getById(formId);
+		if(fieldNames != null && fieldNames.length > 0) {
+			int i = 0;
+			for (String fieldName : fieldNames) {
+				if (fieldTypes != null && fieldTypes.length > 0) {
+					form.getFields().add(fieldService.createField(fieldName, form.getWorkflow(), FieldType.valueOf(fieldTypes[i])));
+				} else {
+					form.getFields().add(fieldService.createField(fieldName, form.getWorkflow(), FieldType.text));
+				}
+				i++;
+			}
+		}
+	}
+
 	private List<Field> getFields(InputStream inputStream, Workflow workflow) throws IOException, EsupSignatureException {
 		List<Field> fields = new ArrayList<>();
 		List<Field> fieldsOrdered = new LinkedList<>();

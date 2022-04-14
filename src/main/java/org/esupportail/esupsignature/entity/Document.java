@@ -40,11 +40,11 @@ public class Document {
     @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST}, orphanRemoval = true)
     private BigFile bigFile = new BigFile();
 
+    @JsonIgnore
     public InputStream getInputStream() {
         try {
             if(this.bigFile != null && this.bigFile.getBinaryFile() != null) {
-                InputStream inputStream = this.bigFile.getBinaryFile().getBinaryStream();
-                return inputStream;
+                return this.bigFile.getBinaryFile().getBinaryStream();
             }
         } catch (SQLException e) {
             logger.error("unable to get inputStream", e);

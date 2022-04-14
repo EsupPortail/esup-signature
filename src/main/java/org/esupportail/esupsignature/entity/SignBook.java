@@ -26,6 +26,7 @@ public class SignBook {
 	@Version
     private Integer version;
 
+    @Column(columnDefinition = "TEXT")
     private String subject;
 
     private String workflowName;
