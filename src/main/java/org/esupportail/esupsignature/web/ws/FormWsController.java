@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.DataService;
 import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,6 +36,9 @@ public class FormWsController {
 
     @Resource
     private DataExportService dataExportService;
+
+    @Resource
+    private SignRequestService signRequestService;
 
     @CrossOrigin
     @PostMapping(value = "/{id}/new")
@@ -65,8 +69,9 @@ public class FormWsController {
     @PostMapping(value = "/{id}/new-doc")
     @Operation(description = "Création d'une nouvelle instance d'un formulaire")
     public Long startWithDoc(@PathVariable Long id,
-                             @Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
+                             @RequestParam @Parameter(description = "Multipart stream du fichier à signer") MultipartFile[] multipartFiles,
                              @RequestParam @Parameter(description = "Eppn du propriétaire du futur document") String createByEppn,
+                             @RequestParam(required = false) @Parameter(description = "Multipart stream des pièces jointes") MultipartFile[] attachementMultipartFiles,
                              @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*email]") List<String> recipientEmails,
                              @RequestParam(required = false) @Parameter(description = "Lites des numéros d'étape pour lesquelles tous les participants doivent signer", example = "[stepNumber]") List<String> allSignToCompletes,
                              @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
@@ -84,6 +89,9 @@ public class FormWsController {
                 datas.putAll(objectMapper.readValue(formDatas, type));
             }
             SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, null, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), signRequestParamsJsonString, title);
+            if(attachementMultipartFiles.length > 0) {
+                signRequestService.addAttachement(attachementMultipartFiles, null, signBook.getSignRequests().get(0).getId());
+            }
             return signBook.getSignRequests().get(0).getId();
         } catch (EsupSignatureException | EsupSignatureIOException | EsupSignatureFsException | IOException e) {
             return -1L;

@@ -38,7 +38,7 @@
                 <div class="card-body">
                     <h3>WORKFLOW ID : <input type="text" readonly disabled th:value="${workflow.id}"></h3>
                     <div class="alert alert-info">Nombre de demandes pour ce circuit : <span th:text="${nbSignRequests}"></span></div>
-                    <form th:object="${workflow}" th:action="'/admin/workflows/update'" method="post" id="updateSignBook">
+                    <form th:object="${workflow}" th:action="@{/admin/workflows/update}" method="post" id="updateSignBook">
                         <input type="hidden" th:field="*{id}">
                         <div class="form-group mb-3">
                             <label for="description"><strong>Titre</strong></label>
@@ -116,6 +116,7 @@
                                 </div>
                             </div>
                             <select id="managersSelect" class="select-users" multiple="multiple" name="managers">
+                                <option data-placeholder="true"></option>
                                 <th:block th:each="manager : ${workflow.managers}">
                                     <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
                                 </th:block>
