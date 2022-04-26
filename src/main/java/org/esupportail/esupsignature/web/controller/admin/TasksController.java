@@ -23,7 +23,7 @@ public class TasksController {
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
-        return "su";
+        return "tasks";
     }
 
     @Resource
