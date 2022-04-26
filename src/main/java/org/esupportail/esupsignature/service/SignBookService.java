@@ -1551,10 +1551,7 @@ public class SignBookService {
                         logger.info("send by email to " + targetUrl);
                         try {
                             for (SignRequest signRequest : signRequests) {
-                                for (String email : targetUrl.split(";")) {
-                                    if(email.contains(":")) {
-                                        email = email.split(":")[1];
-                                    }
+                                for (String email : targetUrl.replace("mailto:", "").split(",")) {
                                     User user = userService.getUserByEmail(email);
                                     if(!signRequest.getParentSignBook().getViewers().contains(user)) {
                                         signRequest.getParentSignBook().getViewers().add(user);
@@ -1597,7 +1594,7 @@ public class SignBookService {
                                             documentService.exportDocument(documentIOType, targetUrl, attachment, null);
                                         }
                                     }
-                                    String name = generateName(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), userService.getSystemUser(), true);
+                                    String name = generateName(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), true);
                                     documentService.exportDocument(documentIOType, targetUrl, signedFile, name);
                                     target.setTargetOk(true);
                                 } catch (EsupSignatureFsException e) {
@@ -1632,7 +1629,7 @@ public class SignBookService {
                 if(signedFile != null) {
                     String subPath = "/" + signRequest.getParentSignBook().getWorkflowName() + "/";
                     if (signRequest.getExportedDocumentURI() == null) {
-                        String name = generateName(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), userService.getSystemUser(), true);
+                        String name = generateName(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), true);
                         String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath, signedFile.getId() + "_" + name);
                         if (documentUri != null) {
                             signRequest.setExportedDocumentURI(documentUri);
