@@ -841,9 +841,17 @@ export class PdfViewer extends EventFactory {
                 } else {
                     warningFields.forEach(function (field) {
                         if (field.description != null && field.description !== "") {
-                            text += "<li>" + field.description + " (en page " + field.page + ")</li>";
+                            text += "<li>" + field.description;
+                            if(field.page != null) {
+                                text += " (en page " + field.page + ")";
+                            }
+                            text +="</li>";
                         } else {
-                            text += "<li>" + field.name + " (en page " + field.page + ")</li>";
+                            text += "<li>" + field.name;
+                            if(field.page != null) {
+                                text += " (en page " + field.page + ")";
+                            }
+                            text +="</li>";
                         }
                     });
                 }
