@@ -533,7 +533,7 @@ public class SignBookService {
         if(title == null || title.isEmpty()) {
             title = form.getTitle();
         }
-        SignBook signBook = createSignBook(form.getTitle(), modelWorkflow, null, user);
+        SignBook signBook = createSignBook(title, modelWorkflow, null, user);
         SignRequest signRequest = signRequestService.createSignRequest(signBook.getSubject(), signBook, user.getEppn(), authUser.getEppn());
         signRequest.getSignRequestParams().addAll(signRequestParamses);
         InputStream inputStream;
