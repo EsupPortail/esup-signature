@@ -118,7 +118,9 @@ public class WorkflowStepService {
         WorkflowStep workflowStep = createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
         workflowStep.setDescription(description);
         workflowStep.setChangeable(changeable);
-        workflowStep.setMaxRecipients(maxRecipients);
+        if(maxRecipients != null) {
+            workflowStep.setMaxRecipients(maxRecipients);
+        }
         workflowStep.setAttachmentRequire(attachmentRequire);
         workflowStep.setAutoSign(autoSign);
         if(autoSign) {

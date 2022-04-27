@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
@@ -44,28 +45,26 @@ public class UserService {
 
     private static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm";
 
-    private LdapPersonService ldapPersonService;
+    private final GlobalProperties globalProperties;
 
-    private LdapOrganizationalUnitService ldapOrganizationalUnitService;
+    private final WebSecurityProperties webSecurityProperties;
 
-    public UserService(GlobalProperties globalProperties) {
+    private final LdapPersonService ldapPersonService;
+
+    private final LdapOrganizationalUnitService ldapOrganizationalUnitService;
+
+    public UserService(GlobalProperties globalProperties,
+                       WebSecurityProperties webSecurityProperties,
+                       @Autowired(required = false) LdapPersonService ldapPersonService,
+                       @Autowired(required = false) LdapOrganizationalUnitService ldapOrganizationalUnitService) {
         this.globalProperties = globalProperties;
-    }
-
-    @Autowired(required = false)
-    public void setLdapPersonService(LdapPersonService ldapPersonService) {
+        this.webSecurityProperties = webSecurityProperties;
         this.ldapPersonService = ldapPersonService;
-    }
-
-    @Autowired(required = false)
-    public void setLdapOrganizationalUnitService(LdapOrganizationalUnitService ldapOrganizationalUnitService) {
         this.ldapOrganizationalUnitService = ldapOrganizationalUnitService;
     }
 
     @Resource
     private ShibProperties shibProperties;
-
-    private final GlobalProperties globalProperties;
 
     @Resource
     private UserRepository userRepository;
@@ -447,13 +446,15 @@ public class UserService {
     public List<User> getTempUsersFromRecipientList(List<String> recipientsEmails) {
         List<User> tempUsers = new ArrayList<>();
         for (String recipientEmail : recipientsEmails) {
-            if(recipientEmail.contains("*")) {
-                recipientEmail = recipientEmail.split("\\*")[1];
-            }
-            if(!recipientEmail.contains(globalProperties.getDomain())) {
-                User recipientUser = getUserByEmail(recipientEmail);
-                if (recipientUser.getUserType().equals(UserType.external)) {
-                    tempUsers.add(recipientUser);
+            if(recipientEmail != null) {
+                if (recipientEmail.contains("*")) {
+                    recipientEmail = recipientEmail.split("\\*")[1];
+                }
+                if (!recipientEmail.contains(globalProperties.getDomain())) {
+                    User recipientUser = getUserByEmail(recipientEmail);
+                    if (recipientUser.getUserType().equals(UserType.external)) {
+                        tempUsers.add(recipientUser);
+                    }
                 }
             }
         }
@@ -609,7 +610,13 @@ public class UserService {
     }
 
     public List<String> getAllRoles() {
-        return userRepository.getAllRoles();
+        List<String> roles = new ArrayList<>(userRepository.getAllRoles());
+        for(String role : webSecurityProperties.getMappingGroupsRoles().values()){
+            if(!roles.contains(role)) {
+                roles.add(role);
+            }
+        }
+        return roles;
     }
 
     public List<User> getByManagersRoles(String role) {

@@ -503,7 +503,7 @@ export class PdfViewer extends EventFactory {
                         section.css("z-index", datePickerIndex + 2000);
                     });
                     inputField.on("focusout", function() {
-                        section.css("z-index", datePickerIndex);
+                        section.css("z-index", 4);
                     });
                     inputField.off('dp.change');
                     inputField.on('dp.change', e => this.fireEvent('change', ['date']));

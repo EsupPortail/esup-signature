@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.web.controller.user;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -70,9 +71,6 @@ public class SignBookController {
     private SignService signService;
 
     @Resource
-    private UserService userService;
-
-    @Resource
     private FormService formService;
 
     @Resource
@@ -84,10 +82,15 @@ public class SignBookController {
                        @RequestParam(value = "recipientsFilter", required = false) String recipientsFilter,
                        @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
                        @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
+                       @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
+                       @RequestParam(value = "dateFilter", required = false) String dateFilter,
                        @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
         if(statusFilter == null || statusFilter.equals("all")) statusFilter = "";
         if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
             workflowFilter = "%";
+        }
+        if(creatorFilter == null || creatorFilter.isEmpty() || creatorFilter.equals("all")) {
+            creatorFilter = "%";
         }
         if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
             docTitleFilter = "%";
@@ -95,15 +98,18 @@ public class SignBookController {
         if(recipientsFilter == null || recipientsFilter.isEmpty() || recipientsFilter.equals("all")) {
             recipientsFilter = "%";
         }
-        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
+        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("signBooks", signBooks);
+        List<User> creators = signBookService.getCreators(userEppn, workflowFilter, docTitleFilter, creatorFilter);
+        model.addAttribute("creators", creators);
         model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
         model.addAttribute("workflowFilter", workflowFilter);
         model.addAttribute("docTitleFilter", docTitleFilter);
+        model.addAttribute("dateFilter", dateFilter);
         model.addAttribute("recipientsFilter", recipientsFilter);
         LinkedHashSet<String> workflowNames = new LinkedHashSet<>();
         LinkedHashSet<String> docTitles = new LinkedHashSet<>();
@@ -127,10 +133,15 @@ public class SignBookController {
                          @RequestParam(value = "recipientsFilter", required = false) String recipientsFilter,
                          @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
                          @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
+                         @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
+                         @RequestParam(value = "dateFilter", required = false) String dateFilter,
                          @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
         if(statusFilter == null || statusFilter.equals("all")) statusFilter = "";
         if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
             workflowFilter = "%";
+        }
+        if(creatorFilter == null || creatorFilter.isEmpty() || creatorFilter.equals("all")) {
+            creatorFilter = "%";
         }
         if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
             docTitleFilter = "%";
@@ -138,7 +149,7 @@ public class SignBookController {
         if(recipientsFilter == null || recipientsFilter.isEmpty() || recipientsFilter.equals("all")) {
             recipientsFilter = "%";
         }
-        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
+        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("signBooks", signBooks);
         CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
         final Context ctx = new Context(Locale.FRENCH);

@@ -6,7 +6,7 @@ export class ListSignBooksUi {
         console.info("Starting list sign UI");
         this.signRequests = signRequests;
         this.infiniteScrolling = infiniteScrolling;
-        this.totalElementsToDisplay = signRequests.totalElements - signRequests.numberOfElements;
+        this.totalElementsToDisplay = this.signRequests.totalElements - this.signRequests.numberOfElements;
         this.statusFilter = "";
         this.recipientsFilter = "";
         this.workflowFilter = "";
@@ -40,6 +40,8 @@ export class ListSignBooksUi {
         $('#workflowFilter').on('change', e => this.buildUrlFilter());
         $('#recipientsFilter').on('change', e => this.buildUrlFilter());
         $('#docTitleFilter').on('change', e => this.buildUrlFilter());
+        $('#creatorFilter').on('change', e => this.buildUrlFilter());
+        $('#dateFilter').on('change', e => this.buildUrlFilter());
         $('#deleteMultipleButton').on("click", e => this.deleteMultiple());
         $('#menuDeleteMultipleButton').on("click", e => this.deleteMultiple());
         $('#downloadMultipleButton').on("click", e => this.downloadMultiple());
@@ -135,7 +137,7 @@ export class ListSignBooksUi {
 
     detectEndDiv(e) {
         if ($(e.target).scrollTop() + $(e.target).innerHeight() + 1 >= $(e.target)[0].scrollHeight && (this.infiniteScrolling != null && this.infiniteScrolling)) {
-            if(this.totalElementsToDisplay >= (this.page + 1) * 10 ) {
+            if(this.totalElementsToDisplay > 0 ) {
                 this.addToPage();
             } else {
                 this.signRequestTable.parent().children('tfoot').remove();
@@ -221,9 +223,9 @@ export class ListSignBooksUi {
         }
         $.get("/user/signbooks/list-ws?statusFilter=" + this.statusFilter + "&sort=" + sort + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=10", function (data) {
             self.signRequestTable.append(data);
-            let clickableRow = $(".clickable-row");
-            clickableRow.unbind();
-            clickableRow.on('click',  function() {
+            let clickableRows = $(".clickable-row");
+            clickableRows.unbind();
+            clickableRows.on('click',  function() {
                 window.location = $(this).closest('tr').attr('data-href');
             });
             $(document).trigger("refreshClickableTd");
@@ -231,6 +233,8 @@ export class ListSignBooksUi {
             $("#loader").hide();
             self.refreshListeners();
             $('#listSignRequestTable').on('scroll', e => self.detectEndDiv(e));
+            let displayedElements = $("#signRequestTable tr").length;
+            self.totalElementsToDisplay = self.signRequests.totalElements - displayedElements;
         });
     }
 
@@ -238,9 +242,9 @@ export class ListSignBooksUi {
         let currentParams = new URLSearchParams(window.location.search);
         let filters = $('.sign-request-filter');
         for (let i = 0 ; i < filters.length ; i++) {
-            if (filters.eq(i).val() !== "") {
+            // if (filters.eq(i).val() !== "") {
                 currentParams.set(filters.eq(i).attr('id'), filters.eq(i).val());
-            }
+            // }
         }
         document.location.href = "/user/signbooks?" + currentParams.toString();
     }

@@ -136,7 +136,7 @@
             </th:block>
         </th:block>
         <th:block th:unless="${signRequest}">
-            <div class="alert alert-success mx-auto mt-1 mb-1">
+            <div class="alert alert-success mx-auto mt-1 mb-1" th:if="${auditTrail != null}">
                 <h4>Le document à été signé par cette plateforme</h4>
                 <dl class="row border-bottom m-0">
                     <dt class="col-lg-5">Nom de document : </dt>
