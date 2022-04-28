@@ -89,10 +89,11 @@ public class SignRequestWsController {
     }
 
     @CrossOrigin
-    @GetMapping(value = "/status/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/status/{id}")
     @Operation(description = "Récupération du statut d'une demande de signature")
+    @ResponseBody
     public String getStatus(@Parameter(description = "Identifiant de la demande") @PathVariable Long id) {
-        return JSONObject.quote(signRequestService.getStatus(id));
+        return signRequestService.getStatus(id);
     }
 
     @CrossOrigin
