@@ -78,15 +78,25 @@ public class SignRequestController {
     @Resource
     private OtpService otpService;
 
+    @Resource
+    private GlobalProperties globalProperties;
+
+    @GetMapping()
+    public String show() {
+        return "redirect:/user/";
+    }
+
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureException {
         SignRequest signRequest = signBookService.getSignRequestsFullById(id, userEppn, authUserEppn);
-        if (signRequest.getLastNotifDate() == null) {
-            model.addAttribute("notifTime", Integer.MAX_VALUE);
-        } else {
-            model.addAttribute("notifTime", Duration.between(signRequest.getLastNotifDate().toInstant(), new Date().toInstant()).toHours());
+        boolean displayNotif = false;
+        if (signRequest.getLastNotifDate() == null && Duration.between(signRequest.getCreateDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()) {
+            displayNotif = true;
+        } else if (signRequest.getLastNotifDate() != null && Duration.between(signRequest.getLastNotifDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()) {
+            displayNotif = true;
         }
+        model.addAttribute("displayNotif", displayNotif);
         model.addAttribute("signRequest", signRequest);
         Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
         model.addAttribute("workflow", workflow);
