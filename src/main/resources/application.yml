@@ -23,6 +23,7 @@ global:
     signed-suffix: "_signé"
     trash-keep-delay: -1
     disable-cert-storage: false
+    export-attachements: false
 
 #tomcat:
 #    ajp:

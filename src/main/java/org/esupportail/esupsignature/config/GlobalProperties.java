@@ -170,6 +170,11 @@ public class GlobalProperties {
      */
     private Boolean pdfOnly = false;
 
+    /**
+     * Exporter les pièces jointes (si actif, l'export sera un dossier contenant le document signé ainsi que les PJ)
+     */
+    public Boolean exportAttachements = true;
+
     public String getRootUrl() {
         return rootUrl;
     }
@@ -440,5 +445,13 @@ public class GlobalProperties {
 
     public void setPdfOnly(Boolean pdfOnly) {
         this.pdfOnly = pdfOnly;
+    }
+
+    public boolean getExportAttachements() {
+        return exportAttachements;
+    }
+
+    public void setExportAttachements(boolean exportAttachements) {
+        this.exportAttachements = exportAttachements;
     }
 }

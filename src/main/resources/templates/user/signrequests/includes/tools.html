@@ -43,8 +43,8 @@
 					data-bs-target="#addCommentModal">
 				<i class="fas fa-sticky-note"></i> <span class="d-none d-xl-inline">Post-it</span>
 			</button>
-			<div th:if="${notifTime >= hoursBeforeRefreshNotif && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="border ms-3 me-3"></div>
-			<form th:if="${notifTime >= hoursBeforeRefreshNotif && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
+			<div th:if="${displayNotif && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="border ms-3 me-3"></div>
+			<form th:if="${displayNotif && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
 				  th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
 				<button type="submit" class="btn btn-light btn-outline-dark ms-1">
 					<i class="fas fa-bullhorn"></i> <span class="d-none d-xxl-inline">Relancer</span>
