@@ -23,6 +23,7 @@ global:
     signed-suffix: "_signé"
     trash-keep-delay: -1
     disable-cert-storage: false
+    export-attachements: false
 
 #tomcat:
 #    ajp:
@@ -129,10 +130,6 @@ spring:
             static-locations: classpath:/static
     mvc:
         static-path-pattern: /**
-        hiddenmethod:
-            filter :
-                enabled: true
-
 
 ldap:
     search-base: ou=people
@@ -235,13 +232,12 @@ sign:
     xades-signature-level: XAdES_BASELINE_T
 
 logging:
-    file:
-        name: logs/esup-signature.log
+    file.name: logs/esup-signature.log
     level:
         root: info
         org.esupportail.esupsignature: info
         org.verapdf: error
-        org.apache.pdfbox: error
+        org.apache.pdfbox: warn
         eu.europa.esig.dss: error
         org.springframework.web.filter.CommonsRequestLoggingFilter: error
 #    config: classpath:logback-prod.xml

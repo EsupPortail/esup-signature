@@ -13,6 +13,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.thymeleaf.dialect.springdata.SpringDataDialect;
@@ -31,10 +32,10 @@ public class WebAppConfig implements WebMvcConfigurer {
 		this.globalProperties = globalProperties;
 	}
 
-//    @Bean
-//    public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
-//        return new HiddenHttpMethodFilter();
-//    }
+    @Bean
+    public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
+        return new HiddenHttpMethodFilter();
+    }
 
     @Bean
     public SpringDataDialect springDataDialect() {
