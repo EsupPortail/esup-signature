@@ -1588,7 +1588,7 @@ public class SignBookService {
                             } else {
                                 try {
                                     Document signedFile = signRequest.getLastSignedDocument();
-                                    if (signRequest.getAttachments().size() > 0) {
+                                    if (signRequest.getAttachments().size() > 0 && globalProperties.getExportAttachements()) {
                                         if(!targetUrl.endsWith("/")) {
                                             targetUrl += "/";
                                         }
