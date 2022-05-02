@@ -1589,9 +1589,12 @@ public class SignBookService {
                                 try {
                                     Document signedFile = signRequest.getLastSignedDocument();
                                     if (signRequest.getAttachments().size() > 0) {
-                                        targetUrl += "/" + signRequest.getTitle();
+                                        if(!targetUrl.endsWith("/")) {
+                                            targetUrl += "/";
+                                        }
+                                        targetUrl += signRequest.getTitle();
                                         for (Document attachment : signRequest.getAttachments()) {
-                                            documentService.exportDocument(documentIOType, targetUrl, attachment, null);
+                                            documentService.exportDocument(documentIOType, targetUrl, attachment, attachment.getFileName());
                                         }
                                     }
                                     String name = generateName(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), true);
