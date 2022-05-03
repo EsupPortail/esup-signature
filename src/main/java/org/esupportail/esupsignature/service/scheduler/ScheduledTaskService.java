@@ -7,7 +7,6 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
@@ -19,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -31,7 +29,7 @@ import java.util.Date;
 import java.util.List;
 
 @EnableScheduling
-@Profile("!dev")
+//@Profile("!dev")
 @Component
 @EnableConfigurationProperties(GlobalProperties.class)
 public class ScheduledTaskService {
@@ -81,16 +79,13 @@ public class ScheduledTaskService {
 	}
 
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
-	@Transactional
 	public void scanAllSignbooksTargets() {
 		logger.debug("scan all signRequest to export");
 		List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
 		for(SignBook signBook : signBooks) {
 			try {
-				if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
-					signBookService.sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getSubject(), signBook.getLiveWorkflow().getTargets(), "scheduler");
-				}
-			} catch(EsupSignatureFsException | EsupSignatureException e) {
+				signBookService.sendSignRequestsToTarget(signBook.getId(), "scheduler");
+			} catch(Exception e) {
 				logger.error(e.getMessage());
 			}
 		}
