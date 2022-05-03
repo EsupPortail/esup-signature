@@ -23,7 +23,7 @@ global:
     signed-suffix: "_signé"
     trash-keep-delay: -1
     disable-cert-storage: false
-    export-attachements: false
+    export-attachements: true
 
 #tomcat:
 #    ajp:
@@ -56,7 +56,7 @@ spring:
     data:
         ldap:
             repositories:
-                enabled: true
+                enabled: false
     datasource:
         driver-class-name: org.postgresql.Driver
         url: jdbc:postgresql://localhost:5432/esupsignature
