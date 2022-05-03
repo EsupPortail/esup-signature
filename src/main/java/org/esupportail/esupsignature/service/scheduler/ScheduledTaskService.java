@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -29,7 +30,7 @@ import java.util.Date;
 import java.util.List;
 
 @EnableScheduling
-//@Profile("!dev")
+@Profile("!dev")
 @Component
 @EnableConfigurationProperties(GlobalProperties.class)
 public class ScheduledTaskService {
@@ -86,7 +87,7 @@ public class ScheduledTaskService {
 			try {
 				signBookService.sendSignRequestsToTarget(signBook.getId(), "scheduler");
 			} catch(Exception e) {
-				logger.error(e.getMessage());
+				logger.error("export error for signbook " + signBook.getId() + " - " + e.getMessage());
 			}
 		}
 	}
