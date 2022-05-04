@@ -97,6 +97,16 @@ export class PdfViewer extends EventFactory {
         });
     }
 
+    checkCurrentPage(e) {
+        let numPages = this.pdfDoc.numPages;
+        for(let i = 1; i < numPages + 1; i++) {
+            if(e > $("#page_" + i).offset().top - 250) {
+                this.pageNum = i;
+                document.getElementById('page_num').textContent = this.pageNum;
+            }
+        }
+    }
+
     fullWidth() {
         console.info("full width " + window.innerWidth);
         let newScale = (Math.round(window.innerWidth / 100) / 10);
@@ -140,15 +150,39 @@ export class PdfViewer extends EventFactory {
             console.info("adjust zoom to screen wide " + window.innerWidth);
             this.scale = newScale;
             console.info('zoom in, scale = ' + this.scale);
-            this.renderPage(this.pageNum);
+            // this.renderPage(this.pageNum);
             this.fireEvent('scaleChange', ['in']);
         }
     }
 
     startRender(pdf) {
-        this.pdfDoc = pdf;
+        $(".pdf-page").each(function(e) {
+           $(this).remove();
+        });
+        if(this.pdfDoc != null) {
+            pdf = this.pdfDoc;
+        } else {
+            this.pdfDoc = pdf;
+        }
         this.numPages = this.pdfDoc.numPages;
         document.getElementById('page_count').textContent = this.pdfDoc.numPages;
+        for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
+            let container = document.createElement("div");
+            $(container).attr("id", "page_" + i);
+            $(container).attr("page-num", i);
+            $(container).addClass("drop-shadows");
+            $(container).addClass("pdf-page drop-shadows");
+            this.canvas.appendChild(container);
+            $(container).droppable({
+                drop: function( event, ui ) {
+                    ui.helper.attr("page", i)
+                }
+            });
+
+            // this.canvas.appendChild(document.createElement("br"));
+            pdf.getPage(i).then(page => this.renderTask(page, container));
+        }
+        this.initRender();
         this.fireEvent("ready", ['ok']);
     }
 
@@ -172,40 +206,40 @@ export class PdfViewer extends EventFactory {
             $('#prev').prop('disabled', true);
             $('#next').prop('disabled', true);
         }
-        this.pdfDoc.getPage(this.pageNum).then(page => this.renderTask(page));
+        // this.pdfDoc.getPage(this.pageNum).then(page => this.renderTask(page));
     }
 
-    renderTask(page) {
-        console.info("launch render task" + this.scale);
+    renderTask(page, container) {
+        console.info("launch render task scaled to : " + this.scale);
         this.page = page;
         let scale = this.scale;
         localStorage.setItem('scale', scale.toPrecision(2) + "");
         let rotation = this.rotation;
         let viewport = page.getViewport({scale, rotation});
-        if(this.pdfPageView == null) {
-            let dispatchToDOM = false;
-            let globalEventBus = new EventBus({ dispatchToDOM });
-            this.pdfPageView = new pdfjsViewer.PDFPageView({
-                eventBus: globalEventBus,
-                container: this.canvas,
-                id: this.pageNum,
-                defaultViewport: viewport,
-                annotationLayerFactory:
-                    new pdfjsViewer.DefaultAnnotationLayerFactory(),
-                renderInteractiveForms: true
-            });
-        }
-        this.pdfPageView.scale = this.scale;
-        this.pdfPageView.rotation = this.rotation;
-        this.pdfPageView.setPdfPage(page);
+        let dispatchToDOM = false;
+        let globalEventBus = new EventBus({ dispatchToDOM });
+        let pdfPageView = new pdfjsViewer.PDFPageView({
+            eventBus: globalEventBus,
+            container: container,
+            id: this.pageNum,
+            defaultViewport: viewport,
+            annotationLayerFactory:
+                new pdfjsViewer.DefaultAnnotationLayerFactory(),
+            renderInteractiveForms: true
+        });
+        pdfPageView.scale = this.scale;
+        pdfPageView.rotation = this.rotation;
+        pdfPageView.setPdfPage(page);
         let self = this;
-        this.pdfPageView.eventBus.on("annotationlayerrendered", function() {
+        pdfPageView.eventBus.on("annotationlayerrendered", function() {
             $(".annotationLayer").each(function() {
                 $(this).addClass("d-none");
             });
+            container.style.width = Math.round(pdfPageView.viewport.width) +"px";
+            container.style.height = Math.round(pdfPageView.viewport.height) + "px";
             self.postRender();
         });
-        this.pdfPageView.draw();
+        pdfPageView.draw();
     }
 
     postRender() {
@@ -213,21 +247,22 @@ export class PdfViewer extends EventFactory {
         this.promiseRenderForm(false).then(e => this.promiseRenderForm(true)).then(e => this.promizeRestoreValue()).then(function(){
             self.fireEvent("renderFinished", ['ok']);
         });
-        this.canvas.style.width = Math.round(this.pdfPageView.viewport.width) +"px";
-        this.canvas.style.height = Math.round(this.pdfPageView.viewport.height) + "px";
+        // this.canvas.style.width = Math.round(this.pdfPageView.viewport.width) +"px";
+        // this.canvas.style.height = Math.round(this.pdfPageView.viewport.height) + "px";
         console.groupEnd();
     }
 
     promiseRenderForm(isField) {
+        let pdfDoc = this.pdfDoc;
         return new Promise((resolve, reject) => {
-            if (this.page != null) {
+            for (let i = 1; i < pdfDoc.numPages + 1; i++) {
                 if (isField) {
                     if (this.dataFields != null && !this.disableAllFields) {
                         console.info("render fields");
-                        this.page.getAnnotations().then(items => this.renderPdfFormWithFields(items)).then(e => this.annotationLinkTargetBlank());
+                        pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.renderPdfFormWithFields(items)).then(e => this.annotationLinkTargetBlank()));
                     }
                 } else {
-                    this.page.getAnnotations().then(items => this.renderPdfForm(items)).then(e => this.annotationLinkTargetBlank());
+                    pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.renderPdfForm(items)).then(e => this.annotationLinkTargetBlank()));
                 }
                 resolve("Réussite");
             }
@@ -726,21 +761,26 @@ export class PdfViewer extends EventFactory {
             return false;
         }
         this.pageNum--;
-        this.renderPage(this.pageNum);
-        window.scrollTo(0, 0);
-        this.fireEvent('pageChange', ['prev']);
+        $([document.documentElement, document.body]).animate({
+            scrollTop: $("#page_" + this.pageNum).offset().top - 200
+        }, 500);
+        document.getElementById('page_num').textContent = this.pageNum;
         return true;
     }
 
     nextPage() {
-        this.fireEvent('beforeChange', ['next']);
+        // this.fireEvent('beforeChange', ['next']);
         if (this.isLastpage()) {
             return false;
         }
         this.pageNum++;
-        this.renderPage(this.pageNum);
-        window.scrollTo(0, 0);
-        this.fireEvent('pageChange', ['next']);
+        // this.renderPage(this.pageNum);
+        // window.scrollTo(0, 0);
+        $([document.documentElement, document.body]).animate({
+            scrollTop: $("#page_" + this.pageNum).offset().top - 200
+        }, 500);
+        document.getElementById('page_num').textContent = this.pageNum;
+        // this.fireEvent('pageChange', ['next']);
         return true;
     }
 
@@ -758,7 +798,7 @@ export class PdfViewer extends EventFactory {
         }
         this.scale = Math.round((this.scale + this.zoomStep) * 10) / 10;
         console.info('zoom in, scale = ' + this.scale);
-        this.renderPage(this.pageNum);
+        this.startRender()
         this.fireEvent('scaleChange', ['in']);
     }
 
@@ -769,7 +809,7 @@ export class PdfViewer extends EventFactory {
         }
         this.scale = this.scale - this.zoomStep;
         console.info('zoom out, scale = ' + this.scale);
-        this.renderPage(this.pageNum);
+        this.startRender()
         this.fireEvent('scaleChange', ['out']);
     }
 

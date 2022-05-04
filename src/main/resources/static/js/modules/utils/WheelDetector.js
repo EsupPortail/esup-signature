@@ -22,12 +22,18 @@ export class WheelDetector extends EventFactory {
                 this.fireEvent("zoomin");
             }
         } else {
-            if (this.detectMouseWheelDirection(event) === 'down' && parseInt($(window).scrollTop() + $(window).height()) >= parseInt($(document).height())) {
-                console.debug("debug - " + "wheel down");
-                this.fireEvent("pagebottom");
-            } else if (this.detectMouseWheelDirection(event) === 'up' && window.scrollY === 0) {
-                console.debug("debug - " + "wheel up");
-                this.fireEvent("pagetop");
+            if (this.detectMouseWheelDirection(event) === 'down') {
+                this.fireEvent("down", [window.scrollY]);
+                if (parseInt($(window).scrollTop() + $(window).height()) >= parseInt($(document).height())) {
+                    console.debug("debug - " + "wheel down");
+                    this.fireEvent("pagebottom");
+                }
+            } else if (this.detectMouseWheelDirection(event) === 'up') {
+                this.fireEvent("up", [window.scrollY]);
+                if (window.scrollY === 0) {
+                    console.debug("debug - " + "wheel up");
+                    this.fireEvent("pagetop");
+                }
             }
         }
     }

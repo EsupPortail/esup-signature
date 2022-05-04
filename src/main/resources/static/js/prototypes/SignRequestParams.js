@@ -110,7 +110,6 @@ export class SignRequestParams  extends EventFactory {
         $("#extraName_" + this.id).on("click", e => this.toggleName());
         $("#extraDate_" + this.id).on("click", e => this.toggleDate());
         $("#extraText_" + this.id).on("click", e => this.toggleText());
-
     }
 
     initLight() {
@@ -295,7 +294,7 @@ export class SignRequestParams  extends EventFactory {
             $("#extraTools_" + this.id).remove();
             $("#crossTools_" + this.id).css("top", "-45px");
         }
-
+        this.cross.attr("page", this.signPageNumber);
     }
 
     restoreUserParams() {
@@ -373,17 +372,19 @@ export class SignRequestParams  extends EventFactory {
         this.cross.draggable({
             containment: "#pdf",
             scroll: false,
-            drag: function() {
-                let thisPos = $(this).position();
-                let x = Math.round(thisPos.left / self.currentScale);
-                let y = Math.round(thisPos.top / self.currentScale);
+            drag: function(event, ui) {
+                self.signPageNumber = self.cross.attr("page");
+                let x = Math.round(ui.position.left / self.currentScale);
+                let y = Math.round((ui.position.top - (($("#page_" + self.signPageNumber).offset().top) - $("#page_1").offset().top)) / self.currentScale);
                 if(!self.firstLaunch) {
                     self.xPos = x;
                     self.yPos = y;
                 } else {
-                    if(self.signFieldPresent) {
-                        window.scrollTo(self.xPos * self.currentScale, self.yPos * self.currentScale);
-                    }
+                    // if(self.signFieldPresent) {
+                    //     window.scrollTo(self.xPos * self.currentScale, self.yPos * self.currentScale + $("#page_" + self.signPageNumber).offset().top);
+                    // }
+                    self.xPos = x;
+                    self.yPos = y;
                     self.firstLaunch = false;
                 }
             }
@@ -391,7 +392,7 @@ export class SignRequestParams  extends EventFactory {
     }
 
     applyCurrentSignRequestParams() {
-        this.cross.css('top', this.yPos * this.currentScale + 'px');
+        this.cross.css('top', (this.yPos * this.currentScale + ($("#page_" + this.signPageNumber).offset().top) - ($("#page_1").offset().top)) + 'px');
         this.cross.css('left', this.xPos * this.currentScale + 'px');
     }
 
@@ -521,9 +522,9 @@ export class SignRequestParams  extends EventFactory {
 
     simulateDrop() {
         let x = this.xPos * this.currentScale;
-        let y = this.yPos * this.currentScale;
+        let y = this.yPos * this.currentScale + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top;
         this.cross.on("dragstop", function(){
-            window.scrollTo(0, y / 2);
+            window.scrollTo(0, y);
             $(this).unbind("dragstop");
         });
         this.cross.simulate("drag", {
