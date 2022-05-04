@@ -89,9 +89,11 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 						grantedAuthorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(mappingGroupesRole)));
 					}
 				}
-				Matcher m = Pattern.compile(groupPrefixRoleName).matcher(credential);
-				if (m.matches()) {
-					grantedAuthorities.add(new SimpleGrantedAuthority(credential));
+				if(groupPrefixRoleName != null) {
+					Matcher m = Pattern.compile(groupPrefixRoleName).matcher(credential);
+					if (m.matches()) {
+						grantedAuthorities.add(new SimpleGrantedAuthority(credential));
+					}
 				}
 			}
 
