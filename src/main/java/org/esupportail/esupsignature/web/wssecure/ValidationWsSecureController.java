@@ -29,10 +29,12 @@ public class ValidationWsSecureController {
     @ResponseBody
     public String shortValidateDocument(@PathVariable(name="id") long id) throws IOException {
         File file = signRequestService.getToValidateFile(id);
-        Reports reports = validationService.validate(new FileInputStream(file), null);
-        if(reports != null) {
-            String xmlSimpleReport = reports.getXmlSimpleReport();
-            return xsltService.generateShortReport(xmlSimpleReport);
+        if(file != null) {
+            Reports reports = validationService.validate(new FileInputStream(file), null);
+            if (reports != null) {
+                String xmlSimpleReport = reports.getXmlSimpleReport();
+                return xsltService.generateShortReport(xmlSimpleReport);
+            }
         }
         return null;
 

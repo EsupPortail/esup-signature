@@ -17,7 +17,6 @@ import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.ValidationService;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,7 +109,9 @@ public class ValidationController {
 	@GetMapping(value = "/document/{id}")
 	public String validateDocument(@PathVariable(name="id") long id, Model model) throws IOException {
 		File file = signRequestService.getToValidateFile(id);
-		extracted(new FileInputStream(file), null, model);
+		if(file != null) {
+			extracted(new FileInputStream(file), null, model);
+		}
 		return "user/validation/result";
 	}
 
