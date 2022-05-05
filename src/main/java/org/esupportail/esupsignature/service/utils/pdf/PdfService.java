@@ -249,7 +249,6 @@ public class PdfService {
     }
 
     public ByteArrayOutputStream createQR(String data) throws WriterException, IOException {
-        data += "12345678901234567890";
         BitMatrix matrix = new MultiFormatWriter().encode(
                 new String(data.getBytes("UTF-8"), "UTF-8"),
                 BarcodeFormat.DATA_MATRIX, 500, 500);
