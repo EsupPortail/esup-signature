@@ -22,7 +22,7 @@ export class WorkspacePdf {
         this.signable = signable;
         this.editable = editable;
         this.signRequestId = id;
-        this.initialOffset = 187;
+        this.initialOffset;
         this.signType = signType;
         this.stepRepeatable = stepRepeatable;
         this.status = status;
@@ -106,10 +106,6 @@ export class WorkspacePdf {
                 //     visualButton.on('click', e => this.signPosition.toggleVisual());
                 // }
             }
-            this.wheelDetector.addEventListener("down", e => this.pdfViewer.checkCurrentPage(e));
-            this.wheelDetector.addEventListener("up", e => this.pdfViewer.checkCurrentPage(e));
-            this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
-            this.wheelDetector.addEventListener("zoomout", e => this.pdfViewer.zoomOut());
             // this.wheelDetector.addEventListener("pagetop", e => this.pageTop());
             // this.wheelDetector.addEventListener("pagebottom", e => this.pageBottom());
 
@@ -183,7 +179,7 @@ export class WorkspacePdf {
                     signSpaceDiv.removeClass("sign-field");
                 }
                 signSpaceDiv.show();
-                let offset = $("#page_" + currentSignRequestParams.signPageNumber).offset().top - this.initialOffset;
+                let offset = $("#page_" + currentSignRequestParams.signPageNumber).offset().top - this.initialOffset + (10 * (currentSignRequestParams.signPageNumber - 1));
                 signSpaceDiv.css("top", Math.round(currentSignRequestParams.yPos * this.pdfViewer.scale + offset));
                 signSpaceDiv.css("left", Math.round(currentSignRequestParams.xPos * this.pdfViewer.scale));
                 signSpaceDiv.css("width", Math.round(currentSignRequestParams.signWidth * this.pdfViewer.scale / .75) + "px");
@@ -257,6 +253,10 @@ export class WorkspacePdf {
         // if(this.signPosition.signImages.length === 0 && this.signType !== "visa" && this.signType !== "hiddenVisa") {
         //     this.signPosition.toggleVisual();
         // }
+        this.wheelDetector.addEventListener("down", e => this.pdfViewer.checkCurrentPage(e));
+        this.wheelDetector.addEventListener("up", e => this.pdfViewer.checkCurrentPage(e));
+        this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
+        this.wheelDetector.addEventListener("zoomout", e => this.pdfViewer.zoomOut());
     }
 
     initLaunchButtons() {
@@ -282,7 +282,9 @@ export class WorkspacePdf {
     }
 
     saveData() {
-        this.pdfViewer.page.getAnnotations().then(items => this.pdfViewer.saveValues(items)).then(e => this.pushData(false));
+        for(let i = 1; i < this.pdfViewer.pdfDoc.numPages + 1; i++) {
+            this.pdfViewer.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.pdfViewer.saveValues(items)).then(e => this.pushData(false)));
+        }
     }
 
     pushData(redirect) {
@@ -668,7 +670,7 @@ export class WorkspacePdf {
                     let signRequestParams = Array.from(self.signPosition.signRequestParamses.values())[i];
                     let cross = signRequestParams.cross;
                     if (cross.attr("id") === ui.draggable.attr("id")) {
-                        let offset = ($("#page_" + signRequestParams.signPageNumber).offset().top) - 187;
+                        let offset = ($("#page_" + signRequestParams.signPageNumber).offset().top) - self.initialOffset + (10 * (signRequestParams.signPageNumber - 1 ));
                         signRequestParams.yPos = (Math.round(parseInt(signSpaceDiv.css("top")) - offset) / self.pdfViewer.scale);
                         signRequestParams.xPos = Math.round(parseInt(signSpaceDiv.css("left")) / self.pdfViewer.scale);
                         signRequestParams.applyCurrentSignRequestParams();

@@ -171,7 +171,7 @@ export class PdfViewer extends EventFactory {
             $(container).attr("id", "page_" + i);
             $(container).attr("page-num", i);
             $(container).addClass("drop-shadows");
-            $(container).addClass("pdf-page drop-shadows");
+            $(container).addClass("pdf-page");
             this.canvas.appendChild(container);
             $(container).droppable({
                 drop: function( event, ui ) {
@@ -258,7 +258,7 @@ export class PdfViewer extends EventFactory {
             for (let i = 1; i < pdfDoc.numPages + 1; i++) {
                 if (isField) {
                     if (this.dataFields != null && !this.disableAllFields) {
-                        console.info("render fields");
+                        console.info("render fields of page " + i);
                         pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.renderPdfFormWithFields(items)).then(e => this.annotationLinkTargetBlank()));
                     }
                 } else {
@@ -357,7 +357,9 @@ export class PdfViewer extends EventFactory {
         if(this.savedFields.size === 0) {
             this.promizeSaveValues();
         }
-        this.page.getAnnotations().then(items => this.restoreValues(items));
+        for(let i = 1; i < this.pdfDoc.numPages + 1; i++) {
+            this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.restoreValues(items)));
+        }
 
         this.fireEvent('render', ['end']);
     }
