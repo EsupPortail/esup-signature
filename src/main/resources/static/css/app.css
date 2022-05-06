@@ -61,7 +61,23 @@ html {
     position: relative;
     min-height: 100%;
     font-size: 16px;
+    scrollbar-color: #E10F46 #CECECE;
 }
+
+::-webkit-scrollbar {
+    background-color: #CECECE;
+    width: 12px;
+    padding: 2px;
+    margin: 2px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #E10F46;
+    border-radius: 10px;
+    width: 8px !important;
+    border: solid 3px #CECECE;
+}
+
 
 body {
     font-family: "Gravity", sans-serif;
@@ -889,9 +905,13 @@ height: 100%;
 }
 
 .drop-shadows {
-    -moz-box-shadow: 2px 2px 8px 4px rgba(0, 0, 0, 0.3);
-    -webkit-box-shadow: 2px 2px 8px 4px rgba(0, 0, 0, 0.3);
-    box-shadow: 2px 2px 8px 4px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 2px 2px 4px 4px rgba(0, 0, 0, 0.3);
+    -webkit-box-shadow: 2px 2px 4px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 2px 2px 4px 4px rgba(0, 0, 0, 0.3);
+}
+
+.pdf-page {
+    margin-bottom: 10px !important; /* Never change margin between pages */
 }
 
 .angle-3 {
@@ -1772,6 +1792,10 @@ input:focus, textarea:focus, select:focus {
 .custom-autocompletion {
     all: initial;
     margin-top: 5%;
+}
+
+.ui-tooltip {
+    position: fixed;
 }
 
 .ui-autocomplete {
