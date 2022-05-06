@@ -39,7 +39,7 @@ export class PdfViewer extends EventFactory {
         this.pdfFields = [];
         this.events = {};
         this.rotation = 0;
-        this.pdfJs = pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
+        pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
         this.initListeners();
     }
 
