@@ -13,6 +13,7 @@ export class PdfViewer extends EventFactory {
         this.editable = editable;
         this.currentStepNumber = currentStepNumber;
         this.currentStepId = currentStepId;
+        this.saveScrolling = 0;
         this.pageNum = 1;
         if(forcePageNum != null) {
             this.pageNum = forcePageNum;
@@ -39,8 +40,9 @@ export class PdfViewer extends EventFactory {
         this.pdfFields = [];
         this.events = {};
         this.rotation = 0;
-        pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
         this.initListeners();
+        pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
+
     }
 
     initListeners() {
@@ -52,6 +54,15 @@ export class PdfViewer extends EventFactory {
         $('#rotateright').on('click', e => this.rotateRight());
         $(window).on('resize', e => this.adjustZoom());
         this.addEventListener("fieldsReady", e => this.listenToSearchCompletion());
+        // this.addEventListener("ready", e => this.restoreScrolling());
+   }
+
+   restoreScrolling() {
+       window.scrollTo({
+           top: this.saveScrolling * this.scale,
+           left: 0,
+           behavior: 'instant',
+       });
    }
 
     listenToSearchCompletion() {
@@ -156,6 +167,7 @@ export class PdfViewer extends EventFactory {
     }
 
     startRender(pdf) {
+        this.saveScrolling = window.scrollY / this.scale;
         $(".pdf-page").each(function(e) {
            $(this).remove();
         });
@@ -180,23 +192,10 @@ export class PdfViewer extends EventFactory {
             });
             pdf.getPage(i).then(page => this.renderTask(page, container));
         }
-        this.initRender();
+        this.refreshTools();
         this.initialOffset = $("#page_1").offset().top;
         this.fireEvent("ready", ['ok']);
     }
-
-    // renderPage(num) {
-    //     console.group("Start render");
-    //     console.debug("debug - " + "render page " + num + ", scale : " + this.scale + ", signable : " + this.signable + " ,step : " + this.currentStepNumber);
-    //     this.pageNum = num;
-    //     if(this.pdfDoc != null) {
-    //         if(this.page != null) {
-    //             this.page.getAnnotations().then(e => this.promiseSaveValues()).then(e => this.initRender());
-    //         } else {
-    //             this.initRender()
-    //         }
-    //     }
-    // }
 
     scrollToPage(num) {
         let self = this;
@@ -208,7 +207,7 @@ export class PdfViewer extends EventFactory {
         }
     }
 
-    initRender() {
+    refreshTools() {
         document.getElementById('page_num').textContent = this.pageNum;
         document.getElementById('zoom').textContent = Math.round(100 * this.scale);
         if(this.pdfDoc.numPages === 1) {
@@ -257,6 +256,7 @@ export class PdfViewer extends EventFactory {
             self.fireEvent("renderFinished", ['ok']);
         });
         console.groupEnd();
+        this.restoreScrolling();
     }
 
     promiseRenderForm(isField) {
@@ -669,14 +669,6 @@ export class PdfViewer extends EventFactory {
 
     isFieldEnable(dataField) {
         return dataField.editable;
-        // let isIncludeCurrentStep = false;
-        // for (let i = 0; i < dataField.workflowSteps.length; i++) {
-        //     if (dataField.workflowSteps[i].id === this.currentStepId) {
-        //         isIncludeCurrentStep = true;
-        //         break;
-        //     }
-        // }
-        // return (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero));
     }
 
     renderPdfForm(items) {
@@ -768,10 +760,9 @@ export class PdfViewer extends EventFactory {
 
     prevPage() {
         this.fireEvent('beforeChange', ['prev']);
-        if (this.isFirstPage()) {
-            return false;
+        if (!this.isFirstPage()) {
+            this.pageNum--;
         }
-        this.pageNum--;
         $([document.documentElement, document.body]).animate({
             scrollTop: $("#page_" + this.pageNum).offset().top - this.initialOffset
         }, 500);
@@ -780,7 +771,7 @@ export class PdfViewer extends EventFactory {
     }
 
     nextPage() {
-        if (this.isLastpage()) {
+        if (this.isLastPage()) {
             return false;
         }
         this.pageNum++;
@@ -795,7 +786,7 @@ export class PdfViewer extends EventFactory {
         return this.pageNum <= 1;
     }
 
-    isLastpage() {
+    isLastPage() {
         return this.pageNum >= this.numPages;
     }
 
@@ -805,10 +796,8 @@ export class PdfViewer extends EventFactory {
         }
         this.scale = Math.round((this.scale + this.zoomStep) * 10) / 10;
         console.info('zoom in, scale = ' + this.scale);
-        this.startRender()
         this.fireEvent('scaleChange', ['in']);
     }
-
 
     zoomOut() {
         if (this.scale <= 0.50) {
@@ -816,7 +805,6 @@ export class PdfViewer extends EventFactory {
         }
         this.scale = this.scale - this.zoomStep;
         console.info('zoom out, scale = ' + this.scale);
-        this.startRender()
         this.fireEvent('scaleChange', ['out']);
     }
 
@@ -959,12 +947,4 @@ export class PdfViewer extends EventFactory {
         });
     }
 
-    checkObjectInArray(fields, name) {
-        for(let i = 0; i < fields.length; i++) {
-            if (fields[i].name === name) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

@@ -200,12 +200,7 @@ export class WorkspacePdf {
             signNum = forceSignNumber;
         }
         if(this.currentSignRequestParamses[signNum] != null) {
-            let signPageNumber = this.currentSignRequestParamses[signNum].signPageNumber;
-            if (signPageNumber !== this.pdfViewer.pageNum) {
-                this.pdfViewer.scrollToPage(signPageNumber);
-                // this.currentSignRequestParamses[signNum].yPos = this.currentSignRequestParamses[signNum].yPos + ($("#page_" + signPageNumber).offset().top - 170);
-            }
-            targetPageNumber = signPageNumber;
+            targetPageNumber = this.currentSignRequestParamses[signNum].signPageNumber;
             this.firstInsertSign = false;
         }
         if(localStorage.getItem('signNumber') != null && this.restore) {
@@ -478,6 +473,7 @@ export class WorkspacePdf {
 
     refreshWorkspace() {
         console.info("refresh workspace");
+        this.pdfViewer.startRender();
         this.signPosition.updateScales(this.pdfViewer.scale);
         this.refreshAfterPageChange();
     }
@@ -708,7 +704,7 @@ export class WorkspacePdf {
         let signId = $(e).attr("id").split("_")[1];
         console.log("toggle sign_" + signId);
         let signRequestParams = this.signPosition.signRequestParamses.get(parseInt(signId));
-        if ((signRequestParams.signPageNumber === this.pdfViewer.pageNum || signRequestParams.allPages) && this.mode === 'sign') {
+        if (this.mode === 'sign') {
             signRequestParams.show();
         } else {
             signRequestParams.hide();

@@ -61,7 +61,23 @@ html {
     position: relative;
     min-height: 100%;
     font-size: 16px;
+    scrollbar-color: #E10F46 #CECECE;
 }
+
+::-webkit-scrollbar {
+    background-color: #CECECE;
+    width: 12px;
+    padding: 2px;
+    margin: 2px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #E10F46;
+    border-radius: 10px;
+    width: 8px !important;
+    border: solid 3px #CECECE;
+}
+
 
 body {
     font-family: "Gravity", sans-serif;
