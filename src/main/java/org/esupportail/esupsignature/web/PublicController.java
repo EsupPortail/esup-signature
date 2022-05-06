@@ -56,7 +56,7 @@ public class PublicController {
     }
 
     @GetMapping(value = "/control/{token}")
-    public String control(@PathVariable String token, Model model, HttpSession httpSession) throws EsupSignatureFsException {
+    public String control(@PathVariable String token, Model model) throws EsupSignatureFsException {
         SignRequest signRequest = signRequestService.getSignRequestByToken(token);
         if(signRequest == null) {
             return "error";

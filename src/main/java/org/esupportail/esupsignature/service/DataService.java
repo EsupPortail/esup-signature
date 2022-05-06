@@ -63,8 +63,12 @@ public class DataService {
     }
 
     public Data updateDatas(Form form, Data data, Map<String, String> formDatas, User user, User authUser) {
+        SignBook signBook = data.getSignBook();
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user, data.getSignBook().getSignRequests().get(0));
         for(Field field : fields) {
+            if(!field.getWorkflowSteps().contains(signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep())) {
+                formDatas.put(field.getName(), data.getDatas().get(field.getName()));
+            }
             if(!field.getStepZero()) {
                 field.setDefaultValue("");
             }

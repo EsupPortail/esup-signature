@@ -125,7 +125,7 @@ export class SignUi {
             this.wait.modal('show');
             this.wait.modal({backdrop: 'static', keyboard: false});
             if(this.isPdf) {
-                this.workspace.pdfViewer.promizeSaveValues().then(e => this.submitSignRequest());
+                this.workspace.pdfViewer.promiseSaveValues().then(e => this.submitSignRequest());
             } else {
                 this.submitSignRequest();
             }

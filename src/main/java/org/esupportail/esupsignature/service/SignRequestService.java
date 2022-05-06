@@ -864,11 +864,15 @@ public class SignRequestService {
 	public File getToValidateFile(long id) throws IOException {
 		SignRequest signRequest = getById(id);
 		Document toValideDocument = signRequest.getLastSignedDocument();
-		File file = fileService.getTempFile(toValideDocument.getFileName());
-		OutputStream outputStream = new FileOutputStream(file);
-		IOUtils.copy(toValideDocument.getInputStream(), outputStream);
-		outputStream.close();
-		return file;
+		if(toValideDocument != null) {
+			File file = fileService.getTempFile(toValideDocument.getFileName());
+			OutputStream outputStream = new FileOutputStream(file);
+			IOUtils.copy(toValideDocument.getInputStream(), outputStream);
+			outputStream.close();
+			return file;
+		} else {
+			return null;
+		}
 	}
 
 	public List<SignRequest> getAll() {
