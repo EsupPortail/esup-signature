@@ -680,18 +680,7 @@ th .ss-content {
 }
 
 .scrollbar-lite {
-    scrollbar-width: none;
-    overflow-y:scroll;
-}
-
-.scrollbar-lite::-webkit-scrollbar {
-    width: 5px;
-    background-color: transparent;
-}
-
-.scrollbar-lite::-webkit-scrollbar-thumb {
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
-    background-color: #ebebeb
+    overflow-y: hidden;
 }
 
 .tools {
