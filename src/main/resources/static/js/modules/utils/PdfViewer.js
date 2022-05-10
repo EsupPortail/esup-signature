@@ -297,10 +297,13 @@ export class PdfViewer extends EventFactory {
     }
 
     promiseSaveValues() {
-        console.info("launch save values");
-        for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
-            this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.saveValues(items)));
-        }
+        return new Promise((resolve, reject) => {
+            console.info("launch save values");
+            for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
+                this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.saveValues(items)));
+            }
+            resolve();
+        });
     }
 
     saveValues(items) {
