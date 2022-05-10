@@ -70,7 +70,7 @@ public class PublicController {
             String eppn = userService.tryGetEppnFromLdap(auth);
             if(eppn != null && userService.getUserByEppn(eppn) != null) {
                 model.addAttribute("signRequest", signRequest);
-                setControlValues(model, signRequest, eppn);
+                setControlValues(model, signRequest, auditTrail, eppn);
             }
         }
         if (buildProperties != null) {
@@ -103,7 +103,7 @@ public class PublicController {
             }
             model.addAttribute("auditTrail", auditTrail);
             if(signRequest != null) {
-                setControlValues(model, signRequest, eppn);
+                setControlValues(model, signRequest, auditTrail, eppn);
             }
         } else {
             model.addAttribute("error", true);
@@ -112,15 +112,13 @@ public class PublicController {
         return "public/control";
     }
 
-    private void setControlValues(Model model, SignRequest signRequest, String eppn) {
+    private void setControlValues(Model model, SignRequest signRequest, AuditTrail auditTrail, String eppn) {
         List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
+        model.addAttribute("logs", logs);
         model.addAttribute("usersHasSigned", signRequestService.checkUserResponseSigned(signRequest));
         model.addAttribute("usersHasRefused", signRequestService.checkUserResponseRefused(signRequest));
         model.addAttribute("signRequest", signRequest);
-        Document signedDocument = signRequestService.getLastSignedFile(signRequest.getId());
-        model.addAttribute("signedDocument", signedDocument);
-        model.addAttribute("size", FileUtils.byteCountToDisplaySize(signedDocument.getSize()));
-        model.addAttribute("logs", logs);
+        model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
         if(eppn != null) {
             model.addAttribute("viewAccess", preAuthorizeService.checkUserViewRights(signRequest, eppn, eppn));
         }

@@ -259,43 +259,45 @@ public class PdfService {
 
     public InputStream addQrCode(SignRequest signRequest, InputStream inputStream) throws IOException, WriterException {
         PDDocument pdDocument = PDDocument.load(inputStream);
-        PDPage pdPage = pdDocument.getPage(0);
-        PDFTextStripper pdfTextStripper = new PDFTextStripper();
-        String signatureInfos = "Liens de contrôle : " + pdfTextStripper.getLineSeparator() +
-                        globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
-        PDAnnotationLink pdAnnotationLink = new PDAnnotationLink();
-        PDRectangle position = new PDRectangle(pdPage.getMediaBox().getWidth() - 80, 30, 30, 30);
-        pdAnnotationLink.setRectangle(position);
-        PDBorderStyleDictionary pdBorderStyleDictionary = new PDBorderStyleDictionary();
-        pdBorderStyleDictionary.setStyle(PDBorderStyleDictionary.STYLE_INSET);
-        pdAnnotationLink.setBorderStyle(pdBorderStyleDictionary);
-        Color color = new Color(255, 255, 255);
-        float[] components = new float[] {
-                color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f };
-        PDColor pdColor = new PDColor(components, PDDeviceRGB.INSTANCE);
-        pdAnnotationLink.setColor(pdColor);
-        PDActionURI action = new PDActionURI();
-        String url = globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
-        action.setURI(url);
-        pdAnnotationLink.setAction(action);
-        pdAnnotationLink.setPage(pdPage);
-        pdAnnotationLink.setQuadPoints(new float[0]);
-        pdAnnotationLink.setContents(signatureInfos);
-        pdPage.getAnnotations().add(pdAnnotationLink);
+        for(int i = 0; i < pdDocument.getNumberOfPages(); i++) {
+            PDPage pdPage = pdDocument.getPage(i);
+            PDFTextStripper pdfTextStripper = new PDFTextStripper();
+            String signatureInfos = "Liens de contrôle : " + pdfTextStripper.getLineSeparator() +
+                    globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
+            PDAnnotationLink pdAnnotationLink = new PDAnnotationLink();
+            PDRectangle position = new PDRectangle(pdPage.getMediaBox().getWidth() - 80, 30, 30, 30);
+            pdAnnotationLink.setRectangle(position);
+            PDBorderStyleDictionary pdBorderStyleDictionary = new PDBorderStyleDictionary();
+            pdBorderStyleDictionary.setStyle(PDBorderStyleDictionary.STYLE_INSET);
+            pdAnnotationLink.setBorderStyle(pdBorderStyleDictionary);
+            Color color = new Color(255, 255, 255);
+            float[] components = new float[]{
+                    color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f};
+            PDColor pdColor = new PDColor(components, PDDeviceRGB.INSTANCE);
+            pdAnnotationLink.setColor(pdColor);
+            PDActionURI action = new PDActionURI();
+            String url = globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
+            action.setURI(url);
+            pdAnnotationLink.setAction(action);
+            pdAnnotationLink.setPage(pdPage);
+            pdAnnotationLink.setQuadPoints(new float[0]);
+            pdAnnotationLink.setContents(signatureInfos);
+            pdPage.getAnnotations().add(pdAnnotationLink);
 
-        if(pdDocument.getDocumentCatalog().getDocumentOutline() == null) {
-            PDDocumentOutline outline = new PDDocumentOutline();
-            pdDocument.getDocumentCatalog().setDocumentOutline(outline);
+            if (pdDocument.getDocumentCatalog().getDocumentOutline() == null) {
+                PDDocumentOutline outline = new PDDocumentOutline();
+                pdDocument.getDocumentCatalog().setDocumentOutline(outline);
+            }
+            PDOutlineItem pdOutlineItem = new PDOutlineItem();
+            pdOutlineItem.setDestination(pdAnnotationLink.getDestination());
+            pdOutlineItem.setTitle(signatureInfos);
+            pdDocument.getDocumentCatalog().getDocumentOutline().addLast(pdOutlineItem);
+            ByteArrayOutputStream outputStream = createQR(url);
+            PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, outputStream.toByteArray(), "QRCode check");
+            PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
+            contentStream.drawImage(pdImage, pdPage.getMediaBox().getWidth() - 50, 30, 30, 30);
+            contentStream.close();
         }
-        PDOutlineItem pdOutlineItem = new PDOutlineItem();
-        pdOutlineItem.setDestination(pdAnnotationLink.getDestination());
-        pdOutlineItem.setTitle(signatureInfos);
-        pdDocument.getDocumentCatalog().getDocumentOutline().addLast(pdOutlineItem);
-        ByteArrayOutputStream outputStream = createQR(url);
-        PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, outputStream.toByteArray(), "QRCode check");
-        PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
-        contentStream.drawImage(pdImage, pdPage.getMediaBox().getWidth() - 50, 30, 30, 30);
-        contentStream.close();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         pdDocument.save(out);
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());

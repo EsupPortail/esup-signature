@@ -339,12 +339,12 @@ public class SignBookController {
 
     @GetMapping(value = "/download-multiple-with-report", produces = "application/zip")
     @ResponseBody
-    public void downloadMultipleWithReport(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) throws IOException {
+    public void downloadMultipleWithReport(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException {
         httpServletResponse.setContentType("application/zip");
         httpServletResponse.setStatus(HttpServletResponse.SC_OK);
         httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
         try {
-            signBookService.getMultipleSignedDocumentsWithReport(ids, httpServletResponse);
+            signBookService.getMultipleSignedDocumentsWithReport(ids, httpServletRequest, httpServletResponse);
         } catch (Exception e) {
             e.printStackTrace();
         }

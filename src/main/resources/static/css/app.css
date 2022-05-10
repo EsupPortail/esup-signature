@@ -134,6 +134,10 @@ textarea:invalid {
     box-shadow:none;
 }
 
+dd {
+    font-weight: bold;
+}
+
 .form-switch.form-switch-md {
     padding-left: 4.5em;
     height: 2.5em;

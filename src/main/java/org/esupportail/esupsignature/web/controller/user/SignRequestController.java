@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import eu.europa.esig.dss.validation.reports.Reports;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
@@ -76,6 +77,9 @@ public class SignRequestController {
     private LogService logService;
 
     @Resource
+    private AuditTrailService auditTrailService;
+
+    @Resource
     private OtpService otpService;
 
     @Resource
@@ -138,9 +142,14 @@ public class SignRequestController {
             }
         }
         model.addAttribute("signatureIds", new ArrayList<>());
-        Reports reports = signRequestService.validate(id);
-        if(reports != null) {
-            model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+        if(!signRequest.getStatus().equals(SignRequestStatus.draft) && !signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getStatus().equals(SignRequestStatus.refused) && !signRequest.getStatus().equals(SignRequestStatus.deleted)) {
+            Reports reports = signRequestService.validate(id);
+            if (reports != null) {
+                model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+            }
+            AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
+            model.addAttribute("auditTrail", auditTrail);
+            model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
         }
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
@@ -157,8 +166,6 @@ public class SignRequestController {
             model.addAttribute("action", signRequest.getData().getForm().getAction());
             model.addAttribute("supervisors", signRequest.getData().getForm().getManagers());
         }
-        List<Log> logs = logService.getBySignRequest(signRequest.getId());
-        logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
         if(signRequest.getSignable()
                 && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && userService.getUiParams(authUserEppn) != null
                 && (userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert) == null || !Arrays.asList(userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert).split(",")).contains(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId().toString()))
@@ -171,6 +178,7 @@ public class SignRequestController {
         if(data != null && data.getForm() != null) {
             model.addAttribute("form", data.getForm());
         }
+        List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
         model.addAttribute("logs", logs);
         return "user/signrequests/show";
     }
