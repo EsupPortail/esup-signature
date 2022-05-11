@@ -412,19 +412,14 @@
 		<!-- SEDA dependencies -->
 
 		<dependency>
+			<groupId>net.byteseek</groupId>
+			<artifactId>byteseek</artifactId>
+			<version>2.0.3</version>
+		</dependency>
+		<dependency>
 			<groupId>fr.gouv.vitam.tools</groupId>
 			<artifactId>sedalib</artifactId>
 			<version>2.5.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>xerces</groupId>
-					<artifactId>xercesImpl</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.opengis.cite.xerces</groupId>
-					<artifactId>xercesImpl-xsd11</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>uk.gov.nationalarchives</groupId>
@@ -435,23 +430,11 @@
 			<groupId>uk.gov.nationalarchives</groupId>
 			<artifactId>droid-core-interfaces</artifactId>
 			<version>6.5-VITAM</version>
-			<exclusions>
-				<exclusion>
-					<groupId>xerces</groupId>
-					<artifactId>xercesImpl</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>uk.gov.nationalarchives</groupId>
 			<artifactId>droid-container</artifactId>
 			<version>6.5-VITAM</version>
-			<exclusions>
-				<exclusion>
-					<groupId>xerces</groupId>
-					<artifactId>xercesImpl</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>commons-lang</groupId>
