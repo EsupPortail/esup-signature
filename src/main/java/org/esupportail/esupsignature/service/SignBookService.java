@@ -545,7 +545,7 @@ public class SignBookService {
         }
         if(computedWorkflow.getWorkflowSteps().size() == 0) {
             try {
-                inputStream = pdfService.convertGS(inputStream, signRequest.getToken());
+                inputStream = pdfService.convertGS(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -986,7 +986,7 @@ public class SignBookService {
                 auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), "Signature simple", "Pas de timestamp", date, null, null, null, null);
             }
             if ((signRequestService.isStepAllSignDone(signRequest.getParentSignBook()))) {
-                signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest, lastSignLogs), signRequest.getToken());
+                signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest, lastSignLogs));
             }
             byte[] signedBytes = signedInputStream.readAllBytes();
 
@@ -1352,14 +1352,12 @@ public class SignBookService {
             auditTrail.writeTo(zipOutputStream);
             zipOutputStream.closeEntry();
 
-            File reportFile = fileService.getTempFile("report.pdf");
             Reports reports = validationService.validate(new ByteArrayInputStream(fileBytes), null);
-            fopService.generateSimpleReport(reports.getXmlSimpleReport(), new FileOutputStream(reportFile));
+            ByteArrayOutputStream reportByteArrayOutputStream = new ByteArrayOutputStream();
+            fopService.generateSimpleReport(reports.getXmlSimpleReport(), reportByteArrayOutputStream);
             zipOutputStream.putNextEntry(new ZipEntry("rapport-signature.pdf"));
-            IOUtils.copy(pdfService.addQrCode(signRequest, new FileInputStream(reportFile)), zipOutputStream);
+            IOUtils.copy(pdfService.addQrCode(signRequest, new ByteArrayInputStream(reportByteArrayOutputStream.toByteArray())), zipOutputStream);
             zipOutputStream.closeEntry();
-
-            reportFile.delete();
         }
         zipOutputStream.close();
         return outputStream.toByteArray();

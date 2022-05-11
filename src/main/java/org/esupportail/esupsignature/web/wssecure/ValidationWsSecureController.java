@@ -7,8 +7,6 @@ import org.esupportail.esupsignature.service.ValidationService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 @CrossOrigin(origins = "*")
@@ -28,15 +26,11 @@ public class ValidationWsSecureController {
     @GetMapping(value = "/short/{id}")
     @ResponseBody
     public String shortValidateDocument(@PathVariable(name="id") long id) throws IOException {
-        File file = signRequestService.getToValidateFile(id);
-        if(file != null) {
-            Reports reports = validationService.validate(new FileInputStream(file), null);
-            if (reports != null) {
-                String xmlSimpleReport = reports.getXmlSimpleReport();
-                return xsltService.generateShortReport(xmlSimpleReport);
-            }
+        Reports reports = validationService.validate(signRequestService.getToValidateFile(id), null);
+        if (reports != null) {
+            String xmlSimpleReport = reports.getXmlSimpleReport();
+            return xsltService.generateShortReport(xmlSimpleReport);
         }
         return null;
-
     }
 }

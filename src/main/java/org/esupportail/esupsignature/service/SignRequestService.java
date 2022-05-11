@@ -246,7 +246,8 @@ public class SignRequestService {
 							}
 						}
 						signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
-						if(validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0) {
+						Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
+						if(reports == null || reports.getSimpleReport().getSignatureIdList().size() == 0) {
 							inputStream = pdfService.removeSignField(new ByteArrayInputStream(bytes));
 						}
 					} else if(multipartFiles[0].getContentType() != null && multipartFiles[0].getContentType().contains("image")){
@@ -274,11 +275,9 @@ public class SignRequestService {
 	public void addAttachmentToSignRequest(SignRequest signRequest, MultipartFile... multipartFiles) throws EsupSignatureIOException {
 		for(MultipartFile multipartFile : multipartFiles) {
 			try {
-				File file = fileService.inputStreamToTempFile(multipartFile.getInputStream(), multipartFile.getName());
-				Document document = documentService.createDocument(new FileInputStream(file), "attachement_" + signRequest.getAttachments().size() + "_" + multipartFile.getOriginalFilename(), multipartFile.getContentType());
+				Document document = documentService.createDocument(multipartFile.getInputStream(), "attachement_" + signRequest.getAttachments().size() + "_" + multipartFile.getOriginalFilename(), multipartFile.getContentType());
 				signRequest.getAttachments().add(document);
 				document.setParentId(signRequest.getId());
-				file.delete();
 			} catch (IOException e) {
 				throw new EsupSignatureIOException(e.getMessage(), e);
 			}
@@ -861,15 +860,14 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public File getToValidateFile(long id) throws IOException {
+	public InputStream getToValidateFile(long id) throws IOException {
 		SignRequest signRequest = getById(id);
 		Document toValideDocument = signRequest.getLastSignedDocument();
 		if(toValideDocument != null) {
-			File file = fileService.getTempFile(toValideDocument.getFileName());
-			OutputStream outputStream = new FileOutputStream(file);
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			IOUtils.copy(toValideDocument.getInputStream(), outputStream);
 			outputStream.close();
-			return file;
+			return new ByteArrayInputStream(outputStream.toByteArray());
 		} else {
 			return null;
 		}

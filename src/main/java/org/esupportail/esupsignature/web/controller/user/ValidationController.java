@@ -108,10 +108,7 @@ public class ValidationController {
 
 	@GetMapping(value = "/document/{id}")
 	public String validateDocument(@PathVariable(name="id") long id, Model model) throws IOException {
-		File file = signRequestService.getToValidateFile(id);
-		if(file != null) {
-			extracted(new FileInputStream(file), null, model);
-		}
+		extracted(signRequestService.getToValidateFile(id), null, model);
 		return "user/validation/result";
 	}
 

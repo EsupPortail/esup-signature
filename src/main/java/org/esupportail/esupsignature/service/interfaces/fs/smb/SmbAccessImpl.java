@@ -380,18 +380,15 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 	private FsFile toFsFile(SmbFile smbFile, String path) throws IOException {
-		String name = smbFile.getName();
-		File tempFile = fileService.getTempFile(smbFile.getName());
-		FileOutputStream out = new FileOutputStream(tempFile);
 		InputStream is = smbFile.getInputStream();
-		IOUtils.copy(is, out);
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		IOUtils.copy(is, outputStream);
 		is.close();
-		out.close();
+		outputStream.close();
 		smbFile.close();
-		FsFile fsFile = new FsFile(new FileInputStream(tempFile), smbFile.getName(), URLConnection.guessContentTypeFromName(smbFile.getName()));
+		FsFile fsFile = new FsFile(new ByteArrayInputStream(outputStream.toByteArray()), smbFile.getName(), URLConnection.guessContentTypeFromName(smbFile.getName()));
 		fsFile.setPath(path);
 		fsFile.setCreateDate(new Date(smbFile.getDate()));
-		tempFile.delete();
 		return fsFile;
 	}
 

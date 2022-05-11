@@ -304,9 +304,9 @@ public class SignService {
 			}
 			InputStream signImage = fileService.addTextToImage(inputStream, signRequestParams, SignType.nexuSign, user, date, fixFactor);
 			if(signRequestParams.getAddWatermark()) {
-				File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-				fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, fileWithWatermark, color, signRequestParams.getExtraOnTop());
-				signImage = new FileInputStream(fileWithWatermark);
+				ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+				fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, outputStream, color, signRequestParams.getExtraOnTop());
+				signImage = new ByteArrayInputStream(outputStream.toByteArray());
 			}
 			BufferedImage bufferedSignImage = ImageIO.read(signImage);
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -455,7 +455,7 @@ public class SignService {
 						bytes = pdfService.stampImage(new ByteArrayInputStream(bytes), signRequest, signRequestParams, i, user, date).readAllBytes();
 						i++;
 					}
-					inputStream = pdfService.convertGS(pdfService.writeMetadatas(new ByteArrayInputStream(bytes), toSignFile.getFileName(), signRequest, new ArrayList<>()), signRequest.getToken());
+					inputStream = pdfService.convertGS(pdfService.writeMetadatas(new ByteArrayInputStream(bytes), toSignFile.getFileName(), signRequest, new ArrayList<>()));
 				} else {
 					inputStream = new ByteArrayInputStream(bytes);
 				}
