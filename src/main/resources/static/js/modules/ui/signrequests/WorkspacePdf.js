@@ -62,21 +62,23 @@ export class WorkspacePdf {
         this.initChangeModeSelector();
         this.initDataFields(fields);
         this.wsTabs = $("#ws-tabs");
+        this.workspace = $("#workspace");
+        this.secondTools = $("#second-tools");
         if ((formId == null && workflow == null) || currentSignRequestParamses.length === 0) {
-            $("#second-tools").toggleClass("d-none d-flex");
+            this.secondTools.toggleClass("d-none d-flex");
             if(this.wsTabs.length) {
                 this.autocollapse();
                 let self = this;
                 $(window).on('resize', function () {
                     self.autocollapse();
                 });
-                if($("#second-tools").children().length > 0) {
-                    $("#workspace").css("margin-top", "216px");
+                if(this.secondTools.children().length > 0) {
+                    this.workspace.css("margin-top", "216px");
                 } else {
-                    $("#workspace").css("margin-top", "178px");
+                    this.workspace.css("margin-top", "178px");
                 }
             } else {
-                $("#workspace").css("margin-top", "170px");
+                this.workspace.css("margin-top", "170px");
             }
         }
         let root = document.querySelector(':root');
@@ -285,8 +287,7 @@ export class WorkspacePdf {
         let pdfViewer = this.pdfViewer;
 
         pdfViewer.dataFields.forEach(function (dataField) {
-            let savedField = self.pdfViewer.savedFields.get(dataField.name)
-            formData[dataField.name] = savedField;
+            formData[dataField.name] = self.pdfViewer.savedFields.get(dataField.name);
         })
         if (redirect || this.dataId != null) {
             let json = JSON.stringify(formData);
@@ -352,6 +353,15 @@ export class WorkspacePdf {
                 if (result === "ok") {
                     if (!self.checkSignsPositions() && (self.signType !== "hiddenVisa")) {
                         bootbox.alert("Merci de placer la signature", null);
+                        $("#addSignButton").addClass("flash");
+                        $("#addSignButton").toggleClass("btn-primary btn-light");
+                        $("#addSignButton").toggleClass("btn-outline-primary");
+                        setTimeout(function() {
+                            $("#addSignButton").removeClass("flash btn-primary");
+                            $("#addSignButton").toggleClass("btn-primary btn-light");
+                            $("#addSignButton").toggleClass("btn-outline-primary");
+                        }, 4000);
+
                     } else {
                         if (self.signPosition.signRequestParamses.size === 0 && (self.signType === "certSign" || self.signType === "nexuSign")) {
                             bootbox.confirm({
@@ -509,7 +519,6 @@ export class WorkspacePdf {
         }
         let xPos = e.offsetX ? (e.offsetX) : e.clientX;
         let yPos = e.pageY - offset;
-        // let yPos = (e.offsetY ? (e.offsetY) : e.clientY) + window.scrollY;
         $("#commentPosX").val(xPos);
         $('#commentPosY').val(yPos);
 

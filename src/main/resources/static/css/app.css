@@ -1926,6 +1926,16 @@ progress:before {
 
 @keyframes blink { 50% { border-color:#fff !important; }  }
 
+.flash {
+    animation: flash 1s linear infinite;
+}
+
+@keyframes flash {
+    50% {
+        opacity: 0;
+    }
+}
+
 .file-alt-color {
     color: #276FB2;
 }
