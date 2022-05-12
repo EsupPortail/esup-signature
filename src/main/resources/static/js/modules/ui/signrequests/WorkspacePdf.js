@@ -203,7 +203,18 @@ export class WorkspacePdf {
         if(this.currentSignRequestParamses[signNum] != null && this.firstInsertSign) {
             let signPageNumber = this.currentSignRequestParamses[signNum].signPageNumber;
             if (signPageNumber !== this.pdfViewer.pageNum) {
+                let self = this;
+                let preventMultipleAdd = true;
+                this.pdfViewer.addEventListener('addSign', function() {
+                    self.pdfViewer.removeEventListener("addSign");
+                    if(preventMultipleAdd) {
+                        self.signPosition.addSign(targetPageNumber, self.restore, self.signImageNumber, forceSignNumber);
+                        preventMultipleAdd = false;
+                    }
+                });
                 this.pdfViewer.renderPage(signPageNumber);
+            } else {
+                this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, forceSignNumber);
             }
             targetPageNumber = signPageNumber;
             this.firstInsertSign = false;
@@ -211,7 +222,6 @@ export class WorkspacePdf {
         if(localStorage.getItem('signNumber') != null && this.restore) {
             this.signImageNumber = localStorage.getItem('signNumber');
         }
-        this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, forceSignNumber);
         if((this.signType === "nexuSign" || this.signType === "certSign") && !this.notSigned) {
             $("#addSignButton").attr("disabled", true);
         }

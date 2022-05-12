@@ -212,6 +212,7 @@ export class PdfViewer extends EventFactory {
         let self = this;
         this.promiseRenderForm(false).then(e => this.promiseRenderForm(true)).then(e => this.promizeRestoreValue()).then(function(){
             self.fireEvent("renderFinished", ['ok']);
+            self.fireEvent("addSign", ['ok']);
         });
         this.canvas.style.width = Math.round(this.pdfPageView.viewport.width) +"px";
         this.canvas.style.height = Math.round(this.pdfPageView.viewport.height) + "px";
