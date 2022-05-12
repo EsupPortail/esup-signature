@@ -8,6 +8,7 @@ export class WorkspacePdf {
     constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
         console.info("Starting workspace UI");
         this.ready = false;
+        this.formInitialized = false;
         this.isPdf = isPdf;
         this.isOtp = isOtp;
         this.phone = phone;
@@ -96,7 +97,7 @@ export class WorkspacePdf {
             this.pdfViewer.addEventListener('ready', e => this.initWorkspace());
             this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
             this.pdfViewer.addEventListener('renderFinished', e => this.refreshAfterPageChange());
-            this.pdfViewer.addEventListener('render', e => this.initForm());
+            this.pdfViewer.addEventListener('renderFinished', e => this.initForm());
             this.pdfViewer.addEventListener('change', e => this.saveData());
             if (this.signable) {
                 // let visualButton = $('#visualButton');
@@ -239,7 +240,6 @@ export class WorkspacePdf {
                 // }
             }
             this.initLaunchButtons();
-            this.pdfViewer.removeEventListener('ready');
             this.wheelDetector.addEventListener("down", e => this.pdfViewer.checkCurrentPage(e));
             this.wheelDetector.addEventListener("up", e => this.pdfViewer.checkCurrentPage(e));
             this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
@@ -255,17 +255,19 @@ export class WorkspacePdf {
         });
     }
 
-    initForm(e) {
+    initForm() {
         console.info("init form");
-        let inputs = $("#signForm :input");
-        $.each(inputs, (index, e) => this.listenForChange(e));
-        if (this.mode === 'read' || this.mode === 'comment') {
-            this.disableForm();
+        if(!this.formInitialized) {
+            this.formInitialized = true;
+            let inputs = $("#signForm :input");
+            $.each(inputs, (index, e) => this.listenForChange(e));
+            if (this.mode === 'read' || this.mode === 'comment') {
+                this.disableForm();
+            }
         }
     }
 
     listenForChange(input) {
-        $(input).unbind();
         $(input).change(e => this.saveData());
     }
 
@@ -478,7 +480,7 @@ export class WorkspacePdf {
         console.info("refresh workspace");
         this.pdfViewer.startRender();
         this.signPosition.updateScales(this.pdfViewer.scale);
-        this.refreshAfterPageChange();
+        // this.refreshAfterPageChange();
     }
 
     clickAction(e) {
