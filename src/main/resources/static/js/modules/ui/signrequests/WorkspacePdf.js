@@ -259,7 +259,7 @@ export class WorkspacePdf {
         console.info("init form");
         if(!this.formInitialized) {
             this.formInitialized = true;
-            let inputs = $("#signForm :input");
+            let inputs = $("#signForm .annotationLayer :input");
             $.each(inputs, (index, e) => this.listenForChange(e));
             if (this.mode === 'read' || this.mode === 'comment') {
                 this.disableForm();
