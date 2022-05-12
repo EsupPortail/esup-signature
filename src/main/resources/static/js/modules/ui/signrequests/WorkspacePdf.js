@@ -7,6 +7,7 @@ export class WorkspacePdf {
 
     constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
         console.info("Starting workspace UI");
+        this.ready = false;
         this.isPdf = isPdf;
         this.isOtp = isOtp;
         this.phone = phone;
@@ -31,7 +32,6 @@ export class WorkspacePdf {
         this.currentStepMultiSign = currentStepMultiSign;
         this.forcePageNum = null;
         this.pointItEnable = true;
-        this.firstInsertSign = true;
         this.first = true;
         for (let i = 0; i < fields.length; i++) {
             let field = fields[i];
@@ -201,7 +201,7 @@ export class WorkspacePdf {
         }
         if(this.currentSignRequestParamses[signNum] != null) {
             targetPageNumber = this.currentSignRequestParamses[signNum].signPageNumber;
-            this.firstInsertSign = false;
+            this.signPosition.currentSignRequestParamsNum++;
         }
         if(localStorage.getItem('signNumber') != null && this.restore) {
             this.signImageNumber = localStorage.getItem('signNumber');
@@ -214,34 +214,37 @@ export class WorkspacePdf {
 
     initWorkspace() {
         console.info("init workspace");
-        if (localStorage.getItem('mode') === null) {
-            this.mode = "comment";
-            localStorage.setItem('mode', this.mode);
+        if(!this.ready) {
+            this.ready = true;
+            if (localStorage.getItem('mode') === null) {
+                this.mode = "comment";
+                localStorage.setItem('mode', this.mode);
+            }
+            if (this.status === 'draft') {
+                this.mode = "comment";
+                localStorage.setItem('mode', this.mode);
+            } else {
+                this.mode = "sign";
+                localStorage.setItem('mode', this.mode);
+            }
+            console.info("init to " + this.mode + " mode");
+            if (localStorage.getItem('mode') === 'comment') {
+                this.enableCommentMode();
+            } else {
+                this.enableSignMode();
+                // if (this.signable && this.currentSignType !== 'visa' && this.currentSignType !== 'hiddenVisa') {
+                //     if (this.mode === 'sign') {
+                //         // this.signPosition.toggleVisual();
+                //     }
+                // }
+            }
+            this.initLaunchButtons();
+            this.pdfViewer.removeEventListener('ready');
+            this.wheelDetector.addEventListener("down", e => this.pdfViewer.checkCurrentPage(e));
+            this.wheelDetector.addEventListener("up", e => this.pdfViewer.checkCurrentPage(e));
+            this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
+            this.wheelDetector.addEventListener("zoomout", e => this.pdfViewer.zoomOut());
         }
-        if (this.status === 'draft') {
-            this.mode = "comment";
-            localStorage.setItem('mode', this.mode);
-        } else {
-            this.mode = "sign";
-            localStorage.setItem('mode', this.mode);
-        }
-        console.info("init to " + this.mode + " mode");
-        if (localStorage.getItem('mode') === 'comment') {
-            this.enableCommentMode();
-        } else {
-            this.enableSignMode();
-            // if (this.signable && this.currentSignType !== 'visa' && this.currentSignType !== 'hiddenVisa') {
-            //     if (this.mode === 'sign') {
-            //         // this.signPosition.toggleVisual();
-            //     }
-            // }
-        }
-        this.initLaunchButtons();
-        this.pdfViewer.removeEventListener('ready');
-        this.wheelDetector.addEventListener("down", e => this.pdfViewer.checkCurrentPage(e));
-        this.wheelDetector.addEventListener("up", e => this.pdfViewer.checkCurrentPage(e));
-        this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
-        this.wheelDetector.addEventListener("zoomout", e => this.pdfViewer.zoomOut());
     }
 
     initLaunchButtons() {
@@ -664,7 +667,7 @@ export class WorkspacePdf {
                     let signRequestParams = Array.from(self.signPosition.signRequestParamses.values())[i];
                     let cross = signRequestParams.cross;
                     if (cross.attr("id") === ui.draggable.attr("id")) {
-                        let offset = ($("#page_" + signRequestParams.signPageNumber).offset().top) - self.pdfViewer.initialOffset + (10 * (signRequestParams.signPageNumber - 1 ));
+                        let offset = ($("#page_" + signRequestParams.signPageNumber).offset().top) - self.pdfViewer.initialOffset + (10 * (signRequestParams.signPageNumber));
                         signRequestParams.yPos = (Math.round(parseInt(signSpaceDiv.css("top")) - offset) / self.pdfViewer.scale);
                         signRequestParams.xPos = Math.round(parseInt(signSpaceDiv.css("left")) / self.pdfViewer.scale);
                         signRequestParams.applyCurrentSignRequestParams();

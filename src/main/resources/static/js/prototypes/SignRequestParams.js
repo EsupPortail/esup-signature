@@ -44,14 +44,12 @@ export class SignRequestParams  extends EventFactory {
         this.signHeight = 75;
         this.extraWidth = 0;
         this.extraHeight = 0;
-        this.signFieldPresent = true;
         this.savedText = "";
-        let testScroll = document.documentElement.scrollTop;
-        if(testScroll > 0 && (this.xPos == null || this.xPos === 0) && (this.yPos == null || this.yPos === 0)) {
+        this.offset = ($("#page_" + this.signPageNumber).offset().top) + (10 * (this.signPageNumber - 1));
+        if(signRequestParamsModel == null) {
             this.xPos = (parseInt($("#pdf").css("width")) / 2 / scale) - (this.signWidth * scale / 2);
-            let mid = $(window).scrollTop() + Math.floor($(window).height() / 2);
-            this.yPos = Math.round(mid / scale) - (this.signHeight * scale / 2) - (200 / scale) ;
-            this.signFieldPresent = false;
+            let mid = $(window).scrollTop() + $(window).height() / 2;
+            this.yPos = (mid - this.offset) / scale;
         }
         if(light) {
             this.initLight();
@@ -384,7 +382,8 @@ export class SignRequestParams  extends EventFactory {
     }
 
     applyCurrentSignRequestParams() {
-        this.cross.css('top', (this.yPos * this.currentScale + ($("#page_" + this.signPageNumber).offset().top) - $("#page_1").offset().top + (10 * (this.signPageNumber - 1)))  + 'px');
+        let offset = ($("#page_" + this.signPageNumber).offset().top) - this.initialOffset + (10 * (this.signPageNumber));
+        this.cross.css('top', (this.yPos * this.currentScale + offset) + 'px');
         this.cross.css('left', this.xPos * this.currentScale + 'px');
     }
 
@@ -513,10 +512,13 @@ export class SignRequestParams  extends EventFactory {
     }
 
     simulateDrop() {
-        let x = this.xPos * this.currentScale;
-        let y = this.yPos * this.currentScale + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top + (10 * (this.signPageNumber - 1));
+        let x = Math.round(this.xPos * this.currentScale);
+        let y = Math.round(this.yPos * this.currentScale + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top + (10 * (this.signPageNumber - 1)));
         this.cross.on("dragstop", function(){
-            window.scrollTo(0, y);
+            let test = window.scrollY + $(window).height();
+            if(y > test) {
+                window.scrollTo(0, y);
+            }
             $(this).unbind("dragstop");
         });
         this.cross.simulate("drag", {
@@ -913,6 +915,7 @@ export class SignRequestParams  extends EventFactory {
     }
 
     turnToText() {
+        $("#signImage_" + this.id).remove();
         let self = this;
         let divExtraHtml = "<textarea id='textPart_" + this.id + "' class='sign-textarea align-top' rows='1' style='overflow: hidden'></textarea>";
         this.cross.append(divExtraHtml);
