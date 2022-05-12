@@ -27,7 +27,7 @@ import java.util.Date;
 @EnableConfigurationProperties(GlobalProperties.class)
 public class DocumentService {
 
-	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
+	private static final Logger logger = LoggerFactory.getLogger(DocumentService.class);
 
 	private final GlobalProperties globalProperties;
 
@@ -101,9 +101,9 @@ public class DocumentService {
 						name = name + "." + fileService.getExtension(signedFile.getFileName());
 					}
 				}
-				logger.info("send to " + documentIOType.name() + " in " + targetUrl + "/" + name);
+				logger.info("send to " + documentIOType.name() + " in " + targetUrl + name);
 				if (fsAccessService.putFile(targetUrl, name, inputStream, UploadActionType.OVERRIDE)) {
-					documentUri = targetUrl + "/" + name;
+					documentUri = targetUrl + name;
 					return documentUri;
 				} else {
 					throw new EsupSignatureException("file is not exported");

@@ -7,7 +7,6 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
@@ -81,17 +80,14 @@ public class ScheduledTaskService {
 	}
 
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
-	@Transactional
 	public void scanAllSignbooksTargets() {
 		logger.debug("scan all signRequest to export");
 		List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
 		for(SignBook signBook : signBooks) {
 			try {
-				if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
-					signBookService.sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getSubject(), signBook.getLiveWorkflow().getTargets(), "scheduler");
-				}
-			} catch(EsupSignatureFsException | EsupSignatureException e) {
-				logger.error(e.getMessage());
+				signBookService.sendSignRequestsToTarget(signBook.getId(), "scheduler");
+			} catch(Exception e) {
+				logger.error("export error for signbook " + signBook.getId() + " - " + e.getMessage());
 			}
 		}
 	}

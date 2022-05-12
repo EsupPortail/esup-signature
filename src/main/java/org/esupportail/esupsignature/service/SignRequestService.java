@@ -110,9 +110,6 @@ public class SignRequestService {
 	private PreFillService preFillService;
 
 	@Resource
-	private AuditTrailService auditTrailService;
-
-	@Resource
 	private LogService logService;
 
 	@Resource

@@ -288,20 +288,20 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws EsupSignatureFsException {
+	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) {
 		//must manage the upload option.
 		Folder targetFolder = (Folder) getCmisObject(dir);
 		if(targetFolder == null) {
 			createURITree(dir);
 			targetFolder = (Folder) getCmisObject(dir);
 		}
-		Map<String, String> prop = new HashMap<String, String>();
+		Map<String, String> prop = new HashMap<>();
 		prop.put(PropertyIds.OBJECT_TYPE_ID, BaseTypeId.CMIS_DOCUMENT.value());
 		prop.put(PropertyIds.NAME, String.valueOf(filename));
 		String mimeType = new MimetypesFileTypeMap().getContentType(filename);
 		ContentStream stream = new ContentStreamImpl(filename, null, mimeType, inputStream);
 		Document document = targetFolder.createDocument(prop, stream, VersioningState.NONE, null, null, null, cmisSession.getDefaultContext());
-		HashMap<String, String> m = new HashMap<String, String>();
+		HashMap<String, String> m = new HashMap<>();
         m.put("cmis:name",filename);
         document.updateProperties(m);
 		return true;

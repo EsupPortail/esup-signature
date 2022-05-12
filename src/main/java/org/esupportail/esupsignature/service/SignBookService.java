@@ -533,7 +533,7 @@ public class SignBookService {
         if(title == null || title.isEmpty()) {
             title = form.getTitle();
         }
-        SignBook signBook = createSignBook(form.getTitle(), modelWorkflow, null, user);
+        SignBook signBook = createSignBook(title, modelWorkflow, null, user);
         SignRequest signRequest = signRequestService.createSignRequest(signBook.getSubject(), signBook, user.getEppn(), authUser.getEppn());
         signRequest.getSignRequestParams().addAll(signRequestParamses);
         InputStream inputStream;
@@ -1540,80 +1540,90 @@ public class SignBookService {
         return signImages;
     }
 
-    public void sendSignRequestsToTarget(List<SignRequest> signRequests, String title, List<Target> targets, String authUserEppn) throws EsupSignatureException, EsupSignatureFsException {
-        boolean allTargetsDone = true;
-        for(Target target : targets) {
-            if(!target.getTargetOk()) {
-                DocumentIOType documentIOType = fsAccessFactoryService.getPathIOType(target.getTargetUri());
-                String targetUrl = target.getTargetUri();
-                if (documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
-                    if (documentIOType.equals(DocumentIOType.mail)) {
-                        logger.info("send by email to " + targetUrl);
-                        try {
-                            for (SignRequest signRequest : signRequests) {
-                                for (String email : targetUrl.replace("mailto:", "").split(",")) {
-                                    User user = userService.getUserByEmail(email);
-                                    if(!signRequest.getParentSignBook().getViewers().contains(user)) {
-                                        signRequest.getParentSignBook().getViewers().add(user);
-                                    }
-                                }
-                            }
-                            mailService.sendFile(title, signRequests, targetUrl);
-                            target.setTargetOk(true);
-                        } catch (MessagingException | IOException e) {
-                            logger.error("unable to send mail to : " + target.getTargetUri(), e);
-                            allTargetsDone = false;
-                        }
-                    } else {
-                        for (SignRequest signRequest : signRequests) {
-                            if (fsAccessFactoryService.getPathIOType(target.getTargetUri()).equals(DocumentIOType.rest)) {
-                                RestTemplate restTemplate = new RestTemplate();
-                                SignRequestStatus status = SignRequestStatus.completed;
-                                if (signRequest.getRecipientHasSigned().values().stream().anyMatch(action -> action.getActionType().equals(ActionType.refused))) {
-                                    status = SignRequestStatus.refused;
-                                }
-                                try {
-                                    ResponseEntity<String> response = restTemplate.getForEntity(target.getTargetUri() + "?signRequestId=" + signRequest.getId() + "&status=" + status.name(), String.class);
-                                    if (response.getStatusCode().equals(HttpStatus.OK)) {
-                                        target.setTargetOk(true);
-                                        signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
-                                    } else {
-                                        logger.error("rest export fail : " + target.getTargetUri() + " return is : " + response.getStatusCode());
-                                        allTargetsDone = false;
-                                    }
-                                } catch (Exception e) {
-                                    logger.error("rest export fail : " + target.getTargetUri(), e);
-                                    allTargetsDone = false;
-                                }
-                            } else {
-                                try {
-                                    Document signedFile = signRequest.getLastSignedDocument();
-                                    if (signRequest.getAttachments().size() > 0) {
-                                        targetUrl += "/" + signRequest.getTitle();
-                                        for (Document attachment : signRequest.getAttachments()) {
-                                            documentService.exportDocument(documentIOType, targetUrl, attachment, null);
+    @Transactional
+    public void sendSignRequestsToTarget(Long id, String authUserEppn) throws EsupSignatureException, EsupSignatureFsException {
+        SignBook signBook = getById(id);
+        if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
+            List<SignRequest> signRequests = signBook.getSignRequests();
+            String title = signBook.getSubject();
+            List<Target> targets = signBook.getLiveWorkflow().getTargets();
+            boolean allTargetsDone = true;
+            for (Target target : targets) {
+                if (!target.getTargetOk()) {
+                    DocumentIOType documentIOType = fsAccessFactoryService.getPathIOType(target.getTargetUri());
+                    String targetUrl = target.getTargetUri();
+                    if (documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
+                        if (documentIOType.equals(DocumentIOType.mail)) {
+                            logger.info("send by email to " + targetUrl);
+                            try {
+                                for (SignRequest signRequest : signRequests) {
+                                    for (String email : targetUrl.replace("mailto:", "").split(",")) {
+                                        User user = userService.getUserByEmail(email);
+                                        if (!signRequest.getParentSignBook().getViewers().contains(user)) {
+                                            signRequest.getParentSignBook().getViewers().add(user);
                                         }
                                     }
-                                    String name = generateName(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), true);
-                                    documentService.exportDocument(documentIOType, targetUrl, signedFile, name);
-                                    target.setTargetOk(true);
-                                } catch (EsupSignatureFsException e) {
-                                    logger.error("fs export fail : " + target.getProtectedTargetUri(), e);
-                                    allTargetsDone = false;
+                                }
+                                mailService.sendFile(title, signRequests, targetUrl);
+                                target.setTargetOk(true);
+                            } catch (MessagingException | IOException e) {
+                                logger.error("unable to send mail to : " + target.getTargetUri(), e);
+                                allTargetsDone = false;
+                            }
+                        } else {
+                            for (SignRequest signRequest : signRequests) {
+                                if (fsAccessFactoryService.getPathIOType(target.getTargetUri()).equals(DocumentIOType.rest)) {
+                                    RestTemplate restTemplate = new RestTemplate();
+                                    SignRequestStatus status = SignRequestStatus.completed;
+                                    if (signRequest.getRecipientHasSigned().values().stream().anyMatch(action -> action.getActionType().equals(ActionType.refused))) {
+                                        status = SignRequestStatus.refused;
+                                    }
+                                    try {
+                                        ResponseEntity<String> response = restTemplate.getForEntity(target.getTargetUri() + "?signRequestId=" + signRequest.getId() + "&status=" + status.name(), String.class);
+                                        if (response.getStatusCode().equals(HttpStatus.OK)) {
+                                            target.setTargetOk(true);
+                                            signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
+                                        } else {
+                                            logger.error("rest export fail : " + target.getTargetUri() + " return is : " + response.getStatusCode());
+                                            allTargetsDone = false;
+                                        }
+                                    } catch (Exception e) {
+                                        logger.error("rest export fail : " + target.getTargetUri(), e);
+                                        allTargetsDone = false;
+                                    }
+                                } else {
+                                    try {
+                                        Document signedFile = signRequest.getLastSignedDocument();
+                                        if (signRequest.getAttachments().size() > 0 && globalProperties.getExportAttachements()) {
+                                            if (!targetUrl.endsWith("/")) {
+                                                targetUrl += "/";
+                                            }
+                                            targetUrl += signRequest.getTitle();
+                                            for (Document attachment : signRequest.getAttachments()) {
+                                                documentService.exportDocument(documentIOType, targetUrl, attachment, attachment.getFileName());
+                                            }
+                                        }
+                                        String name = generateName(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), true);
+                                        documentService.exportDocument(documentIOType, targetUrl, signedFile, name);
+                                        target.setTargetOk(true);
+                                    } catch (EsupSignatureFsException e) {
+                                        logger.error("fs export fail : " + target.getProtectedTargetUri(), e);
+                                        allTargetsDone = false;
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        }
-        if(allTargetsDone) {
-            for (SignRequest signRequest : signRequests) {
-                signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.exported, "Exporté vers toutes les destinations", "SUCCESS", authUserEppn, authUserEppn);
+            if (allTargetsDone) {
+                for (SignRequest signRequest : signRequests) {
+                    signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.exported, "Exporté vers toutes les destinations", "SUCCESS", authUserEppn, authUserEppn);
+                }
+                signRequests.get(0).getParentSignBook().setStatus(SignRequestStatus.exported);
+            } else {
+                throw new EsupSignatureException("unable to send to all targets");
             }
-            signRequests.get(0).getParentSignBook().setStatus(SignRequestStatus.exported);
-        } else {
-            throw new EsupSignatureException("unable to send to all targets");
         }
     }
 

@@ -89,9 +89,7 @@ public class FormWsController {
                 datas.putAll(objectMapper.readValue(formDatas, type));
             }
             SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, null, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), signRequestParamsJsonString, title);
-            if(attachementMultipartFiles.length > 0) {
-                signRequestService.addAttachement(attachementMultipartFiles, null, signBook.getSignRequests().get(0).getId());
-            }
+            signRequestService.addAttachement(attachementMultipartFiles, null, signBook.getSignRequests().get(0).getId());
             return signBook.getSignRequests().get(0).getId();
         } catch (EsupSignatureException | EsupSignatureIOException | EsupSignatureFsException | IOException e) {
             return -1L;
