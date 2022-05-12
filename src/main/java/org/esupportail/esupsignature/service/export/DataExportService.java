@@ -117,16 +117,15 @@ public class DataExportService {
     }
 
     public InputStream mapListToCSV(List<Map<String, String>> list) throws IOException {
-        File csvFile = fileService.getTempFile("export.csv");
-        FileWriter out = new FileWriter(csvFile);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        OutputStreamWriter out = new OutputStreamWriter(outputStream);
         String[] headers = list.stream().flatMap(map -> map.keySet().stream()).distinct().toArray(String[]::new);
         CSVPrinter printer = new CSVPrinter(out, CSVFormat.EXCEL.withHeader(headers));
         for (Map<String, String> map : list) {
             printer.printRecord(map.values());
         }
         out.flush();
-        InputStream inputStream = new FileInputStream(csvFile);
-        csvFile.delete();
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
         return inputStream;
     }
 

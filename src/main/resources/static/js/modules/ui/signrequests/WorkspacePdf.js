@@ -7,6 +7,8 @@ export class WorkspacePdf {
 
     constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
         console.info("Starting workspace UI");
+        this.ready = false;
+        this.formInitialized = false;
         this.isPdf = isPdf;
         this.isOtp = isOtp;
         this.phone = phone;
@@ -31,7 +33,6 @@ export class WorkspacePdf {
         this.currentStepMultiSign = currentStepMultiSign;
         this.forcePageNum = null;
         this.pointItEnable = true;
-        this.firstInsertSign = true;
         this.first = true;
         for (let i = 0; i < fields.length; i++) {
             let field = fields[i];
@@ -61,21 +62,23 @@ export class WorkspacePdf {
         this.initChangeModeSelector();
         this.initDataFields(fields);
         this.wsTabs = $("#ws-tabs");
+        this.workspace = $("#workspace");
+        this.secondTools = $("#second-tools");
         if ((formId == null && workflow == null) || currentSignRequestParamses.length === 0) {
-            $("#second-tools").toggleClass("d-none d-flex");
+            this.secondTools.toggleClass("d-none d-flex");
             if(this.wsTabs.length) {
                 this.autocollapse();
                 let self = this;
                 $(window).on('resize', function () {
                     self.autocollapse();
                 });
-                if($("#second-tools").children().length > 0) {
-                    $("#workspace").css("margin-top", "216px");
+                if(this.secondTools.children().length > 0) {
+                    this.workspace.css("margin-top", "216px");
                 } else {
-                    $("#workspace").css("margin-top", "178px");
+                    this.workspace.css("margin-top", "178px");
                 }
             } else {
-                $("#workspace").css("margin-top", "170px");
+                this.workspace.css("margin-top", "170px");
             }
         }
         let root = document.querySelector(':root');
@@ -96,7 +99,7 @@ export class WorkspacePdf {
             this.pdfViewer.addEventListener('ready', e => this.initWorkspace());
             this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
             this.pdfViewer.addEventListener('renderFinished', e => this.refreshAfterPageChange());
-            this.pdfViewer.addEventListener('render', e => this.initForm());
+            this.pdfViewer.addEventListener('renderFinished', e => this.initForm());
             this.pdfViewer.addEventListener('change', e => this.saveData());
             if (this.signable) {
                 // let visualButton = $('#visualButton');
@@ -201,7 +204,7 @@ export class WorkspacePdf {
         }
         if(this.currentSignRequestParamses[signNum] != null) {
             targetPageNumber = this.currentSignRequestParamses[signNum].signPageNumber;
-            this.firstInsertSign = false;
+            this.signPosition.currentSignRequestParamsNum++;
         }
         if(localStorage.getItem('signNumber') != null && this.restore) {
             this.signImageNumber = localStorage.getItem('signNumber');
@@ -214,34 +217,36 @@ export class WorkspacePdf {
 
     initWorkspace() {
         console.info("init workspace");
-        if (localStorage.getItem('mode') === null) {
-            this.mode = "comment";
-            localStorage.setItem('mode', this.mode);
+        if(!this.ready) {
+            this.ready = true;
+            if (localStorage.getItem('mode') === null) {
+                this.mode = "comment";
+                localStorage.setItem('mode', this.mode);
+            }
+            if (this.status === 'draft') {
+                this.mode = "comment";
+                localStorage.setItem('mode', this.mode);
+            } else {
+                this.mode = "sign";
+                localStorage.setItem('mode', this.mode);
+            }
+            console.info("init to " + this.mode + " mode");
+            if (localStorage.getItem('mode') === 'comment') {
+                this.enableCommentMode();
+            } else {
+                this.enableSignMode();
+                // if (this.signable && this.currentSignType !== 'visa' && this.currentSignType !== 'hiddenVisa') {
+                //     if (this.mode === 'sign') {
+                //         // this.signPosition.toggleVisual();
+                //     }
+                // }
+            }
+            this.initLaunchButtons();
+            this.wheelDetector.addEventListener("down", e => this.pdfViewer.checkCurrentPage(e));
+            this.wheelDetector.addEventListener("up", e => this.pdfViewer.checkCurrentPage(e));
+            this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
+            this.wheelDetector.addEventListener("zoomout", e => this.pdfViewer.zoomOut());
         }
-        if (this.status === 'draft') {
-            this.mode = "comment";
-            localStorage.setItem('mode', this.mode);
-        } else {
-            this.mode = "sign";
-            localStorage.setItem('mode', this.mode);
-        }
-        console.info("init to " + this.mode + " mode");
-        if (localStorage.getItem('mode') === 'comment') {
-            this.enableCommentMode();
-        } else {
-            this.enableSignMode();
-            // if (this.signable && this.currentSignType !== 'visa' && this.currentSignType !== 'hiddenVisa') {
-            //     if (this.mode === 'sign') {
-            //         // this.signPosition.toggleVisual();
-            //     }
-            // }
-        }
-        this.initLaunchButtons();
-        this.pdfViewer.removeEventListener('ready');
-        this.wheelDetector.addEventListener("down", e => this.pdfViewer.checkCurrentPage(e));
-        this.wheelDetector.addEventListener("up", e => this.pdfViewer.checkCurrentPage(e));
-        this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
-        this.wheelDetector.addEventListener("zoomout", e => this.pdfViewer.zoomOut());
     }
 
     initLaunchButtons() {
@@ -252,17 +257,19 @@ export class WorkspacePdf {
         });
     }
 
-    initForm(e) {
+    initForm() {
         console.info("init form");
-        let inputs = $("#signForm :input");
-        $.each(inputs, (index, e) => this.listenForChange(e));
-        if (this.mode === 'read' || this.mode === 'comment') {
-            this.disableForm();
+        if(!this.formInitialized) {
+            this.formInitialized = true;
+            let inputs = $("#signForm .annotationLayer :input");
+            $.each(inputs, (index, e) => this.listenForChange(e));
+            if (this.mode === 'read' || this.mode === 'comment') {
+                this.disableForm();
+            }
         }
     }
 
     listenForChange(input) {
-        $(input).unbind();
         $(input).change(e => this.saveData());
     }
 
@@ -280,8 +287,7 @@ export class WorkspacePdf {
         let pdfViewer = this.pdfViewer;
 
         pdfViewer.dataFields.forEach(function (dataField) {
-            let savedField = self.pdfViewer.savedFields.get(dataField.name)
-            formData[dataField.name] = savedField;
+            formData[dataField.name] = self.pdfViewer.savedFields.get(dataField.name);
         })
         if (redirect || this.dataId != null) {
             let json = JSON.stringify(formData);
@@ -347,6 +353,15 @@ export class WorkspacePdf {
                 if (result === "ok") {
                     if (!self.checkSignsPositions() && (self.signType !== "hiddenVisa")) {
                         bootbox.alert("Merci de placer la signature", null);
+                        $("#addSignButton").addClass("flash");
+                        $("#addSignButton").toggleClass("btn-primary btn-light");
+                        $("#addSignButton").toggleClass("btn-outline-primary");
+                        setTimeout(function() {
+                            $("#addSignButton").removeClass("flash btn-primary");
+                            $("#addSignButton").toggleClass("btn-primary btn-light");
+                            $("#addSignButton").toggleClass("btn-outline-primary");
+                        }, 4000);
+
                     } else {
                         if (self.signPosition.signRequestParamses.size === 0 && (self.signType === "certSign" || self.signType === "nexuSign")) {
                             bootbox.confirm({
@@ -475,7 +490,7 @@ export class WorkspacePdf {
         console.info("refresh workspace");
         this.pdfViewer.startRender();
         this.signPosition.updateScales(this.pdfViewer.scale);
-        this.refreshAfterPageChange();
+        // this.refreshAfterPageChange();
     }
 
     clickAction(e) {
@@ -504,7 +519,6 @@ export class WorkspacePdf {
         }
         let xPos = e.offsetX ? (e.offsetX) : e.clientX;
         let yPos = e.pageY - offset;
-        // let yPos = (e.offsetY ? (e.offsetY) : e.clientY) + window.scrollY;
         $("#commentPosX").val(xPos);
         $('#commentPosY').val(yPos);
 
@@ -664,7 +678,7 @@ export class WorkspacePdf {
                     let signRequestParams = Array.from(self.signPosition.signRequestParamses.values())[i];
                     let cross = signRequestParams.cross;
                     if (cross.attr("id") === ui.draggable.attr("id")) {
-                        let offset = ($("#page_" + signRequestParams.signPageNumber).offset().top) - self.pdfViewer.initialOffset + (10 * (signRequestParams.signPageNumber - 1 ));
+                        let offset = ($("#page_" + signRequestParams.signPageNumber).offset().top) - self.pdfViewer.initialOffset + (10 * (signRequestParams.signPageNumber));
                         signRequestParams.yPos = (Math.round(parseInt(signSpaceDiv.css("top")) - offset) / self.pdfViewer.scale);
                         signRequestParams.xPos = Math.round(parseInt(signSpaceDiv.css("left")) / self.pdfViewer.scale);
                         signRequestParams.applyCurrentSignRequestParams();

@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.web.otp;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.security.otp.Otp;
@@ -43,6 +44,9 @@ public class OtpAccessController {
     private OtpService otpService;
 
     @Resource
+    private SignRequestService signRequestService;
+
+    @Resource
     private UserService userService;
 
     @Resource
@@ -57,7 +61,7 @@ public class OtpAccessController {
 //    }
 
     @GetMapping(value = "/{urlId}")
-    public String signin(@PathVariable String urlId, Model model) {
+    public String signin(@PathVariable String urlId, Model model, HttpServletRequest httpServletRequest) {
         model.addAttribute("urlId", urlId);
         Otp otp = otpService.getOtp(urlId);
         if(otp != null) {
@@ -80,6 +84,8 @@ public class OtpAccessController {
                 }
                 return "otp/enter-phonenumber";
             }
+        } else {
+            signRequestService.renewOtp(urlId);
         }
         return "redirect:/otp-access/expired";
     }

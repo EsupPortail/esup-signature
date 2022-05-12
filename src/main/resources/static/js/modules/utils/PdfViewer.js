@@ -190,7 +190,7 @@ export class PdfViewer extends EventFactory {
                     ui.helper.attr("page", i)
                 }
             });
-            pdf.getPage(i).then(page => this.renderTask(page, container));
+            pdf.getPage(i).then(page => this.renderTask(page, container, i));
         }
         this.refreshTools();
         this.initialOffset = $("#page_1").offset().top;
@@ -217,7 +217,7 @@ export class PdfViewer extends EventFactory {
         // this.pdfDoc.getPage(this.pageNum).then(page => this.renderTask(page));
     }
 
-    renderTask(page, container) {
+    renderTask(page, container, i) {
         console.info("launch render task scaled to : " + this.scale);
         this.page = page;
         let scale = this.scale;
@@ -245,15 +245,17 @@ export class PdfViewer extends EventFactory {
             });
             container.style.width = Math.round(pdfPageView.viewport.width) +"px";
             container.style.height = Math.round(pdfPageView.viewport.height) + "px";
-            self.postRender();
+            self.postRender(i);
         });
         pdfPageView.draw();
     }
 
-    postRender() {
+    postRender(i) {
         let self = this;
         this.promiseRenderForm(false).then(e => this.promiseRenderForm(true)).then(e => this.promiseRestoreValue()).then(function(){
-            self.fireEvent("renderFinished", ['ok']);
+            if(i === self.pdfDoc.numPages) {
+                self.fireEvent('renderFinished', ['ok']);
+            }
         });
         console.groupEnd();
         this.restoreScrolling();
@@ -271,8 +273,8 @@ export class PdfViewer extends EventFactory {
                 } else {
                     pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.renderPdfForm(items)).then(e => this.annotationLinkTargetBlank()));
                 }
-                resolve("Réussite");
             }
+            resolve("Réussite");
         });
     }
     
@@ -297,10 +299,13 @@ export class PdfViewer extends EventFactory {
     }
 
     promiseSaveValues() {
-        console.info("launch save values");
-        for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
-            this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.saveValues(items)));
-        }
+        return new Promise((resolve, reject) => {
+            console.info("launch save values");
+            for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
+                this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.saveValues(items)));
+            }
+            resolve();
+        });
     }
 
     saveValues(items) {
@@ -369,7 +374,6 @@ export class PdfViewer extends EventFactory {
         for(let i = 1; i < this.pdfDoc.numPages + 1; i++) {
             this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.restoreValues(items)));
         }
-
         this.fireEvent('render', ['end']);
     }
 
@@ -660,7 +664,6 @@ export class PdfViewer extends EventFactory {
                 }
             }
         }
-        this.fireEvent('fieldsReady', ['ok']);
         console.debug("debug - " + ">>End compute field");
         $(".annotationLayer").each(function() {
             $(this).removeClass("d-none");
@@ -895,7 +898,7 @@ export class PdfViewer extends EventFactory {
                     let page = warningFields[0].page;
                     if (page !== self.pageNum) {
                         self.scrollToPage(page);
-                        self.addEventListener("renderFinished", function () {
+                        self.addEventListener('renderFinished', function () {
                             setTimeout(function () {
                                 field = $('#' + warningFields[0].name);
                                 self.focusField(field)

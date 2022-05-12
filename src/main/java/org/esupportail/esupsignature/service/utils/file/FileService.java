@@ -1,9 +1,7 @@
 package org.esupportail.esupsignature.service.utils.file;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.mime.MimeTypes;
 import org.esupportail.esupsignature.entity.Document;
@@ -36,15 +34,6 @@ public class FileService {
 	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
 
 	private final String[] faImages = {"check-solid", "times-solid", "circle-regular", "minus-solid"};
-
-	public File inputStreamToTempFile(InputStream inputStream, String name) throws IOException {
-		File file = getTempFile("tmp_" + name);
-		OutputStream outputStream = new FileOutputStream(file);
-		IOUtils.copy(inputStream, outputStream);
-		outputStream.close();
-		inputStream.close();
-		return file;
-	}
 
 	public ByteArrayOutputStream copyInputStream(InputStream inputStream) {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -100,7 +89,6 @@ public class FileService {
 		}
 		return null;
 	}
-
 
 	public String getBase64Image(Document document) throws IOException {
 		BufferedImage imBuff = ImageIO.read(document.getInputStream());
@@ -288,14 +276,14 @@ public class FileService {
 			}
 //			graphics2D.drawString("", 0, fm.getHeight() * lineCount + 1);
 			graphics2D.dispose();
-			File fileImage = getTempFile("sign.png");
-			ImageIO.write(image, "png", fileImage);
-			textAddedInputStream = new FileInputStream(fileImage);
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			ImageIO.write(image, "png", outputStream);
+			textAddedInputStream = new ByteArrayInputStream(outputStream.toByteArray());
 		}
 		return textAddedInputStream;
 	}
 
-	public void addImageWatermark(InputStream watermarkImageFile, InputStream sourceImageFile, File destImageFile, Color color, boolean extraOnTop) {
+	public void addImageWatermark(InputStream watermarkImageFile, InputStream sourceImageFile, ByteArrayOutputStream destImageFile, Color color, boolean extraOnTop) {
 		try {
 			BufferedImage sourceImage = ImageIO.read(sourceImageFile);
 			BufferedImage watermarkImage = ImageIO.read(watermarkImageFile);
@@ -322,29 +310,23 @@ public class FileService {
 		}
 	}
 
-	public InputStream svgToPng(InputStream svgInputStream) throws IOException {
-		File file = getTempFile("sceau.png");
-		ImageIO.write(ImageIO.read(svgInputStream), "PNG", file);
-		return new FileInputStream(file);
+//	public InputStream svgToPng(InputStream svgInputStream) throws IOException {
+//		File file = getTempFile("sceau.png");
+//		ImageIO.write(ImageIO.read(svgInputStream), "PNG", file);
+//		return new FileInputStream(file);
+//	}
+
+	public InputStream getFileFromUrl(String url) throws IOException {
+		return new URL(url).openStream();
 	}
 
-	public File getFileFromUrl(String url) throws IOException {
-		File file = getTempFile(url.split("/")[url.split("/").length-1]);
-		FileUtils.copyURLToFile(new URL(url), file);
-		return file;
-	}
-
-	public boolean isFileContainsText(File file, String text) {
-		try {
-			Scanner scanner = new Scanner(file);
-			while (scanner.hasNextLine()) {
-				String line = scanner.nextLine();
-				if(line.contains(text)) {
-					return true;
-				}
+	public boolean isFileContainsText(InputStream file, String text) {
+		Scanner scanner = new Scanner(file);
+		while (scanner.hasNextLine()) {
+			String line = scanner.nextLine();
+			if(line.contains(text)) {
+				return true;
 			}
-		} catch(FileNotFoundException e) {
-			logger.error(e.getMessage());
 		}
 		return false;
 	}
@@ -377,15 +359,15 @@ public class FileService {
 		imgBuf.setRGB(0, 0, w, h, rgb, 0, w);
 	}
 
-	public File getEmptyImage() throws IOException {
+	public InputStream getEmptyImage() throws IOException {
 		BufferedImage bufferedImage = new BufferedImage(600, 300, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g2d = bufferedImage.createGraphics();
 		g2d.setColor(Color.white);
 		g2d.fillRect(0, 0, 600, 300);
 		g2d.dispose();
-		File fileSignImage = getTempFile("sign_image.png");
-		ImageIO.write(bufferedImage, "png", fileSignImage);
-		return fileSignImage;
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ImageIO.write(bufferedImage, "png", outputStream);
+		return new ByteArrayInputStream(outputStream.toByteArray());
 	}
 
 	private InputStream getFaImage(String faName) throws IOException {

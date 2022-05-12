@@ -30,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -424,7 +425,7 @@ public class UserService {
             } else if(domain.equals(globalProperties.getDomain())) {
                 return UserType.shib;
             } else if(shibProperties.getDomainsWhiteListUrl() != null) {
-                File whiteListFile = getDomainsWhiteList();
+                InputStream whiteListFile = getDomainsWhiteList();
                 if (fileService.isFileContainsText(whiteListFile, domain)) {
                     return UserType.shib;
                 }
@@ -434,11 +435,11 @@ public class UserService {
     }
 
 
-    public File getDomainsWhiteList() {
+    public InputStream getDomainsWhiteList() {
         try {
-        return fileService.getFileFromUrl(shibProperties.getDomainsWhiteListUrl());
+            return fileService.getFileFromUrl(shibProperties.getDomainsWhiteListUrl());
         } catch (IOException e) {
-        e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return null;
     }

@@ -6,6 +6,7 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import eu.europa.esig.dss.validation.reports.Reports;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
@@ -145,17 +146,16 @@ public class PdfService {
             signImage = fileService.getFaImageByIndex(signRequestParams.getSignImageNumber());
         } else {
             if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) || !signRequestParams.getAddImage()) {
-                File fileSignImage = fileService.getEmptyImage();
-                signImage = fileService.addTextToImage(new FileInputStream(fileSignImage), signRequestParams, signType, user, newDate, fixFactor);
+                signImage = fileService.addTextToImage(fileService.getEmptyImage(), signRequestParams, signType, user, newDate, fixFactor);
             } else if (signRequestParams.getAddExtra()) {
                 signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType, user, newDate, fixFactor);
             } else if (signRequestParams.getTextPart() == null || signRequestParams.getTextPart().isEmpty()) {
                 signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
             }
             if (signRequestParams.getAddWatermark()) {
-                File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-                fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, fileWithWatermark, new Color(137, 137, 137), signRequestParams.getExtraOnTop());
-                signImage = new FileInputStream(fileWithWatermark);
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, outputStream, new Color(137, 137, 137), signRequestParams.getExtraOnTop());
+                signImage = new ByteArrayInputStream(outputStream.toByteArray());
             }
         }
 
@@ -259,43 +259,45 @@ public class PdfService {
 
     public InputStream addQrCode(SignRequest signRequest, InputStream inputStream) throws IOException, WriterException {
         PDDocument pdDocument = PDDocument.load(inputStream);
-        PDPage pdPage = pdDocument.getPage(0);
-        PDFTextStripper pdfTextStripper = new PDFTextStripper();
-        String signatureInfos = "Liens de contrôle : " + pdfTextStripper.getLineSeparator() +
-                        globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
-        PDAnnotationLink pdAnnotationLink = new PDAnnotationLink();
-        PDRectangle position = new PDRectangle(pdPage.getMediaBox().getWidth() - 80, 30, 30, 30);
-        pdAnnotationLink.setRectangle(position);
-        PDBorderStyleDictionary pdBorderStyleDictionary = new PDBorderStyleDictionary();
-        pdBorderStyleDictionary.setStyle(PDBorderStyleDictionary.STYLE_INSET);
-        pdAnnotationLink.setBorderStyle(pdBorderStyleDictionary);
-        Color color = new Color(255, 255, 255);
-        float[] components = new float[] {
-                color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f };
-        PDColor pdColor = new PDColor(components, PDDeviceRGB.INSTANCE);
-        pdAnnotationLink.setColor(pdColor);
-        PDActionURI action = new PDActionURI();
-        String url = globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
-        action.setURI(url);
-        pdAnnotationLink.setAction(action);
-        pdAnnotationLink.setPage(pdPage);
-        pdAnnotationLink.setQuadPoints(new float[0]);
-        pdAnnotationLink.setContents(signatureInfos);
-        pdPage.getAnnotations().add(pdAnnotationLink);
+        for(int i = 0; i < pdDocument.getNumberOfPages(); i++) {
+            PDPage pdPage = pdDocument.getPage(i);
+            PDFTextStripper pdfTextStripper = new PDFTextStripper();
+            String signatureInfos = "Liens de contrôle : " + pdfTextStripper.getLineSeparator() +
+                    globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
+            PDAnnotationLink pdAnnotationLink = new PDAnnotationLink();
+            PDRectangle position = new PDRectangle(pdPage.getMediaBox().getWidth() - 80, 30, 30, 30);
+            pdAnnotationLink.setRectangle(position);
+            PDBorderStyleDictionary pdBorderStyleDictionary = new PDBorderStyleDictionary();
+            pdBorderStyleDictionary.setStyle(PDBorderStyleDictionary.STYLE_INSET);
+            pdAnnotationLink.setBorderStyle(pdBorderStyleDictionary);
+            Color color = new Color(255, 255, 255);
+            float[] components = new float[]{
+                    color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f};
+            PDColor pdColor = new PDColor(components, PDDeviceRGB.INSTANCE);
+            pdAnnotationLink.setColor(pdColor);
+            PDActionURI action = new PDActionURI();
+            String url = globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
+            action.setURI(url);
+            pdAnnotationLink.setAction(action);
+            pdAnnotationLink.setPage(pdPage);
+            pdAnnotationLink.setQuadPoints(new float[0]);
+            pdAnnotationLink.setContents(signatureInfos);
+            pdPage.getAnnotations().add(pdAnnotationLink);
 
-        if(pdDocument.getDocumentCatalog().getDocumentOutline() == null) {
-            PDDocumentOutline outline = new PDDocumentOutline();
-            pdDocument.getDocumentCatalog().setDocumentOutline(outline);
+            if (pdDocument.getDocumentCatalog().getDocumentOutline() == null) {
+                PDDocumentOutline outline = new PDDocumentOutline();
+                pdDocument.getDocumentCatalog().setDocumentOutline(outline);
+            }
+            PDOutlineItem pdOutlineItem = new PDOutlineItem();
+            pdOutlineItem.setDestination(pdAnnotationLink.getDestination());
+            pdOutlineItem.setTitle(signatureInfos);
+            pdDocument.getDocumentCatalog().getDocumentOutline().addLast(pdOutlineItem);
+            ByteArrayOutputStream outputStream = createQR(url);
+            PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, outputStream.toByteArray(), "QRCode check");
+            PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
+            contentStream.drawImage(pdImage, pdPage.getMediaBox().getWidth() - 50, 30, 30, 30);
+            contentStream.close();
         }
-        PDOutlineItem pdOutlineItem = new PDOutlineItem();
-        pdOutlineItem.setDestination(pdAnnotationLink.getDestination());
-        pdOutlineItem.setTitle(signatureInfos);
-        pdDocument.getDocumentCatalog().getDocumentOutline().addLast(pdOutlineItem);
-        ByteArrayOutputStream outputStream = createQR(url);
-        PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, outputStream.toByteArray(), "QRCode check");
-        PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
-        contentStream.drawImage(pdImage, pdPage.getMediaBox().getWidth() - 50, 30, 30, 30);
-        contentStream.close();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         pdDocument.save(out);
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -481,64 +483,59 @@ public class PdfService {
         return inputStream;
     }
 
-    public InputStream convertGS(InputStream inputStream, String UUID) throws IOException, EsupSignatureException {
-        File file = fileService.inputStreamToTempFile(inputStream, "temp.pdf");
-        if (!isPdfAComplient(new FileInputStream(file)) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
-            File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dNOSAFER -dBATCH -sFONTPATH=" + pdfConfig.getPdfProperties().getPathToFonts() + " -dNOPAUSE -dSubsetFonts=false -dEmbedAllFonts=true -dAlignToPixels=0 -dGridFitTT=2 -dCompatibilityLevel=1.4 -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + pdfConfig.getPdfADefPath() + "' '" + file.getAbsolutePath() + "'";
+    public InputStream convertGS(InputStream inputStream) throws IOException, EsupSignatureException {
+        byte[] originalBytes = inputStream.readAllBytes();
+        if (!isPdfAComplient(new ByteArrayInputStream(originalBytes)) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dNOSAFER -dBATCH -sFONTPATH=" + pdfConfig.getPdfProperties().getPathToFonts() + " -dNOPAUSE -dSubsetFonts=false -dEmbedAllFonts=true -dAlignToPixels=0 -dGridFitTT=2 -dCompatibilityLevel=1.4 -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile=- -q '" + pdfConfig.getPdfADefPath() + "' -";
             logger.info("GhostScript PDF/A convertion : " + cmd);
 
             ProcessBuilder processBuilder = new ProcessBuilder();
+            processBuilder.redirectErrorStream(true);
             if(SystemUtils.IS_OS_WINDOWS) {
                 processBuilder.command("cmd", "/C", cmd);
             } else {
                 processBuilder.command("bash", "-c", cmd);
             }
-            //processBuilder.directory(new File("/tmp"));
+            InputStream convertedInputStream;
             try {
                 Process process = processBuilder.start();
+                IOUtils.copy(new ByteArrayInputStream(originalBytes), process.getOutputStream());
+                process.getOutputStream().flush();
+                process.getOutputStream().close();
+                byte[] result = process.getInputStream().readAllBytes();
                 int exitVal = process.waitFor();
-                StringBuilder output = new StringBuilder();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    output.append(line).append("\n");
-                }
                 if (exitVal == 0) {
                     logger.info("Convert success");
-                    logger.info(output.toString());
+                    convertedInputStream = new ByteArrayInputStream(result);
                 } else {
                     logger.warn("Convert fail");
                     logger.warn(cmd);
+                    StringBuilder output = new StringBuilder();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(result)));
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        output.append(line).append("\n");
+                    }
                     logger.warn(output.toString());
-//                    throw new EsupSignatureSignException("PDF/A convertion failure");
                     logger.warn("PDF/A convertion failure : document will be signed without convertion");
                     process.destroy();
-                    FileInputStream fileInputStream = new FileInputStream(file);
-                    file.delete();
-                    return fileInputStream;
+                    return null;
                 }
             } catch (InterruptedException e) {
-                logger.error("GhostScript launcs error : check installation or path", e);
+                logger.error("GhostScript launch error : check installation or path", e);
                 throw new EsupSignatureSignException("GhostScript launch error");
             }
-            InputStream convertedInputStream = new FileInputStream(targetFile);
-            file.delete();
-            targetFile.delete();
             return convertedInputStream;
         } else {
-            FileInputStream fileInputStream = new FileInputStream(file);
-            file.delete();
-            return fileInputStream;
+            return null;
         }
     }
 
     public InputStream normalizeGS(InputStream inputStream) throws IOException, EsupSignatureException {
-        File file = fileService.inputStreamToTempFile(inputStream, "temp.pdf");
-        Reports reports = validationService.validate(new FileInputStream(file), null);
-        if (!isPdfAComplient(new FileInputStream(file)) && (reports == null || reports.getSimpleReport().getSignatureIdList().size() == 0)) {
-            File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite -d -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + file.getAbsolutePath() + "'";
+        byte[] originalBytes = inputStream.readAllBytes();
+        Reports reports = validationService.validate(new ByteArrayInputStream(originalBytes), null);
+        if (!isPdfAComplient(new ByteArrayInputStream(originalBytes)) && (reports == null || reports.getSimpleReport().getSignatureIdList().size() == 0)) {
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite -d -sOutputFile=- -q -";
             logger.info("GhostScript PDF/A conversion : " + cmd);
 
             ProcessBuilder processBuilder = new ProcessBuilder();
@@ -547,23 +544,26 @@ public class PdfService {
             } else {
                 processBuilder.command("bash", "-c", cmd);
             }
-            //processBuilder.directory(new File("/tmp"));
+            InputStream convertedInputStream;
             try {
                 Process process = processBuilder.start();
-                StringBuilder output = new StringBuilder();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    output.append(line + "\n");
-                }
-
+                IOUtils.copy(new ByteArrayInputStream(originalBytes), process.getOutputStream());
+                process.getOutputStream().flush();
+                process.getOutputStream().close();
+                byte[] result = process.getInputStream().readAllBytes();
+                convertedInputStream = new ByteArrayInputStream(result);
                 int exitVal = process.waitFor();
                 if (exitVal == 0) {
                     logger.info("Convert success");
-                    logger.debug(output.toString());
                 } else {
                     logger.warn("Convert fail");
                     logger.warn(cmd);
+                    StringBuilder output = new StringBuilder();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(result)));
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        output.append(line + "\n");
+                    }
                     logger.warn(output.toString());
                     throw new EsupSignatureSignException("PDF/A convertion failure");
                 }
@@ -571,14 +571,9 @@ public class PdfService {
                 logger.error("GhostScript launcs error : check installation or path", e);
                 throw new EsupSignatureSignException("GhostScript launch error");
             }
-            InputStream convertedInputStream = new FileInputStream(targetFile);
-            file.delete();
-            targetFile.delete();
             return convertedInputStream;
         } else {
-            FileInputStream fileInputStream = new FileInputStream(file);
-            file.delete();
-            return fileInputStream;
+            return new ByteArrayInputStream(originalBytes);
         }
     }
 
