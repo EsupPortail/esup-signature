@@ -1726,13 +1726,19 @@ public class SignBookService {
             template = template.replace("[title]", signBook.getSubject());
         }
         if(template.contains("[originalFileName]")) {
-            template = template.replace("[originalFileName]", signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName());
+            if(signBook.getSignRequests().size() > 0 && signBook.getSignRequests().get(0).getOriginalDocuments().size() > 0) {
+                template = template.replace("[originalFileName]", signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName());
+            } else {
+                template = template.replace("[originalFileName]", signBook.getSubject());
+            }
         }
         if(template.contains("[signedFileName]")) {
-            if(signBook.getSignRequests().get(0).getSignedDocuments().size() > 0) {
+            if(signBook.getSignRequests().size() > 0 && signBook.getSignRequests().get(0).getSignedDocuments().size() > 0) {
                 template = template.replace("[signedFileName]", signBook.getSignRequests().get(0).getSignedDocuments().get(0).getFileName());
+            } if(signBook.getSignRequests().size() > 0 && signBook.getSignRequests().get(0).getOriginalDocuments().size() > 0) {
+                template = template.replace("[originalFileName]", signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName());
             } else {
-                template = template.replace("[signedFileName]", signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName());
+                template = template.replace("[originalFileName]", signBook.getSubject());
             }
         }
         if(template.contains("[fileNameOnly]")) {
