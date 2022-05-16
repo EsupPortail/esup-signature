@@ -28,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -669,5 +668,13 @@ public class UserService {
         User user = getUserByEppn(userEppn);
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.writer().writeValueAsString(user.getFavoriteSignRequestParams());
+    }
+
+    @Transactional
+    public void updateUserInfos(Long id, String eppn, String name, String firstname) {
+        User user = getById(id);
+        user.setEppn(eppn);
+        user.setName(name);
+        user.setFirstname(firstname);
     }
 }
