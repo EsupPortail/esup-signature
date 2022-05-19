@@ -217,9 +217,9 @@
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>bootstrap-fileinput</artifactId>
 			<version>5.2.7</version>
-                        <exclusions>
+			<exclusions>
 				<exclusion>
-					<groupId>org.webjars.bower</groupId>
+					<groupId>org.webjars.npm</groupId>
 					<artifactId>bootstrap</artifactId>
 				</exclusion>
 			</exclusions>
