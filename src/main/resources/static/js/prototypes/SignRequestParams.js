@@ -13,10 +13,10 @@ export class SignRequestParams  extends EventFactory {
         this.signImages = signImages;
         this.currentScale = parseFloat(scale);
         this.signPageNumber = 1;
+        if(page != null) this.signPageNumber = page;
         this.isOtp = isOtp;
         this.phone = phone;
         this.light = light;
-        if(page != null) this.signPageNumber = page;
         this.userName = userName;
         this.authUserName = authUserName;
         this.ready = null;
@@ -45,7 +45,10 @@ export class SignRequestParams  extends EventFactory {
         this.extraWidth = 0;
         this.extraHeight = 0;
         this.savedText = "";
-        this.offset = ($("#page_" + this.signPageNumber).offset().top) + (10 * (this.signPageNumber - 1));
+        this.offset = 0;
+        if(!light) {
+            this.offset = ($("#page_" + this.signPageNumber).offset().top) + (10 * (this.signPageNumber - 1));
+        }
         if(signRequestParamsModel == null) {
             this.xPos = (parseInt($("#pdf").css("width")) / 2 / scale) - (this.signWidth * scale / 2);
             let mid = $(window).scrollTop() + $(window).height() / 2;
