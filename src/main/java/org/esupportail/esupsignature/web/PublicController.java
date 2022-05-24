@@ -1,15 +1,14 @@
 package org.esupportail.esupsignature.web;
 
+import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.FileUtils;
+import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.entity.AuditTrail;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
-import org.esupportail.esupsignature.service.AuditTrailService;
-import org.esupportail.esupsignature.service.LogService;
-import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +16,14 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -49,6 +50,12 @@ public class PublicController {
     private UserService userService;
 
     @Resource
+    private ValidationService validationService;
+
+    @Resource
+    private XSLTService xsltService;
+
+    @Resource
     private PreAuthorizeService preAuthorizeService;
 
     public PublicController(@Autowired(required = false) BuildProperties buildProperties) {
@@ -56,7 +63,8 @@ public class PublicController {
     }
 
     @GetMapping(value = "/control/{token}")
-    public String control(@PathVariable String token, Model model) throws EsupSignatureFsException {
+    @Transactional
+    public String control(@PathVariable String token, Model model) throws EsupSignatureFsException, IOException {
         SignRequest signRequest = signRequestService.getSignRequestByToken(token);
         if(signRequest == null) {
             return "error";
@@ -65,6 +73,12 @@ public class PublicController {
         Document signedDocument = signRequestService.getLastSignedFile(signRequest.getId());
         model.addAttribute("size", FileUtils.byteCountToDisplaySize(signedDocument.getSize()));
         model.addAttribute("auditTrail", auditTrail);
+        if(auditTrail != null && auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
+            byte[] docBytes = signRequest.getSignedDocuments().get(0).getInputStream().readAllBytes();
+            Reports reports = validationService.validate(new ByteArrayInputStream(docBytes), null);
+            String xmlSimpleReport = reports.getXmlSimpleReport();
+            model.addAttribute("simpleReport", xsltService.generateShortReport(xmlSimpleReport));
+        }
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && !auth.getName().equals("anonymousUser")) {
             String eppn = userService.tryGetEppnFromLdap(auth);
@@ -81,6 +95,7 @@ public class PublicController {
     }
 
     @PostMapping(value = "/control/{token}")
+    @Transactional
     public String checkFile(@PathVariable String token, @RequestParam(value = "multipartFile") MultipartFile multipartFile,
                             Model model, HttpSession httpSession) throws IOException {
         String checksum = fileService.getFileChecksum(multipartFile.getInputStream());
@@ -104,6 +119,12 @@ public class PublicController {
             model.addAttribute("auditTrail", auditTrail);
             if(signRequest != null) {
                 setControlValues(model, signRequest, auditTrail, eppn);
+            }
+            if(auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
+                byte[] docBytes = multipartFile.getBytes();
+                Reports reports = validationService.validate(new ByteArrayInputStream(docBytes), null);
+                String xmlSimpleReport = reports.getXmlSimpleReport();
+                model.addAttribute("simpleReport", xsltService.generateShortReport(xmlSimpleReport));
             }
         } else {
             model.addAttribute("error", true);

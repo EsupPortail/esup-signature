@@ -19,6 +19,7 @@ import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
 import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.Pkcs11SignatureToken;
+import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.validation.timestamp.TimestampToken;
@@ -162,7 +163,7 @@ public class SignService {
 
 			CertificateToken certificateToken = userKeystoreService.getCertificateToken(abstractKeyStoreTokenConnection);
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(abstractKeyStoreTokenConnection);
-			AbstractSignatureForm signatureDocumentForm = getSignatureDocumentForm(toSignDocuments, signRequest, visual, user, new Date());
+			AbstractSignatureForm signatureDocumentForm = getSignatureDocumentForm(toSignDocuments, signRequest, visual, user, new Date(), abstractKeyStoreTokenConnection instanceof Pkcs11SignatureToken);
 			signatureForm = signatureDocumentForm.getSignatureForm();
 			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 			signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
@@ -183,7 +184,14 @@ public class SignService {
 				aSiCWithXAdESSignatureParameters.aSiC().setMimeType("application/vnd.etsi.asic-e+zip");
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else {
-				parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), new Color(214, 0, 128), user, signatureDocumentForm.getSigningDate());
+				if(abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken) {
+					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), new Color(214, 0, 128), user, signatureDocumentForm.getSigningDate());
+				} else {
+					PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
+					pAdESSignatureParameters.setSignerName(user.getFirstname() + " " + user.getName());
+					pAdESSignatureParameters.setContactInfo(user.getEmail());
+					parameters = pAdESSignatureParameters;
+				}
 			}
 			parameters.setSigningCertificate(certificateToken);
 			parameters.setCertificateChain(certificateTokenChain);
@@ -442,7 +450,7 @@ public class SignService {
 		}
 	}
 
-	public AbstractSignatureForm getSignatureDocumentForm(List<Document> documents, SignRequest signRequest, boolean visual, User user, Date date) throws IOException, EsupSignatureException {
+	public AbstractSignatureForm getSignatureDocumentForm(List<Document> documents, SignRequest signRequest, boolean visual, User user, Date date, boolean sealSign) throws IOException, EsupSignatureException {
 		SignatureForm signatureForm;
 		AbstractSignatureForm abstractSignatureForm;
 		if(documents.size() > 1) {
@@ -468,7 +476,9 @@ public class SignService {
 				byte[] bytes = inputStream.readAllBytes();
 				if(isNotSigned(signRequest) && !pdfService.isPdfAComplient(new ByteArrayInputStream(bytes))) {
 					int i = 0;
-					for(SignRequestParams signRequestParams : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams()) {
+					if(sealSign) i = 1;
+					List<SignRequestParams> signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
+					for(SignRequestParams signRequestParams : signRequestParamses) {
 						bytes = pdfService.stampImage(new ByteArrayInputStream(bytes), signRequest, signRequestParams, i, user, date).readAllBytes();
 						i++;
 					}
@@ -655,7 +665,7 @@ public class SignService {
 		User user = userService.getUserByEppn(userEppn);
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		List<SignRequestParams> liveWfSignRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
-		return getSignatureDocumentForm(getToSignDocuments(signRequest.getId()), signRequest, liveWfSignRequestParams.get(0).getVisual(), user, new Date());
+		return getSignatureDocumentForm(getToSignDocuments(signRequest.getId()), signRequest, liveWfSignRequestParams.get(0).getVisual(), user, new Date(), false);
 	}
 
 	@Transactional

@@ -44,53 +44,53 @@
                                 <dt class="col-3">Taille : </dt>
                                 <dd class="col-9" th:text="${size} + ' (' + ${auditTrail.documentSize} + ')'"></dd>
                             </dl>
-                        </div>
+                            </div>
                             <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
-
-                            <h4>Signatures</h4>
-                            <table class="table table-sm table-hover">
-                                <thead class="table-secondary">
-                                <tr>
-                                    <th></th>
-                                    <th>Date</th>
-                                    <th>Nom</th>
-                                    <th>Email</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <th:block th:each="auditStep, iterator : ${auditTrail.auditSteps}">
-                                    <tr data-bs-toggle="collapse" data-bs-target="#collapseExample" style="cursor: pointer;" title="Cliquez ici pour afficher le detail">
-                                        <td><i class="fas fa-plus"></i></td>
-                                        <td class="text-left"><span
-                                                th:text="${#dates.format(auditStep.timeStampDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
-                                        <td class="text-left"><span th:text="${auditStep.firstname} + ' ' + ${auditStep.name}"></span></td>
-                                        <td class="text-left"><span
-                                                th:text="${auditStep.email}"></span></td>
+                                <h4>Signatures</h4>
+                                <table class="table table-sm table-hover">
+                                    <thead class="table-secondary">
+                                    <tr>
+                                        <th></th>
+                                        <th>Date</th>
+                                        <th>Nom</th>
+                                        <th>Email</th>
                                     </tr>
-                                    <tr class="collapse" id="collapseExample">
-                                        <td colspan="6">
-                                            <dl class="row border-bottom m-0">
-                                                <dt class="col-lg-5">Login : </dt>
-                                                <dd th:text="${auditStep.authenticationDetails}"></dd>
-                                            </dl>
-                                            <dl class="row border-bottom m-0">
-                                                <dt class="col-lg-5">Authentification : </dt>
-                                                <dd th:text="${auditStep.authenticationDetails}"></dd>
-                                            </dl>
-                                            <dl class="row border-bottom m-0">
-                                                <dt class="col-lg-5">Certificat signature : </dt>
-                                                <dd th:text="${auditStep.signCertificat}"></dd>
-                                            </dl>
-                                            <dl class="row border-bottom m-0">
-                                                <dt class="col-lg-5">Certificat timestamp : </dt>
-                                                <dd th:text="${auditStep.timeStampCertificat}"></dd>
-                                            </dl>
-                                        </td>
-                                    </tr>
-                                </th:block>
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                    <th:block th:each="auditStep, iterator : ${auditTrail.auditSteps}">
+                                        <tr data-bs-toggle="collapse" data-bs-target="#collapseExample" style="cursor: pointer;" title="Cliquez ici pour afficher le detail">
+                                            <td><i class="fas fa-plus"></i></td>
+                                            <td class="text-left"><span
+                                                    th:text="${#dates.format(auditStep.timeStampDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
+                                            <td class="text-left"><span th:text="${auditStep.firstname} + ' ' + ${auditStep.name}"></span></td>
+                                            <td class="text-left"><span
+                                                    th:text="${auditStep.email}"></span></td>
+                                        </tr>
+                                        <tr class="collapse" id="collapseExample">
+                                            <td colspan="6">
+                                                <dl class="row border-bottom m-0">
+                                                    <dt class="col-lg-5">Login : </dt>
+                                                    <dd th:text="${auditStep.authenticationDetails}"></dd>
+                                                </dl>
+                                                <dl class="row border-bottom m-0">
+                                                    <dt class="col-lg-5">Authentification : </dt>
+                                                    <dd th:text="${auditStep.authenticationDetails}"></dd>
+                                                </dl>
+                                                <dl class="row border-bottom m-0">
+                                                    <dt class="col-lg-5">Certificat signature : </dt>
+                                                    <dd th:text="${auditStep.signCertificat}"></dd>
+                                                </dl>
+                                                <dl class="row border-bottom m-0">
+                                                    <dt class="col-lg-5">Certificat timestamp : </dt>
+                                                    <dd th:text="${auditStep.timeStampCertificat}"></dd>
+                                                </dl>
+                                            </td>
+                                        </tr>
+                                    </th:block>
+                                    </tbody>
+                                </table>
+                                <div th:utext="${simpleReport}"></div>
+                            </div>
                             <div class="alert alert-light border-secondary mx-auto" style="page-break-after: auto;">
                                 <h4>Journal des actions</h4>
                                 <table class="table table-sm table-hover">
