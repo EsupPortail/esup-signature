@@ -4,6 +4,7 @@ import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -85,6 +86,9 @@ public class SignRequestController {
     @Resource
     private GlobalProperties globalProperties;
 
+    @Resource
+    private SignProperties signProperties;
+
     @GetMapping()
     public String show() {
         return "redirect:/user/";
@@ -148,8 +152,14 @@ public class SignRequestController {
                 model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
             }
             AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
-            model.addAttribute("auditTrail", auditTrail);
-            model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
+            if(auditTrail != null) {
+                model.addAttribute("auditTrail", auditTrail);
+                model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
+            }
+        }
+        // TODO add ROLE_SEAL check
+        if(signProperties.getSealCertificatDriver() != null) {
+            model.addAttribute("sealCertificateOk", true);
         }
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());

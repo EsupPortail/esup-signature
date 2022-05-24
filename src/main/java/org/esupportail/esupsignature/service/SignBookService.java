@@ -6,6 +6,7 @@ import eu.europa.esig.dss.diagnostic.DiagnosticData;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
@@ -45,7 +46,10 @@ import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
@@ -67,6 +71,8 @@ public class SignBookService {
     private static final Logger logger = LoggerFactory.getLogger(SignBookService.class);
 
     private final GlobalProperties globalProperties;
+
+    private final SignProperties signProperties;
 
     @Resource
     private MessageSource messageSource;
@@ -174,8 +180,9 @@ public class SignBookService {
         return globalProperties;
     }
 
-    public SignBookService(GlobalProperties globalProperties) {
+    public SignBookService(GlobalProperties globalProperties, SignProperties signProperties) {
         this.globalProperties = globalProperties;
+        this.signProperties = signProperties;
     }
 
     public List<SignBook> getAllSignBooks() {
@@ -1524,7 +1531,8 @@ public class SignBookService {
                                 && user.getKeystore() == null
                                 && certificatService.getCertificatByUser(userEppn).size() == 0
                                 && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)
-                                && globalProperties.getOpenXPKIServerUrl() == null) {
+                                && globalProperties.getOpenXPKIServerUrl() == null
+                                && signProperties.getSealCertificatDriver() == null) {
                             signRequestRef.setSignable(false);
                             throw new EsupSignatureUserException("Pour signer ce document merci d’ajouter un certificat à votre profil <a href='user/users' target='_blank'>Mes paramètres</a>");
                         }
