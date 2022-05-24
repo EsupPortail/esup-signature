@@ -18,16 +18,6 @@ public class SignProperties {
     private Long passwordTimeout;
     private String aesKey;
 
-    /**
-     *  Pilote du certificat cachet
-     */
-    private String sealCertificatDriver;
-
-    /**
-     *  Pin du certificat cachet
-     */
-    private String sealCertificatPin;
-
     public SignatureForm getDefaultSignatureForm() {
         return defaultSignatureForm;
     }
@@ -113,21 +103,5 @@ public class SignProperties {
 
     public void setAesKey(String aesKey) {
         this.aesKey = aesKey;
-    }
-
-    public String getSealCertificatDriver() {
-        return sealCertificatDriver;
-    }
-
-    public void setSealCertificatDriver(String sealCertificatDriver) {
-        this.sealCertificatDriver = sealCertificatDriver;
-    }
-
-    public String getSealCertificatPin() {
-        return sealCertificatPin;
-    }
-
-    public void setSealCertificatPin(String sealCertificatPin) {
-        this.sealCertificatPin = sealCertificatPin;
     }
 }

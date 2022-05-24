@@ -5,6 +5,7 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
@@ -80,7 +81,7 @@ public class SignRequestWsSecureController {
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
         try {
-            boolean result = signBookService.initSign(id, signRequestParamsJsonString, comment, formData, password, certType, userShareId, userEppn, authUserEppn);
+            boolean result = signBookService.initSign(id, signRequestParamsJsonString, comment, formData, password, SignWith.valueOf(certType), userShareId, userEppn, authUserEppn);
             if(!result) {
                 return ResponseEntity.status(HttpStatus.OK).body("initNexu");
             }

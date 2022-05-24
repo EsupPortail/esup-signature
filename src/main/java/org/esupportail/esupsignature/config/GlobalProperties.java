@@ -175,6 +175,22 @@ public class GlobalProperties {
      */
     public Boolean exportAttachements = true;
 
+
+    /**
+     *  Pilote du certificat cachet
+     */
+    private String sealCertificatDriver;
+
+    /**
+     *  Pin du certificat cachet
+     */
+    private String sealCertificatPin;
+
+    /**
+     *  Appliquer le cachet sur toutes les demandes terminées
+     */
+    private Boolean sealAllDocs = false;
+
     public String getRootUrl() {
         return rootUrl;
     }
@@ -453,5 +469,29 @@ public class GlobalProperties {
 
     public void setExportAttachements(boolean exportAttachements) {
         this.exportAttachements = exportAttachements;
+    }
+
+    public String getSealCertificatDriver() {
+        return sealCertificatDriver;
+    }
+
+    public void setSealCertificatDriver(String sealCertificatDriver) {
+        this.sealCertificatDriver = sealCertificatDriver;
+    }
+
+    public String getSealCertificatPin() {
+        return sealCertificatPin;
+    }
+
+    public void setSealCertificatPin(String sealCertificatPin) {
+        this.sealCertificatPin = sealCertificatPin;
+    }
+
+    public Boolean getSealAllDocs() {
+        return sealAllDocs;
+    }
+
+    public void setSealAllDocs(Boolean sealAllDocs) {
+        this.sealAllDocs = sealAllDocs;
     }
 }

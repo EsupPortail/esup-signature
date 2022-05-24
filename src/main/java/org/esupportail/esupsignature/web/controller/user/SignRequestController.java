@@ -52,6 +52,9 @@ public class SignRequestController {
     @Resource
     private SignService signService;
 
+    @Resource
+    private SignWithService signWithService;
+
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
         return "signrequests";
@@ -163,9 +166,10 @@ public class SignRequestController {
             }
         }
         // TODO add ROLE_SEAL check
-        if(signProperties.getSealCertificatDriver() != null) {
+        if(globalProperties.getSealCertificatDriver() != null) {
             model.addAttribute("sealCertificateOk", true);
         }
+        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest.getCurrentSignType()));
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("editable", signRequest.getEditable());

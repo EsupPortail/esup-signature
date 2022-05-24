@@ -9,10 +9,8 @@ export class SignUi {
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.signRequestId = id;
         this.percent = 0;
-        this.getProgressTimer = null;
         this.isOtp = isOtp;
         this.wait = $('#wait');
-        this.workspace = null;
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
         this.isPdf = isPdf;
@@ -25,12 +23,15 @@ export class SignUi {
         this.gotoNext = false;
         this.certTypeSelect = $("#certType");
         this.nbSignRequests = nbSignRequests;
+        this.attachmentRequire = attachmentRequire;
+        this.attachmentAlert = attachmentAlert;
+        this.signLaunchButton = $("#signLaunchButton");
         $("#password").hide();
-        this.togglePasswordField();
         this.initListeners();
         if(status !== "exported") {
             this.initReportModal();
         }
+        this.togglePasswordField();
     }
 
     initListeners() {
@@ -44,10 +45,7 @@ export class SignUi {
                 $("#launchNoInfiniteSignButton").click();
             }
         });
-        if(this.certTypeSelect) {
-            this.certTypeSelect.on("change", e => this.togglePasswordField());
-        }
-
+        $("#certType").on("change", e => this.togglePasswordField());
         $("#copyButton").on('click', e => this.copy());
         $("#send").on('submit', function (e) {
             e.preventDefault();
@@ -55,6 +53,15 @@ export class SignUi {
             if ($(e.target).is(':invalid')) {
                 alert("Merci de saisir les participants");
             }
+        });
+        this.initLaunchButtons();
+    }
+
+    initLaunchButtons() {
+        $("#visaLaunchButton").on('click', e => this.launchSignModal());
+        this.signLaunchButton.on('click', e => this.launchSignModal());
+        $("#refuseLaunchButton").on('click', function () {
+            window.onbeforeunload = null;
         });
     }
 
@@ -84,9 +91,120 @@ export class SignUi {
         });
     }
 
-    togglePasswordField(){
-        let value = $("#certType").val();
-        if(value === "profil") {
+    launchSignModal() {
+        console.info("launch sign modal");
+        window.onbeforeunload = null;
+        let self = this;
+        if (this.isPdf) {
+            this.workspace.pdfViewer.checkForm().then(function (result) {
+                if (result === "ok") {
+                    if (self.workspace.signPosition.signRequestParamses.size === 0) {
+                        bootbox.confirm({
+                            message: "<h3>Attention vous allez signez ce document sans visuel</h3>" +
+                                "<div class='alert alert-danger'>Dans ce cas seules les signatures avec certificat sont possibles</div>",
+                            buttons: {
+                                cancel: {
+                                    label: '<i class="fa fa-undo"></i> Modifier ma signature',
+                                    className: 'btn-success'
+                                },
+                                confirm: {
+                                    label: '<i class="fa fa-check"></i> Continuer sans visuel'
+                                }
+                            },
+                            callback: function (result) {
+                                if (result) {
+                                    self.checkAttachement();
+                                }
+                            }
+                        });
+                        self.certTypeSelect.children().each(function(e) {
+                            if($(this).val() === "imageStamp") {
+                                $(this).attr('disabled', 'disabled');
+                                $("#certType").val("");
+                            }
+                        });
+                    } else {
+                        self.certTypeSelect.children().each(function(e) {
+                            if($(this).val() === "imageStamp") {
+                                $(this).removeAttr('disabled');
+                            }
+                        });
+                        self.checkAttachement();
+                    }
+                }
+            });
+        } else {
+            let signModal;
+            if (self.stepRepeatable) {
+                signModal = $('#stepRepeatableModal');
+                // $('#launchNoInfiniteSignButton').hide();
+            } else {
+                signModal = $("#signModal");
+            }
+            signModal.modal('show');
+        }
+    }
+
+    checkAttachement() {
+        let self = this;
+        if (this.attachmentRequire) {
+            bootbox.dialog({
+                message: "Vous devez joindre un document à cette étape avant de signer",
+                buttons: {
+                    close: {
+                        label: 'Fermer'
+                    }
+                },
+                callback: function (result) {
+                }
+            });
+        } else if (this.attachmentAlert) {
+            bootbox.confirm({
+                message: "Attention, il est demandé de joindre un document à cette étape avant de signer",
+                buttons: {
+                    cancel: {
+                        label: '<i class="fa fa-times"></i> Annuler'
+                    },
+                    confirm: {
+                        label: '<i class="fa fa-check"></i> Continuer'
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        self.confirmLaunchSignModal();
+                    }
+                }
+            });
+        } else {
+            this.confirmLaunchSignModal();
+        }
+    }
+
+    confirmLaunchSignModal() {
+        let enableInfinite = $("#enableInfinite");
+        enableInfinite.unbind();
+        enableInfinite.on("click", function () {
+            $("#infiniteForm").toggleClass("d-none");
+            $("#launchNoInfiniteSignButton").toggle();
+            $("#signCommentNoInfinite").toggle();
+        });
+        let signModal;
+        if (this.stepRepeatable) {
+            signModal = $('#stepRepeatableModal');
+            // $('#launchNoInfiniteSignButton').hide();
+        } else {
+            signModal = $("#signModal");
+        }
+        signModal.on('shown.bs.modal', function () {
+            $("#checkValidateSignButtonEnd").focus();
+            $("#checkValidateSignButtonNext").focus();
+        });
+        signModal.modal('show');
+    }
+
+    togglePasswordField() {
+        let value = this.certTypeSelect.val();
+        if(value === "userCert") {
             $("#password").show();
         } else {
             $("#password").hide();
@@ -101,7 +219,11 @@ export class SignUi {
 
     launchSign(gotoNext) {
         let signModal = $('#signModal');
-        if (this.isPdf && !this.workspace.checkSignsPositions() && this.workspace.signType !== "hiddenVisa") {
+        if(this.certTypeSelect.val() === '' || this.certTypeSelect.val() === null) {
+            bootbox.alert("<div class='alert alert-danger'>Merci de choisir un type de signature dans la liste déroulante</div>", null);
+            return;
+        }
+        if (this.isPdf && !this.workspace.checkSignsPositions() && this.workspace.signType !== "hiddenVisa" && (this.certTypeSelect.val() === 'imageStamp')) {
             bootbox.alert("Merci de placer la signature", null);
             signModal.modal('hide');
             return;
@@ -113,7 +235,7 @@ export class SignUi {
         let good = true;
         if(this.signForm) {
             let inputs = this.signForm.getElementsByTagName("input");
-            for (var i = 0, len = inputs.length; i < len; i++) {
+            for (let i = 0, len = inputs.length; i < len; i++) {
                 let input = inputs[i];
                 if (!input.checkValidity()) {
                     good = false;
@@ -152,7 +274,7 @@ export class SignUi {
             let signRequestParamses = Array.from(this.workspace.signPosition.signRequestParamses.values());
             this.signRequestUrlParams = {
                 'password' : $("#password").val(),
-                'certType' : $("#certType").val(),
+                'certType' : this.certTypeSelect.val(),
                 'signRequestParams' : JSON.stringify(signRequestParamses, function replacer(key, value) {
                     if (this &&
                         (key === "events"

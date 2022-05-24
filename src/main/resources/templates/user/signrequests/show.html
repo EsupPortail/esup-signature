@@ -294,12 +294,11 @@
                     Attention ce document comporte <span th:text="${signatureIds.size()}"></span> signature(s) électronique(s). Le fait d'apposer une signature calligraphique ou un visa visuel aura pour effet de détruire les précédentes signatures
                 </div>
                 <div id="signFormConfirm">
-                    <div class="alert alert-success">
-                        <p th:text="'Vous allez effectuer une signature de type : ' + #{'signbook.signtype.' + ${signType}}"></p>
-                        <p th:if="${user.keystore == null && signType == 'certSign'}">à l'aide du certificat de votre établissement</p>
+                    <div class="alert alert-primary">
+                        <p th:utext="'Le niveau de signature minimum requis pour signer ce document est : <b>' + #{'signbook.signtype.' + ${signType}} + '</b>'"></p>
                     </div>
                 </div>
-                <th:block th:if="${signRequest.createBy.eppn != user.eppn || signRequest.parentSignBook.liveWorkflow.getLiveWorkflowSteps().size() > signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
+                <th:block th:if="${signRequest.parentSignBook.liveWorkflow.getLiveWorkflowSteps().size() > signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
                 <label for="signComment">Vous pouvez ajouter un commentaire</label>
                 <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
                 </th:block>
@@ -337,17 +336,15 @@
                         </button>
                     </div>
                 </div>
-                <label for="certType" th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign}">Si besoin choisir le certificat à utiliser</label>
-                <select th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign}" id="certType" name="certType" class="form-select mt-2">
-                    <option th:if="${sealCertificateOk}" value="seal">Certificat cachet d'établissement</option>
-                    <option th:if="${globalProperties.openXPKIServerUrl != null}" value="default">Certificat généré automatiquement</option>
-                    <option th:if="${user.keystore != null}" value="profil">Certificat lié à mon profil</option>
-                    <option th:if="${certificats.size() > 0}" value="etab">Certificat de l'établissement</option>
-                </select>
-
-                <input th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).certSign || user.keystore == null} ? 'd-none'"
-                       class="form-control mt-2 mb-1" type="password" id="password" name="password" value=""
-                       placeholder="Mot de passe du keystore" />
+                <div class="alert alert-success mt-1">
+                    <label for="certType">Merci de selectionner le type de signature que vous souhaitez utiliser</label>
+                    <select id="certType" name="certType" class="form-select mt-2" required>
+                        <th:block th:each="signWith : ${signWiths}">
+                            <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                        </th:block>
+                    </select>
+                    <input class="form-control mt-2 mb-1" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" />
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>

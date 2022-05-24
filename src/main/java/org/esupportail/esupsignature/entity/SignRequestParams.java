@@ -31,8 +31,6 @@ public class SignRequestParams {
 
 	private String extraText = "";
 
-    private Boolean visual = true;
-
     private Boolean addWatermark = false;
 
     private Boolean allPages = false;
@@ -155,14 +153,6 @@ public class SignRequestParams {
 
     public void setExtraText(String extraText) {
         this.extraText = extraText;
-    }
-
-    public Boolean getVisual() {
-        return visual;
-    }
-
-    public void setVisual(Boolean visual) {
-        this.visual = visual;
     }
 
     public Boolean getAddWatermark() {

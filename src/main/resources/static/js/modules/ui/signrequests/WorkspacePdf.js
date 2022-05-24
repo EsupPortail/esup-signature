@@ -28,8 +28,6 @@ export class WorkspacePdf {
         this.stepRepeatable = stepRepeatable;
         this.status = status;
         this.csrf = csrf;
-        this.attachmentAlert = attachmentAlert;
-        this.attachmentRequire = attachmentRequire;
         this.currentStepMultiSign = currentStepMultiSign;
         this.forcePageNum = null;
         this.pointItEnable = true;
@@ -53,7 +51,6 @@ export class WorkspacePdf {
         this.currentSignRequestParamses = this.signPosition.currentSignRequestParamses;
         this.mode = 'sign';
         this.wheelDetector = new WheelDetector();
-        this.signLaunchButton = $("#signLaunchButton");
         this.addSpotEnabled = false;
         this.addCommentEnabled = false;
         this.spotCursor = this.getCommentPointer("\uf3c5");
@@ -129,8 +126,6 @@ export class WorkspacePdf {
                     postitButton.removeClass('circle-border');
                 });
             });
-        } else {
-            this.initLaunchButtons();
         }
         $('#addSignButton').on('click', e => this.addSign());
         $("#addCheck").on("click", e => this.signPosition.addCheckImage(this.pdfViewer.pageNum));
@@ -241,20 +236,11 @@ export class WorkspacePdf {
                 //     }
                 // }
             }
-            this.initLaunchButtons();
             this.wheelDetector.addEventListener("down", e => this.pdfViewer.checkCurrentPage(e));
             this.wheelDetector.addEventListener("up", e => this.pdfViewer.checkCurrentPage(e));
             this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
             this.wheelDetector.addEventListener("zoomout", e => this.pdfViewer.zoomOut());
         }
-    }
-
-    initLaunchButtons() {
-        $("#visaLaunchButton").on('click', e => this.launchSignModal());
-        this.signLaunchButton.on('click', e => this.launchSignModal());
-        $("#refuseLaunchButton").on('click', function () {
-            window.onbeforeunload = null;
-        });
     }
 
     initForm() {
@@ -342,117 +328,6 @@ export class WorkspacePdf {
         } else {
             return false;
         }
-    }
-
-    launchSignModal() {
-        console.info("launch sign modal");
-        window.onbeforeunload = null;
-        let self = this;
-        if (this.isPdf) {
-            this.pdfViewer.checkForm().then(function (result) {
-                if (result === "ok") {
-                    if (!self.checkSignsPositions() && (self.signType !== "hiddenVisa")) {
-                        bootbox.alert("Merci de placer la signature", null);
-                        $("#addSignButton").addClass("flash");
-                        $("#addSignButton").toggleClass("btn-primary btn-light");
-                        $("#addSignButton").toggleClass("btn-outline-primary");
-                        setTimeout(function() {
-                            $("#addSignButton").removeClass("flash btn-primary");
-                            $("#addSignButton").toggleClass("btn-primary btn-light");
-                            $("#addSignButton").toggleClass("btn-outline-primary");
-                        }, 4000);
-
-                    } else {
-                        if (self.signPosition.signRequestParamses.size === 0 && (self.signType === "certSign" || self.signType === "nexuSign")) {
-                            bootbox.confirm({
-                                message: "Attention vous allez signez ce document sans visuel",
-                                buttons: {
-                                    cancel: {
-                                        label: '<i class="fa fa-times"></i> Annuler'
-                                    },
-                                    confirm: {
-                                        label: '<i class="fa fa-check"></i> Confirmer'
-                                    }
-                                },
-                                callback: function (result) {
-                                    if (result) {
-                                        self.checkAttachement();
-                                    }
-                                }
-                            });
-                        } else {
-                            self.checkAttachement();
-                        }
-                    }
-                }
-            });
-        } else {
-            let signModal;
-            if (self.stepRepeatable) {
-                signModal = $('#stepRepeatableModal');
-                // $('#launchNoInfiniteSignButton').hide();
-            } else {
-                signModal = $("#signModal");
-            }
-            signModal.modal('show');
-        }
-    }
-
-    checkAttachement() {
-        let self = this;
-        if (this.attachmentRequire) {
-            bootbox.dialog({
-                message: "Vous devez joindre un document à cette étape avant de signer",
-                buttons: {
-                    close: {
-                        label: 'Fermer'
-                    }
-                },
-                callback: function (result) {
-                }
-            });
-        } else if (this.attachmentAlert) {
-            bootbox.confirm({
-                message: "Attention, il est demandé de joindre un document à cette étape avant de signer",
-                buttons: {
-                    cancel: {
-                        label: '<i class="fa fa-times"></i> Annuler'
-                    },
-                    confirm: {
-                        label: '<i class="fa fa-check"></i> Continuer'
-                    }
-                },
-                callback: function (result) {
-                    if (result) {
-                        self.confirmLaunchSignModal();
-                    }
-                }
-            });
-        } else {
-            this.confirmLaunchSignModal();
-        }
-    }
-
-    confirmLaunchSignModal() {
-        let enableInfinite = $("#enableInfinite");
-        enableInfinite.unbind();
-        enableInfinite.on("click", function () {
-            $("#infiniteForm").toggleClass("d-none");
-            $("#launchNoInfiniteSignButton").toggle();
-            $("#signCommentNoInfinite").toggle();
-        });
-        let signModal;
-        if (this.stepRepeatable) {
-            signModal = $('#stepRepeatableModal');
-            // $('#launchNoInfiniteSignButton').hide();
-        } else {
-            signModal = $("#signModal");
-        }
-        signModal.on('shown.bs.modal', function () {
-            $("#checkValidateSignButtonEnd").focus();
-            $("#checkValidateSignButtonNext").focus();
-        });
-        signModal.modal('show');
     }
 
     static validateForm() {
