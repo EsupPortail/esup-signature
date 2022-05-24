@@ -29,6 +29,8 @@ export class Nexu {
                 $("#alertNexu").show();
                 $("#signLaunchButton").hide();
             }
+            $("#certType > option[value='nexuCert']").attr('disabled', 'disabled');
+            
         });
     }
 

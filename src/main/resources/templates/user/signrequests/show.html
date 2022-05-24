@@ -298,6 +298,9 @@
                         <p th:utext="'Le niveau de signature minimum demandé pour signer ce document est : <br><center><b>' + #{'signbook.signtype.' + ${signType}} + '</b></center>'"></p>
                     </div>
                 </div>
+                <div id="noOptions" class="alert alert-danger mt-1" style="display: none;">
+                    Aucune option de signature n'est disponible pour cette demande. Si vous en avez la possibilité, merci soit d'ajouter une signature sur le document, soit de demarrer NexU.
+                </div>
                 <th:block th:if="${signRequest.parentSignBook.liveWorkflow.getLiveWorkflowSteps().size() > signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
                 <label for="signComment">Vous pouvez ajouter un commentaire</label>
                 <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
@@ -321,11 +324,10 @@
                             <i class="fas fa-sync-alt fa-2x"></i><br> Ré-actualiser la page après le lancement de NexU
                         </a>
                     </div>
-                    <div id="nexu_missing_alert" style="display: none; text-align: center;">
-                        <div class="alert alert-warning float-start">
-                            <h3>L'application NexU n'a pas été détectée</h3>
-                            <p>
-                                Merci de lancer l’application sur votre poste puis d'actualiser la page.<br/>
+                    <div id="nexu_missing_alert" class="mt-1" style="display: none;">
+                        <div class="alert alert-warning">
+                            <p>L'application NexU n'a pas été détectée</p>
+                            <p>Si vous souhaitez signer à l'aide d'un certificat présent sur votre poste ou sur clé USB, merci de lancer l’application NexU sur votre poste puis d'actualiser la page.<br/>
                                 Pour plus d'informations sur l'utilisation de NexU merci de consulter la documentation à cette adresse :
                                 <a target="_blank" href="https://www.esup-portail.org/wiki/display/SIGN/Application+NexU">https://www.esup-portail.org/wiki/display/SIGN/Application+NexU</a>
                             </p>

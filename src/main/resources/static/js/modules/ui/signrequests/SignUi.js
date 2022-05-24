@@ -122,6 +122,14 @@ export class SignUi {
                                 $(this).attr('disabled', 'disabled');
                                 $("#certType").val("");
                             }
+                            let nbOptions = $("#certType option:not([disabled])").length;
+                            if(nbOptions === 0) {
+                                $("#nexuCheck").removeClass("d-none");
+                                $("#noOptions").show();
+                            } else {
+                                $("#nexuCheck").addClass("d-none");
+                                $("#noOptions").hide();
+                            }
                         });
                     } else {
                         self.certTypeSelect.children().each(function(e) {
@@ -129,6 +137,10 @@ export class SignUi {
                                 $(this).removeAttr('disabled');
                             }
                         });
+                        $("#certType > option[value='imageStamp']").attr('selected', 'selected');
+                        $("#certType").val('imageStamp');
+                        $("#nexuCheck").addClass("d-none");
+                        $("#noOptions").hide();
                         self.checkAttachement();
                     }
                 }
