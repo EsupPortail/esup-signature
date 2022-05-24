@@ -39,8 +39,8 @@
     let signable = [[${signable}]];
     let editable = [[${editable}]];
     let currentSignType = [[${signRequest.currentSignType}]];
-    if (signable && currentSignType === 'nexuSign') {
-        new Nexu(null, null);
+    if (signable) {
+        new Nexu(null, null, currentSignType);
     }
     sessionStorage.setItem("favoriteSignRequestParams", [[${favoriteSignRequestParamsJson}]]);
     new SignUi(
@@ -295,14 +295,23 @@
                 </div>
                 <div id="signFormConfirm">
                     <div class="alert alert-primary">
-                        <p th:utext="'Le niveau de signature minimum requis pour signer ce document est : <b>' + #{'signbook.signtype.' + ${signType}} + '</b>'"></p>
+                        <p th:utext="'Le niveau de signature minimum demandé pour signer ce document est : <br><center><b>' + #{'signbook.signtype.' + ${signType}} + '</b></center>'"></p>
                     </div>
                 </div>
                 <th:block th:if="${signRequest.parentSignBook.liveWorkflow.getLiveWorkflowSteps().size() > signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
                 <label for="signComment">Vous pouvez ajouter un commentaire</label>
                 <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
                 </th:block>
-                <div th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}">
+                <div class="alert alert-success mt-1">
+                    <label for="certType">Merci de selectionner le type de signature que vous souhaitez utiliser</label>
+                    <select id="certType" name="certType" class="form-select mt-2" required>
+                        <th:block th:each="signWith : ${signWiths}">
+                            <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                        </th:block>
+                    </select>
+                    <input class="form-control mt-2 mb-1" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" />
+                </div>
+                <div id="nexuCheck" th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign ? 'd-none' : ''}">
                     <div id="nexu_version_alert" style="display: none;text-align: center;">
                         <div class="alert alert-warning float-start">
                             L'application NexU n’a pas la bonne version : NexU <span th:text="${globalProperties.nexuVersion} + 'est nécessaire'"></span>
@@ -335,15 +344,6 @@
                                 th:value="${signRequest.id}" autofocus>Signer le document
                         </button>
                     </div>
-                </div>
-                <div class="alert alert-success mt-1">
-                    <label for="certType">Merci de selectionner le type de signature que vous souhaitez utiliser</label>
-                    <select id="certType" name="certType" class="form-select mt-2" required>
-                        <th:block th:each="signWith : ${signWiths}">
-                            <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
-                        </th:block>
-                    </select>
-                    <input class="form-control mt-2 mb-1" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" />
                 </div>
             </div>
             <div class="modal-footer">

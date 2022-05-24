@@ -209,6 +209,11 @@ export class SignUi {
         } else {
             $("#password").hide();
         }
+        if(value === "nexuCert") {
+            $("#nexuCheck").removeClass('d-none');
+        } else {
+            $("#nexuCheck").addClass('d-none');
+        }
     }
 
     launchNoInfiniteSign() {

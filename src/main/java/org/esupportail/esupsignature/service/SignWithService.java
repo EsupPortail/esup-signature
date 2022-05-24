@@ -33,7 +33,9 @@ public class SignWithService {
     public List<SignWith> getAuthorizedSignWiths(String userEppn, SignType signType) {
         User user = userService.getUserByEppn(userEppn);
         List<SignWith> signWiths = new ArrayList<>(List.of(SignWith.values()));
-        signWiths.removeIf(signWith -> signWith.getValue() < signType.getValue());
+        if(signType != null) {
+            signWiths.removeIf(signWith -> signWith.getValue() < signType.getValue());
+        }
         if(globalProperties.getDisableCertStorage() || user.getKeystore() == null) {
             signWiths.remove(SignWith.userCert);
         }

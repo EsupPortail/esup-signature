@@ -1,6 +1,6 @@
 export class Nexu {
 
-    constructor(addExtra, id) {
+    constructor(addExtra, id, currentSignType) {
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.nexuUrl = this.globalProperties.nexuUrl;
         this.nexuVersion = this.globalProperties.nexuVersion;
@@ -15,20 +15,20 @@ export class Nexu {
         this.successDiv.hide();
         $("#warning-text").html("NexU not detected or not started ! ");
         $("#nexu_missing_alert").show();
-        $("#signFormConfirm").hide();
         let self = this;
         this.checkNexuClient().then(function (){
             console.warn("NexU detected");
             $("#warning-text").html("");
             $("#nexu_missing_alert").hide();
             $("#alertNexu").remove();
-            $("#signFormConfirm").show();
             if(id != null) {
                 self.loadScript();
             }
         }).catch(function (){
-            $("#alertNexu").show();
-            $("#signLaunchButton").hide();
+            if(currentSignType === 'nexuSign') {
+                $("#alertNexu").show();
+                $("#signLaunchButton").hide();
+            }
         });
     }
 
