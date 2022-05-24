@@ -5,6 +5,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
+import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -89,6 +90,9 @@ public class SignRequestController {
     @Resource
     private SignProperties signProperties;
 
+    @Resource
+    private XSLTService xsltService;
+
     @GetMapping()
     public String show() {
         return "redirect:/user/";
@@ -150,6 +154,7 @@ public class SignRequestController {
             Reports reports = signRequestService.validate(id);
             if (reports != null) {
                 model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+                model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
             }
             AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
             if(auditTrail != null) {
