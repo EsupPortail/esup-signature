@@ -4,7 +4,6 @@ import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -91,9 +90,6 @@ public class SignRequestController {
     private GlobalProperties globalProperties;
 
     @Resource
-    private SignProperties signProperties;
-
-    @Resource
     private XSLTService xsltService;
 
     @GetMapping()
@@ -162,7 +158,9 @@ public class SignRequestController {
             AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
             if(auditTrail != null) {
                 model.addAttribute("auditTrail", auditTrail);
-                model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
+                if(auditTrail.getDocumentSize() != null) {
+                    model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
+                }
             }
         }
         // TODO add ROLE_SEAL check

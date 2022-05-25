@@ -186,7 +186,7 @@ public class SignService {
 				aSiCWithXAdESSignatureParameters.aSiC().setMimeType("application/vnd.etsi.asic-e+zip");
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else {
-				if(abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken && signRequest.getSignRequestParams().size() > 0) {
+				if(abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > 0) {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), new Color(214, 0, 128), user, signatureDocumentForm.getSigningDate());
 				} else {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, user);
