@@ -234,7 +234,7 @@ public class SignRequestService {
 				if (multipartFiles.length == 1 && bytes.length > 0) {
 					if("application/pdf".equals(multipartFiles[0].getContentType()) && scanSignatureFields) {
 						if(!pdfService.isAcroForm(new ByteArrayInputStream(bytes))) {
-							bytes = pdfService.normalizeGS(new ByteArrayInputStream(bytes)).readAllBytes();
+							bytes = pdfService.normalizeGS(bytes);
 						}
 						List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
 						if(signRequestParamses.size() == 0) {

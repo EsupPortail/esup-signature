@@ -475,6 +475,7 @@ public class SignService {
 			abstractSignatureForm = signatureMultipleDocumentsForm;
 		} else {
 			InputStream inputStream;
+			byte[] bytes;
 			Document toSignFile = documents.get(0);
 			if(toSignFile.getContentType().equals("application/pdf")) {
 				signatureForm = SignatureForm.PAdES;
@@ -483,25 +484,23 @@ public class SignService {
 				} else {
 					inputStream = toSignFile.getInputStream();
 				}
-				byte[] bytes = inputStream.readAllBytes();
-				if(isNotSigned(signRequest) && !pdfService.isPdfAComplient(new ByteArrayInputStream(bytes))) {
+				bytes = inputStream.readAllBytes();
+				if(isNotSigned(signRequest) && !pdfService.isPdfAComplient(bytes)) {
 					int i = 0;
 					if(sealSign) i = 1;
 					List<SignRequestParams> signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
 					for(SignRequestParams signRequestParams : signRequestParamses) {
-						bytes = pdfService.stampImage(new ByteArrayInputStream(bytes), signRequest, signRequestParams, i, user, date).readAllBytes();
+						bytes = pdfService.stampImage(bytes, signRequest, signRequestParams, i, user, date);
 						i++;
 					}
-					inputStream = pdfService.convertGS(pdfService.writeMetadatas(new ByteArrayInputStream(bytes), toSignFile.getFileName(), signRequest, new ArrayList<>()));
-				} else {
-					inputStream = new ByteArrayInputStream(bytes);
+					bytes = pdfService.convertGS(pdfService.writeMetadatas(bytes, toSignFile.getFileName(), signRequest, new ArrayList<>()));
 				}
 			} else {
 				signatureForm = signProperties.getDefaultSignatureForm();
-				inputStream = toSignFile.getInputStream();
+				bytes = toSignFile.getInputStream().readAllBytes();
 			}
 			SignatureDocumentForm signatureDocumentForm = new SignatureDocumentForm();
-			signatureDocumentForm.setDocumentToSign(inputStream.readAllBytes());
+			signatureDocumentForm.setDocumentToSign(bytes);
 			if(!signatureForm.equals(SignatureForm.PAdES)) {
 				signatureDocumentForm.setContainerType(signProperties.getContainerType());
 			}

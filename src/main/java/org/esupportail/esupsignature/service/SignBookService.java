@@ -544,7 +544,7 @@ public class SignBookService {
         SignBook signBook = createSignBook(title, modelWorkflow, null, user);
         SignRequest signRequest = signRequestService.createSignRequest(signBook.getSubject(), signBook, user.getEppn(), authUser.getEppn());
         signRequest.getSignRequestParams().addAll(signRequestParamses);
-        InputStream inputStream;
+        byte[] inputStream;
         try {
             inputStream = dataService.generateFile(data, formReplaceInputStream);
         } catch(IOException e) {
@@ -558,7 +558,7 @@ public class SignBookService {
             }
         }
         String fileName = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
-        MultipartFile multipartFile = fileService.toMultipartFile(inputStream, fileName + ".pdf", "application/pdf");
+        MultipartFile multipartFile = fileService.toMultipartFile(new ByteArrayInputStream(inputStream), fileName + ".pdf", "application/pdf");
         signRequestService.addDocsToSignRequest(signRequest, true, 0, form.getSignRequestParams(), multipartFile);
         workflowService.importWorkflow(signBook, computedWorkflow, externalUsersInfos);
         signRequestService.nextWorkFlowStep(signBook);
@@ -952,7 +952,7 @@ public class SignBookService {
         }
         List<Document> toSignDocuments = signService.getToSignDocuments(signRequest.getId());
         SignType signType = signRequest.getCurrentSignType();
-        InputStream filledInputStream;
+        byte[] filledInputStream;
         if(!signRequestService.isNextWorkFlowStep(signRequest.getParentSignBook())) {
             Data data = dataService.getBySignRequest(signRequest);
             if(data != null && data.getForm() != null) {
@@ -971,11 +971,11 @@ public class SignBookService {
         if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf") && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0) {
             filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, signRequestService.isStepAllSignDone(signRequest.getParentSignBook()));
         } else {
-            filledInputStream = toSignDocuments.get(0).getInputStream();
+            filledInputStream = toSignDocuments.get(0).getInputStream().readAllBytes();
         }
         boolean visual = true;
         if(signWith.equals(SignWith.imageStamp)) {
-            InputStream signedInputStream = filledInputStream;
+            byte[] signedInputStream = filledInputStream;
             String fileName = toSignDocuments.get(0).getFileName();
             if(signType.equals(SignType.hiddenVisa)) visual = false;
             if(signRequestParamses.size() == 0 && visual) {
@@ -995,7 +995,7 @@ public class SignBookService {
             if ((signRequestService.isStepAllSignDone(signRequest.getParentSignBook()))) {
                 signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest, lastSignLogs));
             }
-            byte[] signedBytes = signedInputStream.readAllBytes();
+            byte[] signedBytes = signedInputStream;
 
             boolean isComplete = applyEndOfSignRules(signRequest.getId(), user.getEppn(), authUser.getEppn(), signType, comment);
             Document signedDocument = documentService.addSignedFile(signRequest, new ByteArrayInputStream(signedBytes), signRequest.getTitle() + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType());
@@ -1009,7 +1009,7 @@ public class SignBookService {
         } else {
             if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
                 signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
-                toSignDocuments.get(0).setTransientInputStream(pdfService.addOutLine(signRequest, filledInputStream, user, new Date(), new SimpleDateFormat()));
+                toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(pdfService.addOutLine(signRequest, filledInputStream, user, new Date(), new SimpleDateFormat())));
             }
             Document signedDocument = signService.certSign(signRequest, signerUser, password, signWith);
             Reports reports = validationService.validate(signedDocument.getInputStream(), null);
