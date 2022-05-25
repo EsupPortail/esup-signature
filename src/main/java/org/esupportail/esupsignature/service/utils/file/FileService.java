@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service.utils.file;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.mime.MimeTypes;
 import org.esupportail.esupsignature.entity.Document;
@@ -396,4 +397,12 @@ public class FileService {
 		return DigestUtils.sha3_256Hex(inputStream);
 	}
 
+	public File inputStreamToTempFile(InputStream inputStream, String name) throws IOException {
+		File file = getTempFile("tmp_" + name);
+		OutputStream outputStream = new FileOutputStream(file);
+		IOUtils.copy(inputStream, outputStream);
+		outputStream.close();
+		inputStream.close();
+		return file;
+	}
 }
