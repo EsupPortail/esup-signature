@@ -81,7 +81,7 @@ public class SignRequestWsSecureController {
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
         try {
-            boolean result = signBookService.initSign(id, signRequestParamsJsonString, comment, formData, password, SignWith.valueOf(certType), userShareId, userEppn, authUserEppn);
+            boolean result = signBookService.initSign(id, signRequestParamsJsonString, comment, formData, password, certType, userShareId, userEppn, authUserEppn);
             if(!result) {
                 return ResponseEntity.status(HttpStatus.OK).body("initNexu");
             }

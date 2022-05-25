@@ -6,7 +6,6 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
@@ -330,7 +329,7 @@ public class SignBookController {
                                            @RequestParam(value = "password", required = false) String password,
                                            @RequestParam(value = "certType", required = false) String certType,
                                            HttpSession httpSession) throws InterruptedException, EsupSignatureMailException, EsupSignatureException, IOException {
-        String error = signBookService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, SignWith.valueOf(certType));
+        String error = signBookService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, certType);
         if(error == null) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {

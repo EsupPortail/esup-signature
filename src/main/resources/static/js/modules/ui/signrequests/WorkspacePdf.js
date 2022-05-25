@@ -18,7 +18,6 @@ export class WorkspacePdf {
         this.formId = formId;
         this.signImageNumber = signImageNumber;
         this.restore = restore;
-        this.currentSignType = currentSignType;
         this.postits = postits;
         this.notSigned = notSigned;
         this.signable = signable;
@@ -98,16 +97,6 @@ export class WorkspacePdf {
             this.pdfViewer.addEventListener('renderFinished', e => this.refreshAfterPageChange());
             this.pdfViewer.addEventListener('renderFinished', e => this.initForm());
             this.pdfViewer.addEventListener('change', e => this.saveData());
-            if (this.signable) {
-                // let visualButton = $('#visualButton');
-                // if (this.currentSignType !== "pdfImageStamp") {
-                //     // visualButton.removeClass("d-none");
-                //     visualButton.on('click', e => this.signPosition.toggleVisual());
-                // }
-            }
-            // this.wheelDetector.addEventListener("pagetop", e => this.pageTop());
-            // this.wheelDetector.addEventListener("pagebottom", e => this.pageBottom());
-
             this.pdfViewer.pdfDiv.on('click', e => this.clickAction(e));
 
             $(".postit-global-close").on('click', function () {
@@ -230,11 +219,6 @@ export class WorkspacePdf {
                 this.enableCommentMode();
             } else {
                 this.enableSignMode();
-                // if (this.signable && this.currentSignType !== 'visa' && this.currentSignType !== 'hiddenVisa') {
-                //     if (this.mode === 'sign') {
-                //         // this.signPosition.toggleVisual();
-                //     }
-                // }
             }
             this.wheelDetector.addEventListener("down", e => this.pdfViewer.checkCurrentPage(e));
             this.wheelDetector.addEventListener("up", e => this.pdfViewer.checkCurrentPage(e));

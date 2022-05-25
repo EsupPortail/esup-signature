@@ -16,22 +16,28 @@ export class Nexu {
         $("#warning-text").html("NexU not detected or not started ! ");
         $("#nexu_missing_alert").show();
         let self = this;
-        this.checkNexuClient().then(function (){
-            console.warn("NexU detected");
-            $("#warning-text").html("");
-            $("#nexu_missing_alert").hide();
-            $("#alertNexu").remove();
-            if(id != null) {
-                self.loadScript();
-            }
-        }).catch(function (){
-            if(currentSignType === 'nexuSign') {
-                $("#alertNexu").show();
-                $("#signLaunchButton").hide();
-            }
-            $("#certType > option[value='nexuCert']").attr('disabled', 'disabled');
-            
+        $(document).ready(function() {
+            self.checkNexuClient().then(function(e) {
+                console.warn("NexU detected");
+                $("#warning-text").html("");
+                $("#nexu_missing_alert").hide();
+                $("#alertNexu").remove();
+                $("#noOptions").hide();
+                $("#selectTypeDiv").show();
+                if(id != null) {
+                    self.loadScript();
+                }
+            }).catch(function (){
+                if(currentSignType === 'nexuSign') {
+                    $("#alertNexu").show();
+                    $("#signLaunchButton").hide();
+                    $("#second-tools").removeClass("d-flex");
+                    $("#second-tools").hide();
+                }
+                $("#certType > option[value='nexuCert']").attr('disabled', 'disabled');
+            });
         });
+
     }
 
     static getDataToSign(certificateData) {
@@ -133,7 +139,10 @@ export class Nexu {
                         detectNexu = true;
                         self.detectedPort = port.trim();
                         self.checkNexu(data);
-                        resolve("nexu detected");
+                        $("#nexu_missing_alert").hide();
+                        $("#noOptions").hide();
+                        $("#selectTypeDiv").show();
+                        resolve("detected");
                     },
                     error: function () {
                         reject();

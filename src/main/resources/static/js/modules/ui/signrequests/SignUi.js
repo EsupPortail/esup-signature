@@ -14,6 +14,7 @@ export class SignUi {
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
         this.isPdf = isPdf;
+        this.currentSignType = currentSignType;
         this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, currentSignType, fields, stepRepeatable, status, this.csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone);
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
@@ -35,14 +36,14 @@ export class SignUi {
     }
 
     initListeners() {
-        $("#checkValidateSignButtonNexu").on('click', e => this.launchSign(false));
         $("#checkValidateSignButtonEnd").on('click', e => this.launchSign(false));
         $("#checkValidateSignButtonNext").on('click', e => this.launchSign(true));
         $("#launchInfiniteSignButton").on('click', e => this.insertStep());
         $("#launchNoInfiniteSignButton").on('click', e => this.launchNoInfiniteSign());
+        let self = this;
         $("#password").on('keyup', function (e) {
             if (e.keyCode === 13) {
-                $("#launchNoInfiniteSignButton").click();
+                self.launchSign(true);
             }
         });
         $("#certType").on("change", e => this.togglePasswordField());
@@ -95,7 +96,7 @@ export class SignUi {
         console.info("launch sign modal");
         window.onbeforeunload = null;
         let self = this;
-        if (this.isPdf) {
+        if (this.isPdf && this.currentSignType !== 'hiddenVisa') {
             this.workspace.pdfViewer.checkForm().then(function (result) {
                 if (result === "ok") {
                     if (self.workspace.signPosition.signRequestParamses.size === 0) {
@@ -126,9 +127,11 @@ export class SignUi {
                             if(nbOptions === 0) {
                                 $("#nexuCheck").removeClass("d-none");
                                 $("#noOptions").show();
+                                $("#selectTypeDiv").hide();
                             } else {
                                 $("#nexuCheck").addClass("d-none");
                                 $("#noOptions").hide();
+                                $("#selectTypeDiv").show();
                             }
                         });
                     } else {
@@ -141,8 +144,16 @@ export class SignUi {
                         $("#certType").val('imageStamp');
                         $("#nexuCheck").addClass("d-none");
                         $("#noOptions").hide();
+                        $("#selectTypeDiv").show();
                         self.checkAttachement();
                     }
+                    self.certTypeSelect.children().each(function(e) {
+                        if(!$(this).attr('disabled')) {
+                            $(this).attr('selected', 'selected');
+                            $("#certType").val($(this).attr('value')).trigger('change');
+                            return false;
+                        }
+                    });
                 }
             });
         } else {
