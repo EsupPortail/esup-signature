@@ -17,21 +17,21 @@
                         <div class="modal-body">
                             <div class="col-lg-12">
                                 <div class="form-group mb-3">
-                                    <input required aria-describedby="inputGroupLabel01" class="form-control"
-                                           data-buttontext="Choisir fichier" id="inputGroupFile01" name="multipartFiles"
-                                           type="file" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''">
-                                    <label class="custom-file-label" for="inputGroupFile01" id="inputGroupLabel01"
-                                           aria-label="Choisir un document">
-                                    </label>
+                                    <label class="form-label" for="inputGroupFile01">Choix des fichiers à signer</label>
+                                    <input required="true" id="inputGroupFile01" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''">
+                                    <script th:inline="javascript" type="module">
+                                        import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=[[${versionApp}]]';
+                                        new FilesInput($("#inputGroupFile01"));
+                                    </script>
                                 </div>
-                                <br>
-                                <label class="form-label" for="signType">Choisir un type de signature</label>
-                                <select name="signType" id="signType" class="slim-select-simple">
-                                    <th:block th:each="signType : ${signTypes}">
-                                        <option th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" th:value="${signType}"
-                                                th:text="#{'signbook.signtype.' + ${signType}}"></option>
-                                    </th:block>
-                                </select>
+                                <input type="hidden" name="signType" value="pdfImageStamp">
+<!--                                <label class="form-label" for="signType">Choisir un type de signature</label>-->
+<!--                                <select name="signType" id="signType" class="slim-select-simple">-->
+<!--                                    <th:block th:each="signType : ${signTypes}">-->
+<!--                                        <option th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" th:value="${signType}"-->
+<!--                                                th:text="#{'signbook.signtype.' + ${signType}}"></option>-->
+<!--                                    </th:block>-->
+<!--                                </select>-->
                             </div>
                         </div>
                         <div class="modal-footer">
