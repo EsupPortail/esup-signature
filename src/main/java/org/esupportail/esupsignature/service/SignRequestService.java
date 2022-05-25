@@ -246,7 +246,8 @@ public class SignRequestService {
 							}
 						}
 						signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
-						if(validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0) {
+						Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
+						if(reports == null || reports.getSimpleReport().getSignatureIdList().size() == 0) {
 							inputStream = pdfService.removeSignField(new ByteArrayInputStream(bytes));
 						}
 					} else if(multipartFiles[0].getContentType() != null && multipartFiles[0].getContentType().contains("image")){
