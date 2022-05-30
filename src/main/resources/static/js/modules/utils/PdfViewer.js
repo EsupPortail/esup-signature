@@ -899,21 +899,9 @@ export class PdfViewer extends EventFactory {
                 }
                 bootbox.alert(text, function () {
                     let field = $('#' + warningFields[0].name);
-                    let page = warningFields[0].page;
-                    if (page !== self.pageNum) {
-                        self.scrollToPage(page);
-                        self.addEventListener('renderFinished', function () {
-                            setTimeout(function () {
-                                field = $('#' + warningFields[0].name);
-                                self.focusField(field)
-                            }, 100);
-
-                        });
-                    } else {
-                        setTimeout(function () {
-                            self.focusField(field)
-                        }, 100);
-                    }
+                    setTimeout(function () {
+                        self.focusField(field)
+                    }, 100);
                 });
                 resolveOk = $(this)[0].name;
                 $('#sendModal').modal('hide');
