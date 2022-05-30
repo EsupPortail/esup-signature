@@ -2,8 +2,8 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
@@ -21,6 +21,12 @@ public class SignWithService {
     private UserService userService;
 
     @Resource
+    private DataService dataService;
+
+    @Resource
+    private SignRequestService signRequestService;
+
+    @Resource
     private CertificatService certificatService;
 
     private final GlobalProperties globalProperties;
@@ -30,12 +36,9 @@ public class SignWithService {
     }
 
     @Transactional
-    public List<SignWith> getAuthorizedSignWiths(String userEppn, SignType signType) {
+    public List<SignWith> getAuthorizedSignWiths(String userEppn, SignRequest signRequest) {
         User user = userService.getUserByEppn(userEppn);
         List<SignWith> signWiths = new ArrayList<>(List.of(SignWith.values()));
-        if(signType != null) {
-            signWiths.removeIf(signWith -> signWith.getValue() < signType.getValue());
-        }
         if(globalProperties.getDisableCertStorage() || user.getKeystore() == null) {
             signWiths.remove(SignWith.userCert);
         }
@@ -47,6 +50,12 @@ public class SignWithService {
         }
         if(globalProperties.getOpenXPKIServerUrl() == null) {
             signWiths.remove(SignWith.openPkiCert);
+        }
+        if(signRequest.getCurrentSignType() != null) {
+            signWiths.removeIf(signWith -> signWith.getValue() < signRequest.getCurrentSignType().getValue());
+        }
+        if(dataService.getBySignBook(signRequest.getParentSignBook()) != null && signRequestService.isMoreWorkflowStep(signRequest.getParentSignBook())) {
+            signWiths.removeIf(signWith -> signWith.getValue() > 2);
         }
         return signWiths;
     }

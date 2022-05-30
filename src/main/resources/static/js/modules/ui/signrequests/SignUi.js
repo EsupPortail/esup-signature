@@ -100,40 +100,44 @@ export class SignUi {
             this.workspace.pdfViewer.checkForm().then(function (result) {
                 if (result === "ok") {
                     if (self.workspace.signPosition.signRequestParamses.size === 0) {
-                        bootbox.confirm({
-                            message: "<h3>Attention vous allez signez ce document sans visuel</h3>" +
-                                "<div class='alert alert-danger'>Dans ce cas seules les signatures avec certificat sont possibles</div>",
-                            buttons: {
-                                cancel: {
-                                    label: '<i class="fa fa-undo"></i> Modifier ma signature',
-                                    className: 'btn-success'
+                        if(self.workspace.currentSignRequestParamses.length > 0) {
+                            bootbox.alert("Merci de placer la signature", null);
+                        } else {
+                            bootbox.confirm({
+                                message: "<h3>Attention vous allez signez ce document sans visuel</h3>" +
+                                    "<div class='alert alert-danger'>Dans ce cas seules les signatures avec certificat sont possibles</div>",
+                                buttons: {
+                                    cancel: {
+                                        label: '<i class="fa fa-undo"></i> Modifier ma signature',
+                                        className: 'btn-success'
+                                    },
+                                    confirm: {
+                                        label: '<i class="fa fa-check"></i> Continuer sans visuel'
+                                    }
                                 },
-                                confirm: {
-                                    label: '<i class="fa fa-check"></i> Continuer sans visuel'
+                                callback: function (result) {
+                                    if (result) {
+                                        self.checkAttachement();
+                                    }
                                 }
-                            },
-                            callback: function (result) {
-                                if (result) {
-                                    self.checkAttachement();
+                            });
+                            self.certTypeSelect.children().each(function (e) {
+                                if ($(this).val() === "imageStamp") {
+                                    $(this).attr('disabled', 'disabled');
+                                    $("#certType").val("");
                                 }
-                            }
-                        });
-                        self.certTypeSelect.children().each(function(e) {
-                            if($(this).val() === "imageStamp") {
-                                $(this).attr('disabled', 'disabled');
-                                $("#certType").val("");
-                            }
-                            let nbOptions = $("#certType option:not([disabled])").length;
-                            if(nbOptions === 0) {
-                                $("#nexuCheck").removeClass("d-none");
-                                $("#noOptions").show();
-                                $("#selectTypeDiv").hide();
-                            } else {
-                                $("#nexuCheck").addClass("d-none");
-                                $("#noOptions").hide();
-                                $("#selectTypeDiv").show();
-                            }
-                        });
+                                let nbOptions = $("#certType option:not([disabled])").length;
+                                if (nbOptions === 0) {
+                                    $("#nexuCheck").removeClass("d-none");
+                                    $("#noOptions").show();
+                                    $("#selectTypeDiv").hide();
+                                } else {
+                                    $("#nexuCheck").addClass("d-none");
+                                    $("#noOptions").hide();
+                                    $("#selectTypeDiv").show();
+                                }
+                            });
+                        }
                     } else {
                         self.certTypeSelect.children().each(function(e) {
                             if($(this).val() === "imageStamp") {
