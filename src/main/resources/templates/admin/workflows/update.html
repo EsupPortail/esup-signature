@@ -83,6 +83,10 @@
                             <input class="form-control" type="text" th:field="*{namingTemplate}" value="" autocomplete="off">
                         </div>
                         <div class="form-check mb-2">
+                            <input id="ownerSystem" type="checkbox" class="form-check-input" th:field="*{ownerSystem}"/>
+                            <label for="ownerSystem" class="form-check-label">Le compte système est propriétaire des demandes de ce circuit (les créateurs ne pourront pas supprimer les demandes)</label>
+                        </div>
+                        <div class="form-check mb-2">
                             <input id="publicUsage" type="checkbox" class="form-check-input" th:field="*{publicUsage}"/>
                             <label for="publicUsage" class="form-check-label">Visibilité publique ?</label>
                         </div>

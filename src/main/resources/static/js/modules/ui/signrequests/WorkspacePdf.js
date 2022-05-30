@@ -47,7 +47,7 @@ export class WorkspacePdf {
             signImageNumber,
             signImages,
             userName, authUserName, signable, this.forcePageNum, this.isOtp, this.phone);
-        this.currentSignRequestParamses = this.signPosition.currentSignRequestParamses;
+        this.currentSignRequestParamses = currentSignRequestParamses;
         this.mode = 'sign';
         this.wheelDetector = new WheelDetector();
         this.addSpotEnabled = false;

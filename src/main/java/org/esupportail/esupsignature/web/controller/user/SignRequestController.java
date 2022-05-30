@@ -167,7 +167,7 @@ public class SignRequestController {
         if(globalProperties.getSealCertificatDriver() != null) {
             model.addAttribute("sealCertificateOk", true);
         }
-        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest.getCurrentSignType()));
+        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest));
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("editable", signRequest.getEditable());

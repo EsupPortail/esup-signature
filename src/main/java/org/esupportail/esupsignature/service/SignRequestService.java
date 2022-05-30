@@ -851,7 +851,8 @@ public class SignRequestService {
 		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
 			List<SignRequestParams> signRequestParamsForCurrentStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().stream().filter(signRequestParams -> signRequestParams.getSignDocumentNumber().equals(signOrderNumber)).collect(Collectors.toList());
 			for(SignRequestParams signRequestParams : signRequestParamsForCurrentStep) {
-				if(signRequest.getSignRequestParams().contains(signRequestParams) && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().anyMatch(recipient -> recipient.getUser().equals(user))) {
+				if(signRequest.getSignRequestParams().contains(signRequestParams)
+					&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().anyMatch(recipient -> recipient.getUser().equals(user))) {
 					toUserSignRequestParams.add(signRequestParams);
 				}
 			}
