@@ -426,6 +426,7 @@ public class WorkflowService {
         workflowToUpdate.setTargetNamingTemplate(workflow.getTargetNamingTemplate());
         workflowToUpdate.setPublicUsage(workflow.getPublicUsage());
         workflowToUpdate.setVisibility(workflow.getVisibility());
+        workflowToUpdate.setOwnerSystem(workflow.getOwnerSystem());
         workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
         workflowToUpdate.setSendAlertToAllRecipients(workflow.getSendAlertToAllRecipients());
         workflowToUpdate.getRoles().clear();

@@ -543,6 +543,10 @@ public class SignBookService {
         }
         SignBook signBook = createSignBook(title, modelWorkflow, null, user);
         SignRequest signRequest = signRequestService.createSignRequest(signBook.getSubject(), signBook, user.getEppn(), authUser.getEppn());
+        if(form.getWorkflow().getOwnerSystem()) {
+            signBook.setCreateBy(userService.getSystemUser());
+            signRequest.setCreateBy(userService.getSystemUser());
+        }
         signRequest.getSignRequestParams().addAll(signRequestParamses);
         byte[] inputStream;
         try {
@@ -815,6 +819,10 @@ public class SignBookService {
             }
         }
         signRequestService.completeSignRequests(signBook.getSignRequests(), userEppn);
+        Data data = dataService.getBySignBook(signBook);
+        if(data != null) {
+            data.setStatus(SignRequestStatus.completed);
+        }
         updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", "SUCCESS", "", userEppn, userEppn);
     }
 
@@ -1089,6 +1097,10 @@ public class SignBookService {
                     recipient.setSigned(true);
                 }
             }
+        }
+        Data data = dataService.getBySignBook(signBook);
+        if(data != null) {
+            data.setStatus(SignRequestStatus.refused);
         }
     }
 
