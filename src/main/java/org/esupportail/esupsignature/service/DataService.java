@@ -112,7 +112,7 @@ public class DataService {
         return cloneData;
     }
 
-    public InputStream generateFile(Data data, InputStream inputStream) throws IOException {
+    public byte[] generateFile(Data data, InputStream inputStream) throws IOException {
         Form form = data.getForm();
         if(inputStream != null && inputStream.available() > 0) {
             return pdfService.fill(inputStream, data.getDatas(), false);

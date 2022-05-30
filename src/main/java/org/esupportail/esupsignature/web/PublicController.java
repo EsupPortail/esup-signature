@@ -1,6 +1,8 @@
 package org.esupportail.esupsignature.web;
 
+import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.FileUtils;
+import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.entity.AuditTrail;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Log;
@@ -49,6 +51,9 @@ public class PublicController {
     private UserService userService;
 
     @Resource
+    private XSLTService xsltService;
+
+    @Resource
     private PreAuthorizeService preAuthorizeService;
 
     public PublicController(@Autowired(required = false) BuildProperties buildProperties) {
@@ -56,7 +61,7 @@ public class PublicController {
     }
 
     @GetMapping(value = "/control/{token}")
-    public String control(@PathVariable String token, Model model) throws EsupSignatureFsException {
+    public String control(@PathVariable String token, Model model) throws EsupSignatureFsException, IOException {
         SignRequest signRequest = signRequestService.getSignRequestByToken(token);
         if(signRequest == null) {
             return "error";
@@ -65,6 +70,10 @@ public class PublicController {
         Document signedDocument = signRequestService.getLastSignedFile(signRequest.getId());
         model.addAttribute("size", FileUtils.byteCountToDisplaySize(signedDocument.getSize()));
         model.addAttribute("auditTrail", auditTrail);
+        if(auditTrail != null && auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
+            Reports reports = signRequestService.validate(signRequest.getId());
+            model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
+        }
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && !auth.getName().equals("anonymousUser")) {
             String eppn = userService.tryGetEppnFromLdap(auth);
@@ -104,6 +113,10 @@ public class PublicController {
             model.addAttribute("auditTrail", auditTrail);
             if(signRequest != null) {
                 setControlValues(model, signRequest, auditTrail, eppn);
+            }
+            if(auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
+                Reports reports = signRequestService.validate(signRequest.getId());
+                model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
             }
         } else {
             model.addAttribute("error", true);

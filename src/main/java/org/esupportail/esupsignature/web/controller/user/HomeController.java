@@ -100,7 +100,7 @@ public class HomeController {
                 messages.addAll(messageService.getByUser(authUser));
             }
             model.addAttribute("messageNews", messages);
-            Page<SignBook> signBooksToSign = signBookService.getSignBooks(userEppn, "tosign", "%", "%", "%", "%", null, pageable);
+            Page<SignBook> signBooksToSign = signBookService.getSignBooks(userEppn, "toSign", "%", "%", "%", "%", null, pageable);
             model.addAttribute("signBooksToSign", signBooksToSign);
             Page<SignBook> signBooksPending = signBookService.getSignBooks(userEppn, "pending", "%", "%", "%", "%", null, pageable);
             model.addAttribute("signBooksPending", signBooksPending);

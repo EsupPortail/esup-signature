@@ -99,7 +99,7 @@ public class ValidationController {
 			model.addAttribute("detailedReport", "<h2>Impossible de valider ce document</h2>");
 		}
 		try {
-			model.addAttribute("pdfaReport", pdfService.checkPDFA(new ByteArrayInputStream(docBytes), true));
+			model.addAttribute("pdfaReport", pdfService.checkPDFA(docBytes, true));
 		} catch (EsupSignatureException e) {
 			model.addAttribute("pdfaReport", Arrays.asList("danger", "Impossible de valider ce document"));
 			logger.error(e.getMessage());

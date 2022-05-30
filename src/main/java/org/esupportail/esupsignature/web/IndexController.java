@@ -176,7 +176,7 @@ public class IndexController {
 		return "logged-out";
 	}
 
-	@RequestMapping(value={"/robots.txt", "/robot.txt"})
+	@RequestMapping(value={"/robots.txt", "/robot.txt"}, produces = "text/plain")
 	@ResponseBody
 	public String getRobotsTxt() {
 		return "User-agent: *\n" +

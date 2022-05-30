@@ -676,7 +676,7 @@ export class PdfViewer extends EventFactory {
 
     renderPdfForm(items) {
         console.debug("debug - " + "rending pdfForm items");
-        $('[id^="signField_"]').each(function (){
+        $('[id^="signField_"]').each(function () {
             $(this).unbind();
             $(this).remove();
         });
@@ -695,18 +695,22 @@ export class PdfViewer extends EventFactory {
                     let top = Math.round(pdf.height() - ((item.rect[1] + (item.rect[3] - item.rect[1])) / .75 * this.scale));
                     let width = Math.round((item.rect[2] - item.rect[0]) / .75 * this.scale);
                     let height = Math.round((item.rect[3] - item.rect[1]) / .75 * this.scale);
-                    let signDiv = "<div title='Cliquez pour voir le detail de la signature' id='signField_" + signFieldNumber + "' class='sign-field' style='position: absolute; left: " + left + "px; top: " + top + "px;width: " + width + "px; height: " + height + "px;'></div>";
+                    let signDiv = "<div data-id='" + signFieldNumber + "' title='Cliquez pour voir le detail de la signature' id='signField_" + signFieldNumber + "' class='sign-field' style='position: absolute; left: " + left + "px; top: " + top + "px;width: " + width + "px; height: " + height + "px;'></div>";
                     pdf.append(signDiv);
                     let signField = $('#signField_' + signFieldNumber);
                     signField.css("font-size", 8);
                     signField.attr("data-id", signFieldNumber);
                     signField.on('click', function () {
                         console.info("click on " + signFieldNumber);
-                        let report = $("#report_" + $(this).attr("data-id"));
+                        let id = $(this).attr("data-id");
+                        let report = $("#report_" + id);
+                        console.log(report.length);
                         if (report.length) {
                             $("#reportModal").modal("show");
                             $("div[id^='report_']").each(function () {
-                                $(this).hide();
+                                if($(this).attr("id") !== "report_" + id) {
+                                    $(this).hide();
+                                }
                             });
                             report.css("display", "block");
                         }

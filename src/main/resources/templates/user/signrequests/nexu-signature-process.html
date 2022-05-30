@@ -4,7 +4,9 @@
 <head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
     import {Nexu} from '/js/modules/ui/signrequests/Nexu.js?version=[[${versionApp}]]';
-    let nexu = new Nexu([[${addExtra}]], [[${id}]]);
+    $(document).ready(function() {
+        new Nexu([[${addExtra}]], [[${id}]]);
+    });
 </script>
 <body>
 <header th:replace="fragments/nav :: nav"></header>
@@ -14,8 +16,9 @@
         <div class="alert alert-success col-6 mb-2 mx-auto">
             <h3>Signature NexU en cours</h3>
             <p>
-                L'application Nexu va s'ouvrir, vous pourez utiliser le gestionnaire de clés windows ou une
-                clé matérielle<br>
+                L'application Nexu va s’ouvrir, vous pourrez utiliser le gestionnaire de clés windows ou une
+                clé matérielle
+                <br>
                 Il est possible que vous deviez saisir votre mot de passe plusieurs fois pendant la
                 procédure
             </p>
@@ -35,7 +38,7 @@
                         <br>
                         <small>Erreur : <span id="errorcontent"></span></small>
                         <br/>
-                        <a onclick="location.reload();" class="btn btn-danger btnSeccion text-white" id="btnSeccion4">
+                        <a onclick="location.reload();" class="btn btn-danger text-white">
                             <i class="fas fa-sync-alt fa-2x"></i><br/> Relancer
                         </a>
                     </div>
@@ -44,7 +47,7 @@
                      id="success">
                     <strong>Signature effectuée</strong>
                     <br/>
-                    <a th:href="'/user/signrequests/' + ${id}" class="btn btn-success btnSeccion" id="return2">
+                    <a th:href="'/user/signrequests/' + ${id}" class="btn btn-success" id="return2">
                         <i class="fas fa-flag-checkered fa-2x"></i><br/> Retour
                     </a>
                 </div>

@@ -1,6 +1,6 @@
 export class Nexu {
 
-    constructor(addExtra, id) {
+    constructor(addExtra, id, currentSignType) {
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.nexuUrl = this.globalProperties.nexuUrl;
         this.nexuVersion = this.globalProperties.nexuVersion;
@@ -15,21 +15,29 @@ export class Nexu {
         this.successDiv.hide();
         $("#warning-text").html("NexU not detected or not started ! ");
         $("#nexu_missing_alert").show();
-        $("#signFormConfirm").hide();
         let self = this;
-        this.checkNexuClient().then(function (){
-            console.warn("NexU detected");
-            $("#warning-text").html("");
-            $("#nexu_missing_alert").hide();
-            $("#alertNexu").remove();
-            $("#signFormConfirm").show();
-            if(id != null) {
-                self.loadScript();
-            }
-        }).catch(function (){
-            $("#alertNexu").show();
-            $("#signLaunchButton").hide();
+        $(document).ready(function() {
+            self.checkNexuClient().then(function(e) {
+                console.warn("NexU detected");
+                $("#warning-text").html("");
+                $("#nexu_missing_alert").hide();
+                $("#alertNexu").remove();
+                $("#noOptions").hide();
+                $("#selectTypeDiv").show();
+                if(id != null) {
+                    self.loadScript();
+                }
+            }).catch(function (){
+                if(currentSignType === 'nexuSign') {
+                    $("#alertNexu").show();
+                    $("#signLaunchButton").hide();
+                    $("#second-tools").removeClass("d-flex");
+                    $("#second-tools").hide();
+                }
+                $("#certType > option[value='nexuCert']").attr('disabled', 'disabled');
+            });
         });
+
     }
 
     static getDataToSign(certificateData) {
@@ -131,7 +139,10 @@ export class Nexu {
                         detectNexu = true;
                         self.detectedPort = port.trim();
                         self.checkNexu(data);
-                        resolve("nexu detected");
+                        $("#nexu_missing_alert").hide();
+                        $("#noOptions").hide();
+                        $("#selectTypeDiv").show();
+                        resolve("detected");
                     },
                     error: function () {
                         reject();

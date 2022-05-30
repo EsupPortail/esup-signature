@@ -4,6 +4,7 @@ import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -50,6 +51,9 @@ public class SignRequestController {
     @Resource
     private SignService signService;
 
+    @Resource
+    private SignWithService signWithService;
+
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
         return "signrequests";
@@ -84,6 +88,9 @@ public class SignRequestController {
 
     @Resource
     private GlobalProperties globalProperties;
+
+    @Resource
+    private XSLTService xsltService;
 
     @GetMapping()
     public String show() {
@@ -146,11 +153,21 @@ public class SignRequestController {
             Reports reports = signRequestService.validate(id);
             if (reports != null) {
                 model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+                model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
             }
             AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
-            model.addAttribute("auditTrail", auditTrail);
-            model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
+            if(auditTrail != null) {
+                model.addAttribute("auditTrail", auditTrail);
+                if(auditTrail.getDocumentSize() != null) {
+                    model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
+                }
+            }
         }
+        // TODO add ROLE_SEAL check
+        if(globalProperties.getSealCertificatDriver() != null) {
+            model.addAttribute("sealCertificateOk", true);
+        }
+        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest.getCurrentSignType()));
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("editable", signRequest.getEditable());

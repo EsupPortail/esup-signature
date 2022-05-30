@@ -26,7 +26,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "left join lws.recipients r " +
             "where (sb.workflowName like :workflowFilter) " +
             "and (sb.subject like :docTitleFilter) " +
-            "and (:userEppn in r.user.eppn  or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
+            "and ((:userEppn in r.user.eppn and lws.id = sb.liveWorkflow.id) or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
             "and sb.hidedBy is empty " +
             "and size(sb.signRequests) > 0 " +
             "and sb.status <> 'deleted' " +
@@ -42,7 +42,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "left join lws.recipients r " +
             "where (sb.workflowName like :workflowFilter) " +
             "and (sb.subject like :docTitleFilter) " +
-            "and (:userEppn in r.user.eppn  or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
+            "and ((:userEppn in r.user.eppn and lws.id = sb.liveWorkflow.id) or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
             "and sb.hidedBy is empty " +
             "and size(sb.signRequests) > 0 " +
             "and sb.status <> 'deleted'" +
@@ -60,7 +60,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "where (sb.workflowName like :workflowFilter) " +
             "and (sb.subject like :docTitleFilter) " +
             "and :recipientUserEppn in (u.eppn) " +
-            "and (:userEppn in (key(rhs).user.eppn)  or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
+            "and ((:userEppn in r.user.eppn and lws.id = sb.liveWorkflow.id) or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
             "and sb.hidedBy is empty " +
             "and size(sb.signRequests) > 0 " +
             "and sb.status <> 'deleted' " +
