@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service.interfaces.listsearch.impl;
 import org.esupportail.esupsignature.service.extdb.ExtDbService;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserList;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -32,7 +33,7 @@ public class SympaUserList implements UserList {
     }
 
     @Override
-    public List<String> getUsersEmailFromList(String listName) {
+    public List<String> getUsersEmailFromList(String listName) throws DataAccessException {
         List<String> userEmails = new ArrayList<>();
         jdbcTemplate.query("select user_subscriber from subscriber_table where list_subscriber=" + "'" + listName.split("@")[0] + "'", (ResultSet rs) -> {
             userEmails.add(rs.getString("user_subscriber"));

@@ -371,8 +371,11 @@ public class SignRequestController {
                                  @RequestParam(value = "link", required = false) String link,
                                  RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         logger.info("start add attachment");
-        signRequestService.addAttachement(multipartFiles, link, id);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La piece jointe à bien été ajoutée"));
+        if(signRequestService.addAttachement(multipartFiles, link, id)) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La piece jointe à bien été ajoutée"));
+        } else {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucune pièce jointe n'a été ajoutée. Merci de contrôle la validité du document"));
+        }
         return "redirect:/user/signrequests/" + id;
     }
 

@@ -657,18 +657,22 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void addAttachement(MultipartFile[] multipartFiles, String link, Long signRequestId) throws EsupSignatureIOException {
+	public boolean addAttachement(MultipartFile[] multipartFiles, String link, Long signRequestId) throws EsupSignatureIOException {
 		SignRequest signRequest = getById(signRequestId);
+		int nbAttachmentAdded = 0;
 		if(multipartFiles != null && multipartFiles.length > 0) {
 			for (MultipartFile multipartFile : multipartFiles) {
 				if(multipartFile.getSize() > 0) {
 					addAttachmentToSignRequest(signRequest, multipartFile);
+					nbAttachmentAdded++;
 				}
 			}
 		}
 		if(link != null && !link.isEmpty()) {
 			signRequest.getLinks().add(link);
+			nbAttachmentAdded++;
 		}
+		return nbAttachmentAdded > 0;
 	}
 
 	public void removeAttachement(Long id, Long attachementId, RedirectAttributes redirectAttributes) {

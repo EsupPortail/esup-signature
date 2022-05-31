@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.ldap.NamingException;
 import org.springframework.stereotype.Controller;
@@ -143,8 +144,12 @@ public class UserController {
 	@GetMapping(value = "/search-user-list")
 	@ResponseBody
 	public List<String> searchUserList(@RequestParam(value="searchString") String searchString) {
-
-    	return userListService.getUsersEmailFromList(searchString);
+		try {
+			return userListService.getUsersEmailFromList(searchString);
+		} catch (DataAccessException e) {
+			logger.warn(e.getMessage());
+		}
+		return null;
 	}
 
 	@GetMapping("/properties")
