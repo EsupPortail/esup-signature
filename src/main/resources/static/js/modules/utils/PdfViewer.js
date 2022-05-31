@@ -193,7 +193,7 @@ export class PdfViewer extends EventFactory {
             pdf.getPage(i).then(page => this.renderTask(page, container, i));
         }
         this.refreshTools();
-        this.initialOffset = $("#page_1").offset().top;
+        this.initialOffset = parseInt($("#page_1").offset().top);
         this.fireEvent("ready", ['ok']);
     }
 

@@ -537,10 +537,11 @@ export class WorkspacePdf {
                     let signRequestParams = Array.from(self.signPosition.signRequestParamses.values())[i];
                     let cross = signRequestParams.cross;
                     if (cross.attr("id") === ui.draggable.attr("id")) {
-                        let offset = ($("#page_" + signRequestParams.signPageNumber).offset().top) - self.pdfViewer.initialOffset + (10 * (signRequestParams.signPageNumber));
-                        signRequestParams.yPos = (Math.round(parseInt(signSpaceDiv.css("top")) - offset) / self.pdfViewer.scale);
+                        let offset = Math.round($("#page_" + signRequestParams.signPageNumber).offset().top) - self.pdfViewer.initialOffset + (10 * (signRequestParams.signPageNumber));
+                        console.log(parseInt(signSpaceDiv.css("top")) + " -> " + Math.round((parseInt(signSpaceDiv.css("top")) - offset) / self.pdfViewer.scale));
+                        signRequestParams.yPos = Math.round((parseInt(signSpaceDiv.css("top")) - offset) / self.pdfViewer.scale);
                         signRequestParams.xPos = Math.round(parseInt(signSpaceDiv.css("left")) / self.pdfViewer.scale);
-                        signRequestParams.applyCurrentSignRequestParams();
+                        signRequestParams.applyCurrentSignRequestParams(self.pdfViewer.initialOffset);
                     }
                 }
                 self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = true;
