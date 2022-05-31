@@ -387,7 +387,6 @@ export class SignRequestParams extends EventFactory {
     applyCurrentSignRequestParams(initialOffset) {
         let pageOffset = $("#page_" + this.signPageNumber).offset().top;
         let offset = pageOffset - initialOffset + (10 * (parseInt(this.signPageNumber)));
-        console.log((this.yPos * this.currentScale + offset));
         this.cross.css('top', Math.round(this.yPos * this.currentScale + offset) + 'px');
         this.cross.css('left', Math.round(this.xPos * this.currentScale) + 'px');
     }
