@@ -773,7 +773,6 @@ export class PdfViewer extends EventFactory {
         $([document.documentElement, document.body]).animate({
             scrollTop: $("#page_" + this.pageNum).offset().top - this.initialOffset
         }, 500);
-        document.getElementById('page_num').textContent = this.pageNum;
         return true;
     }
 
@@ -785,7 +784,6 @@ export class PdfViewer extends EventFactory {
         $([document.documentElement, document.body]).animate({
             scrollTop: $("#page_" + this.pageNum).offset().top - this.initialOffset
         }, 500);
-        document.getElementById('page_num').textContent = this.pageNum;
         return true;
     }
 

@@ -191,6 +191,16 @@ public class GlobalProperties {
      */
     private Boolean sealAllDocs = false;
 
+    /**
+     *  Whitelist des domaines authorisés à obtenir le ROLE_USER pour les connexion Shibboleth
+     */
+    private List<String> shibUsersDomainWhiteList;
+
+    /**
+     *  Adresse du web service de données externes
+     */
+    private String restExtValueUrl;
+
     public String getRootUrl() {
         return rootUrl;
     }
@@ -493,5 +503,21 @@ public class GlobalProperties {
 
     public void setSealAllDocs(Boolean sealAllDocs) {
         this.sealAllDocs = sealAllDocs;
+    }
+
+    public List<String> getShibUsersDomainWhiteList() {
+        return shibUsersDomainWhiteList;
+    }
+
+    public void setShibUsersDomainWhiteList(List<String> shibUsersDomainWhiteList) {
+        this.shibUsersDomainWhiteList = shibUsersDomainWhiteList;
+    }
+
+    public String getRestExtValueUrl() {
+        return restExtValueUrl;
+    }
+
+    public void setRestExtValueUrl(String restExtValueUrl) {
+        this.restExtValueUrl = restExtValueUrl;
     }
 }

@@ -255,6 +255,10 @@ public class UserService {
                 }
             }
         }
+        if(userType.equals(UserType.shib) && globalProperties.getShibUsersDomainWhiteList() != null && globalProperties.getShibUsersDomainWhiteList().size() > 0 && globalProperties.getShibUsersDomainWhiteList().contains(user.getEppn().split("@")[1])) {
+            user.getRoles().remove("ROLE_USER");
+            user.getRoles().add("ROLE_OTP");
+        }
         userRepository.save(user);
         return user;
     }
