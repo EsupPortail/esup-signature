@@ -838,7 +838,7 @@ public class SignRequestService {
 			List<Recipient> recipients = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients();
 			for(Recipient recipient : recipients) {
 				User user = recipient.getUser();
-				if(userService.findPersonLdapByUser(user) != null || user.getUserType().equals(UserType.external)) {
+				if(userService.findPersonLdapByUser(user) != null || user.getUserType().equals(UserType.external) || user.getUserType().equals(UserType.shib)) {
 					recipientNotPresentsignRequests.remove(signRequest);
 				}
 			}

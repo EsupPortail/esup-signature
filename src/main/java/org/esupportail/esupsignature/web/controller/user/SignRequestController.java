@@ -307,7 +307,7 @@ public class SignRequestController {
                 }
                 long signRequestId = signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
                 if(signRequestService.checkTempUsers(signRequestId, recipientsEmails, externalUsersInfos)) {
-                    redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
+                    redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Merci de compléter tous les utilisateurs externes"));
                 }
                 return "redirect:/user/signrequests/" + signRequestId;
             } catch (EsupSignatureException | MessagingException | EsupSignatureFsException e) {

@@ -194,7 +194,7 @@ public class UserService {
 
         UserType userType = checkMailDomain(mail);
         if (userType.equals(UserType.external)) {
-            logger.info("ldap user not found : " + mail + ". Creating temp acccount");
+            logger.info("ldap user not found : " + mail + ". Creating temp account");
             return createUser(UUID.randomUUID().toString(), "", "", mail, UserType.external, false);
         } else if (userType.equals(UserType.shib)) {
             return createUser(mail, mail, "Nouvel utilisateur fédération", mail, UserType.shib, false);
@@ -436,7 +436,6 @@ public class UserService {
         }
         return UserType.external;
     }
-
 
     public InputStream getDomainsWhiteList() {
         try {
