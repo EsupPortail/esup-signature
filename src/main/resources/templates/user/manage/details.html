@@ -44,34 +44,72 @@
                     <div id="listSignRequestTable" class="">
                         <table class="table table-borderless table-hover">
                             <thead class="table-secondary">
-                            <tr>
-<!--                                <th class="w-20 d-none d-lg-table-cell">-->
-<!--                                    <div class="position-relative">-->
-<!--                                        <button type="button" id="menu-toggle_multiple" class="btn text-light toggle-mini-menu" title="Menu global" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="collapse">-->
-<!--                                            <i class="fas fa-ellipsis-v"></i>-->
-<!--                                        </button>-->
-<!--                                        <div class="card position-absolute collapse mini-menu-thead" id="menu-multiple">-->
-<!--                                            <div class="card-body">-->
-<!--                                                <button id="selectAllButton" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button">-->
-<!--                                                    <i class="far fa-check-square"></i> Tout sélectionner-->
-<!--                                                </button>-->
-<!--                                                <button id="unSelectAllButton" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button">-->
-<!--                                                    <i class="far fa-minus-square"></i> Tout dé-sélectionner-->
-<!--                                                </button>-->
-<!--                                                <button id="menuDeleteMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fas fa-trash-alt pr-2"></i> Supprimer la sélection</button>-->
-
-<!--                                            </div>-->
-<!--                                        </div>-->
-<!--                                    </div>-->
-<!--                                </th>-->
-                                <th class="w-20 d-none d-xxl-table-cell text-center">Circuit</th>
-                                <th class="w-20 text-center">Titre</th>
-                                <th><a class="sorted" sd:pagination-sort="createBy">Crée par</a></th>
-                                <th><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
-                                <th class="d-none d-lg-table-cell">Participants</th>
-                                <th class="d-none d-xxl-table-cell">Date de signature/refus</th>
-                                <th class="d-none d-md-table-cell">Statut</th>
-                                <th>Actions</th>
+                            <tr style="z-index: 2;">
+                                <form>
+                                <th class="d-none d-xxl-table-cell text-center" style="width: 10%;">
+                                    <select id="workflowFilter" class="slim-select-filter sign-request-filter" data-placeholder="Circuit" data-allow-deselect="true">
+                                        <option data-placeholder="true"></option>
+                                        <option value="all">Tout</option>
+                                        <th:block th:each="workflow : ${workflowNames}">
+                                            <option th:value="${workflow}" th:selected="${workflowFilter == workflow}" th:text="${workflow}"></option>
+                                        </th:block>
+                                    </select>
+                                </th>
+                                <th class="text-center" style="width: 10%;">
+                                    <select id="docTitleFilter" class="slim-select-filter sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
+                                        <option data-placeholder="true"></option>
+                                        <option value="all">Tout</option>
+                                        <th:block th:each="docTitle : ${docTitles}">
+                                            <option th:value="${docTitle}" th:selected="${docTitleFilter == docTitle}" th:text="${docTitle}"></option>
+                                        </th:block>
+                                    </select>
+                                </th>
+                                <th class="d-none d-xxl-table-cell">
+                                    <div class="d-flex text-center">
+                                        <select id="creatorFilter" name="creatorFilter" class="slim-select-filter sign-request-filter" data-placeholder="Crée par" data-allow-deselect="true" onchange="submit();">
+                                            <option data-placeholder="true"></option>
+                                            <option value="all">Tout</option>
+                                            <th:block th:each="creator : ${creators}">
+                                                <option th:value="${creator.eppn}" th:selected="${creatorFilter == creator.eppn}" th:text="${creator.firstname} + ' ' + ${creator.name}"></option>
+                                            </th:block>
+                                        </select>
+                                        <a class="sorted my-auto text-center ms-1" sd:pagination-sort="createBy"><i class="fas fa-sort"></i></a>
+                                    </div>
+                                </th>
+                                <th class="d-none d-xl-table-cell">
+                                    <div class="d-flex text-center">
+                                        <input type="date" id="dateFilter" name="dateFilter" placeholder="Date de création" title="Date de création" class="form-control date sign-request-filter" th:value="${dateFilter}" onchange="submit();">
+                                        <a class="sorted my-auto text-center ms-1" sd:pagination-sort="createDate"><i class="fas fa-sort"></i></a>
+                                    </div>
+                                </th>
+                                <th class="d-none d-xl-table-cell">
+                                    <select name="recipientsFilter" id="recipientsFilter" class="slim-select-filter sign-request-filter" data-placeholder="Participants" data-allow-deselect="true" onchange="submit();">
+                                        <option data-placeholder="true"></option>
+                                        <option value="all">Tout</option>
+                                        <th:block th:each="signRequestRecipient : ${signRequestRecipients}">
+                                            <option th:value="${signRequestRecipient.eppn}" th:selected="${recipientsFilter == signRequestRecipient.eppn}" th:text="${signRequestRecipient.firstname + ' ' + signRequestRecipient.name}"></option>
+                                        </th:block>
+                                    </select>
+                                </th>
+                                <th class="d-none d-xxxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date de signature/refus</a></th>
+                                <th class="d-none d-md-table-cell">
+                                    <div class="d-flex text-center">
+                                    <select class="slim-select-filter sign-request-filter" name="statusFilter" id="statusFilter" onchange="submit();">
+                                        <option value="" data-placeholder="true">Choisir un statut</option>
+                                        <option value="all">Tous</option>
+                                        <th:block th:each="status : ${statuses}">
+                                            <option th:if="${status.name == statusFilter}" th:value="${status}"
+                                                    selected="selected"
+                                                    th:text="#{'signbook.status.' + ${status}}"></option>
+                                            <option th:unless="${status == statusFilter}" th:value="${status}"
+                                                    th:text="#{'signbook.status.' + ${status}}"></option>
+                                        </th:block>
+                                    </select>
+                                    <a class="sorted my-auto text-center ms-1" sd:pagination-sort="status"><i class="fas fa-sort"></i></a>
+                                    </div>
+                                </th>
+                                <th >Actions</th>
+                                </form>
                             </tr>
                             </thead>
                             <tbody>

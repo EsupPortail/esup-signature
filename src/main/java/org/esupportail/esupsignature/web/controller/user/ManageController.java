@@ -1,9 +1,8 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.Data;
-import org.esupportail.esupsignature.entity.Form;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
@@ -12,8 +11,9 @@ import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
@@ -29,10 +29,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RequestMapping("user/manage")
 @Controller
@@ -69,10 +67,37 @@ public class ManageController {
 
     @PreAuthorize("@preAuthorizeService.formManage(#id, #authUserEppn)")
     @GetMapping(value = "/form/{id}", produces="text/csv")
-    public String list(@ModelAttribute("authUserEppn") String authUserEppn, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, @PathVariable Long id, Model model) {
+    public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                       @RequestParam(value = "statusFilter", required = false) String statusFilter,
+                       @RequestParam(value = "recipientsFilter", required = false) String recipientsFilter,
+                       @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
+                       @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
+                       @RequestParam(value = "dateFilter", required = false) String dateFilter,
+                       @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, @PathVariable Long id, Model model) {
         Form form = formService.getById(id);
+        if(statusFilter == null || statusFilter.isEmpty() || statusFilter.equals("all")) {
+            statusFilter = "%";
+        }
+        if(creatorFilter == null || creatorFilter.isEmpty() || creatorFilter.equals("all")) {
+            creatorFilter = "%";
+        }
+        if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
+            docTitleFilter = "%";
+        }
+        if(recipientsFilter == null || recipientsFilter.isEmpty() || recipientsFilter.equals("all")) {
+            recipientsFilter = "%";
+        }
+        model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("form", form);
-        model.addAttribute("listManagedSignRequests", signRequestService.getSignRequestsByForm(form, pageable));
+        model.addAttribute("docTitleFilter", docTitleFilter);
+        model.addAttribute("dateFilter", dateFilter);
+        model.addAttribute("recipientsFilter", recipientsFilter);
+        model.addAttribute("creatorFilter", creatorFilter);
+        model.addAttribute("statusFilter", statusFilter);
+        Page<SignRequest> signRequests = signRequestService.getSignRequestsByForm(form, statusFilter, recipientsFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+        model.addAttribute("listManagedSignRequests", signRequests);
+        model.addAttribute("creators", signRequests.stream().map(SignRequest::getCreateBy).distinct().collect(Collectors.toList()));
+        model.addAttribute("signRequestRecipients", signRequests.stream().map(SignRequest::getRecipientHasSigned).map(Map::keySet).flatMap(Collection::stream).map(Recipient::getUser).distinct().collect(Collectors.toList()));
         return "user/manage/details";
     }
 
