@@ -37,7 +37,6 @@ export class Nexu {
                 $("#certType > option[value='nexuCert']").attr('disabled', 'disabled');
             });
         });
-
     }
 
     static getDataToSign(certificateData) {

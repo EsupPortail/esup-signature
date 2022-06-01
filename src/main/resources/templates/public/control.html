@@ -9,7 +9,7 @@
 <main role="main">
     <div class="col-10 mx-auto" style="margin-top: 60px" th:fragment="control">
         <div class="alert alert-primary mb-1 text-center">
-            <h5>Verification de la conformité du document signé<span th:text="${token}"></span></h5>
+            <h5>Vérification de la conformité du document : <span th:text="${token}"></span></h5>
         </div>
         <div th:if="${error}" class="alert alert-danger mb-1">
             <h5>Le document que vous avez fournis n’est pas conforme : </h5>

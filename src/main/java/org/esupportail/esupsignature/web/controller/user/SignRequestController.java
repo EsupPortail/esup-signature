@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.service.*;
@@ -167,7 +168,9 @@ public class SignRequestController {
         if(globalProperties.getSealCertificatDriver() != null) {
             model.addAttribute("sealCertificateOk", true);
         }
-        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest));
+        List<SignWith> signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest);
+        model.addAttribute("signWiths", signWiths);
+        model.addAttribute("allSignWiths", SignWith.values());
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("editable", signRequest.getEditable());
