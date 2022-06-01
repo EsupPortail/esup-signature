@@ -342,11 +342,11 @@ public class SignBookService {
     }
 
     @Transactional
-    public boolean delete(Long signBookId, String userEppn) {
+    public Boolean delete(Long signBookId, String userEppn) {
         SignBook signBook = getById(signBookId);
         if(signBook.getStatus().equals(SignRequestStatus.deleted)) {
-            deleteDefinitive(signBookId);
-            return true;
+            deleteDefinitive(signBookId, userEppn);
+            return null;
         }
         List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
         for(Long signRequestId : signRequestsIds) {
@@ -370,22 +370,29 @@ public class SignBookService {
     }
 
     @Transactional
-    public void deleteDefinitive(Long signBookId) {
+    public boolean deleteDefinitive(Long signBookId, String userEppn) {
+        User user = userService.getUserByEppn(userEppn);
         SignBook signBook = getById(signBookId);
-        signBook.getLiveWorkflow().setCurrentStep(null);
-        List<Long> liveWorkflowStepIds = signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getId).collect(Collectors.toList());
-        signBook.getLiveWorkflow().getLiveWorkflowSteps().clear();
-        for (Long liveWorkflowStepId : liveWorkflowStepIds) {
-            liveWorkflowStepService.delete(liveWorkflowStepId);
+        if(signBook.getCreateBy().equals(user) || userService.getSystemUser().equals(user) || user.getRoles().contains("ROLE_ADMIN")) {
+            signBook.getLiveWorkflow().setCurrentStep(null);
+            List<Long> liveWorkflowStepIds = signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getId).collect(Collectors.toList());
+            signBook.getLiveWorkflow().getLiveWorkflowSteps().clear();
+            for (Long liveWorkflowStepId : liveWorkflowStepIds) {
+                liveWorkflowStepService.delete(liveWorkflowStepId);
+            }
+            List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
+            for (Long signRequestId : signRequestsIds) {
+                signRequestService.deleteDefinitive(signRequestId);
+            }
+            dataService.deleteBySignBook(signBook);
+            nullifySignBook(signBook);
+            signBookRepository.delete(signBook);
+            logger.info("definitive delete signbook : " + signBookId + " by " + userEppn);
+            return true;
+        } else {
+            logger.warn("unable to definitive delete signbook : " + signBookId + " by " + userEppn);
+            return false;
         }
-        List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
-        for(Long signRequestId : signRequestsIds) {
-            signRequestService.deleteDefinitive(signRequestId);
-        }
-        dataService.deleteBySignBook(signBook);
-        nullifySignBook(signBook);
-        signBookRepository.delete(signBook);
-        logger.info("definitive delete signbook : " + signBookId);
     }
 
     public boolean checkUserManageRights(String userEppn, SignBook signBook) {
@@ -632,7 +639,7 @@ public class SignBookService {
                 signRequestService.addDocsToSignRequest(signRequest, true, i, new ArrayList<>(), multipartFile);
             } catch (EsupSignatureIOException e) {
                 logger.warn("revert signbook creation due to error : " + e.getMessage());
-                deleteDefinitive(signBookId);
+                deleteDefinitive(signBookId, authUserEppn);
                 throw new EsupSignatureIOException(e.getMessage(), e);
             }
             i++;
