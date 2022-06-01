@@ -51,7 +51,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.service.LogService;
-import org.esupportail.esupsignature.service.ValidationService;
+import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
