@@ -308,7 +308,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Bean
 	public SpelGroupService spelGroupService() {
-		SpelGroupService spelGroupService = new SpelGroupService();
+		SpelGroupService spelGroupService = new SpelGroupService(globalProperties);
 		Map<String, String> groups4eppnSpel = new HashMap<>();
 		if (webSecurityProperties.getGroupMappingSpel() != null) {
 			for (String groupName : webSecurityProperties.getGroupMappingSpel().keySet()) {

@@ -121,34 +121,19 @@ export class SignUi {
                                     }
                                 }
                             });
-                            self.certTypeSelect.children().each(function (e) {
-                                if ($(this).val() === "imageStamp") {
-                                    $(this).attr('disabled', 'disabled');
-                                    $("#certType").val("");
-                                }
-                                let nbOptions = $("#certType option:not([disabled])").length;
-                                if (nbOptions === 0) {
-                                    $("#nexuCheck").removeClass("d-none");
-                                    $("#noOptions").show();
-                                    $("#selectTypeDiv").hide();
-                                } else {
-                                    $("#nexuCheck").addClass("d-none");
-                                    $("#noOptions").hide();
-                                    $("#selectTypeDiv").show();
-                                }
-                            });
+                            self.checkSignOptions();
                         }
                     } else {
                         self.certTypeSelect.children().each(function(e) {
-                            if($(this).val() === "imageStamp") {
+                            if($(this).val() === "imageStamp" && (self.currentSignType === "imageStamp" || self.currentSignType === "visa")) {
                                 $(this).removeAttr('disabled');
                             }
                         });
-                        $("#certType > option[value='imageStamp']").attr('selected', 'selected');
-                        $("#certType").val('imageStamp');
-                        $("#nexuCheck").addClass("d-none");
-                        $("#noOptions").hide();
-                        $("#selectTypeDiv").show();
+                        if(self.currentSignType === "imageStamp" || self.currentSignType === "visa") {
+                            $("#certType > option[value='imageStamp']").attr('selected', 'selected');
+                            $("#certType").val('imageStamp');
+                        }
+                        self.checkSignOptions();
                         self.checkAttachement();
                     }
                     self.certTypeSelect.children().each(function(e) {
@@ -170,6 +155,21 @@ export class SignUi {
             }
             signModal.modal('show');
         }
+    }
+
+    checkSignOptions() {
+        this.certTypeSelect.children().each(function (e) {
+            let nbOptions = $("#certType option:not([disabled])").length;
+            if (nbOptions === 0) {
+                $("#nexuCheck").removeClass("d-none");
+                $("#noOptions").show();
+                $("#selectTypeDiv").hide();
+            } else {
+                $("#nexuCheck").addClass("d-none");
+                $("#noOptions").hide();
+                $("#selectTypeDiv").show();
+            }
+        });
     }
 
     checkAttachement() {

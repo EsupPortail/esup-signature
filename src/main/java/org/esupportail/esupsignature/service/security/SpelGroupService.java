@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.security;
 
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
@@ -12,16 +13,25 @@ import java.util.List;
 import java.util.Map;
 
 public class SpelGroupService implements GroupService {
-	
+
+	private final GlobalProperties globalProperties;
+
 	private Map<String, String> groups4eppnSpel = new HashMap<>();
 
 	public void setGroups4eppnSpel(Map<String, String> groups4eppnSpel) {
 		this.groups4eppnSpel = groups4eppnSpel;
 	}
 
+	public SpelGroupService(GlobalProperties globalProperties) {
+		this.globalProperties = globalProperties;
+	}
+
 	@Override
 	public List<String> getGroups(String eppn) {
-		
+
+		if(!eppn.contains("@")) {
+			eppn = eppn + "@" + globalProperties.getDomain();
+		}
 		List<String> groups = new ArrayList<>();
 
 		for(String groupName: groups4eppnSpel.keySet()) {

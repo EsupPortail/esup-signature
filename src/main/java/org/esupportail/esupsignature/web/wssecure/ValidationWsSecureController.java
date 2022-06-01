@@ -3,7 +3,7 @@ package org.esupportail.esupsignature.web.wssecure;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.ValidationService;
+import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;

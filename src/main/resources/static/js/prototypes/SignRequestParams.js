@@ -2,7 +2,7 @@ import {EventFactory} from "../modules/utils/EventFactory.js?version=@version@";
 import {Color} from "../modules/utils/Color.js?version=@version@";
 import {UserUi} from '../modules/ui/users/UserUi.js?version=@version@';
 
-export class SignRequestParams  extends EventFactory {
+export class SignRequestParams extends EventFactory {
 
     constructor(signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone, light, signImages) {
         super();
@@ -47,7 +47,7 @@ export class SignRequestParams  extends EventFactory {
         this.savedText = "";
         this.offset = 0;
         if(!light) {
-            this.offset = ($("#page_" + this.signPageNumber).offset().top) + (10 * (this.signPageNumber - 1));
+            this.offset = ($("#page_" + this.signPageNumber).offset().top) + (10 * (parseInt(this.signPageNumber) - 1));
         }
         if(signRequestParamsModel == null) {
             this.xPos = (parseInt($("#pdf").css("width")) / 2 / scale) - (this.signWidth * scale / 2);
@@ -384,10 +384,11 @@ export class SignRequestParams  extends EventFactory {
         });
     }
 
-    applyCurrentSignRequestParams() {
-        let offset = ($("#page_" + this.signPageNumber).offset().top) - this.initialOffset + (10 * (this.signPageNumber));
-        this.cross.css('top', (this.yPos * this.currentScale + offset) + 'px');
-        this.cross.css('left', this.xPos * this.currentScale + 'px');
+    applyCurrentSignRequestParams(initialOffset) {
+        let pageOffset = $("#page_" + this.signPageNumber).offset().top;
+        let offset = pageOffset - initialOffset + (10 * (parseInt(this.signPageNumber)));
+        this.cross.css('top', Math.round(this.yPos * this.currentScale + offset) + 'px');
+        this.cross.css('left', Math.round(this.xPos * this.currentScale) + 'px');
     }
 
     deleteSign() {
@@ -516,7 +517,7 @@ export class SignRequestParams  extends EventFactory {
 
     simulateDrop() {
         let x = Math.round(this.xPos * this.currentScale);
-        let y = Math.round(this.yPos * this.currentScale + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top + (10 * (this.signPageNumber - 1)));
+        let y = Math.round(this.yPos * this.currentScale + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top + (10 * (parseInt(this.signPageNumber) - 1)));
         this.cross.on("dragstop", function(){
             let test = window.scrollY + $(window).height();
             if(y > test) {

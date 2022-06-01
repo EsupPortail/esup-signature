@@ -149,9 +149,14 @@ public class WorkflowManagerController {
                                      @RequestParam(name="changeable", required = false) Boolean changeable,
                                      @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                                      @RequestParam(name="attachmentAlert", required = false) Boolean attachmentAlert,
-                                     @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) {
+                                     @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire,
+                                     RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowService.getById(id);
-        workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire);
+        try {
+            workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire);
+        } catch (EsupSignatureException e) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Type de signature impossible pour une étape infinie"));
+        }
         return "redirect:/manager/workflows/" + id;
     }
 

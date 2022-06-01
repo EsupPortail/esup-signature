@@ -131,7 +131,9 @@ public class PublicController {
         model.addAttribute("usersHasSigned", signRequestService.checkUserResponseSigned(signRequest));
         model.addAttribute("usersHasRefused", signRequestService.checkUserResponseRefused(signRequest));
         model.addAttribute("signRequest", signRequest);
-        model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
+        if(auditTrail.getDocumentSize() != null) {
+            model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
+        }
         if(eppn != null) {
             model.addAttribute("viewAccess", preAuthorizeService.checkUserViewRights(signRequest, eppn, eppn));
         }

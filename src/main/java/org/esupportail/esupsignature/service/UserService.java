@@ -194,7 +194,7 @@ public class UserService {
 
         UserType userType = checkMailDomain(mail);
         if (userType.equals(UserType.external)) {
-            logger.info("ldap user not found : " + mail + ". Creating temp acccount");
+            logger.info("ldap user not found : " + mail + ". Creating temp account");
             return createUser(UUID.randomUUID().toString(), "", "", mail, UserType.external, false);
         } else if (userType.equals(UserType.shib)) {
             return createUser(mail, mail, "Nouvel utilisateur fédération", mail, UserType.shib, false);
@@ -254,6 +254,10 @@ public class UserService {
                     }
                 }
             }
+        }
+        if(userType.equals(UserType.shib) && globalProperties.getShibUsersDomainWhiteList() != null && globalProperties.getShibUsersDomainWhiteList().size() > 0 && globalProperties.getShibUsersDomainWhiteList().contains(user.getEppn().split("@")[1])) {
+            user.getRoles().remove("ROLE_USER");
+            user.getRoles().add("ROLE_OTP");
         }
         userRepository.save(user);
         return user;
@@ -432,7 +436,6 @@ public class UserService {
         }
         return UserType.external;
     }
-
 
     public InputStream getDomainsWhiteList() {
         try {

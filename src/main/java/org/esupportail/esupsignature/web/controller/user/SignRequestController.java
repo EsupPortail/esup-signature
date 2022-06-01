@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.service.*;
@@ -167,7 +168,9 @@ public class SignRequestController {
         if(globalProperties.getSealCertificatDriver() != null) {
             model.addAttribute("sealCertificateOk", true);
         }
-        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest));
+        List<SignWith> signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest);
+        model.addAttribute("signWiths", signWiths);
+        model.addAttribute("allSignWiths", SignWith.values());
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("editable", signRequest.getEditable());
@@ -307,7 +310,7 @@ public class SignRequestController {
                 }
                 long signRequestId = signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
                 if(signRequestService.checkTempUsers(signRequestId, recipientsEmails, externalUsersInfos)) {
-                    redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
+                    redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Merci de compléter tous les utilisateurs externes"));
                 }
                 return "redirect:/user/signrequests/" + signRequestId;
             } catch (EsupSignatureException | MessagingException | EsupSignatureFsException e) {
@@ -371,8 +374,11 @@ public class SignRequestController {
                                  @RequestParam(value = "link", required = false) String link,
                                  RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         logger.info("start add attachment");
-        signRequestService.addAttachement(multipartFiles, link, id);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La piece jointe à bien été ajoutée"));
+        if(signRequestService.addAttachement(multipartFiles, link, id)) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La piece jointe à bien été ajoutée"));
+        } else {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucune pièce jointe n'a été ajoutée. Merci de contrôle la validité du document"));
+        }
         return "redirect:/user/signrequests/" + id;
     }
 

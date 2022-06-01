@@ -24,6 +24,7 @@ import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.metric.CustomMetricsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
+import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
@@ -657,18 +658,22 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void addAttachement(MultipartFile[] multipartFiles, String link, Long signRequestId) throws EsupSignatureIOException {
+	public boolean addAttachement(MultipartFile[] multipartFiles, String link, Long signRequestId) throws EsupSignatureIOException {
 		SignRequest signRequest = getById(signRequestId);
+		int nbAttachmentAdded = 0;
 		if(multipartFiles != null && multipartFiles.length > 0) {
 			for (MultipartFile multipartFile : multipartFiles) {
 				if(multipartFile.getSize() > 0) {
 					addAttachmentToSignRequest(signRequest, multipartFile);
+					nbAttachmentAdded++;
 				}
 			}
 		}
 		if(link != null && !link.isEmpty()) {
 			signRequest.getLinks().add(link);
+			nbAttachmentAdded++;
 		}
+		return nbAttachmentAdded > 0;
 	}
 
 	public void removeAttachement(Long id, Long attachementId, RedirectAttributes redirectAttributes) {
@@ -834,7 +839,7 @@ public class SignRequestService {
 			List<Recipient> recipients = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients();
 			for(Recipient recipient : recipients) {
 				User user = recipient.getUser();
-				if(userService.findPersonLdapByUser(user) != null || user.getUserType().equals(UserType.external)) {
+				if(userService.findPersonLdapByUser(user) != null || user.getUserType().equals(UserType.external) || user.getUserType().equals(UserType.shib)) {
 					recipientNotPresentsignRequests.remove(signRequest);
 				}
 			}

@@ -14,10 +14,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class CasLdapAuthoritiesPopulator extends DefaultLdapAuthoritiesPopulator {
 
@@ -81,7 +78,8 @@ public class CasLdapAuthoritiesPopulator extends DefaultLdapAuthoritiesPopulator
 			ldapGroupService.getLdapFiltersGroups().put(mappingGroupsRoles.getGroupe(), mappingGroupsRoles.getRole());
 		}
 		List<String> ldapGroups = ldapGroupService.getGroups(username.toLowerCase());
-		for (String role : group2UserRoleService.getRoles(username.toLowerCase())) {
+		List<String> roles = new ArrayList<>(group2UserRoleService.getRoles(username.toLowerCase()));
+		for (String role : roles) {
 			SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(role);
 			grantedAuthorities.add(simpleGrantedAuthority);
 			logger.debug("loading authorities : " + simpleGrantedAuthority.getAuthority());
