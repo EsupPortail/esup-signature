@@ -276,7 +276,7 @@
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>slim-select</artifactId>
-			<version>1.27.0</version>
+			<version>1.27.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.webjars.npm</groupId>
