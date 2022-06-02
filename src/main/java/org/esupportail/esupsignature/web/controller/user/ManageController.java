@@ -97,7 +97,8 @@ public class ManageController {
         Page<SignRequest> signRequests = signRequestService.getSignRequestsByForm(form, statusFilter, recipientsFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("listManagedSignRequests", signRequests);
         model.addAttribute("creators", signRequests.stream().map(SignRequest::getCreateBy).distinct().collect(Collectors.toList()));
-        model.addAttribute("signRequestRecipients", signRequests.stream().map(SignRequest::getRecipientHasSigned).map(Map::keySet).flatMap(Collection::stream).map(Recipient::getUser).distinct().collect(Collectors.toList()));
+        List<User> signRequestRecipients = signRequestService.getSignRequestsByForm(form, "%", "%", "%", "%", null, Pageable.ofSize(Integer.MAX_VALUE)).stream().map(SignRequest::getRecipientHasSigned).map(Map::keySet).flatMap(Collection::stream).map(Recipient::getUser).distinct().collect(Collectors.toList());
+        model.addAttribute("signRequestRecipients", signRequestRecipients);
         return "user/manage/details";
     }
 

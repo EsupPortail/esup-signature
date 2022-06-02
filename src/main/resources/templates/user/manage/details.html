@@ -4,6 +4,7 @@
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="signRequests" type="org.springframework.data.domain.Page<esupportail.esupsignature.entity.SignRequest>"*/-->
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
+<!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
 <header th:replace="fragments/nav :: nav"></header>
@@ -13,7 +14,7 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/manage">Espace superviseurs</a></li>
-                <li class="breadcrumb-item active" th:text="${form.name}"></li>
+                <li class="breadcrumb-item active"><a th:href="'/user/manage/form/' + ${form.id}" th:text="${form.name}"></a></li>
             </ol>
         </nav>
         <div id="content" class="content">
@@ -46,15 +47,6 @@
                             <thead class="table-secondary">
                             <tr style="z-index: 2;">
                                 <form>
-                                <th class="d-none d-xxl-table-cell text-center" style="width: 10%;">
-                                    <select id="workflowFilter" class="slim-select-filter sign-request-filter" data-placeholder="Circuit" data-allow-deselect="true">
-                                        <option data-placeholder="true"></option>
-                                        <option value="all">Tout</option>
-                                        <th:block th:each="workflow : ${workflowNames}">
-                                            <option th:value="${workflow}" th:selected="${workflowFilter == workflow}" th:text="${workflow}"></option>
-                                        </th:block>
-                                    </select>
-                                </th>
                                 <th class="text-center" style="width: 10%;">
                                     <select id="docTitleFilter" class="slim-select-filter sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
                                         <option data-placeholder="true"></option>
@@ -120,7 +112,6 @@
 <!--                                               th:data-sign-type="${signRequest.parentSignBook.liveWorkflow.currentStep != null ? signRequest.parentSignBook.liveWorkflow.currentStep.signType : ''}"-->
 <!--                                               th:data-id-signbook="${signRequest.parentSignBook.id}">-->
 <!--                                    </td>-->
-                                    <td th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signRequest.parentSignBook.subject}"></td>
                                     <td class="clickable-td text-break"><span th:text="${signRequest.title}"></span></td>
                                     <td class="clickable-td d-none d-lg-table-cell" th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></td>
                                     <td class="clickable-td d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
@@ -150,7 +141,7 @@
                                         </table>
                                     </td>
                                     <td class="clickable-td d-none d-xxl-table-cell">
-                                        <span th:if="${signRequest.endDate != null}" th:text="${#dates.format(signRequest.endDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                        <span th:if="${signRequest.parentSignBook.endDate != null}" th:text="${#dates.format(signRequest.parentSignBook.endDate, 'dd/MM/yyyy HH:mm')}"></span>
                                     </td>
                                     <td class="clickable-td d-none d-md-table-cell"
                                         style="width: 150px;">

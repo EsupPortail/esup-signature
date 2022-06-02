@@ -26,6 +26,8 @@
     const user = new User([[${user.id}]], "[[${user.eppn}]]", "[[${user.name}]]", "[[${user.firstname}]]", "[[${user.email}]]");
     const creator = new User([[${signRequest.createBy.id}]], "[[${signRequest.createBy.eppn}]]", "[[${signRequest.createBy.name}]]", "[[${signRequest.createBy.firstname}]]");
     const currentStepNumber = "[[${currentStepNumber}]]";
+    const supervisors = "[[${supervisors}]]";
+    const isLastStep = "[[${isLastStep}]]";
     /*]]>*/
 </script>
 
@@ -63,7 +65,7 @@
                     <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}">
                         <a th:href="'/user/signrequests/restore/' + ${signRequest.id}" role="button" class="btn-floating btn-lg bg-primary waves-effect" title="Restaurer"><i class="fas fa-trash-restore"></i></a>
                     </li>
-                    <li th:if="${signRequest.createBy.eppn == userEppn || @preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}">
+                    <li th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}">
                         <a role="button" class="btn-floating btn-lg bg-danger waves-effect"
                            th:title="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"
                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
@@ -82,7 +84,7 @@
                     <li th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a class="btn-lg btn-floating bg-primary waves-effect"
                            th:href="'/ws-secure/signrequests/get-last-file/' + ${id}" target="_blank"
-                           title="Télécharger la dernière version"><i class="fas fa-file-download"></i></a>
+                           title="Télécharger la dernière version du document"><i class="fas fa-file-download"></i></a>
                     </li>
                     <li th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
                         <a class="btn-lg btn-floating bg-primary waves-effect"
@@ -582,7 +584,7 @@
     </div>
 </div>
 
-<div th:if="${signRequest.createBy.eppn == userEppn || @preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}"
+<div th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}"
      class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
     <div class="modal-dialog">
         <div class="modal-content">
