@@ -60,7 +60,7 @@ export class WorkspacePdf {
         this.wsTabs = $("#ws-tabs");
         this.workspace = $("#workspace");
         this.secondTools = $("#second-tools");
-        if ((formId == null && workflow == null) || currentSignRequestParamses.length === 0) {
+        if ((formId == null && !workflow) || currentSignRequestParamses.length === 0) {
             this.secondTools.toggleClass("d-none d-flex");
             if(this.wsTabs.length) {
                 this.autocollapse();

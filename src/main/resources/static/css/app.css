@@ -1029,19 +1029,19 @@ height: 100%;
 }
 
 .nav-item.ws-tab.active {
-    border-bottom : 1px solid #e2e3e5;
+    border-bottom : 1px solid #ffffff;
 }
 
 .nav-tabs .nav-link {
-    color: #6c757d;
-    border-color: #6c757d !important;
-    border-bottom : 1px solid #000000 !important;
+    color: rgba(0, 0, 0, 0.46);
+    border-color: rgba(0, 0, 0, 0.46) !important;
+    border-bottom : 1px solid rgba(0, 0, 0, 0.46) !important;
     /*background-color: #dee2e6;*/
 }
 
 .nav-link.current {
     color: black;
-    border-color: #000 #000 #e2e3e5 #000 !important;
+    border-color: #000 #000 #fff #000 !important;
 
 }
 
