@@ -18,7 +18,7 @@ export class Nexu {
         let self = this;
         $(document).ready(function() {
             self.checkNexuClient().then(function(e) {
-                console.warn("NexU detected");
+                console.info("NexU detected !");
                 $("#warning-text").html("");
                 $("#nexu_missing_alert").hide();
                 $("#alertNexu").remove();
@@ -124,30 +124,36 @@ export class Nexu {
             let ports = this.bindingPorts.split(",");
             let detectNexu = false;
             let self = this;
-            ports.forEach(function (port){
+            let breakOut = false;
+            ports.forEach(function (port) {
+                if(breakOut) {
+                    return false;
+                }
                 let url = "http://localhost:" + port.trim() + "/nexu-info";
-                console.info("check " + url);
+                console.info("check nexu on " + url);
                 $.ajax({
                     type: "GET",
                     url: url,
                     crossDomain: true,
                     dataType: "json",
-                    context : this,
-                    success: function (data) {
-                        console.info("nexu detected on " + url);
-                        detectNexu = true;
-                        self.detectedPort = port.trim();
-                        self.checkNexu(data);
-                        $("#nexu_missing_alert").hide();
-                        $("#noOptions").hide();
-                        $("#selectTypeDiv").show();
-                        resolve("detected");
-                    },
-                    error: function () {
-                        reject();
-                    }
+                    async: false,
+                    cache: false,
+                }).done(function (data) {
+                    console.info("nexu detected on " + url);
+                    detectNexu = true;
+                    self.detectedPort = port.trim();
+                    self.checkNexu(data);
+                    $("#nexu_missing_alert").hide();
+                    $("#noOptions").hide();
+                    $("#selectTypeDiv").show();
+                    breakOut = true;
+                    resolve("detected");
+
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    console.debug("nexu not detected on " + url);
                 });
             });
+            reject();
         });
     }
 
