@@ -298,7 +298,7 @@
                                             <select class="select-users" th:id="'recipientEmailsSelect-' + ${form.id} + '_' + ${iterator.index + 1}"
                                                     th:multiple="${step.maxRecipients != null && step.maxRecipients > 1}" name="recipientEmails" required="required" th:maxlength="${step.maxRecipients}">
                                                 <option data-placeholder="true"></option>
-                                                <th:block th:each="user : ${step.users}" th:if="${step.maxRecipients != null && step.maxRecipients > 1}">
+                                                <th:block th:each="user : ${step.users}">
                                                     <option th:if="${user.email != null && user.email != 'generic'}" selected="selected"
                                                             th:text="${user.email}"
                                                             th:placeholder="${user.email}"
