@@ -45,11 +45,20 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -154,13 +163,37 @@ public class SignRequestService {
 		return signRequestRepository.findByToken(token);
 	}
 
-	public Page<SignRequest> getSignRequestsByForm(Form form, Pageable pageable) {
+	public Page<SignRequest> getSignRequestsByForm(Form form, String statusFilter, String recipientsFilter, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
 		List<SignRequest> signRequests = new ArrayList<>();
 		List<Data> datas = dataRepository.findByFormId(form.getId());
 		for(Data data : datas) {
 			if(data.getSignBook() != null && data.getSignBook().getSignRequests().size() > 0) {
 				signRequests.add(data.getSignBook().getSignRequests().get(0));
 			}
+		}
+		if(!statusFilter.equals("%")) {
+			signRequests = signRequests.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.valueOf(statusFilter))).collect(Collectors.toList());
+		}
+		if(!creatorFilter.equals("%")) {
+			signRequests = signRequests.stream().filter(signRequest -> signRequest.getCreateBy().getEppn().equals(creatorFilter)).collect(Collectors.toList());
+		}
+		if(!recipientsFilter.equals("%")) {
+			signRequests = signRequests.stream().filter(signRequest -> signRequest.getRecipientHasSigned().keySet().stream().anyMatch(recipient -> recipient.getUser().getEppn().equals(recipientsFilter))).collect(Collectors.toList());
+		}
+		if(dateFilter != null && !dateFilter.isEmpty()) {
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			Date formattedDate = null;
+			try {
+				formattedDate = formatter.parse(dateFilter);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+			LocalDateTime nowLocalDateTime = formattedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+			LocalDateTime startLocalDateTime = nowLocalDateTime.with(LocalTime.of(0, 0, 0));
+			LocalDateTime endLocalDateTime = nowLocalDateTime.with(LocalTime.of(23, 59, 59));
+			Date startDateFilter = Timestamp.valueOf(startLocalDateTime);
+			Date endDateFilter = Timestamp.valueOf(endLocalDateTime);
+			signRequests = signRequests.stream().filter(signRequest -> signRequest.getCreateDate().after(startDateFilter) && signRequest.getCreateDate().before(endDateFilter)).collect(Collectors.toList());
 		}
 		if(pageable.getSort().iterator().hasNext()) {
 			Sort.Order order = pageable.getSort().iterator().next();

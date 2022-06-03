@@ -8,7 +8,7 @@
     <th:block th:unless="${userEppn != null}">
     <header th:replace="fragments/nav-empty :: nav-empty"></header>
     </th:block>
-    <main role="main">
+    <main role="main" style="padding-bottom: 65px !important;">
     <div class="card col-lg-10 mx-auto" style="top: 60px;">
         <div class="card-body">
             <h1>Une erreur s’est produite<span th:if="${userEppn != null}" th:text=" ' : ' + ${status} + ' ' + ${error}"></span></h1>

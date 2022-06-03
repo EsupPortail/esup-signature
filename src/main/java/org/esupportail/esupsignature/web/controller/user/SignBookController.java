@@ -168,16 +168,21 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-        boolean isDefinitive = signBookService.delete(id, authUserEppn);
-        if(isDefinitive) {
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été supprimé définitivement"));
-            if(httpServletRequest.getHeader(HttpHeaders.REFERER).contains("signrequests")) {
-                return "redirect:/user/signbooks";
+        Boolean isDefinitive = signBookService.delete(id, authUserEppn);
+        if(isDefinitive != null) {
+            if (isDefinitive) {
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été supprimé définitivement"));
+                if (httpServletRequest.getHeader(HttpHeaders.REFERER).contains("signrequests")) {
+                    return "redirect:/user/signbooks";
+                } else {
+                    return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+                }
             } else {
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été placé dans la corbeille"));
                 return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
             }
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été placé dans la corbeille"));
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Ce document ne pas être supprimé de la corbeille"));
             return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
         }
     }
@@ -185,8 +190,11 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @DeleteMapping(value = "/force-delete/{id}", produces = "text/html")
     public String forceDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-        signBookService.deleteDefinitive(id);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été supprimé définitivement"));
+        if(signBookService.deleteDefinitive(id, authUserEppn)) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été supprimé définitivement"));
+        } else {
+            redirectAttributes.addFlashAttribute("warn", new JsonMessage("info", "Le document ne peut pas être supprimé définitivement"));
+        }
         return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
     }
 
@@ -194,7 +202,7 @@ public class SignBookController {
     @DeleteMapping(value = "silent-delete/{id}", produces = "text/html")
     @ResponseBody
     public void silentDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
-        signBookService.deleteDefinitive(id);
+        signBookService.deleteDefinitive(id, authUserEppn);
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")

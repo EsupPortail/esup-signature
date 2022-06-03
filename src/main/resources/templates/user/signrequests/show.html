@@ -65,7 +65,7 @@
                     <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}">
                         <a th:href="'/user/signrequests/restore/' + ${signRequest.id}" role="button" class="btn-floating btn-lg bg-primary waves-effect" title="Restaurer"><i class="fas fa-trash-restore"></i></a>
                     </li>
-                    <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
+                    <li th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}">
                         <a role="button" class="btn-floating btn-lg bg-danger waves-effect"
                            th:title="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"
                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
@@ -84,7 +84,7 @@
                     <li th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a class="btn-lg btn-floating bg-primary waves-effect"
                            th:href="'/ws-secure/signrequests/get-last-file/' + ${id}" target="_blank"
-                           title="Télécharger la dernière version"><i class="fas fa-file-download"></i></a>
+                           title="Télécharger la dernière version du document"><i class="fas fa-file-download"></i></a>
                     </li>
                     <li th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
                         <a class="btn-lg btn-floating bg-primary waves-effect"
@@ -93,18 +93,18 @@
                            title="Imprimer avec un code datamatrix"><i class="fas fa-print"></i></a>
                     </li>
                     <th:block id="signButtons" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" th:unless="${signable}" class="fixed-action-btns active">
-                    <li>
-                        <a role="button" class="btn-floating btn-lg bg-success waves-effect" title="Démarrer le circuit"
-                           data-bs-toggle="modal" data-bs-target="#sendModal"><i class="fas fa-play"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Supprimer"
-                           data-bs-toggle="modal" data-bs-target="#modal-warning"
-                           th:data-bs-target="'#modal-warning-' + ${signRequest.id}"><i class="fas fa-trash-alt"></i>
-                        </a>
-                    </li>
-                </th:block>
+                        <li>
+                            <a role="button" class="btn-floating btn-lg bg-success waves-effect" title="Démarrer le circuit"
+                               data-bs-toggle="modal" data-bs-target="#sendModal"><i class="fas fa-play"></i>
+                            </a>
+                        </li>
+<!--                        <li>-->
+<!--                            <a role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Supprimer"-->
+<!--                               data-bs-toggle="modal" data-bs-target="#modal-warning"-->
+<!--                               th:data-bs-target="'#modal-warning-' + ${signRequest.id}"><i class="fas fa-trash-alt"></i>-->
+<!--                            </a>-->
+<!--                        </li>-->
+                    </th:block>
                 <th:block id="openButtons" class="fixed-action-btns active"
                      th:if="${viewRight && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}"
                      onmouseover="$('#openButtons').toggleClass('active');"
@@ -584,7 +584,7 @@
     </div>
 </div>
 
-<div th:if="${signRequest.createBy.eppn == userEppn}"
+<div th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}"
      class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -786,53 +786,53 @@
     new SignUi(
         [[${signRequest.id}]],
         [# th:if="${signRequest.data != null}"]
-    [[${signRequest.data.id}]],
+            [[${signRequest.data.id}]],
         [/]
-            [# th:unless="${signRequest.data != null}"]
-    null,
+        [# th:unless="${signRequest.data != null}"]
+            null,
         [/]
-            [# th:if="${signRequest.data != null && signRequest.data.form != null}"]
-    [[${signRequest.data.form.id}]],
+        [# th:if="${signRequest.data != null && signRequest.data.form != null}"]
+            [[${signRequest.data.form.id}]],
         [/]
-            [# th:unless="${signRequest.data != null && signRequest.data.form != null}"]
-    null,
+        [# th:unless="${signRequest.data != null && signRequest.data.form != null}"]
+            null,
         [/]
-            [[${toUseSignRequestParams}]],
-            [[${user.defaultSignImageNumber}]],
-            currentSignType,
-            signable,
-            editable,
-            [[${signRequest.comments}]],
-            [[${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}]],
-            [[${currentStepNumber}]],
-            [[${currentStepId}]],
-            [[${currentStepMultiSign}]],
-            [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null}"]
-    [[${workflow}]],
+        [[${toUseSignRequestParams}]],
+        [[${user.defaultSignImageNumber}]],
+        currentSignType,
+        signable,
+        editable,
+        [[${signRequest.comments}]],
+        [[${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}]],
+        [[${currentStepNumber}]],
+        [[${currentStepId}]],
+        [[${currentStepMultiSign}]],
+        [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null}"]
+            [[${workflow != null}]],
         [/]
-            [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep == null}"]
-    null,
+        [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep == null}"]
+            null,
         [/]
-            [[${signImages}]],
-            [[${user.firstname + ' ' + user.name}]],
-            [[${authUser.firstname + ' ' + authUser.name}]],
-            [[${_csrf}]],
-            [[${fields}]],
-            [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null}"]
-    [[${signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}]],
+        [[${signImages}]],
+        [[${user.firstname + ' ' + user.name}]],
+        [[${authUser.firstname + ' ' + authUser.name}]],
+        [[${_csrf}]],
+        [[${fields}]],
+        [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null}"]
+            [[${signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}]],
         [/]
-            [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep == null}"]
-    null,
+        [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep == null}"]
+            null,
         [/]
-            [[${signRequest.status}]],
-            [[${action}]],
-            [[${signRequest.parentSignBook.signRequests.size()}]],
-            [[${isNotSigned}]],
-            [[${attachmentAlert}]],
-            [[${attachmentRequire}]],
-            [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]],
-            [[${user.favoriteSignRequestParams == null} ? true : false]],
-            [[${user.phone}]]
+        [[${signRequest.status}]],
+        [[${action}]],
+        [[${signRequest.parentSignBook.signRequests.size()}]],
+        [[${isNotSigned}]],
+        [[${attachmentAlert}]],
+        [[${attachmentRequire}]],
+        [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]],
+        [[${user.favoriteSignRequestParams == null} ? true : false]],
+        [[${user.phone}]]
     );
     $(document).ready(function () {
         if (signable) {

@@ -164,10 +164,6 @@ public class SignRequestController {
                 }
             }
         }
-        // TODO add ROLE_SEAL check
-        if(globalProperties.getSealCertificatDriver() != null) {
-            model.addAttribute("sealCertificateOk", true);
-        }
         List<SignWith> signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest);
         model.addAttribute("signWiths", signWiths);
         model.addAttribute("allSignWiths", SignWith.values());
@@ -361,7 +357,7 @@ public class SignRequestController {
             return "redirect:/user/signbooks/";
 
         } else {
-            signBookService.deleteDefinitive(signRequest.getParentSignBook().getId());
+            signBookService.deleteDefinitive(signRequest.getParentSignBook().getId(), authUserEppn);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
             return "redirect:/user/";
         }
