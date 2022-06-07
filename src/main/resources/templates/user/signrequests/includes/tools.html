@@ -43,6 +43,9 @@
 					data-bs-target="#addCommentModal">
 				<i class="fas fa-sticky-note"></i> <span class="d-none d-xl-inline">Post-it</span>
 			</button>
+			<button th:if="${signImages.size() == 1}" id="signImage" class="btn btn-light btn-outline-dark ms-1" title="Ajouter une image de signature">
+				<i class="fas fa-plus-square"></i> <span class="d-xl-inline">Ajouter une image de signature</span>
+			</button>
 			<div th:if="${displayNotif && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="border ms-3 me-3"></div>
 			<form th:if="${displayNotif && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
 				  th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">

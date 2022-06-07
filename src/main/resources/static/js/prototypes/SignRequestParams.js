@@ -1,6 +1,5 @@
 import {EventFactory} from "../modules/utils/EventFactory.js?version=@version@";
 import {Color} from "../modules/utils/Color.js?version=@version@";
-import {UserUi} from '../modules/ui/users/UserUi.js?version=@version@';
 
 export class SignRequestParams extends EventFactory {
 
@@ -49,11 +48,6 @@ export class SignRequestParams extends EventFactory {
         if(!light) {
             this.offset = ($("#page_" + this.signPageNumber).offset().top) + (10 * (parseInt(this.signPageNumber) - 1));
         }
-        if(signRequestParamsModel == null) {
-            this.xPos = (parseInt($("#pdf").css("width")) / 2 / scale) - (this.signWidth * scale / 2);
-            let mid = $(window).scrollTop() + $(window).height() / 2;
-            this.yPos = (mid - this.offset) / scale;
-        }
         if(light) {
             this.initLight();
         } else {
@@ -81,6 +75,11 @@ export class SignRequestParams extends EventFactory {
             }
         }
         this.stringLength = 1;
+        if(signRequestParamsModel == null || (this.xPos===0 && this.yPos===0)) {
+            this.xPos = (parseInt($("#pdf").css("width")) / 2 / scale) - (this.signWidth * scale / 2);
+            let mid = $(window).scrollTop() + $(window).height() / 2;
+            this.yPos = (mid - this.offset) / scale;
+        }
         this.initEventListeners();
    }
 
@@ -253,7 +252,7 @@ export class SignRequestParams extends EventFactory {
             }
         }
         if(this.restore && this.isSign) {
-            if (localStorage.getItem('signNumber') != null) {
+            if (JSON.parse(localStorage.getItem('signNumber')) != null) {
                 this.fireEvent("nextSign", localStorage.getItem('signNumber'));
             }
             if (!this.isVisa && localStorage.getItem('addExtra') != null) {
@@ -299,51 +298,51 @@ export class SignRequestParams extends EventFactory {
     }
 
     restoreUserParams() {
-        if (localStorage.getItem('addWatermark') != null) {
-            if(localStorage.getItem('addWatermark') === "true") {
+        if (JSON.parse(localStorage.getItem('addWatermark')) != null) {
+            if(JSON.parse(localStorage.getItem('addWatermark')) === true) {
                 this.addWatermark = false;
                 this.toggleWatermark();
             }
         }
         if(this.addExtra) {
-            if (localStorage.getItem('extraOnTop') != null) {
-                if (localStorage.getItem('extraOnTop') === "false") {
+            if (JSON.parse(localStorage.getItem('extraOnTop')) != null) {
+                if (JSON.parse(localStorage.getItem('extraOnTop')) === false) {
                     if (this.divExtra != null && this.extraOnTop) {
                         this.toggleExtraOnTop();
                     }
                 }
             }
-            if (localStorage.getItem('extraType') != null) {
-                if (localStorage.getItem('extraType') === "false") {
+            if (JSON.parse(localStorage.getItem('extraType')) != null) {
+                if (JSON.parse(localStorage.getItem('extraType')) === false) {
                     if (this.divExtra != null && this.extraType) {
                         this.toggleType();
                     }
                 }
             }
-            if (localStorage.getItem('extraName') != null) {
-                if (localStorage.getItem('extraName') === "false") {
+            if (JSON.parse(localStorage.getItem('extraName')) != null) {
+                if (JSON.parse(localStorage.getItem('extraName')) === false) {
                     if (this.divExtra != null && this.extraName) {
                         this.toggleName();
                     }
                 }
             }
-            if (localStorage.getItem('extraText') != null) {
-                if (localStorage.getItem('extraText') === "false") {
+            if (JSON.parse(localStorage.getItem('extraText')) != null) {
+                if (JSON.parse(localStorage.getItem('extraText')) === false) {
                     if (this.divExtra != null && this.isExtraText) {
                         this.toggleText();
                     }
                 }
             }
-            if (localStorage.getItem('extraDate') != null) {
-                if (localStorage.getItem('extraDate') === "false") {
+            if (JSON.parse(localStorage.getItem('extraDate')) != null) {
+                if (JSON.parse(localStorage.getItem('extraDate')) === false) {
                     if (this.divExtra != null && this.extraDate) {
                         this.toggleDate();
                     }
                 }
             }
         }
-        if (localStorage.getItem('addImage') != null && (localStorage.getItem('addImage') === "false" || localStorage.getItem('addImage') === "true") && this.signImages.length > 0) {
-            if(localStorage.getItem('addImage') === "false") {
+        if (JSON.parse(localStorage.getItem('addImage')) != null && this.signImages.length > 0) {
+            if(JSON.parse(localStorage.getItem('addImage')) === false) {
                 this.addImage = true;
                 this.toggleImage();
             } else {
@@ -479,9 +478,11 @@ export class SignRequestParams extends EventFactory {
 
     prevSignImage() {
         if(this.signImageNumber > 0) {
-            this.changeSignImage(parseInt(this.signImageNumber) - 1)
+            this.changeSignImage(parseInt(this.signImageNumber) - 1);
         } else {
-            this.changeSignImage(this.signImages.length - 1)
+            if(this.signImages.length > 0) {
+                this.changeSignImage(this.signImages.length - 1);
+            }
         }
     }
 
@@ -653,7 +654,7 @@ export class SignRequestParams extends EventFactory {
                 this.divExtra = $("#divExtra_" + this.id);
                 this.divExtra.append("<span id='extraTypeDiv_"+ this.id +"' >" + this.typeSign + "<br/></span>");
                 this.divExtra.append("<span id='extraNameDiv_"+ this.id +"' >" + this.userName + "<br/></span>");
-                this.divExtra.append("<span id='extraDateDiv_"+ this.id +"'>le " + moment().format('DD/MM/YYYY HH:mm:ss') + "<br/></span>");
+                this.divExtra.append("<span id='extraDateDiv_"+ this.id +"'>le " + moment().format('DD/MM/YYYY HH:mm:ss [GMT]Z') + "<br/></span>");
                 setInterval(function() {
                     self.refreshDate();
                 }, 1000);
@@ -744,7 +745,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     refreshDate() {
-        $("#extraDateDiv_" + this.id).html("le " + moment().format('DD/MM/YYYY HH:mm:ss') + "<br/>");
+        $("#extraDateDiv_" + this.id).html("le " + moment().format('DD/MM/YYYY HH:mm:ss [GMT]Z') + "<br/>");
     }
 
     toggleType() {
@@ -994,21 +995,17 @@ export class SignRequestParams extends EventFactory {
                     sizes.then(result => this.changeSignSize(result));
                     localStorage.setItem('signNumber', imageNum);
                 } else {
-                    this.changeSignSize({ w: 150, h: 75});
-                    let saveAddImage = localStorage.getItem("addImage");
-                    if(this.divExtra == null) {
-                        this.toggleExtra();
-                    }
-                    this.toggleImage();
-                    localStorage.setItem("addImage", saveAddImage);
-                    let signImageBtn = $("#signImage_" + this.id);
-                    signImageBtn.unbind();
-                    signImageBtn.on('click', function(){
-                        if(this.userUI == null) {
-                            this.userUI = new UserUi();
-                        }
-                        $("#add-sign-image").modal("show");
+                    let self = this;
+                    $.get({
+                        url: "/ws-secure/users/get-default-image",
+                        success: function(data) {
+                            img = "data:image/PNG;charset=utf-8;base64, " + data;
+                            self.cross.css("background-image", "url('" + img + "')");
+                            let sizes = self.getImageDimensions(img);
+                            sizes.then(result => self.changeSignSize(result));
+                            localStorage.setItem('signNumber', imageNum);                        }
                     });
+
                 }
             }
         } else if(imageNum < 0) {

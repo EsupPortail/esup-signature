@@ -100,6 +100,7 @@ export class SignUi {
             this.workspace.pdfViewer.checkForm().then(function (result) {
                 if (result === "ok") {
                     if (self.workspace.signPosition.signRequestParamses.size === 0) {
+                        $("#certType > option[value='imageStamp']").remove();
                         if(self.workspace.currentSignRequestParamses.length > 0 || self.stepRepeatable) {
                             bootbox.alert("Merci de placer la signature", null);
                         } else {

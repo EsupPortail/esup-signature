@@ -1567,6 +1567,7 @@ public class SignBookService {
                 }
             }
         }
+        signImages.add(userService.getDefaultImage(userEppn));
         return signImages;
     }
 

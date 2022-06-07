@@ -680,4 +680,10 @@ public class UserService {
         user.setName(name);
         user.setFirstname(firstname);
     }
+
+    @Transactional
+    public String getDefaultImage(String eppn) throws IOException {
+        User user = getUserByEppn(eppn);
+        return fileService.getBase64Image(fileService.getDefaultImage(user.getName(), user.getFirstname()), "default");
+    }
 }
