@@ -2,6 +2,8 @@ import {PdfViewer} from "../../utils/PdfViewer.js?version=@version@";
 import {SignPosition} from "./SignPosition.js?version=@version@";
 import {WheelDetector} from "../../utils/WheelDetector.js?version=@version@";
 import {Message} from "../../../prototypes/Message.js?version=@version@";
+import {UserUi} from '../users/UserUi.js?version=@version@';
+
 
 export class WorkspacePdf {
 
@@ -145,6 +147,15 @@ export class WorkspacePdf {
                 });
             });
         });
+
+        let signImageBtn = $("#signImage");
+        signImageBtn.unbind();
+        signImageBtn.on('click', function () {
+            if (this.userUI == null) {
+                this.userUI = new UserUi();
+            }
+            $("#add-sign-image").modal("show");
+        });
     }
 
     initSignFields() {
@@ -190,7 +201,7 @@ export class WorkspacePdf {
             targetPageNumber = this.currentSignRequestParamses[signNum].signPageNumber;
             this.signPosition.currentSignRequestParamsNum++;
         }
-        if(localStorage.getItem('signNumber') != null && this.restore) {
+        if(JSON.parse(localStorage.getItem('signNumber')) != null && this.restore) {
             this.signImageNumber = localStorage.getItem('signNumber');
         }
         this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, forceSignNumber);

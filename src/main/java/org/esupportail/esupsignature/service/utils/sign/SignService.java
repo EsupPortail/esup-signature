@@ -329,12 +329,12 @@ public class SignService {
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
-		if(user.getSignImages().size() > signRequestParams.getSignImageNumber() || user.getEppn().equals("system")) {
+		if(signRequestParams.getSignImageNumber() == null || user.getSignImages().size() >= signRequestParams.getSignImageNumber() || user.getEppn().equals("system")) {
 			InputStream inputStream;
 			if(user.getSignImages().size() > signRequestParams.getSignImageNumber() && signRequestParams.getAddImage()) {
 				inputStream = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
 			} else {
-				inputStream = new ClassPathResource("/static/images/empty-sign.png").getInputStream();
+				inputStream = fileService.getDefaultImage(user.getName(), user.getFirstname());
 			}
 			InputStream signImage = fileService.addTextToImage(inputStream, signRequestParams, SignType.nexuSign, user, date, fixFactor);
 			if(signRequestParams.getAddWatermark()) {
