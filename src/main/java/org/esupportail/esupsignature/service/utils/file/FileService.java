@@ -258,7 +258,7 @@ public class FileService {
 				lineCount++;
 			}
 			if(signRequestParams.getExtraDate()) {
-				DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
+				DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss 'GMT'XXX", Locale.FRENCH);
 				if(lineCount == 0) {
 					graphics2D.drawString("le " + dateFormat.format(date), widthOffset, fm.getHeight());
 				} else {
@@ -301,7 +301,7 @@ public class FileService {
 //			changeColor(watermarkImage, 255, 255, 255, 0, 0, 0);
 //			changeColor(watermarkImage, 0, 0, 0, color.getRed(), color.getGreen(), color.getBlue());
 			Graphics2D g2d = (Graphics2D) sourceImage.getGraphics();
-			AlphaComposite alphaChannel = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.1f);
+			AlphaComposite alphaChannel = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f);
 			g2d.setComposite(alphaChannel);
 			double factor = sourceImage.getWidth() * .8 / watermarkImage.getWidth();
 			int width = (int) (sourceImage.getWidth() * .8);
@@ -311,8 +311,8 @@ public class FileService {
 				width = (int) (watermarkImage.getWidth() * factor);
 				height = (int) (sourceImage.getHeight() * .6);
 			}
-			int topLeftX = (int) ((sourceImage.getWidth() - width) / 2);
-			int topLeftY = (int) ((sourceImage.getHeight() - height) / 2);
+			int topLeftX = (sourceImage.getWidth() - width) / 2;
+			int topLeftY = (sourceImage.getHeight() - height) / 2;
 			g2d.drawImage(watermarkImage, topLeftX, topLeftY, width, height, null);
 			ImageIO.write(sourceImage, "png", destImageFile);
 			g2d.dispose();
