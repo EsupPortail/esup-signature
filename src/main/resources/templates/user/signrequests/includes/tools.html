@@ -43,6 +43,9 @@
 					data-bs-target="#addCommentModal">
 				<i class="fas fa-sticky-note"></i> <span class="d-none d-xl-inline">Post-it</span>
 			</button>
+			<button th:if="${signImages.size() == 1}" id="signImage" class="btn btn-light btn-outline-dark ms-1" title="Ajouter une image de signature">
+				<i class="fas fa-plus-square"></i> <span class="d-xl-inline">Ajouter une image de signature</span>
+			</button>
 			<div th:if="${displayNotif && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="border ms-3 me-3"></div>
 			<form th:if="${displayNotif && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
 				  th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
@@ -108,7 +111,7 @@
 	<ul id="ws-tabs" class="nav nav-tabs" th:if="${nbSignRequestInSignBookParent > 1}">
 		<th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
 			<li class="nav-item overflow-hidden ws-tab" th:classappend="${(signRequest.id == signRequestTab.id ? 'active' : '') + ' ' + (nbSignRequestInSignBookParent > 1 ? 'file-tab' : '')}">
-				<a class="nav-link text-black" th:classappend="${(signRequest.id == signRequestTab.id ? 'current alert-secondary' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'alert-success' : '')}"
+				<a class="nav-link" th:classappend="${(signRequest.id == signRequestTab.id ? 'current alert-secondary text-black' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'alert-success' : '')}"
 				   th:href="'/user/signrequests/' + ${signRequestTab.id}"
 				   th:title="${signRequestTab.title}">
 					<div class="truncate">

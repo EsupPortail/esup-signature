@@ -69,7 +69,13 @@ public class PreAuthorizeService {
 
     public boolean signRequestOwner(Long id, String userEppn) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        return signRequest.getCreateBy().getEppn().equals(userEppn);
+        User user = userService.getUserByEppn(userEppn);
+        boolean isManager = false;
+        if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
+            Workflow workflow = workflowService.getById(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId());
+            isManager = workflow.getManagers().contains(user.getEmail());
+        }
+        return signRequest.getCreateBy().getEppn().equals(userEppn) || isManager;
     }
 
     public boolean signRequestRecipent(Long id, String userEppn) {

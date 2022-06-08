@@ -5,11 +5,22 @@ export class WheelDetector extends EventFactory {
     constructor() {
         super();
         this.initListeners();
+        this.lastScrollTop = 0;
     }
 
     initListeners() {
+        let self = this;
         window.addEventListener("DOMMouseScroll", e => this.computeWhellEvent(e));
         window.addEventListener("wheel", e => this.computeWhellEvent(e));
+        window.addEventListener("scroll", function(){ // or window.addEventListener("scroll"....
+            let st = window.scrollY || document.documentElement.scrollTop;
+            if (st > this.lastScrollTop){
+                self.fireEvent("down", [window.scrollY]);
+            } else {
+                self.fireEvent("up", [window.scrollY]);
+            }
+            this.lastScrollTop = st <= 0 ? 0 : st; // For Mobile or negative scrolling
+        }, false);
     }
 
     computeWhellEvent(event) {
@@ -20,14 +31,6 @@ export class WheelDetector extends EventFactory {
             } else {
                 console.debug("debug - " + "wheel up zoom in");
                 this.fireEvent("zoomin");
-            }
-        } else {
-            if (this.detectMouseWheelDirection(event) === 'down' && parseInt($(window).scrollTop() + $(window).height()) >= parseInt($(document).height())) {
-                console.debug("debug - " + "wheel down");
-                this.fireEvent("pagebottom");
-            } else if (this.detectMouseWheelDirection(event) === 'up' && window.scrollY === 0) {
-                console.debug("debug - " + "wheel up");
-                this.fireEvent("pagetop");
             }
         }
     }

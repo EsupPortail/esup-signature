@@ -308,7 +308,6 @@ export class ListSignBooksUi {
                 });
             }
         });
-
     }
 
     updateWaitModal(e) {

@@ -99,7 +99,7 @@ export default class FilesInput extends EventFactory {
             browseOnZoneClick: !readOnly,
             uploadUrl: this.uploadUrl,
             uploadAsync: this.async,
-            theme: 'explorer-fa',
+            theme: 'explorer-fas',
             pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
             initialPreview: urls,
             initialPreviewConfig : previews,
@@ -162,6 +162,11 @@ export default class FilesInput extends EventFactory {
                 },
                 showRemove: !readOnly
             }
+        });
+        this.input.on('filezoomshown', function(event, params) {
+            $('.kv-zoom-body').each(function (e){
+                $(this).removeAttr('style');
+            });
         });
     }
 

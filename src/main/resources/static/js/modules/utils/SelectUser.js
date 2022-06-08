@@ -10,17 +10,28 @@ export default class SelectUser {
         this.valuePrefix = "";
         this.limit = 99;
         this.flag = false;
-        this.favorites = null;
         let selectNameSplit = selectName.split("_");
         if(selectNameSplit.length === 2) {
             this.valuePrefix = selectNameSplit[1] + "*";
         }
+        let defaultFavorites = [];
+        $("#" + selectName + " > option").each(function() {
+            if($(this).text() !== "") {
+                defaultFavorites.push({
+                    text: $(this).text(),
+                    value: $(this).attr("value"),
+                    selected: true
+                });
+                $(this).remove();
+            }
+        });
+        this.favorites = defaultFavorites;
         if(limit != null) {
             this.limit = limit;
         }
         this.createUserSelect(selectName,  this.valuePrefix);
-        this.selectField.addClass("slim-select-hack");
         this.populateWithFavorites();
+        this.selectField.addClass("slim-select-hack");
         this.initListeners();
     }
 
@@ -38,7 +49,7 @@ export default class SelectUser {
         }
         this.slimSelect = new SlimSelect({
             select: "#" + selectName,
-            data: this.favorites,
+            // data: self.favorites,
             placeholder: placeHolder,
             searchText: 'Aucun résultat',
             searchPlaceholder: 'Rechercher',
@@ -251,22 +262,22 @@ export default class SelectUser {
 
     setFavorites(response) {
         if(response.length > 0) {
-            let typeValues = [];
-            let i = 0;
             for (let j = 0; j < response.length; j++) {
                 let value = response[j];
-                if (this.slimSelect.selected() != null && !this.slimSelect.selected().includes(this.valuePrefix + value)) {
-                    let typeValue = {
+                if (this.favorites.filter(f => f.text === value).length === 0) {
+                    this.favorites.push({
                         text: value,
                         value: this.valuePrefix + value,
-                    };
-                    typeValues[i] = typeValue;
-                    i++;
+                        selected: false
+                    });
                 }
             }
-            this.favorites = typeValues;
             this.slimSelect.setData(this.favorites);
-            this.slimSelect.set();
+            if (this.favorites.filter(f => f.selected).length > 0) {
+                this.slimSelect.set(this.favorites.filter(f => f.selected)[0].value);
+            } else {
+                this.slimSelect.set();
+            }
         }
     }
 
@@ -276,6 +287,7 @@ export default class SelectUser {
             type: 'GET',
             dataType: 'json',
             contentType: "application/json",
+            async: false,
             success: response => this.setFavorites(response)
         });
     }

@@ -1,11 +1,14 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import eu.europa.esig.dss.validation.reports.Reports;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.service.*;
@@ -49,6 +52,9 @@ public class SignRequestController {
     @Resource
     private SignService signService;
 
+    @Resource
+    private SignWithService signWithService;
+
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
         return "signrequests";
@@ -76,10 +82,16 @@ public class SignRequestController {
     private LogService logService;
 
     @Resource
+    private AuditTrailService auditTrailService;
+
+    @Resource
     private OtpService otpService;
 
     @Resource
     private GlobalProperties globalProperties;
+
+    @Resource
+    private XSLTService xsltService;
 
     @GetMapping()
     public String show() {
@@ -138,10 +150,23 @@ public class SignRequestController {
             }
         }
         model.addAttribute("signatureIds", new ArrayList<>());
-        Reports reports = signRequestService.validate(id);
-        if(reports != null) {
-            model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+        if(!signRequest.getStatus().equals(SignRequestStatus.draft) && !signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getStatus().equals(SignRequestStatus.refused) && !signRequest.getStatus().equals(SignRequestStatus.deleted)) {
+            Reports reports = signRequestService.validate(id);
+            if (reports != null) {
+                model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+                model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
+            }
+            AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
+            if(auditTrail != null) {
+                model.addAttribute("auditTrail", auditTrail);
+                if(auditTrail.getDocumentSize() != null) {
+                    model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
+                }
+            }
         }
+        List<SignWith> signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest);
+        model.addAttribute("signWiths", signWiths);
+        model.addAttribute("allSignWiths", SignWith.values());
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("editable", signRequest.getEditable());
@@ -157,8 +182,6 @@ public class SignRequestController {
             model.addAttribute("action", signRequest.getData().getForm().getAction());
             model.addAttribute("supervisors", signRequest.getData().getForm().getManagers());
         }
-        List<Log> logs = logService.getBySignRequest(signRequest.getId());
-        logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
         if(signRequest.getSignable()
                 && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && userService.getUiParams(authUserEppn) != null
                 && (userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert) == null || !Arrays.asList(userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert).split(",")).contains(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId().toString()))
@@ -171,6 +194,7 @@ public class SignRequestController {
         if(data != null && data.getForm() != null) {
             model.addAttribute("form", data.getForm());
         }
+        List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
         model.addAttribute("logs", logs);
         return "user/signrequests/show";
     }
@@ -282,7 +306,7 @@ public class SignRequestController {
                 }
                 long signRequestId = signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
                 if(signRequestService.checkTempUsers(signRequestId, recipientsEmails, externalUsersInfos)) {
-                    redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
+                    redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Merci de compléter tous les utilisateurs externes"));
                 }
                 return "redirect:/user/signrequests/" + signRequestId;
             } catch (EsupSignatureException | MessagingException | EsupSignatureFsException e) {
@@ -333,7 +357,7 @@ public class SignRequestController {
             return "redirect:/user/signbooks/";
 
         } else {
-            signBookService.deleteDefinitive(signRequest.getParentSignBook().getId());
+            signBookService.deleteDefinitive(signRequest.getParentSignBook().getId(), authUserEppn);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
             return "redirect:/user/";
         }
@@ -346,8 +370,11 @@ public class SignRequestController {
                                  @RequestParam(value = "link", required = false) String link,
                                  RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         logger.info("start add attachment");
-        signRequestService.addAttachement(multipartFiles, link, id);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La piece jointe à bien été ajoutée"));
+        if(signRequestService.addAttachement(multipartFiles, link, id)) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La piece jointe à bien été ajoutée"));
+        } else {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucune pièce jointe n'a été ajoutée. Merci de contrôle la validité du document"));
+        }
         return "redirect:/user/signrequests/" + id;
     }
 

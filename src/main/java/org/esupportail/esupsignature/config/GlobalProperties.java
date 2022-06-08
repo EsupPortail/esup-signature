@@ -9,11 +9,11 @@ import java.util.List;
 public class GlobalProperties {
 
     /**
-     * Chemin d'acces à l'application
+     * Chemin d’accès à l’application
      */
     private String rootUrl;
     /**
-     * Nom de domainde ex : univ-ville.fr
+     * Nom de domaine ex : univ-ville.fr
      */
     private String domain;
     /**
@@ -21,7 +21,7 @@ public class GlobalProperties {
      */
     private Boolean enableScheduledCleanup = false;
     /**
-     * Chemin d'écoute de NexU
+     * Chemin d’écoute de NexU
      */
     private String nexuUrl = "http://localhost:9795";
     /**
@@ -29,7 +29,7 @@ public class GlobalProperties {
      */
     private String nexuVersion;
     /**
-     * Chemin de télechargement de NexU
+     * Chemin de téléchargement de NexU
      */
     private String nexuDownloadUrl;
     /**
@@ -77,15 +77,15 @@ public class GlobalProperties {
      */
     private Boolean enableSu = false;
     /**
-     * Activer le message d'accueil pour les nouveaux utilisateurs
+     * Activer le message d’accueil pour les nouveaux utilisateurs
      */
     private Boolean enableSplash = false;
     /**
-     * Géré automatiquement, ne pas modifier!
+     * Géré automatiquement, ne pas modifier !
      */
     private String version = "";
     /**
-     * Adresse email du contact technique de l'application
+     * Adresse email du contact technique de l’application
      */
     private String applicationEmail = "esup.signature@univ-ville.fr";
     /**
@@ -97,7 +97,7 @@ public class GlobalProperties {
      */
     private Boolean infiniteScrolling = true;
     /**
-     * Redirection après signature. true : retour à l'acceuil, false : on reste sur la demande
+     * Redirection après signature. true : retour à l'accueil, false : on reste sur la demande
      */
     private Boolean returnToHomeAfterSign = true;
 
@@ -174,6 +174,32 @@ public class GlobalProperties {
      * Exporter les pièces jointes (si actif, l'export sera un dossier contenant le document signé ainsi que les PJ)
      */
     public Boolean exportAttachements = true;
+
+
+    /**
+     *  Pilote du certificat cachet
+     */
+    private String sealCertificatDriver;
+
+    /**
+     *  Pin du certificat cachet
+     */
+    private String sealCertificatPin;
+
+    /**
+     *  Appliquer le cachet sur toutes les demandes terminées
+     */
+    private Boolean sealAllDocs = false;
+
+    /**
+     *  Whitelist des domaines authorisés à obtenir le ROLE_USER pour les connexions Shibboleth
+     */
+    private List<String> shibUsersDomainWhiteList;
+
+    /**
+     *  Adresse du web service de données externes
+     */
+    private String restExtValueUrl;
 
     public String getRootUrl() {
         return rootUrl;
@@ -453,5 +479,45 @@ public class GlobalProperties {
 
     public void setExportAttachements(boolean exportAttachements) {
         this.exportAttachements = exportAttachements;
+    }
+
+    public String getSealCertificatDriver() {
+        return sealCertificatDriver;
+    }
+
+    public void setSealCertificatDriver(String sealCertificatDriver) {
+        this.sealCertificatDriver = sealCertificatDriver;
+    }
+
+    public String getSealCertificatPin() {
+        return sealCertificatPin;
+    }
+
+    public void setSealCertificatPin(String sealCertificatPin) {
+        this.sealCertificatPin = sealCertificatPin;
+    }
+
+    public Boolean getSealAllDocs() {
+        return sealAllDocs;
+    }
+
+    public void setSealAllDocs(Boolean sealAllDocs) {
+        this.sealAllDocs = sealAllDocs;
+    }
+
+    public List<String> getShibUsersDomainWhiteList() {
+        return shibUsersDomainWhiteList;
+    }
+
+    public void setShibUsersDomainWhiteList(List<String> shibUsersDomainWhiteList) {
+        this.shibUsersDomainWhiteList = shibUsersDomainWhiteList;
+    }
+
+    public String getRestExtValueUrl() {
+        return restExtValueUrl;
+    }
+
+    public void setRestExtValueUrl(String restExtValueUrl) {
+        this.restExtValueUrl = restExtValueUrl;
     }
 }

@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.service.utils.file;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.exception.TikaException;
@@ -36,15 +35,6 @@ public class FileService {
 	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
 
 	private final String[] faImages = {"check-solid", "times-solid", "circle-regular", "minus-solid"};
-
-	public File inputStreamToTempFile(InputStream inputStream, String name) throws IOException {
-		File file = getTempFile("tmp_" + name);
-		OutputStream outputStream = new FileOutputStream(file);
-		IOUtils.copy(inputStream, outputStream);
-		outputStream.close();
-		inputStream.close();
-		return file;
-	}
 
 	public ByteArrayOutputStream copyInputStream(InputStream inputStream) {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -100,7 +90,6 @@ public class FileService {
 		}
 		return null;
 	}
-
 
 	public String getBase64Image(Document document) throws IOException {
 		BufferedImage imBuff = ImageIO.read(document.getInputStream());
@@ -239,8 +228,7 @@ public class FileService {
 			int lineCount = 0;
 			Map<TextAttribute, Object> attributes = new Hashtable<>();
 			int fontSize = (int) (12 * qualityFactor * signRequestParams.getSignScale() * .75);
-			attributes.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
-//			attributes.put(TextAttribute.TRACKING, 0.01);
+			setQualityParams(graphics2D);
 			Font font = null;
 			try {
 				font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.PLAIN).deriveFont((float) fontSize);
@@ -270,7 +258,7 @@ public class FileService {
 				lineCount++;
 			}
 			if(signRequestParams.getExtraDate()) {
-				DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
+				DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss 'GMT'XXX", Locale.FRENCH);
 				if(lineCount == 0) {
 					graphics2D.drawString("le " + dateFormat.format(date), widthOffset, fm.getHeight());
 				} else {
@@ -288,21 +276,32 @@ public class FileService {
 			}
 //			graphics2D.drawString("", 0, fm.getHeight() * lineCount + 1);
 			graphics2D.dispose();
-			File fileImage = getTempFile("sign.png");
-			ImageIO.write(image, "png", fileImage);
-			textAddedInputStream = new FileInputStream(fileImage);
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			ImageIO.write(image, "png", outputStream);
+			textAddedInputStream = new ByteArrayInputStream(outputStream.toByteArray());
 		}
 		return textAddedInputStream;
 	}
 
-	public void addImageWatermark(InputStream watermarkImageFile, InputStream sourceImageFile, File destImageFile, Color color, boolean extraOnTop) {
+	private void setQualityParams(Graphics2D graphics2D) {
+		graphics2D.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+		graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		graphics2D.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+		graphics2D.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
+		graphics2D.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+		graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		graphics2D.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		graphics2D.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+	}
+
+	public void addImageWatermark(InputStream watermarkImageFile, InputStream sourceImageFile, ByteArrayOutputStream destImageFile, Color color, boolean extraOnTop) {
 		try {
 			BufferedImage sourceImage = ImageIO.read(sourceImageFile);
 			BufferedImage watermarkImage = ImageIO.read(watermarkImageFile);
 //			changeColor(watermarkImage, 255, 255, 255, 0, 0, 0);
 //			changeColor(watermarkImage, 0, 0, 0, color.getRed(), color.getGreen(), color.getBlue());
 			Graphics2D g2d = (Graphics2D) sourceImage.getGraphics();
-			AlphaComposite alphaChannel = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.1f);
+			AlphaComposite alphaChannel = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f);
 			g2d.setComposite(alphaChannel);
 			double factor = sourceImage.getWidth() * .8 / watermarkImage.getWidth();
 			int width = (int) (sourceImage.getWidth() * .8);
@@ -312,8 +311,8 @@ public class FileService {
 				width = (int) (watermarkImage.getWidth() * factor);
 				height = (int) (sourceImage.getHeight() * .6);
 			}
-			int topLeftX = (int) ((sourceImage.getWidth() - width) / 2);
-			int topLeftY = (int) ((sourceImage.getHeight() - height) / 2);
+			int topLeftX = (sourceImage.getWidth() - width) / 2;
+			int topLeftY = (sourceImage.getHeight() - height) / 2;
 			g2d.drawImage(watermarkImage, topLeftX, topLeftY, width, height, null);
 			ImageIO.write(sourceImage, "png", destImageFile);
 			g2d.dispose();
@@ -322,29 +321,23 @@ public class FileService {
 		}
 	}
 
-	public InputStream svgToPng(InputStream svgInputStream) throws IOException {
-		File file = getTempFile("sceau.png");
-		ImageIO.write(ImageIO.read(svgInputStream), "PNG", file);
-		return new FileInputStream(file);
+//	public InputStream svgToPng(InputStream svgInputStream) throws IOException {
+//		File file = getTempFile("sceau.png");
+//		ImageIO.write(ImageIO.read(svgInputStream), "PNG", file);
+//		return new FileInputStream(file);
+//	}
+
+	public InputStream getFileFromUrl(String url) throws IOException {
+		return new URL(url).openStream();
 	}
 
-	public File getFileFromUrl(String url) throws IOException {
-		File file = getTempFile(url.split("/")[url.split("/").length-1]);
-		FileUtils.copyURLToFile(new URL(url), file);
-		return file;
-	}
-
-	public boolean isFileContainsText(File file, String text) {
-		try {
-			Scanner scanner = new Scanner(file);
-			while (scanner.hasNextLine()) {
-				String line = scanner.nextLine();
-				if(line.contains(text)) {
-					return true;
-				}
+	public boolean isFileContainsText(InputStream file, String text) {
+		Scanner scanner = new Scanner(file);
+		while (scanner.hasNextLine()) {
+			String line = scanner.nextLine();
+			if(line.contains(text)) {
+				return true;
 			}
-		} catch(FileNotFoundException e) {
-			logger.error(e.getMessage());
 		}
 		return false;
 	}
@@ -377,15 +370,43 @@ public class FileService {
 		imgBuf.setRGB(0, 0, w, h, rgb, 0, w);
 	}
 
-	public File getEmptyImage() throws IOException {
-		BufferedImage bufferedImage = new BufferedImage(600, 300, BufferedImage.TYPE_INT_RGB);
+	public InputStream getEmptyImage() throws IOException {
+		BufferedImage bufferedImage = new BufferedImage(600, 300, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g2d = bufferedImage.createGraphics();
 		g2d.setColor(Color.white);
 		g2d.fillRect(0, 0, 600, 300);
 		g2d.dispose();
-		File fileSignImage = getTempFile("sign_image.png");
-		ImageIO.write(bufferedImage, "png", fileSignImage);
-		return fileSignImage;
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ImageIO.write(bufferedImage, "png", outputStream);
+		return new ByteArrayInputStream(outputStream.toByteArray());
+	}
+
+	public InputStream getDefaultImage(String name, String firstname) throws IOException {
+		BufferedImage bufferedImage = new BufferedImage(600, 300, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D graphics2D = bufferedImage.createGraphics();
+		graphics2D.setColor(new Color(0f,0f,0f,0f ));
+		Rectangle rect = new Rectangle();
+		rect.setRect(0, 0, 600, 300);
+		graphics2D.fillRect(0, 0, 600, 300);
+		setQualityParams(graphics2D);
+		float fontSize = 45f;
+		Font font = null;
+		try {
+			font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(fontSize);
+		} catch (FontFormatException e) {
+			logger.warn("unable to get font");
+		}
+		graphics2D.setFont(font);
+		graphics2D.setColor(Color.BLACK);
+		FontMetrics fm = graphics2D.getFontMetrics();
+		int y = rect.y + ((rect.height - fm.getHeight()) / 2) + fm.getAscent();
+		int lineHeight = Math.round(fontSize + fontSize * .5f);
+		graphics2D.drawString(firstname.toUpperCase(), rect.x + (rect.width - fm.stringWidth(firstname.toUpperCase())) / 2, y - lineHeight);
+		graphics2D.drawString(name.toUpperCase(), rect.x + (rect.width - fm.stringWidth(name.toUpperCase())) / 2, y + lineHeight);
+		graphics2D.dispose();
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ImageIO.write(bufferedImage, "png", outputStream);
+		return new ByteArrayInputStream(outputStream.toByteArray());
 	}
 
 	private InputStream getFaImage(String faName) throws IOException {
@@ -414,4 +435,12 @@ public class FileService {
 		return DigestUtils.sha3_256Hex(inputStream);
 	}
 
+	public File inputStreamToTempFile(InputStream inputStream, String name) throws IOException {
+		File file = getTempFile("tmp_" + name);
+		OutputStream outputStream = new FileOutputStream(file);
+		IOUtils.copy(inputStream, outputStream);
+		outputStream.close();
+		inputStream.close();
+		return file;
+	}
 }

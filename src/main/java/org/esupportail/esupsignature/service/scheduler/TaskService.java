@@ -85,7 +85,7 @@ public class TaskService {
                     LocalDateTime nowDate = LocalDateTime.ofInstant(new Date().toInstant(), ZoneId.systemDefault());
                     long nbDays = ChronoUnit.DAYS.between(deleteDate, nowDate);
                     if (Math.abs(nbDays) >= globalProperties.getTrashKeepDelay()) {
-                        signBookService.deleteDefinitive(signBook.getId());
+                        signBookService.deleteDefinitive(signBook.getId(), "system");
                         i++;
                     }
                 }

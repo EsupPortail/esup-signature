@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.service;
+package org.esupportail.esupsignature.service.utils.sign;
 
 import eu.europa.esig.dss.enumerations.TokenExtractionStrategy;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -65,9 +65,10 @@ public class ValidationService {
             documentValidator.setValidationLevel(ValidationLevel.LONG_TERM_DATA);
             documentValidator.setSignaturePolicyProvider(signaturePolicyProvider);
             Reports reports = null;
-            try (InputStream is = defaultPolicy.getInputStream()) {
+            try {
+                InputStream is = defaultPolicy.getInputStream();
                 reports = documentValidator.validateDocument(is);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 logger.error("Unable to parse policy : " + e.getMessage(), e);
             }
             return reports;

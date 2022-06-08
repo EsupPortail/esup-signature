@@ -22,10 +22,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -429,6 +426,7 @@ public class WorkflowService {
         workflowToUpdate.setTargetNamingTemplate(workflow.getTargetNamingTemplate());
         workflowToUpdate.setPublicUsage(workflow.getPublicUsage());
         workflowToUpdate.setVisibility(workflow.getVisibility());
+        workflowToUpdate.setOwnerSystem(workflow.getOwnerSystem());
         workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
         workflowToUpdate.setSendAlertToAllRecipients(workflow.getSendAlertToAllRecipients());
         workflowToUpdate.getRoles().clear();
@@ -485,10 +483,10 @@ public class WorkflowService {
     @Transactional
     public InputStream getJsonWorkflowSetup(Long id) throws IOException {
         Workflow workflow = getById(id);
-        File jsonFile = fileService.getTempFile("json");
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.writer().writeValue(jsonFile, workflow);
-        return new FileInputStream(jsonFile);
+        objectMapper.writer().writeValue(outputStream, workflow);
+        return new ByteArrayInputStream(outputStream.toByteArray());
     }
 
     @Transactional

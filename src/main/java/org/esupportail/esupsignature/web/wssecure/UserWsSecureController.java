@@ -110,6 +110,12 @@ public class UserWsSecureController {
         }
     }
 
+    @GetMapping(value = "/get-default-image")
+    @ResponseBody
+    public String getDefaultImage(@ModelAttribute("authUserEppn") String authUserEppn) throws IOException {
+        return userService.getDefaultImage(authUserEppn);
+    }
+
     @GetMapping(value = "/get-keystore")
     public ResponseEntity<Void> getKeystore(@ModelAttribute("authUserEppn") String authUserEppn, HttpServletResponse response) throws IOException {
         Map<String, Object> keystore = userService.getKeystoreByUser(authUserEppn);

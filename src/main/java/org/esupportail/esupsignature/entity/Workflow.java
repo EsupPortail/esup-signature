@@ -75,6 +75,8 @@ public class Workflow {
 
     private String targetNamingTemplate;
 
+    private Boolean ownerSystem = false;
+
     public Long getId() {
         return id;
     }
@@ -274,5 +276,13 @@ public class Workflow {
 
     public void setTargetNamingTemplate(String targetNamingTemplate) {
         this.targetNamingTemplate = targetNamingTemplate;
+    }
+
+    public Boolean getOwnerSystem() {
+        return ownerSystem;
+    }
+
+    public void setOwnerSystem(Boolean ownerSystem) {
+        this.ownerSystem = ownerSystem;
     }
 }

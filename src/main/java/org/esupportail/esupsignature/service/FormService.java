@@ -179,15 +179,15 @@ public class FormService {
 				documentService.delete(oldModel.getId());
 			}
 			try {
-				File tempDocument = fileService.inputStreamToTempFile(multipartModel.getInputStream(), multipartModel.getOriginalFilename());
-				List<Field> fields = getFields(new FileInputStream(tempDocument), form.getWorkflow());
+				byte[] tempDocument = multipartModel.getInputStream().readAllBytes();
+				List<Field> fields = getFields(new ByteArrayInputStream(tempDocument), form.getWorkflow());
 				for(Field field : fields) {
 					if(form.getFields().stream().noneMatch(field1 -> field1.getName().equals(field.getName()))) {
 						form.getFields().add(field);
 					}
 				}
-				updateSignRequestParams(id, new FileInputStream(tempDocument));
-				Document newModel = documentService.createDocument(pdfService.removeSignField(new FileInputStream(tempDocument)), multipartModel.getOriginalFilename(), multipartModel.getContentType());
+				updateSignRequestParams(id, new ByteArrayInputStream(tempDocument));
+				Document newModel = documentService.createDocument(pdfService.removeSignField(new ByteArrayInputStream(tempDocument)), multipartModel.getOriginalFilename(), multipartModel.getContentType());
 				form.setDocument(newModel);
 
 			} catch (IOException | EsupSignatureIOException e) {
@@ -499,10 +499,10 @@ public class FormService {
 	@Transactional
     public InputStream getJsonFormSetup(Long id) throws IOException {
 		Form form = getById(id);
-		File jsonFile = fileService.getTempFile("json");
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.writer().writeValue(jsonFile, form);
-		return new FileInputStream(jsonFile);
+		objectMapper.writer().writeValue(outputStream, form);
+		return new ByteArrayInputStream(outputStream.toByteArray());
     }
 
     @Transactional

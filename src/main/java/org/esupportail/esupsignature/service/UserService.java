@@ -28,8 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -194,7 +194,7 @@ public class UserService {
 
         UserType userType = checkMailDomain(mail);
         if (userType.equals(UserType.external)) {
-            logger.info("ldap user not found : " + mail + ". Creating temp acccount");
+            logger.info("ldap user not found : " + mail + ". Creating temp account");
             return createUser(UUID.randomUUID().toString(), "", "", mail, UserType.external, false);
         } else if (userType.equals(UserType.shib)) {
             return createUser(mail, mail, "Nouvel utilisateur fédération", mail, UserType.shib, false);
@@ -254,6 +254,10 @@ public class UserService {
                     }
                 }
             }
+        }
+        if(userType.equals(UserType.shib) && globalProperties.getShibUsersDomainWhiteList() != null && globalProperties.getShibUsersDomainWhiteList().size() > 0 && globalProperties.getShibUsersDomainWhiteList().contains(user.getEppn().split("@")[1])) {
+            user.getRoles().remove("ROLE_USER");
+            user.getRoles().add("ROLE_OTP");
         }
         userRepository.save(user);
         return user;
@@ -424,7 +428,7 @@ public class UserService {
             } else if(domain.equals(globalProperties.getDomain())) {
                 return UserType.shib;
             } else if(shibProperties.getDomainsWhiteListUrl() != null) {
-                File whiteListFile = getDomainsWhiteList();
+                InputStream whiteListFile = getDomainsWhiteList();
                 if (fileService.isFileContainsText(whiteListFile, domain)) {
                     return UserType.shib;
                 }
@@ -433,12 +437,11 @@ public class UserService {
         return UserType.external;
     }
 
-
-    public File getDomainsWhiteList() {
+    public InputStream getDomainsWhiteList() {
         try {
-        return fileService.getFileFromUrl(shibProperties.getDomainsWhiteListUrl());
+            return fileService.getFileFromUrl(shibProperties.getDomainsWhiteListUrl());
         } catch (IOException e) {
-        e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return null;
     }
@@ -668,5 +671,19 @@ public class UserService {
         User user = getUserByEppn(userEppn);
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.writer().writeValueAsString(user.getFavoriteSignRequestParams());
+    }
+
+    @Transactional
+    public void updateUserInfos(Long id, String eppn, String name, String firstname) {
+        User user = getById(id);
+        user.setEppn(eppn);
+        user.setName(name);
+        user.setFirstname(firstname);
+    }
+
+    @Transactional
+    public String getDefaultImage(String eppn) throws IOException {
+        User user = getUserByEppn(eppn);
+        return fileService.getBase64Image(fileService.getDefaultImage(user.getName(), user.getFirstname()), "default");
     }
 }

@@ -6,7 +6,7 @@
         <h5 class="text-center sidebar-label"><b>Filtres</b></h5>
         <a th:classappend="${statusFilter == ''} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signbooks/?statusFilter=all">Tout voir</a>
         <div class="hr"><i class="fas fa-inbox me-1"></i><span class="sidebar-label"> Demandes reçues</span></div>
-        <a th:classappend="${statusFilter == 'tosign'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signbooks/?statusFilter=tosign">
+        <a th:classappend="${statusFilter == 'toSign'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signbooks/?statusFilter=toSign">
             <span class="sidebar-label">A signer</span>
             <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-md-inline" th:text="${nbToSign}">
             </span>

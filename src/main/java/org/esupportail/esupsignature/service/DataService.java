@@ -63,8 +63,12 @@ public class DataService {
     }
 
     public Data updateDatas(Form form, Data data, Map<String, String> formDatas, User user, User authUser) {
+        SignBook signBook = data.getSignBook();
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user, data.getSignBook().getSignRequests().get(0));
         for(Field field : fields) {
+            if(!field.getWorkflowSteps().contains(signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep())) {
+                formDatas.put(field.getName(), data.getDatas().get(field.getName()));
+            }
             if(!field.getStepZero()) {
                 field.setDefaultValue("");
             }
@@ -108,7 +112,7 @@ public class DataService {
         return cloneData;
     }
 
-    public InputStream generateFile(Data data, InputStream inputStream) throws IOException {
+    public byte[] generateFile(Data data, InputStream inputStream) throws IOException {
         Form form = data.getForm();
         if(inputStream != null && inputStream.available() > 0) {
             return pdfService.fill(inputStream, data.getDatas(), false);
