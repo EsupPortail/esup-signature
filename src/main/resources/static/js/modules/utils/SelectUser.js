@@ -5,6 +5,7 @@ export default class SelectUser {
         this.slimSelect = null;
         this.selectField = $("#" + selectName);
         this.selectField.attr("stepSelection", "true");
+        this.checkList = this.selectField.attr("data-es-check-list");
         this.signRequestId = signRequestId;
         this.csrf = csrf;
         this.valuePrefix = "";
@@ -90,19 +91,21 @@ export default class SelectUser {
                             method: 'get',
                             signal: signal,
                         })
-                            .then(function (response){
-                                return response.json()
-                            })
-                            .then(function (json) {
-                                for (let i = 0; i < json.length; i++) {
+                        .then(function (response){
+                            return response.json()
+                        })
+                        .then(function (json) {
+                            for (let i = 0; i < json.length; i++) {
+                                if(data.filter(d => d.value.includes(json[i].mailAlias)).length === 0) {
                                     data.unshift({text: json[i].mailAlias, value: valuePrefix + json[i].mailAlias});
-                                    if(data.length > 0) {
-                                        callback(data);
-                                    }
                                 }
-                            }).catch(function () {
-                               console.debug("debug - " + "abort last search");
-                            });
+                                if(data.length > 0) {
+                                    callback(data);
+                                }
+                            }
+                        }).catch(function () {
+                           console.debug("debug - " + "abort last search");
+                        });
                         if(data.length > 0) {
                             callback(data);
                         } else {
@@ -123,54 +126,56 @@ export default class SelectUser {
 
 
     displayTempUsers(e) {
-        if (this.selectField.attr('id') === 'recipientsEmailsWiz') {
-            if (this.slimSelect.selected().length > 0) {
-                $('#addNew').show();
-                $('#endStart').hide();
-                $('#end').hide();
-            } else {
-                $('#addNew').hide();
-                $('#endStart').show();
-                $('#end').show();
+        if(this.checkList !== "false") {
+            if (this.selectField.attr('id') === 'recipientsEmailsWiz') {
+                if (this.slimSelect.selected().length > 0) {
+                    $('#addNew').show();
+                    $('#endStart').hide();
+                    $('#end').hide();
+                } else {
+                    $('#addNew').hide();
+                    $('#endStart').show();
+                    $('#end').show();
+                }
             }
-        }
-        let recipientEmails;
-        if(Array.isArray(this.slimSelect.selected())) {
-            recipientEmails = this.slimSelect.selected();
-        } else {
-            recipientEmails = new Array(this.slimSelect.selected());
-        }
-        $('[id^="allSignToComplete-"]').each(function(){
-            if (recipientEmails.length > 1) {
-                $(this).show();
+            let recipientEmails;
+            if (Array.isArray(this.slimSelect.selected())) {
+                recipientEmails = this.slimSelect.selected();
             } else {
-                $(this).hide();
+                recipientEmails = new Array(this.slimSelect.selected());
             }
-        })
-        if(this.csrf) {
-            let csrf = this.csrf;
-            $.ajax({
-                url: "/ws-secure/users/check-temp-users/?" + csrf.parameterName + "=" + csrf.token,
-                type: 'POST',
-                contentType: "application/json",
-                dataType: 'json',
-                data: JSON.stringify(recipientEmails),
-                success: data => this.displayTempUsersSuccess(data),
-                error: e => this.displayExternalsError()
-            });
-        }
-
-        if (this.flag === true && e.length > 0) {
-            let text = e[e.length - 1].value;
-            console.info("check : " + text);
-            if ( text != null && !text.includes('(')) {
+            $('[id^="allSignToComplete-"]').each(function () {
+                if (recipientEmails.length > 1) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            })
+            if (this.csrf) {
+                let csrf = this.csrf;
                 $.ajax({
-                    url: "/user/users/search-user-list?searchString=" + text,
-                    type: 'GET',
-                    dataType: 'json',
+                    url: "/ws-secure/users/check-temp-users/?" + csrf.parameterName + "=" + csrf.token,
+                    type: 'POST',
                     contentType: "application/json",
-                    success: response => this.addListMembers(response, text)
+                    dataType: 'json',
+                    data: JSON.stringify(recipientEmails),
+                    success: data => this.displayTempUsersSuccess(data),
+                    error: e => this.displayExternalsError()
                 });
+            }
+
+            if (this.flag === true && e.length > 0) {
+                let text = e[e.length - 1].value;
+                console.info("check : " + text);
+                if (text != null && !text.includes('(')) {
+                    $.ajax({
+                        url: "/user/users/search-user-list?searchString=" + text,
+                        type: 'GET',
+                        dataType: 'json',
+                        contentType: "application/json",
+                        success: response => this.addListMembers(response, text)
+                    });
+                }
             }
         }
     }

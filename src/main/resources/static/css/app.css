@@ -774,6 +774,11 @@ th .ss-content {
 #stepper {
     max-width: 100%;
 }
+
+.bs-stepper .step-trigger:not(:disabled):not(.disabled) {
+    cursor: initial !important;
+}
+
 .bs-stepper-line {
     background-color: #343a40 !important;
 }

@@ -120,6 +120,19 @@ public class UserService {
         }
     }
 
+    public User getGroupUserByEmail(String email) {
+        if (userRepository.countByEmailAndUserType(email, UserType.group) > 0) {
+            return userRepository.findByEmailAndUserType(email, UserType.group).get(0);
+        } else {
+            return createGroupUserWithEmail(email);
+        }
+    }
+
+    @Transactional
+    public User createGroupUserWithEmail(String email) {
+        return createUser(email, email, "", email, UserType.group, false);
+    }
+
     public User getUserByPhone(String phone) {
         return userRepository.findByPhone(phone);
     }
@@ -478,7 +491,7 @@ public class UserService {
         if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size() > 0) {
             for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
                 for (Recipient recipient : liveWorkflowStep.getRecipients()) {
-                    if (recipient.getUser().getUserType().equals(UserType.external) || (recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && !recipient.getUser().getUserType().equals(UserType.shib) && recipient.getUser().getEppn().equals(recipient.getUser().getName()))) {
+                    if (recipient.getUser().getUserType().equals(UserType.external) || (recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && !recipient.getUser().getUserType().equals(UserType.group) && !recipient.getUser().getUserType().equals(UserType.shib) && recipient.getUser().getEppn().equals(recipient.getUser().getName()))) {
                         users.add(recipient.getUser());
                     }
                 }
@@ -487,7 +500,7 @@ public class UserService {
             if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getWorkflowSteps().size() > 0) {
                 for (WorkflowStep workflowStep : signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getWorkflowSteps()) {
                     for (User user : workflowStep.getUsers()) {
-                        if (user.getUserType().equals(UserType.external) || (user.getEppn().equals(user.getEmail()) && user.getEppn().equals(user.getName()))) {
+                        if (user.getUserType().equals(UserType.external) || (user.getEppn().equals(user.getEmail()) && !user.getUserType().equals(UserType.group) && user.getEppn().equals(user.getName()))) {
                             users.add(user);
                         }
                     }
@@ -685,5 +698,10 @@ public class UserService {
     public String getDefaultImage(String eppn) throws IOException {
         User user = getUserByEppn(eppn);
         return fileService.getBase64Image(fileService.getDefaultImage(user.getName(), user.getFirstname()), "default");
+    }
+
+    @Transactional
+    public List<User> getGroupUsers() {
+        return userRepository.findByUserType(UserType.group);
     }
 }

@@ -43,4 +43,16 @@ public class SympaUserList implements UserList {
         });
         return userEmails;
     }
+
+    @Override
+    public List<String> getListOfLists() {
+        List<String> listNames= new ArrayList<>();
+        jdbcTemplate.query("select distinct list_subscriber from subscriber_table", (ResultSet rs) -> {
+            listNames.add(rs.getString("list_subscriber"));
+            while (rs.next()) {
+                listNames.add(rs.getString("list_subscriber"));
+            }
+        });
+        return listNames;
+    }
 }

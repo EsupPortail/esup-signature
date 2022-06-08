@@ -118,7 +118,7 @@
                                             <form th:action="${fromAdmin == true ? '/admin/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id : '/user/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id}" th:method="'delete'">
                                                 <input type="hidden" name="userToRemoveEppn" th:value="${user.eppn}"/>
                                                 <button title="Supprimer le destinataire"
-                                                    onclick="confirm('Voulez-vous vraiment supprimer cet element ?');"
+                                                    onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');"
                                                     type="submit" class="btn btn-danger btn-sm"><i
                                                     class="fas fa-minus-circle"></i></button>
                                             </form>
@@ -143,16 +143,11 @@
                                 </div>
                                 <div class="modal-body">
                                     <div class="form-group mb-3">
-                                        <select class="select-users" name="recipientsEmails"
-                                                th:id="'recipientsEmails' + ${workflowStep.id}"
+                                        <select class="select-users" name="recipientsEmails" th:id="'recipientsEmails' + ${workflowStep.id}"
                                                 size="5" multiple="multiple"
-                                                required="required">
+                                                required="required" data-es-check-list="false">
                                             <option data-placeholder="true"></option>
                                         </select>
-                                    </div>
-                                    <div class="form-group mb-3">
-                                        <textarea class="form-control" name="comment"
-                                                  placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."></textarea>
                                     </div>
                                 </div>
                                 <div class="modal-footer">

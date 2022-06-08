@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.repository.WorkflowStepRepository;
+import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,9 @@ public class WorkflowStepService {
     @Resource
     private WorkflowRepository workflowRepository;
 
+    @Resource
+    private UserListService userListService;
+
     @Transactional
     public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, String... recipientEmails) {
         WorkflowStep workflowStep = new WorkflowStep();
@@ -59,15 +63,20 @@ public class WorkflowStepService {
     public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, String... recipientsEmail) {
         recipientsEmail = Arrays.stream(recipientsEmail).distinct().toArray(String[]::new);
         for (String recipientEmail : recipientsEmail) {
-            User recipientUser = userService.getUserByEmail(recipientEmail);
-            if (workflowStep.getId() != null) {
-                for (User user : workflowStep.getUsers()) {
-                    if (user.equals(recipientUser)) {
-                        return;
+            List<String> groupList = userListService.getUsersEmailFromList(recipientEmail);
+            if(groupList.size() == 0) {
+                User recipientUser = userService.getUserByEmail(recipientEmail);
+                if (workflowStep.getId() != null) {
+                    for (User user : workflowStep.getUsers()) {
+                        if (user.equals(recipientUser)) {
+                            return;
+                        }
                     }
                 }
+                workflowStep.getUsers().add(recipientUser);
+            } else {
+                workflowStep.getUsers().add(userService.createGroupUserWithEmail(recipientEmail));
             }
-            workflowStep.getUsers().add(recipientUser);
         }
     }
 

@@ -109,7 +109,7 @@
                                             <form th:action="${fromAdmin == true ? '/admin/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id : '/user/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id}" th:method="'delete'">
                                                 <input type="hidden" name="userToRemoveEppn" th:value="${user.eppn}"/>
                                                 <button title="Supprimer le destinataire"
-                                                        onclick="confirm('Voulez-vous vraiment supprimer cet element ?');"
+                                                        onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');"
                                                         type="submit" class="btn btn-danger btn-sm"><i
                                                         class="fas fa-minus-circle"></i></button>
                                             </form>
