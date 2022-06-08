@@ -255,8 +255,13 @@ export class WorkspacePdf {
     }
 
     saveData() {
+        let self = this;
         for(let i = 1; i < this.pdfViewer.pdfDoc.numPages + 1; i++) {
-            this.pdfViewer.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.pdfViewer.saveValues(items)).then(e => this.pushData(false)));
+            this.pdfViewer.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.pdfViewer.saveValues(items)).then(function(){
+                if(i === self.pdfViewer.pdfDoc.numPages) {
+                    self.pushData(false);
+                }
+            }));
         }
     }
 
