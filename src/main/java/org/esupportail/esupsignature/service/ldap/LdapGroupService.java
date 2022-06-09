@@ -10,10 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -88,12 +85,12 @@ public class LdapGroupService implements GroupService {
     }
 
     @Override
-    public List<String> getAllGroups(String search) {
+    public List<Map.Entry<String, String>> getAllGroups(String search) {
         String hardcodedFilter = MessageFormat.format(allGroupsSearchFilter, search);
-        List<String> groups = ldapTemplate.search(LdapQueryBuilder.query().attributes("cn").base(groupSearchBase).filter(hardcodedFilter + "*"),
-                (ContextMapper<String>) ctx -> {
+        List<Map.Entry<String, String>> groups = ldapTemplate.search(LdapQueryBuilder.query().attributes("cn", "description").base(groupSearchBase).filter(hardcodedFilter + "*"),
+                (ContextMapper<Map.Entry<String, String>>) ctx -> {
                     DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
-                    return searchResultContext.getNameInNamespace();
+                    return new AbstractMap.SimpleEntry<>(searchResultContext.getStringAttribute("cn"), searchResultContext.getStringAttribute("description"));
                 });
         return groups;
     }
@@ -147,7 +144,7 @@ public class LdapGroupService implements GroupService {
     @Override
     public List<String> getMembers(String groupName) {
 
-        String formattedFilter = MessageFormat.format("memberOf={0}", groupName);
+        String formattedFilter = MessageFormat.format("memberOf=cn={0},ou=groups,dc=univ-rouen,dc=fr", groupName);
 
         List<String> eppns = ldapTemplate.search(memberSearchBase, formattedFilter, (ContextMapper<String>) ctx -> {
                     DirContextAdapter searchResultContext = (DirContextAdapter)ctx;

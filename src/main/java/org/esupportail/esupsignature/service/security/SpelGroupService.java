@@ -27,7 +27,7 @@ public class SpelGroupService implements GroupService {
 	}
 
 	@Override
-	public List<String> getAllGroups(String search) {
+	public List<Map.Entry<String, String>> getAllGroups(String search) {
 		return null;
 	}
 

@@ -10,8 +10,10 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.sql.ResultSet;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @ConditionalOnProperty(name = "extdb.datasources.userListDataSource.name", havingValue = "sympa")
@@ -45,12 +47,12 @@ public class SympaUserList implements UserList {
     }
 
     @Override
-    public List<String> getListOfLists(String search) {
-        List<String> listNames= new ArrayList<>();
-        jdbcTemplate.query("select distinct concat(list_subscriber, '@', robot_subscriber ) as list_name from subscriber_table where list_subscriber like '%" + search + "%'", (ResultSet rs) -> {
-            listNames.add(rs.getString("list_name"));
+    public List<Map.Entry<String, String>> getListOfLists(String search) {
+        List<Map.Entry<String, String>> listNames= new ArrayList<>();
+        jdbcTemplate.query("select distinct concat(name_list, '@', robot_list ) as list_name, subject_list  from list_table where searchkey_list like '%" + search + "%' or name_list like '%" + search + "%'", (ResultSet rs) -> {
+            listNames.add(new AbstractMap.SimpleEntry<>(rs.getString("list_name"), rs.getString("subject_list")));
             while (rs.next()) {
-                listNames.add(rs.getString("list_name"));
+                listNames.add(new AbstractMap.SimpleEntry<>(rs.getString("list_name"), rs.getString("subject_list")));
             }
         });
         return listNames;

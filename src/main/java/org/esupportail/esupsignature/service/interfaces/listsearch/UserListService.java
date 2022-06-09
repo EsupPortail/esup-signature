@@ -5,7 +5,9 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserListService {
@@ -32,15 +34,18 @@ public class UserListService {
 
     }
 
-    public List<String> getListsNames(String search) throws DataAccessException {
+    public Map<String, String> getListsNames(String search) throws DataAccessException {
         if(userLists != null && userLists.size() > 0) {
-            List<String> names = new ArrayList<>();
+            Map<String, String> names = new HashMap<>();
             for (UserList userList : userLists) {
-                names.addAll(userList.getListOfLists(search));
+                List<Map.Entry<String, String>> entries = userList.getListOfLists(search);
+                for(Map.Entry<String, String> entry : entries) {
+                    names.put(entry.getKey(), entry.getValue());
+                }
             }
             return names;
         } else {
-            return new ArrayList<>();
+            return new HashMap<>();
         }
 
     }

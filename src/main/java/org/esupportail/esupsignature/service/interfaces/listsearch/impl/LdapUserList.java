@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 @Primary
 @Component
@@ -30,8 +31,8 @@ public class LdapUserList implements UserList {
     }
 
     @Override
-    public List<String> getListOfLists(String search) {
-        List<String> listNames= ldapGroupService.getAllGroups(search);
+    public List<Map.Entry<String, String>> getListOfLists(String search) {
+        List<Map.Entry<String, String>> listNames= ldapGroupService.getAllGroups(search);
         return listNames;
     }
 }

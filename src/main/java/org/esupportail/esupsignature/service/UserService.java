@@ -377,11 +377,15 @@ public class UserService {
                 personLdaps.add(personLdapLight);
             }
         }
-        for(String string : userListService.getListsNames(searchString)) {
-            if(personLdaps.stream().noneMatch(personLdapLight -> personLdapLight.getMail().equals(string))) {
+        for(Map.Entry<String,String> string : userListService.getListsNames(searchString).entrySet()) {
+            if(personLdaps.stream().noneMatch(personLdapLight -> personLdapLight.getMail().equals(string.getKey()))) {
                 PersonLdapLight personLdapLight = new PersonLdapLight();
-                personLdapLight.setMail(string);
-                personLdapLight.setDisplayName(string);
+                personLdapLight.setMail(string.getKey());
+                if(string.getValue() != null) {
+                    personLdapLight.setDisplayName(string.getValue());
+                } else {
+                    personLdapLight.setDisplayName(string.getKey());
+                }
                 personLdaps.add(personLdapLight);
             }
         }
@@ -482,8 +486,8 @@ public class UserService {
                 if (recipientEmail.contains("*")) {
                     recipientEmail = recipientEmail.split("\\*")[1];
                 }
-                List<String> toto = userListService.getUsersEmailFromList(recipientEmail);
-                if (!recipientEmail.contains(globalProperties.getDomain())) {
+                List<String> groupUsers = userListService.getUsersEmailFromList(recipientEmail);
+                if (groupUsers.size() == 0 && !recipientEmail.contains(globalProperties.getDomain())) {
                     User recipientUser = getUserByEmail(recipientEmail);
                     if (recipientUser.getUserType().equals(UserType.external)) {
                         tempUsers.add(recipientUser);
