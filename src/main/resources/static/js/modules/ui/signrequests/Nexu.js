@@ -136,7 +136,7 @@ export class Nexu {
                     url: url,
                     crossDomain: true,
                     dataType: "json",
-                    async: false,
+                    async: true,
                     cache: false,
                 }).done(function (data) {
                     console.info("nexu detected on " + url);
@@ -148,12 +148,10 @@ export class Nexu {
                     $("#selectTypeDiv").show();
                     breakOut = true;
                     resolve("detected");
-
                 }).fail(function (jqXHR, textStatus, errorThrown) {
                     console.debug("nexu not detected on " + url);
                 });
             });
-            reject();
         });
     }
 

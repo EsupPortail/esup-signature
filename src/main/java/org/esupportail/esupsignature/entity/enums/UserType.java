@@ -4,5 +4,6 @@ public enum UserType {
     ldap,
     shib,
     external,
-    system
+    system,
+    group
 }
