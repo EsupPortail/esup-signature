@@ -81,31 +81,16 @@ export default class SelectUser {
                     .then((json) => {
                         let data = []
                         for (let i = 0; i < json.length; i++) {
-                            data.push({text: json[i].displayName + ' (' + json[i].mail + ')', value: valuePrefix + json[i].mail});
+                            if(json[i].displayName !== json[i].mail) {
+                                data.push({text: json[i].displayName + ' (' + json[i].mail + ')', value: valuePrefix + json[i].mail});
+                            } else {
+                                data.push({text: json[i].displayName, value: valuePrefix + json[i].mail});
+                            }
                         }
                         this.flag = true;
                         controller.abort();
                         controller = new AbortController();
                         signal = controller.signal;
-                        fetch('/user/users/search-list?searchString=' + search, {
-                            method: 'get',
-                            signal: signal,
-                        })
-                        .then(function (response){
-                            return response.json()
-                        })
-                        .then(function (json) {
-                            for (let i = 0; i < json.length; i++) {
-                                if(data.filter(d => d.value.includes(json[i].mailAlias)).length === 0) {
-                                    data.unshift({text: json[i].mailAlias, value: valuePrefix + json[i].mailAlias});
-                                }
-                                if(data.length > 0) {
-                                    callback(data);
-                                }
-                            }
-                        }).catch(function () {
-                           console.debug("debug - " + "abort last search");
-                        });
                         if(data.length > 0) {
                             callback(data);
                         } else {

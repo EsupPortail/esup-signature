@@ -45,12 +45,12 @@ public class SympaUserList implements UserList {
     }
 
     @Override
-    public List<String> getListOfLists() {
+    public List<String> getListOfLists(String search) {
         List<String> listNames= new ArrayList<>();
-        jdbcTemplate.query("select distinct list_subscriber from subscriber_table", (ResultSet rs) -> {
-            listNames.add(rs.getString("list_subscriber"));
+        jdbcTemplate.query("select distinct concat(list_subscriber, '@', robot_subscriber ) as list_name from subscriber_table where list_subscriber like '%" + search + "%'", (ResultSet rs) -> {
+            listNames.add(rs.getString("list_name"));
             while (rs.next()) {
-                listNames.add(rs.getString("list_subscriber"));
+                listNames.add(rs.getString("list_name"));
             }
         });
         return listNames;

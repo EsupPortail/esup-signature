@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.ldap.*;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
@@ -77,6 +78,9 @@ public class UserService {
 
     @Resource
     private SignRequestParamsRepository signRequestParamsRepository;
+
+    @Resource
+    private UserListService userListService;
 
     public User getById(Long id) {
         return userRepository.findById(id).get();
@@ -366,7 +370,19 @@ public class UserService {
                 personLdaps.remove(personLdaps.stream().filter(personLdap -> personLdap.getMail().equals(user.getEmail())).findFirst().get());
             }
             if(personLdaps.stream().noneMatch(personLdapLight -> personLdapLight.getMail().equals(user.getEmail()))) {
-                personLdaps.add(getPersonLdapLightFromUser(user));
+                PersonLdapLight personLdapLight = getPersonLdapLightFromUser(user);
+                if(user.getUserType().equals(UserType.group)) {
+                    personLdapLight.setDisplayName(personLdapLight.getDisplayName());
+                }
+                personLdaps.add(personLdapLight);
+            }
+        }
+        for(String string : userListService.getListsNames(searchString)) {
+            if(personLdaps.stream().noneMatch(personLdapLight -> personLdapLight.getMail().equals(string))) {
+                PersonLdapLight personLdapLight = new PersonLdapLight();
+                personLdapLight.setMail(string);
+                personLdapLight.setDisplayName(string);
+                personLdaps.add(personLdapLight);
             }
         }
         return personLdaps;
@@ -466,6 +482,7 @@ public class UserService {
                 if (recipientEmail.contains("*")) {
                     recipientEmail = recipientEmail.split("\\*")[1];
                 }
+                List<String> toto = userListService.getUsersEmailFromList(recipientEmail);
                 if (!recipientEmail.contains(globalProperties.getDomain())) {
                     User recipientUser = getUserByEmail(recipientEmail);
                     if (recipientUser.getUserType().equals(UserType.external)) {

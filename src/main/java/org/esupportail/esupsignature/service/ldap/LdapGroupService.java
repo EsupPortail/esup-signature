@@ -27,6 +27,12 @@ public class LdapGroupService implements GroupService {
 
     private String groupSearchFilter;
 
+    private String allGroupsSearchFilter;
+
+    private String groupNameAttribut;
+
+    private String membersOfGroupSearchFilter;
+
     private String memberSearchBase;
 
     private String memberSearchFilter;
@@ -53,6 +59,18 @@ public class LdapGroupService implements GroupService {
         this.groupSearchFilter = groupSearchFilter;
     }
 
+    public void setAllGroupsSearchFilter(String allGroupsSearchFilter) {
+        this.allGroupsSearchFilter = allGroupsSearchFilter;
+    }
+
+    public void setGroupNameAttribut(String groupNameAttribut) {
+        this.groupNameAttribut = groupNameAttribut;
+    }
+
+    public void setMembersOfGroupSearchFilter(String membersOfGroupSearchFilter) {
+        this.membersOfGroupSearchFilter = membersOfGroupSearchFilter;
+    }
+
     public void setMemberSearchBase(String memberSearchBase) {
         this.memberSearchBase = memberSearchBase;
     }
@@ -70,18 +88,25 @@ public class LdapGroupService implements GroupService {
     }
 
     @Override
+    public List<String> getAllGroups(String search) {
+        String hardcodedFilter = MessageFormat.format(allGroupsSearchFilter, search);
+        List<String> groups = ldapTemplate.search(LdapQueryBuilder.query().attributes("cn").base(groupSearchBase).filter(hardcodedFilter + "*"),
+                (ContextMapper<String>) ctx -> {
+                    DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
+                    return searchResultContext.getNameInNamespace();
+                });
+        return groups;
+    }
+
+    @Override
     public List<String> getGroups(String eppn) {
-
         String username = eppn.replaceAll("@.*", "");
-
         List<String> dns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").where("uid").is(username),
                 (ContextMapper<String>) ctx -> {
                     DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                     return searchResultContext.getNameInNamespace();
                 });
-
         List<String> groups = new ArrayList<>();
-
         if(!dns.isEmpty()) {
             String userDn = dns.get(0);
             String formattedGroupSearchFilter = MessageFormat.format(groupSearchFilter, userDn, username);
@@ -91,7 +116,6 @@ public class LdapGroupService implements GroupService {
                         return searchResultContext.getStringAttribute("cn");
                     });
         }
-
         for(String ldapFilter: ldapFiltersGroups.keySet()) {
             String hardcodedFilter = MessageFormat.format(memberSearchFilter, username, ldapFilter);
             List<String> filterDns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").filter(hardcodedFilter),
@@ -106,7 +130,6 @@ public class LdapGroupService implements GroupService {
         }
         return groups;
     }
-
 
     public void addLdapRoles(Set<GrantedAuthority> grantedAuthorities, List<String> ldapGroups, String groupPrefixRoleName, Map<String, String> mappingGroupesRoles) {
         for(String groupName : ldapGroups) {
@@ -124,12 +147,11 @@ public class LdapGroupService implements GroupService {
     @Override
     public List<String> getMembers(String groupName) {
 
-        String formattedFilter = MessageFormat.format(memberSearchFilter, groupName);
+        String formattedFilter = MessageFormat.format("memberOf={0}", groupName);
 
-        List<String> eppns = ldapTemplate.search(
-                memberSearchBase, formattedFilter, (ContextMapper<String>) ctx -> {
+        List<String> eppns = ldapTemplate.search(memberSearchBase, formattedFilter, (ContextMapper<String>) ctx -> {
                     DirContextAdapter searchResultContext = (DirContextAdapter)ctx;
-                    String eppn = searchResultContext.getStringAttribute("eduPersonPrincipalName");
+                    String eppn = searchResultContext.getStringAttribute("mail");
                     return eppn;
                 });
 

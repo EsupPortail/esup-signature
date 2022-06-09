@@ -27,6 +27,11 @@ public class SpelGroupService implements GroupService {
 	}
 
 	@Override
+	public List<String> getAllGroups(String search) {
+		return null;
+	}
+
+	@Override
 	public List<String> getGroups(String eppn) {
 
 		if(!eppn.contains("@")) {
