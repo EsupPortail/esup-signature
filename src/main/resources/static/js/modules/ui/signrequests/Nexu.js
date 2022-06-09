@@ -148,12 +148,10 @@ export class Nexu {
                     $("#selectTypeDiv").show();
                     breakOut = true;
                     resolve("detected");
-
                 }).fail(function (jqXHR, textStatus, errorThrown) {
                     console.debug("nexu not detected on " + url);
                 });
             });
-            reject();
         });
     }
 
