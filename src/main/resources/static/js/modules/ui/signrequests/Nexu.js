@@ -136,7 +136,7 @@ export class Nexu {
                     url: url,
                     crossDomain: true,
                     dataType: "json",
-                    async: false,
+                    async: true,
                     cache: false,
                 }).done(function (data) {
                     console.info("nexu detected on " + url);
