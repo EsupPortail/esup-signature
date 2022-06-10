@@ -235,16 +235,6 @@ public class SignRequestController {
         return new String[]{"ok"};
     }
 
-//    @GetMapping("/sign-by-token/{token}")
-//    public String signByToken(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("token") String token) {
-//        SignRequest signRequest = signRequestService.getSignRequestsByToken(token).get(0);
-//        if (signRequestService.checkUserSignRights(user, authUser, signRequest)) {
-//            return "redirect:/user/signrequests/" + signRequest.getId();
-//        } else {
-//            return "redirect:/";
-//        }
-//    }
-
     @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
     @PostMapping(value = "/fast-sign-request")
     public String createSignRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
