@@ -956,6 +956,8 @@ public class SignBookService {
     }
 
     public void sign(SignRequest signRequest, String password, String signWith, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, User user, User authUser, Long userShareId, String comment) throws EsupSignatureException, IOException, InterruptedException, EsupSignatureMailException {
+        Date date = new Date();
+        List<Log> lastSignLogs = new ArrayList<>();
         if(signRequest.getAuditTrail() == null) {
             signRequest.setAuditTrail(auditTrailService.create(signRequest.getToken()));
         }
@@ -997,13 +999,16 @@ public class SignBookService {
             if(signRequestParamses.size() == 0 && visual) {
                 throw new EsupSignatureException("Il manque une signature !");
             }
-            List<Log> lastSignLogs = new ArrayList<>();
-            Date date = new Date();
             if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
                 for(SignRequestParams signRequestParams : signRequestParamses) {
                     signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, 1, signerUser, date);
-                    lastSignLogs.add(signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn()));
-                    auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), "Signature simple", "Pas de timestamp", date, null, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
+                    if(signRequestParams.getSignImageNumber() < 0) {
+                        lastSignLogs.add(signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Ajout d'un élément", "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn()));
+                        auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), "Ajout d'un élément", "Pas de timestamp", date, null, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
+                    } else {
+                        lastSignLogs.add(signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Apposition de la signature", "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn()));
+                        auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), "Signature simple", "Pas de timestamp", date, null, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
+                    }
                 }
             } else {
                 auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), "Signature simple", "Pas de timestamp", date, null, null, null, null);
@@ -1023,13 +1028,24 @@ public class SignBookService {
                 }
             }
         } else {
+            Document signedDocument = signService.certSign(signRequest, signerUser, password, SignWith.valueOf(signWith));
+            Reports reports = validationService.validate(signedDocument.getInputStream(), null);
+            DiagnosticData diagnosticData = reports.getDiagnosticData();
+            if(diagnosticData.getAllSignatures().size() == 0) {
+                for (SignRequestParams signRequestParams : signRequestParamses) {
+                    if (signRequestParams.getSignImageNumber() < 0) {
+                        filledInputStream = pdfService.stampImage(filledInputStream, signRequest, signRequestParams, 1, signerUser, date);
+                        lastSignLogs.add(signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Ajout d'un élément", "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn()));
+                        auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), "Ajout d'un élément", "Pas de timestamp", date, null, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
+                    }
+                }
+            } else {
+                logger.warn("skip add visuals because document already signed");
+            }
             if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
                 signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
                 toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(pdfService.addOutLine(signRequest, filledInputStream, user, new Date(), new SimpleDateFormat())));
             }
-            Document signedDocument = signService.certSign(signRequest, signerUser, password, SignWith.valueOf(signWith));
-            Reports reports = validationService.validate(signedDocument.getInputStream(), null);
-            DiagnosticData diagnosticData = reports.getDiagnosticData();
             String certificat = new ArrayList<>(diagnosticData.getAllSignatures()).get(diagnosticData.getAllSignatures().size() - 1).getSigningCertificate().toString();
             String timestamp = diagnosticData.getTimestampList().get(0).getSigningCertificate().toString();
             if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > 0) {
