@@ -150,10 +150,12 @@ public class SignRequestController {
             }
         }
         model.addAttribute("signatureIds", new ArrayList<>());
+        Reports reports = signRequestService.validate(id);
+        if (reports != null) {
+            model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+        }
         if(!signRequest.getStatus().equals(SignRequestStatus.draft) && !signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getStatus().equals(SignRequestStatus.refused) && !signRequest.getStatus().equals(SignRequestStatus.deleted)) {
-            Reports reports = signRequestService.validate(id);
             if (reports != null) {
-                model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
                 model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
             }
             AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
