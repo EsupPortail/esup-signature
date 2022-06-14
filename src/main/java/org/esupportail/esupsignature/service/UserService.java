@@ -653,7 +653,7 @@ public class UserService {
                 roles.add(role);
             }
         }
-        return roles;
+        return roles.stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
     public List<User> getByManagersRoles(String role) {
@@ -732,6 +732,6 @@ public class UserService {
 
     public List<String> getManagersRoles(String authUserEppn) {
         User user = getUserByEppn(authUserEppn);
-        return user.getManagersRoles();
+        return user.getManagersRoles().stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 }
