@@ -100,8 +100,10 @@ public class HomeController {
                 messages.addAll(messageService.getByUser(authUser));
             }
             model.addAttribute("messageNews", messages);
-            Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, "tosign", "%", "%", "%", "%", null, pageable);
-            model.addAttribute("signBooks", signBooks);
+            Page<SignBook> signBooksToSign = signBookService.getSignBooks(userEppn, "toSign", "%", "%", "%", "%", null, pageable);
+            model.addAttribute("signBooksToSign", signBooksToSign);
+            Page<SignBook> signBooksPending = signBookService.getSignBooks(userEppn, "pending", "%", "%", "%", "%", null, pageable);
+            model.addAttribute("signBooksPending", signBooksPending);
             List<Data> datas = dataRepository.findByCreateByAndStatus(authUser, SignRequestStatus.draft);
             model.addAttribute("datas", datas);
             model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));

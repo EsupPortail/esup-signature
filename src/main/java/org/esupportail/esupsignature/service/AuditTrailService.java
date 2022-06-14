@@ -1,26 +1,41 @@
 package org.esupportail.esupsignature.service;
 
-import org.esupportail.esupsignature.entity.AuditStep;
-import org.esupportail.esupsignature.entity.AuditTrail;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.User;
+import com.google.zxing.WriterException;
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.repository.AuditStepRepository;
 import org.esupportail.esupsignature.repository.AuditTrailRepository;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.utils.pdf.PdfService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.support.RequestContext;
+import org.springframework.web.servlet.view.AbstractTemplateView;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.WebContext;
+import org.thymeleaf.spring5.context.webmvc.SpringWebMvcThymeleafRequestContext;
+import org.thymeleaf.spring5.naming.SpringContextVariableNames;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class AuditTrailService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuditTrailService.class);
 
     @Resource
     private AuditTrailRepository auditTrailRepository;
@@ -33,6 +48,21 @@ public class AuditTrailService {
 
     @Resource
     private FileService fileService;
+
+    @Resource
+    private LogService logService;
+
+    @Resource
+    private SignRequestService signRequestService;
+
+    @Resource
+    private TemplateEngine templateEngine;
+
+    @Resource
+    private ServletContext servletContext;
+
+    @Resource
+    private PdfService pdfService;
 
     @Transactional
     public AuditTrail create(String token) {
@@ -97,4 +127,54 @@ public class AuditTrailService {
         return auditTrailRepository.findByToken(token);
     }
 
+    public ByteArrayOutputStream generateAuditTrailPdf(SignRequest signRequest, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException {
+        AuditTrail auditTrail = getAuditTrailByToken(signRequest.getToken());
+        RequestContext requestContext = new RequestContext(httpServletRequest, httpServletResponse);
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("auditTrail", auditTrail);
+        List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
+        vars.put("logs", logs);
+        vars.put("usersHasSigned", signRequestService.checkUserResponseSigned(signRequest));
+        vars.put("usersHasRefused", signRequestService.checkUserResponseRefused(signRequest));
+        vars.put("signRequest", signRequest);
+        vars.put("print", true);
+        vars.put("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
+        vars.put(AbstractTemplateView.SPRING_MACRO_REQUEST_CONTEXT_ATTRIBUTE, requestContext);
+        vars.put(SpringContextVariableNames.SPRING_REQUEST_CONTEXT, requestContext);
+        vars.put(SpringContextVariableNames.THYMELEAF_REQUEST_CONTEXT, new SpringWebMvcThymeleafRequestContext(requestContext, httpServletRequest));
+        final WebContext webContext = new WebContext(httpServletRequest, httpServletResponse, servletContext, Locale.FRENCH);
+        for (final Map.Entry<String, Object> entry : vars.entrySet()) {
+            webContext.setVariable(entry.getKey(), entry.getValue());
+        }
+        String html = templateEngine.process("public/control", webContext);
+        PdfRendererBuilder builder = new PdfRendererBuilder();
+        builder.useFastMode();
+        builder.withHtmlContent(html, findBaseUrl(httpServletRequest));
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        builder.toStream(outputStream);
+        builder.run();
+        byte[] bytes = outputStream.toByteArray();
+        try {
+            InputStream inputStream = pdfService.addQrCode(signRequest, new ByteArrayInputStream(bytes));
+            IOUtils.copy(inputStream, outputStream);
+        } catch (WriterException e) {
+            logger.warn("can't insert qr code");
+        }
+        return outputStream;
+    }
+
+    String findBaseUrl(final HttpServletRequest request) {
+        final String baseUrl;
+        if (request == null) {
+            baseUrl = "";
+        } else {
+            StringBuffer url = request.getRequestURL();
+            String uri = request.getRequestURI();
+            String ctx = request.getContextPath();
+            baseUrl = url.substring(0,
+                    url.length() - uri.length() + ctx.length())
+                    + "/";
+        }
+        return baseUrl;
+    }
 }

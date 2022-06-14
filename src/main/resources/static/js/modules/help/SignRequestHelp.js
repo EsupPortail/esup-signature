@@ -49,7 +49,7 @@ export class SignRequestHelp {
         }
         this.intro.addStep({
             element: '#sidebar',
-            intro: "La barre latérale vous permet de basculer sur le mode \"commentaires\" et vous informe sur l'avancé du circuit",
+            intro: "La barre latérale vous permet de basculer sur le mode \"commentaires\" et vous informe sur l'avancée du circuit",
             position: 'right'
         });
         if($.trim($("#cross").html()) !== '') {

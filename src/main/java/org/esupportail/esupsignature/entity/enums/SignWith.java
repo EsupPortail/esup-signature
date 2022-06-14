@@ -1,11 +1,12 @@
 package org.esupportail.esupsignature.entity.enums;
 
-public enum SignType {
-    hiddenVisa(0), visa(1), pdfImageStamp(2), certSign(3), nexuSign(4);
+public enum SignWith {
+
+    imageStamp(2), userCert(3), groupCert(3), openPkiCert(3), sealCert(3), nexuCert(4);
 
     private final int value;
 
-    SignType(final int newValue) {
+    SignWith(final int newValue) {
         value = newValue;
     }
 

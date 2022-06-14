@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.service;
+package org.esupportail.esupsignature.service.utils.sign;
 
 import eu.europa.esig.dss.enumerations.TokenExtractionStrategy;
 import eu.europa.esig.dss.model.DSSDocument;

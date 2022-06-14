@@ -126,8 +126,11 @@ public class AdminSignRequestController {
 
 	@DeleteMapping(value = "delete-definitive/{id}", produces = "text/html")
 	public String deleteDefinitive(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-		signBookService.deleteDefinitive(id);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+		if(signBookService.deleteDefinitive(id, authUserEppn)) {
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été supprimé définitivement"));
+		} else {
+			redirectAttributes.addFlashAttribute("warn", new JsonMessage("info", "Le document ne peut pas être supprimé définitivement"));
+		}
 		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
 

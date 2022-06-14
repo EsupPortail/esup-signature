@@ -292,6 +292,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 		//must manage the upload option.
 		Folder targetFolder = (Folder) getCmisObject(dir);
 		if(targetFolder == null) {
+			logger.info("creating cmis folder : " + dir);
 			createURITree(dir);
 			targetFolder = (Folder) getCmisObject(dir);
 		}

@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import eu.europa.esig.dss.model.x509.CertificateToken;
+import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.KSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import eu.europa.esig.dss.validation.CertificateValidator;
@@ -38,7 +39,7 @@ public class UserKeystoreService {
 		try {
 			return new Pkcs12SignatureToken(keyStoreFile, new PasswordProtection(password.toCharArray()));
 		} catch (Exception e) {
-			if(e.getCause().getMessage().equals("keystore password was incorrect")) {
+			if(e.getCause() != null && e.getCause().getMessage() != null && e.getCause().getMessage().equals("keystore password was incorrect")) {
 				logger.warn("keystore password was incorrect");
 			} else {
 				logger.error("open keystore fail :" + e.getMessage());
@@ -47,7 +48,7 @@ public class UserKeystoreService {
 		}
 	}
 
-	public CertificateToken getCertificateToken(Pkcs12SignatureToken token) throws EsupSignatureKeystoreException {
+	public CertificateToken getCertificateToken(AbstractKeyStoreTokenConnection token) throws EsupSignatureKeystoreException {
 		try {
 			KSPrivateKeyEntry ksPrivateKeyEntry = (KSPrivateKeyEntry) token.getKeys().get(0);
 			return ksPrivateKeyEntry.getCertificate();
@@ -56,8 +57,8 @@ public class UserKeystoreService {
 			throw new EsupSignatureKeystoreException("get certificat token fail", e);
 		}
 	}
-	
-	public CertificateToken[] getCertificateTokenChain(Pkcs12SignatureToken token) {
+
+	public CertificateToken[] getCertificateTokenChain(AbstractKeyStoreTokenConnection token) {
 			KSPrivateKeyEntry ksPrivateKeyEntry = (KSPrivateKeyEntry) token.getKeys().get(0);
 			CertificateToken[] certificateTokens = ksPrivateKeyEntry.getCertificateChain();
 			return certificateTokens;
