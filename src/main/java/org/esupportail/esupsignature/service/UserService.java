@@ -660,6 +660,10 @@ public class UserService {
         return userRepository.findByManagersRolesIn(Collections.singletonList(role));
     }
 
+    public List<User> getByManagersRolesUsers() {
+        return userRepository.findByManagersRolesNotNull();
+    }
+
     @Transactional
     public void updateReplaceUserBy(String eppn, String[] byEmail, String beginDate, String endDate) {
         User user = getUserByEppn(eppn);

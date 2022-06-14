@@ -450,6 +450,15 @@ public class FormService {
 		return formRepository.findByRolesIn(Collections.singletonList(role));
 	}
 
+	public Set<Form> getManagerForms(String userEppn) {
+		User manager = userService.getByEppn(userEppn);
+		Set<Form> formsManaged = new HashSet<>();
+		for (String role : manager.getManagersRoles()) {
+			formsManaged.addAll(formRepository.findByManagerRole(role));
+		}
+		return formsManaged;
+	}
+
 	@Transactional
 	public void updateSignRequestParams(Long formId, InputStream inputStream) throws EsupSignatureIOException {
 		Form form = getById(formId);

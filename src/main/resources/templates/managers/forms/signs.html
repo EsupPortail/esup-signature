@@ -6,7 +6,7 @@
 <head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
     import {default as FormSignsUi} from '/js/modules/ui/forms/FormSignsUi.js?version=[[${versionApp}]]';
-    new FormSignsUi("admin", [[${form.id}]], [[${_csrf}]]);
+    new FormSignsUi("manager", [[${form.id}]], [[${_csrf}]]);
 </script>
 <body>
 <header th:replace="fragments/nav :: nav"></header>

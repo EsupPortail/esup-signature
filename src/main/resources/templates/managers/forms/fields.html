@@ -6,7 +6,7 @@
 <head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
     import {FormFieldsUi} from '/js/modules/ui/forms/FormFieldsUi.js?version=[[${versionApp}]]';
-    new FormFieldsUi("admin", [[${form.id}]], [[${preFillTypes}]]);
+    new FormFieldsUi("manager", [[${form.id}]], [[${preFillTypes}]]);
 </script>
 <body>
 <header th:replace="fragments/nav :: nav"></header>

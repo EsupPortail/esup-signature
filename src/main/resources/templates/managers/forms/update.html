@@ -84,16 +84,13 @@
                         <div class="form-group mb-3">
                             <label><strong>Autorisations</strong></label>
                             <div class="form-check">
-                                <input id="publicUsage" type="checkbox" class="form-check-input" th:field="*{publicUsage}"/>
-                                <label for="publicUsage">Visibilité publique ?</label>
+                                <input id="publicUsage" type="hidden" class="form-check-input" th:field="*{publicUsage}" value="false"/>
                             </div>
                             <label for="roles">
                                 Rôle
                             </label>
                             <select id="roles" class="slim-select-simple" type="text" th:field="*{roles}" multiple>
-                                <th:block th:each="newRole : ${roles}">
-                                    <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(form.roles, newRole)}"></option>
-                                </th:block>
+                                <option th:text="${form.managerRole}" th:value="${form.managerRole}"></option>
                             </select>
                         </div>
                         <div class="form-group mb-3" id="managers">

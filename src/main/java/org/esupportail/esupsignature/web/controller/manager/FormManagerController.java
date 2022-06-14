@@ -68,14 +68,15 @@ public class FormManagerController {
     private FieldService fieldService;
 
     @GetMapping()
+    @PreAuthorize("@preAuthorizeService.isManager(#authUserEppn)")
     public String list(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
         Set<Form> forms = new HashSet<>();
         User manager = userService.getByEppn(authUserEppn);
         for (String role : manager.getManagersRoles()) {
-            forms.addAll(formService.getByRoles(role));
+            forms.addAll(formService.getManagerForms(authUserEppn));
         }
         model.addAttribute("forms", forms);
-        model.addAttribute("roles", manager.getManagersRoles());
+        model.addAttribute("roles", userService.getManagersRoles(authUserEppn));
         model.addAttribute("targetTypes", DocumentIOType.values());
         model.addAttribute("workflowTypes", workflowService.getManagerWorkflows(authUserEppn));
         model.addAttribute("preFillTypes", preFillService.getPreFillValues());
@@ -99,13 +100,15 @@ public class FormManagerController {
     }
 
     @PostMapping()
+    @PreAuthorize("@preAuthorizeService.isManager(#authUserEppn)")
     public String postForm(@RequestParam("name") String name,
+                           @RequestParam(name = "managerRole") String managerRole,
                            @RequestParam("fieldNames[]") String[] fieldNames,
                            @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
         try {
             Form form = formService.createForm(null, name, null, null, null, null, publicUsage, fieldNames, null);
+            form.setManagerRole(managerRole);
             return "redirect:/manager/forms/" + form.getId();
-
         } catch (EsupSignatureException e) {
             logger.error(e.getMessage());
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
@@ -114,17 +117,21 @@ public class FormManagerController {
     }
 
     @PostMapping("generate")
+    @PreAuthorize("@preAuthorizeService.isManager(#authUserEppn)")
     public String generateForm(
             @RequestParam("multipartFile") MultipartFile multipartFile,
+            @ModelAttribute("authUserEppn") String authUserEppn,
             @RequestParam String name,
             @RequestParam String title,
             @RequestParam Long workflowId,
             @RequestParam String prefillType,
+            @RequestParam(name = "managerRole") String managerRole,
             @RequestParam(required = false) List<String> roleNames,
             @RequestParam(required = false) Boolean publicUsage,
             RedirectAttributes redirectAttributes) throws IOException {
         try {
             Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, publicUsage);
+            form.setManagerRole(managerRole);
             return "redirect:/manager/forms/" + form.getId();
         } catch (EsupSignatureException e) {
             logger.error(e.getMessage());
@@ -134,11 +141,13 @@ public class FormManagerController {
     }
 
     @GetMapping("update/{id}")
-    public String updateForm(@PathVariable("id") long id, Model model) {
+    @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
+    public String updateForm(@PathVariable("id") long id, @ModelAttribute("authUserEppn") String authUserEppn, Model model) {
+        User manager = userService.getByEppn(authUserEppn);
         Form form = formService.getById(id);
         model.addAttribute("form", form);
         model.addAttribute("fields", form.getFields());
-        model.addAttribute("roles", userService.getAllRoles());
+        model.addAttribute("roles", manager.getManagersRoles());
         model.addAttribute("document", form.getDocument());
         List<Workflow> workflows = workflowService.getSystemWorkflows();
         workflows.add(form.getWorkflow());
@@ -197,28 +206,30 @@ public class FormManagerController {
         return "redirect:/manager/forms";
     }
 
-    @GetMapping(value = "/{name}/datas/csv", produces="text/csv")
-    public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, HttpServletResponse response) {
-        List<Form> forms = formService.getFormByName(name);
-        if (forms.size() > 0) {
-            try {
-                response.setContentType("text/csv; charset=utf-8");
-                response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(forms.get(0).getName(), StandardCharsets.UTF_8.toString()) + ".csv");
-                InputStream csvInputStream = dataExportService.getCsvDatasFromForms(forms);
-                IOUtils.copy(csvInputStream, response.getOutputStream());
-                return new ResponseEntity<>(HttpStatus.OK);
-            } catch (Exception e) {
-                logger.error("get file error", e);
-            }
-        } else {
-            logger.warn("form " + name + " not found");
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+//    @GetMapping(value = "/{name}/datas/csv", produces="text/csv")
+//    @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
+//    public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, HttpServletResponse response) {
+//        List<Form> forms = formService.getFormByName(name);
+//        if (forms.size() > 0) {
+//            try {
+//                response.setContentType("text/csv; charset=utf-8");
+//                response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(forms.get(0).getName(), StandardCharsets.UTF_8.toString()) + ".csv");
+//                InputStream csvInputStream = dataExportService.getCsvDatasFromForms(forms);
+//                IOUtils.copy(csvInputStream, response.getOutputStream());
+//                return new ResponseEntity<>(HttpStatus.OK);
+//            } catch (Exception e) {
+//                logger.error("get file error", e);
+//            }
+//        } else {
+//            logger.warn("form " + name + " not found");
+//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//        }
+//        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 
     @GetMapping("{id}/fields")
-    public String fields(@PathVariable("id") Long id, Model model) {
+    @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
+    public String fields(@PathVariable("id") Long id, @ModelAttribute("authUserEppn") String authUserEppn, Model model) {
         Form form = formService.getById(id);
         model.addAttribute("form", form);
         model.addAttribute("workflow", form.getWorkflow());
@@ -234,7 +245,9 @@ public class FormManagerController {
 
     @ResponseBody
     @PostMapping("/fields/{id}/update")
+    @PreAuthorize("@preAuthorizeService.isManager(#authUserEppn)")
     public ResponseEntity<String> updateField(@PathVariable("id") Long id,
+                                              @ModelAttribute("authUserEppn") String authUserEppn,
                                               @RequestParam(value = "description", required = false) String description,
                                               @RequestParam(value = "fieldType", required = false, defaultValue = "text") FieldType fieldType,
                                               @RequestParam(value = "required", required = false, defaultValue = "false") Boolean required,
@@ -269,6 +282,7 @@ public class FormManagerController {
     }
 
     @GetMapping(value = "/get-file/{id}")
+    @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
     public void getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes) throws IOException {
         try {
             Map<String, Object> attachmentResponse = formService.getModel(id);
@@ -278,7 +292,7 @@ public class FormManagerController {
                 IOUtils.copyLarge((InputStream) attachmentResponse.get("inputStream"), httpServletResponse.getOutputStream());
             } else {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Modèle non trouvée ..."));
-                httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
+                httpServletResponse.sendRedirect("/manager/forms/update/" + id);
             }
         } catch (Exception e) {
             logger.error("get file error", e);
@@ -286,7 +300,8 @@ public class FormManagerController {
     }
 
     @GetMapping("{id}/signs")
-    public String signs(@PathVariable("id") Long id, Model model) throws EsupSignatureIOException {
+    @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
+    public String signs(@PathVariable("id") Long id, @ModelAttribute("authUserEppn") String authUserEppn, Model model) throws EsupSignatureIOException {
         Form form = formService.getById(id);
         Map<Long, Integer> srpMap = new HashMap<>();
         for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
@@ -305,7 +320,9 @@ public class FormManagerController {
     }
 
     @PostMapping("/update-signs-order/{id}")
+    @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
     public String updateSignsOrder(@PathVariable("id") Long id,
+                                   @ModelAttribute("authUserEppn") String authUserEppn,
                                    @RequestParam Map<String, String> values,
                                    RedirectAttributes redirectAttributes) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();

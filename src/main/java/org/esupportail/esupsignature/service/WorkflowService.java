@@ -224,7 +224,7 @@ public class WorkflowService {
         }
         Set<Workflow> workflows = new HashSet<>();
         if (userEppn.equals(authUserEppn)) {
-            workflows.addAll(workflowRepository.findByCreateByEppn(userEppn));
+            workflows.addAll(workflowRepository.findByCreateByEppn(userEppn).stream().filter(workflow -> workflow.getManagerRole().isEmpty()).collect(Collectors.toList()));
 //            workflows.addAll(workflowRepository.findByManagersContains(user.getEmail()));
             workflows.addAll(authorizedWorkflows);
         } else {
