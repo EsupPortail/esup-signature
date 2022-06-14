@@ -46,6 +46,8 @@ public class Workflow {
     @ElementCollection(targetClass=String.class)
     private List<String> roles = new ArrayList<>();
 
+    private String managerRole;
+
     @ElementCollection(targetClass= ShareType.class)
     private List<ShareType> authorizedShareTypes = new ArrayList<>();
 
@@ -217,6 +219,14 @@ public class Workflow {
 
     public void setRoles(List<String> roles) {
         this.roles = roles;
+    }
+
+    public String getManagerRole() {
+        return managerRole;
+    }
+
+    public void setManagerRole(String managerRole) {
+        this.managerRole = managerRole;
     }
 
     public List<ShareType> getAuthorizedShareTypes() {

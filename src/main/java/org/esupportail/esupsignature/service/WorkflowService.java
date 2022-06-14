@@ -476,17 +476,12 @@ public class WorkflowService {
         targetService.delete(target);
     }
 
-    public List<Workflow> getWorkflowsByRoles(String role) {
-        return workflowRepository.findByRolesIn(Collections.singletonList(role));
-    }
-
     public Set<Workflow> getManagerWorkflows(String userEppn) {
         User manager = userService.getByEppn(userEppn);
         Set<Workflow> workflowsManaged = new HashSet<>();
         for (String role : manager.getManagersRoles()) {
-            workflowsManaged.addAll(this.getWorkflowsByRoles(role));
+            workflowsManaged.addAll(workflowRepository.findByManagerRole(role));
         }
-//        workflowsManaged.addAll(this.getWorkflowsByUser(manager.getEppn(), manager.getEppn()));
         return workflowsManaged;
     }
 

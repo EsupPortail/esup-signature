@@ -725,4 +725,9 @@ public class UserService {
     public List<User> getGroupUsers() {
         return userRepository.findByUserType(UserType.group);
     }
+
+    public List<String> getManagersRoles(String authUserEppn) {
+        User user = getUserByEppn(authUserEppn);
+        return user.getManagersRoles();
+    }
 }

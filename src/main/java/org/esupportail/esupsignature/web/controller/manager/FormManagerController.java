@@ -1,12 +1,14 @@
 package org.esupportail.esupsignature.web.controller.manager;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.Form;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
@@ -132,15 +134,15 @@ public class FormManagerController {
     }
 
     @GetMapping("update/{id}")
-    @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
-    public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") long id, Model model) {
+    public String updateForm(@PathVariable("id") long id, Model model) {
         Form form = formService.getById(id);
-        User manager = userService.getUserByEppn(authUserEppn);
         model.addAttribute("form", form);
         model.addAttribute("fields", form.getFields());
-        model.addAttribute("roles", manager.getManagersRoles());
+        model.addAttribute("roles", userService.getAllRoles());
         model.addAttribute("document", form.getDocument());
-        model.addAttribute("workflowTypes", workflowService.getManagerWorkflows(authUserEppn));
+        List<Workflow> workflows = workflowService.getSystemWorkflows();
+        workflows.add(form.getWorkflow());
+        model.addAttribute("workflowTypes", workflows);
         List<PreFill> preFillTypes = preFillService.getPreFillValues();
         model.addAttribute("preFillTypes", preFillTypes);
         model.addAttribute("shareTypes", ShareType.values());
@@ -215,9 +217,23 @@ public class FormManagerController {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @GetMapping("{id}/fields")
+    public String fields(@PathVariable("id") Long id, Model model) {
+        Form form = formService.getById(id);
+        model.addAttribute("form", form);
+        model.addAttribute("workflow", form.getWorkflow());
+        PreFill preFill = preFillService.getPreFillServiceByName(form.getPreFillType());
+        if(preFill != null) {
+            model.addAttribute("preFillTypes", preFill.getTypes());
+        } else {
+            model.addAttribute("preFillTypes", new HashMap<>());
+        }
+        model.addAttribute("document", form.getDocument());
+        return "managers/forms/fields";
+    }
+
     @ResponseBody
     @PostMapping("/fields/{id}/update")
-    @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
     public ResponseEntity<String> updateField(@PathVariable("id") Long id,
                                               @RequestParam(value = "description", required = false) String description,
                                               @RequestParam(value = "fieldType", required = false, defaultValue = "text") FieldType fieldType,
@@ -230,8 +246,7 @@ public class FormManagerController {
                                               @RequestParam(value = "valueType", required = false) String valueType,
                                               @RequestParam(value = "valueReturn", required = false) String valueReturn,
                                               @RequestParam(value = "stepZero", required = false, defaultValue = "false") Boolean stepZero,
-                                              @RequestParam(value = "workflowStepsIds", required = false) List<Long> workflowStepsIds,
-                                              @ModelAttribute("authUserEppn") String authUserEppn) {
+                                              @RequestParam(value = "workflowStepsIds", required = false) List<Long> workflowStepsIds) {
 
         String extValueServiceName = "";
         String extValueType = "";
@@ -268,6 +283,39 @@ public class FormManagerController {
         } catch (Exception e) {
             logger.error("get file error", e);
         }
+    }
+
+    @GetMapping("{id}/signs")
+    public String signs(@PathVariable("id") Long id, Model model) throws EsupSignatureIOException {
+        Form form = formService.getById(id);
+        Map<Long, Integer> srpMap = new HashMap<>();
+        for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
+            for(SignRequestParams signRequestParams : workflowStep.getSignRequestParams()) {
+                srpMap.put(signRequestParams.getId(), form.getWorkflow().getWorkflowSteps().indexOf(workflowStep) + 1);
+            }
+        }
+        if(form.getDocument() != null) {
+            form.setTotalPageCount(formService.getTotalPagesCount(id));
+        }
+        model.addAttribute("form", form);
+        model.addAttribute("srpMap", srpMap);
+        model.addAttribute("workflow", form.getWorkflow());
+        model.addAttribute("document", form.getDocument());
+        return "managers/forms/signs";
+    }
+
+    @PostMapping("/update-signs-order/{id}")
+    public String updateSignsOrder(@PathVariable("id") Long id,
+                                   @RequestParam Map<String, String> values,
+                                   RedirectAttributes redirectAttributes) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String[] stringStringMap = objectMapper.readValue(values.get("srpMap"), String[].class);
+        Map<Long, Integer> signRequestParamsSteps = new HashMap<>();
+        for (int i = 0; i < stringStringMap.length; i = i + 2) {
+            signRequestParamsSteps.put(Long.valueOf(stringStringMap[i]), Integer.valueOf(stringStringMap[i + 1]));
+        }
+        formService.setSignRequestParamsSteps(id, signRequestParamsSteps);
+        return "redirect:/managers/forms/" + id + "/signs";
     }
 
 }

@@ -57,6 +57,7 @@ public class WorkflowManagerController {
     @PreAuthorize("@preAuthorizeService.isManager(#authUserEppn)")
     public String list(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
         model.addAttribute("workflows", workflowService.getManagerWorkflows(authUserEppn));
+        model.addAttribute("roles", userService.getManagersRoles(authUserEppn));
         return "managers/workflows/list";
     }
 
@@ -71,13 +72,14 @@ public class WorkflowManagerController {
 
     @PostMapping(produces = "text/html")
     @PreAuthorize("@preAuthorizeService.isManager(#authUserEppn)")
-    public String create(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(name = "title", required = false) String title, @RequestParam(name = "description") String description, RedirectAttributes redirectAttributes) {
+    public String create(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(name = "managerRole") String managerRole, @RequestParam(name = "title", required = false) String title, @RequestParam(name = "description") String description, RedirectAttributes redirectAttributes) {
         if(title == null) {
             title = description;
         }
         Workflow workflow;
         try {
             workflow = workflowService.createWorkflow(title, description, userService.getByEppn(authUserEppn));
+            workflow.setManagerRole(managerRole);
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit possède déjà ce préfixe"));
             return "redirect:/manager/workflows/";
