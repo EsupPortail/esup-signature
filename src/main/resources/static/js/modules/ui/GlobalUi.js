@@ -189,7 +189,7 @@ export class GlobalUi {
                 type: 'POST',
                 contentType: "application/json",
                 dataType: 'json',
-                data: JSON.stringify($('#recipientsEmails').find(`[data-check='true']`).prevObject[0].slim.selected()),
+                data: JSON.stringify($('#recipientsEmails').find(`[data-es-check-cert='true']`).prevObject[0].slim.selected()),
                 success: response => this.checkSendPending(response, send)
             });
         } else {

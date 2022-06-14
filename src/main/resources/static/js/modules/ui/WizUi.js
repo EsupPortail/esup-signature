@@ -168,7 +168,7 @@ export class WizUi {
         let csrf = this.csrf;
         let step = new Step();
         step.workflowId = $('#wizWorkflowId').val();
-        step.recipientsEmails = $('#recipientsEmailsWiz').find(`[data-check='true']`).prevObject[0].slim.selected();
+        step.recipientsEmails = $('#recipientsEmailsWiz').find(`[data-es-check-cert='true']`).prevObject[0].slim.selected();
         step.allSignToComplete = $('#allSignToCompleteWiz').is(':checked');
         step.autoSign = $('#autoSign').is(':checked');
         let userSignFirst = $('#userSignFirstWiz').is(':checked');

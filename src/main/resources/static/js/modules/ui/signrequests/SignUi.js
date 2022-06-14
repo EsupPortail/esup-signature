@@ -399,7 +399,7 @@ export class SignUi {
         let signRequestId = this.signRequestId;
         let csrf = this.csrf;
         let step = new Step();
-        let selectedRecipients = $('#recipientsEmailsInfinite').find(`[data-check='true']`).prevObject[0].slim.selected();
+        let selectedRecipients = $('#recipientsEmailsInfinite').find(`[data-es-check-cert='true']`).prevObject[0].slim.selected();
         if(selectedRecipients.length === 0 ) {
             $("#infiniteFormSubmit").click();
             return;
