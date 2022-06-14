@@ -27,7 +27,6 @@ import java.util.List;
 
 @RequestMapping("/manager/workflows")
 @Controller
-
 public class WorkflowManagerController {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowManagerController.class);
@@ -55,6 +54,7 @@ public class WorkflowManagerController {
     private WorkflowStepService workflowStepService;
 
     @GetMapping
+    @PreAuthorize("@preAuthorizeService.isManager(#authUserEppn)")
     public String list(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
         model.addAttribute("workflows", workflowService.getManagerWorkflows(authUserEppn));
         return "managers/workflows/list";
@@ -70,6 +70,7 @@ public class WorkflowManagerController {
     }
 
     @PostMapping(produces = "text/html")
+    @PreAuthorize("@preAuthorizeService.isManager(#authUserEppn)")
     public String create(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(name = "title", required = false) String title, @RequestParam(name = "description") String description, RedirectAttributes redirectAttributes) {
         if(title == null) {
             title = description;

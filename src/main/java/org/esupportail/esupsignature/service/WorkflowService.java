@@ -486,7 +486,7 @@ public class WorkflowService {
         for (String role : manager.getManagersRoles()) {
             workflowsManaged.addAll(this.getWorkflowsByRoles(role));
         }
-        workflowsManaged.addAll(this.getWorkflowsByUser(manager.getEppn(), manager.getEppn()));
+//        workflowsManaged.addAll(this.getWorkflowsByUser(manager.getEppn(), manager.getEppn()));
         return workflowsManaged;
     }
 

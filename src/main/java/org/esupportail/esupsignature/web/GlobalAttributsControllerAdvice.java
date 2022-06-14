@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.dss.service.OJService;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.hibernate.LazyInitializationException;
 import org.slf4j.Logger;
@@ -54,6 +55,9 @@ public class GlobalAttributsControllerAdvice {
     private SignTypeService signTypeService;
 
     @Resource
+    private PreAuthorizeService preAuthorizeService;
+
+    @Resource
     private OJService ojService;
 
     private final Environment environment;
@@ -90,6 +94,7 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("isOneSignShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign));
             model.addAttribute("isOneReadShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.read));
             model.addAttribute("managedFormsSize", formService.getFormByManagersContains(authUserEppn).size());
+            model.addAttribute("isManager", preAuthorizeService.isManager(authUserEppn));
             model.addAttribute("infiniteScrolling", globalProperties.getInfiniteScrolling());
             model.addAttribute("validationToolsEnabled", validationService != null);
             model.addAttribute("globalProperties", myGlobalProperties);

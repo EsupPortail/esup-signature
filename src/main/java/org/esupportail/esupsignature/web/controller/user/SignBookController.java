@@ -52,6 +52,11 @@ public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
 
+    @ModelAttribute("activeMenu")
+    public String getActiveMenu() {
+        return "signbooks";
+    }
+
     @Resource
     private PreAuthorizeService preAuthorizeService;
 

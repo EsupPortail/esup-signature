@@ -47,6 +47,11 @@ public class PreAuthorizeService {
         return userEppn.equals(authUserEppn);
     }
 
+    public boolean isManager(String userEppn) {
+        User user = userService.getUserByEppn(userEppn);
+        return user.getManagersRoles().size() > 0;
+    }
+
     public boolean formManage(Long id, String userEppn) {
         Form form = formService.getById(id);
         User user = userService.getByEppn(userEppn);
