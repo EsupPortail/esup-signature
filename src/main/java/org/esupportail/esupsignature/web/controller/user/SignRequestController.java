@@ -166,8 +166,8 @@ public class SignRequestController {
                 }
             }
         }
-        List<SignWith> signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest);
-        model.addAttribute("signWiths", signWiths);
+        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest));
+        model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn));
         model.addAttribute("allSignWiths", SignWith.values());
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
