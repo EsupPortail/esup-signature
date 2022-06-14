@@ -27,6 +27,7 @@ export class SignUi {
         this.attachmentRequire = attachmentRequire;
         this.attachmentAlert = attachmentAlert;
         this.signLaunchButton = $("#signLaunchButton");
+        this.saveOptionText =  $("#certType > option[value='imageStamp']").text();
         $("#password").hide();
         this.initListeners();
         if(status !== "exported") {
@@ -125,16 +126,25 @@ export class SignUi {
                             self.checkSignOptions();
                         }
                     } else {
+                        $("#certType > option[value='imageStamp']").remove();
+                        $('#certType').prepend($('<option>', {
+                            value: 'imageStamp',
+                            text: self.saveOptionText
+                        }));
+                        self.checkSignOptions();
                         self.certTypeSelect.children().each(function(e) {
                             if($(this).val() === "imageStamp" && (self.currentSignType === "imageStamp" || self.currentSignType === "visa")) {
                                 $(this).removeAttr('disabled');
+                                $("#noOptions").hide();
+                                $("#selectTypeDiv").show();
+                                $("#checkValidateSignButtonEnd").show();
+                                $("#checkValidateSignButtonNext").show();
                             }
                         });
                         if(self.currentSignType === "imageStamp" || self.currentSignType === "visa") {
                             $("#certType > option[value='imageStamp']").attr('selected', 'selected');
                             $("#certType").val('imageStamp');
                         }
-                        self.checkSignOptions();
                         self.checkAttachement();
                     }
                     self.certTypeSelect.children().each(function(e) {
@@ -165,10 +175,14 @@ export class SignUi {
                 $("#nexuCheck").removeClass("d-none");
                 $("#noOptions").show();
                 $("#selectTypeDiv").hide();
+                $("#checkValidateSignButtonEnd").hide();
+                $("#checkValidateSignButtonNext").hide();
             } else {
                 $("#nexuCheck").addClass("d-none");
                 $("#noOptions").hide();
                 $("#selectTypeDiv").show();
+                $("#checkValidateSignButtonEnd").show();
+                $("#checkValidateSignButtonNext").show();
             }
         });
     }

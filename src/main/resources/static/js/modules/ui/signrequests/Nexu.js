@@ -27,7 +27,7 @@ export class Nexu {
                 if(id != null) {
                     self.loadScript();
                 }
-            }).catch(function (){
+            }).catch(function(e){
                 if(currentSignType === 'nexuSign') {
                     $("#alertNexu").show();
                     $("#signLaunchButton").hide();
@@ -125,6 +125,7 @@ export class Nexu {
             let detectNexu = false;
             let self = this;
             let breakOut = false;
+            let i = 0;
             ports.forEach(function (port) {
                 if(breakOut) {
                     return false;
@@ -136,9 +137,10 @@ export class Nexu {
                     url: url,
                     crossDomain: true,
                     dataType: "json",
-                    async: false,
+                    async: true,
                     cache: false,
                 }).done(function (data) {
+                    i++;
                     console.info("nexu detected on " + url);
                     detectNexu = true;
                     self.detectedPort = port.trim();
@@ -148,12 +150,14 @@ export class Nexu {
                     $("#selectTypeDiv").show();
                     breakOut = true;
                     resolve("detected");
-
                 }).fail(function (jqXHR, textStatus, errorThrown) {
-                    console.debug("nexu not detected on " + url);
+                    i++;
+                    if(i === ports.length) {
+                        console.debug("nexu not detected on " + url);
+                        reject(0);
+                    }
                 });
             });
-            reject();
         });
     }
 
