@@ -77,7 +77,7 @@ public class PublicController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && !auth.getName().equals("anonymousUser")) {
             String eppn = userService.tryGetEppnFromLdap(auth);
-            if(eppn != null && userService.getUserByEppn(eppn) != null) {
+            if(eppn != null && userService.getUserByEppn(eppn) != null && auditTrail != null) {
                 model.addAttribute("signRequest", signRequest);
                 setControlValues(model, signRequest, auditTrail, eppn);
             }
