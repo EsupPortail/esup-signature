@@ -334,9 +334,13 @@ public class SignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-        signRequestService.delete(id, authUserEppn);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
-        return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+        if(signRequestService.delete(id, authUserEppn)) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression définitive effectuée"));
+            return "redirect:/user/signbooks";
+        } else {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+            return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+        }
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
@@ -434,13 +438,15 @@ public class SignRequestController {
                           @RequestParam(value = "names", required = false) List<String> names,
                           @RequestParam(value = "firstnames", required = false) List<String> firstnames,
                           @RequestParam(value = "phones", required = false) List<String> phones,
+                          @RequestParam(value = "draft", required = false) Boolean draft,
                           RedirectAttributes redirectAttributes) throws MessagingException, EsupSignatureException, EsupSignatureFsException {
+        if(draft == null) draft = false;
         List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
         if(signRequestService.checkTempUsers(id, recipientEmails, externalUsersInfos)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
             return "redirect:/user/signrequests/" + id;
         }
-        signBookService.initWorkflowAndPendingSignBook(id, recipientEmails, allSignToCompletes, externalUsersInfos, targetEmails, userEppn, authUserEppn);
+        signBookService.initWorkflowAndPendingSignBook(id, recipientEmails, allSignToCompletes, externalUsersInfos, targetEmails, userEppn, authUserEppn, draft);
         if(comment != null && !comment.isEmpty()) {
             signRequestService.addPostit(id, comment, userEppn, authUserEppn);
         }
