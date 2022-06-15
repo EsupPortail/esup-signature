@@ -346,7 +346,7 @@ public class SignBookService {
         SignBook signBook = getById(signBookId);
         if(signBook.getStatus().equals(SignRequestStatus.deleted)) {
             deleteDefinitive(signBookId, userEppn);
-            return null;
+            return true;
         }
         List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
         for(Long signRequestId : signRequestsIds) {
@@ -729,7 +729,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public void initWorkflowAndPendingSignBook(Long signRequestId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, String userEppn, String authUserEppn) throws EsupSignatureFsException, EsupSignatureException {
+    public void initWorkflowAndPendingSignBook(Long signRequestId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, String userEppn, String authUserEppn, boolean draft) throws EsupSignatureFsException, EsupSignatureException {
         SignRequest signRequest = signRequestService.getById(signRequestId);
         SignBook signBook = signRequest.getParentSignBook();
         if(signBook.getStatus().equals(SignRequestStatus.draft)) {
@@ -745,7 +745,9 @@ public class SignBookService {
                     }
                 }
             }
-            pendingSignBook(signBook.getId(), null, userEppn, authUserEppn, false);
+            if(!draft) {
+                pendingSignBook(signBook.getId(), null, userEppn, authUserEppn, false);
+            }
         }
     }
 
@@ -1178,7 +1180,7 @@ public class SignBookService {
         SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), signBook, createByEppn, createByEppn);
         signRequest.getSignRequestParams().addAll(signRequestParamses);
         signRequestService.addDocsToSignRequest(signRequest, false, 0, new ArrayList<>(), multipartFiles);
-        initWorkflowAndPendingSignBook(signRequest.getId(), recipientEmails, allSignToCompletes, null, targetEmails, createByEppn, createByEppn);
+        initWorkflowAndPendingSignBook(signRequest.getId(), recipientEmails, allSignToCompletes, null, targetEmails, createByEppn, createByEppn, false);
         if(targetUrls != null) {
             for(String targetUrl : targetUrls) {
                 if(signBook.getLiveWorkflow().getTargets().stream().noneMatch(target -> target != null && target.getTargetUri().equals(targetUrl))) {

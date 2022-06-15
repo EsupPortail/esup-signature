@@ -544,10 +544,11 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void delete(Long signRequestId, String userEppn) {
+	public boolean delete(Long signRequestId, String userEppn) {
 		SignRequest signRequest = getById(signRequestId);
 		if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
 			deleteDefinitive(signRequestId);
+			return true;
 		} else {
 			if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
 				signRequest.getOriginalDocuments().clear();
@@ -556,6 +557,7 @@ public class SignRequestService {
 			signRequest.setStatus(SignRequestStatus.deleted);
 			logService.create(signRequest.getId(), SignRequestStatus.deleted, "Suppression par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			otpService.deleteOtpBySignRequestId(signRequestId);
+			return false;
 		}
 	}
 
