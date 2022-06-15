@@ -101,6 +101,20 @@ export class GlobalUi {
             });
         });
 
+        $('.toggle-mini-menu').each(function(e) {
+            $(this).on('click', function(e) {
+                // e.preventDefault();
+                e.stopPropagation();
+            })
+        });
+
+        $('.prevent').each(function(e) {
+            $(this).on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            })
+        });
+
         $('.workflow-delete-button').each(function(e) {
             $(this).on('click', function(e) {
                 e.preventDefault();

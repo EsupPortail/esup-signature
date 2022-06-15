@@ -585,5 +585,9 @@ public class WorkflowService {
         }
     }
 
+    public void rename(Long id, String name) {
+        Workflow workflow = getById(id);
+        workflow.setDescription(name);
+    }
 }
 

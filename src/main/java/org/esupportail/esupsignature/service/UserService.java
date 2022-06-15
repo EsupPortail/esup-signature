@@ -79,9 +79,6 @@ public class UserService {
     @Resource
     private SignRequestParamsRepository signRequestParamsRepository;
 
-    @Resource
-    private UserListService userListService;
-
     public User getById(Long id) {
         return userRepository.findById(id).get();
     }
