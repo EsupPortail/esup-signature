@@ -13,6 +13,9 @@ public class LdapProperties {
     private String listSearchFilter;
     private String groupSearchBase;
     private String groupSearchFilter;
+    private String allGroupsSearchFilter;
+    private String groupNameAttribut;
+    private String membersOfGroupSearchFilter;
     private String memberSearchFilter;
     private String userIdSearchFilter;
     private Map<String, String> mappingFiltersGroups = new HashMap<>();
@@ -55,6 +58,30 @@ public class LdapProperties {
 
     public void setGroupSearchFilter(String groupSearchFilter) {
         this.groupSearchFilter = groupSearchFilter;
+    }
+
+    public String getAllGroupsSearchFilter() {
+        return allGroupsSearchFilter;
+    }
+
+    public void setAllGroupsSearchFilter(String allGroupsSearchFilter) {
+        this.allGroupsSearchFilter = allGroupsSearchFilter;
+    }
+
+    public String getGroupNameAttribut() {
+        return groupNameAttribut;
+    }
+
+    public void setGroupNameAttribut(String groupNameAttribut) {
+        this.groupNameAttribut = groupNameAttribut;
+    }
+
+    public String getMembersOfGroupSearchFilter() {
+        return membersOfGroupSearchFilter;
+    }
+
+    public void setMembersOfGroupSearchFilter(String membersOfGroupSearchFilter) {
+        this.membersOfGroupSearchFilter = membersOfGroupSearchFilter;
     }
 
     public String getMemberSearchFilter() {

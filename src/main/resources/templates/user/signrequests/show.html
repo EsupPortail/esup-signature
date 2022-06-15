@@ -245,11 +245,20 @@
                 <div id="noOptions" class="alert alert-danger mt-1" style="display: none;">
                     Aucune option de signature n'est disponible pour cette demande. Si vous en avez la possibilité, merci d’ajouter une signature sur le document et/ou de démarrer NexU.
                 </div>
+                <div th:if="${!sealCertOK}" class="alert alert-danger mt-1">
+                    La signature par certificat cachet d’établissement et temporairement indisponible pour des raisons de maintenance. Merci refaire un essai ultérieurement.
+                </div>
                 <div id="selectTypeDiv" class="alert alert-success mt-1" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                     <label for="certType">Merci de sélectionner le type de signature que vous souhaitez utiliser parmi les types disponibles</label>
                     <select id="certType" name="certType" class="form-select mt-2" required>
                         <th:block th:each="signWith : ${signWiths}">
-                            <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                            <th:block th:if="${signWith.name != 'sealCert'}">
+                                <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                            </th:block>
+                            <th:block th:if="${signWith.name == 'sealCert'}">
+                                <option th:if="${sealCertOK}" th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                                <option th:unless="${sealCertOK}" value="" th:text="#{'signwith.' + ${signWith}}" disabled></option>
+                            </th:block>
                         </th:block>
                     </select>
                     <input class="form-control mt-2 mb-1" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" />
@@ -385,7 +394,7 @@
                     <input type="submit" id="infiniteFormSubmit" class="d-none">
                     <label for="recipientsEmailsInfinite">Choisir les participants</label>
                     <div class="form-group mb-3">
-                        <select class="select-users" data-check="true" name="recipientsEmails" id="recipientsEmailsInfinite" size="5" multiple="multiple" required="required">
+                        <select class="select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmailsInfinite" size="5" multiple="multiple" required="required">
                             <option data-placeholder="true"></option>
                         </select>
                     </div>

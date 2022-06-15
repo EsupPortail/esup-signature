@@ -42,6 +42,9 @@ public class LdapConfig {
         ldapGroupService.setLdapTemplate(ldapTemplate);
         ldapGroupService.setGroupSearchBase(ldapProperties.getGroupSearchBase());
         ldapGroupService.setGroupSearchFilter(ldapProperties.getGroupSearchFilter());
+        ldapGroupService.setAllGroupsSearchFilter(ldapProperties.getAllGroupsSearchFilter());
+        ldapGroupService.setGroupNameAttribut(ldapProperties.getGroupNameAttribut());
+//        ldapGroupService.setMembersOfGroupSearchFilter(ldapProperties.getMembersOfGroupSearchFilter());
         ldapGroupService.setMemberSearchBase(ldapProperties.getSearchBase());
         ldapGroupService.setMemberSearchFilter(ldapProperties.getMemberSearchFilter());
         ldapGroupService.setDomain(globalProperties.getDomain());

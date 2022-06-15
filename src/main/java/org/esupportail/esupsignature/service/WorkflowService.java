@@ -9,8 +9,8 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
+import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,10 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -62,9 +65,6 @@ public class WorkflowService {
     public UserPropertieService userPropertieService;
 
     @Resource
-    private FileService fileService;
-
-    @Resource
     private TargetService targetService;
 
     @Resource
@@ -72,6 +72,9 @@ public class WorkflowService {
 
     @Resource
     private SignBookRepository signBookRepository;
+
+    @Resource
+    private UserListService userListService;
 
     @PostConstruct
     public void initCreatorWorkflow() {
@@ -221,7 +224,7 @@ public class WorkflowService {
         }
         Set<Workflow> workflows = new HashSet<>();
         if (userEppn.equals(authUserEppn)) {
-            workflows.addAll(workflowRepository.findByCreateByEppn(userEppn));
+            workflows.addAll(workflowRepository.findByCreateByEppn(userEppn).stream().filter(workflow -> workflow.getManagerRole() == null || workflow.getManagerRole().isEmpty()).collect(Collectors.toList()));
 //            workflows.addAll(workflowRepository.findByManagersContains(user.getEmail()));
             workflows.addAll(authorizedWorkflows);
         } else {
@@ -349,6 +352,13 @@ public class WorkflowService {
                 if (oneUser.getEppn().equals("generic")) {
                     workflowStep.getUsers().remove(oneUser);
                 }
+                if(oneUser.getUserType().equals(UserType.group)) {
+                    workflowStep.getUsers().remove(oneUser);
+                    List<String> emails = userListService.getUsersEmailFromList(oneUser.getEmail());
+                    for (String email : emails) {
+                        workflowStep.getUsers().add(userService.getUserByEmail(email));
+                    }
+                }
             }
         }
    }
@@ -466,17 +476,12 @@ public class WorkflowService {
         targetService.delete(target);
     }
 
-    public List<Workflow> getWorkflowsByRoles(String role) {
-        return workflowRepository.findByRolesIn(Collections.singletonList(role));
-    }
-
     public Set<Workflow> getManagerWorkflows(String userEppn) {
         User manager = userService.getByEppn(userEppn);
         Set<Workflow> workflowsManaged = new HashSet<>();
         for (String role : manager.getManagersRoles()) {
-            workflowsManaged.addAll(this.getWorkflowsByRoles(role));
+            workflowsManaged.addAll(workflowRepository.findByManagerRole(role));
         }
-        workflowsManaged.addAll(this.getWorkflowsByUser(manager.getEppn(), manager.getEppn()));
         return workflowsManaged;
     }
 
