@@ -106,8 +106,8 @@ export class SignUi {
                             bootbox.alert("Merci de placer la signature", null);
                         } else {
                             bootbox.confirm({
-                                message: "<h3>Attention vous allez signez ce document sans visuel</h3>" +
-                                    "<div class='alert alert-danger'>Dans ce cas seules les signatures avec certificat sont possibles</div>",
+                                message: "<h3>Attention vous allez signer sans appliquer d'image de signature</h3>" +
+                                    "<div class='alert alert-danger'>Dans ce cas, seules les signatures avec certificat électronique sont possibles</div>",
                                 buttons: {
                                     cancel: {
                                         label: '<i class="fa fa-undo"></i> Modifier ma signature',

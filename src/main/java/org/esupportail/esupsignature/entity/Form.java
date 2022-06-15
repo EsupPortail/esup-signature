@@ -33,6 +33,8 @@ public class Form {
 	@ElementCollection(targetClass=String.class)
 	private List<String> managers = new ArrayList<>();
 
+	private String managerRole;
+
 	@OneToOne
 	private Workflow workflow;
 	
@@ -127,6 +129,14 @@ public class Form {
 
 	public void setManagers(List<String> managers) {
 		this.managers = managers;
+	}
+
+	public String getManagerRole() {
+		return managerRole;
+	}
+
+	public void setManagerRole(String managerRole) {
+		this.managerRole = managerRole;
 	}
 
 	public Workflow getWorkflow() {

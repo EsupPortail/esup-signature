@@ -43,6 +43,18 @@
                     </li>
                 </ul>
             </div>
+
+            <div class="card col-lg-10 mx-auto mb-1">
+                <div class="card-body">
+                    Nom du circuit
+                    <form th:action="'/user/workflows/' + ${workflow.id} + '/rename'" th:method="'put'">
+                        <div class="input-group">
+                            <input type="text" class="form-control input-group-prepend" name="name" th:value="${workflow.description}"/>
+                            <button title="Modifier le nom du circuit" type="submit" class="btn btn-success"><i class="fas fa-save"></i></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <dl class="row border-bottom m-0">

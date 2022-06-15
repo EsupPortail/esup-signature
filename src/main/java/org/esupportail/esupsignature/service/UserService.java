@@ -79,9 +79,6 @@ public class UserService {
     @Resource
     private SignRequestParamsRepository signRequestParamsRepository;
 
-    @Resource
-    private UserListService userListService;
-
     public User getById(Long id) {
         return userRepository.findById(id).get();
     }
@@ -653,11 +650,15 @@ public class UserService {
                 roles.add(role);
             }
         }
-        return roles;
+        return roles.stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
     public List<User> getByManagersRoles(String role) {
         return userRepository.findByManagersRolesIn(Collections.singletonList(role));
+    }
+
+    public List<User> getByManagersRolesUsers() {
+        return userRepository.findByManagersRolesNotNull();
     }
 
     @Transactional
@@ -724,5 +725,10 @@ public class UserService {
     @Transactional
     public List<User> getGroupUsers() {
         return userRepository.findByUserType(UserType.group);
+    }
+
+    public List<String> getManagersRoles(String authUserEppn) {
+        User user = getUserByEppn(authUserEppn);
+        return user.getManagersRoles().stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 }

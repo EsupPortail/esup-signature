@@ -52,6 +52,11 @@ public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
 
+    @ModelAttribute("activeMenu")
+    public String getActiveMenu() {
+        return "signbooks";
+    }
+
     @Resource
     private PreAuthorizeService preAuthorizeService;
 
@@ -192,10 +197,13 @@ public class SignBookController {
     public String forceDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
         if(signBookService.deleteDefinitive(id, authUserEppn)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été supprimé définitivement"));
+            return "redirect:/user/signbooks";
+
         } else {
             redirectAttributes.addFlashAttribute("warn", new JsonMessage("info", "Le document ne peut pas être supprimé définitivement"));
+            return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+
         }
-        return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")

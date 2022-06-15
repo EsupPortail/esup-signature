@@ -224,7 +224,7 @@ public class WorkflowService {
         }
         Set<Workflow> workflows = new HashSet<>();
         if (userEppn.equals(authUserEppn)) {
-            workflows.addAll(workflowRepository.findByCreateByEppn(userEppn));
+            workflows.addAll(workflowRepository.findByCreateByEppn(userEppn).stream().filter(workflow -> workflow.getManagerRole() == null || workflow.getManagerRole().isEmpty()).collect(Collectors.toList()));
 //            workflows.addAll(workflowRepository.findByManagersContains(user.getEmail()));
             workflows.addAll(authorizedWorkflows);
         } else {
@@ -476,17 +476,12 @@ public class WorkflowService {
         targetService.delete(target);
     }
 
-    public List<Workflow> getWorkflowsByRoles(String role) {
-        return workflowRepository.findByRolesIn(Collections.singletonList(role));
-    }
-
     public Set<Workflow> getManagerWorkflows(String userEppn) {
         User manager = userService.getByEppn(userEppn);
         Set<Workflow> workflowsManaged = new HashSet<>();
         for (String role : manager.getManagersRoles()) {
-            workflowsManaged.addAll(this.getWorkflowsByRoles(role));
+            workflowsManaged.addAll(workflowRepository.findByManagerRole(role));
         }
-        workflowsManaged.addAll(this.getWorkflowsByUser(manager.getEppn(), manager.getEppn()));
         return workflowsManaged;
     }
 
@@ -590,5 +585,9 @@ public class WorkflowService {
         }
     }
 
+    public void rename(Long id, String name) {
+        Workflow workflow = getById(id);
+        workflow.setDescription(name);
+    }
 }
 
