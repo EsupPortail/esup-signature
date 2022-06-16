@@ -127,13 +127,15 @@ export class SignUi {
                         }
                     } else {
                         $("#certType > option[value='imageStamp']").remove();
-                        $('#certType').prepend($('<option>', {
-                            value: 'imageStamp',
-                            text: self.saveOptionText
-                        }));
+                        if(self.currentSignType === "pdfImageStamp" || self.currentSignType === "visa") {
+                            $('#certType').prepend($('<option>', {
+                                value: 'imageStamp',
+                                text: self.saveOptionText
+                            }));
+                        }
                         self.checkSignOptions();
                         self.certTypeSelect.children().each(function(e) {
-                            if($(this).val() === "imageStamp" && (self.currentSignType === "imageStamp" || self.currentSignType === "visa")) {
+                            if($(this).val() === "imageStamp" && (self.currentSignType === "pdfImageStamp" || self.currentSignType === "visa")) {
                                 $(this).removeAttr('disabled');
                                 $("#noOptions").hide();
                                 $("#selectTypeDiv").show();
