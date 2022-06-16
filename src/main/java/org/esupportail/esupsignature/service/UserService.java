@@ -487,7 +487,7 @@ public class UserService {
             if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getWorkflowSteps().size() > 0) {
                 for (WorkflowStep workflowStep : signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getWorkflowSteps()) {
                     for (User user : workflowStep.getUsers()) {
-                        if (user.getUserType().equals(UserType.external) || (user.getEppn().equals(user.getEmail()) && user.getEppn().equals(user.getName()))) {
+                        if (user.getUserType().equals(UserType.external) || (!user.getUserType().equals(UserType.group) && user.getEppn().equals(user.getEmail()) && user.getEppn().equals(user.getName()))) {
                             users.add(user);
                         }
                     }
