@@ -131,6 +131,8 @@ public class SignBookController {
         return "user/signbooks/list";
     }
 
+
+
     @GetMapping(value = "/list-ws")
     @ResponseBody
     public String listWs(@ModelAttribute(name = "userEppn") String userEppn, @ModelAttribute(name = "authUserEppn") String authUserEppn,
@@ -167,7 +169,13 @@ public class SignBookController {
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
         SignBook signBook = signBookService.getById(id);
-        return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
+        Long signRequestId = signBook.getSignRequests().get(0).getId();
+        if(signBook.getSignRequests().size() > 1) {
+            if(signBook.getSignRequests().stream().anyMatch(s -> s.getStatus().equals(SignRequestStatus.pending))) {
+                signRequestId = signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending)).findFirst().get().getId();
+            }
+        }
+        return "redirect:/user/signrequests/" + signRequestId;
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")

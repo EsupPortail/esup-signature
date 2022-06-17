@@ -121,15 +121,10 @@
                         <i class="fas fa-shield-alt "></i>
                     </a></li>
                    </th:block>
-                    <li th:if="${nextSignRequest != null}" class="d-none">
-                        <a id="nextSignRequestButton" role="button" th:href="'/user/signrequests/' + ${nextSignRequest.id}"
+                    <li th:if="${nextSignBook != null}" class="d-none">
+                        <a id="nextSignBookButton" role="button" th:href="'/user/signbooks/' + ${nextSignBook.id}"
                            class="btn-lg btn-floating bg-primary waves-effect" title="Demande suivante"><i
                                 class="fas fa-arrow-right"></i></a>
-                    </li>
-                    <li th:if="${prevSignRequest != null}" class="d-none">
-                        <a id="prevSignRequestButton" role="button" th:href="'/user/signrequests/' + ${prevSignRequest.id}"
-                           class="btn-lg btn-floating bg-primary waves-effect" title="Demande précédente"><i
-                                class="fas fa-arrow-left"></i></a>
                     </li>
                 </ul>
             </div>
@@ -300,19 +295,17 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <div th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}">
-                    <button id="checkValidateSignButtonEnd"
-                            class="btn btn-success me-1" title="Signer" th:value="${signRequest.id}" autofocus>
-                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}">Signer</span>
-                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>
-                    </button>
-                    <button id="checkValidateSignButtonNext" th:if="${nextSignRequest != null}"
-                            class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
-                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}">Signer et aller à la suivante </span>
-                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser et aller à la suivante </span>
-                        <i class="fas fa-arrow-alt-circle-right"></i>
-                    </button>
-                </div>
+                <button id="checkValidateSignButtonEnd"
+                        class="btn btn-success me-1" title="Signer" th:value="${signRequest.id}" autofocus>
+                    <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer</span>
+                    <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>
+                </button>
+                <button id="checkValidateSignButtonNext" th:if="${nextSignBook != null}"
+                        class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
+                    <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer et aller à la suivante </span>
+                    <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser et aller à la suivante </span>
+                    <i class="fas fa-arrow-alt-circle-right"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -394,7 +387,7 @@
                     <input type="submit" id="infiniteFormSubmit" class="d-none">
                     <label for="recipientsEmailsInfinite">Choisir les participants</label>
                     <div class="form-group mb-3">
-                        <select class="select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmailsInfinite" size="5" multiple="multiple" required="required">
+                        <select class="select-users" data-check="true" name="recipientsEmails" id="recipientsEmailsInfinite" size="5" multiple="multiple" required="required">
                             <option data-placeholder="true"></option>
                         </select>
                     </div>
@@ -586,6 +579,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
+                    <input type="hidden" name="draft" value="false">
                     <button type="submit" class="btn btn-success">Valider</button>
                 </div>
             </form>
@@ -636,7 +630,7 @@
                                 class="btn btn-danger me-1" title="Refuser" autofocus>
                             <span>Refuser</span>
                         </button>
-                        <button type="submit" id="refuseNext" th:if="${nextSignRequest != null}"  name="redirect" th:value="${nextSignRequest.id}"
+                        <button type="submit" id="refuseNext" th:if="${nextSignBook != null}"  name="redirect" th:value="${nextSignBook.id}"
                                 class="btn btn-danger" title="Refuser et aller à la suivante" autofocus>
                             <span>Refuser et aller à la suivante </span>
                             <i class="fas fa-arrow-alt-circle-right"></i>

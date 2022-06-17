@@ -132,8 +132,7 @@ public class SignRequestController {
             model.addAttribute("toSignDocument", toSignDocuments.get(0));
         }
         model.addAttribute("attachments", signRequestService.getAttachments(id));
-        model.addAttribute("nextSignRequest", signBookService.getNextSignRequest(signRequest.getId(), userEppn, authUserEppn));
-        model.addAttribute("prevSignRequest", signBookService.getPreviousSignRequest(signRequest.getId(), userEppn, authUserEppn));
+        model.addAttribute("nextSignBook", signBookService.getNextSignBook(signRequest.getId(), userEppn, authUserEppn));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
         model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
@@ -440,7 +439,6 @@ public class SignRequestController {
                           @RequestParam(value = "phones", required = false) List<String> phones,
                           @RequestParam(value = "draft", required = false) Boolean draft,
                           RedirectAttributes redirectAttributes) throws MessagingException, EsupSignatureException, EsupSignatureFsException {
-        if(draft == null) draft = false;
         List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
         if(signRequestService.checkTempUsers(id, recipientEmails, externalUsersInfos)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));

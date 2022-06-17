@@ -729,24 +729,34 @@ public class SignBookService {
     }
 
     @Transactional
-    public void initWorkflowAndPendingSignBook(Long signRequestId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, String userEppn, String authUserEppn, boolean draft) throws EsupSignatureFsException, EsupSignatureException {
+    public void initWorkflowAndPendingSignBook(Long signRequestId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, String userEppn, String authUserEppn, Boolean draft) throws EsupSignatureFsException, EsupSignatureException {
         SignRequest signRequest = signRequestService.getById(signRequestId);
         SignBook signBook = signRequest.getParentSignBook();
         if(signBook.getStatus().equals(SignRequestStatus.draft)) {
-            if (signBook.getLiveWorkflow().getWorkflow() != null) {
-                List<Target> targets = new ArrayList<>(workflowService.getById(signBook.getLiveWorkflow().getWorkflow().getId()).getTargets());
-                Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow().getId(), recipientsEmails, allSignToCompletes, userEppn, false);
-                workflowService.importWorkflow(signBook, workflow, externalUsersInfos);
-                signRequestService.nextWorkFlowStep(signBook);
-                targetService.copyTargets(targets, signBook, targetEmails);
-                if(recipientsEmails != null) {
-                    for (String recipientEmail : recipientsEmails) {
-                        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(recipientEmail.split("\\*")[1]));
-                    }
+            if(draft != null) {
+                if(draft) {
+                    initWorkflow(recipientsEmails, allSignToCompletes, externalUsersInfos, targetEmails, userEppn, authUserEppn, signBook);
+                } else {
+                    pendingSignBook(signBook.getId(), null, userEppn, authUserEppn, false);
                 }
-            }
-            if(!draft) {
+            } else {
+                initWorkflow(recipientsEmails, allSignToCompletes, externalUsersInfos, targetEmails, userEppn, authUserEppn, signBook);
                 pendingSignBook(signBook.getId(), null, userEppn, authUserEppn, false);
+            }
+        }
+    }
+
+    private void initWorkflow(List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, String userEppn, String authUserEppn, SignBook signBook) throws EsupSignatureException, EsupSignatureFsException {
+        if (signBook.getLiveWorkflow().getWorkflow() != null) {
+            List<Target> targets = new ArrayList<>(workflowService.getById(signBook.getLiveWorkflow().getWorkflow().getId()).getTargets());
+            Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow().getId(), recipientsEmails, allSignToCompletes, userEppn, false);
+            workflowService.importWorkflow(signBook, workflow, externalUsersInfos);
+            signRequestService.nextWorkFlowStep(signBook);
+            targetService.copyTargets(targets, signBook, targetEmails);
+            if(recipientsEmails != null) {
+                for (String recipientEmail : recipientsEmails) {
+                    userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(recipientEmail.split("\\*")[1]));
+                }
             }
         }
     }
@@ -1180,7 +1190,7 @@ public class SignBookService {
         SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), signBook, createByEppn, createByEppn);
         signRequest.getSignRequestParams().addAll(signRequestParamses);
         signRequestService.addDocsToSignRequest(signRequest, false, 0, new ArrayList<>(), multipartFiles);
-        initWorkflowAndPendingSignBook(signRequest.getId(), recipientEmails, allSignToCompletes, null, targetEmails, createByEppn, createByEppn, false);
+        initWorkflowAndPendingSignBook(signRequest.getId(), recipientEmails, allSignToCompletes, null, targetEmails, createByEppn, createByEppn, null);
         if(targetUrls != null) {
             for(String targetUrl : targetUrls) {
                 if(signBook.getLiveWorkflow().getTargets().stream().noneMatch(target -> target != null && target.getTargetUri().equals(targetUrl))) {
@@ -1305,22 +1315,22 @@ public class SignBookService {
         return nbImportedFiles;
     }
 
-    public SignRequest getNextSignRequest(Long signRequestId, String userEppn, String authUserEppn) {
+    public SignBook getNextSignBook(Long signRequestId, String userEppn, String authUserEppn) {
         List<SignRequest> toSignRequests = getSignRequestsForCurrentUserByStatus(userEppn, authUserEppn);
         Optional<SignRequest> signRequest = toSignRequests.stream().filter(signRequest1 -> signRequest1.getId().equals(signRequestId)).findFirst();
         if(signRequest.isPresent()) {
             if (toSignRequests.size() > 0) {
                 if (!toSignRequests.contains(signRequest.get())) {
-                    return toSignRequests.get(0);
+                    return toSignRequests.get(0).getParentSignBook();
                 } else {
                     if (toSignRequests.size() > 1) {
                         int indexOfCurrentSignRequest = toSignRequests.indexOf(signRequest.get());
                         if (indexOfCurrentSignRequest == 0) {
-                            return toSignRequests.get(indexOfCurrentSignRequest + 1);
+                            return toSignRequests.get(indexOfCurrentSignRequest + 1).getParentSignBook();
                         } else if (indexOfCurrentSignRequest == toSignRequests.size() - 1) {
-                            return toSignRequests.get(0);
+                            return toSignRequests.get(0).getParentSignBook();
                         } else {
-                            return toSignRequests.get(indexOfCurrentSignRequest + 1);
+                            return toSignRequests.get(indexOfCurrentSignRequest + 1).getParentSignBook();
                         }
                     }
                 }
