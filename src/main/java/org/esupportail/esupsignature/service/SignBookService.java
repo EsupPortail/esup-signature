@@ -1315,22 +1315,22 @@ public class SignBookService {
         return nbImportedFiles;
     }
 
-    public SignRequest getNextSignRequest(Long signRequestId, String userEppn, String authUserEppn) {
+    public SignBook getNextSignBook(Long signRequestId, String userEppn, String authUserEppn) {
         List<SignRequest> toSignRequests = getSignRequestsForCurrentUserByStatus(userEppn, authUserEppn);
         Optional<SignRequest> signRequest = toSignRequests.stream().filter(signRequest1 -> signRequest1.getId().equals(signRequestId)).findFirst();
         if(signRequest.isPresent()) {
             if (toSignRequests.size() > 0) {
                 if (!toSignRequests.contains(signRequest.get())) {
-                    return toSignRequests.get(0);
+                    return toSignRequests.get(0).getParentSignBook();
                 } else {
                     if (toSignRequests.size() > 1) {
                         int indexOfCurrentSignRequest = toSignRequests.indexOf(signRequest.get());
                         if (indexOfCurrentSignRequest == 0) {
-                            return toSignRequests.get(indexOfCurrentSignRequest + 1);
+                            return toSignRequests.get(indexOfCurrentSignRequest + 1).getParentSignBook();
                         } else if (indexOfCurrentSignRequest == toSignRequests.size() - 1) {
-                            return toSignRequests.get(0);
+                            return toSignRequests.get(0).getParentSignBook();
                         } else {
-                            return toSignRequests.get(indexOfCurrentSignRequest + 1);
+                            return toSignRequests.get(indexOfCurrentSignRequest + 1).getParentSignBook();
                         }
                     }
                 }

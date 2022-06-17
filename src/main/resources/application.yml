@@ -37,6 +37,9 @@ info:
         environment: PROD
 
 management:
+    health:
+        ldap:
+            enabled: false
     endpoints:
         jmx:
             exposure:

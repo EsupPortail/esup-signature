@@ -364,7 +364,7 @@ export class SignUi {
                     document.location.href="/user/nexu-sign/" + self.signRequestId;
                 } else {
                     if (self.gotoNext) {
-                        document.location.href = $("#nextSignRequestButton").attr('href');
+                        document.location.href = $("#nextSignBookButton").attr('href');
                     } else {
                         if(self.isOtp== null || !self.isOtp) {
                             if(self.nbSignRequests > 1 || !self.globalProperties.returnToHomeAfterSign) {
