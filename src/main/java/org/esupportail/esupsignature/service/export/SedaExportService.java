@@ -73,10 +73,11 @@ public class SedaExportService {
             sb.setAgencies("FRAN_NP_000001", "FRAN_NP_000010", "FRAN_NP_000015", "FRAN_NP_000019");
             sb.setArchivalAgreement("IC-000001");
             DataObjectPackage dataObjectPackage = sb.getArchiveTransfer().getDataObjectPackage();
-
-            BinaryDataObject signValidationBinaryDataObject = new BinaryDataObject(dataObjectPackage, validationXml.toPath(), validationXml.getName(), "BinaryMaster_1");
-            signValidationBinaryDataObject.extractTechnicalElements(pl);
-
+            BinaryDataObject signValidationBinaryDataObject = null;
+            if(validationXml.length() > 0) {
+                signValidationBinaryDataObject = new BinaryDataObject(dataObjectPackage, validationXml.toPath(), validationXml.getName(), "BinaryMaster_1");
+                signValidationBinaryDataObject.extractTechnicalElements(pl);
+            }
             ArchiveUnit id1ArchiveUnit = sb.createRootArchiveUnit("ID1", "File", signRequest.getTitle(), "");
             List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
             Management management = new Management();
@@ -115,7 +116,9 @@ public class SedaExportService {
             }
 
             id1ArchiveUnit.addDataObjectById(docBinaryDataObject.getInDataObjectPackageId());
-            id2ArchiveUnit.addDataObjectById(signValidationBinaryDataObject.getInDataObjectPackageId());
+            if(signValidationBinaryDataObject != null) {
+                id2ArchiveUnit.addDataObjectById(signValidationBinaryDataObject.getInDataObjectPackageId());
+            }
             sb.generateSIP();
             InputStream targetInputStream = new FileInputStream(targetFile);
             targetFile.delete();
