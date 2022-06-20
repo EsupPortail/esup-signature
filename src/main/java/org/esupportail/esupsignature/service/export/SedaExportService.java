@@ -74,7 +74,7 @@ public class SedaExportService {
             sb.setArchivalAgreement("IC-000001");
             DataObjectPackage dataObjectPackage = sb.getArchiveTransfer().getDataObjectPackage();
             BinaryDataObject signValidationBinaryDataObject = null;
-            if(validationXml.length() > 0) {
+            if(reports != null) {
                 signValidationBinaryDataObject = new BinaryDataObject(dataObjectPackage, validationXml.toPath(), validationXml.getName(), "BinaryMaster_1");
                 signValidationBinaryDataObject.extractTechnicalElements(pl);
             }
@@ -95,12 +95,12 @@ public class SedaExportService {
             management.addMetadata(reuseRule);
             management.addMetadata(new ClassificationRule());
             id1ArchiveUnit.setManagement(management);
-
-            ArchiveUnit id2ArchiveUnit = sb.addNewSubArchiveUnit("ID1", "ID2", "Item", "validation.xml", "");
             BinaryDataObject docBinaryDataObject = new BinaryDataObject(dataObjectPackage, Paths.get(file.getAbsolutePath()), file.getName(), "BinaryMaster_1");
-            docBinaryDataObject.extractTechnicalElements(pl);
+            id1ArchiveUnit.addDataObjectById(docBinaryDataObject.getInDataObjectPackageId());
 
             if(reports != null) {
+                ArchiveUnit id2ArchiveUnit = sb.addNewSubArchiveUnit("ID1", "ID2", "Item", "validation.xml", "");
+                docBinaryDataObject.extractTechnicalElements(pl);
                 SimpleReport simpleReport = reports.getSimpleReport();
                 for (String signatureId : simpleReport.getSignatureIdList()) {
                     Signature signature = new Signature();
@@ -115,12 +115,9 @@ public class SedaExportService {
                     signature.addMetadata(referencedObject);
                     id2ArchiveUnit.getContent().addMetadata(signature);
                 }
-            }
-            
-            id1ArchiveUnit.addDataObjectById(docBinaryDataObject.getInDataObjectPackageId());
-            if(signValidationBinaryDataObject != null) {
                 id2ArchiveUnit.addDataObjectById(signValidationBinaryDataObject.getInDataObjectPackageId());
             }
+
             sb.generateSIP();
             InputStream targetInputStream = new FileInputStream(targetFile);
             targetFile.delete();
