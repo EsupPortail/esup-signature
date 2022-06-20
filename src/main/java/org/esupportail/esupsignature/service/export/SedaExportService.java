@@ -100,21 +100,23 @@ public class SedaExportService {
             BinaryDataObject docBinaryDataObject = new BinaryDataObject(dataObjectPackage, Paths.get(file.getAbsolutePath()), file.getName(), "BinaryMaster_1");
             docBinaryDataObject.extractTechnicalElements(pl);
 
-            SimpleReport simpleReport = reports.getSimpleReport();
-            for(String signatureId : simpleReport.getSignatureIdList()) {
-                Signature signature = new Signature();
-                signature.addMetadata(new Signer(simpleReport.getSignedBy(signatureId), convertToLocalDateTimeViaInstant(simpleReport.getBestSignatureTime(signatureId))));
-                Validator validator = new Validator("DSS Validator", convertToLocalDateTimeViaInstant(date));
-                validator.addNewMetadata("Identifier", "DSS");
-                signature.addMetadata(validator);
-                ReferencedObject referencedObject = new ReferencedObject(
-                        docBinaryDataObject.getInDataObjectPackageId(),
-                        docBinaryDataObject.messageDigest.getValue(),
-                        docBinaryDataObject.messageDigest.getAlgorithm());
-                signature.addMetadata(referencedObject);
-                id2ArchiveUnit.getContent().addMetadata(signature);
+            if(reports != null) {
+                SimpleReport simpleReport = reports.getSimpleReport();
+                for (String signatureId : simpleReport.getSignatureIdList()) {
+                    Signature signature = new Signature();
+                    signature.addMetadata(new Signer(simpleReport.getSignedBy(signatureId), convertToLocalDateTimeViaInstant(simpleReport.getBestSignatureTime(signatureId))));
+                    Validator validator = new Validator("DSS Validator", convertToLocalDateTimeViaInstant(date));
+                    validator.addNewMetadata("Identifier", "DSS");
+                    signature.addMetadata(validator);
+                    ReferencedObject referencedObject = new ReferencedObject(
+                            docBinaryDataObject.getInDataObjectPackageId(),
+                            docBinaryDataObject.messageDigest.getValue(),
+                            docBinaryDataObject.messageDigest.getAlgorithm());
+                    signature.addMetadata(referencedObject);
+                    id2ArchiveUnit.getContent().addMetadata(signature);
+                }
             }
-
+            
             id1ArchiveUnit.addDataObjectById(docBinaryDataObject.getInDataObjectPackageId());
             if(signValidationBinaryDataObject != null) {
                 id2ArchiveUnit.addDataObjectById(signValidationBinaryDataObject.getInDataObjectPackageId());
