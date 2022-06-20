@@ -132,13 +132,18 @@ public class AuditTrailService {
         RequestContext requestContext = new RequestContext(httpServletRequest, httpServletResponse);
         Map<String, Object> vars = new HashMap<>();
         vars.put("auditTrail", auditTrail);
+        if(auditTrail != null) {
+            vars.put("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
+        } else {
+            vars.put("size", FileUtils.byteCountToDisplaySize(0));
+        }
         List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
         vars.put("logs", logs);
         vars.put("usersHasSigned", signRequestService.checkUserResponseSigned(signRequest));
         vars.put("usersHasRefused", signRequestService.checkUserResponseRefused(signRequest));
         vars.put("signRequest", signRequest);
         vars.put("print", true);
-        vars.put("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
+
         vars.put(AbstractTemplateView.SPRING_MACRO_REQUEST_CONTEXT_ATTRIBUTE, requestContext);
         vars.put(SpringContextVariableNames.SPRING_REQUEST_CONTEXT, requestContext);
         vars.put(SpringContextVariableNames.THYMELEAF_REQUEST_CONTEXT, new SpringWebMvcThymeleafRequestContext(requestContext, httpServletRequest));
