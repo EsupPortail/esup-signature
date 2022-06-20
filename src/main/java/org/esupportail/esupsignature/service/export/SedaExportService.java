@@ -60,9 +60,12 @@ public class SedaExportService {
             IOUtils.copy(document.getInputStream(), outputStream);
             outputStream.close();
             Reports reports = validationService.validate(new FileInputStream(file), null);
+
             File validationXml = fileService.getTempFile("validation.xml");
             FileWriter fw = new java.io.FileWriter(validationXml.getAbsolutePath());
-            fw.write(reports.getXmlDiagnosticData());
+            if(reports != null) {
+                fw.write(reports.getXmlDiagnosticData());
+            }
             fw.close();
 
             SEDALibProgressLogger pl = new SEDALibProgressLogger(logger, SEDALibProgressLogger.GLOBAL);
