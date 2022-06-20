@@ -153,7 +153,7 @@
                 </dl>
             </div>
             <div class="alert alert-light border-secondary">
-                <h5>Merci de déposer le document à contrôler pour vérifier ça conformité et accéder aux informations détaillées</h5>
+                <h5>Merci de déposer le document à contrôler pour vérifier sa conformité et accéder aux informations détaillées</h5>
                 <form th:action="'/public/control/' + ${token} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                     <input required class="form-control mb-2" data-buttontext="Choisir fichier" id="multipartFile" name="multipartFile" type="file">
                     <input class="btn btn-success" type="submit">
