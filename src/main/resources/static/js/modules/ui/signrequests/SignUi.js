@@ -367,6 +367,7 @@ export class SignUi {
                         document.location.href = $("#nextSignBookButton").attr('href');
                     } else {
                         if(self.isOtp== null || !self.isOtp) {
+                            // TODO add user return to home settings
                             if(self.nbSignRequests > 1 || !self.globalProperties.returnToHomeAfterSign) {
                                 document.location.href = "/user/signrequests/" + self.signRequestId;
                             } else {
