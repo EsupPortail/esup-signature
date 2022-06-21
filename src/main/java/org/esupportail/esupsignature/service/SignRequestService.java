@@ -266,7 +266,7 @@ public class SignRequestService {
 				String contentType = multipartFile.getContentType();
 				InputStream inputStream = new ByteArrayInputStream(bytes);
 				if (multipartFiles.length == 1 && bytes.length > 0) {
-					if("application/pdf".equals(multipartFiles[0].getContentType()) && scanSignatureFields) {
+					if("application/pdf".equals(contentType) && scanSignatureFields) {
 						if(!pdfService.isAcroForm(new ByteArrayInputStream(bytes))) {
 							bytes = pdfService.normalizeGS(bytes);
 						}
@@ -284,11 +284,16 @@ public class SignRequestService {
 						if(reports == null || reports.getSimpleReport().getSignatureIdList().size() == 0) {
 							inputStream = pdfService.removeSignField(new ByteArrayInputStream(bytes));
 						}
-					} else if(multipartFiles[0].getContentType() != null && multipartFiles[0].getContentType().contains("image")){
+					} else if(contentType != null && contentType.contains("image")){
 						bytes = pdfService.jpegToPdf(multipartFile.getInputStream(), multipartFile.getName()).readAllBytes();
 						contentType = "application/pdf";
 						inputStream = new ByteArrayInputStream(bytes);
 					}
+//					else if(contentType != null && (contentType.contains("application/msword") || contentType.contains("application/vnd.openxmlformats") || contentType.contains("officedocument.wordprocessingml.document"))){
+//						bytes = pdfService.convertDocToPDF(multipartFile.getInputStream()).readAllBytes();
+//						contentType = "application/pdf";
+//						inputStream = new ByteArrayInputStream(bytes);
+//					}
 					Document document = documentService.createDocument(inputStream, multipartFile.getOriginalFilename(), contentType);
 					signRequest.getOriginalDocuments().add(document);
 					document.setParentId(signRequest.getId());

@@ -213,15 +213,15 @@ export class GlobalUi {
 
     checkSendPending(data, send) {
         if (data.length === 0) {
-            this.submitSendPendind();
+            this.submitSendPendind(send);
             return;
         }
         let self = this;
-        let stringChain = "Les utilisateurs suivants n'ont pas de certificats électroniques : ";
+        let stringChain = "Les utilisateurs suivants n'ont pas de certificats électroniques : <br><ul>";
         for (let i = 0; i < data.length ; i++) {
-            stringChain += data[i].firstname + " " + data[i].name + " ";
+            stringChain += "<li>" + data[i].firstname + " " + data[i].name + "</li>";
         }
-        stringChain += "Confirmez-vous l'envoie de la demande ? "
+        stringChain += "</ul>Confirmez-vous l’envoie de la demande ? "
         bootbox.confirm(stringChain, function(result) {
            if(result) {
                self.submitSendPendind(send);

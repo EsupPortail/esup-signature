@@ -51,8 +51,8 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.service.LogService;
-import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -997,4 +997,18 @@ public class PdfService {
         }
         return false;
     }
+
+//    public InputStream convertDocToPDF(InputStream doc) {
+//        try {
+//            Docx2PDFViaDocx4jConverter docx2PDFViaDocx4jConverter = Docx2PDFViaDocx4jConverter.getInstance();
+//            docx2PDFViaDocx4jConverter.toPdfSettings(Options.getFrom( "DOCX" ));
+//            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//            docx2PDFViaDocx4jConverter.convert(doc, byteArrayOutputStream, Options.getFrom( "DOCX" ));
+//            return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+//        } catch (XDocConverterException e) {
+//            logger.error(e.getMessage(), e);
+//        }
+//        return doc;
+//    }
+
 }

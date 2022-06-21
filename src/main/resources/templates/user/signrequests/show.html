@@ -240,7 +240,7 @@
                 <div id="noOptions" class="alert alert-danger mt-1" style="display: none;">
                     Aucune option de signature n'est disponible pour cette demande. Si vous en avez la possibilité, merci d’ajouter une signature sur le document et/ou de démarrer NexU.
                 </div>
-                <div th:if="${!sealCertOK}" class="alert alert-danger mt-1">
+                <div id="noSeal" th:if="${!sealCertOK}" class="alert alert-danger mt-1" style="display: none;">
                     La signature par certificat cachet d’établissement et temporairement indisponible pour des raisons de maintenance. Merci refaire un essai ultérieurement.
                 </div>
                 <div id="selectTypeDiv" class="alert alert-success mt-1" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">

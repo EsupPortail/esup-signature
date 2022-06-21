@@ -265,7 +265,7 @@ public class SignBookService {
     public SignBook addFastSignRequestInNewSignBook(MultipartFile[] multipartFiles, SignType signType, String userEppn, String authUserEppn) throws EsupSignatureException {
         User user = userService.getUserByEppn(userEppn);
         logger.info("création rapide demande de signature par " + user.getFirstname() + " " + user.getName());
-        if (signService.checkSignTypeDocType(signType, multipartFiles[0])) {
+//        if (signService.checkSignTypeDocType(signType, multipartFiles[0])) {
             try {
                 String name = fileService.getNameOnly(multipartFiles[0].getOriginalFilename());
                 SignBook signBook = addDocsInNewSignBookSeparated(name, "Auto signature", multipartFiles, userEppn);
@@ -277,9 +277,9 @@ public class SignBookService {
             } catch (EsupSignatureIOException e) {
                 throw new EsupSignaturePdfException("Impossible de charger le document suite à une erreur interne", e);
             }
-        } else {
-            throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type : <br><b>" + fileService.getContentTypeDescription(multipartFiles[0].getContentType()) + "</b>");
-        }
+//        } else {
+//            throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type : <br><b>" + fileService.getContentTypeDescription(multipartFiles[0].getContentType()) + "</b>");
+//        }
     }
 
     public List<User> getRecipientsNames(String userEppn) {
@@ -679,7 +679,8 @@ public class SignBookService {
     public Map<SignBook, String> sendSignRequest(String title, MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser, boolean forceSendEmail, Boolean forceAllSign, String targetUrl) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
         if(forceAllSign == null) forceAllSign = false;
         if (!signService.checkSignTypeDocType(signType, multipartFiles[0])) {
-            throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type : <br><b>" + fileService.getContentTypeDescription(multipartFiles[0].getContentType()) + "</b>");        }
+//            throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type : <br><b>" + fileService.getContentTypeDescription(multipartFiles[0].getContentType()) + "</b>");
+        }
         if(title == null || title.isEmpty()) {
             title = "";
             for(MultipartFile multipartFile : multipartFiles) {

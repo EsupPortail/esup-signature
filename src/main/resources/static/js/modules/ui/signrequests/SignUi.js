@@ -100,10 +100,13 @@ export class SignUi {
         if (this.isPdf && this.currentSignType !== 'hiddenVisa') {
             this.workspace.pdfViewer.checkForm().then(function (result) {
                 if (result === "ok") {
-                    if (self.workspace.signPosition.signRequestParamses.size === 0) {
+                    let signId = self.workspace.checkSignsPositions();
+                    if (signId != null) {
                         $("#certType > option[value='imageStamp']").remove();
                         if(self.workspace.currentSignRequestParamses.length > 0 || self.stepRepeatable) {
-                            bootbox.alert("Merci de placer la signature", null);
+                            bootbox.alert("Merci de placer la signature", function() {
+                                window.scrollTo(0, $("#signSpace_" + signId).offset().top - self.workspace.pdfViewer.initialOffset);
+                            });
                         } else {
                             bootbox.confirm({
                                 message: "<h3>Attention vous allez signer sans appliquer d'image de signature</h3>" +
@@ -185,6 +188,9 @@ export class SignUi {
                 $("#selectTypeDiv").show();
                 $("#checkValidateSignButtonEnd").show();
                 $("#checkValidateSignButtonNext").show();
+            }
+            if($("#certType > option[value='imageStamp']").attr('selected')) {
+                $("#noSeal").show();
             }
         });
     }
@@ -272,7 +278,7 @@ export class SignUi {
             bootbox.alert("<div class='alert alert-danger'>Merci de choisir un type de signature dans la liste déroulante</div>", null);
             return;
         }
-        if (this.isPdf && !this.workspace.checkSignsPositions() && this.workspace.signType !== "hiddenVisa" && (this.certTypeSelect.val() === 'imageStamp')) {
+        if (this.isPdf && this.workspace.checkSignsPositions() != null && this.workspace.signType !== "hiddenVisa" && (this.certTypeSelect.val() === 'imageStamp')) {
             bootbox.alert("Merci de placer la signature", null);
             signModal.modal('hide');
             return;

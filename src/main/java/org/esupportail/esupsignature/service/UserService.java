@@ -593,8 +593,12 @@ public class UserService {
     @Transactional
     public List<User> getUserWithoutCertificate(List<String> userEmails) {
         List<User> users = new ArrayList<>();
-        userEmails.forEach(ue -> users.add(this.getUserByEmail(ue)));
-        return users.stream().filter(u -> u.getKeystoreFileName() == null).collect(Collectors.toList());
+        if(globalProperties.getSealCertificatPin().isEmpty()) {
+            userEmails.forEach(ue -> users.add(this.getUserByEmail(ue)));
+            return users.stream().filter(u -> u.getKeystoreFileName() == null).collect(Collectors.toList());
+        } else {
+            return users;
+        }
     }
 
     @Transactional

@@ -118,7 +118,7 @@
                         <i class="fas fa-stop-circle"></i><span class="nav-item-label d-none d-xl-inline"> Désactiver la délégation en cours</span>
                     </a>
                 </li>
-                <li class="nav-item text-white" th:if="${isManager && userEppn == authUserEppn}" title="Menu gestionnaire">
+                <li class="nav-item text-white me-1" th:if="${isManager && userEppn == authUserEppn}" title="Menu gestionnaire">
                     <a href="/manager/workflows" th:class="'btn text-white btn-transparent ' + ${managerMenu}"
                        th:classappend="${managerMenu == 'active'} ? 'bg-secondary'">
                         <i class="fas fa-user-tie"></i> <span class="nav-item-label d-none d-xxl-inline">Gestionnaire</span>
