@@ -15,8 +15,8 @@ import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -74,7 +74,7 @@ public class SedaExportService {
             sb.setArchivalAgreement("IC-000001");
             DataObjectPackage dataObjectPackage = sb.getArchiveTransfer().getDataObjectPackage();
             BinaryDataObject signValidationBinaryDataObject = null;
-            if(reports != null) {
+            if(reports != null && reports.getXmlSimpleReport() != null) {
                 signValidationBinaryDataObject = new BinaryDataObject(dataObjectPackage, validationXml.toPath(), validationXml.getName(), "BinaryMaster_1");
                 signValidationBinaryDataObject.extractTechnicalElements(pl);
             }
