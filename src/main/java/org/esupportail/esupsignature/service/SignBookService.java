@@ -998,7 +998,8 @@ public class SignBookService {
             }
         }
         byte[] bytes = toSignDocuments.get(0).getInputStream().readAllBytes();
-        if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf") && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0) {
+        if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf")
+                && (validationService.validate(new ByteArrayInputStream(bytes), null) == null || validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0)) {
             filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, signRequestService.isStepAllSignDone(signRequest.getParentSignBook()));
         } else {
             filledInputStream = toSignDocuments.get(0).getInputStream().readAllBytes();
