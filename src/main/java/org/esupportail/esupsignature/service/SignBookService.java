@@ -1043,6 +1043,7 @@ public class SignBookService {
             }
         } else {
             Document signedDocument = signService.certSign(signRequest, signerUser, password, SignWith.valueOf(signWith));
+            reports = validationService.validate(signedDocument.getInputStream(), null);
             DiagnosticData diagnosticData = reports.getDiagnosticData();
             if(diagnosticData.getAllSignatures().size() == 0) {
                 for (SignRequestParams signRequestParams : signRequestParamses) {
