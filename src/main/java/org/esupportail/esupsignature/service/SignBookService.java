@@ -999,7 +999,9 @@ public class SignBookService {
             }
         }
         byte[] bytes = toSignDocuments.get(0).getInputStream().readAllBytes();
-        if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf") && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0) {
+        Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
+        if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf")
+                && (reports == null || reports.getSimpleReport().getSignatureIdList().size() == 0)) {
             filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, signRequestService.isStepAllSignDone(signRequest.getParentSignBook()));
         } else {
             filledInputStream = toSignDocuments.get(0).getInputStream().readAllBytes();
@@ -1042,7 +1044,7 @@ public class SignBookService {
             }
         } else {
             Document signedDocument = signService.certSign(signRequest, signerUser, password, SignWith.valueOf(signWith));
-            Reports reports = validationService.validate(signedDocument.getInputStream(), null);
+            reports = validationService.validate(signedDocument.getInputStream(), null);
             DiagnosticData diagnosticData = reports.getDiagnosticData();
             if(diagnosticData.getAllSignatures().size() == 0) {
                 for (SignRequestParams signRequestParams : signRequestParamses) {
