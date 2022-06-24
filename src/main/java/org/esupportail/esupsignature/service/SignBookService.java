@@ -1366,7 +1366,7 @@ public class SignBookService {
             if(signService.getToSignDocuments(signRequest.getId()).size() == 1) {
                 List<Document> documents = signService.getToSignDocuments(signRequest.getId());
                 name = documents.get(0).getFileName();
-                inputStream = pdfService.addQrCode(signRequest, documents.get(0).getInputStream());
+                inputStream = documents.get(0).getInputStream();
             }
         } else {
             FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
@@ -1398,7 +1398,7 @@ public class SignBookService {
             ByteArrayOutputStream reportByteArrayOutputStream = new ByteArrayOutputStream();
             fopService.generateSimpleReport(reports.getXmlSimpleReport(), reportByteArrayOutputStream);
             zipOutputStream.putNextEntry(new ZipEntry("rapport-signature.pdf"));
-            IOUtils.copy(pdfService.addQrCode(signRequest, new ByteArrayInputStream(reportByteArrayOutputStream.toByteArray())), zipOutputStream);
+            IOUtils.copy(new ByteArrayInputStream(reportByteArrayOutputStream.toByteArray()), zipOutputStream);
             zipOutputStream.closeEntry();
         }
         zipOutputStream.close();
