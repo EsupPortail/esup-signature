@@ -45,12 +45,15 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.URLEncoder;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -773,24 +776,24 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Map<String, Object> getToSignFileResponse(Long signRequestId) throws SQLException, EsupSignatureFsException, IOException, EsupSignatureException {
+	public void getToSignFileResponse(Long signRequestId, HttpServletResponse httpServletResponse) throws SQLException, EsupSignatureFsException, IOException, EsupSignatureException {
 		SignRequest signRequest = getById(signRequestId);
 		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			List<Document> documents = signService.getToSignDocuments(signRequest.getId());
-			if (documents.size() > 1) {
-				return null;
+			Document document;
+			if(documents.size() > 0) {
+				document = documents.get(0);
 			} else {
-				Document document;
-				if(documents.size() > 0) {
-					document = documents.get(0);
-				} else {
-					document = signRequest.getOriginalDocuments().get(0);
-				}
-				return fileService.getFileResponse(document.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), document.getFileName(), document.getContentType());
+				document = signRequest.getOriginalDocuments().get(0);
 			}
+			httpServletResponse.setContentType(document.getContentType());
+			httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
+			IOUtils.copyLarge(document.getInputStream(), httpServletResponse.getOutputStream());
 		} else {
 			FsFile fsFile = getLastSignedFsFile(signRequest);
-			return fileService.getFileResponse(fsFile.getInputStream().readAllBytes(), fsFile.getName(), fsFile.getContentType());
+			httpServletResponse.setContentType(fsFile.getContentType());
+			httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fsFile.getName(), StandardCharsets.UTF_8.toString()));
+			IOUtils.copyLarge(fsFile.getInputStream(), httpServletResponse.getOutputStream());
 		}
 	}
 

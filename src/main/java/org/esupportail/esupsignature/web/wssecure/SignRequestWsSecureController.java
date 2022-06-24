@@ -5,7 +5,6 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
@@ -96,12 +95,7 @@ public class SignRequestWsSecureController {
     @GetMapping(value = "/get-last-file/{id}")
     public ResponseEntity<Void> getLastFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
-            Map<String, Object> fileResponse = signRequestService.getToSignFileResponse(id);
-            if(fileResponse != null) {
-                httpServletResponse.setContentType(fileResponse.get("contentType").toString());
-                httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
-                IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
-            }
+            signRequestService.getToSignFileResponse(id, httpServletResponse);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             logger.error("get file error", e);

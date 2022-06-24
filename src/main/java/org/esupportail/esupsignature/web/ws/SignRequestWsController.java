@@ -108,12 +108,7 @@ public class SignRequestWsController {
     @Operation(description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
     public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
-            Map<String, Object> fileResponse = signRequestService.getToSignFileResponse(id);
-            if (fileResponse != null) {
-                httpServletResponse.setContentType(fileResponse.get("contentType").toString());
-                httpServletResponse.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
-                IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
-            }
+            signRequestService.getToSignFileResponse(id, httpServletResponse);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (NoResultException | IOException | EsupSignatureFsException | SQLException | EsupSignatureException e) {
             logger.error(e.getMessage(), e);
