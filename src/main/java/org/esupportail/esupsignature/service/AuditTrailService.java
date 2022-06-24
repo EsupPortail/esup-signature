@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service;
 
-import com.google.zxing.WriterException;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -159,12 +158,7 @@ public class AuditTrailService {
         builder.toStream(outputStream);
         builder.run();
         byte[] bytes = outputStream.toByteArray();
-        try {
-            InputStream inputStream = pdfService.addQrCode(signRequest, new ByteArrayInputStream(bytes));
-            IOUtils.copy(inputStream, outputStream);
-        } catch (WriterException e) {
-            logger.warn("can't insert qr code");
-        }
+        IOUtils.copy(new ByteArrayInputStream(bytes), outputStream);
         return outputStream;
     }
 
