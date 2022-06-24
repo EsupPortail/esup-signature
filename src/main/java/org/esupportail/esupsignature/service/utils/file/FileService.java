@@ -342,14 +342,6 @@ public class FileService {
 		return false;
 	}
 
-    public Map<String, Object> getFileResponse(byte[] bytes, String fileName, String contentType) {
-        Map<String, Object> fileResponse = new HashMap<>();
-        fileResponse.put("inputStream", new ByteArrayInputStream(bytes));
-        fileResponse.put("fileName", fileName);
-        fileResponse.put("contentType", contentType);
-        return fileResponse;
-    }
-
 	public void changeColor(BufferedImage imgBuf, int oldRed, int oldGreen, int oldBlue, int newRed, int newGreen, int newBlue) {
 
 		int RGB_MASK = 0x00ffffff;

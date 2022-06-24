@@ -35,7 +35,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.Map;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -104,16 +103,11 @@ public class SignRequestWsSecureController {
     }
 
     @GetMapping(value = "/get-file/{id}")
-    public ResponseEntity<Void> getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException, SQLException, EsupSignatureFsException {
+    public ResponseEntity<Void> getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException {
         Document document = documentService.getById(id);
         if(signRequestService.getById(document.getParentId()) != null) {
             if(preAuthorizeService.signRequestView(document.getParentId(), userEppn, authUserEppn)) {
-                Map<String, Object> fileResponse = signRequestService.getFileResponse(id);
-                if(fileResponse != null) {
-                    httpServletResponse.setContentType(fileResponse.get("contentType").toString());
-                    httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
-                    IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
-                }
+                signRequestService.getFileResponse(id, httpServletResponse);
                 return new ResponseEntity<>(HttpStatus.OK);
             } else {
                 logger.warn(userEppn + " try access document " + id + " without permission");
@@ -192,12 +186,7 @@ public class SignRequestWsSecureController {
     @GetMapping(value = "/print-with-code/{id}")
     public ResponseEntity<Void> printWithCode(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
-            Map<String, Object> fileResponse = signRequestService.getToSignFileResponseWithCode(id);
-            if (fileResponse != null) {
-                httpServletResponse.setContentType(fileResponse.get("contentType").toString());
-                httpServletResponse.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
-                IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
-            }
+            signRequestService.getToSignFileResponseWithCode(id, httpServletResponse);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (NoResultException | IOException | EsupSignatureFsException | SQLException | EsupSignatureException | WriterException e) {
             logger.error(e.getMessage(), e);

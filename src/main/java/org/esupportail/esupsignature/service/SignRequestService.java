@@ -20,6 +20,7 @@ import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
+import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.metric.CustomMetricsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
@@ -51,9 +52,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
-import java.net.URLEncoder;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -76,6 +75,9 @@ public class SignRequestService {
 	public SignRequestService(GlobalProperties globalProperties) {
 		this.globalProperties = globalProperties;
 	}
+
+	@Resource
+	private WebUtilsService webUtilsService;
 
 	@Resource
 	private SignRequestRepository signRequestRepository;
@@ -766,13 +768,14 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Map<String, Object> getAttachmentResponse(Long signRequestId, Long attachementId) throws SQLException, IOException {
+	public boolean getAttachmentResponse(Long signRequestId, Long attachementId, HttpServletResponse httpServletResponse) throws IOException {
 		SignRequest signRequest = getById(signRequestId);
 		Document attachement = documentService.getById(attachementId);
 		if (attachement != null && attachement.getParentId().equals(signRequest.getId())) {
-			return fileService.getFileResponse(attachement.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), attachement.getFileName(), attachement.getContentType());
+			webUtilsService.copyFileStreamToHttpResponse(attachement.getFileName(), attachement.getContentType(), attachement.getInputStream(), httpServletResponse);
+			return true;
 		}
-		return null;
+		return false;
 	}
 
 	@Transactional
@@ -786,44 +789,37 @@ public class SignRequestService {
 			} else {
 				document = signRequest.getOriginalDocuments().get(0);
 			}
-			httpServletResponse.setContentType(document.getContentType());
-			httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
-			IOUtils.copyLarge(document.getInputStream(), httpServletResponse.getOutputStream());
+			webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), document.getInputStream(), httpServletResponse);
 		} else {
 			FsFile fsFile = getLastSignedFsFile(signRequest);
-			httpServletResponse.setContentType(fsFile.getContentType());
-			httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fsFile.getName(), StandardCharsets.UTF_8.toString()));
-			IOUtils.copyLarge(fsFile.getInputStream(), httpServletResponse.getOutputStream());
+			webUtilsService.copyFileStreamToHttpResponse(fsFile.getName(), fsFile.getContentType(), fsFile.getInputStream(), httpServletResponse);
 		}
 	}
 
 	@Transactional
-	public Map<String, Object> getToSignFileResponseWithCode(Long signRequestId) throws SQLException, EsupSignatureFsException, IOException, EsupSignatureException, WriterException {
+	public void getToSignFileResponseWithCode(Long signRequestId, HttpServletResponse httpServletResponse) throws SQLException, EsupSignatureFsException, IOException, EsupSignatureException, WriterException {
 		SignRequest signRequest = getById(signRequestId);
 		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			List<Document> documents = signService.getToSignDocuments(signRequest.getId());
-			if (documents.size() > 1) {
-				return null;
+			Document document;
+			if(documents.size() > 0) {
+				document = documents.get(0);
 			} else {
-				Document document;
-				if(documents.size() > 0) {
-					document = documents.get(0);
-				} else {
-					document = signRequest.getOriginalDocuments().get(0);
-				}
-				InputStream inputStream = pdfService.addQrCode(signRequest, document.getBigFile().getBinaryFile().getBinaryStream());
-				return fileService.getFileResponse(inputStream.readAllBytes(), document.getFileName(), document.getContentType());
+				document = signRequest.getOriginalDocuments().get(0);
 			}
+			InputStream inputStream = pdfService.addQrCode(signRequest, document.getInputStream());
+			webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), inputStream, httpServletResponse);
 		} else {
 			FsFile fsFile = getLastSignedFsFile(signRequest);
-			return fileService.getFileResponse(fsFile.getInputStream().readAllBytes(), fsFile.getName(), fsFile.getContentType());
+			InputStream inputStream = pdfService.addQrCode(signRequest, fsFile.getInputStream());
+			webUtilsService.copyFileStreamToHttpResponse(fsFile.getName(), fsFile.getContentType(), inputStream, httpServletResponse);
 		}
 	}
 
 	@Transactional
-	public Map<String, Object> getFileResponse(Long documentId) throws SQLException, IOException {
+	public void getFileResponse(Long documentId, HttpServletResponse httpServletResponse) throws IOException {
 		Document document = documentService.getById(documentId);
-		return fileService.getFileResponse(document.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), document.getFileName(), document.getContentType());
+		webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), document.getInputStream(), httpServletResponse);
 	}
 
 	@Transactional
