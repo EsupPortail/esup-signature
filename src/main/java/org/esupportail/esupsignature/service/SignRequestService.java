@@ -426,20 +426,7 @@ public class SignRequestService {
 		}
 	}
 
-	public void completeSignRequest(Long id, String userEppn, String authUserEppn) throws EsupSignatureException {
-		SignRequest signRequest = getById(id);
-		completeSignRequest(signRequest, userEppn, authUserEppn);
-	}
-
-	private void completeSignRequest(SignRequest signRequest, String userEppn, String authUserEppn) throws EsupSignatureException {
-		if (signRequest.getCreateBy().getEppn().equals(userEppn) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
-			completeSignRequests(Arrays.asList(signRequest), authUserEppn);
-		} else {
-			logger.warn(userEppn + " try to complete " + signRequest.getId() + " without rights");
-		}
-	}
-
-	public void completeSignRequests(List<SignRequest> signRequests, String authUserEppn) throws EsupSignatureException {
+	public void completeSignRequests(List<SignRequest> signRequests, String authUserEppn) {
 		for(SignRequest signRequest : signRequests) {
 			if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
 				updateStatus(signRequest.getId(), SignRequestStatus.completed, "Terminé", "SUCCESS", authUserEppn, authUserEppn);

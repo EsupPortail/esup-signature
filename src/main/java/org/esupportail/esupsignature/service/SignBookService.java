@@ -228,9 +228,9 @@ public class SignBookService {
         } else if(statusFilter.equals("toSign"))  {
             signBooks = signBookRepository.findToSign(userEppn, workflowFilter, docTitleFilter, creatorFilter, startDateFilter, endDateFilter, pageable);
         } else if(statusFilter.equals("signedByMe")) {
-            signBooks = signBookRepository.findByRecipientAndActionType(userEppn, ActionType.signed, pageable);
+            signBooks = signBookRepository.findByRecipientAndActionTypeNotDeleted(userEppn, ActionType.signed, workflowFilter, docTitleFilter, creatorFilter, pageable);
         } else if(statusFilter.equals("refusedByMe")) {
-            signBooks = signBookRepository.findByRecipientAndActionType(userEppn, ActionType.refused, pageable);
+            signBooks = signBookRepository.findByRecipientAndActionTypeNotDeleted(userEppn, ActionType.refused, workflowFilter, docTitleFilter, creatorFilter, pageable);
         } else if(statusFilter.equals("followByMe")) {
             signBooks = signBookRepository.findByViewersContaining(userEppn, pageable);
         } else if(statusFilter.equals("sharedSign")) {
@@ -242,21 +242,6 @@ public class SignBookService {
             signBooks = signBookRepository.findEmpty(userEppn, pageable);
         } else {
             signBooks = signBookRepository.findByCreateByEppnAndStatusAndSignRequestsNotNull(userEppn, SignRequestStatus.valueOf(statusFilter), pageable);
-        }
-
-        for(SignBook signBook : signBooks) {
-            if(signBook.getEndDate() == null &&
-                    (signBook.getStatus().equals(SignRequestStatus.completed)
-                    || signBook.getStatus().equals(SignRequestStatus.exported)
-                    || signBook.getStatus().equals(SignRequestStatus.refused)
-                    || signBook.getStatus().equals(SignRequestStatus.signed)
-                    || signBook.getStatus().equals(SignRequestStatus.archived)
-                    || signBook.getStatus().equals(SignRequestStatus.deleted))) {
-                List<Action> actions = signBook.getSignRequests().stream().map(SignRequest::getRecipientHasSigned).map(Map::values).flatMap(Collection::stream).filter(action -> action.getDate() != null).sorted(Comparator.comparing(Action::getDate).reversed()).collect(Collectors.toList());
-                if(actions.size() > 0) {
-                    signBook.setEndDate(actions.get(0).getDate());
-                }
-            }
         }
         return signBooks;
     }
@@ -844,6 +829,7 @@ public class SignBookService {
             data.setStatus(SignRequestStatus.completed);
         }
         updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", "SUCCESS", "", userEppn, userEppn);
+        signBook.setEndDate(new Date());
     }
 
     public List<SignRequest> getSignRequestsForCurrentUserByStatus(String userEppn, String authUserEppn) {
