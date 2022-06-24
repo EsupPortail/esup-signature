@@ -421,13 +421,6 @@ public class SignRequestController {
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
-    @GetMapping(value = "/complete/{id}")
-    public String complete(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws EsupSignatureException {
-        signRequestService.completeSignRequest(id, userEppn, authUserEppn);
-        return "redirect:/user/signrequests/" + id + "/?form";
-    }
-
-    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @PostMapping(value = "/pending/{id}")
     public String pending(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam(required = false) List<String> recipientEmails,
