@@ -69,13 +69,11 @@
                                     <div class="card-body">
                                         <form th:id="${'deleteWorkflow_' + workflow.id}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'">
                                         </form>
-                                        <button role="button" class="btn btn-sm workflow-button workflow-delete-button" title="Supprimer" type="button" th:data-id="${workflow.id}">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
                                         <button  class="btn btn-sm workflow-button workflow-update-button" title="Modifier" th:data-id="${workflow.id}" type="button">
                                             <i class="fas fa-cog"></i>
                                         </button>
-                                        <button type="button" class="btn-close toggle-mini-menu" data-bs-toggle="collapse" th:data-bs-target="'#menu-' + ${workflow.id}" aria-label="Close">
+                                        <button role="button" class="btn btn-sm workflow-button workflow-delete-button" title="Supprimer" type="button" th:data-id="${workflow.id}">
+                                            <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </div>
                                 </div>

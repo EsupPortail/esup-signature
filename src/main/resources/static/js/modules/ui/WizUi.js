@@ -207,8 +207,10 @@ export class WizUi {
         let csrf = this.csrf;
         let name = $("#workflowName").val();
         let elementId = $("#elementId");
+        console.log(this.recipientCCSelect.slimSelect.selected());
+        let self = this;
         $.ajax({
-            url: "/user/wizard/wiz-save"+ this.mode +"/" + elementId.val() + "?name=" + name + "&" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/wizard/wiz-save"+ this.mode +"/" + elementId.val() + "?name=" + name + "&viewers=" + self.recipientCCSelect.slimSelect.selected() + "&" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             success: html => this.initWiz2(html)
         });

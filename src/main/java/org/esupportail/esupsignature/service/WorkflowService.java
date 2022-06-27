@@ -589,5 +589,20 @@ public class WorkflowService {
         Workflow workflow = getById(id);
         workflow.setDescription(name);
     }
+
+    @Transactional
+    public void addViewers(Long id, List<String> recipientsCCEmails) {
+        Workflow workflow = getById(id);
+        if(recipientsCCEmails != null && recipientsCCEmails.size() > 0) {
+            for (String recipientsEmail : recipientsCCEmails) {
+                User user = userService.getUserByEmail(recipientsEmail);
+                if (!workflow.getViewers().contains(user)) {
+                    workflow.getViewers().add(user);
+                }
+            }
+        } else {
+            workflow.getViewers().clear();
+        }
+    }
 }
 

@@ -134,10 +134,13 @@ public class WorkflowController {
         workflowService.delete(workflow);
     }
 
-    @PutMapping(value = "/{id}/rename")
+    @PutMapping(value = "/{id}")
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
-    public String rename(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, @RequestParam String name) throws EsupSignatureException {
+    public String rename(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
+                         @RequestParam(required = false) List<String> viewers,
+                         @RequestParam String name) {
         workflowService.rename(id, name);
+        workflowService.addViewers(id, viewers);
         return "redirect:/user/workflows/" + id;
     }
 }

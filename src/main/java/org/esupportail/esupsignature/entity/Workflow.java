@@ -69,6 +69,9 @@ public class Workflow {
     @OneToMany(cascade = CascadeType.REMOVE)
     private List<Target> targets = new ArrayList<>();
 
+    @ManyToMany
+    private List<User> viewers = new ArrayList<>();
+
     private Boolean fromCode;
 
     private Boolean visibility = false;
@@ -294,5 +297,13 @@ public class Workflow {
 
     public void setOwnerSystem(Boolean ownerSystem) {
         this.ownerSystem = ownerSystem;
+    }
+
+    public List<User> getViewers() {
+        return viewers;
+    }
+
+    public void setViewers(List<User> viewers) {
+        this.viewers = viewers;
     }
 }

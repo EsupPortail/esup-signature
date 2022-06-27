@@ -36,6 +36,7 @@ export default class SelectUser {
         $("." + this.slimSelect.config.id).each(function() {
            $(this).removeAttr("style");
         });
+        this.selectField.slim = this.slimSelect;
         this.initListeners();
     }
 
