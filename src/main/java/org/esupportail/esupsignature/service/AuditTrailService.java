@@ -131,7 +131,7 @@ public class AuditTrailService {
         RequestContext requestContext = new RequestContext(httpServletRequest, httpServletResponse);
         Map<String, Object> vars = new HashMap<>();
         vars.put("auditTrail", auditTrail);
-        if(auditTrail != null) {
+        if(auditTrail != null && auditTrail.getDocumentSize() != null) {
             vars.put("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
         } else {
             vars.put("size", FileUtils.byteCountToDisplaySize(0));
