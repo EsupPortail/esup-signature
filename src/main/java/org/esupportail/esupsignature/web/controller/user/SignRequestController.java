@@ -110,6 +110,7 @@ public class SignRequestController {
         }
         model.addAttribute("displayNotif", displayNotif);
         model.addAttribute("signRequest", signRequest);
+        model.addAttribute("signBook", signRequest.getParentSignBook());
         Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
         model.addAttribute("workflow", workflow);
         model.addAttribute("postits", signRequest.getComments().stream().filter(Comment::getPostit).collect(Collectors.toList()));
@@ -198,28 +199,6 @@ public class SignRequestController {
         List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
         model.addAttribute("logs", logs);
         return "user/signrequests/show";
-    }
-
-    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
-    @GetMapping(value = "/details/{id}")
-    public String details(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) throws Exception {
-        User user = (User) model.getAttribute("user");
-        SignRequest signRequest = signRequestService.getById(id);
-        model.addAttribute("signBooks", signBookService.getAllSignBooks());
-        List<Log> logs = logService.getBySignRequest(signRequest.getId());
-        logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
-        model.addAttribute("logs", logs);
-        model.addAttribute("comments", logService.getLogs(signRequest.getId()));
-        model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
-        if (user.getKeystore() != null) {
-            model.addAttribute("keystore", user.getKeystore().getFileName());
-        }
-        model.addAttribute("signRequest", signRequest);
-        model.addAttribute("toSignDocument", signService.getToSignDocuments(id).get(0));
-        model.addAttribute("signable", signRequest.getSignable());
-        model.addAttribute("editable", signRequest.getEditable());
-        model.addAttribute("workflows", workflowService.getAllWorkflows());
-        return "user/signrequests/details";
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
@@ -344,17 +323,25 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @DeleteMapping(value = "/force-delete/{id}", produces = "text/html")
-    public String forceDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+    public String forceDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
         SignRequest signRequest = signRequestService.getById(id);
+        String referer = httpServletRequest.getHeader("referer");
         if(signRequest.getParentSignBook().getSignRequests().size() > 1) {
             signRequestService.deleteDefinitive(id);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
-            return "redirect:/user/signbooks/";
-
+            if(referer.contains("signrequests")) {
+                return "redirect:/user/signbooks/";
+            } else {
+                return "redirect:" + referer;
+            }
         } else {
             signBookService.deleteDefinitive(signRequest.getParentSignBook().getId(), authUserEppn);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
-            return "redirect:/user/";
+            if(referer.contains("signrequests")) {
+                return "redirect:/user/";
+            } else {
+                return "redirect:" + referer;
+            }
         }
     }
 

@@ -314,6 +314,13 @@ public class SignBookService {
         return signBook;
     }
 
+
+    public void updateSignBook(Long id, String subject, String description) {
+        SignBook signBook = getById(id);
+        signBook.setSubject(subject);
+        signBook.setDescription(description);
+    }
+
     @Transactional
     public void initSignBook(Long signBookId, Long id, String userEppn) {
         User user = userService.getUserByEppn(userEppn);
@@ -454,7 +461,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public void addLiveStep(Long id, List<String> recipientsEmails, int stepNumber, Boolean allSignToComplete, SignType signType, boolean repeatable, SignType repeatableSignType, boolean multiSign, boolean autoSign, String authUserEppn) throws EsupSignatureException {
+    public void addLiveStep(Long id, List<String> recipientsEmails, int stepNumber, Boolean allSignToComplete, SignType signType, boolean repeatable, SignType repeatableSignType, boolean multiSign, Boolean autoSign, String authUserEppn) throws EsupSignatureException {
         SignBook signBook = this.getById(id);
         int currentStepNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
         LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(null, repeatable, repeatableSignType, multiSign, autoSign, allSignToComplete, signType, recipientsEmails, null);
@@ -464,7 +471,7 @@ public class SignBookService {
             if (stepNumber >= currentStepNumber) {
                 signBook.getLiveWorkflow().getLiveWorkflowSteps().add(stepNumber, liveWorkflowStep);
             } else {
-                throw new EsupSignatureException("L'étape ne peut pas être ajoutée");
+                throw new EsupSignatureException("L'étape ne peut pas être ajoutée car le circuit est déjà démarré");
             }
         }
         if(recipientsEmails != null) {
@@ -637,6 +644,9 @@ public class SignBookService {
             SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, authUserEppn, authUserEppn);
             try {
                 signRequestService.addDocsToSignRequest(signRequest, true, i, new ArrayList<>(), multipartFile);
+                if(signBook.getStatus().equals(SignRequestStatus.pending)) {
+                    signRequestService.pendingSignRequest(signRequest, authUserEppn);
+                }
             } catch (EsupSignatureIOException e) {
                 logger.warn("revert signbook creation due to error : " + e.getMessage());
                 deleteDefinitive(signBookId, authUserEppn);
@@ -1857,4 +1867,5 @@ public class SignBookService {
     public List<User> getCreators(String userEppn, String workflowFilter, String docTitleFilter, String creatorFilter) {
         return signBookRepository.findUserByRecipientAndCreateByEppn(userEppn, workflowFilter, docTitleFilter, creatorFilter);
     }
+
 }
