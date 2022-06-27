@@ -33,6 +33,9 @@ export default class SelectUser {
         this.createUserSelect(selectName,  this.valuePrefix);
         this.populateWithFavorites();
         this.selectField.addClass("slim-select-hack");
+        $("." + this.slimSelect.config.id).each(function() {
+           $(this).removeAttr("style");
+        });
         this.initListeners();
     }
 

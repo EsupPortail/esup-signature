@@ -239,8 +239,9 @@ public class SignBookController {
     public String update(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                          @RequestParam String subject,
                          @RequestParam String description,
+                         @RequestParam(required = false) List<String> viewers,
                          RedirectAttributes redirectAttributes) {
-        signBookService.updateSignBook(id, subject, description);
+        signBookService.updateSignBook(id, subject, description, viewers);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
         return "redirect:/user/signbooks/update/" + id;
     }

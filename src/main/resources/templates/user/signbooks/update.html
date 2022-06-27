@@ -2,10 +2,6 @@
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
-<script th:inline="javascript" type="module">
-    import {default as SelectUser} from '/js/modules/utils/SelectUser.js?version=[[${versionApp}]]';
-    new SelectUser("recipientsEmails2", null, null, [[${_csrf}]]);
-</script>
 <body>
 <header th:replace="fragments/nav :: nav"></header>
 <main role="main">
@@ -37,10 +33,23 @@
                 <div class="card-body">
                     <form id="params" th:action="'/user/signbooks/update/' + ${signBook.id}" th:method="put">
                         <h5 class="text-center"><b>Paramètres généraux</b></h5>
-                        <label for="subject">Titre</label>
-                        <input type="text" class="form-control" name="subject" id="subject" th:value="${signBook.subject}">
-                        <label for="description">Description</label>
-                        <textarea id="description" name="description" class="form-control" th:text="${signBook.description}"></textarea>
+                        <div class="form-group">
+                            <label for="subject">Titre</label>
+                            <input type="text" class="form-control" name="subject" id="subject" th:value="${signBook.subject}">
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea id="description" name="description" class="form-control" th:text="${signBook.description}"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Observateurs</label>
+                            <select id="viewersSelect" class="select-users" multiple="multiple" name="viewers" style="display: none;">
+                                <option data-placeholder="true"></option>
+                                <th:block th:each="viewer : ${signBook.viewers}">
+                                    <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
+                                </th:block>
+                            </select>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -200,6 +209,10 @@
                     </button>
                 </div>
             </form>
+            <script th:inline="javascript" type="module">
+                import {default as SelectUser} from '/js/modules/utils/SelectUser.js?version=[[${versionApp}]]';
+                new SelectUser("recipientsEmails2", null, null, [[${_csrf}]]);
+            </script>
         </div>
     </div>
 </div>

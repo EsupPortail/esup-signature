@@ -314,11 +314,12 @@ public class SignBookService {
         return signBook;
     }
 
-
-    public void updateSignBook(Long id, String subject, String description) {
+    @Transactional
+    public void updateSignBook(Long id, String subject, String description, List<String> viewers) {
         SignBook signBook = getById(id);
         signBook.setSubject(subject);
         signBook.setDescription(description);
+        addViewers(id, viewers);
     }
 
     @Transactional
@@ -491,13 +492,15 @@ public class SignBookService {
     @Transactional
     public void addViewers(Long signBookId, List<String> recipientsCCEmails) {
         SignBook signBook = getById(signBookId);
-        if(recipientsCCEmails != null) {
-            for (String recipientsEmail : recipientsCCEmails) {
-                User user = userService.getUserByEmail(recipientsEmail);
-                if(!signBook.getViewers().contains(user)) {
-                    signBook.getViewers().add(user);
+        if(recipientsCCEmails != null && recipientsCCEmails.size() > 0) {
+                for (String recipientsEmail : recipientsCCEmails) {
+                    User user = userService.getUserByEmail(recipientsEmail);
+                    if (!signBook.getViewers().contains(user)) {
+                        signBook.getViewers().add(user);
+                    }
                 }
-            }
+        } else {
+            signBook.getViewers().clear();
         }
     }
 
