@@ -192,13 +192,12 @@ export class GlobalUi {
             os = 'iOS';
         } else if (windowsPlatforms.indexOf(platform) !== -1) {
             os = 'Windows';
-            $(html).css("scrollbar-width", "thin");
+            $(document.body).css("scrollbar-width", "thin");
         } else if (/Android/.test(userAgent)) {
             os = 'Android';
         } else if (/Linux/.test(platform)) {
             os = 'Linux';
         }
-
         return os;
     }
 
