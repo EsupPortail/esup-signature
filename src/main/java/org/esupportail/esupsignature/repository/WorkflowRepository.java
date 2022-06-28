@@ -12,7 +12,6 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     List<Workflow> findByFromCodeIsTrue();
     List<Workflow> findByCreateByEppn(String userEppn);
     List<Workflow> findDistinctByAuthorizedShareTypesIsNotNull();
-    List<Workflow> findByRolesIn(List<String> roles);
     List<Workflow> findByManagerRole(String role);
     Long countByName(String name);
     Long countByNameAndCreateByEppn(String name, String userEppn);
@@ -20,4 +19,5 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     List<Workflow> findAuthorizedForms(String role);
     @Query("select distinct w from Workflow w where w.id not in (select distinct f.workflow from Form f) and w.createBy.eppn = 'system'")
     List<Workflow> findNotInForm();
+    List<Workflow> findWorkflowByManagersIn(List<String> emails);
 }

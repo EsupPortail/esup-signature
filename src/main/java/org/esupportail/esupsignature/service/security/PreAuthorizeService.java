@@ -55,11 +55,11 @@ public class PreAuthorizeService {
         return false;
     }
 
-    public boolean formManage(Long id, String userEppn) {
+    public boolean workflowManage(Long id, String userEppn) {
         if(userEppn != null) {
-            Form form = formService.getById(id);
+            Workflow workflow = workflowService.getById(id);
             User user = userService.getByEppn(userEppn);
-            return form.getManagers().contains(user.getEmail());
+            return workflow.getManagers().contains(user.getEmail());
         }
         return false;
     }
@@ -197,7 +197,7 @@ public class PreAuthorizeService {
                 List<SignRequest> signRequests = signRequestRepository.findByIdAndRecipient(signRequest.getId(), userEppn);
                 Data data = signBookService.getBySignBook(signRequest.getParentSignBook());
                 User authUser = userService.getUserByEppn(authUserEppn);
-                if ((data != null && (data.getForm() != null && data.getForm().getManagers().contains(authUser.getEmail())))
+                if ((data != null && (data.getForm() != null && data.getForm().getWorkflow().getManagers().contains(authUser.getEmail())))
                         || signRequest.getCreateBy().getEppn().equals(userEppn)
                         || signRequest.getParentSignBook().getViewers().contains(userService.getUserByEppn(authUserEppn))
                         || signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getUsers).anyMatch(users -> users.contains(user))

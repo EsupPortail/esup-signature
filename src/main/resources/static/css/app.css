@@ -1255,7 +1255,7 @@ textarea:placeholder-shown.required-field {
 
 .fixed-action-btn {
     position: fixed;
-    right: 50px;
+    right: 25px;
     bottom: 80px;
     z-index: 8;
     overflow: hidden;
@@ -1266,7 +1266,7 @@ textarea:placeholder-shown.required-field {
     -webkit-box-align: end;
     -ms-flex-align: end;
     align-items: flex-end;
-    padding: 15px;
+    padding: 20px;
 }
 
 .fixed-action-btn-simple {

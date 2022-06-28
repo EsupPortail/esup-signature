@@ -130,7 +130,7 @@ public class OtpSignRequestController {
         model.addAttribute("viewRight", preAuthorizeService.checkUserViewRights(signRequest, userEppn, authUserEppn));
         if(signRequest.getData() != null && signRequest.getData().getForm() != null) {
             model.addAttribute("action", signRequest.getData().getForm().getAction());
-            model.addAttribute("supervisors", signRequest.getData().getForm().getManagers());
+            model.addAttribute("supervisors", signRequest.getData().getForm().getWorkflow().getManagers());
         }
         List<Log> logs = logService.getBySignRequest(signRequest.getId());
         logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());

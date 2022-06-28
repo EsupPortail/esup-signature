@@ -30,6 +30,7 @@ public class Form {
 
 	private Integer version;
 
+	@Deprecated
 	@ElementCollection(targetClass=String.class)
 	private List<String> managers = new ArrayList<>();
 
@@ -123,10 +124,12 @@ public class Form {
 		this.version = version;
 	}
 
+	@Deprecated
 	public List<String> getManagers() {
 		return managers;
 	}
 
+	@Deprecated
 	public void setManagers(List<String> managers) {
 		this.managers = managers;
 	}

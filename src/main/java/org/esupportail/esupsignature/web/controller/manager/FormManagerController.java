@@ -169,13 +169,12 @@ public class FormManagerController {
     @PutMapping
     @PreAuthorize("@preAuthorizeService.formManager(#updateForm.id, #authUserEppn)")
     public String updateForm(@ModelAttribute Form updateForm,
-                             @RequestParam(required = false) List<String> managers,
                              @RequestParam(value = "types", required = false) String[] types,
                              @ModelAttribute("authUserEppn") String authUserEppn,
                              RedirectAttributes redirectAttributes) {
         updateForm.setPublicUsage(false);
         updateForm.setAction("");
-        formService.updateForm(updateForm.getId(), updateForm, managers, types, true);
+        formService.updateForm(updateForm.getId(), updateForm, types, true);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
         return "redirect:/manager/forms/update/" + updateForm.getId();
     }

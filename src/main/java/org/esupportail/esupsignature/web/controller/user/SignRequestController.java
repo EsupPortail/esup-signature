@@ -182,7 +182,7 @@ public class SignRequestController {
         model.addAttribute("frameMode", frameMode);
         if(signRequest.getData() != null && signRequest.getData().getForm() != null) {
             model.addAttribute("action", signRequest.getData().getForm().getAction());
-            model.addAttribute("supervisors", signRequest.getData().getForm().getManagers());
+            model.addAttribute("supervisors", signRequest.getData().getForm().getWorkflow().getManagers());
         }
         if(signRequest.getSignable()
                 && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && userService.getUiParams(authUserEppn) != null

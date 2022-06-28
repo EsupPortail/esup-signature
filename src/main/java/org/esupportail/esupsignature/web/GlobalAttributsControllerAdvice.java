@@ -40,7 +40,7 @@ public class GlobalAttributsControllerAdvice {
     private SignRequestService signRequestService;
 
     @Resource
-    private FormService formService;
+    private WorkflowService workflowService;
 
     @Resource
     private UserShareService userShareService;
@@ -93,7 +93,7 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.create));
             model.addAttribute("isOneSignShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign));
             model.addAttribute("isOneReadShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.read));
-            model.addAttribute("managedFormsSize", formService.getFormByManagersContains(authUserEppn).size());
+            model.addAttribute("managedWorkflowsSize",  workflowService.getWorkflowByManagersContains(authUserEppn).size());
             model.addAttribute("isManager", preAuthorizeService.isManager(authUserEppn));
             model.addAttribute("infiniteScrolling", globalProperties.getInfiniteScrolling());
             model.addAttribute("validationToolsEnabled", validationService != null);

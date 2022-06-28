@@ -18,60 +18,53 @@
                     <table class="table table-borderless">
                         <thead class="table-secondary">
                         <tr>
-                            <th>Nom du formulaire</th>
+                            <th>Type</th>
+                            <th>Nom</th>
                             <th>Consulter la liste des demandes</th>
                             <th>Export des données</th>
                             <th>Envoi du formulaire</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <th:block th:each="form : ${managedForms}">
+                        <th:block th:each="workflow : ${managedWorkflows}">
                             <tr>
-                                <td th:text="${form.name}"></td>
                                 <td>
-                                    <a type="button" th:href="'user/manage/form/' + ${form.id}"
+                                    <i th:unless="${managedForms.contains(workflow)}" class="fas fa-project-diagram project-diagram-color fa-2x"></i>
+                                    <i th:if="${managedForms.contains(workflow)}" class="fas fa-file-alt file-alt-color fa-2x"></i>
+                                </td>
+                                <td th:text="${workflow.description}"></td>
+                                <td>
+                                    <a type="button" th:href="'user/manage/workflow/' + ${workflow.id}"
                                        class="btn btn-sm btn-primary"><i class="fas fa-list"></i> Liste des demandes</a>
                                 </td>
                                 <td>
-                                    <a type="button" th:href="'user/manage/form/' + ${form.id} + '/datas/csv'"
+                                    <a th:if="${managedForms.contains(workflow)}" type="button" th:href="'user/manage/form/' + ${workflow.id} + '/datas/csv'"
+                                       class="btn btn-sm btn-primary"><i class="fas fa-file-export"></i> Export des données</a>
+                                    <a th:unless="${managedForms.contains(workflow)}" type="button" th:href="'user/manage/workflow/' + ${workflow.id} + '/datas/csv'"
                                        class="btn btn-sm btn-primary"><i class="fas fa-file-export"></i> Export des données</a>
                                 </td>
                                 <td>
-                                    <a type="button" th:href="'user/manage/form/' + ${form.id} + '/start?createByEmail=' + ${user.email}"
-                                       class="btn btn-sm btn-primary"><i class="fas fa-paper-plane"></i> Envoyer le formulaire</a>
-                                    <div class="modal fade" th:id="'sendModal_' +  ${form.id}" tabindex="-1" role="dialog" aria-hidden="true">
-                                        <div th:if="${form.messageToDisplay != null}" class="toast toast-xl bg-white show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="999999999" style="z-index: 3;">
-                                            <div class="toast-body toast-body-news">
-                                                <button type="button" class="btn-close float-end" data-bs-dismiss="toast" aria-label="Close"></button>
-                                                <h4 class="me-auto text-dark">Aide</h4>
-                                                <h5 th:utext="${form.messageToDisplay}"></h5>
-                                            </div>
-                                            <div class="toast-footer">
-                                                <button th:if="${form}" th:id="'markHelpAsReadButton_' + ${form.id}" class="btn btn-success me-2 mb-2 float-end" data-bs-dismiss="toast" aria-label="Close">
-                                                    <i class="fa fa-eye-slash"></i>
-                                                    Marquer comme lu
-                                                </button>
-                                            </div>
-                                        </div>
+                                    <button th:if="${managedForms.contains(workflow)}" type="button" class="btn btn-sm btn-primary" th:data-bs-target="'#sendModal_' +  ${workflow.id}"  data-bs-toggle="modal"><i class="fas fa-paper-plane"></i> Envoyer le formulaire</button>
+                                    <div th:if="${managedForms.contains(workflow)}" class="modal fade" th:id="'sendModal_' +  ${workflow.id}" tabindex="-1" role="dialog" aria-hidden="true">
                                         <div class="modal-dialog modal-lg" role="document">
                                             <div class="modal-content modal-lg">
                                                 <div class="modal-header">
-                                                    <h3 class="modal-title" th:text="${form.title}"></h3>
+                                                    <h3 class="modal-title" th:text="${workflow.title}"></h3>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                             aria-label="Close">
 
                                                     </button>
                                                 </div>
-                                                <form th:action="'/user/manage/form/' + ${form.id} + '/start'" method="post">
+                                                <form th:action="'/user/manage/form/' + ${workflow.id} + '/start'" method="post">
                                                     <div class="modal-body">
-                                                        <p th:if="${form.workflow == null || form.workflow.workflowSteps.size() == 0}">Après la validation, vous pourrez télécharger le document</p>
-                                                        <div th:if="${form.workflow != null && form.workflow.workflowSteps.size() > 0}">
+                                                        <p th:if="${workflow == null || workflow.workflowSteps.size() == 0}">Après la validation, vous pourrez télécharger le document</p>
+                                                        <div th:if="${workflow != null && workflow.workflowSteps.size() > 0}">
                                                             <h5>
                                                                 Le circuit associé à ce formulaire comporte <span
-                                                                    th:text="${form.workflow.workflowSteps.size()}"></span> étape<span th:if="${form.workflow.workflowSteps.size()} > 1">(s) : </span>
+                                                                    th:text="${workflow.workflowSteps.size()}"></span> étape<span th:if="${workflow.workflowSteps.size()} > 1">(s) : </span>
                                                             </h5>
                                                             <ul class="list-group">
-                                                                <th:block th:each="step, iterator : ${form.workflow.workflowSteps}">
+                                                                <th:block th:each="step, iterator : ${workflow.workflowSteps}">
                                                                     <li class="list-group-item">
                                                                         <!--                            <div class="form-group mb-3">-->
                                                                         <!--                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>-->
@@ -89,7 +82,7 @@
                                                                         </div>
                                                                         <div th:if="${step.changeable == true}" class="form-group mb-3">
                                                                             <label><span th:text="'Merci de saisir le ' + ${step.maxRecipients != null && step.maxRecipients > 1 ? '(s)' : ''} + 'participant ' + ${step.maxRecipients != null && step.maxRecipients > 1 ? '(s)' : ''} + ' pour l\'étape ' + ${iterator.index + 1}"></span></label>
-                                                                            <select class="select-users" th:id="'recipientEmailsSelect-' + ${form.id} + '_' + ${iterator.index + 1}"
+                                                                            <select class="select-users" th:id="'recipientEmailsSelect-' + ${workflow.id} + '_' + ${iterator.index + 1}"
                                                                                     th:multiple="${step.maxRecipients != null && step.maxRecipients > 1}" name="recipientEmails" required="required" th:maxlength="${step.maxRecipients}">
                                                                                 <option data-placeholder="true"></option>
                                                                                 <th:block th:each="user : ${step.users}">
@@ -101,7 +94,7 @@
                                                                             <p class="small">
                                                                                 Les signataires sont pré-sélectionnés en fonction de vos précédentes saisies.
                                                                             </p>
-                                                                            <div th:id="'tempUsers-recipientEmailsSelect-' + ${form.id} + '_' + ${iterator.index + 1}"></div>
+                                                                            <div th:id="'tempUsers-recipientEmailsSelect-' + ${workflow.id} + '_' + ${iterator.index + 1}"></div>
                                                                             <div class="form-group mb-3" id="allSignToComplete-simple">
                                                                                 <div class="form-check form-switch form-switch-md">
                                                                                     <label  class="form-check-label" th:for="'allSignToComplete_' + ${iterator.index + 1}">Tous les participants doivent-ils signer ?</label>
@@ -113,10 +106,10 @@
                                                                 </th:block>
                                                             </ul>
                                                             <hr>
-                                                            <th:block th:each="target : ${form.workflow.targets}">
+                                                            <th:block th:each="target : ${workflow.targets}">
                                                                 <div th:if="${target.targetUri.contains('mailto:')}" class="form-group mb-3">
                                                                     <label>Etape finale : Envoi par mail à </label>
-                                                                    <select class="select-users" th:id="'targetEmailsSelect-' + ${form.id}" multiple="multiple" name="targetEmails">
+                                                                    <select class="select-users" th:id="'targetEmailsSelect-' + ${workflow.id}" multiple="multiple" name="targetEmails">
                                                                         <option data-placeholder="true"></option>
                                                                         <option th:if="${target.targetUri != null && target.targetUri != ''}" th:value="${target.targetUri}" th:text="${target.targetUri}" selected></option>
                                                                     </select>
