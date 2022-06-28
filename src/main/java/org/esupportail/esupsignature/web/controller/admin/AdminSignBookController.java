@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -132,6 +133,13 @@ public class AdminSignBookController {
 		}
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
 		return new ResponseEntity<>(true, HttpStatus.OK);
+	}
+
+	@DeleteMapping(value = "/{id}", produces = "text/html")
+	public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+		signBookService.delete(id, authUserEppn);
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
 
 }

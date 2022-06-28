@@ -178,7 +178,7 @@ export class ListSignBooksUi {
                             "</div> "
                     });
                     $.ajax({
-                        url: "/" + this.mode + "/signbooks/delete-multiple?" + self.csrf.parameterName + "=" + self.csrf.token,
+                        url: "/" + self.mode + "/signbooks/delete-multiple?" + self.csrf.parameterName + "=" + self.csrf.token,
                         type: 'POST',
                         dataType: 'json',
                         contentType: "application/json",

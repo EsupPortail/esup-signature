@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -47,6 +48,9 @@ public class AdminSignRequestController {
 
 	@Resource
 	private SignService signService;
+
+	@Resource
+	private WebUtilsService webUtilsService;
 
 	@ModelAttribute("adminMenu")
 	public String getAdminMenu() {
@@ -115,13 +119,6 @@ public class AdminSignRequestController {
 		response.setContentType(document.getContentType());
 		IOUtils.copy(document.getInputStream(), response.getOutputStream());
 		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
-	@DeleteMapping(value = "/{id}", produces = "text/html")
-	public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-		signBookService.delete(id, authUserEppn);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
-		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
 
 	@DeleteMapping(value = "delete-definitive/{id}", produces = "text/html")

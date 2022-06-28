@@ -2,15 +2,16 @@ package org.esupportail.esupsignature.web.controller.manager;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.Form;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.FieldService;
+import org.esupportail.esupsignature.service.FormService;
+import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
@@ -29,9 +30,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Controller
@@ -259,8 +257,7 @@ public class FormManagerController {
                                               @RequestParam(value = "valueType", required = false) String valueType,
                                               @RequestParam(value = "valueReturn", required = false) String valueReturn,
                                               @RequestParam(value = "stepZero", required = false, defaultValue = "false") Boolean stepZero,
-                                              @RequestParam(value = "workflowStepsIds", required = false) List<Long> workflowStepsIds,
-                                              @ModelAttribute("authUserEppn") String authUserEppn) {
+                                              @RequestParam(value = "workflowStepsIds", required = false) List<Long> workflowStepsIds) {
 
         String extValueServiceName = "";
         String extValueType = "";
@@ -283,7 +280,6 @@ public class FormManagerController {
     }
 
     @GetMapping(value = "/get-file/{id}")
-    public void getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes) {
     @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
     public void getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes) throws IOException {
         try {
