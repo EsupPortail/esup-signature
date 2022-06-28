@@ -666,11 +666,14 @@ public class SignBookService {
         if (!signService.checkSignTypeDocType(signType, multipartFiles[0])) {
             throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type : <br><b>" + fileService.getContentTypeDescription(multipartFiles[0].getContentType()) + "</b>");        }
         if(title == null || title.isEmpty()) {
-            title = "";
-            for(MultipartFile multipartFile : multipartFiles) {
-                title += fileService.getNameOnly(multipartFile.getOriginalFilename()) + "\n";
+            if(multipartFiles.length == 1) {
+                title = fileService.getNameOnly(multipartFiles[0].getOriginalFilename());
+            } else {
+                title = "Parapheur pour " + recipientsEmails.get(0);
+                if(recipientsEmails.size() > 1) {
+                    title += " ...";
+                }
             }
-            title = title.substring(0, title.length() - 1);
         }
         logger.info(title);
         SignBook signBook = addDocsInNewSignBookSeparated(title, "Demande simple", multipartFiles, user.getEppn());
@@ -1028,8 +1031,7 @@ public class SignBookService {
                 }
             }
         } else {
-            Document signedDocument = signService.certSign(signRequest, signerUser, password, SignWith.valueOf(signWith));
-            reports = validationService.validate(signedDocument.getInputStream(), null);
+            reports = validationService.validate(signRequestService.getToValidateFile(signRequest.getId()), null);
             DiagnosticData diagnosticData = reports.getDiagnosticData();
             if(diagnosticData.getAllSignatures().size() == 0) {
                 for (SignRequestParams signRequestParams : signRequestParamses) {
@@ -1046,6 +1048,9 @@ public class SignBookService {
                 signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
                 toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(pdfService.addOutLine(signRequest, filledInputStream, user, new Date(), new SimpleDateFormat())));
             }
+            Document signedDocument = signService.certSign(signRequest, signerUser, password, SignWith.valueOf(signWith));
+            reports = validationService.validate(signedDocument.getInputStream(), null);
+            diagnosticData = reports.getDiagnosticData();
             String certificat = new ArrayList<>(diagnosticData.getAllSignatures()).get(diagnosticData.getAllSignatures().size() - 1).getSigningCertificate().toString();
             String timestamp = diagnosticData.getTimestampList().get(0).getSigningCertificate().toString();
             if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > 0) {

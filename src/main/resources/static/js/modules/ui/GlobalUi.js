@@ -6,7 +6,7 @@ export class GlobalUi {
     constructor(authUserEppn, csrf, applicationEmail) {
         console.info("Starting global UI");
         this.checkBrowser();
-        this.checkOS();
+        // this.checkOS();
         this.csrf = csrf;
         this.applicationEmail = applicationEmail;
         this.sideBarStatus = localStorage.getItem('sideBarStatus');
