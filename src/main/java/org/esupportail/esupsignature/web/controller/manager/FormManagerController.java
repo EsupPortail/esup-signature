@@ -254,14 +254,9 @@ public class FormManagerController {
     }
 
     @GetMapping(value = "/get-file/{id}")
-    public void getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes) throws IOException {
+    public void getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes) {
         try {
-            Map<String, Object> attachmentResponse = formService.getModel(id);
-            if (attachmentResponse != null) {
-                httpServletResponse.setContentType(attachmentResponse.get("contentType").toString());
-                httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(attachmentResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
-                IOUtils.copyLarge((InputStream) attachmentResponse.get("inputStream"), httpServletResponse.getOutputStream());
-            } else {
+            if(!formService.getModel(id, httpServletResponse)) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Modèle non trouvée ..."));
                 httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
             }

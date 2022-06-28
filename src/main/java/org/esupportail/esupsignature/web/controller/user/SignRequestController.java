@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.entity.*;
@@ -35,9 +34,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -398,12 +394,7 @@ public class SignRequestController {
     @GetMapping(value = "/get-attachment/{id}/{attachementId}")
     public void getAttachment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes) {
         try {
-            Map<String, Object> attachmentResponse = signRequestService.getAttachmentResponse(id, attachementId);
-            if (attachmentResponse != null) {
-                httpServletResponse.setContentType(attachmentResponse.get("contentType").toString());
-                httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(attachmentResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
-                IOUtils.copyLarge((InputStream) attachmentResponse.get("inputStream"), httpServletResponse.getOutputStream());
-            } else {
+            if (!signRequestService.getAttachmentResponse(id, attachementId, httpServletResponse)) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Pièce jointe non trouvée ..."));
                 httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
             }
@@ -417,13 +408,6 @@ public class SignRequestController {
     public String changeStepSignType(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name = "signType") SignType signType) {
         SignRequest signRequest = signRequestService.getById(id);
         signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signType);
-        return "redirect:/user/signrequests/" + id + "/?form";
-    }
-
-    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
-    @GetMapping(value = "/complete/{id}")
-    public String complete(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws EsupSignatureException {
-        signRequestService.completeSignRequest(id, userEppn, authUserEppn);
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 

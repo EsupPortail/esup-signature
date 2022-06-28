@@ -228,9 +228,9 @@ public class SignBookService {
         } else if(statusFilter.equals("toSign"))  {
             signBooks = signBookRepository.findToSign(userEppn, workflowFilter, docTitleFilter, creatorFilter, startDateFilter, endDateFilter, pageable);
         } else if(statusFilter.equals("signedByMe")) {
-            signBooks = signBookRepository.findByRecipientAndActionType(userEppn, ActionType.signed, pageable);
+            signBooks = signBookRepository.findByRecipientAndActionTypeNotDeleted(userEppn, ActionType.signed, workflowFilter, docTitleFilter, creatorFilter, pageable);
         } else if(statusFilter.equals("refusedByMe")) {
-            signBooks = signBookRepository.findByRecipientAndActionType(userEppn, ActionType.refused, pageable);
+            signBooks = signBookRepository.findByRecipientAndActionTypeNotDeleted(userEppn, ActionType.refused, workflowFilter, docTitleFilter, creatorFilter, pageable);
         } else if(statusFilter.equals("followByMe")) {
             signBooks = signBookRepository.findByViewersContaining(userEppn, pageable);
         } else if(statusFilter.equals("sharedSign")) {
@@ -242,21 +242,6 @@ public class SignBookService {
             signBooks = signBookRepository.findEmpty(userEppn, pageable);
         } else {
             signBooks = signBookRepository.findByCreateByEppnAndStatusAndSignRequestsNotNull(userEppn, SignRequestStatus.valueOf(statusFilter), pageable);
-        }
-
-        for(SignBook signBook : signBooks) {
-            if(signBook.getEndDate() == null &&
-                    (signBook.getStatus().equals(SignRequestStatus.completed)
-                    || signBook.getStatus().equals(SignRequestStatus.exported)
-                    || signBook.getStatus().equals(SignRequestStatus.refused)
-                    || signBook.getStatus().equals(SignRequestStatus.signed)
-                    || signBook.getStatus().equals(SignRequestStatus.archived)
-                    || signBook.getStatus().equals(SignRequestStatus.deleted))) {
-                List<Action> actions = signBook.getSignRequests().stream().map(SignRequest::getRecipientHasSigned).map(Map::values).flatMap(Collection::stream).filter(action -> action.getDate() != null).sorted(Comparator.comparing(Action::getDate).reversed()).collect(Collectors.toList());
-                if(actions.size() > 0) {
-                    signBook.setEndDate(actions.get(0).getDate());
-                }
-            }
         }
         return signBooks;
     }
@@ -681,11 +666,14 @@ public class SignBookService {
         if (!signService.checkSignTypeDocType(signType, multipartFiles[0])) {
             throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type : <br><b>" + fileService.getContentTypeDescription(multipartFiles[0].getContentType()) + "</b>");        }
         if(title == null || title.isEmpty()) {
-            title = "";
-            for(MultipartFile multipartFile : multipartFiles) {
-                title += fileService.getNameOnly(multipartFile.getOriginalFilename()) + "\n";
+            if(multipartFiles.length == 1) {
+                title = fileService.getNameOnly(multipartFiles[0].getOriginalFilename());
+            } else {
+                title = "Parapheur pour " + recipientsEmails.get(0);
+                if(recipientsEmails.size() > 1) {
+                    title += " ...";
+                }
             }
-            title = title.substring(0, title.length() - 1);
         }
         logger.info(title);
         SignBook signBook = addDocsInNewSignBookSeparated(title, "Demande simple", multipartFiles, user.getEppn());
@@ -844,6 +832,7 @@ public class SignBookService {
             data.setStatus(SignRequestStatus.completed);
         }
         updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", "SUCCESS", "", userEppn, userEppn);
+        signBook.setEndDate(new Date());
     }
 
     public List<SignRequest> getSignRequestsForCurrentUserByStatus(String userEppn, String authUserEppn) {
@@ -998,7 +987,9 @@ public class SignBookService {
             }
         }
         byte[] bytes = toSignDocuments.get(0).getInputStream().readAllBytes();
-        if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf") && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0) {
+        Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
+        if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf")
+                && (reports == null || reports.getSimpleReport().getSignatureIdList().size() == 0)) {
             filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, signRequestService.isStepAllSignDone(signRequest.getParentSignBook()));
         } else {
             filledInputStream = toSignDocuments.get(0).getInputStream().readAllBytes();
@@ -1040,8 +1031,7 @@ public class SignBookService {
                 }
             }
         } else {
-            Document signedDocument = signService.certSign(signRequest, signerUser, password, SignWith.valueOf(signWith));
-            Reports reports = validationService.validate(signedDocument.getInputStream(), null);
+            reports = validationService.validate(signRequestService.getToValidateFile(signRequest.getId()), null);
             DiagnosticData diagnosticData = reports.getDiagnosticData();
             if(diagnosticData.getAllSignatures().size() == 0) {
                 for (SignRequestParams signRequestParams : signRequestParamses) {
@@ -1058,6 +1048,9 @@ public class SignBookService {
                 signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
                 toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(pdfService.addOutLine(signRequest, filledInputStream, user, new Date(), new SimpleDateFormat())));
             }
+            Document signedDocument = signService.certSign(signRequest, signerUser, password, SignWith.valueOf(signWith));
+            reports = validationService.validate(signedDocument.getInputStream(), null);
+            diagnosticData = reports.getDiagnosticData();
             String certificat = new ArrayList<>(diagnosticData.getAllSignatures()).get(diagnosticData.getAllSignatures().size() - 1).getSigningCertificate().toString();
             String timestamp = diagnosticData.getTimestampList().get(0).getSigningCertificate().toString();
             if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > 0) {
@@ -1364,9 +1357,7 @@ public class SignBookService {
     @Transactional
     public void getToSignFileReportResponse(Long signRequestId, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
         SignRequest signRequest = signRequestService.getById(signRequestId);
-        httpServletResponse.setContentType("application/zip; charset=utf-8");
-        httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(signRequest.getTitle() + "-avec_rapport", StandardCharsets.UTF_8.toString()) + ".zip");
-        httpServletResponse.getOutputStream().write(getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse));
+        webUtilsService.copyFileStreamToHttpResponse(signRequest.getTitle() + "-avec_rapport", "application/zip; charset=utf-8", new ByteArrayInputStream(getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse)), httpServletResponse);
     }
 
     public byte[] getZipWithDocAndReport(SignRequest signRequest, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
@@ -1378,7 +1369,7 @@ public class SignBookService {
             if(signService.getToSignDocuments(signRequest.getId()).size() == 1) {
                 List<Document> documents = signService.getToSignDocuments(signRequest.getId());
                 name = documents.get(0).getFileName();
-                inputStream = pdfService.addQrCode(signRequest, documents.get(0).getInputStream());
+                inputStream = documents.get(0).getInputStream();
             }
         } else {
             FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
@@ -1410,7 +1401,7 @@ public class SignBookService {
             ByteArrayOutputStream reportByteArrayOutputStream = new ByteArrayOutputStream();
             fopService.generateSimpleReport(reports.getXmlSimpleReport(), reportByteArrayOutputStream);
             zipOutputStream.putNextEntry(new ZipEntry("rapport-signature.pdf"));
-            IOUtils.copy(pdfService.addQrCode(signRequest, new ByteArrayInputStream(reportByteArrayOutputStream.toByteArray())), zipOutputStream);
+            IOUtils.copy(new ByteArrayInputStream(reportByteArrayOutputStream.toByteArray()), zipOutputStream);
             zipOutputStream.closeEntry();
         }
         zipOutputStream.close();

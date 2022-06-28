@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -47,6 +48,9 @@ public class AdminSignRequestController {
 
 	@Resource
 	private SignService signService;
+
+	@Resource
+	private WebUtilsService webUtilsService;
 
 	@ModelAttribute("adminMenu")
 	public String getAdminMenu() {
@@ -136,16 +140,14 @@ public class AdminSignRequestController {
 
 	@GetMapping(value = "/get-last-file/{id}")
 	@Transactional
-	public void getLastFile(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse response) {
+	public void getLastFile(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
 		List<Document> documents = signService.getToSignDocuments(id);
 		try {
 			if(documents.size() > 1) {
-				response.sendRedirect("/user/signrequests/" + id);
+				httpServletResponse.sendRedirect("/user/signrequests/" + id);
 			} else {
 				Document document = documents.get(0);
-				response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
-				response.setContentType(document.getContentType());
-				IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+				webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), document.getInputStream(), httpServletResponse);
 			}
 		} catch (Exception e) {
 			logger.error("get file error", e);

@@ -6,6 +6,7 @@ export class GlobalUi {
     constructor(authUserEppn, csrf, applicationEmail) {
         console.info("Starting global UI");
         this.checkBrowser();
+        // this.checkOS();
         this.csrf = csrf;
         this.applicationEmail = applicationEmail;
         this.sideBarStatus = localStorage.getItem('sideBarStatus');
@@ -175,6 +176,29 @@ export class GlobalUi {
             alert("Votre navigateur n'est pas compatible");
             window.location.href="https://www.google.com/intl/fr_fr/chrome/";
         }
+    }
+
+    checkOS() {
+        let userAgent = window.navigator.userAgent,
+            platform = window.navigator?.userAgentData?.platform || window.navigator.platform,
+            macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'],
+            windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'],
+            iosPlatforms = ['iPhone', 'iPad', 'iPod'],
+            os = null;
+
+        if (macosPlatforms.indexOf(platform) !== -1) {
+            os = 'Mac OS';
+        } else if (iosPlatforms.indexOf(platform) !== -1) {
+            os = 'iOS';
+        } else if (windowsPlatforms.indexOf(platform) !== -1) {
+            os = 'Windows';
+            document.getElementsByTagName('html')[0].style.scrollbarWidth= "thin";
+        } else if (/Android/.test(userAgent)) {
+            os = 'Android';
+        } else if (/Linux/.test(platform)) {
+            os = 'Linux';
+        }
+        return os;
     }
 
     disableSendButton(e) {

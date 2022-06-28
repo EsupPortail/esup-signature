@@ -1,9 +1,15 @@
 package org.esupportail.esupsignature.service.utils;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Service
 public class WebUtilsService {
@@ -13,6 +19,12 @@ public class WebUtilsService {
     @Autowired
     public void setRequest(HttpServletRequest request) {
         this.request = request;
+    }
+
+    public void copyFileStreamToHttpResponse(String name, String contentType, InputStream inputStream, HttpServletResponse httpServletResponse) throws IOException {
+        httpServletResponse.setContentType(contentType);
+        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(name, StandardCharsets.UTF_8.toString()));
+        IOUtils.copyLarge(inputStream, httpServletResponse.getOutputStream());
     }
 
     public String getClientIp() {

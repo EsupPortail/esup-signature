@@ -64,7 +64,7 @@ html {
     scrollbar-color: #E10F46 #CECECE;
 }
 
-::-webkit-scrollbar {
+html::-webkit-scrollbar {
     background-color: #CECECE;
     width: 12px;
     height: 12px;
@@ -72,14 +72,42 @@ html {
     margin: 2px;
 }
 
-::-webkit-scrollbar-thumb {
+html::-webkit-scrollbar-thumb {
     background-color: #E10F46;
     border-radius: 10px;
     width: 8px !important;
     border: solid 3px #CECECE;
 }
 
+.table-fix-head::-webkit-scrollbar {
+    background-color: #CECECE;
+    width: 12px;
+    height: 12px;
+    padding: 2px;
+    margin: 2px;
+}
 
+.table-fix-head::-webkit-scrollbar-thumb {
+    background-color: #E10F46;
+    border-radius: 10px;
+    width: 8px !important;
+    border: solid 3px #CECECE;
+}
+
+.scrollbar-lite::-webkit-scrollbar {
+    background-color: #CECECE;
+    width: 12px;
+    height: 12px;
+    padding: 2px;
+    margin: 2px;
+}
+
+.scrollbar-lite::-webkit-scrollbar-thumb {
+    background-color: #E10F46;
+    border-radius: 10px;
+    width: 8px !important;
+    border: solid 3px #CECECE;
+}
 body {
     font-family: "Gravity", sans-serif;
     margin-bottom: 40px;

@@ -254,10 +254,8 @@
                 <div id="noOptions" class="alert alert-danger mt-1" style="display: none;">
                     Aucune option de signature n'est disponible pour cette demande. Si vous en avez la possibilité, merci d’ajouter une signature sur le document et/ou de démarrer NexU.
                 </div>
-                <th:block th:if="${signRequest.parentSignBook.liveWorkflow.getLiveWorkflowSteps().size() > signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
-                    <label for="signComment">Vous pouvez ajouter un commentaire</label>
-                    <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
-                </th:block>
+                <label for="signComment">Vous pouvez ajouter un commentaire</label>
+                <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
                 <div id="nexuCheck" th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign ? 'd-none' : ''}">
                     <div id="nexu_version_alert" style="display: none;text-align: center;">
                         <div class="alert alert-warning float-start">
@@ -313,9 +311,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="signAllModalLabel">Confirmer la signature des documents</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <input autocomplete="new-password"
