@@ -266,6 +266,45 @@ public class SignBookService {
     }
 
     @Transactional
+    public Page<SignBook> getAllSignBooks(String statusFilter, String workflowFilter, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(9999, Calendar.DECEMBER, 31);
+        Date startDateFilter = new Date(0);
+        Date endDateFilter = calendar.getTime();
+        if(dateFilter != null && !dateFilter.isEmpty()) {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            Date formattedDate = null;
+            try {
+                formattedDate = formatter.parse(dateFilter);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            LocalDateTime nowLocalDateTime = formattedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            LocalDateTime startLocalDateTime = nowLocalDateTime.with(LocalTime.of(0, 0, 0));
+            LocalDateTime endLocalDateTime = nowLocalDateTime.with(LocalTime.of(23, 59, 59));
+            startDateFilter = Timestamp.valueOf(startLocalDateTime);
+            endDateFilter = Timestamp.valueOf(endLocalDateTime);
+        }
+        Page<SignBook> signBooks = signBookRepository.findSignBooksAllPaged(statusFilter, workflowFilter, docTitleFilter, creatorFilter, startDateFilter, endDateFilter, pageable);
+
+        for(SignBook signBook : signBooks) {
+            if(signBook.getEndDate() == null &&
+                    (signBook.getStatus().equals(SignRequestStatus.completed)
+                            || signBook.getStatus().equals(SignRequestStatus.exported)
+                            || signBook.getStatus().equals(SignRequestStatus.refused)
+                            || signBook.getStatus().equals(SignRequestStatus.signed)
+                            || signBook.getStatus().equals(SignRequestStatus.archived)
+                            || signBook.getStatus().equals(SignRequestStatus.deleted))) {
+                List<Action> actions = signBook.getSignRequests().stream().map(SignRequest::getRecipientHasSigned).map(Map::values).flatMap(Collection::stream).filter(action -> action.getDate() != null).sorted(Comparator.comparing(Action::getDate).reversed()).collect(Collectors.toList());
+                if(actions.size() > 0) {
+                    signBook.setEndDate(actions.get(0).getDate());
+                }
+            }
+        }
+        return signBooks;
+    }
+
+    @Transactional
     public SignBook addFastSignRequestInNewSignBook(MultipartFile[] multipartFiles, SignType signType, String userEppn, String authUserEppn) throws EsupSignatureException {
         User user = userService.getUserByEppn(userEppn);
         logger.info("création rapide demande de signature par " + user.getFirstname() + " " + user.getName());
@@ -1868,9 +1907,13 @@ public class SignBookService {
     }
 
     public List<User> getCreators(String userEppn, String workflowFilter, String docTitleFilter, String creatorFilter) {
-        return signBookRepository.findUserByRecipientAndCreateByEppn(userEppn, workflowFilter, docTitleFilter, creatorFilter);
-    }
+        if(userEppn != null) {
+            return signBookRepository.findUserByRecipientAndCreateByEppn(userEppn, workflowFilter, docTitleFilter, creatorFilter);
+        } else {
+            return signBookRepository.findSignBookAllUserByRecipientAndCreateByEppn(workflowFilter, docTitleFilter, creatorFilter);
 
+        }
+    }
 
     public Page<SignBook> getSignBookByWorkflow(Workflow workflow, String statusFilter, String recipientsFilter, String creatorFilter, String dateFilter, Pageable pageable) {
         List<SignBook> signBooks = getByWorkflowId(workflow.getId());

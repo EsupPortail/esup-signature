@@ -402,14 +402,16 @@ export class GlobalUi {
 
     checkSelectUser() {
         let csrf = this.csrf;
-        $("select[class='select-users']").each(function () {
-            let selectId = $(this).attr('id');
-            console.info("auto enable select-user for : " + selectId);
-            let limit = null;
-            if($(this).attr("maxLength") != null) {
-                limit = parseInt($(this).attr("maxLength"));
+        $("select").each(function () {
+            if($(this).hasClass("select-users")) {
+                let selectId = $(this).attr('id');
+                console.info("auto enable select-user for : " + selectId);
+                let limit = null;
+                if ($(this).attr("maxLength") != null) {
+                    limit = parseInt($(this).attr("maxLength"));
+                }
+                new SelectUser(selectId, limit, $(this).attr('data-signrequest-id'), csrf);
             }
-            new SelectUser(selectId, limit, $(this).attr('data-signrequest-id'), csrf);
         });
     }
 
@@ -426,6 +428,7 @@ export class GlobalUi {
         $(".slim-select-filter").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-filter for : " + selectName);
+            let select = $("#" + selectName);
             new SlimSelect({
                 select: '#' + selectName,
                 hideSelectedOption: false,
@@ -435,6 +438,8 @@ export class GlobalUi {
                     return option.text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").indexOf(search.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")) !== -1
                 }
             });
+            select.removeClass("spinner-border");
+
         })
 
         $(".slim-select-simple").each(function () {

@@ -3,24 +3,13 @@ package org.esupportail.esupsignature.web.controller.admin;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Log;
-import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.DocumentRepository;
-import org.esupportail.esupsignature.repository.SignBookRepository;
-import org.esupportail.esupsignature.service.LogService;
-import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,7 +51,10 @@ public class AdminSignRequestController {
 	private SignRequestService signRequestService;
 
 	@Resource
-	private SignBookRepository signBookRepository;
+	private FormService formService;
+
+	@Resource
+	private WorkflowService workflowService;
 
 	@Resource
 	private DocumentRepository documentRepository;
@@ -72,28 +64,6 @@ public class AdminSignRequestController {
 
 	@Resource
 	private LogService logService;
-
-	@Resource
-	private FileService fileService;
-
-	@GetMapping
-	public String list(
-			@RequestParam(value = "statusFilter", required = false) String statusFilter,
-			@RequestParam(value = "signBookId", required = false) Long signBookId,
-			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
-		Page<SignBook> signBooks;
-		if(statusFilter == null || statusFilter.isEmpty() || statusFilter.equals("all")) {
-			signBooks = signBookRepository.findAll(pageable);
-		} else {
-			signBooks = signBookRepository.findByStatus(SignRequestStatus.valueOf(statusFilter), pageable);
-		}
-
-		model.addAttribute("signBookId", signBookId);
-		model.addAttribute("signBooks", signBooks);
-		model.addAttribute("statusFilter", statusFilter);
-		model.addAttribute("statuses", SignRequestStatus.values());
-		return "admin/signbooks/list";
-	}
 
 	@GetMapping(value = "/{id}")
 	@Transactional

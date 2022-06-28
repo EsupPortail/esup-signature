@@ -7,9 +7,11 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.FormService;
+import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
-import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.esupportail.esupsignature.web.ws.json.JsonWorkflowStep;
 import org.slf4j.Logger;
@@ -65,13 +67,7 @@ public class SignBookController {
     private SignBookService signBookService;
 
     @Resource
-    private LogService logService;
-
-    @Resource
     private SignRequestService signRequestService;
-
-    @Resource
-    private SignService signService;
 
     @Resource
     private FormService formService;
@@ -128,8 +124,6 @@ public class SignBookController {
         model.addAttribute("signRequestRecipients", signBookService.getRecipientsNames(userEppn).stream().filter(Objects::nonNull).collect(Collectors.toList()));
         return "user/signbooks/list";
     }
-
-
 
     @GetMapping(value = "/list-ws")
     @ResponseBody
