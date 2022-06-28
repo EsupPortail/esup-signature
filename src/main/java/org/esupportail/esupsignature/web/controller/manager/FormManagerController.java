@@ -3,7 +3,8 @@ package org.esupportail.esupsignature.web.controller.manager;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.Form;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -258,7 +259,8 @@ public class FormManagerController {
                                               @RequestParam(value = "valueType", required = false) String valueType,
                                               @RequestParam(value = "valueReturn", required = false) String valueReturn,
                                               @RequestParam(value = "stepZero", required = false, defaultValue = "false") Boolean stepZero,
-                                              @RequestParam(value = "workflowStepsIds", required = false) List<Long> workflowStepsIds) {
+                                              @RequestParam(value = "workflowStepsIds", required = false) List<Long> workflowStepsIds,
+                                              @ModelAttribute("authUserEppn") String authUserEppn) {
 
         String extValueServiceName = "";
         String extValueType = "";
@@ -281,15 +283,11 @@ public class FormManagerController {
     }
 
     @GetMapping(value = "/get-file/{id}")
+    public void getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes) {
     @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
     public void getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes) throws IOException {
         try {
-            Map<String, Object> attachmentResponse = formService.getModel(id);
-            if (attachmentResponse != null) {
-                httpServletResponse.setContentType(attachmentResponse.get("contentType").toString());
-                httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(attachmentResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
-                IOUtils.copyLarge((InputStream) attachmentResponse.get("inputStream"), httpServletResponse.getOutputStream());
-            } else {
+            if(!formService.getModel(id, httpServletResponse)) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Modèle non trouvée ..."));
                 httpServletResponse.sendRedirect("/manager/forms/update/" + id);
             }

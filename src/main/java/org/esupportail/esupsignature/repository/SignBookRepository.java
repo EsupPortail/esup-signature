@@ -31,12 +31,13 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("select distinct sb from SignBook sb " +
             "left join sb.viewers v " +
             "join sb.signRequests sr " +
+            "join sr.recipientHasSigned rhs " +
             "left join sb.liveWorkflow lw " +
             "left join lw.liveWorkflowSteps lws " +
             "left join lws.recipients r " +
             "where (sb.workflowName like :workflowFilter) " +
             "and (sb.subject like :docTitleFilter) " +
-            "and ((:userEppn in r.user.eppn and lws.id = sb.liveWorkflow.id) or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
+            "and ((key(rhs).user.eppn = :userEppn) or (:userEppn in r.user.eppn and lws.id = sb.liveWorkflow.id) or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
             "and sb.hidedBy is empty " +
             "and size(sb.signRequests) > 0 " +
             "and sb.status <> 'deleted' " +
@@ -47,12 +48,13 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("select distinct sb.createBy from SignBook sb " +
             "left join sb.viewers v " +
             "join sb.signRequests sr " +
+            "join sr.recipientHasSigned rhs " +
             "left join sb.liveWorkflow lw " +
             "left join lw.liveWorkflowSteps lws " +
             "left join lws.recipients r " +
             "where (sb.workflowName like :workflowFilter) " +
             "and (sb.subject like :docTitleFilter) " +
-            "and ((:userEppn in r.user.eppn and lws.id = sb.liveWorkflow.id) or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
+            "and ((key(rhs).user.eppn = :userEppn) or (:userEppn in r.user.eppn and lws.id = sb.liveWorkflow.id) or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
             "and sb.hidedBy is empty " +
             "and size(sb.signRequests) > 0 " +
             "and sb.status <> 'deleted'" +
@@ -84,7 +86,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "where (sb.workflowName like :workflowFilter) " +
             "and (sb.subject like :docTitleFilter) " +
             "and :recipientUserEppn in (u.eppn) " +
-            "and ((:userEppn in r.user.eppn and lws.id = sb.liveWorkflow.id) or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
+            "and ((key(rhs).user.eppn = :userEppn) or (:userEppn in r.user.eppn and lws.id = sb.liveWorkflow.id) or sb.createBy.eppn = :userEppn or v.eppn = :userEppn) " +
             "and sb.hidedBy is empty " +
             "and size(sb.signRequests) > 0 " +
             "and sb.status <> 'deleted' " +
@@ -111,6 +113,16 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "join sr.recipientHasSigned rhs " +
             "where key(rhs).user.eppn = :recipientUserEppn and rhs.actionType = :actionType")
     Page<SignBook> findByRecipientAndActionType(String recipientUserEppn, ActionType actionType, Pageable pageable);
+
+    @Query("select distinct sb from SignBook sb " +
+            "join sb.signRequests sr " +
+            "join sr.recipientHasSigned rhs " +
+            "where key(rhs).user.eppn = :recipientUserEppn and rhs.actionType = :actionType " +
+            "and (sb.workflowName like :workflowFilter) " +
+            "and (sb.subject like :docTitleFilter) " +
+            "and sb.status <> 'deleted' " +
+            "and sb.createBy.eppn like :creatorFilter")
+    Page<SignBook> findByRecipientAndActionTypeNotDeleted(String recipientUserEppn, ActionType actionType, String workflowFilter, String docTitleFilter, String creatorFilter, Pageable pageable);
 
     @Query("select distinct sb from SignBook sb join sb.hidedBy hb where hb.eppn = :hidedByEppn")
     Page<SignBook> findByHidedByEppn(String hidedByEppn, Pageable pageable);

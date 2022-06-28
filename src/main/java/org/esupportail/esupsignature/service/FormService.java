@@ -17,7 +17,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
-import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +26,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.*;
-import java.sql.SQLException;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -61,13 +64,13 @@ public class FormService {
 	private UserService userService;
 
 	@Resource
-	private FileService fileService;
-
-	@Resource
 	private SignRequestParamsService signRequestParamsService;
 
 	@Resource
 	private DataRepository dataRepository;
+
+	@Resource
+	private WebUtilsService webUtilsService;
 
 	public Form getById(Long formId) {
 		Form obj = formRepository.findById(formId).get();
@@ -443,13 +446,14 @@ public class FormService {
 	}
 
 	@Transactional
-	public Map<String, Object> getModel(Long id) throws SQLException, IOException {
+	public boolean getModel(Long id, HttpServletResponse httpServletResponse) throws IOException {
 		Form form = getById(id);
-		Document attachement = documentService.getById(form.getDocument().getId());
-		if (attachement != null) {
-			return fileService.getFileResponse(attachement.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), attachement.getFileName(), attachement.getContentType());
+		Document attachment = documentService.getById(form.getDocument().getId());
+		if (attachment != null) {
+			webUtilsService.copyFileStreamToHttpResponse(attachment.getFileName(), attachment.getContentType(), attachment.getInputStream(), httpServletResponse);
+			return true;
 		}
-		return null;
+		return false;
 	}
 
 	public List<Form> getByRoles(String role) {
