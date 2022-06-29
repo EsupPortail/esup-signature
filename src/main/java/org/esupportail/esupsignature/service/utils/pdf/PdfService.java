@@ -535,7 +535,7 @@ public class PdfService {
 
     public byte[] normalizeGS(byte[] originalBytes) throws IOException, EsupSignatureException {
         Reports reports = validationService.validate(new ByteArrayInputStream(originalBytes), null);
-        if (!isPdfAComplient(originalBytes) && (reports == null || reports.getSimpleReport().getSignatureIdList().size() == 0)) {
+        if (!isAcroForm(new ByteArrayInputStream(originalBytes)) && (reports == null || reports.getSimpleReport() == null || reports.getSimpleReport().getSignatureIdList().size() == 0)) {
             String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite -d -sOutputFile=- -q -";
             logger.info("GhostScript PDF/A conversion : " + cmd);
             ProcessBuilder processBuilder = new ProcessBuilder();
