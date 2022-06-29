@@ -168,6 +168,47 @@ public class SignRequestService {
 		return signRequestRepository.findByToken(token);
 	}
 
+	public Page<SignRequest> getSignRequestsByForm(Form form, String statusFilter, String recipientsFilter, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
+		List<SignRequest> signRequests = new ArrayList<>();
+		List<Data> datas = dataRepository.findByFormId(form.getId());
+		for(Data data : datas) {
+			if(data.getSignBook() != null && data.getSignBook().getSignRequests().size() > 0) {
+				signRequests.add(data.getSignBook().getSignRequests().get(0));
+			}
+		}
+		if(!statusFilter.equals("%")) {
+			signRequests = signRequests.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.valueOf(statusFilter))).collect(Collectors.toList());
+		}
+		if(!creatorFilter.equals("%")) {
+			signRequests = signRequests.stream().filter(signRequest -> signRequest.getCreateBy().getEppn().equals(creatorFilter)).collect(Collectors.toList());
+		}
+		if(!recipientsFilter.equals("%")) {
+			signRequests = signRequests.stream().filter(signRequest -> signRequest.getRecipientHasSigned().keySet().stream().anyMatch(recipient -> recipient.getUser().getEppn().equals(recipientsFilter))).collect(Collectors.toList());
+		}
+		if(dateFilter != null && !dateFilter.isEmpty()) {
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			Date formattedDate = null;
+			try {
+				formattedDate = formatter.parse(dateFilter);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+			LocalDateTime nowLocalDateTime = formattedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+			LocalDateTime startLocalDateTime = nowLocalDateTime.with(LocalTime.of(0, 0, 0));
+			LocalDateTime endLocalDateTime = nowLocalDateTime.with(LocalTime.of(23, 59, 59));
+			Date startDateFilter = Timestamp.valueOf(startLocalDateTime);
+			Date endDateFilter = Timestamp.valueOf(endLocalDateTime);
+			signRequests = signRequests.stream().filter(signRequest -> signRequest.getCreateDate().after(startDateFilter) && signRequest.getCreateDate().before(endDateFilter)).collect(Collectors.toList());
+		}
+		if(pageable.getSort().iterator().hasNext()) {
+			Sort.Order order = pageable.getSort().iterator().next();
+			SortDefinition sortDefinition = new MutableSortDefinition(order.getProperty(), true, order.getDirection().isAscending());
+			PropertyComparator<SignRequest> propertyComparator = new PropertyComparator<>(sortDefinition);
+			signRequests.sort(propertyComparator);
+		}
+		return new PageImpl<>(signRequests.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequests.size());
+	}
+
 	public Long nbToSignSignRequests(String userEppn) {
 		return signRequestRepository.countByRecipientUserToSign(userEppn);
 	}
@@ -230,10 +271,8 @@ public class SignRequestService {
 				String contentType = multipartFile.getContentType();
 				InputStream inputStream = new ByteArrayInputStream(bytes);
 				if (multipartFiles.length == 1 && bytes.length > 0) {
-					if("application/pdf".equals(contentType) && scanSignatureFields) {
-						if(!pdfService.isAcroForm(new ByteArrayInputStream(bytes))) {
-							bytes = pdfService.normalizeGS(bytes);
-						}
+					if("application/pdf".equals(multipartFiles[0].getContentType()) && scanSignatureFields) {
+						bytes = pdfService.normalizeGS(bytes);
 						List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
 						if(signRequestParamses.size() == 0) {
 							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), docNumber);
@@ -253,11 +292,6 @@ public class SignRequestService {
 						contentType = "application/pdf";
 						inputStream = new ByteArrayInputStream(bytes);
 					}
-//					else if(contentType != null && (contentType.contains("application/msword") || contentType.contains("application/vnd.openxmlformats") || contentType.contains("officedocument.wordprocessingml.document"))){
-//						bytes = pdfService.convertDocToPDF(multipartFile.getInputStream()).readAllBytes();
-//						contentType = "application/pdf";
-//						inputStream = new ByteArrayInputStream(bytes);
-//					}
 					Document document = documentService.createDocument(inputStream, multipartFile.getOriginalFilename(), contentType);
 					signRequest.getOriginalDocuments().add(document);
 					document.setParentId(signRequest.getId());
