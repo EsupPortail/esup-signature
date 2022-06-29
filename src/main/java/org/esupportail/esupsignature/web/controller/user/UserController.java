@@ -105,7 +105,7 @@ public class UserController {
 		try {
         	redirectAttributes.addFlashAttribute("message", new JsonMessage("custom", userKeystoreService.checkKeystore(authUserEppn, password)));
         } catch (Exception e) {
-        	logger.error("open keystore fail", e);
+        	logger.warn("open keystore fail : " + e.getMessage());
         	redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Mauvais mot de passe"));
 		}
         return "redirect:/user/users/";

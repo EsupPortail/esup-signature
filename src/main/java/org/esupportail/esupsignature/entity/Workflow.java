@@ -82,6 +82,8 @@ public class Workflow {
 
     private Boolean ownerSystem = false;
 
+    private Boolean sealAtEnd = false;
+
     public Long getId() {
         return id;
     }
@@ -305,5 +307,13 @@ public class Workflow {
 
     public void setViewers(List<User> viewers) {
         this.viewers = viewers;
+    }
+
+    public Boolean getSealAtEnd() {
+        return sealAtEnd;
+    }
+
+    public void setSealAtEnd(Boolean sealAtEnd) {
+        this.sealAtEnd = sealAtEnd;
     }
 }

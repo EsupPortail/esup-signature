@@ -890,8 +890,12 @@ public class SignBookService {
         if(data != null) {
             data.setStatus(SignRequestStatus.completed);
         }
-        if(globalProperties.getSealAllDocs()) {
-            sealAllDocs(signBookId, userEppn);
+        if(globalProperties.getSealAllDocs() || (signBook.getLiveWorkflow().getWorkflow().getSealAtEnd() != null && signBook.getLiveWorkflow().getWorkflow().getSealAtEnd())) {
+            try {
+                sealAllDocs(signBookId, userEppn);
+            } catch (Exception e) {
+                logger.warn("seal all skipped : " + e.getMessage());
+            }
         }
         updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", "SUCCESS", "", userEppn, userEppn);
         signBook.setEndDate(new Date());
