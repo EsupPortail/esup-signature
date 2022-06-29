@@ -837,25 +837,31 @@ public class SignBookService {
                     if(signBook.getLiveWorkflow().getCurrentStep().getAutoSign()) {
                         for(SignRequest signRequest1 : signBook.getSignRequests()) {
                             List<SignRequestParams> signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
-                            signRequestParamses.get(0).setExtraDate(true);
-                            signRequestParamses.get(0).setAddExtra(true);
-                            signRequestParamses.get(0).setExtraOnTop(true);
-                            signRequestParamses.get(0).setAddWatermark(true);
-                            signRequestParamses.get(0).setSignWidth(200);
-                            signRequestParamses.get(0).setSignHeight(100);
-                            signRequestParamses.get(0).setExtraText(signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getCertificat().getKeystore().getFileName().replace(",", "\n"));
-                            if(signRequestParamses.size() > 0) {
-                                signRequest1.setSignable(true);
+                            if(liveWorkflowStep.getWorkflowStep().getCertificat() != null) {
+                                if (signRequestParamses.size() > 0) {
+                                    signRequestParamses.get(0).setExtraDate(true);
+                                    signRequestParamses.get(0).setAddExtra(true);
+                                    signRequestParamses.get(0).setExtraOnTop(true);
+                                    signRequestParamses.get(0).setAddWatermark(true);
+                                    signRequestParamses.get(0).setSignWidth(200);
+                                    signRequestParamses.get(0).setSignHeight(100);
+                                    signRequestParamses.get(0).setExtraText(signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getCertificat().getKeystore().getFileName().replace(",", "\n"));
+                                    signRequest1.setSignable(true);
+                                }
                                 try {
-                                    sign(signRequest1, "", "sealCert", signRequestParamses, null, userService.getSystemUser(), userService.getSystemUser(), null, "");
-                                } catch (IOException | InterruptedException | EsupSignatureMailException e) {
+                                    sign(signRequest1, "", "groupCert", signRequestParamses, null, "system", "system", null, "");
+                                } catch (IOException | EsupSignatureMailException e) {
+                                    refuse(signRequest1.getId(), "Signature refusée par le système automatique", "system", "system");
                                     logger.error("auto sign fail", e);
+                                    throw new EsupSignatureException("Erreur lors de la signature automatique : " + e.getMessage());
                                 }
                             } else {
                                 try {
-                                    refuse(signRequest1.getId(), "Signature refusée par le système automatique",  "system", "system");
-                                } catch (EsupSignatureMailException e) {
-                                    logger.error("auto refuse fail", e);
+                                    sign(signRequest1, "", "sealCert", signRequestParamses, null, "system", "system", null, "");
+                                } catch (IOException | EsupSignatureException e) {
+                                    logger.error("auto sign fail", e);
+                                    refuse(signRequest1.getId(), "Signature refusée par le système automatique", "system", "system");
+                                    throw new EsupSignatureException("Erreur lors de la signature automatique : " + e.getMessage());
                                 }
                             }
                         }
@@ -884,8 +890,19 @@ public class SignBookService {
         if(data != null) {
             data.setStatus(SignRequestStatus.completed);
         }
+        if(globalProperties.getSealAllDocs()) {
+            sealAllDocs(signBookId, userEppn);
+        }
         updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", "SUCCESS", "", userEppn, userEppn);
         signBook.setEndDate(new Date());
+    }
+
+    @Transactional
+    public void sealAllDocs(Long id, String userEppn) throws EsupSignatureException {
+        SignBook signBook = getById(id);
+        for(SignRequest signRequest : signBook.getSignRequests()) {
+            signService.certSign(signRequest, userEppn, "", SignWith.sealCert);
+        }
     }
 
     public List<SignRequest> getSignRequestsForCurrentUserByStatus(String userEppn, String authUserEppn) {
@@ -917,7 +934,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public boolean initSign(Long signRequestId, String signRequestParamsJsonString, String comment, String formData, String password, String signWith, Long userShareId, String userEppn, String authUserEppn) throws EsupSignatureMailException, IOException, InterruptedException, EsupSignatureException {
+    public boolean initSign(Long signRequestId, String signRequestParamsJsonString, String comment, String formData, String password, String signWith, Long userShareId, String userEppn, String authUserEppn) throws IOException, EsupSignatureException {
         SignRequest signRequest = getSignRequestsFullById(signRequestId, userEppn, authUserEppn);
         Map<String, String> formDataMap = null;
         List<String> toRemoveKeys = new ArrayList<>();
@@ -964,15 +981,13 @@ public class SignBookService {
             signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
             return false;
         } else {
-            User user = userService.getByEppn(userEppn);
-            User authUser = userService.getByEppn(authUserEppn);
-            sign(signRequest, password, signWith, signRequestParamses, formDataMap, user, authUser, userShareId, comment);
+            sign(signRequest, password, signWith, signRequestParamses, formDataMap, userEppn, authUserEppn, userShareId, comment);
             return true;
         }
     }
 
     @Transactional
-    public String initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String password, String signWith) throws IOException, InterruptedException, EsupSignatureMailException, EsupSignatureException {
+    public String initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String password, String signWith) throws IOException, EsupSignatureException {
         String error = null;
         TypeReference<List<String>> type = new TypeReference<>(){};
         ObjectMapper objectMapper = new ObjectMapper();
@@ -1009,17 +1024,17 @@ public class SignBookService {
         return error;
     }
 
-    public void sign(SignRequest signRequest, String password, String signWith, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, User user, User authUser, Long userShareId, String comment) throws EsupSignatureException, IOException, InterruptedException, EsupSignatureMailException {
+    public void sign(SignRequest signRequest, String password, String signWith, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String userEppn, String authUserEppn, Long userShareId, String comment) throws EsupSignatureException, IOException {
         Date date = new Date();
         List<Log> lastSignLogs = new ArrayList<>();
         if(signRequest.getAuditTrail() == null) {
             signRequest.setAuditTrail(auditTrailService.create(signRequest.getToken()));
         }
-        User signerUser = user;
+        User signerUser = userService.getUserByEppn(userEppn);
         if(userShareId != null) {
             UserShare userShare = userShareService.getById(userShareId);
-            if (userShare.getUser().getEppn().equals(user.getEppn()) && userShare.getSignWithOwnSign() != null && userShare.getSignWithOwnSign()) {
-                signerUser = userService.getByEppn(authUser.getEppn());
+            if (userShare.getUser().getEppn().equals(userEppn) && userShare.getSignWithOwnSign() != null && userShare.getSignWithOwnSign()) {
+                signerUser = userService.getByEppn(authUserEppn);
             }
         }
         List<Document> toSignDocuments = signService.getToSignDocuments(signRequest.getId());
@@ -1059,22 +1074,22 @@ public class SignBookService {
                 for(SignRequestParams signRequestParams : signRequestParamses) {
                     signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, 1, signerUser, date);
                     if(signRequestParams.getSignImageNumber() < 0) {
-                        lastSignLogs.add(signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Ajout d'un élément", "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn()));
-                        auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), "Ajout d'un élément", "Pas de timestamp", date, null, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
+                        lastSignLogs.add(signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Ajout d'un élément", "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn));
+                        auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Ajout d'un élément", "Pas de timestamp", date, null, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
                     } else {
-                        lastSignLogs.add(signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Apposition de la signature", "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn()));
-                        auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), "Signature simple", "Pas de timestamp", date, null, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
+                        lastSignLogs.add(signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Apposition de la signature", "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn));
+                        auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Signature simple", "Pas de timestamp", date, null, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
                     }
                 }
             } else {
-                auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), "Signature simple", "Pas de timestamp", date, null, null, null, null);
+                auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Signature simple", "Pas de timestamp", date, null, null, null, null);
             }
             if ((signRequestService.isStepAllSignDone(signRequest.getParentSignBook()))) {
                 signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest, lastSignLogs));
             }
             byte[] signedBytes = signedInputStream;
 
-            boolean isComplete = applyEndOfSignRules(signRequest.getId(), user.getEppn(), authUser.getEppn(), signType, comment);
+            boolean isComplete = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, signType, comment);
             Document signedDocument = documentService.addSignedFile(signRequest, new ByteArrayInputStream(signedBytes), signRequest.getTitle() + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType());
             if(isComplete) {
                 try {
@@ -1090,8 +1105,8 @@ public class SignBookService {
                 for (SignRequestParams signRequestParams : signRequestParamses) {
                     if (signRequestParams.getSignImageNumber() < 0) {
                         filledInputStream = pdfService.stampImage(filledInputStream, signRequest, signRequestParams, 1, signerUser, date);
-                        lastSignLogs.add(signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Ajout d'un élément", "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn()));
-                        auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), "Ajout d'un élément", "Pas de timestamp", date, null, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
+                        lastSignLogs.add(signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Ajout d'un élément", "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn));
+                        auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Ajout d'un élément", "Pas de timestamp", date, null, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
                     }
                 }
             } else {
@@ -1099,20 +1114,20 @@ public class SignBookService {
             }
             if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
                 signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
-                toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(pdfService.addOutLine(signRequest, filledInputStream, user, new Date(), new SimpleDateFormat())));
+                toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(pdfService.addOutLine(signRequest, filledInputStream, signerUser, new Date(), new SimpleDateFormat())));
             }
-            Document signedDocument = signService.certSign(signRequest, signerUser, password, SignWith.valueOf(signWith));
+            Document signedDocument = signService.certSign(signRequest, signerUser.getEppn(), password, SignWith.valueOf(signWith));
             reports = validationService.validate(signedDocument.getInputStream(), null);
             diagnosticData = reports.getDiagnosticData();
             String certificat = new ArrayList<>(diagnosticData.getAllSignatures()).get(diagnosticData.getAllSignatures().size() - 1).getSigningCertificate().toString();
             String timestamp = diagnosticData.getTimestampList().get(0).getSigningCertificate().toString();
             if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > 0) {
                 SignRequestParams signRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0);
-                auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), certificat, timestamp, reports.getSimpleReport().getValidationTime(), null, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
+                auditTrailService.addAuditStep(signRequest.getToken(), userEppn, certificat, timestamp, reports.getSimpleReport().getValidationTime(), null, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
             } else {
-                auditTrailService.addAuditStep(signRequest.getToken(), user.getEppn(), certificat, timestamp, reports.getSimpleReport().getValidationTime(), null, 0, 0, 0);
+                auditTrailService.addAuditStep(signRequest.getToken(), userEppn, certificat, timestamp, reports.getSimpleReport().getValidationTime(), null, 0, 0, 0);
             }
-            boolean isComplete = applyEndOfSignRules(signRequest.getId(), user.getEppn(), authUser.getEppn(), SignType.certSign, comment);
+            boolean isComplete = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, SignType.certSign, comment);
             if(isComplete) {
                 try {
                     auditTrailService.closeAuditTrail(signRequest.getToken(), signedDocument, signedDocument.getInputStream());

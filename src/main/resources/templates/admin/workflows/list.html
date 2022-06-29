@@ -36,7 +36,6 @@
                             <th>Nom</th>
                             <th>Créé par</th>
                             <th>Destinataires</th>
-                            <th>Superviseur(s) du circuit</th>
                             <th class="text-center">Actions</th>
                         </tr>
                         </thead>
@@ -61,13 +60,6 @@
                                 </td>
                                 <td th:unless="${#lists.size(workflow.workflowSteps) > 0}">
                                     Aucun
-                                </td>
-                                <td>
-                                    <th:block th:each="manager : ${workflow.managers}">
-                                        <i class="fas fa-people"></i>
-                                        <span th:text="${manager}"></span>
-                                        <br/>
-                                    </th:block>
                                 </td>
                                 <td class="text-center">
                                     <div class="position-relative" th:if="${workflow.id != null}">

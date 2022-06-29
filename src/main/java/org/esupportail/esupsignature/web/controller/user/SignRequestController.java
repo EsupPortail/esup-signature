@@ -415,11 +415,16 @@ public class SignRequestController {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
             return "redirect:/user/signrequests/" + id;
         }
-        signBookService.initWorkflowAndPendingSignBook(id, recipientEmails, allSignToCompletes, externalUsersInfos, targetEmails, userEppn, authUserEppn, draft);
-        if(comment != null && !comment.isEmpty()) {
-            signRequestService.addPostit(id, comment, userEppn, authUserEppn);
+        try {
+            signBookService.initWorkflowAndPendingSignBook(id, recipientEmails, allSignToCompletes, externalUsersInfos, targetEmails, userEppn, authUserEppn, draft);
+            if(comment != null && !comment.isEmpty()) {
+                signRequestService.addPostit(id, comment, userEppn, authUserEppn);
+            }
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été transmise"));
+        } catch (EsupSignatureException e) {
+            logger.error(e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
         }
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été transmise"));
         return "redirect:/user/signrequests/" + id;
     }
 

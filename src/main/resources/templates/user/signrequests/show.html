@@ -831,7 +831,8 @@
         [[${attachmentRequire}]],
         [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]],
         [[${user.favoriteSignRequestParams == null} ? true : false]],
-        [[${user.phone}]]
+        [[${user.phone}]],
+        [[${user.returnToHomeAfterSign}]]
     );
     $(document).ready(function () {
         if (signable) {

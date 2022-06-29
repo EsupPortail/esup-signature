@@ -79,13 +79,15 @@ public class UserController {
 
 	@PostMapping
     public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
+						 @RequestParam(value = "returnToHomeAfterSign", required=false) Boolean returnToHomeAfterSign,
 						 @RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
 						 @RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
 						 @RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
 						 @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore,
 						 @RequestParam(value = "signRequestParamsJsonString", required=false) String signRequestParamsJsonString,
 						 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
-		userService.updateUser(authUserEppn, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, signRequestParamsJsonString);
+		if(returnToHomeAfterSign == null) returnToHomeAfterSign = false;
+		userService.updateUser(authUserEppn, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, signRequestParamsJsonString, returnToHomeAfterSign);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Vos paramètres ont été enregistrés"));
 		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
 		return "redirect:" + referer;

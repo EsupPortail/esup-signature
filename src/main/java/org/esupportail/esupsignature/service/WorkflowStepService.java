@@ -103,9 +103,13 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentAlert, Boolean attachmentRequire) throws EsupSignatureException {
+    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentAlert, Boolean attachmentRequire, Boolean autoSign, Long certificatId) throws EsupSignatureException {
         if(repeatable != null && repeatable && signType.getValue() > 2) {
             throw new EsupSignatureException(signType.name() + " not possible for infinite workflow");
+        }
+        if(autoSign == null) autoSign = false;
+        if(autoSign) {
+            signType = SignType.certSign;
         }
         WorkflowStep workflowStep = getById(workflowStepId);
         changeSignType(workflowStep, null, signType);
@@ -116,6 +120,15 @@ public class WorkflowStepService {
         workflowStep.setAttachmentRequire(attachmentRequire);
         workflowStep.setMultiSign(Objects.requireNonNullElse(multiSign, false));
         workflowStep.setAllSignToComplete(Objects.requireNonNullElse(allSignToComplete, false));
+        workflowStep.setAutoSign(autoSign);
+        if(autoSign) {
+            workflowStep.getUsers().clear();
+        }
+        if(certificatId != null) {
+            workflowStep.setCertificat(certificatService.getById(certificatId));
+        } else {
+            workflowStep.setCertificat(null);
+        }
         if(maxRecipients != null) {
             workflowStep.setMaxRecipients(maxRecipients);
         }

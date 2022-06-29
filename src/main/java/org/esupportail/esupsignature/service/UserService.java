@@ -281,7 +281,7 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUser(String authUserEppn, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, String signRequestParamsJsonString) throws IOException {
+    public void updateUser(String authUserEppn, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, String signRequestParamsJsonString, Boolean returnToHomeAfterSign) throws IOException {
         User authUser = getByEppn(authUserEppn);
         if(signRequestParamsJsonString != null && !signRequestParamsJsonString.isEmpty()) {
             ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -325,6 +325,7 @@ public class UserService {
         authUser.setEmailAlertFrequency(emailAlertFrequency);
         authUser.setEmailAlertHour(emailAlertHour);
         authUser.setEmailAlertDay(emailAlertDay);
+        authUser.setReturnToHomeAfterSign(returnToHomeAfterSign);
     }
 
     public boolean checkEmailAlert(User user) {

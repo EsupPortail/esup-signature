@@ -18,7 +18,7 @@ global:
     hours-before-refresh-notif: 24
     share-mode: 1
     infinite-scrolling: true
-    return-to-home-after-sign: false
+    return-to-home-after-sign: true
     naming-template: "[title]"
     signed-suffix: "_signé"
     trash-keep-delay: -1

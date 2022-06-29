@@ -52,7 +52,7 @@ public class MessageAdminController {
 	}
 
 	@PostMapping("/add")
-	public String addMessage(@RequestParam String text, @RequestParam String endDate) throws ParseException, InterruptedException {
+	public String addMessage(@RequestParam String text, @RequestParam String endDate) throws ParseException {
 		messageService.createMessage(endDate, text);
 		return "redirect:/admin/messages";
 	}

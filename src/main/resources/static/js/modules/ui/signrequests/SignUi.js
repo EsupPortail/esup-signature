@@ -4,9 +4,10 @@ import {Step} from "../../../prototypes/Step.js?version=@version@";
 
 export class SignUi {
 
-    constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, isPdf, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
+    constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, isPdf, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone, returnToHome) {
         console.info("Starting sign UI");
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
+        this.returnToHome = returnToHome;
         this.signRequestId = id;
         this.percent = 0;
         this.isOtp = isOtp;
@@ -374,10 +375,18 @@ export class SignUi {
                     } else {
                         if(self.isOtp== null || !self.isOtp) {
                             // TODO add user return to home settings
-                            if(self.nbSignRequests > 1 || !self.globalProperties.returnToHomeAfterSign) {
-                                document.location.href = "/user/signrequests/" + self.signRequestId;
+                            if(self.returnToHome == null) {
+                                if (self.nbSignRequests > 1 || !self.globalProperties.returnToHomeAfterSign) {
+                                    document.location.href = "/user/signrequests/" + self.signRequestId;
+                                } else {
+                                    document.location.href = "/user/";
+                                }
                             } else {
-                                document.location.href = "/user/";
+                                if(self.returnToHome) {
+                                    document.location.href = "/user/";
+                                } else {
+                                    document.location.href = "/user/signrequests/" + self.signRequestId;
+                                }
                             }
                         } else {
                             document.location.href = "/otp/signrequests/" + self.signRequestId;

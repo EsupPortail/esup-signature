@@ -35,13 +35,18 @@
                 <li class="list-group-item">
                 <div class="form-group mb-1">
                     <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span>
-                    <span th:if="${step.description != null && step.description != ''}" th:text="${step.description}"></span>
+                    <span th:if="${step.description != null && step.description != ''}" th:text="${step.description} + '.'"></span>
+                    <th:block th:unless="${step.autoSign}">
                     Destinataires :
                     <th:block th:each="user, iterator : ${step.users}">
                         <span th:text="${user.email}"></span>
                         <span th:if="${iterator.index >= step.users.size()}">, </span>
                     </th:block>
                     <span th:if="${step.repeatable}"> (cette étape peut donner lieu à plusieurs validations en séries)</span>
+                    </th:block>
+                    <th:block th:if="${step.autoSign}">
+                        Étape automatique
+                    </th:block>
                 </div>
                 <div th:if="${step.changeable == true}" class="form-group mb-1">
                     <label><span th:text="'Merci de saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span></label>
