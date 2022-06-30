@@ -6,7 +6,7 @@ export class GlobalUi {
     constructor(authUserEppn, csrf, applicationEmail) {
         console.info("Starting global UI");
         this.checkBrowser();
-        // this.checkOS();
+        this.checkOS();
         this.csrf = csrf;
         this.applicationEmail = applicationEmail;
         this.sideBarStatus = localStorage.getItem('sideBarStatus');
@@ -192,12 +192,15 @@ export class GlobalUi {
             os = 'iOS';
         } else if (windowsPlatforms.indexOf(platform) !== -1) {
             os = 'Windows';
-            document.getElementsByTagName('html')[0].style.scrollbarWidth= "thin";
+            document.styleSheets[document.styleSheets.length - 1].addRule("html", `scrollbar-width: thin;`);
+            document.styleSheets[document.styleSheets.length - 1].addRule(".scrollbar-lite", `scrollbar-width: thin;`);
+            document.styleSheets[document.styleSheets.length - 1].addRule(".table-fix-head", `scrollbar-width: thin;`);
         } else if (/Android/.test(userAgent)) {
             os = 'Android';
         } else if (/Linux/.test(platform)) {
             os = 'Linux';
         }
+        console.info("detected os : " + os);
         return os;
     }
 
