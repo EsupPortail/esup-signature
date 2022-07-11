@@ -58,9 +58,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.verapdf.core.EncryptedPdfException;
-import org.verapdf.core.ModelParsingException;
-import org.verapdf.core.ValidationException;
 import org.verapdf.pdfa.Foundries;
 import org.verapdf.pdfa.PDFAParser;
 import org.verapdf.pdfa.PDFAValidator;
@@ -612,7 +609,7 @@ public class PdfService {
             }
             validator.close();
             parser.close();
-        } catch (ValidationException | ModelParsingException | EncryptedPdfException | IOException e) {
+        } catch (Exception e) {
             logger.warn("check error " + e.getMessage());
             logger.debug("check error", e);
         }
