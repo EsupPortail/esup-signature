@@ -886,7 +886,7 @@ public class SignBookService {
         if(data != null) {
             data.setStatus(SignRequestStatus.completed);
         }
-        if(globalProperties.getSealAllDocs() || (signBook.getLiveWorkflow().getWorkflow().getSealAtEnd() != null && signBook.getLiveWorkflow().getWorkflow().getSealAtEnd())) {
+        if((globalProperties.getSealAllDocs() != null && globalProperties.getSealAllDocs()) || (signBook.getLiveWorkflow().getWorkflow().getSealAtEnd() != null && signBook.getLiveWorkflow().getWorkflow().getSealAtEnd())) {
             try {
                 sealAllDocs(signBookId, userEppn);
             } catch (Exception e) {
