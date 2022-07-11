@@ -6,7 +6,6 @@ import eu.europa.esig.dss.diagnostic.DiagnosticData;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
@@ -72,8 +71,6 @@ public class SignBookService {
     private static final Logger logger = LoggerFactory.getLogger(SignBookService.class);
 
     private final GlobalProperties globalProperties;
-
-    private final SignProperties signProperties;
 
     @Resource
     private MessageSource messageSource;
@@ -181,9 +178,8 @@ public class SignBookService {
         return globalProperties;
     }
 
-    public SignBookService(GlobalProperties globalProperties, SignProperties signProperties) {
+    public SignBookService(GlobalProperties globalProperties) {
         this.globalProperties = globalProperties;
-        this.signProperties = signProperties;
     }
 
     public List<SignBook> getAllSignBooks() {
