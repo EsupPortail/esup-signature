@@ -139,7 +139,8 @@ public class SignService {
 		return documents;
 	}
 
-	public Document certSign(SignRequest signRequest, User user, String password, SignWith signWith) throws EsupSignatureException, InterruptedException {
+	public Document certSign(SignRequest signRequest, String userEppn, String password, SignWith signWith) throws EsupSignatureException {
+		User user = userService.getUserByEppn(userEppn);
 		logger.info("start certSign for signRequest : " + signRequest.getId());
 		SignatureForm signatureForm;
 		List<Document> toSignDocuments = new ArrayList<>(getToSignDocuments(signRequest.getId()));
@@ -148,7 +149,7 @@ public class SignService {
 			if(signWith.equals(SignWith.userCert)) {
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
 			} else if(signWith.equals(SignWith.groupCert)){
-				Certificat certificat = certificatService.getCertificatByUser(user.getEppn()).get(0);
+				Certificat certificat = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getCertificat();
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
 			} else if (signWith.equals(SignWith.sealCert) && user.getRoles().contains("ROLE_SEAL")) {
 				try {

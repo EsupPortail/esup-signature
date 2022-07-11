@@ -287,7 +287,7 @@ public class SignRequestService {
 						if(reports == null || reports.getSimpleReport().getSignatureIdList().size() == 0) {
 							inputStream = pdfService.removeSignField(new ByteArrayInputStream(bytes));
 						}
-					} else if(multipartFiles[0].getContentType() != null && multipartFiles[0].getContentType().contains("image")){
+					} else if(contentType != null && contentType.contains("image")){
 						bytes = pdfService.jpegToPdf(multipartFile.getInputStream(), multipartFile.getName()).readAllBytes();
 						contentType = "application/pdf";
 						inputStream = new ByteArrayInputStream(bytes);

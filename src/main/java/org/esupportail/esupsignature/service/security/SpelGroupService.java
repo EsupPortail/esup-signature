@@ -7,10 +7,8 @@ import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SpelGroupService implements GroupService {
 
@@ -24,6 +22,11 @@ public class SpelGroupService implements GroupService {
 
 	public SpelGroupService(GlobalProperties globalProperties) {
 		this.globalProperties = globalProperties;
+	}
+
+	@Override
+	public List<Map.Entry<String, String>> getAllGroups(String search) {
+		return null;
 	}
 
 	@Override
@@ -46,7 +49,7 @@ public class SpelGroupService implements GroupService {
 				groups.add(groupName);
 			}
 		}		
-		return groups;
+		return groups.stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
 		
 	}
 

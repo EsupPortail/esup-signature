@@ -43,21 +43,24 @@ public class RolesManagersManagerController {
 
     @PostMapping("/edit-role")
     @PreAuthorize("@preAuthorizeService.roleManager(#role, #authUserEppn)")
-    public String editRoles(@RequestParam String role, @RequestParam List<String> rolesManagers, @ModelAttribute("authUserEppn") String authUserEppn) {
-        for (User user : userService.getByManagersRoles(role)) {
-            if (!rolesManagers.contains(user.getEmail())) {
+    public String editRoles(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam String role, @RequestParam(required = false) List<String> rolesManagers) {
+        if(rolesManagers != null) {
+            for (User user : userService.getByManagersRoles(role)) {
+                if (!rolesManagers.contains(user.getEmail())) {
+                    user.getManagersRoles().remove(role);
+                }
+            }
+            for (String mail : rolesManagers) {
+                User user = userService.getUserByEmail(mail);
+                if (!user.getManagersRoles().contains(role)) {
+                    user.getManagersRoles().add(role);
+                }
+            }
+        } else {
+            for (User user : userService.getByManagersRoles(role)) {
                 user.getManagersRoles().remove(role);
             }
         }
-
-        for (String mail : rolesManagers) {
-            User user = userService.getUserByEmail(mail);
-            if (!user.getManagersRoles().contains(role)) {
-                user.getManagersRoles().add(role);
-            }
-        }
-
         return "redirect:/manager/roles-managers";
-
     }
 }

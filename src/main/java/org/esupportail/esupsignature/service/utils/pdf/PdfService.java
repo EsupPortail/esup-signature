@@ -994,4 +994,18 @@ public class PdfService {
         }
         return false;
     }
+
+//    public InputStream convertDocToPDF(InputStream doc) {
+//        try {
+//            Docx2PDFViaDocx4jConverter docx2PDFViaDocx4jConverter = Docx2PDFViaDocx4jConverter.getInstance();
+//            docx2PDFViaDocx4jConverter.toPdfSettings(Options.getFrom( "DOCX" ));
+//            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//            docx2PDFViaDocx4jConverter.convert(doc, byteArrayOutputStream, Options.getFrom( "DOCX" ));
+//            return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+//        } catch (XDocConverterException e) {
+//            logger.error(e.getMessage(), e);
+//        }
+//        return doc;
+//    }
+
 }

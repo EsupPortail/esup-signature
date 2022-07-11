@@ -3,14 +3,14 @@
 <!--/*@thymesVar id="preFillTypes" type="java.util.List<org.esupportail.esupsignature.service.interfaces.prefill.PreFill>"*/-->
 <head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
-    import {default as FormUi} from '/js/modules/ui/forms/FormUi.js?version=[[${versionApp}]]';
+    import {FormUi} from '/js/modules/ui/forms/FormUi.js?version=[[${versionApp}]]';
     new FormUi();
 </script>
 <body>
 <header th:replace="fragments/nav :: nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side-manager"></nav>
+        <nav th:replace="fragments/sides/side-manager :: side-manager"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/manager/forms">Liste des formulaires</a></li>
@@ -29,14 +29,18 @@
                     <a class="nav-link active" href="#" onclick="return false;">Paramètres</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/manager/forms/' + ${form.id}">Configuration des champs</a>
+                    <a class="nav-link" th:href="'/manager/forms/' + ${form.id} + '/fields'">Configuration des champs</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="'/manager/forms/' + ${form.id} + '/signs'">Configuration des signatures</a>
                 </li>
             </ul>
             <br>
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
+                    <h3>FORM ID : <input type="text" readonly disabled th:value="${form.id}"></h3>
                     <form id="formUpdateModel" th:action="'/manager/forms/update-model/' + ${form.id} + '/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
-                        <div class="form-group mb-3">
+                        <div class="form-group mb-3" th:if="${form.document != null}">
                             Modele actuel : <a th:href="'/manager/forms/get-file/' + ${form.id}" target="_blank">
                             <span th:text="${form.document.fileName}"></span></a>
                         </div>
@@ -53,11 +57,11 @@
                     <form id="formUpdate" th:action="'/manager/forms'" th:object="${form}" th:method="'put'">
                         <input type="hidden" th:field="*{id}">
                         <div class="form-group mb-3">
-                            <label for="name">Titre (titre affiché aux utilisateurs)</label>
+                            <label for="title">Titre (affiché aux utilisateurs)</label>
                             <input id="title" class="form-control" type="text" th:field="*{title}"/>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="name">Nom (nom technique)</label>
+                            <label for="name">Nom (nom technique sans espace ni accents)</label>
                             <input id="name" class="form-control" type="text" th:field="*{name}"/>
                         </div>
                         <div class="form-group mb-3">
@@ -78,15 +82,15 @@
                             </th:block>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="name">
+                            <label><strong>Autorisations</strong></label>
+                            <div class="form-check">
+                                <input id="publicUsage" type="hidden" class="form-check-input" th:field="*{publicUsage}" value="false"/>
+                            </div>
+                            <label for="roles">
                                 Rôle
-                                <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à
-                                    ce formulaire</small></div>
                             </label>
-                            <select required class="slim-select-simple" type="text" th:field="*{roles}" multiple>
-                                <th:block th:each="newRole : ${roles}">
-                                    <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(form.roles, newRole)}"></option>
-                                </th:block>
+                            <select id="roles" class="slim-select-simple" type="text" th:field="*{roles}" multiple>
+                                <option th:text="${form.managerRole}" th:value="${form.managerRole}"></option>
                             </select>
                         </div>
                         <div class="form-group mb-3" id="managers">
@@ -102,6 +106,7 @@
                                 </div>
                             </label>
                             <select id="managersSelect" class="select-users" multiple="multiple" name="managers">
+                                <option data-placeholder="true"></option>
                                 <th:block th:each="manager : ${form.managers}">
                                     <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
                                 </th:block>
@@ -110,8 +115,9 @@
                         <div class="form-group mb-3">
                             <label for="workflowType">Type de workflow</label>
                             <select class="slim-select-simple" id="workflowType" th:field="*{workflow}">
+                                <option value="">-- dissocier d'un circuit --</option>
                                 <th:block th:each="workflowType : ${workflowTypes}">
-                                    <option th:value="${workflowType.id}"
+                                    <option th:if="${workflowType != null}" th:value="${workflowType.id}"
                                             th:text="${workflowType.description}"></option>
                                 </th:block>
                             </select>
@@ -150,6 +156,37 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="form-group mb-3">
+                            <label for="actionDiv">Actions (javascript)</label>
+                            <textarea id="actionText" class="form-control" type="text" th:field="*{action}"></textarea>
+                            <div id="actionDiv"></div>
+                            <script language="JavaScript">
+                                ace.require("ace/ext/language_tools");
+                                let editor = ace.edit("actionDiv", {
+                                    mode: "ace/mode/javascript",
+                                    autoScrollEditorIntoView: true,
+                                    enableBasicAutocompletion: true,
+                                    selectionStyle: "text"
+                                });
+                                let textarea = $('#actionText');
+                                textarea.hide();
+                                editor.getSession().setValue(textarea.val());
+                                editor.getSession().on('change', function(){
+                                    textarea.val(editor.getSession().getValue());
+                                });
+                            </script>
+                        </div>
+                    </form>
+                    <form id="importFormSetup" th:action="'/manager/forms/import/' + ${form.id} + '/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
+                        <label class="form-label">Importer une configuration</label>
+                        <div class="form-group mb-3">
+                            <div class="custom-file">
+                                <input id="multipartFormSetup" type="file" class="form-control" name="multipartFormSetup" value="Choisir un fichier"
+                                       aria-describedby="multipartFormSetup"/>
+                                <label for="multipartFormSetup" class="custom-file-label"> Choisir un fichier de configuration au format JSON</label>
+                            </div>
+                        </div>
+                        <button id="submitFormSetup" type="submit" class="btn btn-primary">Charger la configuration</button>
                     </form>
                 </div>
             </div>

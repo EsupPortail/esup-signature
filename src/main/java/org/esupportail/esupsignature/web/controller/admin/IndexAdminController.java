@@ -33,6 +33,6 @@ public class IndexAdminController {
 
 	@GetMapping
 	public String index() {
-		return "redirect:/admin/signrequests";
+		return "redirect:/admin/signbooks";
 	}
 }

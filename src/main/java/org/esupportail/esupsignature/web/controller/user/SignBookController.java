@@ -1,17 +1,17 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.FormService;
+import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
-import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.esupportail.esupsignature.web.ws.json.JsonWorkflowStep;
 import org.slf4j.Logger;
@@ -52,6 +52,11 @@ public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
 
+    @ModelAttribute("activeMenu")
+    public String getActiveMenu() {
+        return "signbooks";
+    }
+
     @Resource
     private PreAuthorizeService preAuthorizeService;
 
@@ -62,13 +67,7 @@ public class SignBookController {
     private SignBookService signBookService;
 
     @Resource
-    private LogService logService;
-
-    @Resource
     private SignRequestService signRequestService;
-
-    @Resource
-    private SignService signService;
 
     @Resource
     private FormService formService;
@@ -162,7 +161,13 @@ public class SignBookController {
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
         SignBook signBook = signBookService.getById(id);
-        return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
+        Long signRequestId = signBook.getSignRequests().get(0).getId();
+        if(signBook.getSignRequests().size() > 1) {
+            if(signBook.getSignRequests().stream().anyMatch(s -> s.getStatus().equals(SignRequestStatus.pending))) {
+                signRequestId = signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending)).findFirst().get().getId();
+            }
+        }
+        return "redirect:/user/signrequests/" + signRequestId;
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
@@ -209,26 +214,30 @@ public class SignBookController {
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
-    @GetMapping(value = "/{id}", params = "form")
+    @GetMapping(value = "/update/{id}")
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
         SignBook signBook = signBookService.getById(id);
         if((signBook.getLiveWorkflow().getWorkflow() == null || signBook.getCreateBy().equals(signBook.getLiveWorkflow().getWorkflow().getCreateBy())) && (signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.pending))) {
             model.addAttribute("signBook", signBook);
-            SignRequest signRequest = signBook.getSignRequests().get(0);
-            model.addAttribute("signRequest", signRequest);
-            List<Document> toSignDocuments = signService.getToSignDocuments(signRequest.getId());
-            if(toSignDocuments.size() == 1) {
-                model.addAttribute("toSignDocument", toSignDocuments.get(0));
-            }
-            model.addAttribute("signable", signRequest.getSignable());
-            model.addAttribute("comments", logService.getLogs(signRequest.getId()));
             model.addAttribute("logs", signBookService.getLogsFromSignBook(signBook));
             model.addAttribute("allSteps", signBookService.getAllSteps(signBook));
             model.addAttribute("workflows", workflowService.getWorkflowsByUser(authUserEppn, authUserEppn));
-            return "user/signrequests/update";
+            return "user/signbooks/update";
         } else {
             return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
         }
+    }
+
+    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
+    @PutMapping(value = "/update/{id}")
+    public String update(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+                         @RequestParam String subject,
+                         @RequestParam String description,
+                         @RequestParam(required = false) List<String> viewers,
+                         RedirectAttributes redirectAttributes) {
+        signBookService.updateSignBook(id, subject, description, viewers);
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
+        return "redirect:/user/signbooks/update/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
@@ -247,7 +256,7 @@ public class SignBookController {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
         }
 
-        return "redirect:/user/signbooks/" + id + "/?form";
+        return "redirect:/user/signbooks/update/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
@@ -292,7 +301,7 @@ public class SignBookController {
         logger.info("start add documents");
         try {
             signBookService.addDocumentsToSignBook(id, multipartFiles, authUserEppn);
-            return "redirect:/user/signrequests/" + id + "/?form";
+            return "redirect:/user/signbooks/update/" + id;
         } catch(EsupSignatureIOException e) {
             logger.warn("redirect to home");
         }
@@ -339,7 +348,7 @@ public class SignBookController {
                                            @RequestParam String ids,
                                            @RequestParam(value = "password", required = false) String password,
                                            @RequestParam(value = "certType", required = false) String certType,
-                                           HttpSession httpSession) throws InterruptedException, EsupSignatureMailException, EsupSignatureException, IOException {
+                                           HttpSession httpSession) throws EsupSignatureException, IOException {
         String error = signBookService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, certType);
         if(error == null) {
             return new ResponseEntity<>(HttpStatus.OK);

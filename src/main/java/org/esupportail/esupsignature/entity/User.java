@@ -105,6 +105,8 @@ public class User {
     @OneToOne
     private SignRequestParams favoriteSignRequestParams;
 
+    private Boolean returnToHomeAfterSign = true;
+
 	public Long getId() {
         return this.id;
     }
@@ -345,5 +347,13 @@ public class User {
             return replaceByUser;
         }
         return null;
+    }
+
+    public Boolean getReturnToHomeAfterSign() {
+        return returnToHomeAfterSign;
+    }
+
+    public void setReturnToHomeAfterSign(Boolean returnToHomeAfterSign) {
+        this.returnToHomeAfterSign = returnToHomeAfterSign;
     }
 }
