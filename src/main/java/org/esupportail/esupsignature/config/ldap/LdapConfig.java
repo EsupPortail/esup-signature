@@ -30,6 +30,7 @@ public class LdapConfig {
     }
 
     @Bean
+    @ConditionalOnProperty({"ldap.all-groups-search-filter"})
     public LdapGroupService ldapGroupService() {
         Map<String, String> ldapFiltersGroups = new HashMap<>();
 

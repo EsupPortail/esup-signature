@@ -86,12 +86,15 @@ public class LdapGroupService implements GroupService {
 
     @Override
     public List<Map.Entry<String, String>> getAllGroups(String search) {
-        String hardcodedFilter = MessageFormat.format(allGroupsSearchFilter, search);
-        List<Map.Entry<String, String>> groups = ldapTemplate.search(LdapQueryBuilder.query().attributes("cn", "description").base(groupSearchBase).filter(hardcodedFilter + "*"),
-                (ContextMapper<Map.Entry<String, String>>) ctx -> {
-                    DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
-                    return new AbstractMap.SimpleEntry<>(searchResultContext.getStringAttribute("cn"), searchResultContext.getStringAttribute("description"));
-                });
+        List<Map.Entry<String, String>> groups = new ArrayList<>();
+        if(allGroupsSearchFilter != null) {
+            String hardcodedFilter = MessageFormat.format(allGroupsSearchFilter, search);
+            groups = ldapTemplate.search(LdapQueryBuilder.query().attributes("cn", "description").base(groupSearchBase).filter(hardcodedFilter + "*"),
+                    (ContextMapper<Map.Entry<String, String>>) ctx -> {
+                        DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
+                        return new AbstractMap.SimpleEntry<>(searchResultContext.getStringAttribute("cn"), searchResultContext.getStringAttribute("description"));
+                    });
+        }
         return groups;
     }
 
