@@ -65,7 +65,7 @@
 	<div id="second-tools" class="d-none mb-1">
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
 			<th:block >
-				<div class="btn btn-outline-dark disabled text-dark me-1 d-none d-xl-inline">Choix du mode : </div>
+				<div class="input-group-text me-1 d-none d-xl-inline">Choix du mode : </div>
 				<div class="me-1">
 				<select id="changeMode" name="changeMode" class=""></select>
 				</div>
