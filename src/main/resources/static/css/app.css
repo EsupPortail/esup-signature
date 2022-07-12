@@ -1810,6 +1810,7 @@ input:focus, textarea:focus, select:focus {
     vertical-align: middle !important;
     margin: auto !important;
     min-height: 38px !important;
+    border: 1px solid #555 !important;
 }
 
 .ss-main {
