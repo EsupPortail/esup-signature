@@ -65,7 +65,7 @@
                                 <button th:if="${workflow.createBy.eppn == userEppn}" type="button" th:id="'menu-toggle_' + ${workflow.id}" class="btn btn-light btn-sm text-dark toggle-mini-menu" style="position: absolute;bottom: 25px;margin-left: 27px;" th:data-bs-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-bs-toggle="collapse">
                                     <i class="fas fa-ellipsis-h"></i>
                                 </button>
-                                <div style="position: absolute !important;" data-bs-backdrop="false" class="card collapse prevent" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
+                                <div style="position: absolute !important; top: 192px;" data-bs-backdrop="false" class="card collapse prevent" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
                                     <div class="card-body">
                                         <form th:id="${'deleteWorkflow_' + workflow.id}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'">
                                         </form>
