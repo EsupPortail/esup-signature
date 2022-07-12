@@ -370,6 +370,7 @@ public class FormService {
 				fieldsOrdered.add(field);
 			}
 		}
+		pdDocument.close();
 		return fieldsOrdered;
 	}
 
