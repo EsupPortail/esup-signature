@@ -6,6 +6,7 @@ import eu.europa.esig.dss.jaxb.common.SchemaFactoryBuilder;
 import eu.europa.esig.dss.jaxb.common.ValidatorConfigurator;
 import eu.europa.esig.dss.jaxb.common.XmlDefinerUtils;
 import eu.europa.esig.dss.spi.tsl.LOTLInfo;
+import eu.europa.esig.dss.spi.tsl.TLInfo;
 import eu.europa.esig.dss.spi.tsl.TLValidationJobSummary;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
@@ -71,11 +72,26 @@ public class OJService {
 	public boolean checkOjFreshness() throws IOException {
 		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
 		if(summary == null) return true;
-		LOTLInfo lotlInfo = summary.getLOTLInfos().get(0);
-		return !lotlInfo.getValidationCacheInfo().isValid()
-				|| lotlInfo.getValidationCacheInfo().isRefreshNeeded()
-				|| lotlInfo.getParsingCacheInfo().isRefreshNeeded()
-				|| lotlInfo.getDownloadCacheInfo().isRefreshNeeded();
+		boolean checkTl = false;
+		for (LOTLInfo lotlInfo : trustedListsCertificateSource.getSummary().getLOTLInfos()) {
+			if(lotlInfo.getValidationCacheInfo().isRefreshNeeded()) {
+				checkTl = !lotlInfo.getValidationCacheInfo().isValid()
+						|| lotlInfo.getValidationCacheInfo().isRefreshNeeded()
+						|| lotlInfo.getParsingCacheInfo().isRefreshNeeded()
+						|| lotlInfo.getDownloadCacheInfo().isRefreshNeeded();
+				break;
+			}
+		}
+		for (TLInfo tlInfo : trustedListsCertificateSource.getSummary().getOtherTLInfos()) {
+			if(tlInfo.getValidationCacheInfo().isRefreshNeeded()) {
+				checkTl = !tlInfo.getValidationCacheInfo().isValid()
+						|| tlInfo.getValidationCacheInfo().isRefreshNeeded()
+						|| tlInfo.getParsingCacheInfo().isRefreshNeeded()
+						|| tlInfo.getDownloadCacheInfo().isRefreshNeeded();
+				break;
+			}
+		}
+		return checkTl;
 	}
 
 	@Async
