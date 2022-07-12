@@ -45,6 +45,10 @@
     /*for javascript detection : new SelectUser()*/
 }
 
+.slim-select-filter {
+    /*for javascript detection : new SlimSelect()*/
+}
+
 .slim-select, .slim-select-simple {
     /*for javascript detection : new SlimSelect()*/
 }
@@ -1810,13 +1814,16 @@ input:focus, textarea:focus, select:focus {
     vertical-align: middle !important;
     margin: auto !important;
     min-height: 38px !important;
-    border: 1px solid #555 !important;
 }
 
 .ss-main {
     color: #555 !important;
     font-weight: normal !important;
     margin: auto !important;
+}
+
+.change-mode > .ss-single-selected {
+    border: 1px solid #555;
 }
 
 .ss-option-selected {
