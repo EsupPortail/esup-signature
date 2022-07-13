@@ -55,8 +55,10 @@
     <div class="form-group mb-3">
         <select class="select-users" data-es-check-cert="true" th:name="'recipientsCCEmailsWiz' + ${workflow != null ? workflow.id : '0'}" th:id="'recipientsCCEmailsWiz' + ${workflow != null ? workflow.id : '0'}" size="5" multiple="multiple">
             <option data-placeholder="true"></option>
+            <th:block th:if="${workflow != null}">
             <th:block th:each="viewer : ${workflow.viewers}">
                 <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
+            </th:block>
             </th:block>
         </select>
     </div>
