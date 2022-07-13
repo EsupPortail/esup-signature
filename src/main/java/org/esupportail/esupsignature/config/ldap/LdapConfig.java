@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.ldap.repository.config.EnableLdapRepositories;
 import org.springframework.ldap.core.LdapTemplate;
 
 import javax.annotation.Resource;
@@ -15,6 +16,7 @@ import java.util.Map;
 @Configuration
 @ConditionalOnProperty({"spring.ldap.base", "ldap.search-base"})
 @EnableConfigurationProperties({GlobalProperties.class, LdapProperties.class})
+@EnableLdapRepositories(basePackages = "org.esupportail.esupsignature.repository.ldap")
 public class LdapConfig {
 
     private final LdapProperties ldapProperties;
