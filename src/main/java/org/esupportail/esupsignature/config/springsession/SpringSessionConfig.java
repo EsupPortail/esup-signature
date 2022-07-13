@@ -16,6 +16,7 @@ public class SpringSessionConfig {
 
     final private DataSource dataSource;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public SpringSessionConfig(DataSource dataSource) {
         this.dataSource = dataSource;
     }
