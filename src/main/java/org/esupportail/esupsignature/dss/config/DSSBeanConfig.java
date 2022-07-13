@@ -104,9 +104,9 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public JdbcCacheCRLSource cachedCRLSource(OnlineCRLSource onlineCRLSource) {
+	public JdbcCacheCRLSource cachedCRLSource(OnlineCRLSource onlineCRLSource, JdbcCacheConnector jdbcCacheConnector) {
 		JdbcCacheCRLSource jdbcCacheCRLSource = new JdbcCacheCRLSource();
-		jdbcCacheCRLSource.setJdbcCacheConnector(new JdbcCacheConnector(cacheDataSource()));
+		jdbcCacheCRLSource.setJdbcCacheConnector(jdbcCacheConnector);
 		jdbcCacheCRLSource.setProxySource(onlineCRLSource);
 		jdbcCacheCRLSource.setDefaultNextUpdateDelay((long) (60 * 3)); // 3 minutes
 		return jdbcCacheCRLSource;
