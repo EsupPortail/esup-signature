@@ -243,7 +243,7 @@ logging:
         root: info
         org.esupportail.esupsignature: info
         org.verapdf: error
-        org.apache.pdfbox: warn
+        org.apache.pdfbox: error
         eu.europa.esig.dss: error
         org.springframework.web.filter.CommonsRequestLoggingFilter: error
 #    config: classpath:logback-prod.xml
