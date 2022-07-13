@@ -60,7 +60,7 @@ public class TomcatConfig {
     @Bean
     public WebServerFactoryCustomizer<TomcatServletWebServerFactory> servletContainerCustomizer() {
         final boolean reloadable = List.of(environment.getActiveProfiles()).contains("dev");
-        logger.warn("SetReloadable to " + reloadable);
+        logger.info("SetReloadable to " + reloadable);
         return new WebServerFactoryCustomizer<TomcatServletWebServerFactory>() {
             @Override
             public void customize(TomcatServletWebServerFactory container) {
