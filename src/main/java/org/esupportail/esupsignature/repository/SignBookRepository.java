@@ -18,7 +18,6 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
 
     List<SignBook> findBySubject(String subject);
 
-
     @Query("select distinct sb from SignBook sb " +
             "where (sb.workflowName like :workflowFilter) " +
             "and (sb.subject like :docTitleFilter) " +
