@@ -6,7 +6,6 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -153,7 +152,7 @@ public class SignBookController {
         CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariables(model.asMap());
-        ctx.setVariable("token", token);
+        ctx.setVariable("_csrf", token);
         return templateEngine.process("user/signbooks/includes/list-elem.html", ctx);
     }
 
