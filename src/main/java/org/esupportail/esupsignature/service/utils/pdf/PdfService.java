@@ -615,7 +615,8 @@ public class PdfService {
             PDDocument pdDocument = PDDocument.load(pdfFile);
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
             if(pdAcroForm != null) {
-                PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), WinAnsiEncoding.INSTANCE);
+                byte[] ttfBytes = new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream().readAllBytes();
+                PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ByteArrayInputStream(ttfBytes), WinAnsiEncoding.INSTANCE);
                 PDResources resources = pdAcroForm.getDefaultResources();
                 resources.put(COSName.getPDFName("LiberationSans"), pdFont);
                 pdAcroForm.setDefaultResources(resources);
@@ -657,7 +658,7 @@ public class PdfService {
                                 pdTextField.getCOSObject().removeItem(COSName.AA);
                                 pdTextField.getCOSObject().removeItem(COSName.AP);
                                 pdTextField.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
-                                pdTextField.setValue(value);
+                                pdTextField.setValue(NormalizeTTFString.getInstance(new ByteArrayInputStream(ttfBytes)).remove(value));
                                 pdAcroForm.getFields().add(pdTextField);
                                 pdAcroForm.getFields().remove(pdListBox);
                                 Map<String, Integer> pageNrByAnnotDict = getPageNumberByAnnotDict(pdDocument);
@@ -678,7 +679,7 @@ public class PdfService {
                                 pdField.getCOSObject().removeItem(COSName.AA);
                                 pdField.getCOSObject().removeItem(COSName.AP);
                                 pdField.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
-                                pdField.setValue(value);
+                                pdField.setValue(NormalizeTTFString.getInstance(new ByteArrayInputStream(ttfBytes)).remove(value));
                             }
                         }
                     }
