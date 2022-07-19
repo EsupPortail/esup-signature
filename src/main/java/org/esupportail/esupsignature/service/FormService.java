@@ -130,13 +130,10 @@ public class FormService {
 	}
 
 	@Transactional
-	public void updateForm(Long id, Form updateForm, List<String> managers, String[] types, boolean updateWorkflow) {
+	public void updateForm(Long id, Form updateForm, String[] types, boolean updateWorkflow) {
 		Form form = getById(id);
 		form.setPdfDisplay(updateForm.getPdfDisplay());
-		form.getManagers().clear();
-		if(managers != null) {
-			form.getManagers().addAll(managers);
-		}
+		form.getWorkflow().getManagers().clear();
 		form.setName(updateForm.getName());
 		form.setTitle(updateForm.getTitle());
 		form.getRoles().clear();
@@ -373,6 +370,7 @@ public class FormService {
 				fieldsOrdered.add(field);
 			}
 		}
+		pdDocument.close();
 		return fieldsOrdered;
 	}
 
@@ -417,9 +415,18 @@ public class FormService {
 		return formRepository.findFormByNameAndDeletedIsNullOrDeletedIsFalse(name);
 	}
 
+	@Transactional
 	public List<Form> getFormByManagersContains(String eppn) {
 		User user = userService.getUserByEppn(eppn);
-		return formRepository.findFormByManagersContainsAndDeletedIsNullOrDeletedIsFalse(user.getEmail());
+		List<Workflow> workflows = workflowRepository.findWorkflowByManagersIn(Collections.singletonList(user.getEmail()));
+		List<Form> managerForms = new ArrayList<>();
+		for(Workflow workflow : workflows) {
+			List<Form> form = formRepository.findByWorkflowIdEquals(workflow.getId());
+			if(form != null && form.size() > 0) {
+				managerForms.add(form.get(0));
+			}
+		}
+		return managerForms;
 	}
 
 	@Transactional
@@ -452,6 +459,15 @@ public class FormService {
 
 	public List<Form> getByRoles(String role) {
 		return formRepository.findByRolesIn(Collections.singletonList(role));
+	}
+
+	public Set<Form> getManagerForms(String userEppn) {
+		User manager = userService.getByEppn(userEppn);
+		Set<Form> formsManaged = new HashSet<>();
+		for (String role : manager.getManagersRoles()) {
+			formsManaged.addAll(formRepository.findByManagerRole(role));
+		}
+		return formsManaged;
 	}
 
 	@Transactional
@@ -524,7 +540,7 @@ public class FormService {
 		formSetup.setName(form.getName());
 		formSetup.setTitle(form.getTitle());
 		formSetup.setWorkflow(null);
-		updateForm(id, formSetup, formSetup.getManagers(), formSetup.getAuthorizedShareTypes().stream().map(Enum::name).collect(Collectors.toList()).toArray(String[]::new), false);
+		updateForm(id, formSetup, formSetup.getAuthorizedShareTypes().stream().map(Enum::name).collect(Collectors.toList()).toArray(String[]::new), false);
 	}
 
 	public void nullifyForm(Form form) {

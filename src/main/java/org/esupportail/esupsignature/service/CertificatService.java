@@ -55,9 +55,11 @@ public class CertificatService {
         return certificatRepository.findByRolesIn(Collections.singletonList(role)).get(0);
     }
 
+    @Transactional
     public List<Certificat> getCertificatByUser(String userEppn) {
         User user = userService.getUserByEppn(userEppn);
-        Set<Certificat> certificats = new HashSet<>(certificatRepository.findByRolesIn(user.getRoles()));
+        List<String> roles = user.getRoles();
+        Set<Certificat> certificats = new HashSet<>(certificatRepository.findByRolesIn(roles));
         return new ArrayList<>(certificats);
     }
 

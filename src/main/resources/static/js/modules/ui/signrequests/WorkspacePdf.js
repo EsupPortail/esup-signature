@@ -321,12 +321,12 @@ export class WorkspacePdf {
         if(testSign.filter(s => s.signImageNumber >= 0 && s.isSign).length > 0) {
             for (let i = 0; i < this.currentSignRequestParamses.length; i++) {
                 if (this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready) {
-                    return false;
+                    return i;
                 }
             }
-            return true;
+            return null;
         } else {
-            return false;
+            return 0;
         }
     }
 

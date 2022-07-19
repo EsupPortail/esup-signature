@@ -272,9 +272,7 @@ public class SignRequestService {
 				InputStream inputStream = new ByteArrayInputStream(bytes);
 				if (multipartFiles.length == 1 && bytes.length > 0) {
 					if("application/pdf".equals(multipartFiles[0].getContentType()) && scanSignatureFields) {
-						if(!pdfService.isAcroForm(new ByteArrayInputStream(bytes))) {
-							bytes = pdfService.normalizeGS(bytes);
-						}
+						bytes = pdfService.normalizeGS(bytes);
 						List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
 						if(signRequestParamses.size() == 0) {
 							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), docNumber);
@@ -289,7 +287,7 @@ public class SignRequestService {
 						if(reports == null || reports.getSimpleReport().getSignatureIdList().size() == 0) {
 							inputStream = pdfService.removeSignField(new ByteArrayInputStream(bytes));
 						}
-					} else if(multipartFiles[0].getContentType() != null && multipartFiles[0].getContentType().contains("image")){
+					} else if(contentType != null && contentType.contains("image")){
 						bytes = pdfService.jpegToPdf(multipartFile.getInputStream(), multipartFile.getName()).readAllBytes();
 						contentType = "application/pdf";
 						inputStream = new ByteArrayInputStream(bytes);

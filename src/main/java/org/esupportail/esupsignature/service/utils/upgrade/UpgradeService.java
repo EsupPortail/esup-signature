@@ -1,12 +1,10 @@
 package org.esupportail.esupsignature.service.utils.upgrade;
 
-import org.esupportail.esupsignature.entity.Action;
-import org.esupportail.esupsignature.entity.AppliVersion;
-import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.AppliVersionRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +33,9 @@ public class UpgradeService {
     private FileService fileService;
 
     private final String[] updates = new String[] {"1.19", "1.22"};
+
+    @Resource
+    private FormService formService;
 
     @Transactional
     public void launch() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
@@ -99,6 +100,17 @@ public class UpgradeService {
                 }
             }
         }
+        logger.info("#### Update end dates of signBooks completed ####");
+        logger.info("#### Starting update manager of workflows ####");
+        List<Form> forms = formService.getAllForms();
+        for(Form form : forms) {
+            for(String manager : form.getManagers()) {
+                if(!form.getWorkflow().getManagers().contains(manager)) {
+                    form.getWorkflow().getManagers().add(manager);
+                }
+            }
+        }
+        logger.info("#### Update manager of workflows completed ####");
     }
 
 

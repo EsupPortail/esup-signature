@@ -121,13 +121,6 @@ public class AdminSignRequestController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@DeleteMapping(value = "/{id}", produces = "text/html")
-	public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-		signBookService.delete(id, authUserEppn);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
-		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
-	}
-
 	@DeleteMapping(value = "delete-definitive/{id}", produces = "text/html")
 	public String deleteDefinitive(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
 		if(signBookService.deleteDefinitive(id, authUserEppn)) {

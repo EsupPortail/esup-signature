@@ -130,7 +130,7 @@ export class Nexu {
                 if(breakOut) {
                     return false;
                 }
-                let url = "http://localhost:" + port.trim() + "/nexu-info";
+                let url = "http://127.0.0.1:" + port.trim() + "/nexu-info";
                 console.info("check nexu on " + url);
                 $.ajax({
                     type: "GET",
@@ -174,7 +174,7 @@ export class Nexu {
     }
 
     loadScript() {
-        let url = "http://localhost:" + this.detectedPort + "/nexu.js";
+        let url = "http://127.0.0.1:" + this.detectedPort + "/nexu.js";
         console.info("loading nexu script : " + url);
         $.getScript(url, function() {
             nexu_get_certificates(Nexu.getDataToSign, Nexu.error);

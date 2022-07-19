@@ -187,7 +187,7 @@ public class MailService {
                         i++;
                     }
                     mimeMessage.setTo(to);
-                    logger.info("send email completes for " + user.getEppn());
+                    logger.info("send email completes cc for " + user.getEppn());
                     if (mailSender != null) {
                         mailSender.send(mimeMessage.getMimeMessage());
                     }
@@ -296,7 +296,7 @@ public class MailService {
             mimeMessage.setSubject("Relance pour la signature d'un document");
             mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
-            logger.info("send email alert for " + recipientsEmails.get(0));
+            logger.info("send email replay alert for " + recipientsEmails.get(0));
             mailSender.send(mimeMessage.getMimeMessage());
             signRequest.setLastNotifDate(new Date());
         } catch (MessagingException e) {
@@ -329,7 +329,7 @@ public class MailService {
             mimeMessage.setSubject("Vous êtes en copie d'une demande de signature crée par " + creator.getFirstname() + " " + creator.getName());
             mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
-            logger.info("send email alert for " + recipientsEmails.get(0));
+            logger.info("send email cc for " + recipientsEmails.get(0));
             mailSender.send(mimeMessage.getMimeMessage());
             signRequest.setLastNotifDate(new Date());
         } catch (MessagingException e) {
@@ -379,6 +379,7 @@ public class MailService {
             mimeMessage.setSubject("Vous avez un document à signer émanant de " + messageSource.getMessage("application.footer", null, Locale.FRENCH));
             mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(otp.getEmail());
+            logger.info("send email alert for " + otp.getEmail());
             mailSender.send(mimeMessage.getMimeMessage());
         } catch (MessagingException e) {
             logger.error("unable to send OTP email", e);

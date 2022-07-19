@@ -8,7 +8,7 @@
 <head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
     import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=[[${versionApp}]]';
-    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]]);
+    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user");
 </script>
 <body>
 <header th:replace="fragments/nav :: nav"></header>
@@ -221,7 +221,6 @@
         </div>
     </div>
 </div>
-<div th:replace="fragments/new-modals :: new-modals"></div>
 <footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

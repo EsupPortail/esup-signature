@@ -7,7 +7,7 @@
         <h5 class="text-center sidebar-label"><b>Administration</b></h5>
         <div class="hr"><i class="fas fa-eye me-1"></i><span class="sidebar-label"> Supervision</span></div>
         <a th:classappend="${activeMenu == 'adminsignrequests'} ? 'btn-secondary' : 'btn-light'"
-           title="Toutes les demandes" type="button" href="/admin/signrequests" class="mb-1 col-12 btn text-left">
+           title="Toutes les demandes" type="button" href="/admin/signbooks" class="mb-1 col-12 btn text-left">
             <i class="fas fa-paste"></i> <span class="sidebar-label">Demandes</span>
         </a>
         <a th:classappend="${activeMenu == 'logs'} ? 'btn-secondary' : 'btn-light'"

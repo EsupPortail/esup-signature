@@ -45,7 +45,7 @@ public class OtpUserController {
                          @RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
                          @RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
                          @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
-        userService.updateUser(authUserEppn, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, null);
+        userService.updateUser(authUserEppn, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, null, false);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Vos paramètres ont été enregistrés"));
         String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
         return "redirect:" + referer;
