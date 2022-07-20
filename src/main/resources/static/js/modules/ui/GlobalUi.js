@@ -322,6 +322,7 @@ export class GlobalUi {
             }
             if(!url.match("/user/users+[\\w\\W]+")
                 && !url.match("/user/users")
+                && !url.match("/admin/")
                 && !url.match("/admin/+[\\w\\W]+")
                 && !url.match("/manager/+[\\w\\W]+")
                 && !url.match("^/user/$")
