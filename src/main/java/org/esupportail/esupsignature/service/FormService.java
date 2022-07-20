@@ -133,7 +133,6 @@ public class FormService {
 	public void updateForm(Long id, Form updateForm, String[] types, boolean updateWorkflow) {
 		Form form = getById(id);
 		form.setPdfDisplay(updateForm.getPdfDisplay());
-		form.getWorkflow().getManagers().clear();
 		form.setName(updateForm.getName());
 		form.setTitle(updateForm.getTitle());
 		form.getRoles().clear();
