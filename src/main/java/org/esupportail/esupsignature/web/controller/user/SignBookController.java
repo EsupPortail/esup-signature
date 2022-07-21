@@ -1,17 +1,16 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.exception.EsupSignatureMailException;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.FormService;
+import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
-import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.esupportail.esupsignature.web.ws.json.JsonWorkflowStep;
 import org.slf4j.Logger;
@@ -23,7 +22,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -41,13 +39,22 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/user/signbooks")
 public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
+
+    @ModelAttribute("activeMenu")
+    public String getActiveMenu() {
+        return "signbooks";
+    }
 
     @Resource
     private PreAuthorizeService preAuthorizeService;
@@ -59,16 +66,7 @@ public class SignBookController {
     private SignBookService signBookService;
 
     @Resource
-    private LogService logService;
-
-    @Resource
     private SignRequestService signRequestService;
-
-    @Resource
-    private SignService signService;
-
-    @Resource
-    private UserService userService;
 
     @Resource
     private FormService formService;
@@ -82,11 +80,15 @@ public class SignBookController {
                        @RequestParam(value = "recipientsFilter", required = false) String recipientsFilter,
                        @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
                        @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
+                       @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
+                       @RequestParam(value = "dateFilter", required = false) String dateFilter,
                        @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
-        if(statusFilter == null) statusFilter = "all";
-        if(statusFilter.equals("all")) statusFilter = "";
+        if(statusFilter == null || statusFilter.equals("all")) statusFilter = "";
         if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
             workflowFilter = "%";
+        }
+        if(creatorFilter == null || creatorFilter.isEmpty() || creatorFilter.equals("all")) {
+            creatorFilter = "%";
         }
         if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
             docTitleFilter = "%";
@@ -94,25 +96,31 @@ public class SignBookController {
         if(recipientsFilter == null || recipientsFilter.isEmpty() || recipientsFilter.equals("all")) {
             recipientsFilter = "%";
         }
-        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
+        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("signBooks", signBooks);
+        List<User> creators = signBookService.getCreators(userEppn, workflowFilter, docTitleFilter, creatorFilter);
+        model.addAttribute("creators", creators);
         model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
         model.addAttribute("workflowFilter", workflowFilter);
         model.addAttribute("docTitleFilter", docTitleFilter);
+        model.addAttribute("dateFilter", dateFilter);
         model.addAttribute("recipientsFilter", recipientsFilter);
-        Set<String> docTitles = new HashSet<>(signBookService.getDocTitles(userEppn));
-        model.addAttribute("docTitles", docTitles);
         LinkedHashSet<String> workflowNames = new LinkedHashSet<>();
-        if(workflowFilter.equals("%") || workflowFilter.equals("Hors circuit")) {
-            workflowNames.add("Hors circuit");
+        LinkedHashSet<String> docTitles = new LinkedHashSet<>();
+        if(statusFilter.isEmpty() && (workflowFilter.equals("%") || workflowFilter.equals("Hors circuit")) && docTitleFilter.equals("%") && recipientsFilter.equals("%")) {
+            docTitles.addAll(signBookService.getAllDocTitles(userEppn));
+            workflowNames.addAll(signBookService.getWorkflowNames(userEppn));
+        } else {
+            docTitles.addAll(signBooks.stream().map(SignBook::getSubject).collect(Collectors.toList()));
+            workflowNames.addAll(signBooks.stream().map(SignBook::getWorkflowName).collect(Collectors.toList()));
         }
-        workflowNames.addAll(signBookService.getWorkflowNames(userEppn));
+        model.addAttribute("docTitles", docTitles);
         model.addAttribute("workflowNames", workflowNames);
-        model.addAttribute("signRequestRecipients", signBookService.getRecipientsNames(userEppn));
+        model.addAttribute("signRequestRecipients", signBookService.getRecipientsNames(userEppn).stream().filter(Objects::nonNull).collect(Collectors.toList()));
         return "user/signbooks/list";
     }
 
@@ -123,11 +131,15 @@ public class SignBookController {
                          @RequestParam(value = "recipientsFilter", required = false) String recipientsFilter,
                          @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
                          @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
+                         @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
+                         @RequestParam(value = "dateFilter", required = false) String dateFilter,
                          @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
-        if(statusFilter == null) statusFilter = "all";
-        if(statusFilter.equals("all")) statusFilter = "";
+        if(statusFilter == null || statusFilter.equals("all")) statusFilter = "";
         if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
             workflowFilter = "%";
+        }
+        if(creatorFilter == null || creatorFilter.isEmpty() || creatorFilter.equals("all")) {
+            creatorFilter = "%";
         }
         if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
             docTitleFilter = "%";
@@ -135,12 +147,12 @@ public class SignBookController {
         if(recipientsFilter == null || recipientsFilter.isEmpty() || recipientsFilter.equals("all")) {
             recipientsFilter = "%";
         }
-        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
+        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("signBooks", signBooks);
         CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariables(model.asMap());
-        ctx.setVariable("token", token);
+        ctx.setVariable("_csrf", token);
         return templateEngine.process("user/signbooks/includes/list-elem.html", ctx);
     }
 
@@ -148,57 +160,83 @@ public class SignBookController {
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
         SignBook signBook = signBookService.getById(id);
-        return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
+        Long signRequestId = signBook.getSignRequests().get(0).getId();
+        if(signBook.getSignRequests().size() > 1) {
+            if(signBook.getSignRequests().stream().anyMatch(s -> s.getStatus().equals(SignRequestStatus.pending))) {
+                signRequestId = signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending)).findFirst().get().getId();
+            }
+        }
+        return "redirect:/user/signrequests/" + signRequestId;
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-        boolean isDefinitive = signBookService.delete(id, authUserEppn);
-        if(isDefinitive) {
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Le document a été supprimé définitivement"));
+        Boolean isDefinitive = signBookService.delete(id, authUserEppn);
+        if(isDefinitive != null) {
+            if (isDefinitive) {
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été supprimé définitivement"));
+                if (httpServletRequest.getHeader(HttpHeaders.REFERER).contains("signrequests")) {
+                    return "redirect:/user/signbooks";
+                } else {
+                    return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+                }
+            } else {
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été placé dans la corbeille"));
+                return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+            }
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Le document a été placé dans la corbeille"));
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Ce document ne pas être supprimé de la corbeille"));
+            return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
         }
-        return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @DeleteMapping(value = "/force-delete/{id}", produces = "text/html")
     public String forceDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-        signBookService.deleteDefinitive(id);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Le document a été supprimé définitivement"));
-        return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+        if(signBookService.deleteDefinitive(id, authUserEppn)) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été supprimé définitivement"));
+            return "redirect:/user/signbooks";
+
+        } else {
+            redirectAttributes.addFlashAttribute("warn", new JsonMessage("info", "Le document ne peut pas être supprimé définitivement"));
+            return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+
+        }
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @DeleteMapping(value = "silent-delete/{id}", produces = "text/html")
     @ResponseBody
     public void silentDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
-        signBookService.deleteDefinitive(id);
+        signBookService.deleteDefinitive(id, authUserEppn);
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
-    @GetMapping(value = "/{id}", params = "form")
+    @GetMapping(value = "/update/{id}")
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
         SignBook signBook = signBookService.getById(id);
         if((signBook.getLiveWorkflow().getWorkflow() == null || signBook.getCreateBy().equals(signBook.getLiveWorkflow().getWorkflow().getCreateBy())) && (signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.pending))) {
             model.addAttribute("signBook", signBook);
-            SignRequest signRequest = signBook.getSignRequests().get(0);
-            model.addAttribute("signRequest", signRequest);
-            List<Document> toSignDocuments = signService.getToSignDocuments(signRequest.getId());
-            if(toSignDocuments.size() == 1) {
-                model.addAttribute("toSignDocument", toSignDocuments.get(0));
-            }
-            model.addAttribute("signable", signRequest.getSignable());
-            model.addAttribute("comments", logService.getLogs(signRequest.getId()));
-            model.addAttribute("logs", signBook.getLogs());
+            model.addAttribute("logs", signBookService.getLogsFromSignBook(signBook));
             model.addAttribute("allSteps", signBookService.getAllSteps(signBook));
             model.addAttribute("workflows", workflowService.getWorkflowsByUser(authUserEppn, authUserEppn));
-            return "user/signrequests/update";
+            return "user/signbooks/update";
         } else {
             return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
         }
+    }
+
+    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
+    @PutMapping(value = "/update/{id}")
+    public String update(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+                         @RequestParam String subject,
+                         @RequestParam String description,
+                         @RequestParam(required = false) List<String> viewers,
+                         RedirectAttributes redirectAttributes) {
+        signBookService.updateSignBook(id, subject, description, viewers);
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
+        return "redirect:/user/signbooks/update/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
@@ -217,7 +255,7 @@ public class SignBookController {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
         }
 
-        return "redirect:/user/signbooks/" + id + "/?form";
+        return "redirect:/user/signbooks/update/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
@@ -258,10 +296,15 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @PostMapping(value = "/add-docs/{id}")
     public String addDocumentToNewSignRequest(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
+                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles) {
         logger.info("start add documents");
-        signBookService.addDocumentsToSignBook(id, multipartFiles, authUserEppn);
-        return "redirect:/user/signrequests/" + id + "/?form";
+        try {
+            signBookService.addDocumentsToSignBook(id, multipartFiles, authUserEppn);
+            return "redirect:/user/signbooks/update/" + id;
+        } catch(EsupSignatureIOException e) {
+            logger.warn("redirect to home");
+        }
+        return "redirect:/user/";
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
@@ -269,29 +312,6 @@ public class SignBookController {
     public String pending(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws EsupSignatureException {
         signBookService.pendingSignBook(id, null, authUserEppn, authUserEppn, false);
         return "redirect:/user/signrequests/" + id;
-    }
-
-    @ResponseBody
-    @PostMapping(value = "/add-docs-in-sign-book-group/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentInSignBookGroup(@ModelAttribute("authUserEppn") String authUserEppn,
-                                             @PathVariable("name") String name,
-                                             @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
-        logger.info("start add documents in " + name);
-        SignBook signBook = signBookService.addDocsInNewSignBookGrouped(name, multipartFiles, authUserEppn);
-        String[] ok = {"" + signBook.getId()};
-        return ok;
-    }
-
-    @ResponseBody
-    @PostMapping(value = "/add-docs-in-sign-book-unique/{workflowName}/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentToNewSignRequestUnique(@ModelAttribute("authUserEppn") String authUserEppn,
-                                                    @PathVariable("name") String name,
-                                                    @PathVariable("workflowName") String workflowName,
-                                                    @RequestParam("multipartFiles") MultipartFile[] multipartFiles, Model model) throws EsupSignatureIOException {
-        User authUser = userService.getUserByEppn(authUserEppn);
-        logger.info("start add documents in " + name);
-        SignBook signBook = signBookService.addDocsInNewSignBookSeparated(name, name, workflowName, multipartFiles, authUser);
-        return new String[]{"" + signBook.getId()};
     }
 
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #authUserEppn, #authUserEppn)")
@@ -327,7 +347,7 @@ public class SignBookController {
                                            @RequestParam String ids,
                                            @RequestParam(value = "password", required = false) String password,
                                            @RequestParam(value = "certType", required = false) String certType,
-                                           HttpSession httpSession) throws InterruptedException, EsupSignatureMailException, EsupSignatureException, IOException {
+                                           HttpSession httpSession) throws EsupSignatureException, IOException {
         String error = signBookService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, certType);
         if(error == null) {
             return new ResponseEntity<>(HttpStatus.OK);
@@ -338,12 +358,12 @@ public class SignBookController {
 
     @GetMapping(value = "/download-multiple-with-report", produces = "application/zip")
     @ResponseBody
-    public void downloadMultipleWithReport(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) throws IOException {
+    public void downloadMultipleWithReport(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException {
         httpServletResponse.setContentType("application/zip");
         httpServletResponse.setStatus(HttpServletResponse.SC_OK);
         httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
         try {
-            signBookService.getMultipleSignedDocumentsWithReport(ids, httpServletResponse);
+            signBookService.getMultipleSignedDocumentsWithReport(ids, httpServletRequest, httpServletResponse);
         } catch (Exception e) {
             e.printStackTrace();
         }

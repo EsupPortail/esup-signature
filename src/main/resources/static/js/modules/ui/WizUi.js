@@ -15,6 +15,7 @@ export class WizUi {
         this.input;
         this.fileInput;
         this.recipientCCSelect;
+        this.form;
         this.close = false;
         this.end = false;
         this.start = false;
@@ -86,17 +87,37 @@ export class WizUi {
         this.fileInput = new FilesInput(this.input, this.workflowName, this.workflowName, null, false, this.csrf, null);
         this.fileInput.addEventListener("uploaded", e => this.gotoStep2(e));
         let id = this.workflowId;
-        if(id == "") {
+        if(id === "") {
             id = 0;
         }
         this.recipientCCSelect = new SelectUser("recipientsCCEmailsWiz" + id, null, null, this.csrf);
+        this.form = this.div.find('form');
+        let self = this;
+        this.form.on('submit', function(e){
+            e.preventDefault();
+            let url = self.form.attr('action') + "/?" + self.csrf.parameterName + '=' + self .csrf.token;
+            let formData = new FormData(this);
+            $.ajax( {
+                url: url,
+                method: 'POST',
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: result => self.gotoStep2(result),
+                error: function(request, status, error) {
+                    alert(request.responseText);
+                }
+            } );
+        });
+
     }
 
     gotoStep2(e) {
         let comment = $("#commentWiz");
         let title = $("#titleWiz");
         let id = this.workflowId;
-        if(id == "") {
+        if(id === "") {
             id = 0;
         }
         let recipientsCCEmailsWiz=[];
@@ -147,7 +168,7 @@ export class WizUi {
         let csrf = this.csrf;
         let step = new Step();
         step.workflowId = $('#wizWorkflowId').val();
-        step.recipientsEmails = $('#recipientsEmailsWiz').find(`[data-check='true']`).prevObject[0].slim.selected();
+        step.recipientsEmails = $('#recipientsEmailsWiz').find(`[data-es-check-cert='true']`).prevObject[0].slim.selected();
         step.allSignToComplete = $('#allSignToCompleteWiz').is(':checked');
         step.autoSign = $('#autoSign').is(':checked');
         let userSignFirst = $('#userSignFirstWiz').is(':checked');
@@ -186,8 +207,9 @@ export class WizUi {
         let csrf = this.csrf;
         let name = $("#workflowName").val();
         let elementId = $("#elementId");
+        let self = this;
         $.ajax({
-            url: "/user/wizard/wiz-save"+ this.mode +"/" + elementId.val() + "?name=" + name + "&" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/wizard/wiz-save"+ this.mode +"/" + elementId.val() + "?name=" + name + "&viewers=" + self.recipientCCSelect.slimSelect.selected() + "&" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             success: html => this.initWiz2(html)
         });

@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
@@ -27,7 +28,7 @@ import java.util.Date;
 @EnableConfigurationProperties(GlobalProperties.class)
 public class DocumentService {
 
-	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
+	private static final Logger logger = LoggerFactory.getLogger(DocumentService.class);
 
 	private final GlobalProperties globalProperties;
 
@@ -55,6 +56,10 @@ public class DocumentService {
 		document.setContentType(contentType);
 		BigFile bigFile = new BigFile();
 		long size = inputStream.available();
+		if(size == 0) {
+			logger.warn("upload aborted cause file size is 0");
+			throw new EsupSignatureRuntimeException("File size is 0");
+		}
 		bigFileService.setBinaryFileStream(bigFile, inputStream, size);
 		document.setBigFile(bigFile);
 		document.setSize(size);
@@ -84,7 +89,6 @@ public class DocumentService {
 	}
 
 	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile, String name) throws EsupSignatureException, EsupSignatureFsException {
-		assert !name.isEmpty();
 		String documentUri;
 		FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(targetUrl);
 		if(fsAccessService != null) {
@@ -92,13 +96,15 @@ public class DocumentService {
 				fsAccessService.createURITree(targetUrl);
 				InputStream inputStream = signedFile.getInputStream();
 				if(name == null) {
-					name = signedFile.getFileName().replaceAll("\\W+", "_");
+					name = signedFile.getFileName();
 				} else {
-					name = name + "." + fileService.getExtension(signedFile.getFileName());
+					if(!fileService.getExtension(name).equals(fileService.getExtension(signedFile.getFileName()))) {
+						name = name + "." + fileService.getExtension(signedFile.getFileName());
+					}
 				}
-				logger.info("send to " + documentIOType.name() + " in " + targetUrl + "/" + name);
+				logger.info("send to " + documentIOType.name() + " in " + targetUrl + name);
 				if (fsAccessService.putFile(targetUrl, name, inputStream, UploadActionType.OVERRIDE)) {
-					documentUri = targetUrl + "/" + name;
+					documentUri = targetUrl + name;
 					return documentUri;
 				} else {
 					throw new EsupSignatureException("file is not exported");

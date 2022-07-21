@@ -1,74 +1,169 @@
 <!DOCTYPE html>
-<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml"lang="fr" >
+<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
+<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
+<!--/*@thymesVar id="signRequests" type="org.springframework.data.domain.Page<esupportail.esupsignature.entity.SignRequest>"*/-->
+<!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
+<!--/*@thymesVar id="infiniteScrolling" type="java.lang.Boolean"*/-->
 <head th:replace="fragments/head :: head"></head>
+<script th:inline="javascript" type="module">
+    import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=[[${versionApp}]]';
+    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "admin");
+</script>
 <body>
 <header th:replace="fragments/nav :: nav"></header>
-<main role="main" class="">
+<main role="main" th:style="${infiniteScrolling} ? '' : 'padding-bottom: 0px;'">
     <div class="wrapper">
         <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item active">Liste des demandes</li>
+                <li class="breadcrumb-item active">Tableau de bord</li>
             </ol>
         </nav>
         <div id="content" class="content">
-            <div class="card col-lg-10 mx-auto">
+            <div id="signButtons" class="fixed-action-btns active">
+                <ul id="buttonList" class="list-unstyled">
+                    <li>
+                        <a type="button" id="deleteMultipleButton"
+                           class="btn-floating btn-lg bg-danger wave-effect d-none">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a type="button" id="downloadMultipleButton"
+                           class="btn-floating btn-lg bg-primary wave-effect d-none">
+                            <i class="fas fa-download"></i>
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+            <div class="card col-sm-9 col-md-10 col-xl-11">
                 <div class="card-body">
-                    <form action="/admin/signrequests" method="get">
-                        <div class="form-group mb-3">
-                            <div class="input-group">
-                            <span class="input-group-text" id="basic-addon1">Statut</span>
-                            <select class="form-select" name="statusFilter" id="statusFilter" onchange="submit();">
-                                <option value="" data-placeholder="true">Choisir un statut</option>
-                                <option value="all">Tous</option>
-                                <th:block th:each="status : ${statuses}">
-                                    <option th:if="${status.name == statusFilter}" th:value="${status}"
-                                            selected="selected"
-                                            th:text="#{'signbook.status.' + ${status}}"></option>
-                                    <option th:unless="${status == statusFilter}" th:value="${status}"
-                                            th:text="#{'signbook.status.' + ${status}}"></option>
-                                </th:block>
-                            </select>
-                            </div>
-                        </div>
-                    </form>
-                        <div class="card-body">
-                            <table class="table table-borderless table-hover">
-                                    <thead class="table-secondary">
-                                    <tr style="z-index: 2;">
-                                        <th class="d-none d-xxl-table-cell text-center" style="width: 10%;">
-                                            Circuit
-                                        </th>
-                                        <th class="text-center" style="width: 10%;">
-                                            Titre des documents
-                                        </th>
-                                        <th class="d-none d-xxl-table-cell"><a class="sorted" sd:pagination-sort="createBy">Crée par</a></th>
-                                        <th class="d-none d-xl-table-cell"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
-                                        <th class="d-none d-xl-table-cell">
-                                            <select id="recipientsFilter" class="slim-select-filter sign-request-filter" data-placeholder="Participants" data-allow-deselect="true">
-                                                <option data-placeholder="true"></option>
-                                                <option value="all">Tout</option>
-                                                <th:block th:each="signRequestRecipient : ${signRequestRecipients}">
-                                                    <option th:value="${signRequestRecipient.eppn}" th:selected="${recipientsFilter == signRequestRecipient.eppn}" th:text="${signRequestRecipient.firstname + ' ' + signRequestRecipient.name}"></option>
-                                                </th:block>
-                                            </select>
-                                        </th>
-                                        <th class="d-none d-md-table-cell"><a class="sorted" sd:pagination-sort="status">Statut</a></th>
-                                        <th >Actions</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody id="signRequestTable">
-                                    <tr th:replace="admin/signbooks/includes/list-elem"></tr>
-                                    </tbody>
-                                </table>
-                        </div>
+                    <div id="listSignRequestTable" class="table-fix-head">
+                        <div id="loader" class="loader" style="position: fixed; left: 50%; top: 40%; z-index:100000000; display: none;"></div>
+                        <table class="table table-borderless table-hover">
+                        <thead class="table-secondary">
+                        <tr style="z-index: 2;">
+                            <th class="w-20 d-none d-lg-table-cell">
+                                <div class="position-relative">
+                                    <button type="button" id="menu-toggle_multiple" class="btn toggle-mini-menu" title="Menu global" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="collapse">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <div class="card position-absolute collapse mini-menu-thead" id="menu-multiple">
+                                        <div class="card-body">
+                                            <button id="selectAllButton" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button">
+                                                <i class="far fa-check-square"></i> Tout sélectionner
+                                            </button>
+                                            <button id="unSelectAllButton" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button">
+                                                <i class="far fa-minus-square"></i> Tout dé-sélectionner
+                                            </button>
+                                            <button id="menuDeleteMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fas fa-trash-alt pr-2"></i> Supprimer la sélection</button>
+                                            <button id="menuDownloadMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fas fa-download pr-2"></i> Télécharger la sélection</button>
+                                            <button id="menuDownloadMultipleButtonWithReport" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fas fa-download pr-2"></i> Télécharger la sélection avec rapports</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th>
+                            <th class="d-none d-xxl-table-cell text-center" style="width: 10%;">
+                                <select id="workflowFilter" class="slim-select-filter sign-request-filter" data-placeholder="Circuit" data-allow-deselect="true">
+                                    <option data-placeholder="true"></option>
+                                    <option value="all">Tout</option>
+                                    <th:block th:each="workflow : ${workflowNames}">
+                                        <option th:if="${workflow != 'null' && workflow != ''}" th:value="${workflow}" th:selected="${workflowFilter == workflow}" th:text="${workflow}"></option>
+                                    </th:block>
+                                </select>
+                            </th>
+                            <th class="text-center" style="width: 10%;">
+                                <input class="form-control sign-request-filter" th:value="${docTitleFilter}" type="text" placeholder="Titre des documents" id="docTitleFilter">
+<!--                                <select id="docTitleFilter" class="slim-select-filter sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">-->
+<!--                                    <option data-placeholder="true"></option>-->
+<!--                                    <option value="all">Tout</option>-->
+<!--                                    <th:block th:each="docTitle : ${docTitles}">-->
+<!--                                        <option th:value="${docTitle}" th:selected="${docTitleFilter == docTitle}" th:text="${docTitle}"></option>-->
+<!--                                    </th:block>-->
+<!--                                </select>-->
+                            </th>
+                            <th class="d-none d-xxl-table-cell">
+                                <div class="d-flex text-center">
+                                    <select id="creatorFilter" class="sign-request-filter"></select>
+<!--                                    <select id="creatorFilter" class="slim-select-filter sign-request-filter spinner-borders" data-placeholder="Crée par" data-allow-deselect="true">-->
+<!--                                        <option data-placeholder="true"></option>-->
+<!--                                        <option value="all">Tout</option>-->
+<!--                                        <th:block th:each="creator : ${creators}">-->
+<!--                                            <option th:value="${creator.eppn}" th:selected="${creatorFilter == creator.eppn}" th:text="${creator.firstname} + ' ' + ${creator.name}"></option>-->
+<!--                                        </th:block>-->
+<!--                                    </select>-->
+<!--                                    <a class="sorted my-auto text-center ms-1" sd:pagination-sort="createBy"><i class="fas fa-sort"></i></a>-->
+                                </div>
+                            </th>
+                            <th class="d-none d-xl-table-cell">
+                                <div class="d-flex text-center">
+                                    <input type="date" id="dateFilter" name="dateFilter" placeholder="Date de création" title="Date de création" class="form-control date sign-request-filter" th:value="${dateFilter}">
+                                    <a class="sorted my-auto text-center ms-1" sd:pagination-sort="createDate"><i class="fas fa-sort"></i></a>
+                                </div>
+                            </th>
+                            <th class="d-none d-xl-table-cell">
+<!--                                <select id="recipientsFilter" class="slim-select-filter sign-request-filter" data-placeholder="Participants" data-allow-deselect="true">-->
+<!--                                    <option data-placeholder="true"></option>-->
+<!--                                    <option value="all">Tout</option>-->
+<!--                                    <th:block th:each="signRequestRecipient : ${signRequestRecipients}">-->
+<!--                                        <option th:value="${signRequestRecipient.eppn}" th:selected="${recipientsFilter == signRequestRecipient.eppn}" th:text="${signRequestRecipient.firstname + ' ' + signRequestRecipient.name}"></option>-->
+<!--                                    </th:block>-->
+<!--                                </select>-->
+                            </th>
+                            <th class="d-none d-xxxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date de signature/refus</a></th>
+                            <th class="d-none d-md-table-cell"><a class="sorted" sd:pagination-sort="status">Statut</a></th>
+                            <th >Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="signRequestTable">
+                        <tr th:replace="admin/signbooks/includes/list-elem"></tr>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td colspan="100%">
+                                <a id="more-sign-request" href="javascript:void(0);" th:if="${infiniteScrolling}">Afficher plus d'éléments</a>
+                            </td>
+                        </tr>
+                        </tfoot>
+                    </table>
                     </div>
-                    <nav th:replace="fragments/pagination :: pagination"></nav>
                 </div>
             </div>
+            <nav  th:unless="${infiniteScrolling}" th:include="fragments/pagination :: pagination"></nav>
         </div>
     </div>
 </main>
+<div class="modal fade" id="checkCertSignModal"
+     tabindex="-1" role="dialog" aria-labelledby="checkCertSignModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="checkCertSignModalLabel">Signature électronique détectée</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">Nous avons détecté une signature électronique parmi les demandes sélectionnées</div>
+                <div class="modal-body">
+                    <form id="passwordForm">
+                        <input type="submit" id="passwordSubmit" class="d-none">
+                        <input class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" required/>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button id="massSignButton"
+                        class="btn btn-success" title="Signer" autofocus>
+                    Lancer la signature en masse <i class="fas fa-arrow-alt-circle-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 <footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

@@ -46,6 +46,8 @@ public class Workflow {
     @ElementCollection(targetClass=String.class)
     private List<String> roles = new ArrayList<>();
 
+    private String managerRole;
+
     @ElementCollection(targetClass= ShareType.class)
     private List<ShareType> authorizedShareTypes = new ArrayList<>();
 
@@ -67,6 +69,9 @@ public class Workflow {
     @OneToMany(cascade = CascadeType.REMOVE)
     private List<Target> targets = new ArrayList<>();
 
+    @ManyToMany
+    private List<User> viewers = new ArrayList<>();
+
     private Boolean fromCode;
 
     private Boolean visibility = false;
@@ -74,6 +79,10 @@ public class Workflow {
     private String namingTemplate;
 
     private String targetNamingTemplate;
+
+    private Boolean ownerSystem = false;
+
+    private Boolean sealAtEnd = false;
 
     public Long getId() {
         return id;
@@ -217,6 +226,14 @@ public class Workflow {
         this.roles = roles;
     }
 
+    public String getManagerRole() {
+        return managerRole;
+    }
+
+    public void setManagerRole(String managerRole) {
+        this.managerRole = managerRole;
+    }
+
     public List<ShareType> getAuthorizedShareTypes() {
         return authorizedShareTypes;
     }
@@ -274,5 +291,29 @@ public class Workflow {
 
     public void setTargetNamingTemplate(String targetNamingTemplate) {
         this.targetNamingTemplate = targetNamingTemplate;
+    }
+
+    public Boolean getOwnerSystem() {
+        return ownerSystem;
+    }
+
+    public void setOwnerSystem(Boolean ownerSystem) {
+        this.ownerSystem = ownerSystem;
+    }
+
+    public List<User> getViewers() {
+        return viewers;
+    }
+
+    public void setViewers(List<User> viewers) {
+        this.viewers = viewers;
+    }
+
+    public Boolean getSealAtEnd() {
+        return sealAtEnd;
+    }
+
+    public void setSealAtEnd(Boolean sealAtEnd) {
+        this.sealAtEnd = sealAtEnd;
     }
 }

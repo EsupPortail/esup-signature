@@ -22,7 +22,7 @@ export class HomeUi {
             if(oldSignRequests.length) {
                 oldSignRequests.modal('show');
                 $("#warningReaded").on('click', function () {
-                    $.get("/user/signrequests/warning-readed");
+                    $.get("/ws-secure/signrequests/warning-readed");
                 });
 
             }
@@ -54,12 +54,18 @@ export class HomeUi {
                 });
             });
         });
+        $(document).ready(function () {
+            $("#fast-form-button").on("click", function (){
+                $(this).unbind();
+                $("#fast-form-submit").click();
+            });
+        });
     }
 
     toggleNewMenu() {
         console.info("toggle new menu");
         $('#newScroll').toggleClass('text-nowrap').toggleClass('new-min-h');
-        $('#toSignList').toggleClass('d-flex d-none');
+        // $('#toSignList').toggleClass('d-flex d-none');
         $('#toggleNewGrid').children().toggleClass('fa-th fa-chevron-up');
         $('.newHr').toggleClass('d-none');
         $('#newContainer').toggleClass('d-inline').toggleClass("text-left");
@@ -73,7 +79,7 @@ export class HomeUi {
     hideAll() {
         $('.globalButton').addClass('d-none');
         $('.workflow-button').addClass('d-none');
-        $('.formButton').addClass('d-none');
+        $('.form-button').addClass('d-none');
         this.noFilterButton.removeClass('btn-secondary');
         this.noFilterButton.addClass('btn-light');
         this.globalFilterButton.removeClass('btn-secondary');
@@ -87,7 +93,7 @@ export class HomeUi {
     showAll() {
         $('.globalButton').removeClass('d-none');
         $('.workflow-button').removeClass('d-none');
-        $('.formButton').removeClass('d-none');
+        $('.form-button').removeClass('d-none');
         this.noFilterButton.addClass('btn-secondary');
         this.noFilterButton.removeClass('btn-light');
         this.globalFilterButton.removeClass('btn-secondary');
@@ -122,7 +128,7 @@ export class HomeUi {
         this.hideAll();
         this.formFilterButton.removeClass('btn-light');
         this.formFilterButton.addClass('btn-secondary');
-        $('.formButton').removeClass('d-none');
+        $('.form-button').removeClass('d-none');
         this.formFilterStatus = !this.formFilterStatus;
         return this.uiParams.set("formFilterStatus", this.formFilterStatus);
     }

@@ -7,16 +7,13 @@ import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
-import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
-import org.esupportail.esupsignature.service.ldap.AliasLdap;
-import org.esupportail.esupsignature.service.ldap.LdapAliasService;
 import org.esupportail.esupsignature.service.ldap.PersonLdapLight;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpHeaders;
-import org.springframework.ldap.NamingException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +27,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
-@RequestMapping("user/users")
+@RequestMapping("/user/users")
 @Controller
 public class UserController {
 
@@ -44,10 +41,9 @@ public class UserController {
 	@Resource
 	private FormService formService;
 
-	private UserKeystoreService userKeystoreService;
+	private final UserKeystoreService userKeystoreService;
 
-	@Autowired(required=false)
-	public void setUserKeystoreService(UserKeystoreService userKeystoreService) {
+	public UserController(@Autowired(required=false) UserKeystoreService userKeystoreService) {
 		this.userKeystoreService = userKeystoreService;
 	}
 
@@ -66,14 +62,8 @@ public class UserController {
 	@Resource
 	private MessageService messageService;
 
-	@Autowired(required = false)
-	private LdapAliasService ldapAliasService;
-
 	@Resource
 	UserListService userListService;
-
-	@Autowired(required = false)
-	private SmsService smsService;
 
     @GetMapping
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
@@ -89,13 +79,18 @@ public class UserController {
 
 	@PostMapping
     public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
-    		@RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
-    		@RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
-    		@RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
-    		@RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, RedirectAttributes redirectAttributes) throws Exception {
-		userService.updateUser(authUserEppn, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore);
+						 @RequestParam(value = "returnToHomeAfterSign", required=false) Boolean returnToHomeAfterSign,
+						 @RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
+						 @RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
+						 @RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
+						 @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore,
+						 @RequestParam(value = "signRequestParamsJsonString", required=false) String signRequestParamsJsonString,
+						 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
+		if(returnToHomeAfterSign == null) returnToHomeAfterSign = false;
+		userService.updateUser(authUserEppn, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, signRequestParamsJsonString, returnToHomeAfterSign);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Vos paramètres ont été enregistrés"));
-		return "redirect:/user/users/";
+		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+		return "redirect:" + referer;
     }
 
 	@GetMapping("/delete-sign/{id}")
@@ -110,7 +105,7 @@ public class UserController {
 		try {
         	redirectAttributes.addFlashAttribute("message", new JsonMessage("custom", userKeystoreService.checkKeystore(authUserEppn, password)));
         } catch (Exception e) {
-        	logger.error("open keystore fail", e);
+        	logger.warn("open keystore fail : " + e.getMessage());
         	redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Mauvais mot de passe"));
 		}
         return "redirect:/user/users/";
@@ -131,25 +126,15 @@ public class UserController {
 		return userService.getPersonLdapsLight(searchString).stream().sorted(Comparator.comparing(PersonLdapLight::getDisplayName)).collect(Collectors.toList());
    }
 
-   	@GetMapping(value = "/search-list")
-	@ResponseBody
-	public List<AliasLdap> searchList(@RequestParam(value="searchString") String searchString) {
-    	if(ldapAliasService != null) {
-			logger.debug("ldap search for : " + searchString);
-			try {
-				return ldapAliasService.searchAlias(searchString);
-			} catch (NamingException e) {
-				logger.trace(e.getMessage() + " : " + e.getExplanation());
-			}
-		}
-    	return new ArrayList<>();
-	}
-
 	@GetMapping(value = "/search-user-list")
 	@ResponseBody
 	public List<String> searchUserList(@RequestParam(value="searchString") String searchString) {
-
-    	return userListService.getUsersEmailFromList(searchString);
+		try {
+			return userListService.getUsersEmailFromList(searchString);
+		} catch (DataAccessException e) {
+			logger.warn(e.getMessage());
+		}
+		return null;
 	}
 
 	@GetMapping("/properties")

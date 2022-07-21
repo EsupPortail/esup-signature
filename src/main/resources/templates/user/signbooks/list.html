@@ -8,7 +8,7 @@
 <head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
     import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=[[${versionApp}]]';
-    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]]);
+    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user");
 </script>
 <body>
 <header th:replace="fragments/nav :: nav"></header>
@@ -100,8 +100,24 @@
                                     </th:block>
                                 </select>
                             </th>
-                            <th class="d-none d-xxl-table-cell"><a class="sorted" sd:pagination-sort="createBy">Crée par</a></th>
-                            <th class="d-none d-xl-table-cell"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
+                            <th class="d-none d-xxl-table-cell">
+                                <div class="d-flex text-center">
+                                    <select id="creatorFilter" class="slim-select-filter sign-request-filter" data-placeholder="Crée par" data-allow-deselect="true">
+                                        <option data-placeholder="true"></option>
+                                        <option value="all">Tout</option>
+                                        <th:block th:each="creator : ${creators}">
+                                            <option th:value="${creator.eppn}" th:selected="${creatorFilter == creator.eppn}" th:text="${creator.firstname} + ' ' + ${creator.name}"></option>
+                                        </th:block>
+                                    </select>
+                                    <a class="sorted my-auto text-center ms-1" sd:pagination-sort="createBy"><i class="fas fa-sort"></i></a>
+                                </div>
+                            </th>
+                            <th class="d-none d-xl-table-cell">
+                                <div class="d-flex text-center">
+                                    <input type="date" id="dateFilter" name="dateFilter" placeholder="Date de création" title="Date de création" class="form-control date sign-request-filter" th:value="${dateFilter}">
+                                    <a class="sorted my-auto text-center ms-1" sd:pagination-sort="createDate"><i class="fas fa-sort"></i></a>
+                                </div>
+                            </th>
                             <th class="d-none d-xl-table-cell">
                                 <select id="recipientsFilter" class="slim-select-filter sign-request-filter" data-placeholder="Participants" data-allow-deselect="true">
                                     <option data-placeholder="true"></option>
@@ -205,7 +221,6 @@
         </div>
     </div>
 </div>
-<div th:replace="fragments/new-modals :: new-modals"></div>
 <footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

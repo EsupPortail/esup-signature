@@ -39,6 +39,7 @@ public class SignRequest {
     @ManyToOne
     private User createBy;
 
+    @Column(columnDefinition = "TEXT")
     private String exportedDocumentURI;
 
     @JsonIgnore
@@ -84,6 +85,11 @@ public class SignRequest {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
+
+    @OneToOne(cascade = CascadeType.DETACH)
+    private AuditTrail auditTrail;
+
+    private String lastOtp;
 
     @JsonIgnore
     @Transient
@@ -269,6 +275,13 @@ public class SignRequest {
         this.lastNotifDate = lastNotifDate;
     }
 
+    public String getLastOtp() {
+        return lastOtp;
+    }
+
+    public void setLastOtp(String lastOtp) {
+        this.lastOtp = lastOtp;
+    }
 
     @JsonIgnore
     public Map<Recipient, Action> getOrderedRecipientHasSigned() {
@@ -286,6 +299,14 @@ public class SignRequest {
 
     public void setRecipientHasSigned(Map<Recipient, Action> recipientHasSigned) {
         this.recipientHasSigned = recipientHasSigned;
+    }
+
+    public AuditTrail getAuditTrail() {
+        return auditTrail;
+    }
+
+    public void setAuditTrail(AuditTrail auditTrail) {
+        this.auditTrail = auditTrail;
     }
 
     @JsonIgnore

@@ -1,6 +1,6 @@
 export class Nexu {
 
-    constructor(addExtra, id) {
+    constructor(addExtra, id, currentSignType) {
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.nexuUrl = this.globalProperties.nexuUrl;
         this.nexuVersion = this.globalProperties.nexuVersion;
@@ -15,20 +15,27 @@ export class Nexu {
         this.successDiv.hide();
         $("#warning-text").html("NexU not detected or not started ! ");
         $("#nexu_missing_alert").show();
-        $("#signFormConfirm").hide();
         let self = this;
-        this.checkNexuClient().then(function (){
-            console.warn("NexU detected");
-            $("#warning-text").html("");
-            $("#nexu_missing_alert").hide();
-            $("#alertNexu").remove();
-            $("#signFormConfirm").show();
-            if(id != null) {
-                self.loadScript();
-            }
-        }).catch(function (){
-            $("#alertNexu").show();
-            $("#signLaunchButton").hide();
+        $(document).ready(function() {
+            self.checkNexuClient().then(function(e) {
+                console.info("NexU detected !");
+                $("#warning-text").html("");
+                $("#nexu_missing_alert").hide();
+                $("#alertNexu").remove();
+                $("#noOptions").hide();
+                $("#selectTypeDiv").show();
+                if(id != null) {
+                    self.loadScript();
+                }
+            }).catch(function(e){
+                if(currentSignType === 'nexuSign') {
+                    $("#alertNexu").show();
+                    $("#signLaunchButton").hide();
+                    $("#second-tools").removeClass("d-flex");
+                    $("#second-tools").hide();
+                }
+                $("#certType > option[value='nexuCert']").attr('disabled', 'disabled');
+            });
         });
     }
 
@@ -117,24 +124,37 @@ export class Nexu {
             let ports = this.bindingPorts.split(",");
             let detectNexu = false;
             let self = this;
-            ports.forEach(function (port){
-                let url = "http://localhost:" + port.trim() + "/nexu-info";
-                console.info("check " + url);
+            let breakOut = false;
+            let i = 0;
+            ports.forEach(function (port) {
+                if(breakOut) {
+                    return false;
+                }
+                let url = "http://127.0.0.1:" + port.trim() + "/nexu-info";
+                console.info("check nexu on " + url);
                 $.ajax({
                     type: "GET",
                     url: url,
                     crossDomain: true,
                     dataType: "json",
-                    context : this,
-                    success: function (data) {
-                        console.info("nexu detected on " + url);
-                        detectNexu = true;
-                        self.detectedPort = port.trim();
-                        self.checkNexu(data);
-                        resolve("nexu detected");
-                    },
-                    error: function () {
-                        reject();
+                    async: true,
+                    cache: false,
+                }).done(function (data) {
+                    i++;
+                    console.info("nexu detected on " + url);
+                    detectNexu = true;
+                    self.detectedPort = port.trim();
+                    self.checkNexu(data);
+                    $("#nexu_missing_alert").hide();
+                    $("#noOptions").hide();
+                    $("#selectTypeDiv").show();
+                    breakOut = true;
+                    resolve("detected");
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    i++;
+                    if(i === ports.length) {
+                        console.debug("nexu not detected on " + url);
+                        reject(0);
                     }
                 });
             });
@@ -154,7 +174,7 @@ export class Nexu {
     }
 
     loadScript() {
-        let url = "http://localhost:" + this.detectedPort + "/nexu.js";
+        let url = "http://127.0.0.1:" + this.detectedPort + "/nexu.js";
         console.info("loading nexu script : " + url);
         $.getScript(url, function() {
             nexu_get_certificates(Nexu.getDataToSign, Nexu.error);

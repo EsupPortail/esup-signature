@@ -1,13 +1,19 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
+import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.ldap.*;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
@@ -23,8 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -40,28 +46,26 @@ public class UserService {
 
     private static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm";
 
-    private LdapPersonService ldapPersonService;
+    private final GlobalProperties globalProperties;
 
-    private LdapOrganizationalUnitService ldapOrganizationalUnitService;
+    private final WebSecurityProperties webSecurityProperties;
 
-    public UserService(GlobalProperties globalProperties) {
+    private final LdapPersonService ldapPersonService;
+
+    private final LdapOrganizationalUnitService ldapOrganizationalUnitService;
+
+    public UserService(GlobalProperties globalProperties,
+                       WebSecurityProperties webSecurityProperties,
+                       @Autowired(required = false) LdapPersonService ldapPersonService,
+                       @Autowired(required = false) LdapOrganizationalUnitService ldapOrganizationalUnitService) {
         this.globalProperties = globalProperties;
-    }
-
-    @Autowired(required = false)
-    public void setLdapPersonService(LdapPersonService ldapPersonService) {
+        this.webSecurityProperties = webSecurityProperties;
         this.ldapPersonService = ldapPersonService;
-    }
-
-    @Autowired(required = false)
-    public void setLdapOrganizationalUnitService(LdapOrganizationalUnitService ldapOrganizationalUnitService) {
         this.ldapOrganizationalUnitService = ldapOrganizationalUnitService;
     }
 
     @Resource
     private ShibProperties shibProperties;
-
-    private final GlobalProperties globalProperties;
 
     @Resource
     private UserRepository userRepository;
@@ -71,6 +75,12 @@ public class UserService {
 
     @Resource
     private DocumentService documentService;
+
+    @Resource
+    private SignRequestParamsRepository signRequestParamsRepository;
+
+    @Resource
+    private UserListService userListService;
 
     public User getById(Long id) {
         return userRepository.findById(id).get();
@@ -114,6 +124,23 @@ public class UserService {
         }
     }
 
+    public User getGroupUserByEmail(String email) {
+        if (userRepository.countByEmailAndUserType(email, UserType.group) > 0) {
+            return userRepository.findByEmailAndUserType(email, UserType.group).get(0);
+        } else {
+            return createGroupUserWithEmail(email);
+        }
+    }
+
+    @Transactional
+    public User createGroupUserWithEmail(String email) {
+        return createUser(email, email, "", email, UserType.group, false);
+    }
+
+    public User getUserByPhone(String phone) {
+        return userRepository.findByPhone(phone);
+    }
+
     @Transactional
     public User getUserByEppn(String eppn) {
         if (eppn.equals("scheduler")) {
@@ -135,6 +162,7 @@ public class UserService {
     }
 
     public String buildEppn(String uid) {
+        uid = uid.trim().toLowerCase();
         if (uid.split("@").length == 1
                 && !(uid.equals("creator") || uid.equals("system") || uid.equals("scheduler") || uid.equals("generic") )) {
             uid = uid + "@" + globalProperties.getDomain();
@@ -174,11 +202,16 @@ public class UserService {
                 String name = personLdaps.get(0).getSn();
                 String firstName = personLdaps.get(0).getGivenName();
                 return createUser(eppn, name, firstName, mail, UserType.ldap, false);
+            } else {
+                logger.warn(mail + " not found in ldap when search by email");
             }
+        } else {
+            logger.warn("no ldap service available");
         }
+
         UserType userType = checkMailDomain(mail);
         if (userType.equals(UserType.external)) {
-            logger.info("ldap user not found : " + mail + ". Creating temp acccount");
+            logger.info("ldap user not found : " + mail + ". Creating temp account");
             return createUser(UUID.randomUUID().toString(), "", "", mail, UserType.external, false);
         } else if (userType.equals(UserType.shib)) {
             return createUser(mail, mail, "Nouvel utilisateur fédération", mail, UserType.shib, false);
@@ -195,7 +228,7 @@ public class UserService {
         } else {
             authName = authentication.getName();
         }
-        logger.info("controle de l'utilisateur " + authName);
+        logger.info("user control for " + authName);
         List<PersonLdap> personLdaps =  Objects.requireNonNull(ldapPersonService).getPersonLdap(authName);
         String eppn = personLdaps.get(0).getEduPersonPrincipalName();
         if (eppn == null) {
@@ -239,13 +272,44 @@ public class UserService {
                 }
             }
         }
+        if(userType.equals(UserType.shib) && globalProperties.getShibUsersDomainWhiteList() != null && globalProperties.getShibUsersDomainWhiteList().size() > 0 && globalProperties.getShibUsersDomainWhiteList().contains(user.getEppn().split("@")[1])) {
+            user.getRoles().remove("ROLE_USER");
+            user.getRoles().add("ROLE_OTP");
+        }
         userRepository.save(user);
         return user;
     }
 
     @Transactional
-    public void updateUser(String authUserEppn, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore) throws IOException {
+    public void updateUser(String authUserEppn, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, String signRequestParamsJsonString, Boolean returnToHomeAfterSign) throws IOException {
         User authUser = getByEppn(authUserEppn);
+        if(signRequestParamsJsonString != null && !signRequestParamsJsonString.isEmpty()) {
+            ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            SignRequestParams signRequestParams = objectMapper.readValue(signRequestParamsJsonString, SignRequestParams.class);
+            signRequestParams.setxPos(0);
+            signRequestParams.setyPos(0);
+            signRequestParams.setSignWidth(300);
+            signRequestParams.setSignHeight(150);
+            if(authUser.getFavoriteSignRequestParams() == null) {
+                signRequestParamsRepository.save(signRequestParams);
+                authUser.setFavoriteSignRequestParams(signRequestParams);
+            } else {
+                //affectation
+                authUser.getFavoriteSignRequestParams().setAddExtra(signRequestParams.getAddExtra());
+                authUser.getFavoriteSignRequestParams().setAddWatermark(signRequestParams.getAddWatermark());
+                authUser.getFavoriteSignRequestParams().setExtraType(signRequestParams.getExtraType());
+                authUser.getFavoriteSignRequestParams().setExtraDate(signRequestParams.getExtraDate());
+                authUser.getFavoriteSignRequestParams().setExtraName(signRequestParams.getExtraName());
+                authUser.getFavoriteSignRequestParams().setExtraText(signRequestParams.getExtraText());
+                authUser.getFavoriteSignRequestParams().setExtraOnTop(signRequestParams.getExtraOnTop());
+            }
+        } else {
+            if(authUser.getFavoriteSignRequestParams() != null) {
+                SignRequestParams signRequestParams = authUser.getFavoriteSignRequestParams();
+                authUser.setFavoriteSignRequestParams(null);
+                signRequestParamsRepository.delete(signRequestParams);
+            }
+        }
         if(multipartKeystore != null && !multipartKeystore.isEmpty() && !globalProperties.getDisableCertStorage()) {
             if(authUser.getKeystore() != null) {
                 documentService.delete(authUser.getKeystore());
@@ -261,6 +325,7 @@ public class UserService {
         authUser.setEmailAlertFrequency(emailAlertFrequency);
         authUser.setEmailAlertHour(emailAlertHour);
         authUser.setEmailAlertDay(emailAlertDay);
+        authUser.setReturnToHomeAfterSign(returnToHomeAfterSign);
     }
 
     public boolean checkEmailAlert(User user) {
@@ -306,7 +371,23 @@ public class UserService {
                 personLdaps.remove(personLdaps.stream().filter(personLdap -> personLdap.getMail().equals(user.getEmail())).findFirst().get());
             }
             if(personLdaps.stream().noneMatch(personLdapLight -> personLdapLight.getMail().equals(user.getEmail()))) {
-                personLdaps.add(getPersonLdapLightFromUser(user));
+                PersonLdapLight personLdapLight = getPersonLdapLightFromUser(user);
+                if(user.getUserType().equals(UserType.group)) {
+                    personLdapLight.setDisplayName(personLdapLight.getDisplayName());
+                }
+                personLdaps.add(personLdapLight);
+            }
+        }
+        for(Map.Entry<String,String> string : userListService.getListsNames(searchString).entrySet()) {
+            if(personLdaps.stream().noneMatch(personLdapLight -> personLdapLight.getMail().equals(string.getKey()))) {
+                PersonLdapLight personLdapLight = new PersonLdapLight();
+                personLdapLight.setMail(string.getKey());
+                if(string.getValue() != null) {
+                    personLdapLight.setDisplayName(string.getValue());
+                } else {
+                    personLdapLight.setDisplayName(string.getKey());
+                }
+                personLdaps.add(personLdapLight);
             }
         }
         return personLdaps;
@@ -347,6 +428,11 @@ public class UserService {
             List<PersonLdap> personLdaps =  ldapPersonService.getPersonLdapRepository().findByEduPersonPrincipalName(user.getEppn());
             if (personLdaps.size() > 0) {
                 personLdap = personLdaps.get(0);
+            } else {
+                personLdaps =  ldapPersonService.getPersonLdap(user.getEppn().split("@")[0]);
+                if (personLdaps.size() > 0) {
+                    personLdap = personLdaps.get(0);
+                }
             }
         } else {
             personLdap = getPersonLdapFromUser(user);
@@ -371,11 +457,12 @@ public class UserService {
         String[] emailSplit = email.split("@");
         if (emailSplit.length > 1) {
             String domain = emailSplit[1];
-            if (domain.equals(globalProperties.getDomain())) {
+            if (domain.equals(globalProperties.getDomain()) && ldapPersonService != null) {
                 return UserType.ldap;
-            }
-            if(shibProperties.getDomainsWhiteListUrl() != null) {
-                File whiteListFile = getDomainsWhiteList();
+            } else if(domain.equals(globalProperties.getDomain())) {
+                return UserType.shib;
+            } else if(shibProperties.getDomainsWhiteListUrl() != null) {
+                InputStream whiteListFile = getDomainsWhiteList();
                 if (fileService.isFileContainsText(whiteListFile, domain)) {
                     return UserType.shib;
                 }
@@ -384,12 +471,11 @@ public class UserService {
         return UserType.external;
     }
 
-
-    public File getDomainsWhiteList() {
+    public InputStream getDomainsWhiteList() {
         try {
-        return fileService.getFileFromUrl(shibProperties.getDomainsWhiteListUrl());
+            return fileService.getFileFromUrl(shibProperties.getDomainsWhiteListUrl());
         } catch (IOException e) {
-        e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return null;
     }
@@ -397,13 +483,16 @@ public class UserService {
     public List<User> getTempUsersFromRecipientList(List<String> recipientsEmails) {
         List<User> tempUsers = new ArrayList<>();
         for (String recipientEmail : recipientsEmails) {
-            if(recipientEmail.contains("*")) {
-                recipientEmail = recipientEmail.split("\\*")[1];
-            }
-            if(!recipientEmail.contains(globalProperties.getDomain())) {
-                User recipientUser = getUserByEmail(recipientEmail);
-                if (recipientUser.getUserType().equals(UserType.external)) {
-                    tempUsers.add(recipientUser);
+            if(recipientEmail != null) {
+                if (recipientEmail.contains("*")) {
+                    recipientEmail = recipientEmail.split("\\*")[1];
+                }
+                List<String> groupUsers = userListService.getUsersEmailFromList(recipientEmail);
+                if (groupUsers.size() == 0 && !recipientEmail.contains(globalProperties.getDomain())) {
+                    User recipientUser = getUserByEmail(recipientEmail);
+                    if (recipientUser.getUserType().equals(UserType.external)) {
+                        tempUsers.add(recipientUser);
+                    }
                 }
             }
         }
@@ -424,7 +513,7 @@ public class UserService {
         if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size() > 0) {
             for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
                 for (Recipient recipient : liveWorkflowStep.getRecipients()) {
-                    if (recipient.getUser().getUserType().equals(UserType.external) || (recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && recipient.getUser().getEppn().equals(recipient.getUser().getName()))) {
+                    if (recipient.getUser().getUserType().equals(UserType.external) || (recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && !recipient.getUser().getUserType().equals(UserType.group) && !recipient.getUser().getUserType().equals(UserType.shib) && recipient.getUser().getEppn().equals(recipient.getUser().getName()))) {
                         users.add(recipient.getUser());
                     }
                 }
@@ -433,7 +522,7 @@ public class UserService {
             if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getWorkflowSteps().size() > 0) {
                 for (WorkflowStep workflowStep : signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getWorkflowSteps()) {
                     for (User user : workflowStep.getUsers()) {
-                        if (user.getUserType().equals(UserType.external) || (user.getEppn().equals(user.getEmail()) && user.getEppn().equals(user.getName()))) {
+                        if (user.getUserType().equals(UserType.external) || (user.getEppn().equals(user.getEmail()) && !user.getUserType().equals(UserType.group) && user.getEppn().equals(user.getName()))) {
                             users.add(user);
                         }
                     }
@@ -505,8 +594,12 @@ public class UserService {
     @Transactional
     public List<User> getUserWithoutCertificate(List<String> userEmails) {
         List<User> users = new ArrayList<>();
-        userEmails.forEach(ue -> users.add(this.getUserByEmail(ue)));
-        return users.stream().filter(u -> u.getKeystoreFileName() == null).collect(Collectors.toList());
+        if(globalProperties.getSealCertificatPin().isEmpty()) {
+            userEmails.forEach(ue -> users.add(this.getUserByEmail(ue)));
+            return users.stream().filter(u -> u.getKeystoreFileName() == null).collect(Collectors.toList());
+        } else {
+            return users;
+        }
     }
 
     @Transactional
@@ -536,7 +629,9 @@ public class UserService {
                 jsonExternalUserInfo.setEmail(emails.get(i));
                 jsonExternalUserInfo.setName(names.get(i));
                 jsonExternalUserInfo.setFirstname(firstnames.get(i));
-                jsonExternalUserInfo.setPhone(phones.get(i));
+                if(phones.size() >= i + 1) {
+                    jsonExternalUserInfo.setPhone(phones.get(i));
+                }
                 externalUsersInfos.add(jsonExternalUserInfo);
             }
         }
@@ -550,12 +645,28 @@ public class UserService {
         user.getRoles().addAll(roles);
     }
 
+    @Transactional
+    public void updatePhone(String userEppn, String phone) {
+        User user = getUserByEppn(userEppn);
+        user.setPhone(phone);
+    }
+
     public List<String> getAllRoles() {
-        return userRepository.getAllRoles();
+        List<String> roles = new ArrayList<>(userRepository.getAllRoles());
+        for(String role : webSecurityProperties.getMappingGroupsRoles().values()){
+            if(!roles.contains(role)) {
+                roles.add(role);
+            }
+        }
+        return roles.stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
     public List<User> getByManagersRoles(String role) {
         return userRepository.findByManagersRolesIn(Collections.singletonList(role));
+    }
+
+    public List<User> getByManagersRolesUsers() {
+        return userRepository.findByManagersRolesNotNull();
     }
 
     @Transactional
@@ -585,4 +696,47 @@ public class UserService {
         }
     }
 
+    public String tryGetEppnFromLdap(Authentication auth) {
+        String eppn = auth.getName();
+        if(ldapPersonService != null) {
+            List<PersonLdap> personLdaps = ldapPersonService.getPersonLdap(auth.getName());
+            if(personLdaps.size() > 0) {
+                eppn = personLdaps.get(0).getEduPersonPrincipalName();
+                if (eppn == null) {
+                    eppn = buildEppn(auth.getName());
+                }
+            }
+        }
+        return eppn;
+    }
+
+    public String getFavoriteSignRequestParamsJson(String userEppn) throws JsonProcessingException {
+        User user = getUserByEppn(userEppn);
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writer().writeValueAsString(user.getFavoriteSignRequestParams());
+    }
+
+    @Transactional
+    public void updateUserInfos(Long id, String eppn, String name, String firstname) {
+        User user = getById(id);
+        user.setEppn(eppn);
+        user.setName(name);
+        user.setFirstname(firstname);
+    }
+
+    @Transactional
+    public String getDefaultImage(String eppn) throws IOException {
+        User user = getUserByEppn(eppn);
+        return fileService.getBase64Image(fileService.getDefaultImage(user.getName(), user.getFirstname()), "default");
+    }
+
+    @Transactional
+    public List<User> getGroupUsers() {
+        return userRepository.findByUserType(UserType.group);
+    }
+
+    public List<String> getManagersRoles(String authUserEppn) {
+        User user = getUserByEppn(authUserEppn);
+        return user.getManagersRoles().stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+    }
 }

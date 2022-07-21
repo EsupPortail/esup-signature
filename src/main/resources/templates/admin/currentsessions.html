@@ -22,7 +22,7 @@
             <th:block th:each="currentSession : ${currentSessions}">
                 <div class="card mb-1 col-10 mx-auto">
                     <div class="card-body">
-                        <h5>
+                        <h5><i class="fas fa-user"></i>
                             <a data-bs-toggle="collapse" th:href="'#sess-' + ${currentSession.hashCode()}" role="button"
                                aria-expanded="false"
                                th:aria-controls="'sess-' + ${currentSession.hashCode()}">

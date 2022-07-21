@@ -31,6 +31,7 @@
                                     <input name="role" type="hidden" th:value="${role}">
                                     <td>
                                         <select th:id="${'rolesManagersSelect' + status.index}" class="select-users" multiple="multiple" name="rolesManagers">
+                                            <option data-placeholder="true"></option>
                                             <th:block th:each="user : ${roleManagers.get(role)}">
                                                 <option th:value="${user.email}" th:text="${user.firstname} + ' ' + ${user.name}"
                                                         selected></option>

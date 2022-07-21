@@ -27,7 +27,6 @@ import java.util.List;
 
 @RequestMapping("/manager/workflows")
 @Controller
-
 public class WorkflowManagerController {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowManagerController.class);
@@ -55,8 +54,10 @@ public class WorkflowManagerController {
     private WorkflowStepService workflowStepService;
 
     @GetMapping
+    @PreAuthorize("@preAuthorizeService.isManager(#authUserEppn)")
     public String list(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
         model.addAttribute("workflows", workflowService.getManagerWorkflows(authUserEppn));
+        model.addAttribute("roles", userService.getManagersRoles(authUserEppn));
         return "managers/workflows/list";
     }
 
@@ -70,13 +71,15 @@ public class WorkflowManagerController {
     }
 
     @PostMapping(produces = "text/html")
-    public String create(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(name = "title", required = false) String title, @RequestParam(name = "description") String description, RedirectAttributes redirectAttributes) {
+    @PreAuthorize("@preAuthorizeService.isManager(#authUserEppn)")
+    public String create(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(name = "managerRole") String managerRole, @RequestParam(name = "title", required = false) String title, @RequestParam(name = "description") String description, RedirectAttributes redirectAttributes) {
         if(title == null) {
             title = description;
         }
         Workflow workflow;
         try {
             workflow = workflowService.createWorkflow(title, description, userService.getByEppn(authUserEppn));
+            workflow.setManagerRole(managerRole);
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit possède déjà ce préfixe"));
             return "redirect:/manager/workflows/";
@@ -149,9 +152,16 @@ public class WorkflowManagerController {
                                      @RequestParam(name="changeable", required = false) Boolean changeable,
                                      @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                                      @RequestParam(name="attachmentAlert", required = false) Boolean attachmentAlert,
-                                     @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) {
+                                     @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire,
+                                     @RequestParam(name="autoSign", required = false) Boolean autoSign,
+                                     RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowService.getById(id);
-        workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire);
+        try {
+            workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, autoSign, null
+            );
+        } catch (EsupSignatureException e) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Type de signature impossible pour une étape infinie"));
+        }
         return "redirect:/manager/workflows/" + id;
     }
 

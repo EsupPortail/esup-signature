@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <nav th:fragment="side-user" id="sidebar">
-    <div class="ms-1 mt-2">
+    <div th:unless="${user.userType.name() == 'external'}" class="ms-1 mt-2">
         <h5 class="text-center sidebar-label"><b>Paramètres</b></h5>
         <a class="btn col-12 mb-1 text-left"
            th:classappend="${activeMenu == 'settings'} ? 'btn-secondary' : 'btn-light'"

@@ -17,7 +17,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
-import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +26,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.*;
-import java.sql.SQLException;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -61,13 +64,13 @@ public class FormService {
 	private UserService userService;
 
 	@Resource
-	private FileService fileService;
-
-	@Resource
 	private SignRequestParamsService signRequestParamsService;
 
 	@Resource
 	private DataRepository dataRepository;
+
+	@Resource
+	private WebUtilsService webUtilsService;
 
 	public Form getById(Long formId) {
 		Form obj = formRepository.findById(formId).get();
@@ -97,10 +100,9 @@ public class FormService {
 
 	@Transactional
 	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage) throws IOException, EsupSignatureException {
-		Workflow workflow = workflowRepository.findById(workflowId).get();
 		byte[] bytes = multipartFile.getInputStream().readAllBytes();
 		Document document = documentService.createDocument(new ByteArrayInputStream(bytes), multipartFile.getOriginalFilename(), multipartFile.getContentType());
-		Form form = createForm(document, name, title, workflow, prefillType, roleNames, publicUsage);
+		Form form = createForm(document, name, title, workflowId, prefillType, roleNames, publicUsage, null, null);
 		try {
 			updateSignRequestParams(form.getId(), new ByteArrayInputStream(bytes));
 		} catch (EsupSignatureIOException e) {
@@ -128,24 +130,22 @@ public class FormService {
 	}
 
 	@Transactional
-	public void updateForm(Long id, Form updateForm, List<String> managers, String[] types) {
+	public void updateForm(Long id, Form updateForm, String[] types, boolean updateWorkflow) {
 		Form form = getById(id);
 		form.setPdfDisplay(updateForm.getPdfDisplay());
-		form.getManagers().clear();
-		if(managers != null) {
-			form.getManagers().addAll(managers);
-		}
 		form.setName(updateForm.getName());
 		form.setTitle(updateForm.getTitle());
 		form.getRoles().clear();
 		form.getRoles().addAll(updateForm.getRoles());
 		form.setPreFillType(updateForm.getPreFillType());
-		if(updateForm.getWorkflow() == null) {
-			for(Field field : form.getFields()) {
-				field.getWorkflowSteps().clear();
+		if(updateWorkflow) {
+			if(updateForm.getWorkflow() == null) {
+				for(Field field : form.getFields()) {
+					field.getWorkflowSteps().clear();
+				}
 			}
+			form.setWorkflow(updateForm.getWorkflow());
 		}
-		form.setWorkflow(updateForm.getWorkflow());
 		form.setDescription(updateForm.getDescription());
 		form.setMessage(updateForm.getMessage());
 		form.setPublicUsage(updateForm.getPublicUsage());
@@ -178,15 +178,15 @@ public class FormService {
 				documentService.delete(oldModel.getId());
 			}
 			try {
-				File tempDocument = fileService.inputStreamToTempFile(multipartModel.getInputStream(), multipartModel.getOriginalFilename());
-				List<Field> fields = getFields(new FileInputStream(tempDocument), form.getWorkflow());
+				byte[] tempDocument = multipartModel.getInputStream().readAllBytes();
+				List<Field> fields = getFields(new ByteArrayInputStream(tempDocument), form.getWorkflow());
 				for(Field field : fields) {
 					if(form.getFields().stream().noneMatch(field1 -> field1.getName().equals(field.getName()))) {
 						form.getFields().add(field);
 					}
 				}
-				updateSignRequestParams(id, new FileInputStream(tempDocument));
-				Document newModel = documentService.createDocument(pdfService.removeSignField(new FileInputStream(tempDocument)), multipartModel.getOriginalFilename(), multipartModel.getContentType());
+				updateSignRequestParams(id, new ByteArrayInputStream(tempDocument));
+				Document newModel = documentService.createDocument(pdfService.removeSignField(new ByteArrayInputStream(tempDocument)), multipartModel.getOriginalFilename(), multipartModel.getContentType());
 				form.setDocument(newModel);
 
 			} catch (IOException | EsupSignatureIOException e) {
@@ -220,15 +220,24 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form createForm(Document document, String name, String title, Workflow workflow, String prefillType, List<String> roleNames, Boolean publicUsage, String... fieldNames) throws IOException, EsupSignatureException {
+	public Form createForm(Document document, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String[] fieldNames, String[] fieldTypes) throws IOException, EsupSignatureException {
+		Workflow workflow = workflowRepository.findById(workflowId).get();
 		Form form = new Form();
 		form.setName(name);
 		form.setTitle(title);
 		form.setActiveVersion(true);
 		form.setVersion(1);
-		if (document == null && fieldNames.length > 0) {
-			for(String fieldName : fieldNames) {
-				form.getFields().add(fieldService.createField(fieldName, workflow));
+		if (document == null) {
+			if(fieldNames != null && fieldNames.length > 0) {
+				int i = 0;
+				for (String fieldName : fieldNames) {
+					if (fieldTypes != null && fieldTypes.length > 0) {
+						form.getFields().add(fieldService.createField(fieldName, workflow, FieldType.valueOf(fieldTypes[i])));
+					} else {
+						form.getFields().add(fieldService.createField(fieldName, workflow, FieldType.text));
+					}
+					i++;
+				}
 			}
 		} else {
 			form.setFields(getFields(document.getInputStream(), workflow));
@@ -241,9 +250,30 @@ public class FormService {
 		form.setWorkflow(workflow);
 		if(publicUsage == null) publicUsage = false;
 		form.setPublicUsage(publicUsage);
-		document.setParentId(form.getId());
+		if(document != null) {
+			document.setParentId(form.getId());
+		}
+		if(fieldTypes != null) {
+			form.setPdfDisplay(false);
+		}
 		formRepository.save(form);
 		return form;
+	}
+
+	@Transactional
+	public void addField(Long formId, String[] fieldNames, String[] fieldTypes) {
+		Form form = getById(formId);
+		if(fieldNames != null && fieldNames.length > 0) {
+			int i = 0;
+			for (String fieldName : fieldNames) {
+				if (fieldTypes != null && fieldTypes.length > 0) {
+					form.getFields().add(fieldService.createField(fieldName, form.getWorkflow(), FieldType.valueOf(fieldTypes[i])));
+				} else {
+					form.getFields().add(fieldService.createField(fieldName, form.getWorkflow(), FieldType.text));
+				}
+				i++;
+			}
+		}
 	}
 
 	private List<Field> getFields(InputStream inputStream, Workflow workflow) throws IOException, EsupSignatureException {
@@ -257,7 +287,7 @@ public class FormService {
 				logger.info(pdField.getFullyQualifiedName() + " finded");
 				int page = pageNrByAnnotDict.get(pdField.getPartialName());
 				if (pdField instanceof PDTextField) {
-					Field field = fieldService.createField(pdField.getPartialName(), workflow);
+					Field field = fieldService.createField(pdField.getPartialName(), workflow, FieldType.text);
 					field.setLabel(pdField.getAlternateFieldName());
 					field.setRequired(pdField.isRequired());
 					field.setReadOnly(pdField.isReadOnly());
@@ -296,10 +326,9 @@ public class FormService {
 					fields.add(field);
 					logger.info(field.getName() + " added");
 				} else if (pdField instanceof PDCheckBox) {
-					Field field = fieldService.createField(pdField.getPartialName(), workflow);
+					Field field = fieldService.createField(pdField.getPartialName(), workflow, FieldType.checkbox);
 					field.setRequired(pdField.isRequired());
 					field.setReadOnly(pdField.isReadOnly());
-					field.setType(FieldType.checkbox);
 					field.setLabel(pdField.getAlternateFieldName());
 					PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
 					parseField(field, pdField, pdAnnotationWidget, page);
@@ -311,8 +340,7 @@ public class FormService {
 						if(pdAnnotationWidget.getRectangle() == null) {
 							continue;
 						}
-						Field field = fieldService.createField(pdField.getPartialName(), workflow);
-						field.setType(FieldType.radio);
+						Field field = fieldService.createField(pdField.getPartialName(), workflow, FieldType.radio);
 						field.setRequired(pdField.isRequired());
 						field.setReadOnly(pdField.isReadOnly());
 						field.setLabel(pdField.getAlternateFieldName());
@@ -322,8 +350,7 @@ public class FormService {
 						break;
 					}
 				} else if (pdField instanceof PDChoice) {
-					Field field = fieldService.createField(pdField.getPartialName(), workflow);
-					field.setType(FieldType.select);
+					Field field = fieldService.createField(pdField.getPartialName(), workflow, FieldType.select);
 					field.setRequired(pdField.isRequired());
 					field.setReadOnly(pdField.isReadOnly());
 					PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
@@ -342,6 +369,7 @@ public class FormService {
 				fieldsOrdered.add(field);
 			}
 		}
+		pdDocument.close();
 		return fieldsOrdered;
 	}
 
@@ -386,10 +414,18 @@ public class FormService {
 		return formRepository.findFormByNameAndDeletedIsNullOrDeletedIsFalse(name);
 	}
 
-
+	@Transactional
 	public List<Form> getFormByManagersContains(String eppn) {
 		User user = userService.getUserByEppn(eppn);
-		return formRepository.findFormByManagersContainsAndDeletedIsNullOrDeletedIsFalse(user.getEmail());
+		List<Workflow> workflows = workflowRepository.findWorkflowByManagersIn(Collections.singletonList(user.getEmail()));
+		List<Form> managerForms = new ArrayList<>();
+		for(Workflow workflow : workflows) {
+			List<Form> form = formRepository.findByWorkflowIdEquals(workflow.getId());
+			if(form != null && form.size() > 0) {
+				managerForms.add(form.get(0));
+			}
+		}
+		return managerForms;
 	}
 
 	@Transactional
@@ -410,17 +446,27 @@ public class FormService {
 	}
 
 	@Transactional
-	public Map<String, Object> getModel(Long id) throws SQLException, IOException {
+	public boolean getModel(Long id, HttpServletResponse httpServletResponse) throws IOException {
 		Form form = getById(id);
-		Document attachement = documentService.getById(form.getDocument().getId());
-		if (attachement != null) {
-			return fileService.getFileResponse(attachement.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), attachement.getFileName(), attachement.getContentType());
+		Document attachment = documentService.getById(form.getDocument().getId());
+		if (attachment != null) {
+			webUtilsService.copyFileStreamToHttpResponse(attachment.getFileName(), attachment.getContentType(), attachment.getInputStream(), httpServletResponse);
+			return true;
 		}
-		return null;
+		return false;
 	}
 
 	public List<Form> getByRoles(String role) {
 		return formRepository.findByRolesIn(Collections.singletonList(role));
+	}
+
+	public Set<Form> getManagerForms(String userEppn) {
+		User manager = userService.getByEppn(userEppn);
+		Set<Form> formsManaged = new HashSet<>();
+		for (String role : manager.getManagersRoles()) {
+			formsManaged.addAll(formRepository.findByManagerRole(role));
+		}
+		return formsManaged;
 	}
 
 	@Transactional
@@ -450,12 +496,32 @@ public class FormService {
 	}
 
 	@Transactional
+	public void addSignRequestParamsSteps(Long formId, Integer step, Integer signPageNumber, Integer xPos, Integer yPos) {
+		Form form = getById(formId);
+		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(signPageNumber, xPos, yPos);
+		form.getSignRequestParams().add(signRequestParams);
+		form.getWorkflow().getWorkflowSteps().get(step - 1).getSignRequestParams().add(signRequestParams);
+	}
+
+	@Transactional
+	public void removeSignRequestParamsSteps(Long formId, Long id) {
+		Form form = getById(formId);
+		SignRequestParams signRequestParams = signRequestParamsService.getById(id);
+		form.getSignRequestParams().removeIf(signRequestParams1 -> signRequestParams1.equals(signRequestParams));
+		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
+			workflowStep.getSignRequestParams().remove(signRequestParams);
+		}
+		signRequestParamsService.delete(id);
+
+	}
+
+	@Transactional
     public InputStream getJsonFormSetup(Long id) throws IOException {
 		Form form = getById(id);
-		File jsonFile = fileService.getTempFile("json");
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.writer().writeValue(jsonFile, form);
-		return new FileInputStream(jsonFile);
+		objectMapper.writer().writeValue(outputStream, form);
+		return new ByteArrayInputStream(outputStream.toByteArray());
     }
 
     @Transactional
@@ -473,8 +539,7 @@ public class FormService {
 		formSetup.setName(form.getName());
 		formSetup.setTitle(form.getTitle());
 		formSetup.setWorkflow(null);
-		updateForm(id, formSetup, formSetup.getManagers(), formSetup.getAuthorizedShareTypes().stream().map(Enum::name).collect(Collectors.toList()).toArray(String[]::new));
-		return;
+		updateForm(id, formSetup, formSetup.getAuthorizedShareTypes().stream().map(Enum::name).collect(Collectors.toList()).toArray(String[]::new), false);
 	}
 
 	public void nullifyForm(Form form) {
@@ -482,5 +547,11 @@ public class FormService {
 		for(Data data : datas) {
 			data.setForm(null);
 		}
+	}
+
+	@Transactional
+	public int getTotalPagesCount(Long id) {
+		Form form = getById(id);
+		return pdfService.getPdfParameters(form.getDocument().getInputStream(), 1).getTotalNumberOfPages();
 	}
 }

@@ -24,14 +24,13 @@ export class UserSignaturePad {
         // $('#validate').click(e => this.saveSignaturePad());
         // $('#reset').click(e => this.resetSignaturePad());
         window.addEventListener("resize", e => this.resizeCanvas());
-        $("#saveButton").on('click', e => this.checkSignatureUpdate());
+        $(document).ready(e => this.resizeCanvas());
     }
 
     checkSignatureUpdate() {
         if (!this.signaturePad.isEmpty()) {
             this.save();
         }
-        $("#userParamsForm").submit();
     }
 
     setLastSign() {

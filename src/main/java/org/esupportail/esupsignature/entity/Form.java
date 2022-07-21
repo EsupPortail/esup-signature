@@ -30,8 +30,11 @@ public class Form {
 
 	private Integer version;
 
+	@Deprecated
 	@ElementCollection(targetClass=String.class)
 	private List<String> managers = new ArrayList<>();
+
+	private String managerRole;
 
 	@OneToOne
 	private Workflow workflow;
@@ -69,6 +72,9 @@ public class Form {
 
 	@Column(columnDefinition = "TEXT")
 	private String action;
+
+	@Transient
+	private Integer totalPageCount = 1;
 
 	public Long getId() {
 		return id;
@@ -118,12 +124,22 @@ public class Form {
 		this.version = version;
 	}
 
+	@Deprecated
 	public List<String> getManagers() {
 		return managers;
 	}
 
+	@Deprecated
 	public void setManagers(List<String> managers) {
 		this.managers = managers;
+	}
+
+	public String getManagerRole() {
+		return managerRole;
+	}
+
+	public void setManagerRole(String managerRole) {
+		this.managerRole = managerRole;
 	}
 
 	public Workflow getWorkflow() {
@@ -228,5 +244,13 @@ public class Form {
 
 	public void setMessageToDisplay(String messageToDisplay) {
 		this.messageToDisplay = messageToDisplay;
+	}
+
+	public Integer getTotalPageCount() {
+		return totalPageCount;
+	}
+
+	public void setTotalPageCount(Integer totalPageCount) {
+		this.totalPageCount = totalPageCount;
 	}
 }

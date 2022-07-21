@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -47,6 +48,9 @@ public class AdminSignRequestController {
 
 	@Resource
 	private SignService signService;
+
+	@Resource
+	private WebUtilsService webUtilsService;
 
 	@ModelAttribute("adminMenu")
 	public String getAdminMenu() {
@@ -96,23 +100,16 @@ public class AdminSignRequestController {
 	}
 
 	@GetMapping(value = "/{id}")
+	@Transactional
 	public String show(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
 		SignRequest signRequest = signRequestService.getById(id);
-			model.addAttribute("signBooks", signBookService.getAllSignBooks());
-			Document toDisplayDocument;
-			if(signService.getToSignDocuments(signRequest.getId()).size() == 1) {
-				toDisplayDocument = signService.getToSignDocuments(signRequest.getId()).get(0);
-				if(toDisplayDocument.getContentType().equals("application/pdf")) {
-				}
-				model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
-				model.addAttribute("documentId", toDisplayDocument.getId());
-			}
-			List<Log> logs = logService.getBySignRequestId(signRequest.getId());
-			model.addAttribute("logs", logs);
-			model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
-			model.addAttribute("signRequest", signRequest);
-			model.addAttribute("itemId", id);
-			return "admin/signrequests/show";
+		List<Log> logs = logService.getBySignRequestId(signRequest.getId());
+		model.addAttribute("logs", logs);
+		model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
+		model.addAttribute("signRequest", signRequest);
+		model.addAttribute("originalDocuments", signRequest.getOriginalDocuments());
+		model.addAttribute("signedDocuments", signRequest.getSignedDocuments());
+		return "admin/signrequests/show";
 	}
 
 	@GetMapping(value = "/getfile/{id}")
@@ -124,32 +121,26 @@ public class AdminSignRequestController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@DeleteMapping(value = "/{id}", produces = "text/html")
-	public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-		signBookService.delete(id, authUserEppn);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
-		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
-	}
-
 	@DeleteMapping(value = "delete-definitive/{id}", produces = "text/html")
 	public String deleteDefinitive(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-		signBookService.deleteDefinitive(id);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+		if(signBookService.deleteDefinitive(id, authUserEppn)) {
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été supprimé définitivement"));
+		} else {
+			redirectAttributes.addFlashAttribute("warn", new JsonMessage("info", "Le document ne peut pas être supprimé définitivement"));
+		}
 		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
 
 	@GetMapping(value = "/get-last-file/{id}")
 	@Transactional
-	public void getLastFile(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse response) {
+	public void getLastFile(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
 		List<Document> documents = signService.getToSignDocuments(id);
 		try {
 			if(documents.size() > 1) {
-				response.sendRedirect("/user/signrequests/" + id);
+				httpServletResponse.sendRedirect("/user/signrequests/" + id);
 			} else {
 				Document document = documents.get(0);
-				response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
-				response.setContentType(document.getContentType());
-				IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+				webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), document.getInputStream(), httpServletResponse);
 			}
 		} catch (Exception e) {
 			logger.error("get file error", e);

@@ -1,16 +1,17 @@
 package org.esupportail.esupsignature.service;
 
 import eu.europa.esig.dss.model.x509.CertificateToken;
+import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.KSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import eu.europa.esig.dss.validation.CertificateValidator;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.reports.CertificateReports;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,13 +24,12 @@ import java.util.Date;
 
 @Service
 public class UserKeystoreService {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(UserKeystoreService.class);
 
-	private CertificateVerifier certificateVerifier;
+	private final CertificateVerifier certificateVerifier;
 
-	@Autowired
-	public void setCertificateVerifier(CertificateVerifier certificateVerifier) {
+	public UserKeystoreService(CertificateVerifier certificateVerifier, GlobalProperties globalProperties) {
 		this.certificateVerifier = certificateVerifier;
 	}
 
@@ -40,7 +40,7 @@ public class UserKeystoreService {
 		try {
 			return new Pkcs12SignatureToken(keyStoreFile, new PasswordProtection(password.toCharArray()));
 		} catch (Exception e) {
-			if(e.getCause().getMessage().equals("keystore password was incorrect")) {
+			if(e.getCause() != null && e.getCause().getMessage() != null && e.getCause().getMessage().equals("keystore password was incorrect")) {
 				logger.warn("keystore password was incorrect");
 			} else {
 				logger.error("open keystore fail :" + e.getMessage());
@@ -49,17 +49,17 @@ public class UserKeystoreService {
 		}
 	}
 
-	public CertificateToken getCertificateToken(Pkcs12SignatureToken token) throws EsupSignatureKeystoreException {
+	public CertificateToken getCertificateToken(AbstractKeyStoreTokenConnection token) throws EsupSignatureKeystoreException {
 		try {
 			KSPrivateKeyEntry ksPrivateKeyEntry = (KSPrivateKeyEntry) token.getKeys().get(0);
 			return ksPrivateKeyEntry.getCertificate();
 		} catch (Exception e) {
-			logger.error("open keystore fail", e);
+			logger.error("open keystore fail : " + e.getMessage());
 			throw new EsupSignatureKeystoreException("get certificat token fail", e);
 		}
 	}
-	
-	public CertificateToken[] getCertificateTokenChain(Pkcs12SignatureToken token) {
+
+	public CertificateToken[] getCertificateTokenChain(AbstractKeyStoreTokenConnection token) {
 			KSPrivateKeyEntry ksPrivateKeyEntry = (KSPrivateKeyEntry) token.getKeys().get(0);
 			CertificateToken[] certificateTokens = ksPrivateKeyEntry.getCertificateChain();
 			return certificateTokens;
@@ -86,7 +86,12 @@ public class UserKeystoreService {
 		CertificateReports certificateReports = certificateValidator.validate();
 		certInfo += "\nRevocation : " + certificateReports.getSimpleReport().getCertificateRevocationReason(certificateToken.getDSSId().asXmlId());
 		certInfo += "\nDate de révocation : " + certificateReports.getSimpleReport().getCertificateRevocationDate(certificateToken.getDSSId().asXmlId());
+		certInfo = getString(certInfo, pkcs12SignatureToken);
+		pkcs12SignatureToken.close();
+		return certInfo;
+	}
 
+	private String getString(String certInfo, Pkcs12SignatureToken pkcs12SignatureToken) {
 		CertificateToken[] certificateTokens = getCertificateTokenChain(pkcs12SignatureToken);
 		for(CertificateToken token : certificateTokens) {
 			X509Certificate cert = token.getCertificate();
@@ -94,7 +99,6 @@ public class UserKeystoreService {
 				+ "\n" + cert.getSubjectX500Principal()
 				+ "\n" + cert.getSerialNumber();
 		}
-		pkcs12SignatureToken.close();
 		return certInfo;
 	}
 

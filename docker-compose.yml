@@ -1,0 +1,21 @@
+version: '3'
+services:
+  postgres:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: esupsignature
+      POSTGRES_PASSWORD: esup
+      POSTGRES_DB: esupsignature
+
+  esup-signature:
+    container_name: esup-signature
+    build:
+      context: .
+      dockerfile: Dockerfile
+    links:
+      - postgres
+    image: esup-signature:latest
+    ports:
+      - 8080:8080

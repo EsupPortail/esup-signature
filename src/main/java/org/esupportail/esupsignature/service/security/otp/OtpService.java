@@ -8,12 +8,15 @@ import org.bouncycastle.util.encoders.Hex;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
@@ -40,6 +43,9 @@ public class OtpService {
     @Resource
     private MailService mailService;
 
+    @Resource
+    private UserService userService;
+
     public OtpService() {
         otpCache = CacheBuilder.newBuilder().expireAfterWrite(EXPIRE_MINS, TimeUnit.MINUTES).build(new CacheLoader<>() {
             public Otp load(String urlId) {
@@ -48,24 +54,35 @@ public class OtpService {
         });
     }
 
-    public void generateOtpForSignRequest(Long id, User extUser) throws EsupSignatureMailException {
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        Otp otp = new Otp();
-        otp.setCreateDate(new Data());
-        otp.setPhoneNumber(extUser.getEppn());
-        otp.setEmail(extUser.getEmail());
-        otp.setSignRequestId(signRequest.getId());
-        String urlId = UUID.randomUUID().toString();
-        mailService.sendOtp(otp, urlId, signRequest);
-        removeOtpFromCache(extUser.getEppn());
-        removeOtpFromCache(extUser.getEmail());
-        otpCache.put(urlId, otp);
-        logger.info("new url for otp : " + urlId);
+    @Transactional
+    public boolean generateOtpForSignRequest(Long id, Long extUserId, String phone) throws EsupSignatureMailException {
+        User extUser = userService.getById(extUserId);
+        if(extUser.getUserType().equals(UserType.external)) {
+            SignRequest signRequest = signRequestRepository.findById(id).get();
+            Otp otp = new Otp();
+            otp.setCreateDate(new Data());
+            otp.setPhoneNumber(phone);
+            otp.setEmail(extUser.getEmail());
+            otp.setSignRequestId(signRequest.getId());
+            String urlId = UUID.randomUUID().toString();
+            mailService.sendOtp(otp, urlId, signRequest);
+            signRequest.setLastOtp(urlId);
+            removeOtpFromCache(extUser.getEppn());
+            removeOtpFromCache(extUser.getEmail());
+            otpCache.put(urlId, otp);
+            if(phone != null) {
+                extUser.setPhone(phone);
+            }
+            logger.info("new url for otp : " + urlId);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void removeOtpFromCache(String searchString) {
         for (Map.Entry<String, Otp> otpEntry : otpCache.asMap().entrySet()) {
-            if(otpEntry.getValue().getEmail().equals(searchString) || otpEntry.getValue().getPhoneNumber().equals(searchString)) {
+            if(otpEntry.getValue().getEmail().equals(searchString) || (otpEntry.getValue().getPhoneNumber() != null && otpEntry.getValue().getPhoneNumber().equals(searchString))) {
                 clearOTP(otpEntry.getKey());
             }
         }
@@ -92,8 +109,8 @@ public class OtpService {
             return otpCache.getUnchecked(urlId);
         }catch (Exception e){
             logger.warn("error on get otp : " + e.getMessage());
-            return null;
         }
+        return null;
     }
 
     public void clearOTP(String urlId){

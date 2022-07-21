@@ -18,11 +18,12 @@ global:
     hours-before-refresh-notif: 24
     share-mode: 1
     infinite-scrolling: true
-    return-to-home-after-sign: false
+    return-to-home-after-sign: true
     naming-template: "[title]"
     signed-suffix: "_signé"
     trash-keep-delay: -1
     disable-cert-storage: false
+    export-attachements: true
 
 #tomcat:
 #    ajp:
@@ -36,6 +37,9 @@ info:
         environment: PROD
 
 management:
+    health:
+        ldap:
+            enabled: false
     endpoints:
         jmx:
             exposure:
@@ -49,7 +53,7 @@ management:
 
 spring:
     session:
-      jdbc:
+        jdbc:
           initialize-schema: always
           save-mode: always
     data:
@@ -134,6 +138,9 @@ ldap:
     search-base: ou=people
     group-search-base: ou=groups
     group-search-filter: member={0}
+    all-groups-search-filter: cn=*{0}
+    group-name-attribut: ou
+    members-of-group-search-filter: ou=
     user-id-search-filter: (uid={0})
     member-search-filter: (&(uid={0})({1}))
     mapping-filters-groups:
@@ -156,7 +163,7 @@ dss:
     cache-data-source-url: jdbc:hsqldb:mem:cachedb
     cache-password:
     cache-username: sa
-    default-validation-policy: policy/custom-constraint.xml
+    default-validation-policy: policy/constraint.xml
     server-signing-keystore-filename: validate_service.p12
     server-signing-keystore-password: password
     server-signing-keystore-type: PKCS12
@@ -180,6 +187,7 @@ pdf:
     convert-to-pdf-a: true
     pdf-a-level: 2
     path-to-g-s: /usr/bin/gs
+    path-to-fonts : /usr/share/fonts
     pdf-to-image-dpi: 72
 
 security:
@@ -230,8 +238,7 @@ sign:
     xades-signature-level: XAdES_BASELINE_T
 
 logging:
-    file:
-        name: logs/esup-signature.log
+    file.name: logs/esup-signature.log
     level:
         root: info
         org.esupportail.esupsignature: info

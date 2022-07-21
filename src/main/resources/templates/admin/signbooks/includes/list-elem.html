@@ -1,36 +1,13 @@
 <html th:remove="tag" lang="fr" xmlns:th="http://www.thymeleaf.org">
 <th:block th:each="signBook : ${signBooks}">
-    <tr th:if="${statusFilter != 'empty' && signBook.signRequests.size() > 0}" th:with="signRequest = ${signBook.signRequests.get(0)}" th:data-href="'/admin/signrequests/' + ${signRequest.id}" data-bs-toggle="tooltip" th:title="${signBook.description}">
-        <td class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/admin/signrequests/' + ${signRequest.id}">
-            <span th:if="${signBook.liveWorkflow.workflow != null}" th:text="${signBook.liveWorkflow.workflow.description}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title != null}"   th:text="${signBook.liveWorkflow.title}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == null && signBook.title != ''}"  th:text="${signBook.title}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == ''}"   th:text="${signBook.liveWorkflow.title}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == null && signBook.title == ''}"   th:text="'Hors circuit'"></span>
+    <tr th:if="${statusFilter != 'empty'}" th:with="signRequest = ${signBook.signRequests.get(0)}" th:data-href="'/admin/signbooks/' + ${signBook.id}" data-bs-toggle="tooltip" th:title="${signBook.description}">
+        <td class="w-20 d-none d-lg-table-cell">
+            <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"
+                   th:data-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"
+                   th:data-id-signbook="${signBook.id}">
         </td>
-        <td class="clickable-td text-break overflow-hidden">
-            <th:block th:if="${signBook.signRequests.size() == 1}">
-                <i class="fa fa-file"></i>
-                <th:block th:if="${signBook.title != null && signBook.title != ''}">
-                    <span th:if="${signBook.liveWorkflow.title != null && signBook.title != signBook.liveWorkflow.title}"
-                          th:text="${signBook.title}"></span>
-                    <span th:if="${(signBook.liveWorkflow.title == null || signBook.title == signBook.liveWorkflow.title) && signBook.name != ''}"
-                          th:text="${signBook.name}"></span>
-                    <span th:if="${signBook.title == signBook.liveWorkflow.title || signBook.name == ''}"
-                          th:text="${signBook.signRequests.get(0).title}"></span>
-                </th:block>
-                <th:block th:unless="${signBook.title != null && signBook.title != ''}">
-                    <span th:text="${signBook.signRequests.get(0).title}"></span>
-                </th:block>
-            </th:block>
-            <th:block th:if="${signBook.signRequests.size() > 1}">
-                <i class="fa fa-folder-open"></i>
-                <span th:if="${signBook.liveWorkflow.title == null || signBook.liveWorkflow.title == signBook.title}"
-                      th:text="' Contient ' + ${signBook.signRequests.size()} + ' documents '"></span>
-                <span th:if="${signBook.liveWorkflow.title != null && signBook.liveWorkflow.title != signBook.title}"
-                      th:text="${signBook.title}"></span>
-            </th:block>
-        </td>
+        <td class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/admin/signrequests/' + ${signRequest.id}" th:text="${signBook.workflowName}"></td>
+        <td class="clickable-td text-break overflow-hidden" style="white-space: pre-line" th:text="${signBook.subject}"></td>
         <td class="clickable-td d-none d-xxl-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
         <td class="clickable-td d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
         </td>
@@ -62,6 +39,9 @@
                 </div>
             </div>
         </td>
+        <td class="clickable-td d-none d-xxxl-table-cell">
+            <span th:if="${signBook.endDate != null}" th:text="${#dates.format(signBook.endDate, 'dd/MM/yyyy HH:mm')}"></span>
+        </td>
         <td class="clickable-td d-none d-md-table-cell"
             style="width: 150px;">
             <div th:replace="user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})"></div>
@@ -73,25 +53,14 @@
                 </button>
                 <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signBook.id}">
                     <div class=" card-body">
-                        <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/admin/signrequests/' + ${signRequest.id}">
+                        <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/admin/signrequests/' + ${signRequest.id}">
                             <i class="fas fa-eye pr-2"></i> Consulter
                         </a>
-                        <a target="_blank" th:if="${signBook.signRequests.size() > 1 && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
-                           th:href="'/admin/signrequests/get-last-files/' + ${signBook.id}">
-                            <i class="fas fa-download pr-2"></i> Télécharger tout
-                        </a>
-                        <a target="_blank" th:if="${signBook.signRequests.size() == 1 && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
-                           th:href="'/admin/signrequests/get-last-file/' + ${signRequest.id}">
-                            <i class="fas fa-download pr-2"></i> Télécharger
-                        </a>
-                        <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="btn btn-transparent text-dark text-left col-12" th:href="'/admin/signrequests/restore/' + ${signRequest.id}" role="button" title="Restaurer">
+                        <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && signBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'/admin/signrequests/restore/' + ${signRequest.id}" role="button" title="Restaurer">
                             <i class="fas fa-trash-restore pr-2"></i> Restaurer
                         </a>
-                        <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
-                            <i class="fas fa-trash-alt pr-2"></i> <span th:text="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
-                        </a>
-                        <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-definitive' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-definitive' + ${signBook.id}">
-                            <i class="fas fa-trash pr-2"></i> Suppression définitive
+                        <a th:if="${signBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
+                            <i class="fas fa-trash-alt text-danger pr-2"></i> <span th:text="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
                         </a>
                     </div>
                 </div>
@@ -99,7 +68,8 @@
             <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signBook.id}">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form th:id="'signBookDel' + ${signBook.id}" th:action="'/admin/signrequests/'+ ${signBook.id}" th:method="delete">
+                        <form th:id="'signBookDel' + ${signBook.id}" th:action="'/admin/signbooks/'+ ${signBook.id}" th:method="delete">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                             <div class="modal-header">
                                 <h2>Attention</h2>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
@@ -117,38 +87,12 @@
                     </div>
                 </div>
             </div>
-            <div class="modal modal-warning fade in" th:id="'modal-warning-definitive' + ${signBook.id}">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <form th:id="'signBookDel' + ${signBook.id}" th:action="'/admin/signrequests/delete-definitive/'+ ${signBook.id}" th:method="delete">
-                            <div class="modal-header">
-                                <h2>Attention</h2>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="alert alert-danger">Confirmez-vous la suppression DEFINITIVE de cette demande ?</div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
-                                <button type="submit" class="btn btn-danger">Oui</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
 
         </td>
     </tr>
-    <tr th:if="${statusFilter == 'empty'}" th:title="${signBook.description}">
+    <tr th:if="${statusFilter == 'empty'}" th:title="${signBook.subject}">
         <td></td>
-        <td class="clickable-td text-break d-none d-xxl-table-cell">
-            <span th:if="${signBook.liveWorkflow.workflow != null}" th:text="${signBook.liveWorkflow.workflow.description}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title != null}"   th:text="${signBook.liveWorkflow.title}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == null && signBook.title != ''}"  th:text="${signBook.title}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == ''}"   th:text="${signBook.liveWorkflow.title}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == null && signBook.title == ''}"   th:text="'Hors circuit'"></span>
+        <td class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signBook.subject}">
         </td>
         <td class="clickable-td text-break">
             Ne contient aucun document
@@ -180,7 +124,7 @@
         </td>
         <td>
             <div class="position-relative">
-                <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signBook.title}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="collapse">
+                <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signBook.subject}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="collapse">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
                 <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signBook.id}">
@@ -195,11 +139,10 @@
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <form th:id="'signBookDel' + ${signBook.id}" th:action="'/admin/signbooks/force-delete/'+ ${signBook.id}" th:method="delete">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                             <div class="modal-header">
                                 <h2>Attention</h2>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-
-                                </button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>

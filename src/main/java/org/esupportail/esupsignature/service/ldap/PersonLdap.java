@@ -64,6 +64,7 @@ public final class PersonLdap {
 	private @Attribute(name = "supannRoleGenerique") String supannRoleGenerique;
 	private @Attribute(name = "supannAutreMail") String supannAutreMail;
 	private @Attribute(name = "mailuserquota") Long mailuserquota;
+	private @Attribute(name = "title") String title;
 
 	public String getUid() {
 		return uid;
@@ -479,6 +480,14 @@ public final class PersonLdap {
 
 	public void setMailuserquota(Long mailuserquota) {
 		this.mailuserquota = mailuserquota;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
 	}
 }
 	

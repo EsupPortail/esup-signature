@@ -3,18 +3,18 @@
 <!--/*@thymesVar id="toSignDocument" type="org.esupportail.esupsignature.entity.Document"*/-->
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <nav th:fragment="side-sign" id="sidebar" class="scrollbar-lite">
-    <div class="ms-1 mt-3 d-none d-lg-block">
+    <div th:unless="${user.userType.name() == 'external'}" class="ms-1 mt-3 d-none d-lg-block">
         <div class="hr sidebar-label">Statut</div>
         <div class="card card-body bg-light">
             <th:block th:if="${signRequest != null}">
-                <div th:include="user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})" class="mb-1"></div>
+                <div th:include="user/signbooks/includes/status :: status(signBook=${signBook})" class="mb-1"></div>
                 <span th:if="${workflow != null}" th:text="'Circuit : ' + ${workflow.description}"></span>
                 <span>Créé par <span th:text="${signRequest.createBy.firstname + ' ' + signRequest.createBy.name}"></span></span>
-                <th:block th:if="${signRequest.parentSignBook.viewers.size() > 0 }">
+                <th:block th:if="${signBook.viewers.size() > 0 }">
                     <span>
                     Suivi par :
                         <ul>
-                            <li th:each="user : ${signRequest.parentSignBook.viewers}" >
+                            <li th:each="user : ${signBook.viewers}" >
                                 <span th:text="${user.firstname + ' ' + user.name}"></span>
 
                             </li>

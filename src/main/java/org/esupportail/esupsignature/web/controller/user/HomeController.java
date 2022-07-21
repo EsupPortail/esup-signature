@@ -1,10 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.entity.Data;
-import org.esupportail.esupsignature.entity.Message;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -14,6 +11,7 @@ import org.esupportail.esupsignature.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -83,7 +81,7 @@ public class HomeController {
         User authUser = userService.getUserByEppn(authUserEppn);
         if(authUser != null) {
             List<SignRequest> oldSignRequests = new ArrayList<>();
-            if(globalProperties.getNbDaysBeforeWarning() > -1) {
+            if(globalProperties.getNbDaysBeforeWarning() > - 1) {
                 oldSignRequests = signRequestRepository.findByCreateByEppnAndOlderPending(authUser.getId(), globalProperties.getNbDaysBeforeWarning());
             }
             model.addAttribute("oldSignRequests", oldSignRequests);
@@ -102,7 +100,10 @@ public class HomeController {
                 messages.addAll(messageService.getByUser(authUser));
             }
             model.addAttribute("messageNews", messages);
-            model.addAttribute("signBooks", signBookService.getSignBooks(userEppn, "tosign", null, null, null, pageable));
+            Page<SignBook> signBooksToSign = signBookService.getSignBooks(userEppn, "toSign", "%", "%", "%", "%", null, pageable);
+            model.addAttribute("signBooksToSign", signBooksToSign);
+            Page<SignBook> signBooksPending = signBookService.getSignBooks(userEppn, "pending", "%", "%", "%", "%", null, pageable);
+            model.addAttribute("signBooksPending", signBooksPending);
             List<Data> datas = dataRepository.findByCreateByAndStatus(authUser, SignRequestStatus.draft);
             model.addAttribute("datas", datas);
             model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));

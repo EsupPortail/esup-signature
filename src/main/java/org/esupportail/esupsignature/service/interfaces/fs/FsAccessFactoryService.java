@@ -54,7 +54,8 @@ public class FsAccessFactoryService {
 
 	public DocumentIOType getPathIOType(String path) throws EsupSignatureFsException {
 		try {
-			URI uri = new URI(path);
+			String url = path.replaceAll(" ", "%20");
+			URI uri = new URI(url);
 			if(uri.getScheme() != null) {
 				switch (uri.getScheme()) {
 					case "mailto":

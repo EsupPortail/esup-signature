@@ -1,8 +1,8 @@
 build:
   stage: deploy
   script: 
-    - export JAVA_HOME='/opt/jdk-14.0.2/'
-    - mvn clean package -DskipTests -Dspring.config.location=/opt/esup-signature/application.yml
+    - export JAVA_HOME='/opt/jdk-17.0.2/'
+    - mvn clean package -Dspring.config.location=/opt/esup-signature/application.yml
     - sshpass -V
     - export SSHPASS=$CI_USER_PASS
     - sshpass -e scp -o StrictHostKeyChecking=no target/esup-signature.war gitlab-ci@runan:/home/gitlab-ci
@@ -16,7 +16,7 @@ build:
     - test
 
 build2:
-  script: mvn clean initialize && mvn -Dspring.config.location=/opt/tomcat-esup-signature/conf/app_config/application.yml clean package && cp -rf target/esup-signature.war /opt/tomcat-esup-signature/webapps/ROOT.war
+  script: mvn clean initialize && mvn -DskipTests -Dspring.config.location=/opt/tomcat-esup-signature/conf/app_config/application.yml clean package && cp -rf target/esup-signature.war /opt/tomcat-esup-signature/webapps/ROOT.war
   only:
     - tags
   except:

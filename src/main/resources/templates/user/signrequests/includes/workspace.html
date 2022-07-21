@@ -36,7 +36,7 @@
     </div>
     <form th:id="'signForm'" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
-        <div id="pdf" class="drop-shadows mx-auto" style="position: relative !important;">
+        <div id="pdf" class="mx-auto" style="position: relative !important;">
 <!--            <th:block th:if="${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}">-->
 <!--                <div id="cross_0" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"-->
 <!--                     onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"-->
@@ -123,6 +123,12 @@
                     style="z-index: 3;">
                 <i class="fas fa-sync"></i>
             </button>
+            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')') && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}" type="button" id="signImage_x"
+                    title="Ajouter une image de votre signature"
+                    class="btn btn-sm btn-transparent text-white"
+                    style="z-index: 3;">
+                <i class="fas fa-signature"></i>
+            </button>
             <button type="button" id="signPrevImage_x"
                     title="Signature précédente"
                     class="btn btn-sm btn-transparent text-white"
@@ -174,7 +180,7 @@
                 <i class="fas fa-ellipsis-v"></i>
             </button>
         </div>
-        <div id="extraTools_x" class="d-none" th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}">
+        <div id="extraTools_x" class="d-none" >
             <button type="button" id="extraType_x"
                     title="Afficher le type de signature"
                     class="btn btn-sm btn-transparent text-white btn-outline-light"

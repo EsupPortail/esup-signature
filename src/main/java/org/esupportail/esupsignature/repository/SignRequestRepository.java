@@ -19,7 +19,7 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
 
     List<SignRequest> findByIdIn(List<Long> ids);
 
-    List<SignRequest> findByToken(String token);
+    SignRequest findByToken(String token);
 
     @Query("select distinct s from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and r.user.eppn = :recipientUserEppn")
     List<SignRequest> findByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
@@ -42,5 +42,7 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
 
     @Query(value = "select * from sign_request where DATE_PART('day', now() - create_date) > :nbBeforeDelete and status = 'pending' and warning_readed = true", nativeQuery = true)
     List<SignRequest> findByOlderPendingAndWarningReaded(Integer nbBeforeDelete);
+
+    SignRequest findByLastOtp(String urlId);
 }
 

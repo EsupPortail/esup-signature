@@ -1,19 +1,17 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="details">
-    <div th:replace="user/signrequests/cards/recipientscard :: recipientscard"></div>
-    <div th:replace="user/signrequests/cards/commentscard :: commentscard"></div>
-    <div th:replace="user/signrequests/cards/logscard :: logscard"></div>
     <div class="col-12 text-center">
-    <a class="btn btn-floating bg-primary waves-effect m-1" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
-        <i class="fas fa-download"></i>
-    </a>
-    <a title="Export SEDA" class="btn btn-floating bg-primary waves-effect m-1" th:href="'/user/signrequests/get-seda/' + ${id}">
-        <i class="fas fa-file-export"></i>
-    </a>
-    <a th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="btn btn-floating bg-primary waves-effect m-1" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
-        <i class="fas fa-shield-alt "></i>
-    </a>
+        <a class="btn btn-floating bg-primary waves-effect m-1" th:href="'/ws-secure/signrequests/get-last-file-report/' + ${signRequest.id}" target="_blank" title="Télécharger le dossier ">
+            <i class="fas fa-file-contract"></i>
+        </a>
+        <a title="Export SEDA" class="btn btn-floating bg-primary waves-effect m-1" th:href="'/ws-secure/signrequests/get-seda/' + ${signRequest.id}">
+            <i class="fas fa-archive"></i>
+        </a>
+        <a th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="btn btn-floating bg-primary waves-effect m-1" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
+            <i class="fas fa-shield-alt"></i>
+        </a>
     </div>
+    <div th:include="public/control :: control"></div>
 </div>
 </html>

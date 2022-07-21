@@ -46,7 +46,7 @@ public class WebAppConfig implements WebMvcConfigurer {
     public SpringSecurityDialect springSecurityDialect() {
         return new SpringSecurityDialect();
     }
-    
+
 	@Bean
 	public CommonsMultipartResolver multipartResolver() {
 		CommonsMultipartResolver commonsMultipartResolver = new CommonsMultipartResolver();
@@ -63,6 +63,7 @@ public class WebAppConfig implements WebMvcConfigurer {
 		registrationBean.setOrder(5);
 		registrationBean.addUrlPatterns(
 				"/user/", "/user/*",
+				"/otp/", "/otp/*",
 				"/error",
 				"/ws-secure/", "/ws-secure/*",
 				"/admin/", "/admin/*",

@@ -34,7 +34,7 @@
                         <a th:if="${workflow.fromCode == null || !workflow.fromCode}" role="button" title="Ajouter une étape automatique" class="btn-floating btn-lg bg-primary waves-effect" data-bs-toggle="modal" data-bs-target="#addAutoStep">
                         <span class="fa-stack">
                             <i class="fas fa-shoe-prints fa-stack-1x me-1 text-white-50"></i>
-                            <i class="fas fa-cog fa-stack-1x ms-3 mt-1 text-white"></i>
+                            <i class="fas fa-robot fa-stack-1x ms-2 mt-1 text-white"></i>
                         </span>
                         </a>
                     </li>
@@ -80,7 +80,7 @@
                                     <label>
                                         <strong>Choix des participants</strong>
                                     </label>
-                                    <select class="select-users" name="recipientsEmails" id="stepRecipientsEmails" size="5" multiple="multiple"></select>
+                                    <select data-es-check-list="false" class="select-users" name="recipientsEmails" id="stepRecipientsEmails" size="5" multiple="multiple"></select>
                                 </div>
                                 <div class="form-group mb-3" id="allSignToComplete-div">
                                     <label for="allSignToComplete">

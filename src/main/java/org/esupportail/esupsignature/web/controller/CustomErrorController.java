@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.web.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.web.ErrorProperties;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
@@ -26,6 +28,8 @@ import java.util.Map;
 @RequestMapping("${server.error.path:${error.path:/error}}")
 public class CustomErrorController implements ErrorController {
 
+    private static final Logger logger = LoggerFactory.getLogger(CustomErrorController.class);
+
     private final ServerProperties serverProperties;
 
     private final ErrorAttributes errorAttributes;
@@ -38,9 +42,15 @@ public class CustomErrorController implements ErrorController {
     @RequestMapping(produces = MediaType.TEXT_HTML_VALUE)
     public String errorHtml(HttpServletRequest request, HttpServletResponse response, Model model) {
         HttpStatus status = getStatus(request);
-        Map<String, Object> errors = Collections
-                .unmodifiableMap(getErrorAttributes(request, getErrorAttributeOptions(request, MediaType.TEXT_HTML)));
+        Map<String, Object> errors = new java.util.HashMap<>(Collections
+                .unmodifiableMap(getErrorAttributes(request, getErrorAttributeOptions(request, MediaType.TEXT_HTML))));
         response.setStatus(status.value());
+        if((int) errors.get("status") != 500) {
+            if(!errors.containsKey("path")) {
+                errors.put("path", "error");
+            }
+            logger.warn(errors.get("path").toString() + " : " + errors.get("status") + " " + errors.get("error").toString());
+        }
         model.addAllAttributes(errors);
         return "error";
     }

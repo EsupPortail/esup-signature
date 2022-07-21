@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/ws-secure/users")
-public class UserWsController {
+public class UserWsSecureController {
 
     @Resource
     private UserPropertieService userPropertieService;
@@ -108,6 +108,12 @@ public class UserWsController {
         } else {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping(value = "/get-default-image")
+    @ResponseBody
+    public String getDefaultImage(@ModelAttribute("authUserEppn") String authUserEppn) throws IOException {
+        return userService.getDefaultImage(authUserEppn);
     }
 
     @GetMapping(value = "/get-keystore")

@@ -7,7 +7,7 @@
     <div class="wrapper">
         <div id="content" class="content">
             <h1>Signature OTP</h1>
-            <form th:action="'/otp'" method="post">
+            <form th:action="'/otp-access'" method="post">
                 <div class="col-4">
                 <input name="urlId" type="hidden" th:value="${urlId}">
                     <div class="mb-3">
@@ -19,6 +19,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="fragments/footer-light :: footer"></footer>
 </body>
 </html>

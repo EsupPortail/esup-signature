@@ -28,7 +28,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String eppn) throws UsernameNotFoundException {
-        eppn = eppn.trim().toLowerCase();
+        eppn = userService.buildEppn(eppn);
         User user = userService.getByEppn(eppn);
         if(user == null) {
             try {

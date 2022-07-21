@@ -13,6 +13,9 @@ export default class FilesInput extends EventFactory {
         }
         console.info("enable complete file input for : " + name);
         this.workflowName = workflowName;
+        if(workflowName === "") {
+            this.workflowName = "custom";
+        }
         this.csrf = new CsrfToken(csrf);
         this.async = false;
         this.uploadUrl = null;
@@ -22,9 +25,10 @@ export default class FilesInput extends EventFactory {
         } else {
             if(workflowName != null) {
                 this.async = false;
-                this.uploadUrl = '/user/signbooks/add-docs-in-sign-book-unique/' + this.workflowName + '/' + this.name + '?' + this.csrf.parameterName + '=' + this.csrf.token;
+                this.uploadUrl = '/ws-secure/signrequests/start-workflow/' + this.workflowName + '?' + this.csrf.parameterName + '=' + this.csrf.token;
             }
         }
+        this.title = $("#titleWiz");
         this.initFileInput(documents, readOnly);
         this.initListeners();
     }
@@ -39,15 +43,12 @@ export default class FilesInput extends EventFactory {
         this.input.on('fileremoved', e => this.checkUniqueFile());
         this.input.on('fileclear', e => this.input.fileinput('unlock'));
         this.input.on('filecleared', e => this.checkUniqueFile());
-        $('#unique :checkbox').change(e => this.changerUploadMethod());
-
     }
 
     uploadFile() {
         this.input.fileinput('upload');
     }
 
-    // [# th:if="${signRequest.status != ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} || user.eppn != signRequest.createBy || signRequest.signedDocuments.size() > 0}"]
     initFileInput(documents, readOnly) {
         let urls = [];
         let previews = [];
@@ -55,7 +56,7 @@ export default class FilesInput extends EventFactory {
         if (documents != null) {
             documents.forEach(function (document) {
                 let type;
-                urls.push("/user/signrequests/get-file/" + document.id);
+                urls.push("/ws-secure/signrequests/get-file/" + document.id);
                 switch (document.contentType.split('/')[1]) {
                     case "pdf" :
                         type = "pdf";
@@ -71,7 +72,7 @@ export default class FilesInput extends EventFactory {
                 }
                 let deleteUrl = "";
                 if(!readOnly) {
-                    deleteUrl = "/user/signrequests/remove-doc/" + document.id + "/?" + csrf.parameterName + "=" + csrf.token;
+                    deleteUrl = "/ws-secure/signrequests/remove-doc/" + document.id + "/?" + csrf.parameterName + "=" + csrf.token;
                 }
                 let preview = new DocumentPreview(
                     type,
@@ -80,7 +81,7 @@ export default class FilesInput extends EventFactory {
                     document.fileName,
                     deleteUrl,
                     document.id,
-                    "/user/signrequests/get-file/" + document.id,
+                    "/ws-secure/signrequests/get-file/" + document.id,
                     document.fileName
                     );
                 previews.push(preview);
@@ -89,6 +90,7 @@ export default class FilesInput extends EventFactory {
         this.input.fileinput({
             language: "fr",
             showCaption: false,
+            minFileSize: 1,
             showClose: false,
             showBrowse: !readOnly,
             showUpload: false,
@@ -156,27 +158,36 @@ export default class FilesInput extends EventFactory {
             fileActionSettings: {
                 showDrag: false,
                 showZoom: function(config) {
-                    if (config.type === 'pdf' || config.type === 'image') {
-                        return true;
-                    }
-                    return false;
+                    return config.type === 'pdf' || config.type === 'image';
                 },
                 showRemove: !readOnly
             }
+        });
+        this.input.on('filezoomshown', function(event, params) {
+            $('.kv-zoom-body').each(function (e){
+                $(this).removeAttr('style');
+            });
         });
     }
 
     fileUpload() {
         console.info("file upload");
-        this.input.fileinput('upload');
         let self = this;
-        this.input.on('filebatchuploadsuccess', function(event, data) {
-            console.info("submit form");
-            self.fireEvent("uploaded", data.response);
-        });
+        let title = $("#titleWiz");
+        if(this.workflowName === "custom" && title.val() === "") {
+            $(window).on('scroll', function(e){
+                window.scrollTo(0,0);
+            });
+            $("#titleWizSubmit").click();
+
+        } else {
+            this.input.fileinput('upload');
+            this.input.on('filebatchuploadsuccess', function(event, data) {
+                console.info("submit form");
+                self.fireEvent("uploaded", data.response);
+            });
+        }
     }
-
-
 
     checkUniqueFile() {
         let nbFiles = this.input.fileinput('getFilesCount', true);
@@ -193,22 +204,6 @@ export default class FilesInput extends EventFactory {
             $('#forceAllSign').addClass('d-none');
             $('#forceAllSign2').addClass('d-none');
         }
-    }
-
-    changerUploadMethod () {
-        console.group('change upload url');
-        if ($('#unique :checkbox').is(":checked")){
-            console.info('to group mode');
-            this.input.fileinput('refresh', {
-                uploadUrl: '/user/signbooks/add-docs-in-sign-book-group/' + this.name + '?'+ this.csrf.parameterName + '=' + this.csrf.token
-            });
-        } else {
-            console.info('to unique mode');
-            this.input.fileinput('refresh', {
-                uploadUrl: '/user/signbooks/add-docs-in-sign-book-unique/' + this.workflowName + '/' + this.name + '?'+ this.csrf.parameterName + '=' + this.csrf.token
-        });
-        }
-        console.groupEnd();
     }
 
 }

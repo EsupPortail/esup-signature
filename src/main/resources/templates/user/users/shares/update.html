@@ -80,6 +80,7 @@
                             <label for="selectUsers">Choix des utilisateurs</label>
                             <select id="selectUsers" class="select-users" name="userIds" multiple="multiple"
                                     required="required">
+                                <option data-placeholder="true"></option>
                                 <th:block th:each="user : ${userShare.toUsers}">
                                     <option th:value="${user.email}" th:text="${user.firstname} + ' ' + ${user.name}"
                                             selected></option>

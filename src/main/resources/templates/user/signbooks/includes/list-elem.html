@@ -1,41 +1,13 @@
 <html th:remove="tag" lang="fr" xmlns:th="http://www.thymeleaf.org">
 <th:block th:each="signBook : ${signBooks}">
-    <tr th:if="${statusFilter != 'empty'}" th:with="signRequest = ${signBook.signRequests.get(0)}" th:data-href="'/user/signrequests/' + ${signRequest.id}" data-bs-toggle="tooltip" th:title="${signBook.description}">
+    <tr th:if="${statusFilter != 'empty'}" th:with="signRequest = ${signBook.signRequests.get(0)}" th:data-href="'/user/signbooks/' + ${signBook.id}" data-bs-toggle="tooltip" th:title="${signBook.description}">
         <td class="w-20 d-none d-lg-table-cell">
             <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"
                    th:data-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"
                    th:data-id-signbook="${signBook.id}">
         </td>
-        <td class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/user/signrequests/' + ${signRequest.id}">
-            <span th:if="${signBook.liveWorkflow.workflow != null}" th:text="${signBook.liveWorkflow.workflow.description}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title != null}" th:text="${signBook.liveWorkflow.title}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == null && signBook.title != ''}" th:text="${signBook.title}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == ''}" th:text="${signBook.liveWorkflow.title}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == null && signBook.title == ''}"   th:text="'Hors circuit'"></span>
-        </td>
-        <td class="clickable-td text-break overflow-hidden">
-            <th:block th:if="${signBook.signRequests.size() == 1}">
-                <i class="fa fa-file"></i>
-                <th:block th:if="${signBook.title != null && signBook.title != ''}">
-                    <span th:if="${signBook.liveWorkflow.title != null && signBook.title != signBook.liveWorkflow.title && signBook.liveWorkflow.workflow != null && signBook.title != signBook.liveWorkflow.workflow.description}"
-                          th:text="${signBook.title}"></span>
-                    <span th:if="${(signBook.liveWorkflow.title == null || signBook.title == signBook.liveWorkflow.title) && signBook.name != ''}"
-                          th:text="${signBook.name}"></span>
-                    <span th:if="${(signBook.liveWorkflow.workflow != null && signBook.title == signBook.liveWorkflow.workflow.description) || signBook.title == signBook.liveWorkflow.title || signBook.name == ''}"
-                          th:text="${signBook.signRequests.get(0).title}"></span>
-                </th:block>
-                <th:block th:unless="${signBook.title != null && signBook.title != '' && signBook.liveWorkflow.workflow != null}">
-                    <span th:text="${signBook.signRequests.get(0).title}"></span>
-                </th:block>
-            </th:block>
-            <th:block th:if="${signBook.signRequests.size() > 1}">
-                <i class="fa fa-folder-open"></i>
-                <span th:if="${signBook.liveWorkflow.title == null || signBook.liveWorkflow.title == signBook.title || signBook.title.isEmpty()}"
-                      th:text="' Contient ' + ${signBook.signRequests.size()} + ' documents '"></span>
-                <span th:if="${signBook.liveWorkflow.title != null && signBook.liveWorkflow.title != signBook.title}"
-                      th:text="${signBook.title}"></span>
-            </th:block>
-        </td>
+        <td class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/user/signrequests/' + ${signRequest.id}" th:text="${signBook.workflowName}"></td>
+        <td class="clickable-td text-break overflow-hidden" style="white-space: pre-line" th:text="${signBook.subject}"></td>
         <td class="clickable-td d-none d-xxl-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
         <td class="clickable-td d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
         </td>
@@ -81,12 +53,18 @@
                 </button>
                 <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signBook.id}">
                     <div class=" card-body">
-                        <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
+                        <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                             <i class="fas fa-signature pr-2 text-success"></i> Signer
                         </a>
-                        <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
+                        <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                             <i class="fas fa-eye pr-2"></i> Consulter
                         </a>
+                        <form th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
+                              th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
+                            <button type="submit" class="btn btn-transparent text-dark text-left col-12">
+                                <i class="fas fa-bullhorn"></i> <span class="d-none d-xxl-inline">Relancer</span>
+                            </button>
+                        </form>
                         <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">
                             <i class="fas fa-eye-slash pr-2"></i> Masquer
                         </a>
@@ -94,11 +72,11 @@
                             <i class="fas fa-eye-slash pr-2"></i> Afficher dans la liste
                         </a>
                         <a target="_blank" th:if="${signBook.signRequests.size() > 1 && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
-                           th:href="'/user/signrequests/get-last-files/' + ${signBook.id}">
+                           th:href="'/ws-secure/signrequests/get-last-files/' + ${signBook.id}">
                             <i class="fas fa-download pr-2"></i> Télécharger tout
                         </a>
                         <a target="_blank" th:if="${signBook.signRequests.size() == 1 && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
-                           th:href="'/user/signrequests/get-last-file/' + ${signRequest.id}">
+                           th:href="'/ws-secure/signrequests/get-last-file/' + ${signRequest.id}">
                             <i class="fas fa-download pr-2"></i> Télécharger
                         </a>
                         <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && signBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'/user/signrequests/restore/' + ${signRequest.id}" role="button" title="Restaurer">
@@ -114,6 +92,7 @@
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <form th:id="'signBookDel' + ${signBook.id}" th:action="'/user/signbooks/'+ ${signBook.id}" th:method="delete">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                             <div class="modal-header">
                                 <h2>Attention</h2>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
@@ -134,14 +113,9 @@
 
         </td>
     </tr>
-    <tr th:if="${statusFilter == 'empty'}" th:title="${signBook.description}">
+    <tr th:if="${statusFilter == 'empty'}" th:title="${signBook.subject}">
         <td></td>
-        <td class="clickable-td text-break d-none d-xxl-table-cell">
-            <span th:if="${signBook.liveWorkflow.workflow != null}" th:text="${signBook.liveWorkflow.workflow.description}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title != null}"   th:text="${signBook.liveWorkflow.title}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == null && signBook.title != ''}"  th:text="${signBook.title}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == ''}"   th:text="${signBook.liveWorkflow.title}"></span>
-            <span th:if="${signBook.liveWorkflow.workflow == null && signBook.liveWorkflow.title == null && signBook.title == ''}"   th:text="'Hors circuit'"></span>
+        <td class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signBook.subject}">
         </td>
         <td class="clickable-td text-break">
             Ne contient aucun document
@@ -173,7 +147,7 @@
         </td>
         <td>
             <div class="position-relative">
-                <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signBook.title}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="collapse">
+                <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signBook.subject}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="collapse">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
                 <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signBook.id}">
@@ -194,6 +168,7 @@
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <form th:id="'signBookDel' + ${signBook.id}" th:action="'/user/signbooks/force-delete/'+ ${signBook.id}" th:method="delete">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                             <div class="modal-header">
                                 <h2>Attention</h2>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">

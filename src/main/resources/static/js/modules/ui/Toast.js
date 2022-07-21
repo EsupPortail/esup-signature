@@ -4,22 +4,31 @@ export default class Toast {
 
     constructor(message) {
         this.resetToasts();
+        this.launchMsg = (message != null && message != "");
         this.message = new Message(message);
-        if(message) {
-            $(document).ready(e => this.launch(this.message));
-        }
-        $("div[id^='toast-message']").each(function() {
-            $(this).css('z-index', 10000);
-            $(this).toast('show');
-        });
         this.toastBackdrop = $("#toast-backdrop");
         this.toast = null;
         this.initListener();
+        this.init();
     }
 
     initListener() {
         document.addEventListener("global", e => this.launch(e.detail));
         document.addEventListener("user", e => this.launch(e.detail));
+    }
+
+    init() {
+        let self = this;
+        $(document).ready(function() {
+            $("div[id^='toast-message-']").each(function() {
+                let idToast = $(this).attr("id");
+                $(this).css('z-index', 10000);
+                $("#" + idToast).toast('show');
+            });
+            if(self.launchMsg) {
+                self.launch(self.message);
+            }
+        });
     }
 
     resetToasts() {

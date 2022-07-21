@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<div id="signRequestParamsForm" th:fragment="signrequestparam" class="d-none">
+    <div id="crossTools" class="badge bg-primary btn-small cross-tools text-left">
+        <div id="defaultTools">
+            <button type="button" id="textReduce"
+                    title="Agrandir le text"
+                    class="btn btn-sm btn-transparent text-white"
+                    style="z-index: 3; display: none">
+                <b style="font-size: 11px;">A</b>
+            </button>
+            <button type="button" id="textGrow"
+                    title="Reduire le text"
+                    class="btn btn-sm btn-transparent text-white"
+                    style="z-index: 3; display: none">
+                <b style="font-size: 14px;">A</b>
+            </button>
+            <button type="button" id="signImage_0"
+                    title="Ajouter une image de votre signature"
+                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    style="z-index: 3;">
+                <i class="fas fa-signature"></i>
+            </button>
+            <button type="button" id="signExtra_0"
+                    title="Ajouter les informations complémentaires (nom, date et heure...)"
+                    class="btn btn-sm btn-transparent text-white"
+                    style="z-index: 3;">
+                <i class="fas fa-receipt"></i>
+            </button>
+            <button type="button" id="signExtraOnTop_0"
+                    title="Texte au dessus/texte sur la droite"
+                    class="btn btn-sm btn-transparent text-white"
+                    disabled
+                    style="z-index: 3;">
+                <i class="fas fa-retweet"></i>
+            </button>
+            <button type="button" id="watermark_0"
+                    title="Filigrane"
+                    class="btn btn-sm btn-transparent text-white"
+                    style="z-index: 3;">
+                <i class="fab fa-markdown"></i>
+            </button>
+        </div>
+        <div id="extraTools_0" class="d-none">
+            <button type="button" id="extraType_0"
+                    title="Afficher le type de signature"
+                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    style="z-index: 3;">
+                Type
+            </button>
+            <button type="button" id="extraName_0"
+                    title="Afficher le nom"
+                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    style="z-index: 3;">
+                Nom
+            </button>
+            <button type="button" id="extraDate_0"
+                    title="Afficher la date"
+                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    style="z-index: 3;">
+                Date
+            </button>
+            <button type="button" id="extraText_0"
+                    title="Ajouter un texte libre"
+                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    style="z-index: 3;">
+                Texte
+            </button>
+        </div>
+    </div>
+    <div id="cross" style="border: 1px solid green; position: relative; z-index:1027;pointer-events: auto;cursor: move;background-repeat: no-repeat; background-position: left bottom;">
+        <div id="borders" class="d-flex text-center align-items-center" style="position: relative; line-height:normal;width: 300px; height: 150px;">
+            <i class="fas fa-signature fa-8x mx-auto align-middle"></i>
+        </div>
+    </div>
+</div>
+</html>

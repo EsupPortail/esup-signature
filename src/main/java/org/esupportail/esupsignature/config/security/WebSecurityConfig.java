@@ -26,9 +26,7 @@ import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -39,6 +37,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
@@ -57,7 +56,7 @@ import java.util.Map;
 @Configuration
 @EnableWebSecurity(debug = false)
 @EnableConfigurationProperties({WebSecurityProperties.class, ShibProperties.class, CasProperties.class, DevShibProperties.class})
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig {
 
 	private static final Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);
 
@@ -147,15 +146,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		return devClientRequestFilter;
 	}
 
-	@Override
-	public void configure(WebSecurity web) throws Exception {
-		super.configure(web);
-		web.ignoring().mvcMatchers("/resources/**", "/webjars/**");
-	}
+//	@Bean
+//	public WebSecurityCustomizer webSecurityCustomizer() {
+//		return (web) -> web.ignoring().antMatchers("/resources/**", "/webjars/**");
+//	}
 
-
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		setAuthorizeRequests(http);
 		http.antMatcher("/**").authorizeRequests().antMatchers("/").permitAll();
 		devSecurityFilters.forEach(devSecurityFilter -> http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class));
@@ -192,14 +189,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.logoutSuccessUrl("/login").permitAll();
 		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy()).maximumSessions(5).sessionRegistry(sessionRegistry());
 		http.csrf()
+				.ignoringAntMatchers("/resources/**")
+				.ignoringAntMatchers("/webjars/**")
 				.ignoringAntMatchers("/ws/**")
 				.ignoringAntMatchers("/user/nexu-sign/**")
-				.ignoringAntMatchers("/otp/**")
+				.ignoringAntMatchers("/otp-access/**")
 				.ignoringAntMatchers("/log/**")
 				.ignoringAntMatchers("/actuator/**")
 				.ignoringAntMatchers("/h2-console/**");
 		http.headers().frameOptions().sameOrigin();
 		http.headers().disable();
+		return http.build();
 	}
 
 //	@Bean
@@ -251,15 +251,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			http.authorizeRequests().antMatchers("/ws/**").denyAll();
 			http.authorizeRequests().antMatchers("/actuator/**").denyAll();
 		}
-		http.authorizeRequests().antMatchers("/otp/**").permitAll();
-		http.authorizeRequests().antMatchers("/error").permitAll();
 		http.authorizeRequests()
 				.antMatchers("/").permitAll()
 				.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
-				.antMatchers("/user/", "/user/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP', 'ROLE_FRANCECONNECT')")
+				.antMatchers("/user/", "/user/**").access("hasAnyRole('ROLE_USER')")
+				.antMatchers("/otp-access/**").permitAll()
+				.antMatchers("/otp/", "/otp/**").access("hasAnyRole('ROLE_OTP', 'ROLE_FRANCECONNECT')")
 				.antMatchers("/ws-secure/", "/ws-secure/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP', 'ROLE_FRANCECONNECT')")
 				.antMatchers("/public/", "/public/**").permitAll()
-				.antMatchers("/h2-console/**").access("hasRole('ROLE_ADMIN')");
+				.antMatchers("/error").permitAll();
 
 	}
 
@@ -296,7 +296,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Bean
-	@Override
 	public AuthenticationManager authenticationManagerBean() {
 		return new ProviderManager(List.of(new OtpAuthenticationProvider()));
 	}
@@ -308,7 +307,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Bean
 	public SpelGroupService spelGroupService() {
-		SpelGroupService spelGroupService = new SpelGroupService();
+		SpelGroupService spelGroupService = new SpelGroupService(globalProperties);
 		Map<String, String> groups4eppnSpel = new HashMap<>();
 		if (webSecurityProperties.getGroupMappingSpel() != null) {
 			for (String groupName : webSecurityProperties.getGroupMappingSpel().keySet()) {

@@ -28,7 +28,6 @@ public class User {
 	
 	private String name;
 
-	
 	private String firstname;
 	
     @Column(unique=true)
@@ -38,6 +37,9 @@ public class User {
     @Column(unique=true)
     @NotNull
     private String email;
+
+    @Column(unique=true)
+    private String phone;
 
     @ElementCollection(targetClass=String.class)
     private List<String> managersRoles = new ArrayList<>();
@@ -88,14 +90,6 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastSendAlertDate = new Date(0);
 
-    public EmailAlertFrequency getEmailAlertFrequency() {
-        return this.emailAlertFrequency;
-    }
-
-    public void setEmailAlertFrequency(EmailAlertFrequency emailAlertFrequency) {
-        this.emailAlertFrequency = emailAlertFrequency;
-    }
-
     @ElementCollection
     private List<String> roles = new ArrayList<>();
 
@@ -107,6 +101,11 @@ public class User {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date replaceEndDate;
+
+    @OneToOne
+    private SignRequestParams favoriteSignRequestParams;
+
+    private Boolean returnToHomeAfterSign = true;
 
 	public Long getId() {
         return this.id;
@@ -154,6 +153,14 @@ public class User {
 
 	public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public List<String> getManagersRoles() {
@@ -268,6 +275,13 @@ public class User {
         this.lastSendAlertDate = lastSendAlertDate;
     }
 
+    public EmailAlertFrequency getEmailAlertFrequency() {
+        return this.emailAlertFrequency;
+    }
+
+    public void setEmailAlertFrequency(EmailAlertFrequency emailAlertFrequency) {
+        this.emailAlertFrequency = emailAlertFrequency;
+    }
     public List<String> getRoles() {
         return roles;
     }
@@ -315,6 +329,15 @@ public class User {
         this.replaceEndDate = replaceEndDate;
     }
 
+    public SignRequestParams getFavoriteSignRequestParams() {
+        return favoriteSignRequestParams;
+    }
+
+    public void setFavoriteSignRequestParams(SignRequestParams favoriteSignRequestParams) {
+        this.favoriteSignRequestParams = favoriteSignRequestParams;
+    }
+
+    @JsonIgnore
     public User getCurrentReplaceUser() {
         Date checkDate = new Date();
         if((replaceBeginDate == null
@@ -324,5 +347,13 @@ public class User {
             return replaceByUser;
         }
         return null;
+    }
+
+    public Boolean getReturnToHomeAfterSign() {
+        return returnToHomeAfterSign;
+    }
+
+    public void setReturnToHomeAfterSign(Boolean returnToHomeAfterSign) {
+        this.returnToHomeAfterSign = returnToHomeAfterSign;
     }
 }

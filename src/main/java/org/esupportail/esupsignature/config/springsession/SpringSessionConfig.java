@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.config.springsession;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
@@ -15,17 +14,12 @@ import javax.sql.DataSource;
 @EnableJdbcHttpSession(saveMode = SaveMode.ON_SET_ATTRIBUTE)
 public class SpringSessionConfig {
 
-//    @Bean("springSessionDataSource")
-//    @SpringSessionDataSource
-//    public DataSource sessionDataSource() {
-//        return new EmbeddedDatabaseBuilder()
-//                .setType(EmbeddedDatabaseType.H2)
-//                .setName("sessions")
-//                .addScript("org/springframework/session/jdbc/schema-h2.sql").build();
-//    }
+    final private DataSource dataSource;
 
-    @Autowired
-    private DataSource dataSource;
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    public SpringSessionConfig(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     @EventListener(ApplicationReadyEvent.class)
     public void loadSpringSessionSchema() {

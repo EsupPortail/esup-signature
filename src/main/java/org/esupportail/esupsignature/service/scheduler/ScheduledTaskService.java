@@ -7,33 +7,30 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
 @EnableScheduling
-//@Profile("!dev")
+@Profile("!dev")
 @Component
 @EnableConfigurationProperties(GlobalProperties.class)
 public class ScheduledTaskService {
@@ -49,7 +46,7 @@ public class ScheduledTaskService {
 	private SignBookService signBookService;
 
 	@Resource
-	private SignRequestService signRequestService;
+	private TaskService taskService;
 
 	@Resource
 	private WorkflowService workflowService;
@@ -83,72 +80,42 @@ public class ScheduledTaskService {
 	}
 
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
-	@Transactional
 	public void scanAllSignbooksTargets() {
 		logger.debug("scan all signRequest to export");
 		List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
 		for(SignBook signBook : signBooks) {
 			try {
-				if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
-					signRequestService.sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getName(), signBook.getLiveWorkflow().getTargets(), "scheduler");
-				}
-			} catch (EsupSignatureFsException | EsupSignatureException e) {
-				logger.error(e.getMessage());
+				signBookService.sendSignRequestsToTarget(signBook.getId(), "scheduler");
+			} catch(Exception e) {
+				logger.error("export error for signbook " + signBook.getId() + " - " + e.getMessage());
 			}
 		}
 	}
 
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
-	@Transactional
 	public void scanAllSignbooksToArchive() {
-		if(globalProperties.getArchiveUri() != null) {
-			logger.debug("scan all signRequest to archive");
-			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
-			signBooks.addAll(signBookRepository.findByStatus(SignRequestStatus.exported));
-			for (SignBook signBook : signBooks) {
-				try {
-					if(signBook.getStatus().equals(SignRequestStatus.completed) && signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
-						continue;
-					}
-					signRequestService.archiveSignRequests(signBook.getSignRequests(), "scheduler");
-				} catch (EsupSignatureFsException | EsupSignatureException e) {
-					logger.error(e.getMessage());
-				}
-			}
+		if(globalProperties.getEnableScheduledCleanup()) {
+			SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
+			Date date = new Date(System.currentTimeMillis());
+			System.out.println(formatter.format(date));
+			logger.info("init archive : " + formatter.format(date));
+			taskService.initArchive();
+			Date date2 = new Date(System.currentTimeMillis());
+			logger.info("end archive" + formatter.format(date2));
+
 		}
 	}
 
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
-	@Transactional
 	public void scanAllSignbooksToClean() {
-		logger.debug("scan all signRequest to clean");
-		if(globalProperties.getDelayBeforeCleaning() > -1) {
-			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.archived);
-			for (SignBook signBook : signBooks) {
-				signRequestService.cleanFiles(signBook, "scheduler");
-			}
-		} else {
-			logger.debug("cleaning documents was skipped because neg value");
-		}
-		if(globalProperties.getTrashKeepDelay() > -1) {
-			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.deleted);
-			int i = 0;
-			for (SignBook signBook : signBooks) {
-				if (signBook.getUpdateDate() != null) {
-					LocalDateTime deleteDate = LocalDateTime.ofInstant(signBook.getUpdateDate().toInstant(), ZoneId.systemDefault());
-					LocalDateTime nowDate = LocalDateTime.ofInstant(new Date().toInstant(), ZoneId.systemDefault());
-					long nbDays = ChronoUnit.DAYS.between(deleteDate, nowDate);
-					if (Math.abs(nbDays) >= globalProperties.getTrashKeepDelay()) {
-						signBookService.deleteDefinitive(signBook.getId());
-						i++;
-					}
-				}
-			}
-			if(i > 0) {
-				logger.info(i + " item are deleted");
-			}
-		} else {
-			logger.debug("cleaning trashes was skipped because neg value");
+		if(globalProperties.getEnableScheduledCleanup()) {
+			SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
+			Date date = new Date(System.currentTimeMillis());
+			System.out.println(formatter.format(date));
+			logger.info("init clean : " + formatter.format(date));
+			taskService.initCleanning();
+			Date date2 = new Date(System.currentTimeMillis());
+			logger.info("end clean : " + formatter.format(date2));
 		}
 	}
 
@@ -173,7 +140,7 @@ public class ScheduledTaskService {
 
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
-	public void cleanWarningReadedSignRequests() {
+	public void cleanWarningReadSignRequests() {
 		if(globalProperties.getNbDaysBeforeDeleting() > -1) {
 			List<SignRequest> signRequests = signRequestRepository.findByOlderPendingAndWarningReaded(globalProperties.getNbDaysBeforeDeleting());
 			for (SignRequest signRequest : signRequests) {

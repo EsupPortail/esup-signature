@@ -31,7 +31,6 @@ import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.fs.UploadActionType;
 import org.esupportail.esupsignature.service.utils.file.FileService;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -139,7 +138,6 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		return null;
 	}
 
-	@NotNull
 	private SmbFile getSmbFileFromPath(String path) throws URISyntaxException, MalformedURLException, UnsupportedEncodingException {
 		SmbFile smbFile;
 		int pos = path.lastIndexOf('/') + 1;
@@ -177,7 +175,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 			}
 			createFile(parent, uri.substring(uri.lastIndexOf("/")), "folder");
 		} else {
-			logger.info(uri + " already exist");
+			logger.debug(uri + " already exist");
 		}
 	}
 
@@ -304,7 +302,8 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		boolean success = false;
 		SmbFile newFile = null;
 		try {
-			URI uri = new URI(dir);
+			URI uri = new URI(dir.replace(" ", "%20")).normalize();
+			filename = filename.replace("\n", "").replace("\r", "");
 			if(uri.getScheme().equals("smb")) {
 				newFile = new SmbFile(dir + "/" + filename, this.cifsContext);
 			}
@@ -381,18 +380,15 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 	private FsFile toFsFile(SmbFile smbFile, String path) throws IOException {
-		String name = smbFile.getName();
-		File tempFile = fileService.getTempFile(smbFile.getName());
-		FileOutputStream out = new FileOutputStream(tempFile);
 		InputStream is = smbFile.getInputStream();
-		IOUtils.copy(is, out);
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		IOUtils.copy(is, outputStream);
 		is.close();
-		out.close();
+		outputStream.close();
 		smbFile.close();
-		FsFile fsFile = new FsFile(new FileInputStream(tempFile), smbFile.getName(), URLConnection.guessContentTypeFromName(smbFile.getName()));
+		FsFile fsFile = new FsFile(new ByteArrayInputStream(outputStream.toByteArray()), smbFile.getName(), URLConnection.guessContentTypeFromName(smbFile.getName()));
 		fsFile.setPath(path);
 		fsFile.setCreateDate(new Date(smbFile.getDate()));
-		tempFile.delete();
 		return fsFile;
 	}
 

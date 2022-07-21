@@ -3,15 +3,15 @@
 <head th:replace="fragments/head-lite :: head-lite"></head>
 <body>
     <th:block th:if="${userEppn != null}">
-    <header th:replace="fragments/nav :: nav"></header>
+    <header th:replace="fragments/nav-empty :: nav-empty"></header>
     </th:block>
     <th:block th:unless="${userEppn != null}">
     <header th:replace="fragments/nav-empty :: nav-empty"></header>
     </th:block>
-    <main role="main">
+    <main role="main" style="padding-bottom: 65px !important;">
     <div class="card col-lg-10 mx-auto" style="top: 60px;">
         <div class="card-body">
-            <h1>Une erreur s’est produite<span th:if="${userEppn != null}" th:text=" ' : ' + ${error}"></span></h1>
+            <h1>Une erreur s’est produite<span th:if="${userEppn != null}" th:text=" ' : ' + ${status} + ' ' + ${error}"></span></h1>
             <p>Merci de contacter le gestionnaire de cette application</p>
             <p><a th:href="'mailto:' + ${applicationEmail}" th:text="${applicationEmail}" target="_blank"></a></p>
             <a th:if="${userEppn != null}" class="btn btn-success" href="javascript:window.history.back();">Retour</a>
@@ -19,68 +19,68 @@
                 <i class="fas fa-chevron-down"></i> Détails de l’erreur
             </button>
             <div id="collapseError" class="collapse mt-2" th:if="${userEppn != null}">
-            <table class="table table-striped">
-                <tr class="row rowDesign">
-                    <td class="col-md-4 ms-auto">
-                        <span class="legend">Date</span>
-                    </td>
-                    <td class="col-md-8">
-                        <span th:text="${timestamp}"></span>
-                    </td>
-                </tr>
-                <tr class="row rowDesign">
-                    <td class="col-md-4 ms-auto">
-                        <span class="legend">Path</span>
-                    </td>
-                    <td class="col-md-8">
-                        <span th:text="${path}"></span>
-                    </td>
-                </tr>
-                <tr class="row rowDesign">
-                    <td class="col-md-4 ms-auto">
-                        <span class="legend">Error</span>
-                    </td>
-                    <td class="col-md-8">
-                        <span th:text="${error}"></span>
-                    </td>
-                </tr>
-                <tr class="row rowDesign">
-                    <td class="col-md-4 ms-auto">
-                        <span class="legend">Status</span>
-                    </td>
-                    <td class="col-md-8">
-                        <span th:text="${status}"></span>
-                    </td>
-                </tr>
-                <tr class="row rowDesign">
-                    <td class="col-md-4 ms-auto">
-                        <span class="legend">Message</span>
-                    </td>
-                    <td class="col-md-8">
-                        <span th:text="${message}"></span>
-                    </td>
-                </tr>
-                <tr class="row rowDesign">
-                    <td class="col-md-4 ms-auto">
-                        <span class="legend">Exception</span>
-                    </td>
-                    <td class="col-md-8">
-                        <span th:text="${exception}"></span>
-                    </td>
-                </tr>
-                <tr class="row rowDesign">
-                    <td class="col-md-4 ms-auto">
-                        <span class="legend">Trace</span>
-                    </td>
-                    <td class="col-md-8">
-                        <span th:text="${trace}"></span>
-                    </td>
-                </tr>
-            </table>
+                <table class="table table-striped">
+                    <tr class="row rowDesign">
+                        <td class="col-md-4 ms-auto">
+                            <span class="legend">Date</span>
+                        </td>
+                        <td class="col-md-8">
+                            <span th:text="${timestamp}"></span>
+                        </td>
+                    </tr>
+                    <tr class="row rowDesign">
+                        <td class="col-md-4 ms-auto">
+                            <span class="legend">Path</span>
+                        </td>
+                        <td class="col-md-8">
+                            <span th:text="${path}"></span>
+                        </td>
+                    </tr>
+                    <tr class="row rowDesign">
+                        <td class="col-md-4 ms-auto">
+                            <span class="legend">Error</span>
+                        </td>
+                        <td class="col-md-8">
+                            <span th:text="${error}"></span>
+                        </td>
+                    </tr>
+                    <tr class="row rowDesign">
+                        <td class="col-md-4 ms-auto">
+                            <span class="legend">Status</span>
+                        </td>
+                        <td class="col-md-8">
+                            <span th:text="${status}"></span>
+                        </td>
+                    </tr>
+                    <tr class="row rowDesign">
+                        <td class="col-md-4 ms-auto">
+                            <span class="legend">Message</span>
+                        </td>
+                        <td class="col-md-8">
+                            <span th:text="${message}"></span>
+                        </td>
+                    </tr>
+                    <tr class="row rowDesign">
+                        <td class="col-md-4 ms-auto">
+                            <span class="legend">Exception</span>
+                        </td>
+                        <td class="col-md-8">
+                            <span th:text="${exception}"></span>
+                        </td>
+                    </tr>
+                    <tr class="row rowDesign">
+                        <td class="col-md-4 ms-auto">
+                            <span class="legend">Trace</span>
+                        </td>
+                        <td class="col-md-8">
+                            <span th:text="${trace}"></span>
+                        </td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>
     </main>
-    <footer th:replace="fragments/footer :: footer"></footer>
+    <footer th:replace="fragments/footer-light :: footer"></footer>
 </body>
 </html>

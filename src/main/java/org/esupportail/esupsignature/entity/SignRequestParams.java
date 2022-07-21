@@ -31,11 +31,11 @@ public class SignRequestParams {
 
 	private String extraText = "";
 
-    private Boolean visual = true;
-
     private Boolean addWatermark = false;
 
     private Boolean allPages = false;
+
+    private Boolean addImage = true;
 
     private Boolean addExtra = false;
 
@@ -64,6 +64,8 @@ public class SignRequestParams {
     private Integer fontSize = 12;
 
     private String comment = "";
+
+    private Boolean restoreExtra = false;
 
     public Long getId() {
         return id;
@@ -153,14 +155,6 @@ public class SignRequestParams {
         this.extraText = extraText;
     }
 
-    public Boolean getVisual() {
-        return visual;
-    }
-
-    public void setVisual(Boolean visual) {
-        this.visual = visual;
-    }
-
     public Boolean getAddWatermark() {
         return addWatermark;
     }
@@ -175,6 +169,14 @@ public class SignRequestParams {
 
     public void setAllPages(Boolean allPages) {
         this.allPages = allPages;
+    }
+
+    public Boolean getAddImage() {
+        return addImage;
+    }
+
+    public void setAddImage(Boolean addImage) {
+        this.addImage = addImage;
     }
 
     public Boolean getAddExtra() {

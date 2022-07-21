@@ -57,11 +57,11 @@
                     <form id="formUpdate" th:action="'/admin/forms'" th:object="${form}" th:method="'put'">
                         <input type="hidden" th:field="*{id}">
                         <div class="form-group mb-3">
-                            <label for="name">Titre (titre affiché aux utilisateurs)</label>
+                            <label for="title">Titre (affiché aux utilisateurs)</label>
                             <input id="title" class="form-control" type="text" th:field="*{title}"/>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="name">Nom (nom technique)</label>
+                            <label for="name">Nom (nom technique sans espace ni accents)</label>
                             <input id="name" class="form-control" type="text" th:field="*{name}"/>
                         </div>
                         <div class="form-group mb-3">
@@ -96,24 +96,6 @@
                                 </th:block>
                             </select>
                         </div>
-                        <div class="form-group mb-3" id="managers">
-                            <label for="managersSelect"><strong>Superviseur(s) du formulaire</strong>
-                                <button class="btn btn-sm btn-transparent" data-bs-target="#collapseHelp1" data-bs-toggle="collapse"
-                                        type="button">
-                                    <span class="fas fa-info-circle text-info"></span>
-                                </button>
-                                <div class="collapse" id="collapseHelp1">
-                                    <div class="alert alert-info">
-                                        Les superviseurs peuvent consulter les demandes et en exporter les données
-                                    </div>
-                                </div>
-                            </label>
-                            <select id="managersSelect" class="select-users" multiple="multiple" name="managers">
-                                <th:block th:each="manager : ${form.managers}">
-                                    <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
-                                </th:block>
-                            </select>
-                        </div>
                         <div class="form-group mb-3">
                             <label for="workflowType">Type de workflow</label>
                             <select class="slim-select-simple" id="workflowType" th:field="*{workflow}">
@@ -137,7 +119,6 @@
                             <input id="pdfDisplay" type="checkbox" class="form-check-input" th:field="*{pdfDisplay}"/>
                             <label for="pdfDisplay">Mise en forme avec le PDF ?</label>
                         </div>
-
                         <div class="form-check">
                             <input id="activeVersion" type="checkbox" class="form-check-input" th:field="*{activeVersion}"/>
                             <label for="activeVersion">Version active</label>

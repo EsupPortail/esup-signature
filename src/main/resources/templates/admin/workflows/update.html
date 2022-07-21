@@ -14,8 +14,7 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin/workflows">Liste des circuits</a></li>
-                <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span>
-                </li>
+                <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span></li>
             </ol>
         </nav>
         <div id="content" class="content">
@@ -38,15 +37,15 @@
                 <div class="card-body">
                     <h3>WORKFLOW ID : <input type="text" readonly disabled th:value="${workflow.id}"></h3>
                     <div class="alert alert-info">Nombre de demandes pour ce circuit : <span th:text="${nbSignRequests}"></span></div>
-                    <form th:object="${workflow}" th:action="'/admin/workflows/update'" method="post" id="updateSignBook">
+                    <form th:object="${workflow}" th:action="@{/admin/workflows/update}" method="post" id="updateSignBook">
                         <input type="hidden" th:field="*{id}">
                         <div class="form-group mb-3">
-                            <label><strong>Titre</strong></label>
-                            <input class="form-control" type="text" th:field="*{title}" value="" autocomplete="on">
+                            <label for="description"><strong>Titre</strong></label>
+                            <input class="form-control" type="text" th:field="*{description}" value="" autocomplete="on">
                         </div>
                         <div class="form-group mb-3">
-                            <label><strong>Description</strong></label>
-                            <input class="form-control" type="text" th:field="*{description}" value="" autocomplete="on">
+                            <label for="title"><strong>Prefix</strong> (utilisé lors de l'import de documents dans le circuit)</label>
+                            <input class="form-control" type="text" th:field="*{title}" value="" autocomplete="on">
                         </div>
                         <div class="form-group mb-3">
                             <label>
@@ -62,7 +61,11 @@
                                     Si vide, se réfere à l'attribut namingTemplate de la configuration générale
                                     Les attributs disponibles sont :
                                     <ul>
-                                        <li>[title] : titre du document original</li>
+                                        <li>[originalFileName] : nom original du document</li>
+                                        <li>[signedFileName] : nom original du document</li>
+                                        <li>[fileNameOnly] : nom document sans extension</li>
+                                        <li>[fileExtension] : extention du document</li>
+                                        <li>[title] : titre du parapheur</li>
                                         <li>[id] : identifiant du parapheur</li>
                                         <li>[worflowName] : nom du circuit</li>
                                         <li>[user.name] : nom prénom de l'utilisateur courant</li>
@@ -78,6 +81,14 @@
                             </div>
                             <input class="form-control" type="text" th:field="*{namingTemplate}" value="" autocomplete="off">
                         </div>
+                        <div class="form-check" th:if="${globalProperties.sealCertificatDriver != null}">
+                            <input id="sealAtEnd" type="checkbox" class="form-check-input" th:field="*{sealAtEnd}"/>
+                            <label for="sealAtEnd">Signature avec cachet en fin de circuit ?</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input id="ownerSystem" type="checkbox" class="form-check-input" th:field="*{ownerSystem}"/>
+                            <label for="ownerSystem" class="form-check-label">Le compte système est propriétaire des demandes de ce circuit (les créateurs ne pourront pas supprimer les demandes)</label>
+                        </div>
                         <div class="form-check mb-2">
                             <input id="publicUsage" type="checkbox" class="form-check-input" th:field="*{publicUsage}"/>
                             <label for="publicUsage" class="form-check-label">Visibilité publique ?</label>
@@ -87,10 +98,7 @@
                             <label for="visibility" class="form-check-label">Diffusion du workflow pour les rôles</label>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="roles">
-                                Rôle
-                            </label>
-                            <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à
+                              <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à
                                 ce formulaire</small></div>
 
                             <select id="roles" class="slim-select-simple" type="text" th:field="*{roles}" multiple th:classappend="${!workflow.visibility} ? 'd-none' : ''">
@@ -108,12 +116,32 @@
                             </label>
                             <div class="collapse" id="collapseHelp1">
                                 <div class="alert alert-info mb-1">
-                                    Les superviseurs peuvent consulter les demandes de ce circuit
+                                    Les superviseurs ont accès à l’espace supervision du circuit. Cela permet de consulter et supprimer les demandes associées et d’exporter les données
                                 </div>
                             </div>
                             <select id="managersSelect" class="select-users" multiple="multiple" name="managers">
+                                <option data-placeholder="true"></option>
                                 <th:block th:each="manager : ${workflow.managers}">
                                     <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="viewersSelect"><strong>Observateurs par défaut</strong>
+                                <button class="btn btn-sm btn-transparent" data-bs-target="#collapseHelp2" data-bs-toggle="collapse"
+                                        type="button">
+                                    <span class="fas fa-info-circle text-info"></span>
+                                </button>
+                            </label>
+                            <div class="collapse" id="collapseHelp2">
+                                <div class="alert alert-info mb-1">
+                                    Les observateurs sont alertés à la fin d’un circuit et ont un accès en lecture. (Modifiable à la création du circuit)
+                                </div>
+                            </div>
+                            <select id="viewersSelect" class="select-users" multiple="multiple" name="viewersEmails" style="display: none;">
+                                <option data-placeholder="true"></option>
+                                <th:block th:each="viewer : ${workflow.viewers}">
+                                    <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
                                 </th:block>
                             </select>
                         </div>
@@ -183,10 +211,13 @@
                                 </tbody>
                             </table>
                         </div>
-                        <label>
-                            <strong>Modèle de nommage pour l'export des documents</strong>
+                        <div class="form-group mb-3">
+                            <label>
+                                <strong>Modèle de nommage pour l'export des documents</strong>
+                            </label>
                             <input class="form-control" type="text" th:field="*{targetNamingTemplate}" value="" autocomplete="off">
-                        </label>
+
+                        </div>
                     </form>
                     <form id="importFormSetup" th:action="'/admin/workflows/import/' + ${workflow.id} + '/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
                         <label class="form-label">Importer une configuration</label>

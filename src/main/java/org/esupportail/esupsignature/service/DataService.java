@@ -63,8 +63,12 @@ public class DataService {
     }
 
     public Data updateDatas(Form form, Data data, Map<String, String> formDatas, User user, User authUser) {
+        SignBook signBook = data.getSignBook();
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user, data.getSignBook().getSignRequests().get(0));
         for(Field field : fields) {
+            if(!field.getWorkflowSteps().contains(signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep())) {
+                formDatas.put(field.getName(), data.getDatas().get(field.getName()));
+            }
             if(!field.getStepZero()) {
                 field.setDefaultValue("");
             }
@@ -80,10 +84,11 @@ public class DataService {
                 formDatas.put(savedDataKeys, "");
             }
         }
-
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
         data.setName(form.getTitle() + "_" + format.format(new Date()));
-        data.getDatas().putAll(formDatas);
+        for(Map.Entry<String, String> entry : formDatas.entrySet()) {
+            data.getDatas().put(entry.getKey(), entry.getValue());
+        }
         data.setForm(form);
         data.setFormName(form.getName());
         data.setFormVersion(form.getVersion());
@@ -109,16 +114,19 @@ public class DataService {
         return cloneData;
     }
 
-    public InputStream generateFile(Data data) {
+    public byte[] generateFile(Data data, InputStream inputStream) throws IOException {
         Form form = data.getForm();
-        if(form.getDocument() != null) {
+        if(inputStream != null && inputStream.available() > 0) {
+            return pdfService.fill(inputStream, data.getDatas(), false);
+        } else  if(form.getDocument() != null) {
             return pdfService.fill(form.getDocument().getInputStream(), data.getDatas(), false);
         } else {
-            try {
-                return pdfService.generatePdfFromData(data);
-            } catch (IOException e) {
-                logger.error("pdf generation error", e);
-            }
+            logger.error("no pdf model");
+//            try {
+//                return pdfService.generatePdfFromData(data);
+//            } catch (IOException e) {
+//                logger.error("pdf generation error", e);
+//            }
         }
         return null;
     }
@@ -155,9 +163,9 @@ public class DataService {
     }
 
     @Transactional
-    public Data addData(Long id, String authUserEppn) {
+    public Data addData(Long formId, String authUserEppn) {
         User authUser = userService.getUserByEppn(authUserEppn);
-        Form form = formService.getById(id);
+        Form form = formService.getById(formId);
         Data data = new Data();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
         data.setName(form.getTitle() + "_" + format.format(new Date()));

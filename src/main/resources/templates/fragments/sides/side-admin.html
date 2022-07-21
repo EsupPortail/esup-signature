@@ -4,16 +4,17 @@
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <nav th:fragment="side-admin" id="sidebar">
     <div class="ms-1 mt-2">
-        <h5 class="text-center sidebar-label"><b>Administration</b></h5>
+        <a href="/admin/"><h5 class="text-center sidebar-label"><b>Administration</b></h5></a>
+        <div class="hr"><i class="fas fa-eye me-1"></i><span class="sidebar-label"> Supervision</span></div>
         <a th:classappend="${activeMenu == 'adminsignrequests'} ? 'btn-secondary' : 'btn-light'"
-           title="Toutes les demandes" type="button" href="/admin/signrequests" class="mb-1 col-12 btn text-left">
+           title="Toutes les demandes" type="button" href="/admin/signbooks" class="mb-1 col-12 btn text-left">
             <i class="fas fa-paste"></i> <span class="sidebar-label">Demandes</span>
         </a>
         <a th:classappend="${activeMenu == 'logs'} ? 'btn-secondary' : 'btn-light'"
            title="Tous les logs" type="button" href="/admin/logs" class="mb-1 col-12 btn text-left">
             <i class="fas fa-clipboard-list"></i> <span class="sidebar-label">Logs</span>
         </a>
-        <hr>
+        <div class="hr"><i class="fas fa-cog me-1"></i><span class="sidebar-label"> Configuration</span></div>
         <a th:classappend="${activeMenu == 'workflows'} ? 'btn-secondary' : 'btn-light'"
            title="Circuits de signature" href="/admin/workflows" class="btn col-12 mb-1 text-left">
             <i class="fas fa-project-diagram project-diagram-color"></i> <span class="sidebar-label">Circuits</span>
@@ -34,7 +35,7 @@
            title="Gestion des certificats" type="button" href="/admin/certificats" class="mb-1 col-12 btn text-left">
             <i class="fas fa-certificate"></i> <span class="sidebar-label">Gestion des certificats</span>
         </a>
-        <hr>
+        <div class="hr"><i class="fas fa-tools me-1"></i><span class="sidebar-label"> Outils</span></div>
         <a th:classappend="${activeMenu == 'currentSessions'} ? 'btn-secondary' : 'btn-light'"
            title="Sessions courantes" href="/admin/currentsessions" class="btn col-12 mb-1 text-left">
             <i class="fas fa-users"></i> <span class="sidebar-label">Sessions courantes</span>
@@ -42,6 +43,10 @@
         <a th:if="${globalProperties.enableSu}" th:classappend="${activeMenu == 'su'} ? 'btn-secondary' : 'btn-light'"
            title="Switch user" href="/admin/su" class="btn col-12 mb-1 text-left">
             <i class="fas fa-user-secret"></i> <span class="sidebar-label">Switch user</span>
+        </a>
+        <a th:classappend="${activeMenu == 'tasks'} ? 'btn-secondary' : 'btn-light'"
+           title="Sessions courantes" href="/admin/tasks" class="btn col-12 mb-1 text-left">
+            <i class="fas fa-tasks"></i> <span class="sidebar-label">Taches planifiées</span>
         </a>
         <a th:classappend="${activeMenu == 'dss'} ? 'btn-secondary' : 'btn-light'" th:if="${validationToolsEnabled}"
            title="Statut DSS" type="button" href="/admin/dss" class="mb-1 col-12 btn text-left">

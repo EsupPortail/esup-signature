@@ -17,9 +17,22 @@
                 <div class="card-body">
                     <form th:action="'/admin/forms'" method="post">
                         <div class="form-group mb-3">
-                            <label for="name">Name</label>
-                            <input id="name" class="form-control" type="text" name="name"/>
+                            <label for="name" class="col-form-label">Titre (affiché aux utilisateurs)</label>
+                            <input type="text" id="title" name="title" class="form-control" required>
                         </div>
+                        <div class="form-group mb-3">
+                            <label for="name" class="col-form-label">Nom (nom technique sans espace ni accents)</label>
+                            <input type="text" id="name" name="name" class="form-control" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="workflowId" class="col-form-label">Type de workflow</label>
+                            <select class="slim-select-simple" id="workflowId" name="workflowId">
+                                <th:block th:each="workflowType : ${workflowTypes}">
+                                    <option th:value="${workflowType.id}" th:text="${workflowType.description}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <hr>
                         <h2>Champs</h2>
                         <div id="repeatingInputFields">
                             <div class="entry inline-form col-xs-12">

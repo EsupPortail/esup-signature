@@ -7,9 +7,7 @@ import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageTree;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDField;
-import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
+import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
@@ -18,6 +16,7 @@ import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -43,7 +42,7 @@ public class SignRequestParamsService {
         return signRequestParamsRepository.findById(id).get();
     }
 
-    public SignRequestParams createFromPdf(PDSignatureField pdSignatureField, int signPageNumber, PDPage pdPage) {
+    public SignRequestParams createFromPdf(PDTerminalField pdSignatureField, int signPageNumber, PDPage pdPage) {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignImageNumber(0);
         signRequestParams.setPdSignatureFieldName(pdSignatureField.getPartialName());
@@ -62,7 +61,7 @@ public class SignRequestParamsService {
         try {
             signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
         } catch (JsonProcessingException e) {
-            logger.warn("no signRequestParams returned");
+            logger.warn("no signRequestParams returned", e);
         }
         return signRequestParamses;
     }
@@ -75,6 +74,7 @@ public class SignRequestParamsService {
                 signRequestParams.setSignDocumentNumber(docNumber);
                 signRequestParamsRepository.save(signRequestParams);
             }
+            pdDocument.close();
             return signRequestParamses;
         } catch (IOException e) {
             throw new EsupSignatureIOException("unable to open pdf document");
@@ -101,6 +101,16 @@ public class SignRequestParamsService {
                         PDPage pdPage = pdPages.get(pageNum);
                         SignRequestParams signRequestParams = createFromPdf(pdSignatureField, pageNrByAnnotDict.get(signFieldName) + 1, pdPage);
                         signRequestParamsList.add(signRequestParams);
+                    }
+                    if(pdField instanceof PDPushButton) {
+                        PDPushButton pdSignatureField = (PDPushButton) pdField;
+                        String signFieldName = pdSignatureField.getPartialName();
+                        if(signFieldName.toLowerCase(Locale.ROOT).startsWith("signature")) {
+                            int pageNum = pageNrByAnnotDict.get(signFieldName);
+                            PDPage pdPage = pdPages.get(pageNum);
+                            SignRequestParams signRequestParams = createFromPdf(pdSignatureField, pageNrByAnnotDict.get(signFieldName) + 1, pdPage);
+                            signRequestParamsList.add(signRequestParams);
+                        }
                     }
                 }
             }
@@ -130,7 +140,6 @@ public class SignRequestParamsService {
                 signRequestParams.setExtraName(signRequestParamses.get(i).getExtraName());
                 signRequestParams.setExtraDate(signRequestParamses.get(i).getExtraDate());
                 signRequestParams.setExtraText(signRequestParamses.get(i).getExtraText());
-                signRequestParams.setVisual(signRequestParamses.get(i).getVisual());
                 signRequestParams.setAddExtra(signRequestParamses.get(i).getAddExtra());
                 signRequestParams.setAddWatermark(signRequestParamses.get(i).getAddWatermark());
                 signRequestParams.setAllPages(signRequestParamses.get(i).getAllPages());
@@ -149,7 +158,6 @@ public class SignRequestParamsService {
                 liveWfSignRequestParams.get(i).setExtraName(signRequestParamses.get(i).getExtraName());
                 liveWfSignRequestParams.get(i).setExtraDate(signRequestParamses.get(i).getExtraDate());
                 liveWfSignRequestParams.get(i).setExtraText(signRequestParamses.get(i).getExtraText());
-                liveWfSignRequestParams.get(i).setVisual(signRequestParamses.get(i).getVisual());
                 liveWfSignRequestParams.get(i).setAddExtra(signRequestParamses.get(i).getAddExtra());
                 liveWfSignRequestParams.get(i).setAddWatermark(signRequestParamses.get(i).getAddWatermark());
                 liveWfSignRequestParams.get(i).setAllPages(signRequestParamses.get(i).getAllPages());
@@ -165,6 +173,12 @@ public class SignRequestParamsService {
         signRequestParams.setyPos(yPos);
         signRequestParamsRepository.save(signRequestParams);
         return signRequestParams;
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        SignRequestParams signRequestParams = getById(id);
+        signRequestParamsRepository.delete(signRequestParams);
     }
 
 }

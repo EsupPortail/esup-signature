@@ -9,35 +9,34 @@
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
 <div th:fragment="message">
 	<div id="toast-backdrop"></div>
-	<div style="width: 100%; position: absolute; left: 0; top: 0; pointer-events: none;"  th:if="${versionApp != null}">
+	<div style="width: 100%; position: absolute; left: 0; top: 0; pointer-events: none;">
 		<script th:inline="javascript" type="module">
 			import Toast from '../../js/modules/ui/Toast.js?version=[[${versionApp}]]';
 			new Toast([[${message}]]);
 		</script>
 		<th:block th:each="messageNew : ${messageNews}">
-			<div th:id="'toast-message-' + ${messageNew.id}" class="toast toast-es toast-xl bg-white" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="999999999">
-				<div class="toast-header pt-3">
-					<h4 class="me-auto">Information !</h4>
-					<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close">
+		<div th:id="'toast-message-' + ${messageNew.id}" class="toast toast-es toast-xl bg-white" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="999999999">
+			<div class="toast-header pt-3">
+				<h4 class="me-auto">Information !</h4>
+				<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close">
 
-					</button>
-				</div>
-				<div class="toast-body toast-body-news">
-					<div th:utext="${messageNew.text}"></div>
-				</div>
-				<div class="toast-footer">
-					<button th:id="'markAsReadButton_' + ${messageNew.id}" class="btn btn-success me-2 mb-2 float-end" data-bs-dismiss="toast" aria-label="Close">
-					<i class="fa fa-eye-slash"></i>
-						Marquer comme lu
-					</button>
-				</div>
-				<progress id="progress-message" class="progress-bar bg-white"></progress>
+				</button>
 			</div>
+			<div class="toast-body toast-body-news">
+				<div th:utext="${messageNew.text}"></div>
+			</div>
+			<div class="toast-footer">
+				<button th:id="'markAsReadButton_' + ${messageNew.id}" class="btn btn-success me-2 mb-2 float-end" data-bs-dismiss="toast" aria-label="Close">
+				<i class="fa fa-eye-slash"></i>
+					Marquer comme lu
+				</button>
+			</div>
+			<progress id="progress-message" class="progress-bar bg-white"></progress>
+		</div>
 		</th:block>
 		<div id="toast-error" class="toast toast-es toast-sm bg-danger" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000" >
 			<div class="toast-body">
-				<button type="button" class="close float-end" data-bs-dismiss="toast" aria-label="Close">
-					<i class="fas fa-times text-white"></i>
+				<button type="button" class="btn-close float-end text-white" data-bs-dismiss="toast" aria-label="Close">
 				</button>
 				<h4 class="me-auto text-white">Erreur</h4>
 				<h5 id="message-error" class="text-white"></h5>
@@ -46,8 +45,7 @@
 		</div>
 		<div id="toast-warn" class="toast toast-es toast-sm bg-warning" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="10000">
 			<div class="toast-body">
-				<button type="button" class="close float-end" data-bs-dismiss="toast" aria-label="Close">
-
+				<button type="button" class="btn-close float-end" data-bs-dismiss="toast" aria-label="Close">
 				</button>
 				<h4 class="me-auto">Attention</h4>
 				<h5 id="message-warn"></h5>
@@ -56,8 +54,7 @@
 		</div>
 		<div id="toast-success" class="toast toast-es toast-sm bg-success" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="2000">
 			<div class="toast-body text-white">
-				<button type="button" class="close float-end" data-bs-dismiss="toast" aria-label="Close">
-
+				<button type="button" class="btn-close float-end" data-bs-dismiss="toast" aria-label="Close">
 				</button>
 				<h5 id="message-success"></h5>
 			</div>
@@ -65,8 +62,7 @@
 		</div>
 		<div id="toast-info" class="toast toast-es toast-sm bg-primary" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="2000">
 			<div class="toast-body">
-				<button type="button" class="close float-end" data-bs-dismiss="toast" aria-label="Close">
-
+				<button type="button" class="btn-close float-end" data-bs-dismiss="toast" aria-label="Close">
 				</button>
 				<h5 id="message-info" class="text-white"></h5>
 			</div>
@@ -74,8 +70,7 @@
 		</div>
 		<div id="toast-custom" class="toast toast-es toast-md bg-white" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="30000">
 			<div class="toast-body">
-				<button type="button" class="close float-end" data-bs-dismiss="toast" aria-label="Close">
-
+				<button type="button" class="btn-close float-end" data-bs-dismiss="toast" aria-label="Close">
 				</button>
 				<h4 class="me-auto text-dark">Message</h4>
 				<h5 id="message-custom"></h5>
@@ -84,8 +79,7 @@
 		</div>
 		<div id="toast-help" class="toast toast-es toast-xl bg-white" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="999999999">
 			<div class="toast-body toast-body-news">
-				<button type="button" class="close float-end" data-bs-dismiss="toast" aria-label="Close">
-
+				<button type="button" class="btn-close float-end" data-bs-dismiss="toast" aria-label="Close">
 				</button>
 				<h4 class="me-auto text-dark">Aide</h4>
 				<h5 id="message-help"></h5>

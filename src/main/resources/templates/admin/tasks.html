@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<meta http-equiv="refresh" content="10">
+<body>
+<header th:replace="fragments/nav :: nav"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item active">Taches planifiées</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-body">
+                    <form th:action="@{/admin/tasks/run-archive}" method="POST">
+                        <button class="btn btn-lg btn-primary btn-block" type="submit">
+                            <div th:if="${isEnableArchiveTask}" class="justify-content-center">
+                                Stopper l'archivage
+                                <div class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
+                                </div>
+                            </div>
+                            <span th:unless="${isEnableArchiveTask}">Lancer l'archivage</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-body">
+                    <form th:action="@{/admin/tasks/run-clean}" method="POST">
+                        <button class="btn btn-lg btn-primary btn-block" type="submit">
+                            <div th:if="${isEnableCleanTask}" class="justify-content-center">
+                                Stopper le nettoyage
+                                <div class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
+                                </div>
+                            </div>
+                            <span th:unless="${isEnableCleanTask}">Lancer le nettoyage</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer :: footer"></footer>
+</body>
+</html>

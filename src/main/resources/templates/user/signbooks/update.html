@@ -2,10 +2,6 @@
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
-<script th:inline="javascript" type="module">
-    import {default as SelectUser} from '/js/modules/utils/SelectUser.js?version=[[${versionApp}]]';
-    new SelectUser("recipientsEmails2", null, null, [[${_csrf}]]);
-</script>
 <body>
 <header th:replace="fragments/nav :: nav"></header>
 <main role="main">
@@ -14,21 +10,47 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/signrequests">Tableau de bord</a></li>
-                <li class="breadcrumb-item"><a th:href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:text="${signBook.title}"></a></li>
-                <li class="breadcrumb-item active" aria-current="page">Edition</span>
-                </li>
+                <li class="breadcrumb-item"><a th:href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:text="${signBook.subject}"></a></li>
+                <li class="breadcrumb-item active" aria-current="page">Edition</li>
             </ol>
         </nav>
         <div id="content" class="content">
-            <div id="addButton" class="fixed-action-btn" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
-                <a class="btn-floating btn-lg bg-success waves-effect" th:href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" title="Retour">
-                    <i class="fas fa-save"></i>
-                </a>
+            <div class="fixed-action-btns active" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+                <ul id="buttonList" class="list-unstyled">
+                    <li>
+                        <a id="saveButton" onclick="$('#params').submit();" class="btn-floating btn-lg bg-success waves-effect" title="Enregistrer">
+                            <i class="fas fa-save"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a id="cancelButton" th:href="'/user/signbooks/' + ${signBook.id}" class="btn-floating btn-lg bg-secondary waves-effect" title="Retour au parapheur">
+                            <i class="fas fa-door-open"></i>
+                        </a>
+                    </li>
+                </ul>
             </div>
             <div class="card col-lg-10 mx-auto mb-1">
                 <div class="card-body">
-                    <h5 class="text-center"><b>Description</b></h5>
-                    <textarea class="form-control" th:text="${signRequest.parentSignBook.description}"></textarea>
+                    <form id="params" th:action="'/user/signbooks/update/' + ${signBook.id}" th:method="put">
+                        <h5 class="text-center"><b>Paramètres généraux</b></h5>
+                        <div class="form-group">
+                            <label for="subject">Titre</label>
+                            <input type="text" class="form-control" name="subject" id="subject" th:value="${signBook.subject}">
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea id="description" name="description" class="form-control" th:text="${signBook.description}"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Observateurs</label>
+                            <select id="viewersSelect" class="select-users" multiple="multiple" name="viewers" style="display: none;">
+                                <option data-placeholder="true"></option>
+                                <th:block th:each="viewer : ${signBook.viewers}">
+                                    <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                    </form>
                 </div>
             </div>
             <div class="card col-lg-10 mx-auto mb-1">
@@ -56,9 +78,6 @@
                                         </button>
                                         <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}" style="width:200px; right: 100px;z-index: 1000;">
                                             <div class=" card-body">
-                                                <a th:if="${signRequest.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" role="button" title="Détails" th:href="'/user/signrequests/details/' + ${signRequest.id}">
-                                                    <i class="fas fa-info-circle pr-2"></i>Détails
-                                                </a>
                                                 <a th:if="${signRequest.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-bs-toggle="modal" data-bs-target="#modal-warning" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
                                                     <i class="fas fa-trash-alt pr-2"></i> Supprimer
                                                 </a>
@@ -130,9 +149,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" id="fast-form-submit" class="btn btn-success">
-                        Envoyer
-                    </button>
+                    <button type="submit" class="btn btn-success">Envoyer</button>
                 </div>
             </form>
         </div>
@@ -190,6 +207,10 @@
                     </button>
                 </div>
             </form>
+            <script th:inline="javascript" type="module">
+                import {default as SelectUser} from '/js/modules/utils/SelectUser.js?version=[[${versionApp}]]';
+                new SelectUser("recipientsEmails2", null, null, [[${_csrf}]]);
+            </script>
         </div>
     </div>
 </div>

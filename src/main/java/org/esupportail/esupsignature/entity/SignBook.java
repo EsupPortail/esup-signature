@@ -26,8 +26,15 @@ public class SignBook {
 	@Version
     private Integer version;
 
+    @Column(columnDefinition = "TEXT")
+    private String subject;
+
+    private String workflowName;
+
+    @Deprecated
 	private String name;
 
+    @Deprecated
     private String title;
 
     @Column(columnDefinition = "TEXT")
@@ -46,8 +53,6 @@ public class SignBook {
 
     private String updateBy;
     
-    private Boolean external = false;
-
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
@@ -95,20 +100,30 @@ public class SignBook {
         this.version = version;
     }
 
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
+    public String getWorkflowName() {
+        return workflowName;
+    }
+
+    public void setWorkflowName(String workflowName) {
+        this.workflowName = workflowName;
+    }
+
+    @Deprecated
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
+    @Deprecated
     public String getTitle() {
         return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public String getDescription() {
@@ -149,14 +164,6 @@ public class SignBook {
 
     public void setUpdateBy(String updateBy) {
         this.updateBy = updateBy;
-    }
-
-    public Boolean getExternal() {
-        return external;
-    }
-
-    public void setExternal(Boolean external) {
-        this.external = external;
     }
 
     public SignRequestStatus getStatus() {

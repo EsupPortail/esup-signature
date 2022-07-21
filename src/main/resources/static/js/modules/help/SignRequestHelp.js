@@ -1,7 +1,8 @@
 export class SignRequestHelp {
 
-    constructor(doneTour) {
+    constructor(doneTour, path) {
         this.doneTour = doneTour;
+        this.path = path;
         this.intro = introJs();
         this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'Passer', showStepNumbers: 'false', overlayOpacity: 0.3})
         this.initListeners();
@@ -11,8 +12,9 @@ export class SignRequestHelp {
     initListeners() {
         this.intro.onbeforechange(e => this.scrollTop(e));
         this.intro.onafterchange(e => this.modButtons());
+        let self = this;
         this.intro.onexit(function () {
-            $.get("/user/users/mark-intro-as-read/signRequestHelp");
+            $.get("/" + self.path + "/users/mark-intro-as-read/signRequestHelp");
         });
         $("#helpStartButton").on('click', e => this.start());
     }
@@ -47,7 +49,7 @@ export class SignRequestHelp {
         }
         this.intro.addStep({
             element: '#sidebar',
-            intro: "La barre latérale vous permet de basculer sur le mode \"commentaires\" et vous informe sur l'avancé du circuit",
+            intro: "La barre latérale vous permet de basculer sur le mode \"commentaires\" et vous informe sur l'avancée du circuit",
             position: 'right'
         });
         if($.trim($("#cross").html()) !== '') {

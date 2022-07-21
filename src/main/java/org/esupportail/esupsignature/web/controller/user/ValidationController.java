@@ -16,8 +16,7 @@ import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.ValidationService;
-import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,9 +58,6 @@ public class ValidationController {
 		
 	@Resource
 	private ValidationService validationService;
-	
-	@Resource
-	private FileService fileService;
 
 	@Resource
 	private PdfService pdfService;
@@ -103,7 +99,7 @@ public class ValidationController {
 			model.addAttribute("detailedReport", "<h2>Impossible de valider ce document</h2>");
 		}
 		try {
-			model.addAttribute("pdfaReport", pdfService.checkPDFA(new ByteArrayInputStream(docBytes), true));
+			model.addAttribute("pdfaReport", pdfService.checkPDFA(docBytes, true));
 		} catch (EsupSignatureException e) {
 			model.addAttribute("pdfaReport", Arrays.asList("danger", "Impossible de valider ce document"));
 			logger.error(e.getMessage());
@@ -112,8 +108,7 @@ public class ValidationController {
 
 	@GetMapping(value = "/document/{id}")
 	public String validateDocument(@PathVariable(name="id") long id, Model model) throws IOException {
-		File file = signRequestService.getToValidateFile(id);
-		extracted(new FileInputStream(file), null, model);
+		extracted(signRequestService.getToValidateFile(id), null, model);
 		return "user/validation/result";
 	}
 
@@ -243,18 +238,6 @@ public class ValidationController {
 			return new DiagnosticData(xmlDiagData);
 		} catch (Exception e) {
 			logger.error("An error occurred while generating DiagnosticData from XML : " + e.getMessage(), e);
-		}
-		return null;
-	}
-
-	@GetMapping(value = "/short/{id}")
-	@ResponseBody
-	public String shortValidateDocument(@PathVariable(name="id") long id) throws IOException {
-		File file = signRequestService.getToValidateFile(id);
-		Reports reports = validationService.validate(new FileInputStream(file), null);
-		if(reports != null) {
-			String xmlSimpleReport = reports.getXmlSimpleReport();
-			return xsltService.generateShortReport(xmlSimpleReport);
 		}
 		return null;
 	}

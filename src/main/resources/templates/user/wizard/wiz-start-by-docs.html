@@ -26,9 +26,15 @@
 <hr>
 <h4 class="d-flex justify-content-center mt-4">Dépôt des fichiers</h4>
 <div class="col-lg-12">
+    <form id="startByDocs" th:action="'/ws-secure/signrequests/start-workflow/' + ${workflow != null ? workflow.name : 'custom'}" th:method="post" enctype="multipart/form-data">
+    <div class="form-group mb-3">
+        <label class="form-label" for="titleWiz">Titre <span th:if="${workflow != null}">(Facultatif)</span><span th:unless="${workflow != null}">(Obligatoire)</span></label>
+        <input th:required="${workflow == null}" type="text" placeholder="Vous pouvez saisir un titre pour retrouver votre demande" id="titleWiz" name="title" class="form-control">
+        <input type="submit" id="titleWizSubmit" class="d-none">
+    </div>
     <div class="form-group mb-3">
         <div class="file-loading">
-            <input th:id="'multipartFiles_' + ${workflow != null ? workflow.id : '0'}" name="multipartFiles" type="file" multiple="multiple"/>
+            <input th:id="'multipartFiles_' + ${workflow != null ? workflow.id : '0'}" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''">
         </div>
     </div>
     <div class="form-group mb-3">
@@ -41,26 +47,29 @@
             <label class="form-check-label">Encapsuler tous les documents dans un seul fichier en fin de circuit</label>
         </div>
         <div>
-            <label class="form-label" for="titleWiz">Titre (facultatif)</label>
-            <input type="text" placeholder="Vous pouvez saisir un titre pour retrouver votre demande" id="titleWiz" name="titleWiz" class="form-control">
-        </div>
-        <div>
             <label class="form-label" for="commentWiz">Commentaire</label>
             <textarea type="text" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."  onfocus="this.placeholder = ''" id="commentWiz" name="commentWiz" class="form-control"></textarea>
         </div>
     <div>
     <label class="form-label" th:for="'recipientsCCEmailsWiz' + ${workflow != null ? workflow.id : '0'}">Choisir les observateurs en copie</label>
     <div class="form-group mb-3">
-        <select class="select-users" data-check="true" th:name="'recipientsCCEmailsWiz' + ${workflow != null ? workflow.id : '0'}" th:id="'recipientsCCEmailsWiz' + ${workflow != null ? workflow.id : '0'}" size="5" multiple="multiple">
+        <select class="select-users" data-es-check-cert="true" th:name="'recipientsCCEmailsWiz' + ${workflow != null ? workflow.id : '0'}" th:id="'recipientsCCEmailsWiz' + ${workflow != null ? workflow.id : '0'}" size="5" multiple="multiple">
+            <option data-placeholder="true"></option>
+            <th:block th:if="${workflow != null}">
+            <th:block th:each="viewer : ${workflow.viewers}">
+                <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
+            </th:block>
+            </th:block>
         </select>
     </div>
     </div>
     </div>
-</div>
-<hr>
-<div class="inline-flex">
-    <button type="button" id="fileUploadBtn" class="btn btn-success float-end m-1">
-        Suivant <i class="fas fa-angle-right"></i>
-    </button>
+        <hr>
+        <div class="inline-flex">
+            <button type="submit" id="fileUploadBtn_old" class="btn btn-success float-end m-1">
+                Suivant <i class="fas fa-angle-right"></i>
+            </button>
+        </div>
+    </form>
 </div>
 </html>

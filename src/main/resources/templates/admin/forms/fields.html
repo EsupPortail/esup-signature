@@ -23,6 +23,8 @@
             <div class="fixed-action-btns active" >
                 <ul class="list-unstyled">
                     <li>
+                        <a th:if="${form.document == null}" title="Ajouter un champ" data-bs-toggle="modal" data-bs-target="#newManualForm" class="btn-floating btn-lg text-dark bg-primary waves-effect"><i class="fas fa-plus"></i></a></li>
+                    <li>
                         <a id="saveButton" title="Enregistrer les modifications" type="button" class="btn-floating btn-lg bg-success">
                             <i class="fas fa-save"></i>
                         </a>
@@ -43,7 +45,7 @@
             <br>
             <div class="card col-lg-11">
                 <div class="card-body">
-                    <div id="listSignRequestTable" class="table-fix-head">
+                    <div th:if="${form.fields.size() > 0}" id="listSignRequestTable" class="table-fix-head">
                         <table class="table table-borderless table-hover">
                     <thead class="table-secondary">
                         <tr>
@@ -158,11 +160,46 @@
                     </tbody>
                 </table>
                     </div>
+                    <div th:unless="${form.fields.size() > 0}" class="alert alert-warning">
+                        Ce formulaire ne contient pas de modèle
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </main>
+<div class="modal fade" id="newManualForm" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nouveau formulaire sans modèle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <script th:inline="javascript" type="module">
+                    import {FormManualAdd } from '/js/modules/ui/forms/FormManualAdd.js?version=[[${versionApp}]]';
+                    new FormManualAdd();
+                </script>
+                <form th:action="'/admin/forms/add-field/' + ${form.id}" method="post">
+                    <div id="repeatingInputFields">
+                        <div class="entry inline-form col-xs-12">
+                            <input class="form-control" name="fieldNames[]" type="text" placeholder="Nom"/>
+                            <select name="fieldTypes[]" class="form-select">
+                                <th:block th:each="fieldType : ${T(org.esupportail.esupsignature.entity.enums.FieldType).values()}">
+                                    <option th:value="${fieldType}" th:text="${fieldType.name()}"></option>
+                                </th:block>
+                            </select>
+                            <button id="btn-add-field" type="button" class="btn btn-success">
+                                <span class="fas fa-plus" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <input class="btn btn-success float-end" type="submit" value="Valider"/>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 <footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

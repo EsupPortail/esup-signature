@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head-lite :: head-lite"></head>
+<body>
+<header th:replace="fragments/nav-empty :: nav-empty"></header>
+<main role="main">
+    <div class="wrapper">
+        <div id="content" class="content">
+            <h1>Signature OTP - Merci de saisir votre numéro de mobile</h1>
+            <form th:action="'/otp-access/phone'" method="post">
+                <div class="col-4">
+                    <input name="urlId" type="hidden" th:value="${urlId}">
+                    <div class="mb-3">
+                        <input name="phone" type="text" class="form-control" maxlength="10" placeholder="Numéro de mobile" autofocus>
+                    </div>
+                    <input type="submit" class="btn btn-success" value="Valider">
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer-light :: footer"></footer>
+</body>
+</html>

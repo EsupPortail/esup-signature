@@ -25,8 +25,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.CertificateFactory;
@@ -139,8 +138,7 @@ public class DdDocService {
     }
 
     private PrivateKey getPrivateKey() throws Exception {
-        File keyFile = fileService.inputStreamToTempFile(new ClassPathResource("/2ddoc.key").getInputStream(), "2ddoc.key");
-        BufferedReader br = new BufferedReader(new FileReader(keyFile));
+        BufferedReader br = new BufferedReader(new InputStreamReader(new ClassPathResource("/2ddoc.key").getInputStream()));
         PEMParser pp = new PEMParser(br);
         PEMKeyPair pemKeyPair = (PEMKeyPair) pp.readObject();
         JcaPEMKeyConverter jcaPEMKeyConverter = new JcaPEMKeyConverter();

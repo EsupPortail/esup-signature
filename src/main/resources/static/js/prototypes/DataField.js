@@ -23,6 +23,7 @@ export class DataField {
         this.topPos;
         this.type;
         this.action;
+        this.editable;
         Object.assign(this, dataField);
     }
 

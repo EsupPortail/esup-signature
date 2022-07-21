@@ -76,9 +76,11 @@
                                         <div th:if="${userEppn == signRequest.createBy.eppn && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="card position-absolute collapse mini-menu position-fixed" th:id="'menu-' + ${recipient.id}" style="z-index: 10000; width: 300px; left:150px">
                                             <div class="card-header" style="height: 40px;">Envoyer un nouveau lien d'accès</div>
                                             <div class=" card-body">
-                                                Confirmer l'envoi du lien
+                                                <form th:action="'/user/signrequests/send-otp/' + ${signRequest.id} + '/' + ${recipient.user.id}" method="post">
+                                                <input type="text" name="phone" class="form-control" placeholder="Numéro de mobile" th:value="${recipient.user.phone}">
                                                 <br>
-                                                <a type="button" class="btn btn-success float-end mb-2" title="Envoyer un nouveau lien d'accès" th:href="'/user/signrequests/send-otp/' + ${signRequest.id} + '/' + ${recipient.user.id}"><i class="fas fa-key"></i></a>
+                                                <button type="submit" class="btn btn-success float-end mb-2" title="Envoyer un nouveau lien d'accès"><i class="fas fa-key"></i></button>
+                                                </form>
                                                 <button class="btn btn-secondary float-start" title="Fermer" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').hide();'"><i class="fas fa-times"></i></button>
                                             </div>
                                         </div>

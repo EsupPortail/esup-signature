@@ -11,7 +11,7 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.service.interfaces.certificat.CertificatService;
+import org.esupportail.esupsignature.service.interfaces.certificat.CertificatGenerationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -35,9 +35,9 @@ import java.security.cert.CertificateFactory;
 
 @Service
 @ConditionalOnProperty("global.open-x-p-k-i-server-url")
-public class OpenXPKICertificatService implements CertificatService {
+public class OpenXPKICertificatGenerationService implements CertificatGenerationService {
 
-    private static final Logger logger = LoggerFactory.getLogger(OpenXPKICertificatService.class);
+    private static final Logger logger = LoggerFactory.getLogger(OpenXPKICertificatGenerationService.class);
 
     @Resource
     private GlobalProperties globalProperties;

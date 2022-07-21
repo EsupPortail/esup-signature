@@ -96,7 +96,7 @@ public class IndexController {
 				model.addAttribute("securityServices", securityServices);
 				model.addAttribute("globalProperties", globalProperties);
 				if(defaultSavedRequest != null) {
-					model.addAttribute("redirect", defaultSavedRequest.getRequestURL());
+					model.addAttribute("redirect", defaultSavedRequest.getRequestURL() + "?" + defaultSavedRequest.getQueryString());
 				}
 				return "signin";
 			} else {
@@ -125,8 +125,9 @@ public class IndexController {
 	public String denied(HttpSession httpSession, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		User authUser = getAuthUser(auth);
-		String forwardUri = httpServletRequest.getAttribute("javax.servlet.forward.request_uri").toString();
-		if(forwardUri !=null) {
+		Object forwardObject = httpServletRequest.getAttribute("javax.servlet.forward.request_uri");
+		if(forwardObject != null) {
+			String forwardUri = httpServletRequest.getAttribute("javax.servlet.forward.request_uri").toString();
 			String[] uriParams = forwardUri.split("/");
 			if (uriParams.length == 4 && uriParams[1].equals("user") && uriParams[2].equals("signrequests")) {
 				try {
@@ -175,7 +176,7 @@ public class IndexController {
 		return "logged-out";
 	}
 
-	@RequestMapping(value={"/robots.txt", "/robot.txt"})
+	@RequestMapping(value={"/robots.txt", "/robot.txt"}, produces = "text/plain")
 	@ResponseBody
 	public String getRobotsTxt() {
 		return "User-agent: *\n" +

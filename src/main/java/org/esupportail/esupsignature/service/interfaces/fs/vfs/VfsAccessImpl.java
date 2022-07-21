@@ -208,7 +208,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 				}
 				return child.getName().getPath();
 			} else {
-				logger.info("file " + title + " already exists !");
+				logger.debug("file " + title + " already exists !");
 			}
 			mayClose(parentPath, parent);
 		} catch (FileSystemException e) {
@@ -249,7 +249,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 				file.moveTo(newFile);
 				return true;
 			} else {
-				logger.info("file " + title + " already exists !");
+				logger.debug("file " + title + " already exists !");
 			}
 			mayClose(path, file);
 		} catch (FileSystemException e) {

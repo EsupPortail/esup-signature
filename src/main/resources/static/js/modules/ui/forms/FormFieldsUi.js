@@ -7,8 +7,6 @@ export class FormFieldsUi {
         console.info("Starting Form UI for " + formId);
         this.toast = new Toast();
         this.formId = formId;
-        this.btnAddField = $('#btn-add-field');
-        this.btnRemove = $('#btn-remove');
         this.btnSaveFields = $('#saveButton');
         this.prefillTypes = prefillTypes;
         this.domain = domain;
@@ -16,8 +14,6 @@ export class FormFieldsUi {
     }
 
     initListeners() {
-        this.btnAddField.on('click', e => this.addField(e));
-        this.btnRemove.on('click', e => this.removeField(e));
         this.btnSaveFields.on('click', e => this.saveFields());
         let self = this;
         $('[id^="valueServiceName_"]').each(function (){
@@ -71,23 +67,6 @@ export class FormFieldsUi {
                 slim.enable();
             }
         }
-    }
-
-    addField(e) {
-        let controlForm = $('#repeatingInputFields:first'),
-            currentEntry = this.btnAddField.parents('.entry:first'),
-            newEntry = $(currentEntry.clone()).appendTo(controlForm);
-        newEntry.find('input').val('');
-        controlForm.find('.entry:not(:last) .btn-add-field')
-            .removeClass('btn-add-field').addClass('btn-remove')
-            .removeClass('btn-success').addClass('btn-danger')
-            .html('<span class="fas fa-minus" aria-hidden="true"></span>');
-    }
-
-    removeField(e) {
-        e.preventDefault();
-        this.btnRemove.parents('.entry:first').remove();
-        return false;
     }
 
     saveFields() {

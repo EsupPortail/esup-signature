@@ -21,7 +21,7 @@ https://www.esup-portail.org/wiki/display/SIGN/Change+log
 
 # Prérequis
 
- * OpenJDK 13
+ * OpenJDK 14
  * Maven 3.1
  * GhostScript
  * PostgreSQL

@@ -39,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin/forms")
@@ -109,6 +110,9 @@ public class FormAdminController {
 				srpMap.put(signRequestParams.getId(), form.getWorkflow().getWorkflowSteps().indexOf(workflowStep) + 1);
 			}
 		}
+		if(form.getDocument() != null) {
+			form.setTotalPageCount(formService.getTotalPagesCount(id));
+		}
 		model.addAttribute("form", form);
 		model.addAttribute("srpMap", srpMap);
 		model.addAttribute("workflow", form.getWorkflow());
@@ -130,19 +134,49 @@ public class FormAdminController {
 		return "redirect:/admin/forms/" + id + "/signs";
 	}
 
+	@PostMapping("/add-signrequestparams/{id}")
+	public String addSignRequestParams(@PathVariable("id") Long id,
+								   Integer step,
+								   Integer signPageNumber,
+								   Integer xPos,
+								   Integer yPos,
+								   RedirectAttributes redirectAttributes) throws JsonProcessingException {
+		formService.addSignRequestParamsSteps(id, step, signPageNumber, xPos, yPos);
+		return "redirect:/admin/forms/" + id + "/signs";
+	}
+
+	@DeleteMapping("/remove-signRequestParams/{formId}/{id}")
+	public String removeSignRequestParams(@PathVariable("formId") Long formId,
+									   @PathVariable("id") Long id,
+									   RedirectAttributes redirectAttributes) throws JsonProcessingException {
+		formService.removeSignRequestParamsSteps(formId, id);
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Champ signature supprimé"));
+		return "redirect:/admin/forms/" + formId + "/signs";
+	}
+
 	@PostMapping()
 	public String postForm(@RequestParam("name") String name,
+						   @RequestParam("title") String title,
+						   @RequestParam Long workflowId,
 						   @RequestParam("fieldNames[]") String[] fieldNames,
+						   @RequestParam("fieldTypes[]") String[] fieldTypes,
 						   @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
 		try {
-			Form form = formService.createForm(null, name, null, null, null, null, publicUsage, fieldNames);
-			return "redirect:/admin/forms/" + form.getId();
-
+			Form form = formService.createForm(null, name, title, workflowId, null, null, publicUsage, fieldNames, fieldTypes);
+			return "redirect:/admin/forms/" + form.getId() + "/fields";
 		} catch (EsupSignatureException e) {
 			logger.error(e.getMessage());
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
 			return "redirect:/admin/forms/";
 		}
+	}
+
+	@PostMapping("/add-field/{id}")
+	public String addField(@PathVariable("id") long id,
+						   @RequestParam("fieldNames[]") String[] fieldNames,
+						   @RequestParam("fieldTypes[]") String[] fieldTypes) {
+		formService.addField(id, fieldNames, fieldTypes);
+		return "redirect:/admin/forms/" + id + "/fields";
 	}
 
 	@PostMapping("generate")
@@ -191,10 +225,9 @@ public class FormAdminController {
 
 	@PutMapping
 	public String updateForm(@ModelAttribute Form updateForm,
-							 @RequestParam(required = false) List<String> managers,
 							 @RequestParam(value = "types", required = false) String[] types,
 							 RedirectAttributes redirectAttributes) {
-		formService.updateForm(updateForm.getId(), updateForm, managers, types);
+		formService.updateForm(updateForm.getId(), updateForm, types, true);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
 		return "redirect:/admin/forms/update/" + updateForm.getId();
 	}
@@ -229,7 +262,7 @@ public class FormAdminController {
 			try {
 				response.setContentType("text/csv; charset=utf-8");
 				response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(forms.get(0).getName(), StandardCharsets.UTF_8.toString()) + ".csv");
-				InputStream csvInputStream = dataExportService.getCsvDatasFromForms(forms);
+				InputStream csvInputStream = dataExportService.getCsvDatasFromForms(forms.stream().map(Form::getWorkflow).collect(Collectors.toList()));
 				IOUtils.copy(csvInputStream, response.getOutputStream());
 				return new ResponseEntity<>(HttpStatus.OK);
 			} catch (Exception e) {
@@ -287,12 +320,7 @@ public class FormAdminController {
 	@GetMapping(value = "/get-file/{id}")
 	public void getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes) throws IOException {
 		try {
-			Map<String, Object> attachmentResponse = formService.getModel(id);
-			if (attachmentResponse != null) {
-				httpServletResponse.setContentType(attachmentResponse.get("contentType").toString());
-				httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(attachmentResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
-				IOUtils.copyLarge((InputStream) attachmentResponse.get("inputStream"), httpServletResponse.getOutputStream());
-			} else {
+			if (!formService.getModel(id, httpServletResponse)) {
 				redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Modèle non trouvée ..."));
 				httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
 			}
