@@ -300,10 +300,10 @@ public class SignRequestService {
 					throw new EsupSignatureIOException("Erreur lors de l'ajout des fichiers");
 				}
 			} catch (IOException e) {
-				logger.warn("error on adding files");
+				logger.warn("error on adding files", e);
 				throw new EsupSignatureIOException("Erreur lors de l'ajout des fichiers", e);
 			} catch (EsupSignatureException e) {
-				logger.warn("error on converting files");
+				logger.warn("error on converting files", e);
 				throw new EsupSignatureIOException("Erreur lors de la conversion du document", e);
 			}
 		}
