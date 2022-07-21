@@ -14,8 +14,7 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin/workflows">Liste des circuits</a></li>
-                <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span>
-                </li>
+                <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span></li>
             </ol>
         </nav>
         <div id="content" class="content">
@@ -99,10 +98,7 @@
                             <label for="visibility" class="form-check-label">Diffusion du workflow pour les rôles</label>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="roles">
-                                Rôle
-                            </label>
-                            <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à
+                              <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à
                                 ce formulaire</small></div>
 
                             <select id="roles" class="slim-select-simple" type="text" th:field="*{roles}" multiple th:classappend="${!workflow.visibility} ? 'd-none' : ''">
@@ -130,7 +126,7 @@
                                 </th:block>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="viewersSelect"><strong>Observateurs par défaut</strong>
                                 <button class="btn btn-sm btn-transparent" data-bs-target="#collapseHelp2" data-bs-toggle="collapse"
                                         type="button">
