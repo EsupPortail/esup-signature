@@ -27,7 +27,7 @@ public class PdfServiceTest {
     @Test
     public void testPdtAConversion() {
         try {
-            pdfService.convertGS(new ClassPathResource("/dummy.pdf").getInputStream().readAllBytes());
+            pdfService.convertGS(new ClassPathResource("/dummy.pdf").getInputStream());
         } catch (Exception e) {
             logger.error("GhostScript convert not working, please check gs install or PDFA_def.ps and srgb.icc locations", e);
             fail();

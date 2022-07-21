@@ -272,7 +272,7 @@ public class SignRequestService {
 				InputStream inputStream = new ByteArrayInputStream(bytes);
 				if (multipartFiles.length == 1 && bytes.length > 0) {
 					if("application/pdf".equals(multipartFiles[0].getContentType()) && scanSignatureFields) {
-						bytes = pdfService.normalizeGS(bytes);
+						bytes = pdfService.normalizeGS(new ByteArrayInputStream(bytes)).readAllBytes();
 						List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
 						if(signRequestParamses.size() == 0) {
 							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), docNumber);
