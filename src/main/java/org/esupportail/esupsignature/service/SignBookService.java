@@ -594,7 +594,7 @@ public class SignBookService {
         }
         if(computedWorkflow.getWorkflowSteps().size() == 0) {
             try {
-                inputStream = pdfService.convertGS(new ByteArrayInputStream(inputStream)).readAllBytes();
+                inputStream = pdfService.convertGS(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -1085,7 +1085,7 @@ public class SignBookService {
                 auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Signature simple", "Pas de timestamp", date, null, null, null, null);
             }
             if ((signRequestService.isStepAllSignDone(signRequest.getParentSignBook()))) {
-                signedInputStream = pdfService.convertGS(new ByteArrayInputStream(pdfService.writeMetadatas(signedInputStream, fileName, signRequest, lastSignLogs))).readAllBytes();
+                signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest, lastSignLogs));
             }
             byte[] signedBytes = signedInputStream;
 

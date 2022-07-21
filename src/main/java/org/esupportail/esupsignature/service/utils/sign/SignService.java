@@ -494,7 +494,7 @@ public class SignService {
 						bytes = pdfService.stampImage(bytes, signRequest, signRequestParams, i, user, date);
 						i++;
 					}
-					bytes = pdfService.convertGS(new ByteArrayInputStream(pdfService.writeMetadatas(bytes, toSignFile.getFileName(), signRequest, new ArrayList<>()))).readAllBytes();
+					bytes = pdfService.convertGS(pdfService.writeMetadatas(bytes, toSignFile.getFileName(), signRequest, new ArrayList<>()));
 				}
 			} else {
 				signatureForm = signProperties.getDefaultSignatureForm();
