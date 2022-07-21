@@ -120,13 +120,32 @@
                             </label>
                             <div class="collapse" id="collapseHelp1">
                                 <div class="alert alert-info mb-1">
-                                    Les superviseurs peuvent consulter les demandes de ce circuit
+                                    Les superviseurs ont accès à l’espace supervision du circuit. Cela permet de consulter et supprimer les demandes associées et d’exporter les données
                                 </div>
                             </div>
                             <select id="managersSelect" class="select-users" multiple="multiple" name="managers">
                                 <option data-placeholder="true"></option>
                                 <th:block th:each="manager : ${workflow.managers}">
                                     <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="viewersSelect"><strong>Observateurs par défaut</strong>
+                                <button class="btn btn-sm btn-transparent" data-bs-target="#collapseHelp2" data-bs-toggle="collapse"
+                                        type="button">
+                                    <span class="fas fa-info-circle text-info"></span>
+                                </button>
+                            </label>
+                            <div class="collapse" id="collapseHelp2">
+                                <div class="alert alert-info mb-1">
+                                    Les observateurs sont alertés à la fin d’un circuit et ont un accès en lecture. (Modifiable à la création du circuit)
+                                </div>
+                            </div>
+                            <select id="viewersSelect" class="select-users" multiple="multiple" name="viewersEmails" style="display: none;">
+                                <option data-placeholder="true"></option>
+                                <th:block th:each="viewer : ${workflow.viewers}">
+                                    <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
                                 </th:block>
                             </select>
                         </div>
