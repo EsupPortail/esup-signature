@@ -15,17 +15,6 @@ build:
   tags:
     - test
 
-build2:
-  script: mvn clean initialize && mvn -DskipTests -Dspring.config.location=/opt/tomcat-esup-signature/conf/app_config/application.yml clean package && cp -rf target/esup-signature.war /opt/tomcat-esup-signature/webapps/ROOT.war
-  only:
-    - tags
-  except:
-    - dev
-    - test
-    - master
-  tags:
-    - prod
-
 build3:
   stage: deploy
   script: 
