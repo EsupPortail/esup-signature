@@ -38,6 +38,11 @@ build3:
     - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@signes cp /home/gitlab-ci/esup-signature.war /opt/esup-signature/
     - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@signes sudo systemctl restart esup-signature.service
   only:
-    - prod2
+    - tags
+  except:
+    - dev
+    - prod
+    - test
+    - master
   tags:
     - prod2
