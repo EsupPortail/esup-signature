@@ -26,7 +26,6 @@ import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.session.SessionRegistryImpl;
@@ -39,7 +38,6 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
@@ -59,7 +57,6 @@ import java.util.Map;
 @EnableWebSecurity(debug = false)
 @EnableConfigurationProperties({WebSecurityProperties.class, ShibProperties.class, CasProperties.class, DevShibProperties.class})
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-public class WebSecurityConfig {
 
 	private static final Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);
 
@@ -149,21 +146,13 @@ public class WebSecurityConfig {
 		return devClientRequestFilter;
 	}
 
-	@Override
-	public void configure(WebSecurity web) throws Exception {
-		super.configure(web);
-		web.ignoring().mvcMatchers("/resources/**", "/webjars/**");
-	}
 //	@Bean
 //	public WebSecurityCustomizer webSecurityCustomizer() {
 //		return (web) -> web.ignoring().antMatchers("/resources/**", "/webjars/**");
 //	}
 
-
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		setAuthorizeRequests(http);
 		http.antMatcher("/**").authorizeRequests().antMatchers("/").permitAll();
 		devSecurityFilters.forEach(devSecurityFilter -> http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class));
@@ -210,7 +199,6 @@ public class WebSecurityConfig {
 				.ignoringAntMatchers("/h2-console/**");
 		http.headers().frameOptions().sameOrigin();
 		http.headers().disable();
-		return http.build();
 	}
 
 //	@Bean
@@ -255,6 +243,7 @@ public class WebSecurityConfig {
 					hasIpAddresses += " or ";
 				}
 			}
+			logger.info("Set web services ips exclustion : " + hasIpAddresses);
 			http.authorizeRequests().antMatchers("/ws/**").access(hasIpAddresses);
 			http.authorizeRequests().antMatchers("/actuator/**").access(hasIpAddresses);
 //			http.authorizeRequests().antMatchers("/ws/**").access("hasRole('ROLE_WS')").and().addFilter(apiKeyFilter());
@@ -307,7 +296,6 @@ public class WebSecurityConfig {
 	}
 
 	@Bean
-	@Override
 	public AuthenticationManager authenticationManagerBean() {
 		return new ProviderManager(List.of(new OtpAuthenticationProvider()));
 	}
