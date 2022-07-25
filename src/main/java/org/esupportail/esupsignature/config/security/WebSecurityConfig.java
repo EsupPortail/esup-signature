@@ -244,6 +244,7 @@ public class WebSecurityConfig {
 					hasIpAddresses += " or ";
 				}
 			}
+			logger.info("Set web services ips exclustion : " + hasIpAddresses);
 			http.authorizeRequests().antMatchers("/ws/**").access(hasIpAddresses);
 			http.authorizeRequests().antMatchers("/actuator/**").access(hasIpAddresses);
 //			http.authorizeRequests().antMatchers("/ws/**").access("hasRole('ROLE_WS')").and().addFilter(apiKeyFilter());
