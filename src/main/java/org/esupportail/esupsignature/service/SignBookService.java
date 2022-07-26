@@ -954,7 +954,7 @@ public class SignBookService {
                                 if(formfield.get().getExtValueType() == null || !formfield.get().getExtValueType().equals("system")) {
                                     data.getDatas().put(entry.getKey(), entry.getValue());
                                 } else {
-                                    if(!formfield.get().getDefaultValue().isEmpty()) {
+                                    if(formfield.get().getDefaultValue() != null && !formfield.get().getDefaultValue().isEmpty()) {
                                         data.getDatas().put(entry.getKey(), formfield.get().getDefaultValue());
                                     }
                                 }
@@ -1802,7 +1802,7 @@ public class SignBookService {
         if(workflow != null) {
             if(target) {
                 if(workflow.getTargetNamingTemplate() != null && !workflow.getTargetNamingTemplate().isEmpty()) {
-                    template = workflow.getNamingTemplate();
+                    template = workflow.getTargetNamingTemplate();
                 } else {
                     template = "[signedFileName]";
                 }
