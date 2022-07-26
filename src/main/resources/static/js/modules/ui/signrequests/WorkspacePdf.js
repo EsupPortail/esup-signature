@@ -33,6 +33,7 @@ export class WorkspacePdf {
         this.forcePageNum = null;
         this.pointItEnable = true;
         this.first = true;
+        this.scrollTop = 0;
         for (let i = 0; i < fields.length; i++) {
             let field = fields[i];
             if (field.workflowSteps != null && field.workflowSteps.includes(currentStepNumber) && field.required) {

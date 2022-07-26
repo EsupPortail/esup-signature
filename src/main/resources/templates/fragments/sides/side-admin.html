@@ -4,7 +4,7 @@
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <nav th:fragment="side-admin" id="sidebar">
     <div class="ms-1 mt-2">
-        <h5 class="text-center sidebar-label"><b>Administration</b></h5>
+        <a href="/admin/"><h5 class="text-center sidebar-label"><b>Administration</b></h5></a>
         <div class="hr"><i class="fas fa-eye me-1"></i><span class="sidebar-label"> Supervision</span></div>
         <a th:classappend="${activeMenu == 'adminsignrequests'} ? 'btn-secondary' : 'btn-light'"
            title="Toutes les demandes" type="button" href="/admin/signbooks" class="mb-1 col-12 btn text-left">

@@ -96,25 +96,6 @@
                                 </th:block>
                             </select>
                         </div>
-                        <div class="form-group mb-3" id="managers">
-                            <label for="managersSelect"><strong>Superviseur(s) du formulaire</strong>
-                                <button class="btn btn-sm btn-transparent" data-bs-target="#collapseHelp1" data-bs-toggle="collapse"
-                                        type="button">
-                                    <span class="fas fa-info-circle text-info"></span>
-                                </button>
-                                <div class="collapse" id="collapseHelp1">
-                                    <div class="alert alert-info">
-                                        Les superviseurs peuvent consulter les demandes et en exporter les données
-                                    </div>
-                                </div>
-                            </label>
-                            <select id="managersSelect" class="select-users" multiple="multiple" name="managers">
-                                <option data-placeholder="true"></option>
-                                <th:block th:each="manager : ${form.managers}">
-                                    <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
-                                </th:block>
-                            </select>
-                        </div>
                         <div class="form-group mb-3">
                             <label for="workflowType">Type de workflow</label>
                             <select class="slim-select-simple" id="workflowType" th:field="*{workflow}">

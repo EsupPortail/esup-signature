@@ -69,6 +69,7 @@
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <form th:id="'signBookDel' + ${signBook.id}" th:action="'/admin/signbooks/'+ ${signBook.id}" th:method="delete">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                             <div class="modal-header">
                                 <h2>Attention</h2>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
@@ -138,11 +139,10 @@
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <form th:id="'signBookDel' + ${signBook.id}" th:action="'/admin/signbooks/force-delete/'+ ${signBook.id}" th:method="delete">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                             <div class="modal-header">
                                 <h2>Attention</h2>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-
-                                </button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>

@@ -14,8 +14,7 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin/workflows">Liste des circuits</a></li>
-                <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span>
-                </li>
+                <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span></li>
             </ol>
         </nav>
         <div id="content" class="content">
@@ -99,10 +98,7 @@
                             <label for="visibility" class="form-check-label">Diffusion du workflow pour les rôles</label>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="roles">
-                                Rôle
-                            </label>
-                            <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à
+                              <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à
                                 ce formulaire</small></div>
 
                             <select id="roles" class="slim-select-simple" type="text" th:field="*{roles}" multiple th:classappend="${!workflow.visibility} ? 'd-none' : ''">
@@ -120,13 +116,32 @@
                             </label>
                             <div class="collapse" id="collapseHelp1">
                                 <div class="alert alert-info mb-1">
-                                    Les superviseurs peuvent consulter les demandes de ce circuit
+                                    Les superviseurs ont accès à l’espace supervision du circuit. Cela permet de consulter et supprimer les demandes associées et d’exporter les données
                                 </div>
                             </div>
                             <select id="managersSelect" class="select-users" multiple="multiple" name="managers">
                                 <option data-placeholder="true"></option>
                                 <th:block th:each="manager : ${workflow.managers}">
                                     <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="viewersSelect"><strong>Observateurs par défaut</strong>
+                                <button class="btn btn-sm btn-transparent" data-bs-target="#collapseHelp2" data-bs-toggle="collapse"
+                                        type="button">
+                                    <span class="fas fa-info-circle text-info"></span>
+                                </button>
+                            </label>
+                            <div class="collapse" id="collapseHelp2">
+                                <div class="alert alert-info mb-1">
+                                    Les observateurs sont alertés à la fin d’un circuit et ont un accès en lecture. (Modifiable à la création du circuit)
+                                </div>
+                            </div>
+                            <select id="viewersSelect" class="select-users" multiple="multiple" name="viewersEmails" style="display: none;">
+                                <option data-placeholder="true"></option>
+                                <th:block th:each="viewer : ${workflow.viewers}">
+                                    <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
                                 </th:block>
                             </select>
                         </div>

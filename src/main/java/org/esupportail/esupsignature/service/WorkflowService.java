@@ -601,11 +601,10 @@ public class WorkflowService {
     public void addViewers(Long id, List<String> recipientsCCEmails) {
         Workflow workflow = getById(id);
         if(recipientsCCEmails != null && recipientsCCEmails.size() > 0) {
+            workflow.getViewers().clear();
             for (String recipientsEmail : recipientsCCEmails) {
                 User user = userService.getUserByEmail(recipientsEmail);
-                if (!workflow.getViewers().contains(user)) {
-                    workflow.getViewers().add(user);
-                }
+                workflow.getViewers().add(user);
             }
         } else {
             workflow.getViewers().clear();

@@ -54,6 +54,12 @@ export class HomeUi {
                 });
             });
         });
+        $(document).ready(function () {
+            $("#fast-form-button").on("click", function (){
+                $(this).unbind();
+                $("#fast-form-submit").click();
+            });
+        });
     }
 
     toggleNewMenu() {

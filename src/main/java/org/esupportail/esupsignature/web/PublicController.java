@@ -73,6 +73,8 @@ public class PublicController {
         if(auditTrail != null && auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
             Reports reports = signRequestService.validate(signRequest.getId());
             model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
+        } else {
+            model.addAttribute("signRequest", signRequest);
         }
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && !auth.getName().equals("anonymousUser")) {

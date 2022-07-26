@@ -268,6 +268,12 @@ td {
     z-index: 10000;
 }
 
+#listSignRequestTable {
+    user-select: text !important;
+    -moz-user-select: text !important;
+    -webkit-user-select: text !important;
+}
+
 #listSignRequestTable th {
     z-index: 2;
 }
@@ -2037,4 +2043,10 @@ progress:before {
 
 .file-drop-zone {
     min-height: revert;
+}
+
+#help-naming-template {
+    user-select: text !important;
+    -moz-user-select: text !important;
+    -webkit-user-select: text !important;
 }

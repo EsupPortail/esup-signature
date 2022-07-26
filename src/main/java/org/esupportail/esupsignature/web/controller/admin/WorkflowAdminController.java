@@ -116,9 +116,11 @@ public class WorkflowAdminController {
     public String update(@ModelAttribute("authUserEppn") String authUserEppn,
 						 @Valid Workflow workflow,
 						 @RequestParam(value = "types", required = false) String[] types,
+						 @RequestParam(required = false) List<String> viewersEmails,
 						 @RequestParam(required = false) List<String> managers) {
 		User authUser = userService.getUserByEppn(authUserEppn);
 		Workflow updateWorkflow = workflowService.update(workflow, authUser, types, managers);
+		workflowService.addViewers(updateWorkflow.getId(), viewersEmails);
         return "redirect:/admin/workflows/update/" + updateWorkflow.getId();
     }
 
