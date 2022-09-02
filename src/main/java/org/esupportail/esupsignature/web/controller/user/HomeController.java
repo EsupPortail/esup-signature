@@ -11,8 +11,8 @@ import org.esupportail.esupsignature.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
@@ -100,9 +100,9 @@ public class HomeController {
                 messages.addAll(messageService.getByUser(authUser));
             }
             model.addAttribute("messageNews", messages);
-            Page<SignBook> signBooksToSign = signBookService.getSignBooks(userEppn, "toSign", "%", "%", "%", "%", null, pageable);
+            Slice<SignBook> signBooksToSign = signBookService.getSignBooks(userEppn, "toSign", null, null, null, null, null, pageable);
             model.addAttribute("signBooksToSign", signBooksToSign);
-            Page<SignBook> signBooksPending = signBookService.getSignBooks(userEppn, "pending", "%", "%", "%", "%", null, pageable);
+            Slice<SignBook> signBooksPending = signBookService.getSignBooks(userEppn, "pending", null, null, null, null, null, pageable);
             model.addAttribute("signBooksPending", signBooksPending);
             List<Data> datas = dataRepository.findByCreateByAndStatus(authUser, SignRequestStatus.draft);
             model.addAttribute("datas", datas);

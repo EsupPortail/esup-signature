@@ -93,6 +93,7 @@ public class User {
     @ElementCollection
     private List<String> roles = new ArrayList<>();
 
+    @JsonIgnore
     @ManyToOne
     private User replaceByUser;
 
