@@ -76,6 +76,9 @@ public class SignBook {
     private List<User> viewers = new ArrayList<>();
 
     @ManyToMany
+    private List<User> team = new ArrayList<>();
+
+    @ManyToMany
     private List<User> hidedBy = new ArrayList<>();
 
     private Boolean forceAllDocsSign = false;
@@ -212,6 +215,14 @@ public class SignBook {
 
     public void setViewers(List<User> viewers) {
         this.viewers = viewers;
+    }
+
+    public List<User> getTeam() {
+        return team;
+    }
+
+    public void setTeam(List<User> team) {
+        this.team = team;
     }
 
     public Boolean getForceAllDocsSign() {

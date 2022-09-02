@@ -75,8 +75,8 @@ public class AdminSignBookController {
 		if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
 			workflowFilter = "%";
 		}
-		if(creatorFilter == null || creatorFilter.isEmpty() || creatorFilter.equals("all") || creatorFilter.equals("undefined")) {
-			creatorFilter = "%";
+		if(creatorFilter.isEmpty() || creatorFilter.equals("all") || creatorFilter.equals("undefined")) {
+			creatorFilter = null;
 		}
 		if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
 			docTitleFilter = "%";
@@ -110,8 +110,8 @@ public class AdminSignBookController {
 		if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
 			workflowFilter = "%";
 		}
-		if(creatorFilter == null || creatorFilter.isEmpty() || creatorFilter.equals("all")) {
-			creatorFilter = "%";
+		if(creatorFilter.isEmpty() || creatorFilter.equals("all")) {
+			creatorFilter = null;
 		}
 		if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
 			docTitleFilter = "%";

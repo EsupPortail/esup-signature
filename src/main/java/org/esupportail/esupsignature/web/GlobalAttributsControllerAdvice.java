@@ -19,7 +19,6 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
-import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
@@ -79,8 +78,6 @@ public class GlobalAttributsControllerAdvice {
     @ModelAttribute
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) throws JsonProcessingException {
         if(userEppn != null) {
-            StopWatch stopWatch = new StopWatch();
-            stopWatch.start();
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
             User user = userService.getUserByEppn(userEppn);
@@ -90,7 +87,6 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("keystoreFileName", user.getKeystoreFileName());
             model.addAttribute("userImagesIds", user.getSignImagesIds());
             model.addAttribute("suUsers", userShareService.getSuUsers(authUserEppn));
-            model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.create));
             model.addAttribute("isOneSignShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign));
             model.addAttribute("isOneReadShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.read));
             model.addAttribute("managedWorkflowsSize",  workflowService.getWorkflowByManagersContains(authUserEppn).size());
@@ -119,8 +115,6 @@ public class GlobalAttributsControllerAdvice {
             } catch (IOException e) {
                 logger.debug("enable to get dss status");
             }
-            stopWatch.stop();
-            logger.debug("GA time : " + stopWatch.getTotalTimeSeconds());
         }
         model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
 
