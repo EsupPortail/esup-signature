@@ -203,11 +203,16 @@ public class UserShareService {
     }
 
     public boolean checkUserViewRights(String userEppn, String authUserEppn, SignBook signBook) {
+        User user = userService.getUserByEppn(userEppn);
         List<Recipient> recipients = new ArrayList<>();
         for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
             recipients.addAll(liveWorkflowStep.getRecipients());
         }
-        if(checkAllShareTypesForSignRequest(userEppn, authUserEppn, signBook.getSignRequests().get(0)) || signBook.getViewers().stream().anyMatch(user -> user.getEppn().equals(authUserEppn)) || signBook.getCreateBy().getEppn().equals(authUserEppn) || recipientService.recipientsContainsUser(recipients, authUserEppn) > 0) {
+        if(checkAllShareTypesForSignRequest(userEppn, authUserEppn, signBook.getSignRequests().get(0))
+                || signBook.getViewers().stream().anyMatch(u -> u.getEppn().equals(authUserEppn))
+                || signBook.getCreateBy().getEppn().equals(authUserEppn)
+                || recipientService.recipientsContainsUser(recipients, authUserEppn) > 0
+                || signBook.getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail())) {
             return true;
         }
         return false;
