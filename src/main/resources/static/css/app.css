@@ -1168,9 +1168,9 @@ textarea:placeholder-shown.required-field {
 }
 
 .crop {
-    overflow:hidden;
-    margin:0;
-    margin-bottom: 20px;
+    overflow: hidden;
+    margin: 0;
+    padding-bottom: 10px;
 }
 
 .fa-4x {
