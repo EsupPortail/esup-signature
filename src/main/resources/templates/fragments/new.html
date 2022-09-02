@@ -54,7 +54,7 @@
                     <div class="d-inline-block" id="newWorkflow">
                         <th:block th:each="workflow : ${workflows}">
                             <a role="button" class="start-wizard-workflow-button btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0 workflow-button"
-                                style="width: 120px; height: 170px;"
+                                style="width: 120px; height: 170px;display: inline-flex; flex-direction: column;"
                                 th:attr="data-workflow-id=${workflow.id}, data-workflow-name=${workflow.name} "
                                 th:alt="'Circuit : ' + ${workflow.description}">
                                 <div class="crop">
@@ -62,11 +62,12 @@
                                 </div>
                                 <h7 th:text="'Circuit : ' + ${workflow.description}"></h7>
                                 <br>
-                                <button th:if="${workflow.createBy.eppn == userEppn}" type="button" th:id="'menu-toggle_' + ${workflow.id}" class="btn btn-light btn-sm text-dark toggle-mini-menu" style="position: absolute;bottom: 25px;margin-left: 27px;" th:data-bs-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-bs-toggle="collapse">
-                                    <i class="fas fa-ellipsis-h"></i>
+                                <button th:if="${workflow.createBy.eppn == userEppn}" type="button" th:id="'menu-toggle_' + ${workflow.id}" class="btn btn-light btn-sm text-dark toggle-mini-menu"
+                                        style="margin-top: auto;" th:data-bs-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-bs-toggle="collapse">
+                                    <i class="fas fa-ellipsis-h" style="float: right;"></i>
                                 </button>
-                                <div style="position: absolute !important; top: 192px;" data-bs-backdrop="false" class="card collapse prevent" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
-                                    <div class="card-body">
+                                <div style="" data-bs-backdrop="false" class="card collapse prevent" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
+                                    <div class="inline-flex">
                                         <form th:id="${'deleteWorkflow_' + workflow.id}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'">
                                         </form>
                                         <button  class="btn btn-sm workflow-button workflow-update-button" title="Modifier" th:data-id="${workflow.id}" type="button">

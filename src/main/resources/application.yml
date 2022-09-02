@@ -119,11 +119,11 @@ spring:
             max-request-size: 1280KB
             resolve-lazily: true
     thymeleaf:
-        cache: false
+        cache: true
         encoding: UTF-8
         mode: HTML
         servlet:
-            produce-partial-output-while-processing: false
+            produce-partial-output-while-processing: true
     web:
         resources:
             cache:

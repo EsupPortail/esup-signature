@@ -147,6 +147,7 @@ export default class SelectUser {
                     type: 'POST',
                     contentType: "application/json",
                     dataType: 'json',
+                    async: true,
                     data: JSON.stringify(recipientEmails),
                     success: data => this.displayTempUsersSuccess(data),
                     error: e => this.displayExternalsError()
@@ -281,7 +282,7 @@ export default class SelectUser {
             type: 'GET',
             dataType: 'json',
             contentType: "application/json",
-            async: false,
+            async: true,
             success: response => this.setFavorites(response)
         });
     }
