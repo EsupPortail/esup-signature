@@ -485,33 +485,34 @@ public class MailService {
         return mailSender;
     }
 
-    public MimeMessage signMessage(MimeMessage message) throws Exception {
+    public MimeMessage signMessage(MimeMessage message) {
         try {
-            AbstractKeyStoreTokenConnection tokenConnection = certificatService.getSealToken();
-            DSSPrivateKeyEntry dssPrivateKeyEntry = tokenConnection.getKeys().get(0);
-            X509Certificate x509Certificate = dssPrivateKeyEntry.getCertificate().getCertificate();
-            PrivateKey privateKey = certificatService.getSealPrivateKey();
-            SMIMECapabilityVector capabilities = new SMIMECapabilityVector();
-            capabilities.addCapability(SMIMECapability.dES_EDE3_CBC);
-            capabilities.addCapability(SMIMECapability.rC2_CBC, 128);
-            capabilities.addCapability(SMIMECapability.dES_CBC);
-            capabilities.addCapability(SMIMECapability.aES256_CBC);
-            ASN1EncodableVector attributes = new ASN1EncodableVector();
-            attributes.add(new SMIMECapabilitiesAttribute(capabilities));
-            IssuerAndSerialNumber issAndSer = new IssuerAndSerialNumber(new X500Name(x509Certificate.getIssuerX500Principal().getName()),
-                    x509Certificate.getSerialNumber());
-            attributes.add(new SMIMEEncryptionKeyPreferenceAttribute(issAndSer));
-            SMIMESignedGenerator signer = new SMIMESignedGenerator();
-            signer.addSignerInfoGenerator(new JcaSimpleSignerInfoGeneratorBuilder()
-                    .setSignedAttributeGenerator(new AttributeTable(attributes))
-                    .build("SHA1withRSA", privateKey, x509Certificate));
-            List<X509Certificate> certList = new ArrayList<>();
-            certList.add(x509Certificate);
-            JcaCertStore jcaCertStore = new JcaCertStore(certList);
-            signer.addCertificates(jcaCertStore);
-            MimeMultipart mm = signer.generate(message);
-            message.setContent(mm, mm.getContentType());
-            message.saveChanges();
+            if(globalProperties.getSignEmailWithSealCertificat()) {
+                AbstractKeyStoreTokenConnection tokenConnection = certificatService.getSealToken();
+                DSSPrivateKeyEntry dssPrivateKeyEntry = tokenConnection.getKeys().get(0);
+                X509Certificate x509Certificate = dssPrivateKeyEntry.getCertificate().getCertificate();
+                PrivateKey privateKey = certificatService.getSealPrivateKey();
+                SMIMECapabilityVector capabilities = new SMIMECapabilityVector();
+                capabilities.addCapability(SMIMECapability.dES_EDE3_CBC);
+                capabilities.addCapability(SMIMECapability.rC2_CBC, 128);
+                capabilities.addCapability(SMIMECapability.dES_CBC);
+                capabilities.addCapability(SMIMECapability.aES256_CBC);
+                ASN1EncodableVector attributes = new ASN1EncodableVector();
+                attributes.add(new SMIMECapabilitiesAttribute(capabilities));
+                IssuerAndSerialNumber issAndSer = new IssuerAndSerialNumber(new X500Name(x509Certificate.getIssuerX500Principal().getName()), x509Certificate.getSerialNumber());
+                attributes.add(new SMIMEEncryptionKeyPreferenceAttribute(issAndSer));
+                SMIMESignedGenerator signer = new SMIMESignedGenerator();
+                signer.addSignerInfoGenerator(new JcaSimpleSignerInfoGeneratorBuilder()
+                        .setSignedAttributeGenerator(new AttributeTable(attributes))
+                        .build("SHA1withRSA", privateKey, x509Certificate));
+                List<X509Certificate> certList = new ArrayList<>();
+                certList.add(x509Certificate);
+                JcaCertStore jcaCertStore = new JcaCertStore(certList);
+                signer.addCertificates(jcaCertStore);
+                MimeMultipart mm = signer.generate(message);
+                message.setContent(mm, mm.getContentType());
+                message.saveChanges();
+            }
             return message;
         } catch (Exception e) {
             logger.debug(e.getMessage(), e);
