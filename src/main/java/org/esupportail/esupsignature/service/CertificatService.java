@@ -130,19 +130,27 @@ public class CertificatService {
         return null;
     }
 
-    public AbstractKeyStoreTokenConnection getSealToken() {
-        KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
-        return new Pkcs11SignatureToken(globalProperties.getSealCertificatDriver(), passwordProtection);
+    public AbstractKeyStoreTokenConnection getSealToken() throws EsupSignatureKeystoreException {
+        if(globalProperties.getSealCertificatPin() != null && globalProperties.getSealCertificatDriver() != null) {
+            KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
+            return new Pkcs11SignatureToken(globalProperties.getSealCertificatDriver(), passwordProtection);
+        } else {
+            throw new EsupSignatureKeystoreException("no seal certificat present");
+        }
     }
 
-    public KeyStore getSealKeyStore() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
-        KeyStore keyStore = KeyStore.getInstance("PKCS11");
-        KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
-        keyStore.load(CertificatService.class.getResourceAsStream(globalProperties.getSealCertificatDriver()), passwordProtection.getPassword());
-        return keyStore;
+    public KeyStore getSealKeyStore() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException, EsupSignatureKeystoreException {
+        if(globalProperties.getSealCertificatPin() != null && globalProperties.getSealCertificatDriver() != null) {
+            KeyStore keyStore = KeyStore.getInstance("PKCS11");
+            KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
+            keyStore.load(CertificatService.class.getResourceAsStream(globalProperties.getSealCertificatDriver()), passwordProtection.getPassword());
+            return keyStore;
+        } else {
+            throw new EsupSignatureKeystoreException("no seal certificat present");
+        }
     }
 
-    public PrivateKey getSealPrivateKey() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, UnrecoverableKeyException {
+    public PrivateKey getSealPrivateKey() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, UnrecoverableKeyException, EsupSignatureKeystoreException {
         KeyStore keyStore = getSealKeyStore();
         KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
         return (PrivateKey) keyStore.getKey(keyStore.aliases().nextElement(), passwordProtection.getPassword());
