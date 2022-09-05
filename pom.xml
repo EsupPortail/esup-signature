@@ -550,6 +550,11 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<groupId>org.xipki.iaik</groupId>
+			<artifactId>sunpkcs11-wrapper</artifactId>
+			<version>1.4.10</version>
+		</dependency>
+		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
 			<version>1.70</version>
