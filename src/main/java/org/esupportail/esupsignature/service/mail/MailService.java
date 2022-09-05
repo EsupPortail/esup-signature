@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.mail;
 
+import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -12,7 +13,6 @@ import org.bouncycastle.asn1.smime.SMIMEEncryptionKeyPreferenceAttribute;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.jcajce.JcaCertStore;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoGeneratorBuilder;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.mail.smime.SMIMESignedGenerator;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.mail.MailConfig;
@@ -53,7 +53,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.security.PrivateKey;
-import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.util.*;
 
@@ -488,11 +487,10 @@ public class MailService {
 
     public MimeMessage signMessage(MimeMessage message) throws Exception {
         try {
-            Security.addProvider(new BouncyCastleProvider());
-            DSSPrivateKeyEntry dssPrivateKeyEntry = certificatService.getSealToken().getKeys().get(0);
+            AbstractKeyStoreTokenConnection tokenConnection = certificatService.getSealToken();
+            DSSPrivateKeyEntry dssPrivateKeyEntry = tokenConnection.getKeys().get(0);
             X509Certificate x509Certificate = dssPrivateKeyEntry.getCertificate().getCertificate();
             PrivateKey privateKey = certificatService.getSealPrivateKey();
-            // Create the SMIMESignedGenerator
             SMIMECapabilityVector capabilities = new SMIMECapabilityVector();
             capabilities.addCapability(SMIMECapability.dES_EDE3_CBC);
             capabilities.addCapability(SMIMECapability.rC2_CBC, 128);
@@ -505,20 +503,18 @@ public class MailService {
             attributes.add(new SMIMEEncryptionKeyPreferenceAttribute(issAndSer));
             SMIMESignedGenerator signer = new SMIMESignedGenerator();
             signer.addSignerInfoGenerator(new JcaSimpleSignerInfoGeneratorBuilder()
-                    .setProvider("BC")
                     .setSignedAttributeGenerator(new AttributeTable(attributes))
-                    .build("SHA1withRSA", privateKey,
-                            x509Certificate));
+                    .build("SHA1withRSA", privateKey, x509Certificate));
             List<X509Certificate> certList = new ArrayList<>();
             certList.add(x509Certificate);
-            JcaCertStore bcerts = new JcaCertStore(certList);
-            signer.addCertificates(bcerts);
+            JcaCertStore jcaCertStore = new JcaCertStore(certList);
+            signer.addCertificates(jcaCertStore);
             MimeMultipart mm = signer.generate(message);
             message.setContent(mm, mm.getContentType());
             message.saveChanges();
             return message;
         } catch (Exception e) {
-            logger.warn("no certificat found", e);
+            logger.debug(e.getMessage(), e);
         }
         return message;
     }
