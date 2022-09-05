@@ -41,7 +41,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
@@ -927,7 +926,7 @@ public class SignBookService {
 
     public List<SignRequest> getSignRequestsForCurrentUserByStatus(String userEppn, String authUserEppn) {
         List<SignRequest> signRequestList = new ArrayList<>();
-        List<SignBook> signBooks = getSignBooks(userEppn, "toSign", "%", "%", "%", "%", null, Pageable.unpaged()).toList();
+        List<SignBook> signBooks = getSignBooks(userEppn, "toSign", null, null, null, null, null, Pageable.unpaged()).toList();
         if(!userEppn.equals(authUserEppn)) {
             for(SignBook signBook: signBooks) {
                 for(SignRequest signRequest : signBook.getSignRequests()) {
