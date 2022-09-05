@@ -133,7 +133,8 @@ spring:
             static-locations: classpath:/static
     mvc:
         static-path-pattern: /**
-
+    devtools:
+        add-properties: false
 ldap:
     search-base: ou=people
     group-search-base: ou=groups
