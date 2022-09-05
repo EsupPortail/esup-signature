@@ -514,7 +514,7 @@ public class MailService {
             message.saveChanges();
             return message;
         } catch (Exception e) {
-            logger.warn("no certificat found", e);
+            logger.debug(e.getMessage(), e);
         }
         return message;
     }
