@@ -187,6 +187,11 @@ public class GlobalProperties {
     private String sealCertificatPin;
 
     /**
+     *  Pin du certificat cachet
+     */
+    private Boolean signEmailWithSealCertificat = false;
+
+    /**
      *  Appliquer le cachet sur toutes les demandes terminées
      */
     private Boolean sealAllDocs = false;
@@ -495,6 +500,14 @@ public class GlobalProperties {
 
     public void setSealCertificatPin(String sealCertificatPin) {
         this.sealCertificatPin = sealCertificatPin;
+    }
+
+    public Boolean getSignEmailWithSealCertificat() {
+        return signEmailWithSealCertificat;
+    }
+
+    public void setSignEmailWithSealCertificat(Boolean signEmailWithSealCertificat) {
+        this.signEmailWithSealCertificat = signEmailWithSealCertificat;
     }
 
     public Boolean getSealAllDocs() {

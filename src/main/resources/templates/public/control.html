@@ -135,7 +135,7 @@
                 <div class="alert alert-danger mb-1">
                     <h5>Le document a été refusé</h5>
                     <ul th:each="userHasRefused : ${usersHasRefused}">
-                        <li th:text="${userHasSigned.firstname} + ' ' + ${userHasSigned.name}"></li>
+                        <li th:text="${userHasRefused.firstname} + ' ' + ${userHasRefused.name}"></li>
                     </ul>
                 </div>
             </th:block>

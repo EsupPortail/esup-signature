@@ -1,7 +1,11 @@
 package org.esupportail.esupsignature.service;
 
 import eu.europa.esig.dss.model.x509.CertificateToken;
+import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
+import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.entity.Certificat;
 import org.esupportail.esupsignature.entity.User;
@@ -19,7 +23,8 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.Key;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.util.*;
 
 @Service
@@ -45,6 +50,13 @@ public class CertificatService {
 
     @Resource
     private SignProperties signProperties;
+
+    @Resource
+    private final GlobalProperties globalProperties;
+
+    public CertificatService(GlobalProperties globalProperties) {
+        this.globalProperties = globalProperties;
+    }
 
 
     public Certificat getById(Long id) {
@@ -116,6 +128,43 @@ public class CertificatService {
             logger.error(e.getMessage());
         }
         return null;
+    }
+
+    public AbstractKeyStoreTokenConnection getSealToken() throws EsupSignatureKeystoreException {
+        if(globalProperties.getSealCertificatPin() != null && globalProperties.getSealCertificatDriver() != null) {
+            KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
+            return new Pkcs11SignatureToken(globalProperties.getSealCertificatDriver(), passwordProtection);
+        } else {
+            throw new EsupSignatureKeystoreException("no seal certificat present");
+        }
+    }
+
+    public KeyStore getSealKeyStore() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException, EsupSignatureKeystoreException {
+        if(globalProperties.getSealCertificatPin() != null && globalProperties.getSealCertificatDriver() != null) {
+            KeyStore keyStore = KeyStore.getInstance("PKCS11");
+            KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
+            keyStore.load(CertificatService.class.getResourceAsStream(globalProperties.getSealCertificatDriver()), passwordProtection.getPassword());
+            return keyStore;
+        } else {
+            throw new EsupSignatureKeystoreException("no seal certificat present");
+        }
+    }
+
+    public PrivateKey getSealPrivateKey() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, UnrecoverableKeyException, EsupSignatureKeystoreException {
+        KeyStore keyStore = getSealKeyStore();
+        KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
+        return (PrivateKey) keyStore.getKey(keyStore.aliases().nextElement(), passwordProtection.getPassword());
+
+    }
+
+    public List<DSSPrivateKeyEntry> getSealCertificats() {
+        List<DSSPrivateKeyEntry> dssPrivateKeyEntries = new ArrayList<>();
+        try {
+            dssPrivateKeyEntries = getSealToken().getKeys();
+        } catch (Exception e) {
+            logger.debug("no seal certificat found");
+        }
+        return dssPrivateKeyEntries;
     }
 
 }
