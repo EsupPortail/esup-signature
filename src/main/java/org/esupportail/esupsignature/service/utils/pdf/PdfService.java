@@ -658,7 +658,7 @@ public class PdfService {
                                 pdTextField.getCOSObject().removeItem(COSName.AA);
                                 pdTextField.getCOSObject().removeItem(COSName.AP);
                                 pdTextField.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
-                                pdTextField.setValue(NormalizeTTFString.getInstance(new ByteArrayInputStream(ttfBytes)).remove(value));
+                                pdTextField.setValue(value);
                                 pdAcroForm.getFields().add(pdTextField);
                                 pdAcroForm.getFields().remove(pdListBox);
                                 Map<String, Integer> pageNrByAnnotDict = getPageNumberByAnnotDict(pdDocument);
@@ -679,7 +679,7 @@ public class PdfService {
                                 pdField.getCOSObject().removeItem(COSName.AA);
                                 pdField.getCOSObject().removeItem(COSName.AP);
                                 pdField.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
-                                pdField.setValue(NormalizeTTFString.getInstance(new ByteArrayInputStream(ttfBytes)).remove(value));
+                                pdField.setValue(value);
                             }
                         }
                     }
