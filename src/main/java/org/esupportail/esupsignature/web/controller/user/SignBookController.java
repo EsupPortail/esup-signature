@@ -152,7 +152,7 @@ public class SignBookController {
         CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariables(model.asMap());
-        ctx.setVariable("token", token);
+        ctx.setVariable("_csrf", token);
         return templateEngine.process("user/signbooks/includes/list-elem.html", ctx);
     }
 
