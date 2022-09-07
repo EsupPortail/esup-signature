@@ -160,7 +160,11 @@
 			<artifactId>spring-boot-configuration-processor</artifactId>
 			<optional>true</optional>
 		</dependency>
-
+<!--		<dependency>-->
+<!--			<groupId>com.integralblue</groupId>-->
+<!--			<artifactId>log4jdbc-spring-boot-starter</artifactId>-->
+<!--			<version>2.0.0</version>-->
+<!--		</dependency>-->
 		<!-- Webjars dependencies -->
 
 		<dependency>
@@ -544,6 +548,11 @@
 					<groupId>org.javassist</groupId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.xipki.iaik</groupId>
+			<artifactId>sunpkcs11-wrapper</artifactId>
+			<version>1.4.10</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
