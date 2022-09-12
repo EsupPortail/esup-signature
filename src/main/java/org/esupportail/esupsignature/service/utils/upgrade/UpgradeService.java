@@ -105,7 +105,7 @@ public class UpgradeService {
         List<Form> forms = formService.getAllForms();
         for(Form form : forms) {
             for(String manager : form.getManagers()) {
-                if(!form.getWorkflow().getManagers().contains(manager)) {
+                if(form.getWorkflow() != null && !form.getWorkflow().getManagers().contains(manager)) {
                     form.getWorkflow().getManagers().add(manager);
                 }
             }
