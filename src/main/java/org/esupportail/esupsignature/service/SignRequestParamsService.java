@@ -96,10 +96,12 @@ public class SignRequestParamsService {
                             continue;
                         }
                         String signFieldName = pdSignatureField.getPartialName();
-                        int pageNum = pageNrByAnnotDict.get(signFieldName);
-                        PDPage pdPage = pdPages.get(pageNum);
-                        SignRequestParams signRequestParams = createFromPdf(pdSignatureField, pageNrByAnnotDict.get(signFieldName) + 1, pdPage);
-                        signRequestParamsList.add(signRequestParams);
+                        if(pageNrByAnnotDict.get(signFieldName) != null) {
+                            int pageNum = pageNrByAnnotDict.get(signFieldName);
+                            PDPage pdPage = pdPages.get(pageNum);
+                            SignRequestParams signRequestParams = createFromPdf(pdSignatureField, pageNrByAnnotDict.get(signFieldName) + 1, pdPage);
+                            signRequestParamsList.add(signRequestParams);
+                        }
                     }
                     if(pdField instanceof PDPushButton) {
                         PDPushButton pdSignatureField = (PDPushButton) pdField;
