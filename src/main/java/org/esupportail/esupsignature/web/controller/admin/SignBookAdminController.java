@@ -34,9 +34,9 @@ import java.util.Locale;
 
 @RequestMapping("/admin/signbooks")
 @Controller
-public class AdminSignBookController {
+public class SignBookAdminController {
 
-	private static final Logger logger = LoggerFactory.getLogger(AdminSignBookController.class);
+	private static final Logger logger = LoggerFactory.getLogger(SignBookAdminController.class);
 
 	@ModelAttribute("adminMenu")
 	public String getAdminMenu() {

@@ -65,7 +65,7 @@ public class GlobalProperties {
      */
     private String archiveUri;
     /**
-     * Délai en nombre de jours avant que les documents des demandes archivées ne soient effacé de la base (-1 non actif)
+     * Délai en nombre de jours avant que les documents des demandes archivées ne soient effacés de la base (-1 non actif)
      */
     private Integer delayBeforeCleaning = -1;
     /**
