@@ -739,4 +739,17 @@ public class UserService {
         User user = getUserByEppn(authUserEppn);
         return user.getManagersRoles().stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
+
+    @Transactional
+    public void anonymize(Long id) {
+        User user = userRepository.findById(id).get();
+        user.setEppn("");
+        user.setName("");
+        user.setFirstname("");
+        user.setEmail("");
+        user.getSignImages().clear();
+        user.setKeystore(null);
+        user.setPhone("");
+        user.getRoles().clear();
+    }
 }

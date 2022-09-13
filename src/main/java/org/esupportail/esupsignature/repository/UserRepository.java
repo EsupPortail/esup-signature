@@ -2,12 +2,15 @@ package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UserType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
 public interface UserRepository extends CrudRepository<User, Long>  {
+    Page<User> findAll(Pageable pageable);
     List<User> findByEmail(String email);
     List<User> findByEmailAndUserType(String email, UserType userType);
     List<User> findByUserType(UserType userType);

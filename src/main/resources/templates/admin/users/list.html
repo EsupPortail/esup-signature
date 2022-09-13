@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
+<head th:replace="fragments/head :: head"></head>
+<body>
+<header th:replace="fragments/nav :: nav"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item active">Utilisateurs</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="card mb-1 col-lg-10 mx-auto">
+                <div class="card-body">
+                    <h5 class="text-center"><b>Utilisateurs</b></h5>
+                    <table class="table table-sm table-borderless table-hover">
+                        <thead class="table-secondary">
+                        <tr>
+                            <th>Id</th>
+                            <th>Prenom</th>
+                            <th>Nom</th>
+                            <th>EPPN</th>
+                            <th>Email</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="user : ${users}">
+                            <tr>
+                                <td><span th:text="${user.id}"></span></td>
+                                <td><span th:text="${user.firstname}"></span></td>
+                                <td><span th:text="${user.name}"></span></td>
+                                <td><span th:text="${user.eppn}"></span></td>
+                                <td><span th:text="${user.email}"></span></td>
+                                <td>
+                                    <div class="position-relative">
+                                        <button type="button" th:id="'menu-toggle_' + ${user.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${user.eppn}" th:data-bs-target="'#menu-' + ${user.id}" th:aria-controls="'menu-' + ${user.id}" data-bs-toggle="collapse">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${user.id}">
+                                            <div class=" card-body">
+                                                <!--                        <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">-->
+                                                <!--                            <i class="fas fa-eye-slash pr-2"></i> Masquer-->
+                                                <!--                        </a>-->
+                                                <!--                        <a th:if="${signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">-->
+                                                <!--                            <i class="fas fa-eye-slash pr-2"></i> Afficher dans la liste-->
+                                                <!--                        </a>-->
+                                                <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${user.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${user.id}">
+                                                    <i class="fas fa-user-secret pr-2"></i> Anonymiser <span th:text="${user.firstname + ' ' + user.name}"></span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${user.id}">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form th:id="${user.id}" th:action="'/admin/users/anonymize/'+ ${user.id}" th:method="post">
+                                                    <div class="modal-header">
+                                                        <h2>Attention</h2>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="alert alert-danger">Confirmez-vous l’anonymisation de cet utilisateur ?</div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
+                                                        <button type="submit" class="btn btn-danger">Oui</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                    <nav th:replace="fragments/pagination :: pagination"></nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer :: footer"></footer>
+</body>
+</html>
