@@ -98,6 +98,10 @@ public class UserService {
         return createUser("system", "Esup-Signature", "Automate", "system", UserType.system, false);
     }
 
+    public User getAnonymousUser() {
+        return createUser("anonymous", "Anonyme", "Utilisateur", "anonymous", UserType.system, false);
+    }
+
     public User getCreatorUser() {
         return createUser("creator", "Createur de la demande", "", "creator", UserType.system, false);
     }
@@ -743,6 +747,10 @@ public class UserService {
     @Transactional
     public void anonymize(Long id) {
         User user = userRepository.findById(id).get();
+        List<User> users = userRepository.findByReplaceByUser(user);
+        for(User user1 : users) {
+            user1.setReplaceByUser(user.getReplaceByUser());
+        }
         user.setEppn("");
         user.setName("");
         user.setFirstname("");
@@ -751,5 +759,11 @@ public class UserService {
         user.setKeystore(null);
         user.setPhone("");
         user.getRoles().clear();
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        User user = userRepository.findById(id).get();
+        userRepository.delete(user);
     }
 }

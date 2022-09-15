@@ -290,6 +290,12 @@ public class UserShareService {
         }
     }
 
+    public void deleteAll(String authUserEppn) {
+        User authUser = userService.getUserByEppn(authUserEppn);
+        List<UserShare> userShares = userShareRepository.findByUserEppn(authUserEppn);
+        userShareRepository.deleteAll(userShares);
+    }
+
     public void delete(UserShare userShare) {
         userShareRepository.delete(userShare);
     }

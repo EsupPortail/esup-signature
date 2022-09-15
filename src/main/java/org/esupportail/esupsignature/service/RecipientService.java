@@ -49,4 +49,11 @@ public class RecipientService {
         return recipients.stream().filter(recipient -> recipient.getUser().getEppn().equals(userEppn)).count();
     }
 
+    public void anonymze(User user, User anonymous) {
+        List<Recipient> recipients = recipientRepository.findByUser(user);
+        for (Recipient recipient : recipients) {
+            recipient.setUser(anonymous);
+        }
+    }
+
 }

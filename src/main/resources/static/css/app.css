@@ -129,6 +129,15 @@ main {
     padding-bottom: 6px;
 }
 
+.main-selectable {
+    -webkit-touch-callout: initial !important;
+    -webkit-user-select: initial !important;
+    -khtms-user-select: initial !important;
+    -moz-user-select: initial !important;
+    -ms-user-select: initial !important;
+    user-select: initial !important;
+}
+
 pre {
     white-space: pre-wrap;
     -webkit-touch-callout: default;

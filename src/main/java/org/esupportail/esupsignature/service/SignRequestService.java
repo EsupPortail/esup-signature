@@ -901,31 +901,6 @@ public class SignRequestService {
 		return (List<SignRequest>) signRequestRepository.findAll();
 	}
 
-	public int transfer(String authUserEppn) {
-		int i = 0;
-		User user = userService.getUserByEppn(authUserEppn);
-		User replacedByUser = user.getCurrentReplaceUser();
-		if(replacedByUser != null) {
-			List<SignRequest> signRequests = getToSignRequests(authUserEppn).stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).collect(Collectors.toList());
-			for(SignRequest signRequest : signRequests) {
-				for(LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
-					for(Recipient recipient : liveWorkflowStep.getRecipients()) {
-						if(recipient.getUser().getEppn().equals(authUserEppn)) {
-							recipient.setUser(replacedByUser);
-						}
-					}
-					for(Recipient recipient : signRequest.getRecipientHasSigned().keySet()) {
-						if(recipient.getUser().getEppn().equals(authUserEppn)) {
-							recipient.setUser(replacedByUser);
-						}
-					}
-				}
-				i++;
-			}
-		}
-		return i;
-	}
-
 	public boolean isAttachmentAlert(SignRequest signRequest) {
 		boolean attachmentAlert = false;
 		if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null
@@ -985,6 +960,13 @@ public class SignRequestService {
 					logger.error(e.getMessage());
 				}
 			}
+		}
+	}
+
+	@Transactional
+	public void anonymize(String userEppn, User anonymous) {
+		for(SignRequest signRequest : signRequestRepository.findByCreateByEppn(userEppn)) {
+			signRequest.setCreateBy(anonymous);
 		}
 	}
 

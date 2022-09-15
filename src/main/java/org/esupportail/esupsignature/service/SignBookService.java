@@ -1989,4 +1989,48 @@ public class SignBookService {
         }
     }
 
+    public List<SignBook> getSignBookForUsers(String userEppn) {
+        User user = userService.getUserByEppn(userEppn);
+//        Calendar calendar = Calendar.getInstance();
+//        calendar.set(9999, Calendar.DECEMBER, 31);
+//        Date startDateFilter = new Date(0);
+//        Date endDateFilter = calendar.getTime();
+//        Page<SignBook> signBooks = signBookRepository.findByRecipientAndCreateByEppnIndexed(user, null, null, null, startDateFilter, endDateFilter, Pageable.unpaged());
+//        return signBooks.getContent();
+        return signBookRepository.findByTeamContaining(user);
+    }
+
+    public int transfer(String authUserEppn) {
+        int i = 0;
+        User user = userService.getUserByEppn(authUserEppn);
+        User replacedByUser = user.getCurrentReplaceUser();
+        if(replacedByUser != null) {
+            List<SignRequest> signRequests = getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).flatMap(signBook -> signBook.getSignRequests().stream().distinct()).collect(Collectors.toList());
+            for(SignRequest signRequest : signRequests) {
+                signRequest.getParentSignBook().getTeam().remove(user);
+                signRequest.getParentSignBook().getTeam().add(replacedByUser);
+                for(LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
+                    for(Recipient recipient : liveWorkflowStep.getRecipients()) {
+                        if(recipient.getUser().getEppn().equals(authUserEppn)) {
+                            recipient.setUser(replacedByUser);
+                        }
+                    }
+                    for(Recipient recipient : signRequest.getRecipientHasSigned().keySet()) {
+                        if(recipient.getUser().getEppn().equals(authUserEppn)) {
+                            recipient.setUser(replacedByUser);
+                        }
+                    }
+                }
+                i++;
+            }
+        }
+        return i;
+    }
+
+    @Transactional
+    public void anonymize(String userEppn, User anonymous) {
+        for(SignBook signBook : signBookRepository.findByCreateByEppn(userEppn)) {
+            signBook.setCreateBy(anonymous);
+        }
+    }
 }

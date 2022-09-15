@@ -58,4 +58,12 @@ public class ReportService {
         reportRepository.delete(report);
     }
 
+    @Transactional
+    public void anonymize(String userEppn) {
+        List<Report> reports = reportRepository.findByUserEppn(userEppn);
+        for (Report report : reports) {
+            report.setUser(userService.getAnonymousUser());
+        }
+    }
+
 }
