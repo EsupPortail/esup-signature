@@ -46,6 +46,7 @@ public class FormWsController {
     public Long start(@PathVariable Long id,
                       @RequestParam @Parameter(description = "Eppn du propriétaire du futur document") String eppn,
                       @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*email]") List<String> recipientEmails,
+                      @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*signTypes]") List<String> signTypes,
                       @RequestParam(required = false) @Parameter(description = "Lites des numéros d'étape pour lesquelles tous les participants doivent signer", example = "[stepNumber]") List<String> allSignToCompletes,
                       @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
                       @RequestParam(required = false) @Parameter(description = "Paramètres de signature", example = "[{\"xPos\":100, \"yPos\":100, \"signPageNumber\":1}, {\"xPos\":200, \"yPos\":200, \"signPageNumber\":1}]") String signRequestParamsJsonString,
@@ -58,7 +59,7 @@ public class FormWsController {
             ObjectMapper objectMapper = new ObjectMapper();
             TypeReference<Map<String, String>> type = new TypeReference<>(){};
             Map<String, String> datas = objectMapper.readValue(formDatas, type);
-            SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, null, targetEmails, targetUrls, eppn, eppn, true, datas, null, signRequestParamsJsonString, title);
+            SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, signTypes, allSignToCompletes, null, targetEmails, targetUrls, eppn, eppn, true, datas, null, signRequestParamsJsonString, title);
             return signBook.getSignRequests().get(0).getId();
         } catch (EsupSignatureException | EsupSignatureIOException | EsupSignatureFsException | JsonProcessingException e) {
             return -1L;
@@ -73,6 +74,7 @@ public class FormWsController {
                              @RequestParam @Parameter(description = "Eppn du propriétaire du futur document") String createByEppn,
                              @RequestParam(required = false) @Parameter(description = "Multipart stream des pièces jointes") MultipartFile[] attachementMultipartFiles,
                              @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*email]") List<String> recipientEmails,
+                             @RequestParam(required = false) @Parameter(description = "Liste des types de signature pour chaque étape", example = "[stepNumber*signTypes]") List<String> signTypes,
                              @RequestParam(required = false) @Parameter(description = "Lites des numéros d'étape pour lesquelles tous les participants doivent signer", example = "[stepNumber]") List<String> allSignToCompletes,
                              @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
                              @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls,
@@ -88,7 +90,7 @@ public class FormWsController {
             if(formDatas != null) {
                 datas.putAll(objectMapper.readValue(formDatas, type));
             }
-            SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, null, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), signRequestParamsJsonString, title);
+            SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, signTypes, allSignToCompletes, null, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), signRequestParamsJsonString, title);
             signRequestService.addAttachement(attachementMultipartFiles, null, signBook.getSignRequests().get(0).getId());
             return signBook.getSignRequests().get(0).getId();
         } catch (EsupSignatureException | EsupSignatureIOException | EsupSignatureFsException | IOException e) {
