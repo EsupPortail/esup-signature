@@ -83,4 +83,10 @@ public class FieldPropertieService {
         fieldPropertie.getFavorites().remove(key);
     }
 
+    @Transactional
+    public void deleteAll(String userEppn) {
+        List<FieldPropertie> fieldProperties = fieldPropertieRepository.findByUserEppn(userEppn);
+        fieldPropertieRepository.deleteAll(fieldProperties);
+    }
+
 }

@@ -80,4 +80,21 @@ public class UserPropertieService {
             userPropertie.getFavorites().remove(user);
         }
     }
+
+    @Transactional
+    public void deleteAll(String authUserEppn) {
+        User user = userService.getUserByEppn(authUserEppn);
+        List<UserPropertie> userProperties2 = userPropertieRepository.findByFavoritesContains(user);
+        for(UserPropertie userPropertie : userProperties2) {
+            userPropertie.getFavorites().clear();
+        }
+        userPropertieRepository.deleteAll(userProperties2);
+        List<UserPropertie> userProperties = getUserProperties(authUserEppn);
+        for(UserPropertie userPropertie : userProperties) {
+            userPropertie.getFavorites().clear();
+        }
+        userPropertieRepository.deleteAll(userProperties);
+    }
+
+
 }

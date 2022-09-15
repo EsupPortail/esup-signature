@@ -4,7 +4,7 @@
 <head th:replace="fragments/head :: head"></head>
 <body>
 <header th:replace="fragments/nav :: nav"></header>
-<main role="main">
+<main role="main" class="main-selectable">
     <div class="wrapper">
         <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
@@ -16,6 +16,14 @@
             <div class="card mb-1 col-lg-10 mx-auto">
                 <div class="card-body">
                     <h5 class="text-center"><b>Utilisateurs</b></h5>
+                    <form method="get">
+                        <div class="input-group">
+                            <input class="form-control" type="text" name="eppn" placeholder="Recherche par eppn" th:value="${eppn}">
+                                <input class="btn btn-success" type="submit" value="OK">
+                                <a type="button" href="/admin/users" class="btn btn-danger" >X</a>
+                        </div>
+                    </form>
+                    <br>
                     <table class="table table-sm table-borderless table-hover">
                         <thead class="table-secondary">
                         <tr>
@@ -48,28 +56,44 @@
                                                 <!--                        <a th:if="${signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">-->
                                                 <!--                            <i class="fas fa-eye-slash pr-2"></i> Afficher dans la liste-->
                                                 <!--                        </a>-->
-                                                <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${user.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${user.id}">
-                                                    <i class="fas fa-user-secret pr-2"></i> Anonymiser <span th:text="${user.firstname + ' ' + user.name}"></span>
+                                                <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-delete-' + ${user.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-delete-' + ${user.id}">
+                                                    <i class="fas fa-trash-alt pr-2"></i> Supprimer définitivement l’utilisateur <span th:text="${user.firstname} + ' ' + ${user.name}"></span>
                                                 </a>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${user.id}">
+                                    <div class="modal modal-warning fade in" th:id="'modal-delete-' + ${user.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <form th:id="${user.id}" th:action="'/admin/users/anonymize/'+ ${user.id}" th:method="post">
                                                     <div class="modal-header">
-                                                        <h2>Attention</h2>
+                                                        <h2>Attention !</h2>
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 
                                                         </button>
                                                     </div>
                                                     <div class="modal-body">
-                                                        <div class="alert alert-danger">Confirmez-vous l’anonymisation de cet utilisateur ?</div>
+                                                        <div class="alert alert-danger">
+                                                            <p>
+                                                            Attention, la suppression définitive
+                                                            d’un utilisateur entraine l’anonymisation de toutes ses données associées aux demandes, circuits et formulaires (qu’il en soit propriétaire ou participant).
+                                                            </p>
+                                                            <p style="font-weight: bold">
+                                                            Cette opération est irreversible sauf à procéder à une sauvegarde préalable !
+                                                            </p>
+                                                            <p>
+                                                            Confirmez-vous la suppression définitive de l’utilisateur <span th:text="${user.firstname} + ' ' + ${user.name}" style="font-weight: bold"></span> ?
+                                                            </p>
+                                                            <br>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" id="force" name="force" type="checkbox">
+                                                                <label for="force" class="form-check-label">Forcer la suppression des demandes en cours de cet utilisateur</label>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
-                                                        <button type="submit" class="btn btn-danger">Oui</button>
+                                                        <button type="submit" onclick="return confirm('Procéder à la suppression ?')" class="btn btn-danger">Oui</button>
                                                     </div>
                                                 </form>
                                             </div>

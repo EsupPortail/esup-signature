@@ -18,6 +18,11 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     List<SignBook> findBySubject(String subject);
 
     @Query("select distinct sb from SignBook sb " +
+            "left join sb.team team " +
+            "where team = :user ")
+    List<SignBook> findByTeamContaining(User user);
+
+    @Query("select distinct sb from SignBook sb " +
             "where (sb.workflowName = :workflowFilter or :workflowFilter is null) " +
             "and (sb.subject = :docTitleFilter or :docTitleFilter is null) " +
             "and size(sb.signRequests) > 0 " +
@@ -196,6 +201,8 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "and sb.hidedBy is empty " +
             "and sb.status <> 'deleted'")
     List<User> findRecipientNames(User user);
+
+    List<SignBook> findByCreateByEppn(String userEppn);
 
 }
 

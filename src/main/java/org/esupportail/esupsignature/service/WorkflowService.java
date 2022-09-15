@@ -610,5 +610,18 @@ public class WorkflowService {
             workflow.getViewers().clear();
         }
     }
+
+    @Transactional
+    public void anonymize(String userEppn, User anonymous) {
+        User user = userService.getUserByEppn(userEppn);
+        List<Workflow> workflows = workflowRepository.findAll();
+        for(Workflow workflow : workflows) {
+            if(workflow.getCreateBy().equals(user)) {
+                workflow.setCreateBy(anonymous);
+            }
+            workflow.getViewers().removeIf(user1 -> user1.equals(user));
+        }
+    }
+
 }
 
