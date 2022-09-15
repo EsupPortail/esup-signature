@@ -40,6 +40,8 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
     @Query(value = "select * from sign_request where create_by_id = :userId and DATE_PART('day', now() - create_date) > :nbBeforeWarning and status = 'pending' and warning_readed = false", nativeQuery = true)
     List<SignRequest> findByCreateByEppnAndOlderPending(Long userId, Integer nbBeforeWarning);
 
+    List<SignRequest> findByCreateByEppn(String userEpppn);
+
     @Query(value = "select * from sign_request where DATE_PART('day', now() - create_date) > :nbBeforeDelete and status = 'pending' and warning_readed = true", nativeQuery = true)
     List<SignRequest> findByOlderPendingAndWarningReaded(Integer nbBeforeDelete);
 

@@ -20,4 +20,6 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     @Query("select distinct w from Workflow w where w.id not in (select distinct f.workflow from Form f) and w.createBy.eppn = 'system'")
     List<Workflow> findNotInForm();
     List<Workflow> findWorkflowByManagersIn(List<String> emails);
+
+    List<Workflow> findByViewersEppn(String userEppn);
 }

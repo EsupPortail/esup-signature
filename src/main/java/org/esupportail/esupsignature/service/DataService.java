@@ -185,4 +185,15 @@ public class DataService {
         dataRepository.delete(data);
     }
 
+    @Transactional
+    public void anonymize(String userEppn, User anonymous) {
+        User user = userService.getUserByEppn(userEppn);
+        for (Data data : dataRepository.findByCreateBy(user)) {
+            data.setCreateBy(anonymous);
+        }
+        for (Data data : dataRepository.findByUpdateBy(user)) {
+            data.setUpdateBy(anonymous);
+        }
+    }
+
 }
