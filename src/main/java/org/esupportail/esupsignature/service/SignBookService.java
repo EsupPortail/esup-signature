@@ -578,7 +578,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas, InputStream formReplaceInputStream, String signRequestParamsJsonString, String title) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
+    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> signTypes,  List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas, InputStream formReplaceInputStream, String signRequestParamsJsonString, String title) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
         if (signRequestParamsJsonString != null) {
             signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
@@ -592,7 +592,7 @@ public class SignBookService {
         }
         Form form = data.getForm();
         Workflow modelWorkflow = data.getForm().getWorkflow();
-        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientsEmails, allSignToCompletes, user.getEppn(), false);
+        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientsEmails, signTypes, allSignToCompletes, user.getEppn(), false);
         if(title == null || title.isEmpty()) {
             title = form.getTitle();
         }
@@ -805,7 +805,7 @@ public class SignBookService {
     private void initWorkflow(List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, String userEppn, String authUserEppn, SignBook signBook) throws EsupSignatureException, EsupSignatureFsException {
         if (signBook.getLiveWorkflow().getWorkflow() != null) {
             List<Target> targets = new ArrayList<>(workflowService.getById(signBook.getLiveWorkflow().getWorkflow().getId()).getTargets());
-            Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow().getId(), recipientsEmails, allSignToCompletes, userEppn, false);
+            Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow().getId(), recipientsEmails, new ArrayList<>(), allSignToCompletes, userEppn, false);
             workflowService.importWorkflow(signBook, workflow, externalUsersInfos);
             signRequestService.nextWorkFlowStep(signBook);
             targetService.copyTargets(targets, signBook, targetEmails);

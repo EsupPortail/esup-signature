@@ -296,7 +296,7 @@ public class WorkflowService {
         return workflow;
     }
 
-    public Workflow computeWorkflow(Long workflowId, List<String> recipientEmails, List<String> allSignToCompletes, String userEppn, boolean computeForDisplay) throws EsupSignatureException {
+    public Workflow computeWorkflow(Long workflowId, List<String> recipientEmails, List<String> signTypes,  List<String> allSignToCompletes, String userEppn, boolean computeForDisplay) throws EsupSignatureException {
         try {
             Workflow modelWorkflow = getById(workflowId);
             if (modelWorkflow.getFromCode() != null && modelWorkflow.getFromCode()) {
@@ -317,6 +317,12 @@ public class WorkflowService {
                     }
                     if(allSignToCompletes != null && allSignToCompletes.contains(step + "")) {
                         workflowStep.setAllSignToComplete(true);
+                    }
+                    if(signTypes != null) {
+                        int finalStep = step;
+                        if (signTypes.stream().anyMatch(s -> s.contains(finalStep + "*"))) {
+                            workflowStep.setSignType(SignType.valueOf(signTypes.stream().filter(s -> s.contains(finalStep + "*")).collect(Collectors.toList()).get(0).split("\\*")[1]));
+                        }
                     }
                 }
                 step++;
@@ -451,7 +457,7 @@ public class WorkflowService {
     public List<WorkflowStep> getWorkflowStepsFromSignRequest(SignRequest signRequest, String userEppn) throws EsupSignatureException {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
-            Workflow workflow = computeWorkflow(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId(), null, null, userEppn, true);
+            Workflow workflow = computeWorkflow(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId(), null, null, null, userEppn, true);
             workflowSteps.addAll(workflow.getWorkflowSteps());
         }
         return workflowSteps;
