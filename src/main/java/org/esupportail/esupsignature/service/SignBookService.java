@@ -278,7 +278,11 @@ public class SignBookService {
         if(creatorFilter != null) {
             creatorFilterUser = userService.getUserByEppn(creatorFilter);
         }
-        Page<SignBook> signBooks = signBookRepository.findSignBooksAllPaged(statusFilter, workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
+        SignRequestStatus status = null;
+        if(statusFilter != null && !statusFilter.isEmpty()) {
+            status = SignRequestStatus.valueOf(statusFilter);
+        }
+        Page<SignBook> signBooks = signBookRepository.findSignBooksAllPaged(status, workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
         for(SignBook signBook : signBooks) {
             if(signBook.getEndDate() == null &&
                     (signBook.getStatus().equals(SignRequestStatus.completed)

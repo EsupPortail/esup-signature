@@ -43,15 +43,8 @@ export class ListSignBooksUi {
         $('#workflowFilter').on('change', e => this.buildUrlFilter());
         $('#recipientsFilter').on('change', e => this.buildUrlFilter());
         $('#docTitleFilter').on('change', e => this.buildUrlFilter());
-        if(this.mode === "user") {
-            $('#creatorFilter').on('change', e => this.buildUrlFilter());
-        } else {
-            new SelectUser("creatorFilter", 1, null, this.csrf);
-            let self = this;
-            $('#creatorFilter').on('change', function () {
-                self.buildUrlFilter();
-            });
-        }
+        $('#creatorFilter').on('change', e => this.buildUrlFilter());
+        $('#statusFilter').on('change', e => this.buildUrlFilter());
         $('#dateFilter').on('change', e => this.buildUrlFilter());
         $('#deleteMultipleButton').on("click", e => this.deleteMultiple());
         $('#menuDeleteMultipleButton').on("click", e => this.deleteMultiple());
