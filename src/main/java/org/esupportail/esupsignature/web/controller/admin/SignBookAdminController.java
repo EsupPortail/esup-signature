@@ -71,17 +71,19 @@ public class SignBookAdminController {
 					   @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
 					   @RequestParam(value = "dateFilter", required = false) String dateFilter,
 					   @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
-		if(statusFilter == null || statusFilter.isEmpty() || statusFilter.equals("all")) statusFilter = null;
-		if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
-			workflowFilter = "%";
+		if(statusFilter != null && (statusFilter.isEmpty() || statusFilter.equals("all"))) {
+			statusFilter = null;
 		}
-		if(creatorFilter.isEmpty() || creatorFilter.equals("all") || creatorFilter.equals("undefined")) {
+		if(workflowFilter != null && (workflowFilter.isEmpty() || workflowFilter.equals("all"))) {
+			workflowFilter = null;
+		}
+		if(creatorFilter != null && (creatorFilter.isEmpty() || creatorFilter.equals("all"))) {
 			creatorFilter = null;
 		}
-		if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
-			docTitleFilter = "%";
+		if(docTitleFilter != null && (docTitleFilter.isEmpty() || docTitleFilter.equals("all"))) {
+			docTitleFilter = null;
 		}
-		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter + "%", creatorFilter, dateFilter, pageable);
+		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
 		model.addAttribute("statusFilter", statusFilter);
 		model.addAttribute("signBooks", signBooks);
 		List<User> creators = signBookService.getCreators(null, workflowFilter, docTitleFilter, creatorFilter);
@@ -106,7 +108,9 @@ public class SignBookAdminController {
 						 @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
 						 @RequestParam(value = "dateFilter", required = false) String dateFilter,
 						 @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
-		if(statusFilter == null || statusFilter.isEmpty() || statusFilter.equals("all")) statusFilter = null;
+		if(statusFilter != null && (statusFilter.isEmpty() || statusFilter.equals("all"))) {
+			statusFilter = null;
+		}
 		if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
 			workflowFilter = "%";
 		}

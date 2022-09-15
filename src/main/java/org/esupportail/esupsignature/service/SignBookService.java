@@ -274,10 +274,10 @@ public class SignBookService {
             startDateFilter = Timestamp.valueOf(startLocalDateTime);
             endDateFilter = Timestamp.valueOf(endLocalDateTime);
         }
-        if(creatorFilter.equals("%")) {
-            creatorFilter = "lemaida3@univ-rouen.fr";
+        User creatorFilterUser = null;
+        if(creatorFilter != null) {
+            creatorFilterUser = userService.getUserByEppn(creatorFilter);
         }
-        User creatorFilterUser = userService.getUserByEppn(creatorFilter);
         Page<SignBook> signBooks = signBookRepository.findSignBooksAllPaged(statusFilter, workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
         for(SignBook signBook : signBooks) {
             if(signBook.getEndDate() == null &&
