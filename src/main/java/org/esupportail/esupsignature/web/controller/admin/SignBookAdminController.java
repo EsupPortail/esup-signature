@@ -111,16 +111,16 @@ public class SignBookAdminController {
 		if(statusFilter != null && (statusFilter.isEmpty() || statusFilter.equals("all"))) {
 			statusFilter = null;
 		}
-		if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
-			workflowFilter = "%";
+		if(workflowFilter != null && (workflowFilter.isEmpty() || workflowFilter.equals("all"))) {
+			workflowFilter = null;
 		}
-		if(creatorFilter.isEmpty() || creatorFilter.equals("all")) {
+		if(creatorFilter != null && (creatorFilter.isEmpty() || creatorFilter.equals("all"))) {
 			creatorFilter = null;
 		}
-		if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
-			docTitleFilter = "%";
+		if(docTitleFilter != null && (docTitleFilter.isEmpty() || docTitleFilter.equals("all"))) {
+			docTitleFilter = null;
 		}
-		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter + "%", creatorFilter, dateFilter, pageable);
+		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
 		model.addAttribute("signBooks", signBooks);
 		CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
 		final Context ctx = new Context(Locale.FRENCH);

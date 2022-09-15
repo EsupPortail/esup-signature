@@ -321,7 +321,7 @@ export class WorkspacePdf {
         let testSign = Array.from(this.signPosition.signRequestParamses.values());
         if(testSign.filter(s => s.signImageNumber >= 0 && s.isSign).length > 0) {
             for (let i = 0; i < this.currentSignRequestParamses.length; i++) {
-                if (this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready) {
+                if ((this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready) && (this.formId != null || this.dataId != null)) {
                     return i;
                 }
             }

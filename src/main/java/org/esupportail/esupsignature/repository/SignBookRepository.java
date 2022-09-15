@@ -23,13 +23,13 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     List<SignBook> findByTeamContaining(User user);
 
     @Query("select distinct sb from SignBook sb " +
-            "where (sb.workflowName = :workflowFilter or :workflowFilter is null) " +
-            "and (sb.subject = :docTitleFilter or :docTitleFilter is null) " +
+            "where (:workflowFilter is null or sb.workflowName = :workflowFilter) " +
+            "and (:docTitleFilter is null or sb.subject = :docTitleFilter) " +
             "and size(sb.signRequests) > 0 " +
-            "and (sb.createBy = :creatorFilter or :creatorFilter is null)" +
-            "and (sb.status = :statusFilter or :statusFilter is null) " +
+            "and (:creatorFilter is null or sb.createBy = :creatorFilter)" +
+            "and (:statusFilter is null or sb.status = :statusFilter)" +
             "and (sb.createDate between :startDateFilter and :endDateFilter)")
-    Page<SignBook> findSignBooksAllPaged(String statusFilter, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
+    Page<SignBook> findSignBooksAllPaged(SignRequestStatus statusFilter, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
 //    @Query("select distinct sb from SignBook sb " +
 //            "left join sb.viewers viewer " +

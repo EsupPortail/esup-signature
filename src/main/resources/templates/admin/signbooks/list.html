@@ -86,15 +86,14 @@
                             </th>
                             <th class="d-none d-xxl-table-cell">
                                 <div class="d-flex text-center">
-                                    <select id="creatorFilter" class="sign-request-filter"></select>
-<!--                                    <select id="creatorFilter" class="slim-select-filter sign-request-filter spinner-borders" data-placeholder="Crée par" data-allow-deselect="true">-->
-<!--                                        <option data-placeholder="true"></option>-->
-<!--                                        <option value="all">Tout</option>-->
-<!--                                        <th:block th:each="creator : ${creators}">-->
-<!--                                            <option th:value="${creator.eppn}" th:selected="${creatorFilter == creator.eppn}" th:text="${creator.firstname} + ' ' + ${creator.name}"></option>-->
-<!--                                        </th:block>-->
-<!--                                    </select>-->
-<!--                                    <a class="sorted my-auto text-center ms-1" sd:pagination-sort="createBy"><i class="fas fa-sort"></i></a>-->
+                                    <select id="creatorFilter" class="slim-select-filter sign-request-filter spinner-borders" data-placeholder="Crée par" data-allow-deselect="true">
+                                        <option data-placeholder="true"></option>
+                                        <option value="all">Tout</option>
+                                        <th:block th:each="creator : ${creators}">
+                                            <option th:value="${creator.eppn}" th:selected="${creatorFilter == creator.eppn}" th:text="${creator.firstname} + ' ' + ${creator.name}"></option>
+                                        </th:block>
+                                    </select>
+                                    <a class="sorted my-auto text-center ms-1" sd:pagination-sort="createBy"><i class="fas fa-sort"></i></a>
                                 </div>
                             </th>
                             <th class="d-none d-xl-table-cell">
@@ -114,10 +113,13 @@
                             </th>
                             <th class="d-none d-xxxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date de signature/refus</a></th>
                             <th class="d-none d-md-table-cell">
-                                <select id="statusFilter" class="sign-request-filter">
-
+                                <select id="statusFilter" class="slim-select-filter sign-request-filter spinner-borders">
+                                    <option data-placeholder="true"></option>
+                                    <option value="all">Tout</option>
+                                    <th:block th:each="status : ${statuses}">
+                                        <option th:value="${status.name}" th:selected="${statusFilter == status.name}" th:text="#{'signbook.status.' + ${status.name}}"></option>
+                                    </th:block>
                                 </select>
-
                             </th>
                             <th >Actions</th>
                         </tr>
@@ -128,7 +130,7 @@
                         <tfoot>
                         <tr>
                             <td colspan="100%">
-                                <a id="more-sign-request" href="javascript:void(0);" th:if="${infiniteScrolling}">Afficher plus d'éléments</a>
+                                <a id="more-sign-request" href="javascript:void(0);" th:if="${infiniteScrolling}">Afficher plus d’éléments</a>
                             </td>
                         </tr>
                         </tfoot>
@@ -136,7 +138,7 @@
                     </div>
                 </div>
             </div>
-            <nav  th:unless="${infiniteScrolling}" th:include="fragments/pagination :: pagination"></nav>
+            <nav th:unless="${infiniteScrolling}" th:include="fragments/pagination :: pagination"></nav>
         </div>
     </div>
 </main>

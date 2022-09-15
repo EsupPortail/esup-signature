@@ -30,6 +30,7 @@ public class UserPropertieService {
         }
     }
 
+    @Transactional
     public void createUserPropertie(User user, User favoriteUser) {
         List<UserPropertie> userProperties = getUserProperties(user.getEppn());
         if (userProperties == null || userProperties.size() == 0) {
@@ -39,6 +40,8 @@ public class UserPropertieService {
                 if(!userPropertie.getFavorites().containsKey(favoriteUser)) {
                     userPropertie.getFavorites().put(favoriteUser, new Date());
                     userPropertieRepository.save(userPropertie);
+                } else {
+                    userPropertie.getFavorites().put(favoriteUser, new Date());
                 }
             }
         }
