@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import org.esupportail.esupsignature.entity.LiveWorkflow;
+import org.esupportail.esupsignature.entity.LiveWorkflowStep;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -216,7 +218,12 @@ public class SignBookController {
     @GetMapping(value = "/update/{id}")
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
         SignBook signBook = signBookService.getById(id);
-        if(signBook != null && (signBook.getLiveWorkflow().getWorkflow() == null || signBook.getCreateBy().equals(signBook.getLiveWorkflow().getWorkflow().getCreateBy())) && (signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.pending))) {
+        LiveWorkflow liveWorkflow = signBook.getLiveWorkflow();
+        List<LiveWorkflowStep> workflowSteps = liveWorkflow.getLiveWorkflowSteps();
+        LiveWorkflowStep liveWorkflowStep = liveWorkflow.getCurrentStep();
+        int toto = liveWorkflow.getCurrentStepNumber();
+        logger.debug(toto + "");
+        if(signBook != null && signBook.getCreateBy().getEppn().equals(authUserEppn) && (signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.pending))) {
             model.addAttribute("signBook", signBook);
             model.addAttribute("logs", signBookService.getLogsFromSignBook(signBook));
             model.addAttribute("allSteps", signBookService.getAllSteps(signBook));
@@ -281,7 +288,7 @@ public class SignBookController {
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "L'étape ne peut pas être supprimée"));
         }
-        return "redirect:/user/signbooks/" + id + "/?form";
+        return "redirect:/user/signbooks/update/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")

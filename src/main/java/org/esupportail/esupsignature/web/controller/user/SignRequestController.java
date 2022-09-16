@@ -134,16 +134,14 @@ public class SignRequestController {
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
         model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
         model.addAttribute("favoriteSignRequestParamsJson", userService.getFavoriteSignRequestParamsJson(userEppn));
-        if(!signRequest.getStatus().equals(SignRequestStatus.draft)) {
-            try {
-                Object userShareString = httpSession.getAttribute("userShareId");
-                Long userShareId = null;
-                if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
-                List<String> signImages = signBookService.getSignImagesForSignRequest(signRequest, userEppn, authUserEppn, userShareId);
-                model.addAttribute("signImages", signImages);
-            } catch (EsupSignatureUserException e) {
-                model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
-            }
+        try {
+            Object userShareString = httpSession.getAttribute("userShareId");
+            Long userShareId = null;
+            if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
+            List<String> signImages = signBookService.getSignImagesForSignRequest(signRequest, userEppn, authUserEppn, userShareId);
+            model.addAttribute("signImages", signImages);
+        } catch (EsupSignatureUserException e) {
+            model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
         }
         model.addAttribute("signatureIds", new ArrayList<>());
         Reports reports = signRequestService.validate(id);

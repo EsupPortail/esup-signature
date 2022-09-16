@@ -151,7 +151,11 @@ public class PdfService {
                     signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType, user, newDate, fixFactor);
                 }
             } else if (signRequestParams.getTextPart() == null || signRequestParams.getTextPart().isEmpty()) {
-                signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
+                if(user.getSignImages().size() >= signRequestParams.getSignImageNumber() + 1) {
+                    signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
+                } else {
+                    signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname()), signRequestParams, signType, user, newDate, fixFactor);
+                }
             }
             if (signRequestParams.getAddWatermark()) {
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
