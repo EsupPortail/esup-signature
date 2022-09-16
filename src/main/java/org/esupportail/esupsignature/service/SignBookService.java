@@ -170,6 +170,9 @@ public class SignBookService {
     private ReportService reportService;
 
     @Resource
+    private ActionService actionService;
+
+    @Resource
     private FOPService fopService;
 
     @Resource
@@ -457,7 +460,15 @@ public class SignBookService {
     public boolean removeStep(Long signBookId, int step) {
         SignBook signBook = getById(signBookId);
         int currentStepNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
-        if(currentStepNumber <= step) {
+        if(currentStepNumber <= step + 1) {
+            if(currentStepNumber == step + 1 && signBook.getLiveWorkflow().getLiveWorkflowSteps().size() > currentStepNumber) {
+                signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(currentStepNumber));
+                for(Recipient recipient : signBook.getLiveWorkflow().getLiveWorkflowSteps().get(currentStepNumber).getRecipients()) {
+                    for (SignRequest signRequest : signBook.getSignRequests()) {
+                        signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
+                    }
+                }
+            }
             LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getLiveWorkflowSteps().get(step);
             signBook.getLiveWorkflow().getLiveWorkflowSteps().remove(liveWorkflowStep);
             for (Recipient recipient : liveWorkflowStep.getRecipients()) {
@@ -467,8 +478,9 @@ public class SignBookService {
             }
             liveWorkflowStepService.delete(liveWorkflowStep);
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
     public void updateStatus(SignBook signBook, SignRequestStatus signRequestStatus, String action, String returnCode, String comment, String userEppn, String authUserEppn) {
@@ -509,7 +521,13 @@ public class SignBookService {
             if (stepNumber >= currentStepNumber) {
                 signBook.getLiveWorkflow().getLiveWorkflowSteps().add(stepNumber, liveWorkflowStep);
             } else {
-                throw new EsupSignatureException("L'étape ne peut pas être ajoutée car le circuit est déjà démarré");
+                if(signBook.getStatus().equals(SignRequestStatus.draft)) {
+                //TODO add step
+                    signBook.getLiveWorkflow().getLiveWorkflowSteps().add(stepNumber, liveWorkflowStep);
+                    signBook.getLiveWorkflow().setCurrentStep(liveWorkflowStep);
+                } else {
+                    throw new EsupSignatureException("L'étape ne peut pas être ajoutée car le circuit est déjà démarré");
+                }
             }
         }
         if(recipientsEmails != null) {

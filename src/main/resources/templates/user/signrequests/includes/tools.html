@@ -54,10 +54,10 @@
 				</button>
 			</form>
 		</th:block>
-		<th:block th:if="${editable}">
+		<th:block th:if="${signRequest.parentSignBook.createBy.eppn == user.eppn
+						&& (signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) && editable}">
 			<div class="border ms-3 me-3 d-none d-lg-block ms-1"></div>
-			<a th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.createBy.eppn == signRequest.parentSignBook.liveWorkflow.workflow.createBy.eppn) && signRequest.parentSignBook.createBy.eppn == user.eppn
-						&& (signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}" class="btn btn-light btn-outline-dark me-1 d-none d-lg-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/update/' + ${signRequest.parentSignBook.id}">
+			<a class="btn btn-light btn-outline-dark me-1 d-none d-md-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/update/' + ${signRequest.parentSignBook.id}">
 				<i class="fas fa-pencil-alt"></i>
 			</a>
 		</th:block>
