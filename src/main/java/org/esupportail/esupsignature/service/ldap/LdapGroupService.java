@@ -28,13 +28,13 @@ public class LdapGroupService implements GroupService {
 
     private String groupNameAttribut;
 
-    private String membersOfGroupSearchFilter;
-
     private String memberSearchBase;
 
     private String memberSearchFilter;
 
     private String domain;
+
+    private String membersOfGroupSearchFilter;
 
     public Map<String, String> getLdapFiltersGroups() {
         return ldapFiltersGroups;
@@ -147,7 +147,7 @@ public class LdapGroupService implements GroupService {
     @Override
     public List<String> getMembers(String groupName) {
 
-        String formattedFilter = MessageFormat.format("memberOf=cn={0},ou=groups,dc=univ-rouen,dc=fr", groupName);
+        String formattedFilter = MessageFormat.format(membersOfGroupSearchFilter, groupName);
 
         List<String> eppns = ldapTemplate.search(memberSearchBase, formattedFilter, (ContextMapper<String>) ctx -> {
                     DirContextAdapter searchResultContext = (DirContextAdapter)ctx;

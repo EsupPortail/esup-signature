@@ -447,7 +447,7 @@ public class SignBookService {
         if(signBook.getSignRequests().size() == 1) {
             User user = userService.getUserByEppn(userEppn);
             Data data = getBySignBook(signBook);
-            if(data != null && data.getForm() != null && !data.getForm().getWorkflow().getManagers().isEmpty()) {
+            if(data != null && data.getForm() != null && data.getForm().getWorkflow() != null && !data.getForm().getWorkflow().getManagers().isEmpty()) {
                 if (data.getForm().getWorkflow().getManagers().contains(user.getEmail())) {
                     return true;
                 }
