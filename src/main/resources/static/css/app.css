@@ -45,6 +45,10 @@
     /*for javascript detection : new SelectUser()*/
 }
 
+.slim-select-filter {
+    /*for javascript detection : new SlimSelect()*/
+}
+
 .slim-select, .slim-select-simple {
     /*for javascript detection : new SlimSelect()*/
 }
@@ -64,7 +68,7 @@ html {
     scrollbar-color: #E10F46 #CECECE;
 }
 
-::-webkit-scrollbar {
+html::-webkit-scrollbar {
     background-color: #CECECE;
     width: 12px;
     height: 12px;
@@ -72,14 +76,42 @@ html {
     margin: 2px;
 }
 
-::-webkit-scrollbar-thumb {
+html::-webkit-scrollbar-thumb {
     background-color: #E10F46;
     border-radius: 10px;
     width: 8px !important;
     border: solid 3px #CECECE;
 }
 
+.table-fix-head::-webkit-scrollbar {
+    background-color: #CECECE;
+    width: 12px;
+    height: 12px;
+    padding: 2px;
+    margin: 2px;
+}
 
+.table-fix-head::-webkit-scrollbar-thumb {
+    background-color: #E10F46;
+    border-radius: 10px;
+    width: 8px !important;
+    border: solid 3px #CECECE;
+}
+
+.scrollbar-lite::-webkit-scrollbar {
+    background-color: #CECECE;
+    width: 12px;
+    height: 12px;
+    padding: 2px;
+    margin: 2px;
+}
+
+.scrollbar-lite::-webkit-scrollbar-thumb {
+    background-color: #E10F46;
+    border-radius: 10px;
+    width: 8px !important;
+    border: solid 3px #CECECE;
+}
 body {
     font-family: "Gravity", sans-serif;
     margin-bottom: 40px;
@@ -174,6 +206,11 @@ dd {
     font-weight: 300;
 }
 
+.h7, h7 {
+    /*font-weight: 300;*/
+    font-size: 15px;
+}
+
 a.disabled {
     opacity: 0.4;
     pointer-events: none;
@@ -229,6 +266,12 @@ td {
     width:250px;
     margin-top: 20px;
     z-index: 10000;
+}
+
+#listSignRequestTable {
+    user-select: text !important;
+    -moz-user-select: text !important;
+    -webkit-user-select: text !important;
 }
 
 #listSignRequestTable th {
@@ -774,6 +817,11 @@ th .ss-content {
 #stepper {
     max-width: 100%;
 }
+
+.bs-stepper .step-trigger:not(:disabled):not(.disabled) {
+    cursor: initial !important;
+}
+
 .bs-stepper-line {
     background-color: #343a40 !important;
 }
@@ -1245,7 +1293,7 @@ textarea:placeholder-shown.required-field {
 
 .fixed-action-btn {
     position: fixed;
-    right: 50px;
+    right: 25px;
     bottom: 80px;
     z-index: 8;
     overflow: hidden;
@@ -1256,7 +1304,7 @@ textarea:placeholder-shown.required-field {
     -webkit-box-align: end;
     -ms-flex-align: end;
     align-items: flex-end;
-    padding: 15px;
+    padding: 20px;
 }
 
 .fixed-action-btn-simple {
@@ -1780,6 +1828,10 @@ input:focus, textarea:focus, select:focus {
     margin: auto !important;
 }
 
+.change-mode > .ss-single-selected {
+    border: 1px solid #555;
+}
+
 .ss-option-selected {
     color: #dedede !important;
 }
@@ -1991,4 +2043,10 @@ progress:before {
 
 .file-drop-zone {
     min-height: revert;
+}
+
+#help-naming-template {
+    user-select: text !important;
+    -moz-user-select: text !important;
+    -webkit-user-select: text !important;
 }

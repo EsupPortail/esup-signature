@@ -28,15 +28,29 @@
                                                     th:selected="${workflowStep.signType == signType}"></option>
                                         </th:block>
                                     </select>
+                                    <input type="hidden" name="signType" value="certSign" th:if="${workflowStep.autoSign}" >
                                 </div>
-                                <th:block th:if="${workflowStep.autoSign}">
+                                <div class="form-check form-switch form-switch-md">
+                                    <input type="checkbox" class="form-check-input" id="autoSign" name="autoSign" th:data-es-step-id="${workflowStep.id}"
+                                           th:checked="${workflowStep.autoSign}"/>
+                                    <label for="autoSign" class="form-check-label">
+                                        L'étape est exécutée automatiquement
+                                    </label>
+                                </div>
+                                <div th:id="'cert_' + ${workflowStep.id}" th:classappend="${!workflowStep.autoSign ? 'd-none' : ''}">
                                     <div class="form-group mb-3">
-                                        <label>Auto signature avec le certificat :</label>
-                                        <br/>
-                                        <span th:text="${workflowStep.certificat.keystore.fileName}"></span>
+                                        <label th:for="'certificatId_' + ${workflowStep.id}"l>Auto signature avec le certificat :</label>
+                                        <br>
+                                        <select class="slim-select-simple" name="certificatId" th:id="'certificatId_' + ${workflowStep.id}" data-placeholder="Choix du certificat">
+                                            <option data-placeholder="true"></option>
+                                            <option value="" th:if="${globalProperties.sealCertificatDriver != null}" th:checked="${workflowStep.certificat == null}">Certificat cachet de l’établissement</option>
+                                            <th:block th:each="certificat : ${certificats}">
+                                                <option th:text="${certificat.keystore.fileName}" th:value="${certificat.id}" th:selected="${workflowStep.certificat != null && workflowStep.certificat.id == certificat.id}"></option>
+                                            </th:block>
+                                        </select>
                                     </div>
-                                </th:block>
-                                <th:block th:if="${!workflowStep.autoSign}">
+                                </div>
+                                <div th:id="'conf_' + ${workflowStep.id}" th:classappend="${!workflowStep.autoSign ? '' : 'd-none'}">
                                     <div class="form-group mb-3">
                                         <label>Nombre maximum de participants:</label>
                                         <input name="maxRecipients" type="number" class="form-control" th:value="${workflowStep.maxRecipients}"/>
@@ -84,7 +98,7 @@
                                                    th:checked="${workflowStep.attachmentRequire}"/>
                                         </div>
                                     </div>
-                                </th:block>
+                                </div>
                                 <button type="submit" class="btn btn-success float-end ms-2 mb-2">
                                     <i class="fas fa-save"></i></button>
                             </form>
@@ -96,7 +110,9 @@
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </form>
-                            <table class="table table-sm table-bordered" th:if="${!workflowStep.autoSign}">
+                            <br><br>
+                            <hr>
+                            <table th:id="'table_' + ${workflowStep.id}" class="table table-sm table-bordered" th:classappend="${!workflowStep.autoSign ? '' : 'd-none'}">
                                 <thead class="table-secondary">
                                 <tr>
                                     <th>Participants</th>
@@ -118,7 +134,7 @@
                                             <form th:action="${fromAdmin == true ? '/admin/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id : '/user/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id}" th:method="'delete'">
                                                 <input type="hidden" name="userToRemoveEppn" th:value="${user.eppn}"/>
                                                 <button title="Supprimer le destinataire"
-                                                    onclick="confirm('Voulez-vous vraiment supprimer cet element ?');"
+                                                    onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');"
                                                     type="submit" class="btn btn-danger btn-sm"><i
                                                     class="fas fa-minus-circle"></i></button>
                                             </form>
@@ -143,16 +159,11 @@
                                 </div>
                                 <div class="modal-body">
                                     <div class="form-group mb-3">
-                                        <select class="select-users" name="recipientsEmails"
-                                                th:id="'recipientsEmails' + ${workflowStep.id}"
+                                        <select class="select-users" name="recipientsEmails" th:id="'recipientsEmails' + ${workflowStep.id}"
                                                 size="5" multiple="multiple"
-                                                required="required">
+                                                required="required" data-es-check-list="false">
                                             <option data-placeholder="true"></option>
                                         </select>
-                                    </div>
-                                    <div class="form-group mb-3">
-                                        <textarea class="form-control" name="comment"
-                                                  placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."></textarea>
                                     </div>
                                 </div>
                                 <div class="modal-footer">

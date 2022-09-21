@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<div th:fragment="footer">
+	<div id="footer">
+		<footer  class="footer bg-secondary fixed-bottom text-center text-white">
+			<span th:text="#{application.footer}"></span> - <span th:text="${#dates.year(#dates.createNow())}"></span>
+		</footer>
+	</div>
+</div>
+</html>

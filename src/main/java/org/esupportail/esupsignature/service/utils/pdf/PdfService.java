@@ -16,7 +16,6 @@ import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.encoding.WinAnsiEncoding;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
@@ -45,22 +44,21 @@ import org.apache.xmpbox.xml.DomXmpParser;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.pdf.PdfConfig;
-import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.FieldType;
+import org.esupportail.esupsignature.entity.Log;
+import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.service.LogService;
-import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.verapdf.core.EncryptedPdfException;
-import org.verapdf.core.ModelParsingException;
-import org.verapdf.core.ValidationException;
 import org.verapdf.pdfa.Foundries;
 import org.verapdf.pdfa.PDFAParser;
 import org.verapdf.pdfa.PDFAValidator;
@@ -535,7 +533,7 @@ public class PdfService {
 
     public byte[] normalizeGS(byte[] originalBytes) throws IOException, EsupSignatureException {
         Reports reports = validationService.validate(new ByteArrayInputStream(originalBytes), null);
-        if (!isPdfAComplient(originalBytes) && (reports == null || reports.getSimpleReport().getSignatureIdList().size() == 0)) {
+        if (!isAcroForm(new ByteArrayInputStream(originalBytes)) && (reports == null || reports.getSimpleReport() == null || reports.getSimpleReport().getSignatureIdList().size() == 0)) {
             String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite -d -sOutputFile=- -q -";
             logger.info("GhostScript PDF/A conversion : " + cmd);
             ProcessBuilder processBuilder = new ProcessBuilder();
@@ -584,13 +582,6 @@ public class PdfService {
         return false;
     }
 
-//    public List<String> checkPDFA(InputStream inputStream, boolean fillResults) throws IOException, EsupSignatureException {
-//        File file = fileService.inputStreamToTempFile(inputStream, "tmp.pdf");
-//        List<String> checkResult = checkPDFA(inputStream, fillResults);
-//        file.delete();
-//        return checkResult;
-//    }
-
     public List<String> checkPDFA(byte[] pdfFile, boolean fillResults) throws EsupSignatureException {
         List<String> result = new ArrayList<>();
         VeraGreenfieldFoundryProvider.initialise();
@@ -612,101 +603,11 @@ public class PdfService {
             }
             validator.close();
             parser.close();
-        } catch (ValidationException | ModelParsingException | EncryptedPdfException | IOException e) {
+        } catch (Exception e) {
             logger.warn("check error " + e.getMessage());
             logger.debug("check error", e);
         }
         return result;
-    }
-
-    public InputStream generatePdfFromData(Data data) throws IOException {
-        PDDocument pdDocument = new PDDocument();
-        PDPage page = new PDPage();
-        pdDocument.addPage(page);
-        PDPageContentStream contents = new PDPageContentStream(pdDocument, page);
-        contents.beginText();
-        PDFont font = PDType1Font.HELVETICA_BOLD;
-        contents.setFont(font, 15);
-        contents.setLeading(15f);
-        contents.newLineAtOffset(30, 700);
-        contents.newLine();
-        for (Map.Entry<String, String> entry : data.getDatas().entrySet()) {
-            contents.newLine();
-            contents.showText(entry.getKey() + " : " + entry.getValue());
-        }
-        PDAcroForm form = new PDAcroForm(pdDocument);
-        pdDocument.getDocumentCatalog().setAcroForm(form);
-        PDResources resources = new PDResources();
-        resources.put(COSName.getPDFName("Helv"), font);
-        form.setDefaultResources(resources);
-        for(Field field : data.getForm().getFields()) {
-            PDTerminalField pdTerminalField;
-            if(field.getType().equals(FieldType.checkbox)) {
-                pdTerminalField = new PDCheckBox(form);
-            }else if(field.getType().equals(FieldType.radio)) {
-                pdTerminalField = new PDRadioButton(form);
-            } else {
-                pdTerminalField = new PDTextField(form);
-            }
-            pdTerminalField.setPartialName(field.getName());
-
-            form.getFields().add(pdTerminalField);
-        }
-        contents.endText();
-        contents.close();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        pdDocument.save(out);
-        pdDocument.close();
-        return  new ByteArrayInputStream(out.toByteArray());
-    }
-
-    public PDDocument addNewPage(PDDocument pdDocument, String template, int position) {
-        try {
-            PDDocument targetPDDocument = new PDDocument();
-            PDPage newPage = null;
-            if (template != null) {
-                PDDocument defaultNewPageTemplate = PDDocument.load(new ClassPathResource(template, PdfService.class).getInputStream());
-                if (defaultNewPageTemplate != null) {
-                    newPage = defaultNewPageTemplate.getPage(0);
-                }
-            } else {
-                PDDocument defaultNewPageTemplate = PDDocument.load(new ClassPathResource("/templates/pdf/defaultnewpage.pdf", PdfService.class).getInputStream());
-                if (defaultNewPageTemplate != null) {
-                    newPage = defaultNewPageTemplate.getPage(0);
-                } else {
-                    newPage = new PDPage(PDRectangle.A4);
-                }
-            }
-            if (position == 0) {
-                targetPDDocument.addPage(newPage);
-            }
-
-            for (PDPage page : pdDocument.getPages()) {
-                targetPDDocument.addPage(page);
-            }
-
-            if (position == -1) {
-                targetPDDocument.addPage(newPage);
-            }
-            return targetPDDocument;
-        } catch (IOException e) {
-            logger.error("error to add blank page", e);
-        }
-        return null;
-    }
-
-    public Map<COSDictionary, Integer> getPageNrByAnnotDict(PDDocumentCatalog docCatalog) throws IOException {
-        Iterator<PDPage> pages = docCatalog.getPages().iterator();
-        Map<COSDictionary, Integer> pageNrByAnnotDict = new HashMap<>();
-        int i = 0;
-        for (Iterator<PDPage> it = pages; it.hasNext(); ) {
-            PDPage pdPage = it.next();
-            for (PDAnnotation annotation : pdPage.getAnnotations()) {
-                pageNrByAnnotDict.put(annotation.getCOSObject(), i + 1);
-            }
-            i++;
-        }
-        return pageNrByAnnotDict;
     }
 
     public byte[] fill(InputStream pdfFile, Map<String, String> datas, boolean isLastStep) {
@@ -714,7 +615,8 @@ public class PdfService {
             PDDocument pdDocument = PDDocument.load(pdfFile);
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
             if(pdAcroForm != null) {
-                PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), WinAnsiEncoding.INSTANCE);
+                byte[] ttfBytes = new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream().readAllBytes();
+                PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ByteArrayInputStream(ttfBytes), WinAnsiEncoding.INSTANCE);
                 PDResources resources = pdAcroForm.getDefaultResources();
                 resources.put(COSName.getPDFName("LiberationSans"), pdFont);
                 pdAcroForm.setDefaultResources(resources);
@@ -997,4 +899,18 @@ public class PdfService {
         }
         return false;
     }
+
+//    public InputStream convertDocToPDF(InputStream doc) {
+//        try {
+//            Docx2PDFViaDocx4jConverter docx2PDFViaDocx4jConverter = Docx2PDFViaDocx4jConverter.getInstance();
+//            docx2PDFViaDocx4jConverter.toPdfSettings(Options.getFrom( "DOCX" ));
+//            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//            docx2PDFViaDocx4jConverter.convert(doc, byteArrayOutputStream, Options.getFrom( "DOCX" ));
+//            return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+//        } catch (XDocConverterException e) {
+//            logger.error(e.getMessage(), e);
+//        }
+//        return doc;
+//    }
+
 }

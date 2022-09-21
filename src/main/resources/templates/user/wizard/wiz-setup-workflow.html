@@ -35,14 +35,18 @@
                 <li class="list-group-item">
                 <div class="form-group mb-1">
                     <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span>
-                    <span th:if="${step.description != null && step.description != ''}" th:text="${step.description}"></span>
-                    <th:block th:if="${(step.description == null || step.description == '') && step.users.size() > 0}">
-                        <span th:if="${step.description != '' && step.description != null}"> - </span>
-                        <th:block th:each="user, iterator : ${step.users}">
-                            <span th:text="${user.firstname} + ' ' + ${user.name}"></span>
-                        </th:block>
+                    <span th:if="${step.description != null && step.description != ''}" th:text="${step.description} + '.'"></span>
+                    <th:block th:unless="${step.autoSign}">
+                    Destinataires :
+                    <th:block th:each="user, iterator : ${step.users}">
+                        <span th:text="${user.email}"></span>
+                        <span th:if="${iterator.index >= step.users.size()}">, </span>
                     </th:block>
                     <span th:if="${step.repeatable}"> (cette étape peut donner lieu à plusieurs validations en séries)</span>
+                    </th:block>
+                    <th:block th:if="${step.autoSign}">
+                        Étape automatique
+                    </th:block>
                 </div>
                 <div th:if="${step.changeable == true}" class="form-group mb-1">
                     <label><span th:text="'Merci de saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span></label>
@@ -101,7 +105,12 @@
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
-        <button type="submit" class="btn btn-success">Valider</button>
+        <button type="submit" id="sendDraftButton" class="btn btn-success" name="draft" value="true">
+            <i class="fas fa-save"></i> Annoter avant envoi
+        </button>
+        <button type="submit" id="sendPendingButton" class="btn btn-success">
+            <i class="fas fa-paper-plane"></i> Envoyer immédiatement la demande
+        </button>
     </div>
 </form>
 </html>

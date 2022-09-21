@@ -39,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin/forms")
@@ -224,10 +225,9 @@ public class FormAdminController {
 
 	@PutMapping
 	public String updateForm(@ModelAttribute Form updateForm,
-							 @RequestParam(required = false) List<String> managers,
 							 @RequestParam(value = "types", required = false) String[] types,
 							 RedirectAttributes redirectAttributes) {
-		formService.updateForm(updateForm.getId(), updateForm, managers, types, true);
+		formService.updateForm(updateForm.getId(), updateForm, types, true);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
 		return "redirect:/admin/forms/update/" + updateForm.getId();
 	}
@@ -262,7 +262,7 @@ public class FormAdminController {
 			try {
 				response.setContentType("text/csv; charset=utf-8");
 				response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(forms.get(0).getName(), StandardCharsets.UTF_8.toString()) + ".csv");
-				InputStream csvInputStream = dataExportService.getCsvDatasFromForms(forms);
+				InputStream csvInputStream = dataExportService.getCsvDatasFromForms(forms.stream().map(Form::getWorkflow).collect(Collectors.toList()));
 				IOUtils.copy(csvInputStream, response.getOutputStream());
 				return new ResponseEntity<>(HttpStatus.OK);
 			} catch (Exception e) {
@@ -320,12 +320,7 @@ public class FormAdminController {
 	@GetMapping(value = "/get-file/{id}")
 	public void getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes) throws IOException {
 		try {
-			Map<String, Object> attachmentResponse = formService.getModel(id);
-			if (attachmentResponse != null) {
-				httpServletResponse.setContentType(attachmentResponse.get("contentType").toString());
-				httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(attachmentResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
-				IOUtils.copyLarge((InputStream) attachmentResponse.get("inputStream"), httpServletResponse.getOutputStream());
-			} else {
+			if (!formService.getModel(id, httpServletResponse)) {
 				redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Modèle non trouvée ..."));
 				httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
 			}

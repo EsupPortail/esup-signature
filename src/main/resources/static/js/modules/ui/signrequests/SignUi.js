@@ -4,9 +4,10 @@ import {Step} from "../../../prototypes/Step.js?version=@version@";
 
 export class SignUi {
 
-    constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, isPdf, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
+    constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, isPdf, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone, returnToHome) {
         console.info("Starting sign UI");
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
+        this.returnToHome = returnToHome;
         this.signRequestId = id;
         this.percent = 0;
         this.isOtp = isOtp;
@@ -100,14 +101,17 @@ export class SignUi {
         if (this.isPdf && this.currentSignType !== 'hiddenVisa') {
             this.workspace.pdfViewer.checkForm().then(function (result) {
                 if (result === "ok") {
-                    if (self.workspace.signPosition.signRequestParamses.size === 0) {
+                    let signId = self.workspace.checkSignsPositions();
+                    if (signId != null) {
                         $("#certType > option[value='imageStamp']").remove();
                         if(self.workspace.currentSignRequestParamses.length > 0 || self.stepRepeatable) {
-                            bootbox.alert("Merci de placer la signature", null);
+                            bootbox.alert("Merci de placer la signature", function() {
+                                window.scrollTo(0, $("#signSpace_" + signId).offset().top - self.workspace.pdfViewer.initialOffset);
+                            });
                         } else {
                             bootbox.confirm({
-                                message: "<h3>Attention vous allez signer ce document sans visuel</h3>" +
-                                    "<div class='alert alert-danger'>Dans ce cas seules les signatures avec certificat sont possibles</div>",
+                                message: "<h3>Attention vous allez signer sans appliquer d'image de signature</h3>" +
+                                    "<div class='alert alert-danger'>Dans ce cas, seules les signatures avec certificat électronique sont possibles</div>",
                                 buttons: {
                                     cancel: {
                                         label: '<i class="fa fa-undo"></i> Modifier ma signature',
@@ -127,13 +131,15 @@ export class SignUi {
                         }
                     } else {
                         $("#certType > option[value='imageStamp']").remove();
-                        $('#certType').prepend($('<option>', {
-                            value: 'imageStamp',
-                            text: self.saveOptionText
-                        }));
+                        if(self.currentSignType === "pdfImageStamp" || self.currentSignType === "visa") {
+                            $('#certType').prepend($('<option>', {
+                                value: 'imageStamp',
+                                text: self.saveOptionText
+                            }));
+                        }
                         self.checkSignOptions();
                         self.certTypeSelect.children().each(function(e) {
-                            if($(this).val() === "imageStamp" && (self.currentSignType === "imageStamp" || self.currentSignType === "visa")) {
+                            if($(this).val() === "imageStamp" && (self.currentSignType === "pdfImageStamp" || self.currentSignType === "visa")) {
                                 $(this).removeAttr('disabled');
                                 $("#noOptions").hide();
                                 $("#selectTypeDiv").show();
@@ -183,6 +189,9 @@ export class SignUi {
                 $("#selectTypeDiv").show();
                 $("#checkValidateSignButtonEnd").show();
                 $("#checkValidateSignButtonNext").show();
+            }
+            if($("#certType > option[value='imageStamp']").attr('selected')) {
+                $("#noSeal").show();
             }
         });
     }
@@ -270,7 +279,7 @@ export class SignUi {
             bootbox.alert("<div class='alert alert-danger'>Merci de choisir un type de signature dans la liste déroulante</div>", null);
             return;
         }
-        if (this.isPdf && !this.workspace.checkSignsPositions() && this.workspace.signType !== "hiddenVisa" && (this.certTypeSelect.val() === 'imageStamp')) {
+        if (this.isPdf && this.workspace.checkSignsPositions() != null && this.workspace.signType !== "hiddenVisa" && (this.certTypeSelect.val() === 'imageStamp')) {
             bootbox.alert("Merci de placer la signature", null);
             signModal.modal('hide');
             return;
@@ -362,13 +371,22 @@ export class SignUi {
                     document.location.href="/user/nexu-sign/" + self.signRequestId;
                 } else {
                     if (self.gotoNext) {
-                        document.location.href = $("#nextSignRequestButton").attr('href');
+                        document.location.href = $("#nextSignBookButton").attr('href');
                     } else {
                         if(self.isOtp== null || !self.isOtp) {
-                            if(self.nbSignRequests > 1 || !self.globalProperties.returnToHomeAfterSign) {
-                                document.location.href = "/user/signrequests/" + self.signRequestId;
+                            // TODO add user return to home settings
+                            if(self.returnToHome == null) {
+                                if (self.nbSignRequests > 1 || !self.globalProperties.returnToHomeAfterSign) {
+                                    document.location.href = "/user/signrequests/" + self.signRequestId;
+                                } else {
+                                    document.location.href = "/user/";
+                                }
                             } else {
-                                document.location.href = "/user/";
+                                if(self.returnToHome) {
+                                    document.location.href = "/user/";
+                                } else {
+                                    document.location.href = "/user/signrequests/" + self.signRequestId;
+                                }
                             }
                         } else {
                             document.location.href = "/otp/signrequests/" + self.signRequestId;
@@ -413,7 +431,7 @@ export class SignUi {
         let signRequestId = this.signRequestId;
         let csrf = this.csrf;
         let step = new Step();
-        let selectedRecipients = $('#recipientsEmailsInfinite').find(`[data-check='true']`).prevObject[0].slim.selected();
+        let selectedRecipients = $('#recipientsEmailsInfinite').find(`[data-es-check-cert='true']`).prevObject[0].slim.selected();
         if(selectedRecipients.length === 0 ) {
             $("#infiniteFormSubmit").click();
             return;

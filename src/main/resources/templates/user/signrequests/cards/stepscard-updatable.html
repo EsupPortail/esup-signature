@@ -31,7 +31,7 @@
                                     <div class="bs-stepper-bottom">
                                         <form th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 1}"
                                                 th:id="'del_' + ${iterator.index}" th:action="'/user/signbooks/remove-live-step/' + ${id} + '/' + ${iterator.index}" th:method="delete">
-                                            <button onclick="confirm('Voulez-vous vraiment supprimer cette étape ?');" class="btn btn-sm float-end">
+                                            <button onclick="return confirm('Voulez-vous vraiment supprimer cette étape ?');" class="btn btn-sm float-end">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </form>

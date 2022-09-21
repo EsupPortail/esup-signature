@@ -18,7 +18,7 @@ global:
     hours-before-refresh-notif: 24
     share-mode: 1
     infinite-scrolling: true
-    return-to-home-after-sign: false
+    return-to-home-after-sign: true
     naming-template: "[title]"
     signed-suffix: "_signé"
     trash-keep-delay: -1
@@ -37,6 +37,9 @@ info:
         environment: PROD
 
 management:
+    health:
+        ldap:
+            enabled: false
     endpoints:
         jmx:
             exposure:
@@ -56,7 +59,7 @@ spring:
     data:
         ldap:
             repositories:
-                enabled: false
+                enabled: true
     datasource:
         driver-class-name: org.postgresql.Driver
         url: jdbc:postgresql://localhost:5432/esupsignature
@@ -135,6 +138,9 @@ ldap:
     search-base: ou=people
     group-search-base: ou=groups
     group-search-filter: member={0}
+    all-groups-search-filter: cn=*{0}
+    group-name-attribut: ou
+    members-of-group-search-filter: ou=
     user-id-search-filter: (uid={0})
     member-search-filter: (&(uid={0})({1}))
     mapping-filters-groups:
@@ -237,7 +243,7 @@ logging:
         root: info
         org.esupportail.esupsignature: info
         org.verapdf: error
-        org.apache.pdfbox: warn
+        org.apache.pdfbox: error
         eu.europa.esig.dss: error
         org.springframework.web.filter.CommonsRequestLoggingFilter: error
 #    config: classpath:logback-prod.xml

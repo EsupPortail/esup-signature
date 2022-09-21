@@ -6,6 +6,7 @@ export class GlobalUi {
     constructor(authUserEppn, csrf, applicationEmail) {
         console.info("Starting global UI");
         this.checkBrowser();
+        this.checkOS();
         this.csrf = csrf;
         this.applicationEmail = applicationEmail;
         this.sideBarStatus = localStorage.getItem('sideBarStatus');
@@ -101,6 +102,20 @@ export class GlobalUi {
             });
         });
 
+        $('.toggle-mini-menu').each(function(e) {
+            $(this).on('click', function(e) {
+                // e.preventDefault();
+                e.stopPropagation();
+            })
+        });
+
+        $('.prevent').each(function(e) {
+            $(this).on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            })
+        });
+
         $('.workflow-delete-button').each(function(e) {
             $(this).on('click', function(e) {
                 e.preventDefault();
@@ -132,9 +147,6 @@ export class GlobalUi {
     }
 
     initTooltips() {
-        // $(document).tooltip({
-        //     disabled: true
-        // });
         $("#newScroll").tooltip({
             disabled: false,
             show: { effect: "fade", duration: 500 },
@@ -177,6 +189,32 @@ export class GlobalUi {
         }
     }
 
+    checkOS() {
+        let userAgent = window.navigator.userAgent,
+            platform = window.navigator?.userAgentData?.platform || window.navigator.platform,
+            macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'],
+            windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'],
+            iosPlatforms = ['iPhone', 'iPad', 'iPod'],
+            os = null;
+
+        if (macosPlatforms.indexOf(platform) !== -1) {
+            os = 'Mac OS';
+        } else if (iosPlatforms.indexOf(platform) !== -1) {
+            os = 'iOS';
+        } else if (windowsPlatforms.indexOf(platform) !== -1) {
+            os = 'Windows';
+            document.styleSheets[document.styleSheets.length - 1].addRule("html", `scrollbar-width: thin;`);
+            document.styleSheets[document.styleSheets.length - 1].addRule(".scrollbar-lite", `scrollbar-width: thin;`);
+            document.styleSheets[document.styleSheets.length - 1].addRule(".table-fix-head", `scrollbar-width: thin;`);
+        } else if (/Android/.test(userAgent)) {
+            os = 'Android';
+        } else if (/Linux/.test(platform)) {
+            os = 'Linux';
+        }
+        console.info("detected os : " + os);
+        return os;
+    }
+
     disableSendButton(e) {
         $("#sendPendingButton").unbind();
     }
@@ -189,7 +227,7 @@ export class GlobalUi {
                 type: 'POST',
                 contentType: "application/json",
                 dataType: 'json',
-                data: JSON.stringify($('#recipientsEmails').find(`[data-check='true']`).prevObject[0].slim.selected()),
+                data: JSON.stringify($('#recipientsEmails').find(`[data-es-check-cert='true']`).prevObject[0].slim.selected()),
                 success: response => this.checkSendPending(response, send)
             });
         } else {
@@ -199,15 +237,15 @@ export class GlobalUi {
 
     checkSendPending(data, send) {
         if (data.length === 0) {
-            this.submitSendPendind();
+            this.submitSendPendind(send);
             return;
         }
         let self = this;
-        let stringChain = "Les utilisateurs suivants n'ont pas de certificats électroniques : ";
+        let stringChain = "Les utilisateurs suivants n'ont pas de certificats électroniques : <br><ul>";
         for (let i = 0; i < data.length ; i++) {
-            stringChain += data[i].firstname + " " + data[i].name + " ";
+            stringChain += "<li>" + data[i].firstname + " " + data[i].name + "</li>";
         }
-        stringChain += "Confirmez-vous l'envoie de la demande ? "
+        stringChain += "</ul>Confirmez-vous l’envoie de la demande ? "
         bootbox.confirm(stringChain, function(result) {
            if(result) {
                self.submitSendPendind(send);
@@ -284,6 +322,7 @@ export class GlobalUi {
             }
             if(!url.match("/user/users+[\\w\\W]+")
                 && !url.match("/user/users")
+                && !url.match("/admin/")
                 && !url.match("/admin/+[\\w\\W]+")
                 && !url.match("/manager/+[\\w\\W]+")
                 && !url.match("^/user/$")
@@ -388,14 +427,16 @@ export class GlobalUi {
 
     checkSelectUser() {
         let csrf = this.csrf;
-        $("select[class='select-users']").each(function () {
-            let selectId = $(this).attr('id');
-            console.info("auto enable select-user for : " + selectId);
-            let limit = null;
-            if($(this).attr("maxLength") != null) {
-                limit = parseInt($(this).attr("maxLength"));
+        $("select").each(function () {
+            if($(this).hasClass("select-users")) {
+                let selectId = $(this).attr('id');
+                console.info("auto enable select-user for : " + selectId);
+                let limit = null;
+                if ($(this).attr("maxLength") != null) {
+                    limit = parseInt($(this).attr("maxLength"));
+                }
+                new SelectUser(selectId, limit, $(this).attr('data-signrequest-id'), csrf);
             }
-            new SelectUser(selectId, limit, $(this).attr('data-signrequest-id'), csrf);
         });
     }
 
@@ -412,6 +453,7 @@ export class GlobalUi {
         $(".slim-select-filter").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-filter for : " + selectName);
+            let select = $("#" + selectName);
             new SlimSelect({
                 select: '#' + selectName,
                 hideSelectedOption: false,
@@ -421,6 +463,8 @@ export class GlobalUi {
                     return option.text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").indexOf(search.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")) !== -1
                 }
             });
+            select.removeClass("spinner-border");
+
         })
 
         $(".slim-select-simple").each(function () {

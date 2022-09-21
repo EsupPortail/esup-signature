@@ -44,7 +44,7 @@
 				<i class="fas fa-sticky-note"></i> <span class="d-none d-xl-inline">Post-it</span>
 			</button>
 			<button th:if="${signImages == null || signImages.size() == 1}" id="signImage" class="btn btn-light btn-outline-dark ms-1" title="Ajouter une image de signature">
-				<i class="fas fa-plus-square"></i> <span class="d-xl-inline">Ajouter une image de signature</span>
+				<i class="fas fa-plus-square"></i> <span class="d-xl-inline">Créer une image de votre signature</span>
 			</button>
 			<div th:if="${displayNotif && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="border ms-3 me-3"></div>
 			<form th:if="${displayNotif && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
@@ -57,7 +57,7 @@
 		<th:block th:if="${editable}">
 			<div class="border ms-3 me-3 d-none d-lg-block ms-1"></div>
 			<a th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.createBy.eppn == signRequest.parentSignBook.liveWorkflow.workflow.createBy.eppn) && signRequest.parentSignBook.createBy.eppn == user.eppn
-						&& (signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}" class="btn btn-light btn-outline-dark me-1 d-none d-lg-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'">
+						&& (signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}" class="btn btn-light btn-outline-dark me-1 d-none d-lg-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/update/' + ${signRequest.parentSignBook.id}">
 				<i class="fas fa-pencil-alt"></i>
 			</a>
 		</th:block>
@@ -65,9 +65,9 @@
 	<div id="second-tools" class="d-none mb-1">
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
 			<th:block >
-				<div class="btn btn-outline-dark disabled text-dark me-1 d-none d-xl-inline">Choix du mode : </div>
+				<div class="input-group-text me-1 d-none d-xl-inline">Choix du mode : </div>
 				<div class="me-1">
-				<select id="changeMode" name="changeMode" class=""></select>
+				<select id="changeMode" name="changeMode" class="change-mode"></select>
 				</div>
 			</th:block>
 			<div id="sign-tools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="d-none me-1">
@@ -115,9 +115,15 @@
 				   th:href="'/user/signrequests/' + ${signRequestTab.id}"
 				   th:title="${signRequestTab.title}">
 					<div class="truncate">
-						<i th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fas fa-file"></i>
-						<i th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked}" class="fas fa-file-signature text-success"></i>
-						<i th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="fas fa-file-excel text-danger"></i>
+						<span title="À signer" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+							<i class="fas fa-exclamation-circle text-warning"></i>
+						</span>
+						<span title="Document signé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
+							<i class="fas fa-check-circle text-success"></i>
+						</span>
+						<span title="Document refusé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
+							<i class="fas fa-times-circle text-danger"></i>
+						</span>
 						&nbsp;<span th:text="${signRequestTab.title}"></span>
 					</div>
 				</a>

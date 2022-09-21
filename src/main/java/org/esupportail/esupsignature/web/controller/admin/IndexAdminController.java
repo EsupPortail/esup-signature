@@ -26,13 +26,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class IndexAdminController {
 
-	@ModelAttribute("active")
+	@ModelAttribute("adminMenu")
+	public String getAdminMenu() {
+		return "active";
+	}
+
+	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
-		return "admin";
+		return "index";
 	}
 
 	@GetMapping
 	public String index() {
-		return "redirect:/admin/signrequests";
+		return "admin/index";
 	}
+
 }

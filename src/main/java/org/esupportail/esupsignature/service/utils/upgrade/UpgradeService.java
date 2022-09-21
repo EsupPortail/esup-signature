@@ -1,20 +1,22 @@
 package org.esupportail.esupsignature.service.utils.upgrade;
 
-import org.esupportail.esupsignature.entity.AppliVersion;
-import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.AppliVersionRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UpgradeService {
@@ -30,7 +32,10 @@ public class UpgradeService {
     @Resource
     private FileService fileService;
 
-    private final String[] updates = new String[] {"1.19"};
+    private final String[] updates = new String[] {"1.19", "1.22"};
+
+    @Resource
+    private FormService formService;
 
     @Transactional
     public void launch() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
@@ -77,6 +82,37 @@ public class UpgradeService {
         }
         return 0;
     }
+
+    @SuppressWarnings("unused")
+    public void update_1_22() {
+        logger.info("#### Starting update end dates of signBooks ####");
+        List<SignBook> signBooks = signBookRepository.findAll(Pageable.unpaged()).getContent();
+        for(SignBook signBook : signBooks) {
+            if((signBook.getStatus().equals(SignRequestStatus.completed)
+                    || signBook.getStatus().equals(SignRequestStatus.exported)
+                    || signBook.getStatus().equals(SignRequestStatus.refused)
+                    || signBook.getStatus().equals(SignRequestStatus.signed)
+                    || signBook.getStatus().equals(SignRequestStatus.archived)
+                    || signBook.getStatus().equals(SignRequestStatus.deleted))) {
+                List<Action> actions = signBook.getSignRequests().stream().map(SignRequest::getRecipientHasSigned).map(Map::values).flatMap(Collection::stream).filter(action -> action.getDate() != null).sorted(Comparator.comparing(Action::getDate).reversed()).collect(Collectors.toList());
+                if(actions.size() > 0) {
+                    signBook.setEndDate(actions.get(0).getDate());
+                }
+            }
+        }
+        logger.info("#### Update end dates of signBooks completed ####");
+        logger.info("#### Starting update manager of workflows ####");
+        List<Form> forms = formService.getAllForms();
+        for(Form form : forms) {
+            for(String manager : form.getManagers()) {
+                if(form.getWorkflow() != null && !form.getWorkflow().getManagers().contains(manager)) {
+                    form.getWorkflow().getManagers().add(manager);
+                }
+            }
+        }
+        logger.info("#### Update manager of workflows completed ####");
+    }
+
 
     @SuppressWarnings("unused")
     public void update_1_19() {

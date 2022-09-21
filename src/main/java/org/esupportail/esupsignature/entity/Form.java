@@ -30,8 +30,11 @@ public class Form {
 
 	private Integer version;
 
+	@Deprecated
 	@ElementCollection(targetClass=String.class)
 	private List<String> managers = new ArrayList<>();
+
+	private String managerRole;
 
 	@OneToOne
 	private Workflow workflow;
@@ -121,12 +124,22 @@ public class Form {
 		this.version = version;
 	}
 
+	@Deprecated
 	public List<String> getManagers() {
 		return managers;
 	}
 
+	@Deprecated
 	public void setManagers(List<String> managers) {
 		this.managers = managers;
+	}
+
+	public String getManagerRole() {
+		return managerRole;
+	}
+
+	public void setManagerRole(String managerRole) {
+		this.managerRole = managerRole;
 	}
 
 	public Workflow getWorkflow() {

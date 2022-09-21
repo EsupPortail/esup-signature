@@ -42,10 +42,13 @@ public class CustomErrorController implements ErrorController {
     @RequestMapping(produces = MediaType.TEXT_HTML_VALUE)
     public String errorHtml(HttpServletRequest request, HttpServletResponse response, Model model) {
         HttpStatus status = getStatus(request);
-        Map<String, Object> errors = Collections
-                .unmodifiableMap(getErrorAttributes(request, getErrorAttributeOptions(request, MediaType.TEXT_HTML)));
+        Map<String, Object> errors = new java.util.HashMap<>(Collections
+                .unmodifiableMap(getErrorAttributes(request, getErrorAttributeOptions(request, MediaType.TEXT_HTML))));
         response.setStatus(status.value());
         if((int) errors.get("status") != 500) {
+            if(!errors.containsKey("path")) {
+                errors.put("path", "error");
+            }
             logger.warn(errors.get("path").toString() + " : " + errors.get("status") + " " + errors.get("error").toString());
         }
         model.addAllAttributes(errors);

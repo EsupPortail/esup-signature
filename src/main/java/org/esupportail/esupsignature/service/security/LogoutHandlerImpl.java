@@ -32,7 +32,7 @@ public class LogoutHandlerImpl implements LogoutHandler {
 
         List<Object> principals = sessionRegistry.getAllPrincipals();
         for (Object principal : principals) {
-            if(authentication.getPrincipal() != null && principal.equals(authentication.getPrincipal())) {
+            if(authentication != null && authentication.getPrincipal().equals(principal)) {
                 for(SessionInformation sessionInformation : sessionRegistry.getAllSessions(principal, false)) {
                     sessionInformation.expireNow();
                 }

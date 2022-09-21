@@ -3,7 +3,7 @@ import {Color} from "../modules/utils/Color.js?version=@version@";
 
 export class SignRequestParams extends EventFactory {
 
-    constructor(signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone, light, signImages) {
+    constructor(signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone, light, signImages, scrollTop) {
         super();
         Object.assign(this, signRequestParamsModel);
         this.id = id;
@@ -45,6 +45,7 @@ export class SignRequestParams extends EventFactory {
         this.extraHeight = 0;
         this.savedText = "";
         this.offset = 0;
+        this.scrollTop = scrollTop;
         if(!light) {
             this.offset = ($("#page_" + this.signPageNumber).offset().top) + (10 * (parseInt(this.signPageNumber) - 1));
         }
@@ -77,7 +78,7 @@ export class SignRequestParams extends EventFactory {
         this.stringLength = 1;
         if(signRequestParamsModel == null || (this.xPos===0 && this.yPos===0)) {
             this.xPos = (parseInt($("#pdf").css("width")) / 2 / scale) - (this.signWidth * scale / 2);
-            let mid = $(window).scrollTop() + $(window).height() / 2;
+            let mid = scrollTop + $(window).height() / 2;
             this.yPos = (mid - this.offset) / scale;
         }
         this.initEventListeners();
@@ -373,12 +374,14 @@ export class SignRequestParams extends EventFactory {
             containment: "#pdf",
             scroll: false,
             drag: function(event, ui) {
-                self.signPageNumber = self.cross.attr("page");
-                self.xPos = Math.round(ui.position.left / self.currentScale);
-                self.yPos = Math.round((ui.position.top - (($("#page_" + self.signPageNumber).offset().top) - $("#page_1").offset().top)) / self.currentScale);
                 if(self.firstLaunch) {
                     self.firstLaunch = false;
                 }
+            },
+            stop: function(event, ui) {
+                self.signPageNumber = self.cross.attr("page");
+                self.xPos = Math.round(ui.position.left / self.currentScale);
+                self.yPos = Math.round((ui.position.top - (($("#page_" + self.signPageNumber).offset().top) - $("#page_1").offset().top)) / self.currentScale);
             }
         });
     }
@@ -519,8 +522,9 @@ export class SignRequestParams extends EventFactory {
     simulateDrop() {
         let x = Math.round(this.xPos * this.currentScale);
         let y = Math.round(this.yPos * this.currentScale + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top + (10 * (parseInt(this.signPageNumber) - 1)));
+        let self = this;
         this.cross.on("dragstop", function(){
-            let test = window.scrollY + $(window).height();
+            let test = self.scrollTop + $(window).height();
             if(y > test) {
                 window.scrollTo(0, y);
             }
@@ -690,9 +694,6 @@ export class SignRequestParams extends EventFactory {
         // this.toggleName();
         // this.toggleText();
         this.updateSize();
-        if(this.addExtra) {
-            this.textareaExtra.focus();
-        }
         if(!this.firstLaunch) {
             localStorage.setItem('addExtra', this.addExtra);
         }

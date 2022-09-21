@@ -7,6 +7,7 @@ import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import eu.europa.esig.dss.validation.CertificateValidator;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.reports.CertificateReports;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.slf4j.Logger;
@@ -23,12 +24,12 @@ import java.util.Date;
 
 @Service
 public class UserKeystoreService {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(UserKeystoreService.class);
 
 	private final CertificateVerifier certificateVerifier;
 
-	public UserKeystoreService(CertificateVerifier certificateVerifier) {
+	public UserKeystoreService(CertificateVerifier certificateVerifier, GlobalProperties globalProperties) {
 		this.certificateVerifier = certificateVerifier;
 	}
 
@@ -53,7 +54,7 @@ public class UserKeystoreService {
 			KSPrivateKeyEntry ksPrivateKeyEntry = (KSPrivateKeyEntry) token.getKeys().get(0);
 			return ksPrivateKeyEntry.getCertificate();
 		} catch (Exception e) {
-			logger.error("open keystore fail", e);
+			logger.error("open keystore fail : " + e.getMessage());
 			throw new EsupSignatureKeystoreException("get certificat token fail", e);
 		}
 	}

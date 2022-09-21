@@ -86,7 +86,9 @@ public class DataService {
         }
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
         data.setName(form.getTitle() + "_" + format.format(new Date()));
-        data.getDatas().putAll(formDatas);
+        for(Map.Entry<String, String> entry : formDatas.entrySet()) {
+            data.getDatas().put(entry.getKey(), entry.getValue());
+        }
         data.setForm(form);
         data.setFormName(form.getName());
         data.setFormVersion(form.getVersion());

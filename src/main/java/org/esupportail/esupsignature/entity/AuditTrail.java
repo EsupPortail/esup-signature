@@ -23,7 +23,7 @@ public class AuditTrail {
 
     private String documentType;
 
-    private Long documentSize;
+    private Long documentSize = 0L;
 
     private String documentCheckSum;
 

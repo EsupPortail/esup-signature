@@ -33,6 +33,7 @@ export class WorkspacePdf {
         this.forcePageNum = null;
         this.pointItEnable = true;
         this.first = true;
+        this.scrollTop = 0;
         for (let i = 0; i < fields.length; i++) {
             let field = fields[i];
             if (field.workflowSteps != null && field.workflowSteps.includes(currentStepNumber) && field.required) {
@@ -321,12 +322,12 @@ export class WorkspacePdf {
         if(testSign.filter(s => s.signImageNumber >= 0 && s.isSign).length > 0) {
             for (let i = 0; i < this.currentSignRequestParamses.length; i++) {
                 if (this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready) {
-                    return false;
+                    return i;
                 }
             }
-            return true;
+            return null;
         } else {
-            return false;
+            return 0;
         }
     }
 
@@ -487,8 +488,9 @@ export class WorkspacePdf {
                 if (this.mode === 'comment') {
                     spotDiv.show();
                     signSpaceDiv.hide();
+                    let offset = $("#page_" + spot.pageNumber).offset().top - this.pdfViewer.initialOffset + (10 * (spot.pageNumber - 1));
                     spotDiv.css('left', ((parseInt(spot.posX) * this.pdfViewer.scale) - 18) + "px");
-                    spotDiv.css('top', ((parseInt(spot.posY) * this.pdfViewer.scale) - 48) + "px");
+                    spotDiv.css('top', ((parseInt(spot.posY) * this.pdfViewer.scale + offset) - 48) + "px");
                     spotDiv.width(spotDiv.width() * this.pdfViewer.scale);
                     spotDiv.unbind('mouseup');
                     spotDiv.on('mouseup', function (e) {
@@ -510,8 +512,9 @@ export class WorkspacePdf {
                     spotDiv.unbind('mouseup');
                     if (this.signable) {
                         signSpaceDiv.show();
+                        let offset = $("#page_" + spot.pageNumber).offset().top - this.pdfViewer.initialOffset + (10 * (spot.pageNumber - 1));
                         signSpaceDiv.css("top", Math.round(spot.posY * self.pdfViewer.scale / .75));
-                        signSpaceDiv.css("left", Math.round(spot.posX * self.pdfViewer.scale / .75));
+                        signSpaceDiv.css("left", Math.round((spot.posX * self.pdfViewer.scale + offset) / .75));
                         signSpaceDiv.css("width", Math.round(150 * self.pdfViewer.scale / .75) + "px");
                         signSpaceDiv.css("height", Math.round(75 * self.pdfViewer.scale / .75) + "px");
                         signSpaceDiv.css("font-size", 14 * self.pdfViewer.scale);

@@ -17,7 +17,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
-import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +26,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.*;
-import java.sql.SQLException;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -61,13 +64,13 @@ public class FormService {
 	private UserService userService;
 
 	@Resource
-	private FileService fileService;
-
-	@Resource
 	private SignRequestParamsService signRequestParamsService;
 
 	@Resource
 	private DataRepository dataRepository;
+
+	@Resource
+	private WebUtilsService webUtilsService;
 
 	public Form getById(Long formId) {
 		Form obj = formRepository.findById(formId).get();
@@ -127,13 +130,9 @@ public class FormService {
 	}
 
 	@Transactional
-	public void updateForm(Long id, Form updateForm, List<String> managers, String[] types, boolean updateWorkflow) {
+	public void updateForm(Long id, Form updateForm, String[] types, boolean updateWorkflow) {
 		Form form = getById(id);
 		form.setPdfDisplay(updateForm.getPdfDisplay());
-		form.getManagers().clear();
-		if(managers != null) {
-			form.getManagers().addAll(managers);
-		}
 		form.setName(updateForm.getName());
 		form.setTitle(updateForm.getTitle());
 		form.getRoles().clear();
@@ -370,6 +369,7 @@ public class FormService {
 				fieldsOrdered.add(field);
 			}
 		}
+		pdDocument.close();
 		return fieldsOrdered;
 	}
 
@@ -414,9 +414,18 @@ public class FormService {
 		return formRepository.findFormByNameAndDeletedIsNullOrDeletedIsFalse(name);
 	}
 
+	@Transactional
 	public List<Form> getFormByManagersContains(String eppn) {
 		User user = userService.getUserByEppn(eppn);
-		return formRepository.findFormByManagersContainsAndDeletedIsNullOrDeletedIsFalse(user.getEmail());
+		List<Workflow> workflows = workflowRepository.findWorkflowByManagersIn(Collections.singletonList(user.getEmail()));
+		List<Form> managerForms = new ArrayList<>();
+		for(Workflow workflow : workflows) {
+			List<Form> form = formRepository.findByWorkflowIdEquals(workflow.getId());
+			if(form != null && form.size() > 0) {
+				managerForms.add(form.get(0));
+			}
+		}
+		return managerForms;
 	}
 
 	@Transactional
@@ -437,17 +446,27 @@ public class FormService {
 	}
 
 	@Transactional
-	public Map<String, Object> getModel(Long id) throws SQLException, IOException {
+	public boolean getModel(Long id, HttpServletResponse httpServletResponse) throws IOException {
 		Form form = getById(id);
-		Document attachement = documentService.getById(form.getDocument().getId());
-		if (attachement != null) {
-			return fileService.getFileResponse(attachement.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), attachement.getFileName(), attachement.getContentType());
+		Document attachment = documentService.getById(form.getDocument().getId());
+		if (attachment != null) {
+			webUtilsService.copyFileStreamToHttpResponse(attachment.getFileName(), attachment.getContentType(), attachment.getInputStream(), httpServletResponse);
+			return true;
 		}
-		return null;
+		return false;
 	}
 
 	public List<Form> getByRoles(String role) {
 		return formRepository.findByRolesIn(Collections.singletonList(role));
+	}
+
+	public Set<Form> getManagerForms(String userEppn) {
+		User manager = userService.getByEppn(userEppn);
+		Set<Form> formsManaged = new HashSet<>();
+		for (String role : manager.getManagersRoles()) {
+			formsManaged.addAll(formRepository.findByManagerRole(role));
+		}
+		return formsManaged;
 	}
 
 	@Transactional
@@ -520,7 +539,7 @@ public class FormService {
 		formSetup.setName(form.getName());
 		formSetup.setTitle(form.getTitle());
 		formSetup.setWorkflow(null);
-		updateForm(id, formSetup, formSetup.getManagers(), formSetup.getAuthorizedShareTypes().stream().map(Enum::name).collect(Collectors.toList()).toArray(String[]::new), false);
+		updateForm(id, formSetup, formSetup.getAuthorizedShareTypes().stream().map(Enum::name).collect(Collectors.toList()).toArray(String[]::new), false);
 	}
 
 	public void nullifyForm(Form form) {

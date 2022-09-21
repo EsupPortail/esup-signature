@@ -25,14 +25,24 @@
 <form id="saveWorkflowForm">
     <div class="row">
         <div class="col-lg-12">
+            <input type="hidden" id="wizWorkflowId" name="wizWorkflowId" th:value="${workflow != null ? workflow.id : null}">
             <input type="submit" id="saveWorkflowSubmit" class="d-none">
             <input type="hidden" id="elementId" th:value="${workflow.id}">
-            <label for="workflowName"><strong>Choisir un nom pour sauvegarder le circuit en tant que modèle</strong></label>
-            <input type="text" id="workflowName" name="name" class="form-control required" required>
-            <br>
-            <button id="saveWorkflow" type="button" class="btn btn-success float-end">
-                <i class="fas fa-save"></i> Enregistrer le circuit
-            </button>
+            <div class="form-group">
+                <label for="workflowName"><strong>Choisir un nom pour sauvegarder le circuit en tant que modèle</strong></label>
+                <input type="text" id="workflowName" name="name" class="form-control required" required>
+            </div>
+            <div class="form-group">
+                <label for="recipientsCCEmailsWiz">Observateurs</label>
+                <select id="recipientsCCEmailsWiz" class="select-users" multiple="multiple" style="display: none;">
+                    <option data-placeholder="true"></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button id="saveWorkflow" type="button" class="btn btn-success float-end">
+                    <i class="fas fa-save"></i> Enregistrer le circuit
+                </button>
+            </div>
         </div>
     </div>
 </form>

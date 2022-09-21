@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.DataRepository;
+import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.slf4j.Logger;
@@ -31,20 +32,24 @@ public class DataExportService {
     @Resource
     private SignBookService signBookService;
 
-    public InputStream getCsvDatasFromForms(List<Form> forms) throws IOException {
-        return mapListToCSV(getDatasToExport(forms));
+    @Resource
+    private FormRepository formRepository;
+
+    public InputStream getCsvDatasFromForms(List<Workflow> workflows) throws IOException {
+        return mapListToCSV(getDatasToExport(workflows));
     }
 
-    public List<Map<String, String>> getDatasToExport(List<Form> forms) {
+    public List<Map<String, String>> getDatasToExport(List<Workflow> workflows) {
         List<Map<String, String>> dataDatas = new ArrayList<>();
-        for(Form form: forms) {
-            dataDatas.addAll(getDatasToExport(form));
+        for(Workflow workflow: workflows) {
+            dataDatas.addAll(getDatasToExport(workflow));
         }
         return  dataDatas;
     }
 
-    public List<LinkedHashMap<String, String>> getDatasToExport(Form form) {
-        List<Data> datas = dataRepository.findByFormId(form.getId());
+    public List<LinkedHashMap<String, String>> getDatasToExport(Workflow workflow) {
+        List<Form> forms = formRepository.findByWorkflowIdEquals(workflow.getId());
+        List<Data> datas = dataRepository.findByFormId(forms.get(0).getId());
         List<LinkedHashMap<String, String>> dataDatas = new ArrayList<>();
         for(Data data : datas) {
             SignBook signBook = data.getSignBook();
@@ -107,7 +112,7 @@ public class DataExportService {
             toExportDatas.put("form_data_" + field.getName(), data.getDatas().get(field.getName()));
         }
         if(signBook != null) {
-            if (signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep() != null) {
+            if (signBook.getLiveWorkflow().getCurrentStep() != null && signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep() != null) {
                 toExportDatas.put("current_step_id", signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getId().toString());
                 toExportDatas.put("current_step_description", signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getDescription());
             }

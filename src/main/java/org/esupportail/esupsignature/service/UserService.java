@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.ldap.*;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
@@ -78,6 +79,9 @@ public class UserService {
     @Resource
     private SignRequestParamsRepository signRequestParamsRepository;
 
+    @Resource
+    private UserListService userListService;
+
     public User getById(Long id) {
         return userRepository.findById(id).get();
     }
@@ -118,6 +122,19 @@ public class UserService {
         } else {
             return createUserWithEmail(email);
         }
+    }
+
+    public User getGroupUserByEmail(String email) {
+        if (userRepository.countByEmailAndUserType(email, UserType.group) > 0) {
+            return userRepository.findByEmailAndUserType(email, UserType.group).get(0);
+        } else {
+            return createGroupUserWithEmail(email);
+        }
+    }
+
+    @Transactional
+    public User createGroupUserWithEmail(String email) {
+        return createUser(email, email, "", email, UserType.group, false);
     }
 
     public User getUserByPhone(String phone) {
@@ -264,7 +281,7 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUser(String authUserEppn, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, String signRequestParamsJsonString) throws IOException {
+    public void updateUser(String authUserEppn, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, String signRequestParamsJsonString, Boolean returnToHomeAfterSign) throws IOException {
         User authUser = getByEppn(authUserEppn);
         if(signRequestParamsJsonString != null && !signRequestParamsJsonString.isEmpty()) {
             ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -308,6 +325,7 @@ public class UserService {
         authUser.setEmailAlertFrequency(emailAlertFrequency);
         authUser.setEmailAlertHour(emailAlertHour);
         authUser.setEmailAlertDay(emailAlertDay);
+        authUser.setReturnToHomeAfterSign(returnToHomeAfterSign);
     }
 
     public boolean checkEmailAlert(User user) {
@@ -353,7 +371,23 @@ public class UserService {
                 personLdaps.remove(personLdaps.stream().filter(personLdap -> personLdap.getMail().equals(user.getEmail())).findFirst().get());
             }
             if(personLdaps.stream().noneMatch(personLdapLight -> personLdapLight.getMail().equals(user.getEmail()))) {
-                personLdaps.add(getPersonLdapLightFromUser(user));
+                PersonLdapLight personLdapLight = getPersonLdapLightFromUser(user);
+                if(user.getUserType().equals(UserType.group)) {
+                    personLdapLight.setDisplayName(personLdapLight.getDisplayName());
+                }
+                personLdaps.add(personLdapLight);
+            }
+        }
+        for(Map.Entry<String,String> string : userListService.getListsNames(searchString).entrySet()) {
+            if(personLdaps.stream().noneMatch(personLdapLight -> personLdapLight.getMail().equals(string.getKey()))) {
+                PersonLdapLight personLdapLight = new PersonLdapLight();
+                personLdapLight.setMail(string.getKey());
+                if(string.getValue() != null) {
+                    personLdapLight.setDisplayName(string.getValue());
+                } else {
+                    personLdapLight.setDisplayName(string.getKey());
+                }
+                personLdaps.add(personLdapLight);
             }
         }
         return personLdaps;
@@ -453,7 +487,8 @@ public class UserService {
                 if (recipientEmail.contains("*")) {
                     recipientEmail = recipientEmail.split("\\*")[1];
                 }
-                if (!recipientEmail.contains(globalProperties.getDomain())) {
+                List<String> groupUsers = userListService.getUsersEmailFromList(recipientEmail);
+                if (groupUsers.size() == 0 && !recipientEmail.contains(globalProperties.getDomain())) {
                     User recipientUser = getUserByEmail(recipientEmail);
                     if (recipientUser.getUserType().equals(UserType.external)) {
                         tempUsers.add(recipientUser);
@@ -478,7 +513,7 @@ public class UserService {
         if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size() > 0) {
             for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
                 for (Recipient recipient : liveWorkflowStep.getRecipients()) {
-                    if (recipient.getUser().getUserType().equals(UserType.external) || (recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && !recipient.getUser().getUserType().equals(UserType.shib) && recipient.getUser().getEppn().equals(recipient.getUser().getName()))) {
+                    if (recipient.getUser().getUserType().equals(UserType.external) || (recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && !recipient.getUser().getUserType().equals(UserType.group) && !recipient.getUser().getUserType().equals(UserType.shib) && recipient.getUser().getEppn().equals(recipient.getUser().getName()))) {
                         users.add(recipient.getUser());
                     }
                 }
@@ -487,7 +522,7 @@ public class UserService {
             if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getWorkflowSteps().size() > 0) {
                 for (WorkflowStep workflowStep : signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getWorkflowSteps()) {
                     for (User user : workflowStep.getUsers()) {
-                        if (user.getUserType().equals(UserType.external) || (user.getEppn().equals(user.getEmail()) && user.getEppn().equals(user.getName()))) {
+                        if (user.getUserType().equals(UserType.external) || (user.getEppn().equals(user.getEmail()) && !user.getUserType().equals(UserType.group) && user.getEppn().equals(user.getName()))) {
                             users.add(user);
                         }
                     }
@@ -559,8 +594,12 @@ public class UserService {
     @Transactional
     public List<User> getUserWithoutCertificate(List<String> userEmails) {
         List<User> users = new ArrayList<>();
-        userEmails.forEach(ue -> users.add(this.getUserByEmail(ue)));
-        return users.stream().filter(u -> u.getKeystoreFileName() == null).collect(Collectors.toList());
+        if(globalProperties.getSealCertificatPin().isEmpty()) {
+            userEmails.forEach(ue -> users.add(this.getUserByEmail(ue)));
+            return users.stream().filter(u -> u.getKeystoreFileName() == null).collect(Collectors.toList());
+        } else {
+            return users;
+        }
     }
 
     @Transactional
@@ -619,11 +658,15 @@ public class UserService {
                 roles.add(role);
             }
         }
-        return roles;
+        return roles.stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
     public List<User> getByManagersRoles(String role) {
         return userRepository.findByManagersRolesIn(Collections.singletonList(role));
+    }
+
+    public List<User> getByManagersRolesUsers() {
+        return userRepository.findByManagersRolesNotNull();
     }
 
     @Transactional
@@ -685,5 +728,15 @@ public class UserService {
     public String getDefaultImage(String eppn) throws IOException {
         User user = getUserByEppn(eppn);
         return fileService.getBase64Image(fileService.getDefaultImage(user.getName(), user.getFirstname()), "default");
+    }
+
+    @Transactional
+    public List<User> getGroupUsers() {
+        return userRepository.findByUserType(UserType.group);
+    }
+
+    public List<String> getManagersRoles(String authUserEppn) {
+        User user = getUserByEppn(authUserEppn);
+        return user.getManagersRoles().stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 }

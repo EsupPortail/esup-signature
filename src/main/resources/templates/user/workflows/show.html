@@ -19,29 +19,53 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div id="addButton" class="fixed-action-btn"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
-                <a class="btn-floating btn-lg bg-primary waves-effect">
-                    <i class="fas fa-ellipsis-v"></i>
-                </a>
+            <div id="addButton" class="fixed-action-btns"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <ul id="collapseExample" class="list-unstyled">
                     <li>
-                        <a th:if="${workflow.documentsSourceUri != null && workflow.sourceType.name() != 'none'}" title="Scanner la source" type="button" th:href="'/user/workflows/get-files-from-source/' + ${workflow.id}" class="btn-floating bg-success waves-effect">
+                        <a th:if="${workflow.documentsSourceUri != null && workflow.sourceType.name() != 'none'}" title="Scanner la source" type="button" th:href="'/user/workflows/get-files-from-source/' + ${workflow.id}" class="btn-lg btn-floating bg-success waves-effect">
                             <i class="fas fa-binoculars"></i>
                         </a>
                     </li>
                     <li>
-                        <a role="button" title="Ajouter une étape" class="btn-floating bg-dark waves-effect" data-bs-toggle="modal" data-bs-target="#addStep">
+                        <a id="saveButton" onclick="$('#params').submit();" class="btn-floating btn-lg bg-success waves-effect" title="Enregistrer">
+                            <i class="fas fa-save"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a role="button" title="Ajouter une étape" class="btn-lg btn-floating bg-dark waves-effect" data-bs-toggle="modal" data-bs-target="#addStep">
                             <i class="fas fa-shoe-prints"></i>
                         </a>
                     </li>
                     <li>
                         <form id="delete" th:action="'/user/workflows/' + ${workflow.id}" th:method="delete">
-                            <a id="delete-button" role="button" title="Supprimer" class="btn-floating bg-danger waves-effect">
+                            <a id="delete-button" role="button" title="Supprimer" class="btn-lg btn-floating bg-danger waves-effect">
                                 <i class="fas fa-trash-alt"></i>
                             </a>
                         </form>
                     </li>
                 </ul>
+            </div>
+
+            <div class="card col-lg-10 mx-auto mb-1">
+                <div class="card-body">
+                    <h5 class="text-center"><b>Paramètres généraux</b></h5>
+                    <form id="params" th:action="'/user/workflows/' + ${workflow.id}" th:method="'put'">
+                        <div class="form-group">
+                            <label for="name">Nom du circuit</label>
+                            <input type="text" class="form-control" name="name" id="name" th:value="${workflow.description}"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="viewersSelect">Observateurs</label>
+                            <select id="viewersSelect" class="select-users" multiple="multiple" name="viewers" style="display: none;">
+                                <option data-placeholder="true"></option>
+                                <th:block th:each="viewer : ${workflow.viewers}">
+                                    <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <button title="Enregistrer" type="submit" class="btn btn-success mt-2 float-end"><i class="fas fa-save"></i></button>
+                    </form>
+                </div>
             </div>
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">

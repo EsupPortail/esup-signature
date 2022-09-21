@@ -4,57 +4,96 @@
 <body>
 <header th:replace="fragments/nav :: nav"></header>
 <main role="main">
-  <div class="wrapper">
-    <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
-    <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
-      <ol id="breadcrumb-ol" class="breadcrumb">
-        <li class="breadcrumb-item active">Managers Roles</li>
-      </ol>
-    </nav>
-    <div id="content" class="content">
-      <div class="card col-lg-10 mx-auto">
-        <div class="card-body">
-          <table class="table table-borderless table-hover">
-            <thead class="table-secondary">
-            <tr>
-              <th>Roles</th>
-              <th>Managers</th>
-              <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <th:block th:each="role, status :${roleManagers.keySet}">
-              <tr>
-                <form th:action="'/admin/roles-managers/edit-role'" method="post">
-
-                  <td th:text="${role}"></td>
-                  <input name="role" type="hidden" th:value="${role}">
-                  <td>
-                      <select th:id="${'rolesManagersSelect' + status.index}" class="select-users" multiple="multiple" name="rolesManagers">
-                        <option data-placeholder="true"></option>
-                        <th:block th:each="user : ${roleManagers.get(role)}">
-                          <option th:value="${user.email}" th:text="${user.firstname} + ' ' + ${user.name}"
-                                  selected></option>
+    <div class="wrapper">
+        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item active">Managers Roles</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="fixed-action-btn-simple" >
+                <a title="Créer un nouveau circuit" data-bs-toggle="modal" data-bs-target="#newManagersRoles" type="button"
+                   class="btn-floating btn-lg bg-primary wave-effect">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-body">
+                    <table class="table table-borderless table-hover">
+                        <thead class="table-secondary">
+                        <tr>
+                            <th>Roles</th>
+                            <th>Managers</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="role, status :${roleManagers.keySet}">
+                            <tr>
+                                <form th:action="'/admin/roles-managers/edit-role'" method="post">
+                                    <td th:text="${role}"></td>
+                                    <input name="role" type="hidden" th:value="${role}">
+                                    <td>
+                                        <select th:id="${'rolesManagersSelect' + status.index}" class="select-users"
+                                                multiple="multiple" name="rolesManagers">
+                                            <option data-placeholder="true"></option>
+                                            <th:block th:each="user : ${roleManagers.get(role)}">
+                                                <option th:value="${user.email}"
+                                                        th:text="${user.firstname} + ' ' + ${user.name}"
+                                                        selected></option>
+                                            </th:block>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <button id="saveButton" title="Enregistrer" type="submit"
+                                                    class="btn btn-sm btn-success">
+                                                <i class="fas fa-save"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </form>
+                            </tr>
                         </th:block>
-                      </select>
-                  </td>
-                  <td>
-                    <div class="text-center">
-                      <button id="saveButton" title="Enregistrer" type="submit" class="btn btn-sm btn-success">
-                        <i class="fas fa-save"></i>
-                      </button>
-                    </div>
-                  </td>
-                </form>
-              </tr>
-            </th:block>
-            </tbody>
-          </table>
+                        </tbody>
+                    </table>
 
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </main>
+<div class="modal fade" id="newManagersRoles" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form th:action="'/admin/roles-managers/create-role'" method="post">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="exampleModalLabel">Ajouter un circuit</h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <label for="role">Choix du role</label>
+                    <select id="role" class="slim-select-simple" type="text" name="role">
+                        <th:block th:each="newRole : ${roles}">
+                            <option th:text="${newRole}" th:value="${newRole}"></option>
+                        </th:block>
+                    </select>
+                    <label for="role">Choix des managers</label>
+                    <select id="rolesManagersSelect" class="select-users"
+                            multiple="multiple" name="rolesManagers">
+                        <option data-placeholder="true"></option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">Creer</button>
+                </div>            </form>
+        </div>
+    </div>
+</div>
+<footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

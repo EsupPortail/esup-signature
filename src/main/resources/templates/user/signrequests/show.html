@@ -121,15 +121,10 @@
                         <i class="fas fa-shield-alt "></i>
                     </a></li>
                    </th:block>
-                    <li th:if="${nextSignRequest != null}" class="d-none">
-                        <a id="nextSignRequestButton" role="button" th:href="'/user/signrequests/' + ${nextSignRequest.id}"
+                    <li th:if="${nextSignBook != null}" class="d-none">
+                        <a id="nextSignBookButton" role="button" th:href="'/user/signbooks/' + ${nextSignBook.id}"
                            class="btn-lg btn-floating bg-primary waves-effect" title="Demande suivante"><i
                                 class="fas fa-arrow-right"></i></a>
-                    </li>
-                    <li th:if="${prevSignRequest != null}" class="d-none">
-                        <a id="prevSignRequestButton" role="button" th:href="'/user/signrequests/' + ${prevSignRequest.id}"
-                           class="btn-lg btn-floating bg-primary waves-effect" title="Demande précédente"><i
-                                class="fas fa-arrow-left"></i></a>
                     </li>
                 </ul>
             </div>
@@ -245,19 +240,26 @@
                 <div id="noOptions" class="alert alert-danger mt-1" style="display: none;">
                     Aucune option de signature n'est disponible pour cette demande. Si vous en avez la possibilité, merci d’ajouter une signature sur le document et/ou de démarrer NexU.
                 </div>
+                <div id="noSeal" th:if="${!sealCertOK}" class="alert alert-danger mt-1" style="display: none;">
+                    La signature par certificat cachet d’établissement et temporairement indisponible pour des raisons de maintenance. Merci refaire un essai ultérieurement.
+                </div>
                 <div id="selectTypeDiv" class="alert alert-success mt-1" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                     <label for="certType">Merci de sélectionner le type de signature que vous souhaitez utiliser parmi les types disponibles</label>
                     <select id="certType" name="certType" class="form-select mt-2" required>
                         <th:block th:each="signWith : ${signWiths}">
-                            <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                            <th:block th:if="${signWith.name != 'sealCert'}">
+                                <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                            </th:block>
+                            <th:block th:if="${signWith.name == 'sealCert'}">
+                                <option th:if="${sealCertOK}" th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                                <option th:unless="${sealCertOK}" value="" th:text="#{'signwith.' + ${signWith}}" disabled></option>
+                            </th:block>
                         </th:block>
                     </select>
                     <input class="form-control mt-2 mb-1" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" />
                 </div>
-                <th:block th:if="${signRequest.parentSignBook.liveWorkflow.getLiveWorkflowSteps().size() > signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
-                    <label for="signComment">Vous pouvez ajouter un commentaire</label>
-                    <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
-                </th:block>
+                <label for="signComment">Vous pouvez ajouter un commentaire</label>
+                <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
                 <div id="nexuCheck" th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign ? 'd-none' : ''}">
                     <div id="nexu_version_alert" style="display: none;text-align: center;">
                         <div class="alert alert-warning float-start">
@@ -291,19 +293,17 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <div th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}">
-                    <button id="checkValidateSignButtonEnd"
-                            class="btn btn-success me-1" title="Signer" th:value="${signRequest.id}" autofocus>
-                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}">Signer</span>
-                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>
-                    </button>
-                    <button id="checkValidateSignButtonNext" th:if="${nextSignRequest != null}"
-                            class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
-                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}">Signer et aller à la suivante </span>
-                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser et aller à la suivante </span>
-                        <i class="fas fa-arrow-alt-circle-right"></i>
-                    </button>
-                </div>
+                <button id="checkValidateSignButtonEnd"
+                        class="btn btn-success me-1" title="Signer" th:value="${signRequest.id}" autofocus>
+                    <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer</span>
+                    <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>
+                </button>
+                <button id="checkValidateSignButtonNext" th:if="${nextSignBook != null}"
+                        class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
+                    <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer et aller à la suivante </span>
+                    <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser et aller à la suivante </span>
+                    <i class="fas fa-arrow-alt-circle-right"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -315,9 +315,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="signAllModalLabel">Confirmer la signature des documents</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <input autocomplete="new-password"
@@ -577,6 +575,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
+                    <input type="hidden" name="draft" value="false">
                     <button type="submit" class="btn btn-success">Valider</button>
                 </div>
             </form>
@@ -627,7 +626,7 @@
                                 class="btn btn-danger me-1" title="Refuser" autofocus>
                             <span>Refuser</span>
                         </button>
-                        <button type="submit" id="refuseNext" th:if="${nextSignRequest != null}"  name="redirect" th:value="${nextSignRequest.id}"
+                        <button type="submit" id="refuseNext" th:if="${nextSignBook != null}"  name="redirect" th:value="${nextSignBook.id}"
                                 class="btn btn-danger" title="Refuser et aller à la suivante" autofocus>
                             <span>Refuser et aller à la suivante </span>
                             <i class="fas fa-arrow-alt-circle-right"></i>
@@ -832,7 +831,8 @@
         [[${attachmentRequire}]],
         [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]],
         [[${user.favoriteSignRequestParams == null} ? true : false]],
-        [[${user.phone}]]
+        [[${user.phone}]],
+        [[${user.returnToHomeAfterSign}]]
     );
     $(document).ready(function () {
         if (signable) {

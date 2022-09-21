@@ -5,25 +5,47 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserListService {
 
-    private final UserList userList;
+    private final List<UserList> userLists;
 
-    public UserListService(@Autowired(required = false) UserList userList) {
-        this.userList = userList;
+    public UserListService(@Autowired(required = false) List<UserList> userLists) {
+        this.userLists = userLists;
     }
 
     public List<String> getUsersEmailFromList(String listName) throws DataAccessException {
-        if(userList != null) {
+        if(userLists != null && userLists.size() > 0) {
             if(listName.contains("*")) {
                 listName = listName.split("\\*")[1];
             }
-            return userList.getUsersEmailFromList(listName);
+            List<String> emails = new ArrayList<>();
+            for (UserList userList : userLists) {
+                emails.addAll(userList.getUsersEmailFromList(listName));
+            }
+            return emails;
         } else {
             return new ArrayList<>();
+        }
+
+    }
+
+    public Map<String, String> getListsNames(String search) throws DataAccessException {
+        if(userLists != null && userLists.size() > 0) {
+            Map<String, String> names = new HashMap<>();
+            for (UserList userList : userLists) {
+                List<Map.Entry<String, String>> entries = userList.getListOfLists(search);
+                for(Map.Entry<String, String> entry : entries) {
+                    names.put(entry.getKey(), entry.getValue());
+                }
+            }
+            return names;
+        } else {
+            return new HashMap<>();
         }
 
     }

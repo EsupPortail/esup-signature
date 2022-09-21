@@ -74,6 +74,7 @@ public class SignRequestParamsService {
                 signRequestParams.setSignDocumentNumber(docNumber);
                 signRequestParamsRepository.save(signRequestParams);
             }
+            pdDocument.close();
             return signRequestParamses;
         } catch (IOException e) {
             throw new EsupSignatureIOException("unable to open pdf document");

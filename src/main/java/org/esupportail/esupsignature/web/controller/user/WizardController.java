@@ -105,14 +105,17 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wiz-save/{id}")
-    public String saveWorkflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
+    public String saveWorkflow(@ModelAttribute("userEppn") String userEppn,
+                               @PathVariable("id") Long id,
                                @RequestParam(name="name") String name,
+                               @RequestParam(required = false) List<String> viewers,
                                Model model) {
         User user = (User) model.getAttribute("user");
         SignBook signBook = signBookService.getById(id);
         model.addAttribute("signBook", signBook);
         try {
             signBookService.saveWorkflow(id, name, name, user);
+            signBookService.addViewers(id, viewers);
         } catch (EsupSignatureException e) {
             return "user/wizard/wiz-save";
         }
@@ -146,7 +149,8 @@ public class WizardController {
     }
 
     @GetMapping(value = "/wiz-save-workflow/{id}")
-    public String wiz5Workflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model) {
+    public String wiz5Workflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
+                               Model model) {
         Workflow workflow = workflowService.getById(id);
         if(workflow.getCreateBy().getEppn().equals(userEppn)) {
             model.addAttribute("workflow", workflow);
@@ -155,10 +159,13 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wiz-save-workflow/{id}")
-    public String wiz5Workflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, @RequestParam(name="name") String name, Model model) {
+    public String wiz5Workflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, @RequestParam(name="name") String name,
+                               @RequestParam(required = false) List<String> viewers,
+                               Model model) {
         User user = (User) model.getAttribute("user");
         if(!workflowService.isWorkflowExist(name, userEppn)) {
             Workflow workflow = workflowService.initWorkflow(user, id, name);
+            workflowService.addViewers(id, viewers);
             model.addAttribute("workflow", workflow);
             return "user/wizard/wizend";
         } else {

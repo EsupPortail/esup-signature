@@ -34,6 +34,7 @@ public class DefaultPreFill implements PreFill {
 		Map<String, List<String>> types = new HashMap<>();
 		types.put("default", Arrays.asList("system"));
 		types.put("ldap", Arrays.asList("person", "organizationalUnit"));
+		types.put("rest", Arrays.asList("data"));
 		return types;
 	}
 

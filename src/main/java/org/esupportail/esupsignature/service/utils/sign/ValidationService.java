@@ -64,6 +64,7 @@ public class ValidationService {
             documentValidator.setLocale(Locale.FRENCH);
             documentValidator.setValidationLevel(ValidationLevel.LONG_TERM_DATA);
             documentValidator.setSignaturePolicyProvider(signaturePolicyProvider);
+
             Reports reports = null;
             try {
                 InputStream is = defaultPolicy.getInputStream();

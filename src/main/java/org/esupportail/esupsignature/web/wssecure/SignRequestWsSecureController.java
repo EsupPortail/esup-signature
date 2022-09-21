@@ -5,7 +5,6 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
@@ -36,7 +35,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.Map;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -96,12 +94,7 @@ public class SignRequestWsSecureController {
     @GetMapping(value = "/get-last-file/{id}")
     public ResponseEntity<Void> getLastFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
-            Map<String, Object> fileResponse = signRequestService.getToSignFileResponse(id);
-            if(fileResponse != null) {
-                httpServletResponse.setContentType(fileResponse.get("contentType").toString());
-                httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
-                IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
-            }
+            signRequestService.getToSignFileResponse(id, httpServletResponse);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             logger.error("get file error", e);
@@ -110,16 +103,11 @@ public class SignRequestWsSecureController {
     }
 
     @GetMapping(value = "/get-file/{id}")
-    public ResponseEntity<Void> getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException, SQLException, EsupSignatureFsException {
+    public ResponseEntity<Void> getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException {
         Document document = documentService.getById(id);
         if(signRequestService.getById(document.getParentId()) != null) {
             if(preAuthorizeService.signRequestView(document.getParentId(), userEppn, authUserEppn)) {
-                Map<String, Object> fileResponse = signRequestService.getFileResponse(id);
-                if(fileResponse != null) {
-                    httpServletResponse.setContentType(fileResponse.get("contentType").toString());
-                    httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
-                    IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
-                }
+                signRequestService.getFileResponse(id, httpServletResponse);
                 return new ResponseEntity<>(HttpStatus.OK);
             } else {
                 logger.warn(userEppn + " try access document " + id + " without permission");
@@ -198,12 +186,7 @@ public class SignRequestWsSecureController {
     @GetMapping(value = "/print-with-code/{id}")
     public ResponseEntity<Void> printWithCode(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
-            Map<String, Object> fileResponse = signRequestService.getToSignFileResponseWithCode(id);
-            if (fileResponse != null) {
-                httpServletResponse.setContentType(fileResponse.get("contentType").toString());
-                httpServletResponse.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
-                IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
-            }
+            signRequestService.getToSignFileResponseWithCode(id, httpServletResponse);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (NoResultException | IOException | EsupSignatureFsException | SQLException | EsupSignatureException | WriterException e) {
             logger.error(e.getMessage(), e);
@@ -220,18 +203,17 @@ public class SignRequestWsSecureController {
                                                     @RequestParam(value = "unique", required = false) Boolean unique,
                                                     @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles) {
         logger.info("start add documents in " + workflowName);
-
-            try {
-                SignBook signBook;
-                if(unique != null && unique) {
-                    signBook = signBookService.addDocsInNewSignBookGrouped(title, multipartFiles, authUserEppn);
-                } else {
-                    signBook = signBookService.addDocsInNewSignBookSeparated(title, workflowName, multipartFiles, authUserEppn);
-                }
-                return new String[]{"" + signBook.getId()};
-            } catch(EsupSignatureIOException e) {
-                logger.warn("signbook not created");
+        try {
+            SignBook signBook;
+            if(unique != null && unique) {
+                signBook = signBookService.addDocsInNewSignBookGrouped(title, multipartFiles, authUserEppn);
+            } else {
+                signBook = signBookService.addDocsInNewSignBookSeparated(title, workflowName, multipartFiles, authUserEppn);
             }
+            return new String[]{"" + signBook.getId()};
+        } catch(EsupSignatureIOException e) {
+            logger.warn("signbook not created");
+        }
         return new ResponseEntity<>("Un problème est survenu car le document est corrompu. Merci d'essayer avec un document valide", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
