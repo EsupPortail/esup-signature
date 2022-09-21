@@ -35,7 +35,7 @@ public class UserListService {
     }
 
     public Map<String, String> getListsNames(String search) throws DataAccessException {
-        if(userLists != null && userLists.size() > 0 && search.length() > 3) {
+        if(userLists != null && userLists.size() > 0 && search.length() > 4) {
             Map<String, String> names = new HashMap<>();
             for (UserList userList : userLists) {
                 List<Map.Entry<String, String>> entries = userList.getListOfLists(search);
