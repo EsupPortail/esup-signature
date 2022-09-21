@@ -576,10 +576,12 @@ public class UserService {
         User authUser = getByEppn(authUserEppn);
         Document signDocument = documentService.getById(id);
         int test = authUser.getSignImages().indexOf(signDocument);
-        if(authUser.getDefaultSignImageNumber().equals(authUser.getSignImages().indexOf(signDocument))) {
+        if (authUser.getDefaultSignImageNumber().equals(test)) {
             authUser.setDefaultSignImageNumber(0);
         } else {
-            authUser.setDefaultSignImageNumber(authUser.getDefaultSignImageNumber() - 1);
+            if(test < authUser.getDefaultSignImageNumber()) {
+                authUser.setDefaultSignImageNumber(authUser.getDefaultSignImageNumber() - 1);
+            }
         }
         authUser.getSignImages().remove(signDocument);
     }
