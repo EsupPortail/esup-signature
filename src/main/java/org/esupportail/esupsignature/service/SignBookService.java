@@ -1596,18 +1596,7 @@ public class SignBookService {
     @Transactional
     public SignRequest getSignRequestsFullById(long id, String userEppn, String authUserEppn) {
         SignRequest signRequest = signRequestService.getById(id);
-        if (signRequest.getStatus().equals(SignRequestStatus.pending)
-                && checkUserSignRights(signRequest, userEppn, authUserEppn)
-                && signRequest.getOriginalDocuments().size() > 0
-                && needToSign(signRequest, userEppn)) {
-            signRequest.setSignable(true);
-            for(Document document : signRequest.getOriginalDocuments()) {
-                if(document.getSize() == 0) {
-                    signRequest.setSignable(false);
-                    break;
-                }
-            }
-        }
+        checkSignRequestSignable(signRequest, userEppn, authUserEppn);
         User user = userService.getUserByEppn(userEppn);
         if ((signRequest.getStatus().equals(SignRequestStatus.pending)
                 && (isUserInRecipients(signRequest, userEppn)
@@ -1660,10 +1649,8 @@ public class SignBookService {
     }
 
     @Transactional
-    public List<String> getSignImagesForSignRequest(SignRequest signRequestRef, String userEppn, String authUserEppn, Long userShareId) throws EsupSignatureUserException, IOException {
-        SignRequest signRequest = getSignRequestsFullById(signRequestRef.getId(), userEppn, authUserEppn);
-        signRequestRef.setSignable(signRequest.getSignable());
-        signRequestRef.setEditable(signRequest.getEditable());
+    public List<String> getSignImagesForSignRequest(Long id, String userEppn, String authUserEppn, Long userShareId) throws EsupSignatureUserException, IOException {
+        SignRequest signRequest = signRequestService.getById(id);
         LinkedList<String> signImages = new LinkedList<>();
         if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
             List<Document> toSignDocuments = signService.getToSignDocuments(signRequest.getId());
@@ -1677,29 +1664,30 @@ public class SignBookService {
                         }
                     }
                     if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
-                        if (checkUserSignRights(signRequest, userEppn, authUserEppn)
-                                && user.getKeystore() == null
-                                && certificatService.getCertificatByUser(userEppn).size() == 0
-                                && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)
-                                && globalProperties.getOpenXPKIServerUrl() == null
-                                && globalProperties.getSealCertificatDriver() == null) {
-                            signRequestRef.setSignable(false);
-                            throw new EsupSignatureUserException("Pour signer ce document merci d’ajouter un certificat à votre profil <a href='user/users' target='_blank'>Mes paramètres</a>");
-                        }
                         for (Document signImage : user.getSignImages()) {
                             signImages.add(fileService.getBase64Image(signImage));
                         }
                     }
-//                    else {
-//                        if (signRequest.getSignable() && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType() != null && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp) || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign))) {
-//                            signRequestRef.setSignable(false);
-//                        }
-//                    }
                 }
             }
         }
         signImages.add(userService.getDefaultImage(userEppn));
         return signImages;
+    }
+
+    private void checkSignRequestSignable(SignRequest signRequest, String userEppn, String authUserEppn) {
+        if (signRequest.getStatus().equals(SignRequestStatus.pending)
+                && checkUserSignRights(signRequest, userEppn, authUserEppn)
+                && signRequest.getOriginalDocuments().size() > 0
+                && needToSign(signRequest, userEppn)) {
+            signRequest.setSignable(true);
+            for(Document document : signRequest.getOriginalDocuments()) {
+                if(document.getSize() == 0) {
+                    signRequest.setSignable(false);
+                    break;
+                }
+            }
+        }
     }
 
     @Transactional

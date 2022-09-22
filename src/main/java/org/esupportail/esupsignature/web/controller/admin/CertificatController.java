@@ -59,7 +59,7 @@ public class CertificatController {
 
     @DeleteMapping
     public String deleteCertificat(@RequestParam Long id,
-            RedirectAttributes redirectAttributes) throws IOException {
+            RedirectAttributes redirectAttributes) {
         certificatService.delete(id);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Certificat supprimé"));
         return "redirect:/admin/certificats";

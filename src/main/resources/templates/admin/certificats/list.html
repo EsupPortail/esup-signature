@@ -34,7 +34,33 @@
                                 <td><span th:text="${certificat.keystore.fileName}"></span></td>
                                 <td><span th:text="${#dates.format(certificat.expireDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                 <td><span th:text="${certificat.roles}"></span></td>
-                                <td><form th:action="'/admin/certificats'" th:method="'delete'"><button type="submit" name="id" th:value="${certificat.id}" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button></form></td>
+                                <td>
+                                    <a class="btn btn-danger" th:href="'#modal-warning'" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning'">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                    <div class="modal modal-warning fade in" th:id="'modal-warning'">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form th:action="'/admin/certificats'" th:method="delete">
+                                                    <input type="hidden" name="id" th:value="${certificat.id}">
+                                                    <div class="modal-header">
+                                                        <h2>Attention</h2>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
+                                                        <button type="submit" class="btn btn-danger">Oui</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
                             </tr>
                         </th:block>
                         </tbody>
