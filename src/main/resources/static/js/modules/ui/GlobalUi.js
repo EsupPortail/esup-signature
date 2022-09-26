@@ -89,15 +89,15 @@ export class GlobalUi {
         $("#sendPendingButton").on('click', e => this.checkUserCertificate(true));
         $("#sendDraftButton").on('click', e => this.checkUserCertificate(false));
         $("#sendSignRequestForm").submit(e => this.disableSendButton(e));
-        let csrf = this.csrf;
+        let self = this;
         $("#startWizardCustomButton").on('click', function(e) {
-            let wizUi = new WizUi("", $("#wizFrameCustom"), "", csrf);
+            let wizUi = new WizUi("", $("#wizFrameCustom"), "", self.csrf, self.maxSize);
             wizUi.startByDocs();
         });
 
         $(".start-wizard-workflow-button").each(function() {
             $(this).on('click', function(e) {
-                let wizUi = new WizUi($(this).attr('data-workflow-id'), $("#wizFrameWorkflow"), $(this).attr('data-workflow-name'), csrf);
+                let wizUi = new WizUi($(this).attr('data-workflow-id'), $("#wizFrameWorkflow"), $(this).attr('data-workflow-name'), self.csrf, self.maxSize);
                 wizUi.startByDocs();
                 $("#wizModalWorkflow").modal('show');
             });
@@ -134,11 +134,11 @@ export class GlobalUi {
         });
 
         $("#start-wizard-button").on('click', function(e) {
-            let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", csrf);
+            let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", self.csrf, self.maxSize);
             wizUi.startByRecipients();
         });
         $("#start-wizard-button2").on('click', function(e) {
-            let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", csrf);
+            let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", self.csrf, self.maxSize);
             wizUi.startByRecipients();
         });
         $("#user-toggle").on("click", function (e){
