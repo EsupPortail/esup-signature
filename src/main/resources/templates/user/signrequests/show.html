@@ -171,8 +171,8 @@
                 </div>
                 <script th:inline="javascript" type="module">
                     import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=[[${versionApp}]]';
-                    new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.originalDocuments}]], true, [[${_csrf}]]);
-                    new FilesInput($("#signedFiles"), "", "signedFiles", [[${signRequest.signedDocuments}]], true, [[${_csrf}]]);
+                    new FilesInput($("#multipartFiles"),[[${globalProperties.maxUploadSize}]], "", "multipartFiles", [[${signRequest.originalDocuments}]], true, [[${_csrf}]]);
+                    new FilesInput($("#signedFiles"),[[${globalProperties.maxUploadSize}]], "", "signedFiles", [[${signRequest.signedDocuments}]], true, [[${_csrf}]]);
                 </script>
             </div>
             <div th:if="${!signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" class="workspace alert alert-danger">

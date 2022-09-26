@@ -4,10 +4,14 @@ import {EventFactory} from "./EventFactory.js?version=@version@";
 
 export default class FilesInput extends EventFactory {
 
-    constructor(input, workflowName, name, documents, readOnly, csrf, signRequestId) {
+    constructor(input, maxSize, workflowName, name, documents, readOnly, csrf, signRequestId) {
         super();
         this.input = input;
         this.name = name;
+        this.maxSize = 1000000;
+        if(maxSize != null) {
+            this.maxSize = maxSize / 1000;
+        }
         if(this.name == null) {
             this.name = "Demande personnalisée"
         }
@@ -91,6 +95,7 @@ export default class FilesInput extends EventFactory {
             language: "fr",
             showCaption: false,
             minFileSize: 1,
+            maxFileSize: this.maxSize,
             showClose: false,
             showBrowse: !readOnly,
             showUpload: false,

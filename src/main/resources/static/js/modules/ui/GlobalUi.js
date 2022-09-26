@@ -3,11 +3,12 @@ import {WizUi} from "./WizUi.js";
 
 export class GlobalUi {
 
-    constructor(authUserEppn, csrf, applicationEmail) {
+    constructor(authUserEppn, csrf, applicationEmail, maxSize) {
         console.info("Starting global UI");
         this.checkBrowser();
         this.checkOS();
         this.csrf = csrf;
+        this.maxSize = maxSize;
         this.applicationEmail = applicationEmail;
         this.sideBarStatus = localStorage.getItem('sideBarStatus');
         this.sideBar = $('#sidebar');

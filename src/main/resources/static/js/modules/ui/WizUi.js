@@ -5,12 +5,13 @@ import {ExternalUserInfos} from "../../prototypes/ExternalUserInfos.js?version=@
 
 export class WizUi {
 
-    constructor(workflowId, div, workflowName, csrf) {
+    constructor(workflowId, div, workflowName, csrf, maxSize) {
         this.workflowId = workflowId;
         this.signBookId = "";
         this.div = div;
         this.workflowName = workflowName;
         this.csrf = csrf;
+        this.maxSize = maxSize;
         this.mode = "";
         this.input;
         this.fileInput;
@@ -84,7 +85,7 @@ export class WizUi {
         this.div.html(html);
         this.input = $("#multipartFiles_" + this.workflowId);
         if(!this.workflowId) this.input = $("#multipartFiles_0");
-        this.fileInput = new FilesInput(this.input, this.workflowName, this.workflowName, null, false, this.csrf, null);
+        this.fileInput = new FilesInput(this.input, this.maxSize, this.workflowName, this.workflowName, null, false, this.csrf, null);
         this.fileInput.addEventListener("uploaded", e => this.gotoStep2(e));
         let id = this.workflowId;
         if(id === "") {

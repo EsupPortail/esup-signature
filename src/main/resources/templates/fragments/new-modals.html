@@ -21,7 +21,7 @@
                                     <input required="true" id="inputGroupFile01" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''">
                                     <script th:inline="javascript" type="module">
                                         import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=[[${versionApp}]]';
-                                        new FilesInput($("#inputGroupFile01"));
+                                        new FilesInput($("#inputGroupFile01"), [[${globalProperties.maxUploadSize}]]);
                                     </script>
                                 </div>
                                 <input type="hidden" name="signType" value="pdfImageStamp">
@@ -81,7 +81,7 @@
                                 <input required="true" id="inputGroupFile02" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''">
                                 <script th:inline="javascript" type="module">
                                     import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=[[${versionApp}]]';
-                                    new FilesInput($("#inputGroupFile02"));
+                                    new FilesInput($("#inputGroupFile02"), [[${globalProperties.maxUploadSize}]]);
                                 </script>
                             </div>
                             <div id="forceAllSign" class="form-check form-switch form-switch-md d-none">
