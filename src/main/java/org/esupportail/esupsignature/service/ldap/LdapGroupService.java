@@ -81,7 +81,7 @@ public class LdapGroupService implements GroupService {
     @Override
     public List<Map.Entry<String, String>> getAllGroups(String search) {
         List<Map.Entry<String, String>> groups = new ArrayList<>();
-        if (allGroupsSearchFilter != null) {
+        if(allGroupsSearchFilter != null) {
             String hardcodedFilter = MessageFormat.format(allGroupsSearchFilter, search);
             groups = ldapTemplate.search(LdapQueryBuilder.query().attributes("cn", "description").base(groupSearchBase).filter(hardcodedFilter + "*"),
                     (ContextMapper<Map.Entry<String, String>>) ctx -> {
@@ -101,16 +101,16 @@ public class LdapGroupService implements GroupService {
                     return searchResultContext.getNameInNamespace();
                 });
         List<String> groups = new ArrayList<>();
-        if (!dns.isEmpty()) {
+        if(!dns.isEmpty()) {
             String userDn = dns.get(0);
             String formattedGroupSearchFilter = MessageFormat.format(groupSearchFilter, userDn, username);
             LdapQuery groupSearchQuery = LdapQueryBuilder.query().attributes("cn").base(groupSearchBase).filter(formattedGroupSearchFilter);
             groups = ldapTemplate.search(groupSearchQuery, (ContextMapper<String>) ctx -> {
-                DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
-                return searchResultContext.getStringAttribute("cn");
-            });
+                        DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
+                        return searchResultContext.getStringAttribute("cn");
+                    });
         }
-        for (String ldapFilter : ldapFiltersGroups.keySet()) {
+        for(String ldapFilter: ldapFiltersGroups.keySet()) {
             String hardcodedFilter = MessageFormat.format(memberSearchFilter, username, ldapFilter);
             List<String> filterDns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").filter(hardcodedFilter),
                     (ContextMapper<String>) ctx -> {
@@ -118,7 +118,7 @@ public class LdapGroupService implements GroupService {
                         return searchResultContext.getNameInNamespace();
                     });
 
-            if (!filterDns.isEmpty()) {
+            if(!filterDns.isEmpty()) {
                 groups.add(ldapFiltersGroups.get(ldapFilter));
             }
         }
@@ -126,8 +126,8 @@ public class LdapGroupService implements GroupService {
     }
 
     public void addLdapRoles(Set<GrantedAuthority> grantedAuthorities, List<String> ldapGroups, String groupPrefixRoleName, Map<String, String> mappingGroupesRoles) {
-        for (String groupName : ldapGroups) {
-            if (groupName != null) {
+        for(String groupName : ldapGroups) {
+            if(groupName != null) {
                 Matcher m = Pattern.compile(groupPrefixRoleName).matcher(groupName);
                 if (mappingGroupesRoles != null && mappingGroupesRoles.containsKey(groupName)) {
                     grantedAuthorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(groupName)));
@@ -140,15 +140,15 @@ public class LdapGroupService implements GroupService {
 
     @Override
     public List<String> getMembers(String groupName) {
-        List<String> eppns = new ArrayList<>();
-        if (membersOfGroupSearchFilter != null) {
-            String formattedFilter = MessageFormat.format(membersOfGroupSearchFilter, groupName);
-            eppns = ldapTemplate.search(memberSearchBase, formattedFilter, (ContextMapper<String>) ctx -> {
-                DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
-                String eppn = searchResultContext.getStringAttribute("mail");
-                return eppn;
-            });
-        }
+
+        String formattedFilter = MessageFormat.format(membersOfGroupSearchFilter, groupName);
+
+        List<String> eppns = ldapTemplate.search(memberSearchBase, formattedFilter, (ContextMapper<String>) ctx -> {
+                    DirContextAdapter searchResultContext = (DirContextAdapter)ctx;
+                    String eppn = searchResultContext.getStringAttribute("mail");
+                    return eppn;
+                });
+
         return eppns;
     }
 

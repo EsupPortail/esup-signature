@@ -40,6 +40,9 @@ public class TaskService {
 
     private boolean enableCleanTask = false;
 
+    private boolean enableCleanUploadingSignBookTask = false;
+
+
     public boolean isEnableArchiveTask() {
         return enableArchiveTask;
     }
@@ -55,6 +58,14 @@ public class TaskService {
 
     public void setEnableCleanTask(boolean enableCleanTask) {
         this.enableCleanTask = enableCleanTask;
+    }
+
+    public boolean isEnableCleanUploadingSignBookTask() {
+        return enableCleanUploadingSignBookTask;
+    }
+
+    public void setEnableCleanUploadingSignBookTask(boolean enableCleanUploadingSignBookTask) {
+        this.enableCleanUploadingSignBookTask = enableCleanUploadingSignBookTask;
     }
 
     @Async
@@ -124,6 +135,16 @@ public class TaskService {
             }
         }
         setEnableArchiveTask(false);
+    }
+
+    @Async
+    public void initCleanUploadingSignBooks() {
+        if(!isEnableCleanUploadingSignBookTask()) {
+            setEnableCleanUploadingSignBookTask(true);
+            signBookService.cleanUploadingSignBooks();
+            setEnableCleanUploadingSignBookTask(false);
+        }
+
     }
 
 }

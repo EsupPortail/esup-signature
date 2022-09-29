@@ -318,7 +318,7 @@ public class SignBookController {
     @GetMapping(value = "/pending/{id}")
     public String pending(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws EsupSignatureException {
         signBookService.pendingSignBook(id, null, authUserEppn, authUserEppn, false);
-        return "redirect:/user/signrequests/" + id;
+        return "redirect:/user/signbooks/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #authUserEppn, #authUserEppn)")

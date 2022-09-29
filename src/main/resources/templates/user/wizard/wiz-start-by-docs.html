@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <div id="stepper1" class="bs-stepper linear">
     <div class="bs-stepper-header" role="tablist">
         <div class="step active" data-bs-target="#test-l-2">
@@ -26,7 +27,8 @@
 <hr>
 <h4 class="d-flex justify-content-center mt-4">Dépôt des fichiers</h4>
 <div class="col-lg-12">
-    <form id="startByDocs" th:action="'/ws-secure/signrequests/start-workflow/' + ${workflow != null ? workflow.name : 'custom'}" th:method="post" enctype="multipart/form-data">
+    <form id="start-workflow-form" th:action="'/ws-secure/signrequests/start-workflow/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="post">
+        <input type="hidden" name="workflowId" th:value="${workflow.id}" th:if="${workflow != null}">
     <div class="form-group mb-3">
         <label class="form-label" for="titleWiz">Titre <span th:if="${workflow != null}">(Facultatif)</span><span th:unless="${workflow != null}">(Obligatoire)</span></label>
         <input th:required="${workflow == null}" type="text" placeholder="Vous pouvez saisir un titre pour retrouver votre demande" id="titleWiz" name="title" class="form-control">
@@ -66,7 +68,7 @@
     </div>
         <hr>
         <div class="inline-flex">
-            <button type="submit" id="fileUploadBtn_old" class="btn btn-success float-end m-1">
+            <button type="button" id="wiz-start-button" class="btn btn-success float-end m-1">
                 Suivant <i class="fas fa-angle-right"></i>
             </button>
         </div>

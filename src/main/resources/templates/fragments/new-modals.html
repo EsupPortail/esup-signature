@@ -8,7 +8,7 @@
              aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
-                    <form th:action="'/user/signrequests/fast-sign-request?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
+                    <form id="fast-sign-form" th:action="'/ws-secure/signrequests/create-sign-book/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
                           method="post" enctype="multipart/form-data">
                         <div class="modal-header">
                             <h3 class="modal-title" id="fastSignRequestLabel">Signer un document présent sur votre poste de travail</h3>
@@ -17,11 +17,11 @@
                         <div class="modal-body">
                             <div class="col-lg-12">
                                 <div class="form-group mb-3">
-                                    <label class="form-label" for="inputGroupFile01">Choix des fichiers à signer</label>
-                                    <input required="true" id="inputGroupFile01" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''">
+                                    <label class="form-label" for="fast-sign-file-input">Choix des fichiers à signer</label>
+                                    <input id="fast-sign-file-input" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''">
                                     <script th:inline="javascript" type="module">
                                         import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=[[${versionApp}]]';
-                                        new FilesInput($("#inputGroupFile01"));
+                                        new FilesInput($("#fast-sign-file-input"), [[${globalProperties.maxUploadSize}]], [[${_csrf}]]);
                                     </script>
                                 </div>
                                 <input type="hidden" name="signType" value="pdfImageStamp">
@@ -35,9 +35,8 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
-                            <button type="submit" id="fast-form-submit" class="d-none"></button>
-                            <button type="button" id="fast-form-button" class="btn btn-success float-end">Valider</button>
+                            <button type="button" id="fast-form-cancel" class="btn btn-secondary float-start d-none" onclick="window.location.reload();" data-bs-dismiss="modal">Annuler</button>
+                            <button type="button" id="fast-sign-button" class="btn btn-success float-end">Valider</button>
                         </div>
                     </form>
                 </div>
@@ -64,9 +63,8 @@
         <div class="modal fade" id="sendSignRequestModal" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
-                    <form id="sendSignRequestForm" th:action="'/user/signrequests/send-sign-request?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
+                    <form id="send-sign-form" th:action="'/ws-secure/signrequests/create-full-sign-book/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
                           method="post" enctype="multipart/form-data">
-                        <input type="hidden" id="pending" name="pending" value="false" />
                         <div class="modal-header">
                             <h3 class="modal-title" id="sendSignRequestLabel">Créer une demande de signature</h3>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -77,11 +75,11 @@
                                 <input type="text" id="titre" class="form-control" name="title" placeholder="Vous pouvez saisir un titre pour retrouver votre demande">
                             </div>
                             <div class="form-group mb-3">
-                                <label class="form-label" for="inputGroupFile02">Choix des fichiers à signer</label>
-                                <input required="true" id="inputGroupFile02" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''">
+                                <label class="form-label" for="send-sign-file-input">Choix des fichiers à signer</label>
+                                <input required="true" id="send-sign-file-input" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''">
                                 <script th:inline="javascript" type="module">
                                     import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=[[${versionApp}]]';
-                                    new FilesInput($("#inputGroupFile02"));
+                                    new FilesInput($("#send-sign-file-input"), [[${globalProperties.maxUploadSize}]], [[${_csrf}]]);
                                 </script>
                             </div>
                             <div id="forceAllSign" class="form-check form-switch form-switch-md d-none">
@@ -128,12 +126,12 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="submit" id="sendButton" class="btn btn-success d-none"></button>
+                            <button type="submit" id="send-sign-submit" class="btn btn-success d-none"></button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                            <button type="button" id="sendDraftButton" class="btn btn-success">
+                            <button type="button" id="send-draft-button" class="btn btn-success">
                                 <i class="fas fa-save"></i> Annoter avant envoi
                             </button>
-                            <button type="button" id="sendPendingButton" class="btn btn-success">
+                            <button type="button" id="send-pending-button" class="btn btn-success">
                                 <i class="fas fa-paper-plane"></i> Envoyer immédiatement la demande
                             </button>
                         </div>
@@ -343,5 +341,9 @@
         </div>
     </th:block>
     </div>
+    <script th:inline="javascript" type="module">
+        import {NewUi} from '/js/modules/ui/NewUi.js?version=[[${versionApp}]]';
+        new NewUi([[${_csrf}]]);
+    </script>
 </div>
 </html>

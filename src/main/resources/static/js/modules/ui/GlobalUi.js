@@ -3,11 +3,12 @@ import {WizUi} from "./WizUi.js";
 
 export class GlobalUi {
 
-    constructor(authUserEppn, csrf, applicationEmail) {
+    constructor(authUserEppn, csrf, applicationEmail, maxSize) {
         console.info("Starting global UI");
         this.checkBrowser();
         this.checkOS();
         this.csrf = csrf;
+        this.maxSize = maxSize;
         this.applicationEmail = applicationEmail;
         this.sideBarStatus = localStorage.getItem('sideBarStatus');
         this.sideBar = $('#sidebar');
@@ -84,19 +85,15 @@ export class GlobalUi {
 
         window.addEventListener('resize', e => this.adjustUi());
         $(document).ready(e => this.onDocumentLoad());
-
-        $("#sendPendingButton").on('click', e => this.checkUserCertificate(true));
-        $("#sendDraftButton").on('click', e => this.checkUserCertificate(false));
-        $("#sendSignRequestForm").submit(e => this.disableSendButton(e));
-        let csrf = this.csrf;
+        let self = this;
         $("#startWizardCustomButton").on('click', function(e) {
-            let wizUi = new WizUi("", $("#wizFrameCustom"), "", csrf);
+            let wizUi = new WizUi("", $("#wizFrameCustom"), "", self.csrf, self.maxSize);
             wizUi.startByDocs();
         });
 
         $(".start-wizard-workflow-button").each(function() {
             $(this).on('click', function(e) {
-                let wizUi = new WizUi($(this).attr('data-workflow-id'), $("#wizFrameWorkflow"), $(this).attr('data-workflow-name'), csrf);
+                let wizUi = new WizUi($(this).attr('data-workflow-id'), $("#wizFrameWorkflow"), $(this).attr('data-workflow-name'), self.csrf, self.maxSize);
                 wizUi.startByDocs();
                 $("#wizModalWorkflow").modal('show');
             });
@@ -133,11 +130,11 @@ export class GlobalUi {
         });
 
         $("#start-wizard-button").on('click', function(e) {
-            let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", csrf);
+            let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", self.csrf, self.maxSize);
             wizUi.startByRecipients();
         });
         $("#start-wizard-button2").on('click', function(e) {
-            let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", csrf);
+            let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", self.csrf, self.maxSize);
             wizUi.startByRecipients();
         });
         $("#user-toggle").on("click", function (e){
@@ -216,46 +213,7 @@ export class GlobalUi {
     }
 
     disableSendButton(e) {
-        $("#sendPendingButton").unbind();
-    }
-
-    checkUserCertificate(send) {
-        if ($('#signType2').val() === 'certSign') {
-            let csrf = this.csrf;
-            $.ajax({
-                url: "/user/users/check-users-certificate?" + csrf.parameterName + "=" + csrf.token,
-                type: 'POST',
-                contentType: "application/json",
-                dataType: 'json',
-                data: JSON.stringify($('#recipientsEmails').find(`[data-es-check-cert='true']`).prevObject[0].slim.selected()),
-                success: response => this.checkSendPending(response, send)
-            });
-        } else {
-            this.submitSendPendind(send);
-        }
-    }
-
-    checkSendPending(data, send) {
-        if (data.length === 0) {
-            this.submitSendPendind(send);
-            return;
-        }
-        let self = this;
-        let stringChain = "Les utilisateurs suivants n'ont pas de certificats électroniques : <br><ul>";
-        for (let i = 0; i < data.length ; i++) {
-            stringChain += "<li>" + data[i].firstname + " " + data[i].name + "</li>";
-        }
-        stringChain += "</ul>Confirmez-vous l’envoie de la demande ? "
-        bootbox.confirm(stringChain, function(result) {
-           if(result) {
-               self.submitSendPendind(send);
-           }
-        });
-    }
-
-    submitSendPendind(send) {
-        $("#pending").val(send);
-        $("#sendButton").click();
+        $("#send-pending-button").unbind();
     }
 
     checkCurrentPage() {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;

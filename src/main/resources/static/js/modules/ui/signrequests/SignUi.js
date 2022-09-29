@@ -182,12 +182,14 @@ export class SignUi {
             if (nbOptions === 0) {
                 $("#nexuCheck").removeClass("d-none");
                 $("#noOptions").show();
+                $("#signCommentDiv").hide();
                 $("#selectTypeDiv").hide();
                 $("#checkValidateSignButtonEnd").hide();
                 $("#checkValidateSignButtonNext").hide();
             } else {
                 $("#nexuCheck").addClass("d-none");
                 $("#noOptions").hide();
+                $("#signCommentDiv").show();
                 $("#selectTypeDiv").show();
                 $("#checkValidateSignButtonEnd").show();
                 $("#checkValidateSignButtonNext").show();
