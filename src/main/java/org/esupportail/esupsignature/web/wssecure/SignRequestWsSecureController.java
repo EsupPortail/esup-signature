@@ -201,7 +201,7 @@ public class SignRequestWsSecureController {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
+    @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
     @ResponseBody
     @PostMapping(value = "/finish-signbook")
     public ResponseEntity<Long> initSignBook(@SessionAttribute("signBookId") Long signBookId, HttpSession session, @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn) {
@@ -211,16 +211,18 @@ public class SignRequestWsSecureController {
         return new ResponseEntity<>(signBookId, HttpStatus.OK);
     }
 
-    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
+    @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
     @ResponseBody
     @PostMapping(value = "/add-docs", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> addDocumentToNewSignRequest(@SessionAttribute("signBookId") Long signBookId,  @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles, @RequestParam(required = false) Boolean separated) throws EsupSignatureIOException {
-        logger.info("start add documents");
-        try {
-            signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn);
-            return new ResponseEntity<>("{}", HttpStatus.OK);
-        } catch (HibernateException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        synchronized (("sign_book_" + signBookId).intern()) {
+            logger.info("start add documents");
+            try {
+                signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn);
+                return new ResponseEntity<>("{}", HttpStatus.OK);
+            } catch (HibernateException e) {
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
     }
 

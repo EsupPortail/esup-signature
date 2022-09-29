@@ -342,6 +342,7 @@ public class SignBookService {
         return signBookRepository.findRecipientNames(user);
     }
 
+    @Transactional
     public SignBook createSignBook(String subject, Workflow workflow, String workflowName, String userEppn) {
         User user = userService.getUserByEppn(userEppn);
         SignBook signBook = new SignBook();
@@ -373,7 +374,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignBook createFullSignBook(String title, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser, boolean forceSendEmail, Boolean forceAllSign) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
+    public SignBook createFullSignBook(String title, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser, boolean forceSendEmail, Boolean forceAllSign) throws EsupSignatureException {
         if(forceAllSign == null) forceAllSign = false;
         if(title == null || title.isEmpty()) {
             title = "Parapheur pour " + recipientsEmails.get(0);
@@ -734,7 +735,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public synchronized void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
+    public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
         int i = 0;
         SignBook signBook = getById(signBookId);
         for (MultipartFile multipartFile : multipartFiles) {

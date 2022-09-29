@@ -66,7 +66,7 @@ public class WebAppConfig implements WebMvcConfigurer {
 				"/user/", "/user/*",
 				"/otp/", "/otp/*",
 				"/error",
-				"/ws-secure/", "/ws-secure/*",
+//				"/ws-secure/", "/ws-secure/*",
 				"/admin/", "/admin/*",
 				"/manager/", "/manager/*",
 				"/public/", "/public/*",

@@ -30,9 +30,9 @@
     <form id="start-workflow-form" th:action="'/ws-secure/signrequests/start-workflow/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="post">
         <input type="hidden" name="workflowId" th:value="${workflow.id}" th:if="${workflow != null}">
     <div class="form-group mb-3">
-        <label class="form-label" for="titleWiz">Titre <span th:if="${workflow != null}">(Facultatif)</span><span th:unless="${workflow != null}">(Obligatoire)</span></label>
-        <input th:required="${workflow == null}" type="text" placeholder="Vous pouvez saisir un titre pour retrouver votre demande" id="titleWiz" name="title" class="form-control">
-        <input type="submit" id="titleWizSubmit" class="d-none">
+        <label class="form-label" for="title-wiz">Titre <span th:if="${workflow != null}">(Facultatif)</span><span th:unless="${workflow != null}">(Obligatoire)</span></label>
+        <input th:required="${workflow == null}" type="text" placeholder="Vous pouvez saisir un titre pour retrouver votre demande" id="title-wiz" name="title" class="form-control">
+        <input type="submit" id="title-wiz-submit" class="d-none">
     </div>
     <div class="form-group mb-3">
         <div class="file-loading">
