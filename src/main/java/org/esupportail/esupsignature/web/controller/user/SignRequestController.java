@@ -293,7 +293,7 @@ public class SignRequestController {
         if(redirect.equals("end")) {
             return "redirect:/user/signbooks/";
         } else {
-            return "redirect:/user/signrequests/" + redirect;
+            return "redirect:/user/signbooks/" + redirect;
         }
     }
 
