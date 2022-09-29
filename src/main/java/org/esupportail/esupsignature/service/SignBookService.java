@@ -1421,6 +1421,10 @@ public class SignBookService {
     }
 
     public SignBook getNextSignBook(Long signRequestId, String userEppn, String authUserEppn) {
+        SignRequest currentsignRequest = signRequestService.getById(signRequestId);
+        if(currentsignRequest.getParentSignBook().getSignRequests().stream().anyMatch(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending))) {
+            return currentsignRequest.getParentSignBook();
+        }
         List<SignRequest> toSignRequests = getSignRequestsForCurrentUserByStatus(userEppn, authUserEppn);
         Optional<SignRequest> signRequest = toSignRequests.stream().filter(signRequest1 -> signRequest1.getId().equals(signRequestId)).findFirst();
         if(signRequest.isPresent()) {
