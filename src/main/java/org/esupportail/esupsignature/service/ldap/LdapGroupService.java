@@ -26,13 +26,13 @@ public class LdapGroupService implements GroupService {
 
     private String allGroupsSearchFilter;
 
+    private String membersOfGroupSearchFilter;
+
     private String memberSearchBase;
 
     private String memberSearchFilter;
 
     private String domain;
-
-    private String membersOfGroupSearchFilter;
 
     public Map<String, String> getLdapFiltersGroups() {
         return ldapFiltersGroups;

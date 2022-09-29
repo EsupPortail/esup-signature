@@ -31,7 +31,6 @@ public class UserListService {
         } else {
             return new ArrayList<>();
         }
-
     }
 
     public Map<String, String> getListsNames(String search) throws DataAccessException {
@@ -47,7 +46,6 @@ public class UserListService {
         } else {
             return new HashMap<>();
         }
-
     }
 
 }

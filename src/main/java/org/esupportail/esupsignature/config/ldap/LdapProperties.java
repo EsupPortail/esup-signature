@@ -14,7 +14,6 @@ public class LdapProperties {
     private String groupSearchBase;
     private String groupSearchFilter;
     private String allGroupsSearchFilter;
-    private String groupNameAttribut;
     private String membersOfGroupSearchFilter;
     private String memberSearchFilter;
     private String userIdSearchFilter;

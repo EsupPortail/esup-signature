@@ -1,19 +1,6 @@
 package org.esupportail.esupsignature.service.mail;
 
-import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
-import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import org.apache.commons.lang.StringUtils;
-import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.cms.AttributeTable;
-import org.bouncycastle.asn1.cms.IssuerAndSerialNumber;
-import org.bouncycastle.asn1.smime.SMIMECapabilitiesAttribute;
-import org.bouncycastle.asn1.smime.SMIMECapability;
-import org.bouncycastle.asn1.smime.SMIMECapabilityVector;
-import org.bouncycastle.asn1.smime.SMIMEEncryptionKeyPreferenceAttribute;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.cert.jcajce.JcaCertStore;
-import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoGeneratorBuilder;
-import org.bouncycastle.mail.smime.SMIMESignedGenerator;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.mail.MailConfig;
 import org.esupportail.esupsignature.entity.*;
@@ -46,14 +33,11 @@ import org.thymeleaf.context.Context;
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
-import java.security.PrivateKey;
-import java.security.cert.X509Certificate;
 import java.util.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -289,7 +273,8 @@ public class MailService {
             mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             logger.info("send email alert for " + recipientsEmails.get(0));
-            mailSender.send(signMessage(mimeMessage.getMimeMessage()));
+//            mailSender.send(signMessage(mimeMessage.getMimeMessage()));
+            mailSender.send(mimeMessage.getMimeMessage());
             signRequest.setLastNotifDate(new Date());
         } catch (Exception e) {
             logger.error("unable to send ALERT email", e);
@@ -485,39 +470,39 @@ public class MailService {
         return mailSender;
     }
 
-    public MimeMessage signMessage(MimeMessage message) {
-        try {
-            if(globalProperties.getSignEmailWithSealCertificat()) {
-                AbstractKeyStoreTokenConnection tokenConnection = certificatService.getSealToken();
-                DSSPrivateKeyEntry dssPrivateKeyEntry = tokenConnection.getKeys().get(0);
-                X509Certificate x509Certificate = dssPrivateKeyEntry.getCertificate().getCertificate();
-                PrivateKey privateKey = certificatService.getSealPrivateKey();
-                SMIMECapabilityVector capabilities = new SMIMECapabilityVector();
-                capabilities.addCapability(SMIMECapability.dES_EDE3_CBC);
-                capabilities.addCapability(SMIMECapability.rC2_CBC, 128);
-                capabilities.addCapability(SMIMECapability.dES_CBC);
-                capabilities.addCapability(SMIMECapability.aES256_CBC);
-                ASN1EncodableVector attributes = new ASN1EncodableVector();
-                attributes.add(new SMIMECapabilitiesAttribute(capabilities));
-                IssuerAndSerialNumber issAndSer = new IssuerAndSerialNumber(new X500Name(x509Certificate.getIssuerX500Principal().getName()), x509Certificate.getSerialNumber());
-                attributes.add(new SMIMEEncryptionKeyPreferenceAttribute(issAndSer));
-                SMIMESignedGenerator signer = new SMIMESignedGenerator();
-                signer.addSignerInfoGenerator(new JcaSimpleSignerInfoGeneratorBuilder()
-                        .setSignedAttributeGenerator(new AttributeTable(attributes))
-                        .build("SHA1withRSA", privateKey, x509Certificate));
-                List<X509Certificate> certList = new ArrayList<>();
-                certList.add(x509Certificate);
-                JcaCertStore jcaCertStore = new JcaCertStore(certList);
-                signer.addCertificates(jcaCertStore);
-                MimeMultipart mm = signer.generate(message);
-                message.setContent(mm, mm.getContentType());
-                message.saveChanges();
-            }
-            return message;
-        } catch (Exception e) {
-            logger.debug(e.getMessage(), e);
-        }
-        return message;
-    }
+//    public MimeMessage signMessage(MimeMessage message) {
+//        try {
+//            if(globalProperties.getSignEmailWithSealCertificat()) {
+//                AbstractKeyStoreTokenConnection tokenConnection = certificatService.getSealToken();
+//                DSSPrivateKeyEntry dssPrivateKeyEntry = tokenConnection.getKeys().get(0);
+//                X509Certificate x509Certificate = dssPrivateKeyEntry.getCertificate().getCertificate();
+//                PrivateKey privateKey = certificatService.getSealPrivateKey();
+//                SMIMECapabilityVector capabilities = new SMIMECapabilityVector();
+//                capabilities.addCapability(SMIMECapability.dES_EDE3_CBC);
+//                capabilities.addCapability(SMIMECapability.rC2_CBC, 128);
+//                capabilities.addCapability(SMIMECapability.dES_CBC);
+//                capabilities.addCapability(SMIMECapability.aES256_CBC);
+//                ASN1EncodableVector attributes = new ASN1EncodableVector();
+//                attributes.add(new SMIMECapabilitiesAttribute(capabilities));
+//                IssuerAndSerialNumber issAndSer = new IssuerAndSerialNumber(new X500Name(x509Certificate.getIssuerX500Principal().getName()), x509Certificate.getSerialNumber());
+//                attributes.add(new SMIMEEncryptionKeyPreferenceAttribute(issAndSer));
+//                SMIMESignedGenerator signer = new SMIMESignedGenerator();
+//                signer.addSignerInfoGenerator(new JcaSimpleSignerInfoGeneratorBuilder()
+//                        .setSignedAttributeGenerator(new AttributeTable(attributes))
+//                        .build("SHA1withRSA", privateKey, x509Certificate));
+//                List<X509Certificate> certList = new ArrayList<>();
+//                certList.add(x509Certificate);
+//                JcaCertStore jcaCertStore = new JcaCertStore(certList);
+//                signer.addCertificates(jcaCertStore);
+//                MimeMultipart mm = signer.generate(message);
+//                message.setContent(mm, mm.getContentType());
+//                message.saveChanges();
+//            }
+//            return message;
+//        } catch (Exception e) {
+//            logger.debug(e.getMessage(), e);
+//        }
+//        return message;
+//    }
 
 }
