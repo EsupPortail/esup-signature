@@ -26,8 +26,6 @@ public class LdapGroupService implements GroupService {
 
     private String allGroupsSearchFilter;
 
-    private String groupNameAttribut;
-
     private String memberSearchBase;
 
     private String memberSearchFilter;
@@ -58,10 +56,6 @@ public class LdapGroupService implements GroupService {
 
     public void setAllGroupsSearchFilter(String allGroupsSearchFilter) {
         this.allGroupsSearchFilter = allGroupsSearchFilter;
-    }
-
-    public void setGroupNameAttribut(String groupNameAttribut) {
-        this.groupNameAttribut = groupNameAttribut;
     }
 
     public void setMembersOfGroupSearchFilter(String membersOfGroupSearchFilter) {

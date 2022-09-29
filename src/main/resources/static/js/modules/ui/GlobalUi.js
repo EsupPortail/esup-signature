@@ -85,10 +85,6 @@ export class GlobalUi {
 
         window.addEventListener('resize', e => this.adjustUi());
         $(document).ready(e => this.onDocumentLoad());
-
-        $("#sendPendingButton").on('click', e => this.checkUserCertificate(true));
-        $("#sendDraftButton").on('click', e => this.checkUserCertificate(false));
-        $("#sendSignRequestForm").submit(e => this.disableSendButton(e));
         let self = this;
         $("#startWizardCustomButton").on('click', function(e) {
             let wizUi = new WizUi("", $("#wizFrameCustom"), "", self.csrf, self.maxSize);
@@ -217,46 +213,7 @@ export class GlobalUi {
     }
 
     disableSendButton(e) {
-        $("#sendPendingButton").unbind();
-    }
-
-    checkUserCertificate(send) {
-        if ($('#signType2').val() === 'certSign') {
-            let csrf = this.csrf;
-            $.ajax({
-                url: "/user/users/check-users-certificate?" + csrf.parameterName + "=" + csrf.token,
-                type: 'POST',
-                contentType: "application/json",
-                dataType: 'json',
-                data: JSON.stringify($('#recipientsEmails').find(`[data-es-check-cert='true']`).prevObject[0].slim.selected()),
-                success: response => this.checkSendPending(response, send)
-            });
-        } else {
-            this.submitSendPendind(send);
-        }
-    }
-
-    checkSendPending(data, send) {
-        if (data.length === 0) {
-            this.submitSendPendind(send);
-            return;
-        }
-        let self = this;
-        let stringChain = "Les utilisateurs suivants n'ont pas de certificats électroniques : <br><ul>";
-        for (let i = 0; i < data.length ; i++) {
-            stringChain += "<li>" + data[i].firstname + " " + data[i].name + "</li>";
-        }
-        stringChain += "</ul>Confirmez-vous l’envoie de la demande ? "
-        bootbox.confirm(stringChain, function(result) {
-           if(result) {
-               self.submitSendPendind(send);
-           }
-        });
-    }
-
-    submitSendPendind(send) {
-        $("#pending").val(send);
-        $("#sendButton").click();
+        $("#send-pending-button").unbind();
     }
 
     checkCurrentPage() {

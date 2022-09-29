@@ -6,8 +6,8 @@
 <head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
     import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=[[${versionApp}]]';
-    new FilesInput($("#multipartFiles"), [[${globalProperties.maxUploadSize}]], "", "multipartFiles", [[${originalDocuments}]], true, [[${_csrf}]], [[${signRequest.id}]]);
-    new FilesInput($("#signedFiles"), [[${globalProperties.maxUploadSize}]], "", "signedFiles", [[${signedDocuments}]], true, [[${_csrf}]], [[${signRequest.id}]]);
+    new FilesInput($("#multipartFiles"), [[${globalProperties.maxUploadSize}]], [[${_csrf}]], "", "multipartFiles", [[${originalDocuments}]], true, [[${signRequest.id}]]);
+    new FilesInput($("#signedFiles"), [[${globalProperties.maxUploadSize}]], [[${_csrf}]], "", "signedFiles", [[${signedDocuments}]], true, [[${signRequest.id}]]);
 </script>
 <body>
 <header th:replace="fragments/nav :: nav"></header>

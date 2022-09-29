@@ -4,7 +4,7 @@ import {EventFactory} from "./EventFactory.js?version=@version@";
 
 export default class FilesInput extends EventFactory {
 
-    constructor(input, maxSize, workflowName, name, documents, readOnly, csrf, signRequestId) {
+    constructor(input, maxSize, csrf, workflowName, name, documents, readOnly, signRequestId) {
         super();
         this.input = input;
         this.name = name;
@@ -21,17 +21,12 @@ export default class FilesInput extends EventFactory {
             this.workflowName = "custom";
         }
         this.csrf = new CsrfToken(csrf);
-        this.async = false;
-        this.uploadUrl = null;
-        if(signRequestId != null) {
-            this.async = false;
-            this.uploadUrl = '/user/signrequests/add-docs/' + signRequestId + '?'+ this.csrf.parameterName + '=' + this.csrf.token;
-        } else {
-            if(workflowName != null) {
-                this.async = false;
-                this.uploadUrl = '/ws-secure/signrequests/start-workflow/' + this.workflowName + '?' + this.csrf.parameterName + '=' + this.csrf.token;
-            }
-        }
+        this.async = true;
+        this.uploadUrl = '/ws-secure/signrequests/add-docs?'+ this.csrf.parameterName + '=' + this.csrf.token;
+        // if(workflowName != null) {
+        //     // this.async = false;
+        //     this.uploadUrl = '/ws-secure/signrequests/start-workflow/?' + this.csrf.parameterName + '=' + this.csrf.token;
+        // }
         this.title = $("#titleWiz");
         this.initFileInput(documents, readOnly);
         this.initListeners();
@@ -97,13 +92,16 @@ export default class FilesInput extends EventFactory {
             minFileSize: 1,
             maxFileSize: this.maxSize,
             showClose: false,
-            showBrowse: !readOnly,
+            showBrowse: false,
             showUpload: false,
+            showUploadStats: false,
+            progressDelay: 50,
             showRemove: !readOnly,
-            dropZoneEnabled: !readOnly && !this.async,
+            dropZoneEnabled: !readOnly,
             browseOnZoneClick: !readOnly,
             uploadUrl: this.uploadUrl,
-            uploadAsync: this.async,
+            maxAjaxThreads: 1,
+            uploadAsync: true,
             theme: 'explorer-fas',
             pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
             initialPreview: urls,

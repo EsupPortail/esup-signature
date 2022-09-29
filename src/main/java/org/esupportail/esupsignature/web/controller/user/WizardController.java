@@ -50,21 +50,22 @@ public class WizardController {
         return "user/wizard/wiz-start-by-docs";
     }
 
-    @GetMapping(value = "/wiz-init-steps/{id}")
-    public String wiz4(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
+    @GetMapping(value = "/wiz-init-steps")
+    public String wiz4(@ModelAttribute("userEppn") String userEppn,
+                       @SessionAttribute("signBookId") Long signBookId,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
                        @RequestParam(value = "forceAllSign", required = false) Boolean forceAllSign,
                        @RequestParam(value = "recipientsCCEmailsWiz", required = false) List<String> recipientsCCEmailsWiz,
                        @RequestParam(value = "comment", required = false) String comment,
                        Model model) {
-        SignBook signBook = signBookService.getById(id);
+        SignBook signBook = signBookService.getById(signBookId);
         signBook.setDescription(comment);
         signBook.setForceAllDocsSign(forceAllSign);
-        signBookService.addViewers(id, recipientsCCEmailsWiz);
+        signBookService.addViewers(signBookId, recipientsCCEmailsWiz);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             model.addAttribute("signBook", signBook);
-            if (workflowId != null) {
-                signBookService.initSignBook(id, workflowId, userEppn);
+            if (workflowId != null && workflowId != 0) {
+                signBookService.initSignBook(signBookId, workflowId, userEppn);
                 model.addAttribute("isTempUsers", signRequestService.isTempUsers(signBook.getSignRequests().get(0).getId()));
                 return "user/wizard/wiz-setup-workflow";
             }
@@ -72,8 +73,9 @@ public class WizardController {
         return "user/wizard/wiz-init-steps";
     }
 
-    @PostMapping(value = "/wiz-add-step/{id}", produces = "text/html")
-    public String wizX(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+    @PostMapping(value = "/wiz-add-step", produces = "text/html")
+    public String wizX(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                       @SessionAttribute("signBookId") Long signBookId,
                        @RequestParam(name="addNew", required = false) Boolean addNew,
                        @RequestParam(name="userSignFirst", required = false) Boolean userSignFirst,
                        @RequestParam(name="end", required = false) Boolean end,
@@ -81,13 +83,13 @@ public class WizardController {
                        @RequestParam(name="start", required = false) Boolean start,
                        @RequestBody JsonWorkflowStep step,
                        Model model) throws EsupSignatureException {
-        SignBook signBook = signBookService.getById(id);
+        SignBook signBook = signBookService.getById(signBookId);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             if(step.getRecipientsEmails() != null && step.getRecipientsEmails().size() > 0) {
                 if (userSignFirst) {
-                    liveWorkflowStepService.addNewStepToSignBook(id, SignType.pdfImageStamp, false, Collections.singletonList(userService.getByEppn(authUserEppn).getEmail()), null, authUserEppn);
+                    liveWorkflowStepService.addNewStepToSignBook(signBookId, SignType.pdfImageStamp, false, Collections.singletonList(userService.getByEppn(authUserEppn).getEmail()), null, authUserEppn);
                 }
-                liveWorkflowStepService.addNewStepToSignBook(id, SignType.valueOf(step.getSignType()), step.getAllSignToComplete(), step.getRecipientsEmails(), step.getExternalUsersInfos(), authUserEppn);
+                liveWorkflowStepService.addNewStepToSignBook(signBookId, SignType.valueOf(step.getSignType()), step.getAllSignToComplete(), step.getRecipientsEmails(), step.getExternalUsersInfos(), authUserEppn);
             } else {
                 end = true;
             }

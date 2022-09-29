@@ -68,14 +68,6 @@ public class LdapProperties {
         this.allGroupsSearchFilter = allGroupsSearchFilter;
     }
 
-    public String getGroupNameAttribut() {
-        return groupNameAttribut;
-    }
-
-    public void setGroupNameAttribut(String groupNameAttribut) {
-        this.groupNameAttribut = groupNameAttribut;
-    }
-
     public String getMembersOfGroupSearchFilter() {
         return membersOfGroupSearchFilter;
     }
