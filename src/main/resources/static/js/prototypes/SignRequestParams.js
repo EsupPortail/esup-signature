@@ -374,12 +374,14 @@ export class SignRequestParams extends EventFactory {
             containment: "#pdf",
             scroll: false,
             drag: function(event, ui) {
-                self.signPageNumber = self.cross.attr("page");
-                self.xPos = Math.round(ui.position.left / self.currentScale);
-                self.yPos = Math.round((ui.position.top - (($("#page_" + self.signPageNumber).offset().top) - $("#page_1").offset().top)) / self.currentScale);
                 if(self.firstLaunch) {
                     self.firstLaunch = false;
                 }
+            },
+            stop: function(event, ui) {
+                self.signPageNumber = self.cross.attr("page");
+                self.xPos = Math.round(ui.position.left / self.currentScale);
+                self.yPos = Math.round((ui.position.top - (($("#page_" + self.signPageNumber).offset().top) - $("#page_1").offset().top)) / self.currentScale);
             }
         });
     }
