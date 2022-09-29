@@ -14,7 +14,6 @@ public class LdapProperties {
     private String groupSearchBase;
     private String groupSearchFilter;
     private String allGroupsSearchFilter;
-    private String groupNameAttribut;
     private String membersOfGroupSearchFilter;
     private String memberSearchFilter;
     private String userIdSearchFilter;
@@ -66,14 +65,6 @@ public class LdapProperties {
 
     public void setAllGroupsSearchFilter(String allGroupsSearchFilter) {
         this.allGroupsSearchFilter = allGroupsSearchFilter;
-    }
-
-    public String getGroupNameAttribut() {
-        return groupNameAttribut;
-    }
-
-    public void setGroupNameAttribut(String groupNameAttribut) {
-        this.groupNameAttribut = groupNameAttribut;
     }
 
     public String getMembersOfGroupSearchFilter() {

@@ -26,8 +26,6 @@ public class LdapGroupService implements GroupService {
 
     private String allGroupsSearchFilter;
 
-    private String groupNameAttribut;
-
     private String membersOfGroupSearchFilter;
 
     private String memberSearchBase;
@@ -58,10 +56,6 @@ public class LdapGroupService implements GroupService {
 
     public void setAllGroupsSearchFilter(String allGroupsSearchFilter) {
         this.allGroupsSearchFilter = allGroupsSearchFilter;
-    }
-
-    public void setGroupNameAttribut(String groupNameAttribut) {
-        this.groupNameAttribut = groupNameAttribut;
     }
 
     public void setMembersOfGroupSearchFilter(String membersOfGroupSearchFilter) {
@@ -146,15 +140,15 @@ public class LdapGroupService implements GroupService {
 
     @Override
     public List<String> getMembers(String groupName) {
-
-        String formattedFilter = MessageFormat.format(membersOfGroupSearchFilter, groupName);
-
-        List<String> eppns = ldapTemplate.search(memberSearchBase, formattedFilter, (ContextMapper<String>) ctx -> {
-                    DirContextAdapter searchResultContext = (DirContextAdapter)ctx;
-                    String eppn = searchResultContext.getStringAttribute("mail");
-                    return eppn;
+        List<String> eppns = new ArrayList<>();
+        if (membersOfGroupSearchFilter != null) {
+            String formattedFilter = MessageFormat.format(membersOfGroupSearchFilter, groupName);
+            eppns = ldapTemplate.search(memberSearchBase, formattedFilter, (ContextMapper<String>) ctx -> {
+                DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
+                String eppn = searchResultContext.getStringAttribute("mail");
+                return eppn;
                 });
-
+        }
         return eppns;
     }
 
