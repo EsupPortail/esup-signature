@@ -108,7 +108,10 @@ export class SignUi {
                         $("#certType > option[value='imageStamp']").remove();
                         if(self.workspace.currentSignRequestParamses.length > 0 || self.stepRepeatable) {
                             bootbox.alert("Merci de placer la signature", function () {
-                                window.scrollTo(0, $("#signSpace_" + signId).offset().top - self.workspace.pdfViewer.initialOffset);
+                                let signSpace = $("#signSpace_" + signId);
+                                if(signSpace.length) {
+                                    window.scrollTo(0, signSpace.offset().top - self.workspace.pdfViewer.initialOffset);
+                                }
                             });
                         } else {
                             bootbox.confirm({

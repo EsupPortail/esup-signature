@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
 import java.util.Collections;
 import java.util.List;
 
@@ -59,6 +60,7 @@ public class WizardController {
                        @RequestParam(value = "comment", required = false) String comment,
                        Model model) {
         SignBook signBook = signBookService.getById(signBookId);
+        signBookService.finishSignBookUpload(signBookId, userEppn);
         signBook.setDescription(comment);
         signBook.setForceAllDocsSign(forceAllSign);
         signBookService.addViewers(signBookId, recipientsCCEmailsWiz);
@@ -188,11 +190,11 @@ public class WizardController {
         }
     }
 
-    @PostMapping(value = "/wizend/{id}")
-    public String wizEnd(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, @RequestParam(name="close") String close, Model model) throws EsupSignatureException, EsupSignatureMailException {
-        SignBook signBook = signBookService.getById(id);
+    @PostMapping(value = "/wizend")
+    public String wizEnd(@ModelAttribute("userEppn") String userEppn, @SessionAttribute("signBookId") Long signBookId, @RequestParam(name="close") String close, Model model) throws EsupSignatureException, EsupSignatureMailException {
+        SignBook signBook = signBookService.getById(signBookId);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
-            signBookService.sendCCEmail(id, null);
+            signBookService.sendCCEmail(signBookId, null);
             model.addAttribute("signBook", signBook);
             model.addAttribute("close", close);
             return "user/wizard/wizend";
@@ -201,13 +203,14 @@ public class WizardController {
         }
     }
 
-    @GetMapping(value = "/wizredirect/{id}")
-    public String wizRedirect(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureException {
-        SignBook signBook = signBookService.getById(id);
+    @GetMapping(value = "/wizredirect")
+    public String wizRedirect(@ModelAttribute("userEppn") String userEppn, @SessionAttribute("signBookId") Long signBookId, HttpSession session, RedirectAttributes redirectAttributes) throws EsupSignatureException {
+        SignBook signBook = signBookService.getById(signBookId);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             if(signBook.getLiveWorkflow().getCurrentStep() == null) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande"));
             }
+            session.removeAttribute("signBookId");
             return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
         } else {
             throw new EsupSignatureException("not authorized");

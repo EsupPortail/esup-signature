@@ -10,6 +10,9 @@ export class WizUi {
         this.signBookId = "";
         this.div = div;
         this.workflowName = workflowName;
+        if(workflowName === "" || workflowName == null) {
+            this.workflowName = "custom";
+        }
         this.csrf = csrf;
         this.maxSize = maxSize;
         this.mode = "";
@@ -32,20 +35,21 @@ export class WizUi {
     submitStartWorkflow() {
         let self = this;
         let form = $("#start-workflow-form");
-        $.post({
-            url: form.attr("action"),
-            success: function(signBookId) {
-                // self.fileInput.on('filebatchuploadsuccess', function() {
-                //     $.post({
-                //         url : "/ws-secure/signrequests/finish-signbook/?" + self.csrf.parameterName + "=" + self.csrf.token,
-                //         success: function() {
-                //             location.href="/user/signbooks/pending/" + signBookId;
-                //         }
-                //     });
-                // });
-                self.input.fileinput("upload");
-            }
-        });
+        let title = $("#title-wiz");
+        if(this.workflowName === "custom" && title.val() === "") {
+            $(window).on('scroll', function(e) {
+                window.scrollTo(0,0);
+            });
+            $("#title-wiz-submit").click();
+        } else {
+            $.post({
+                url: form.attr("action"),
+                data: form.serialize(),
+                success: function () {
+                    self.input.fileinput("upload");
+                }
+            });
+        }
     }
 
     checkOnModalClose() {
@@ -105,7 +109,7 @@ export class WizUi {
         $("#wiz-start-button").on('click', e => this.submitStartWorkflow());
         this.input = $("#multipartFiles_" + this.workflowId);
         if(!this.workflowId) this.input = $("#multipartFiles_0");
-        this.fileInput = new FilesInput(this.input, this.maxSize, this.csrf, this.workflowName, this.workflowName, null, false, null);
+        this.fileInput = new FilesInput(this.input, this.maxSize, this.csrf, this.workflowName, null, false);
         this.input.on("filebatchuploadsuccess", e => this.gotoStep2(e));
         let id = this.workflowId;
         if(id === "") {
@@ -137,7 +141,7 @@ export class WizUi {
     gotoStep2(e) {
         console.log(e);
         let comment = $("#commentWiz");
-        let title = $("#titleWiz");
+        let title = $("#title-wiz");
         let id = this.workflowId;
         if(id === "") {
             id = 0;
@@ -239,10 +243,9 @@ export class WizUi {
 
     exit() {
         let csrf = this.csrf;
-        let self = this;
         if(this.signBookId !== ""){
             $.ajax({
-                url: "/user/wizard/wizend/" + self.signBookId + "?name=" + name + "&close=" + $('#close').val() + "&" + csrf.parameterName + "=" + csrf.token,
+                url: "/user/wizard/wizend?name=" + name + "&close=" + $('#close').val() + "&" + csrf.parameterName + "=" + csrf.token,
                 type: 'POST',
                 success: html => this.initWiz2(html)
             });

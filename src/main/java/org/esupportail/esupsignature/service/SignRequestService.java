@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.zxing.WriterException;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
@@ -866,7 +868,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public List<SignRequestParams> getToUseSignRequestParams(long id, String userEppn) {
+	public List<SignRequestParams> getToUseSignRequestParams(Long id, String userEppn) {
 		User user = userService.getUserByEppn(userEppn);
 		List<SignRequestParams> toUserSignRequestParams = new ArrayList<>();
 		SignRequest signRequest = getById(id);
@@ -970,4 +972,28 @@ public class SignRequestService {
 		}
 	}
 
+	@Transactional
+	public List<Comment> getPostits(Long id) {
+		SignRequest signRequest = getById(id);
+		return signRequest.getComments().stream().filter(Comment::getPostit).collect(Collectors.toList());
+	}
+
+	@Transactional
+	public List<Comment> getComments(Long id) {
+		SignRequest signRequest = getById(id);
+		return signRequest.getComments().stream().filter(comment -> !comment.getPostit() && comment.getStepNumber() == null).collect(Collectors.toList());
+	}
+
+	@Transactional
+	public List<Comment> getSpots(Long id) {
+		SignRequest signRequest = getById(id);
+		return signRequest.getComments().stream().filter(comment -> comment.getStepNumber() != null).collect(Collectors.toList());
+	}
+
+	@Transactional
+	public String getJson(Long id) throws JsonProcessingException {
+		SignRequest signRequest = getById(id);
+		ObjectMapper objectMapper = new ObjectMapper();
+		return objectMapper.writeValueAsString(signRequest);
+	}
 }

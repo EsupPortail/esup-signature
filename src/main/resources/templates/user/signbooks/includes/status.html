@@ -4,6 +4,10 @@
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <div th:fragment="status(signBook)">
 	<div th:switch="${signBook.status}" class="text-center mb-1 mt-1">
+		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).uploading}" class="badge badge-status bg-secondary" th:title="#{'signbook.status.' + ${signBook.status}}">
+			<i class="fas fa-upload" th:title="#{'signbook.status.' + ${signBook.status}}"></i>
+			<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
+		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" class="badge badge-status bg-secondary" th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fab fa-firstdraft" th:title="#{'signbook.status.' + ${signBook.status}}"></i>
 				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
