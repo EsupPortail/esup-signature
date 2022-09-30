@@ -374,7 +374,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignBook createFullSignBook(String title, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser, boolean forceSendEmail, Boolean forceAllSign) throws EsupSignatureException {
+    public SignBook createFullSignBook(String title, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, String userEppn, String authUserEppn, boolean forceSendEmail, Boolean forceAllSign) throws EsupSignatureException {
         if(forceAllSign == null) forceAllSign = false;
         if(title == null || title.isEmpty()) {
             title = "Parapheur pour " + recipientsEmails.get(0);
@@ -383,12 +383,12 @@ public class SignBookService {
             }
         }
         logger.info(title);
-        SignBook signBook = createSignBook(title, null, "Demande simple", user.getEppn());
+        SignBook signBook = createSignBook(title, null, "Demande simple", userEppn);
         signBook.setForceAllDocsSign(forceAllSign);
         if(recipientsCCEmails != null) {
             addViewers(signBook.getId(), recipientsCCEmails);
         }
-        Map<SignBook, String> signBookStringMap = sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, user, authUser, forceSendEmail);
+        Map<SignBook, String> signBookStringMap = sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, userEppn, authUserEppn, forceSendEmail);
         return new ArrayList<>(signBookStringMap.keySet()).get(0);
     }
 
@@ -783,11 +783,8 @@ public class SignBookService {
     }
 
     @Transactional
-    public Map<SignBook, String> sendSignRequest(String title, MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser, boolean forceSendEmail, Boolean forceAllSign, String targetUrl) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
+    public Map<SignBook, String> sendSignRequest(String title, MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, String userEppn, String authUserEppn, boolean forceSendEmail, Boolean forceAllSign, String targetUrl) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
         if(forceAllSign == null) forceAllSign = false;
-        if (!signService.checkSignTypeDocType(signType, multipartFiles[0])) {
-//            throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type : <br><b>" + fileService.getContentTypeDescription(multipartFiles[0].getContentType()) + "</b>");
-        }
         if(title == null || title.isEmpty()) {
             if(multipartFiles.length == 1) {
                 title = fileService.getNameOnly(multipartFiles[0].getOriginalFilename());
@@ -799,7 +796,7 @@ public class SignBookService {
             }
         }
         logger.info(title);
-        SignBook signBook = addDocsInNewSignBookSeparated(title, "Demande simple", multipartFiles, user.getEppn());
+        SignBook signBook = addDocsInNewSignBookSeparated(title, "Demande simple", multipartFiles, userEppn);
         signBook.setForceAllDocsSign(forceAllSign);
         try {
             sendCCEmail(signBook.getId(), recipientsCCEmails);
@@ -809,11 +806,12 @@ public class SignBookService {
         if(targetUrl != null && !targetUrl.isEmpty()) {
             signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
         }
-        return sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, user, authUser, forceSendEmail);
+        return sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, userEppn, authUserEppn, forceSendEmail);
     }
 
-    public Map<SignBook, String> sendSignBook(SignBook signBook, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser, boolean forceSendEmail) throws EsupSignatureException {
-        logger.info(user.getEmail() + " envoi d'une demande de signature à " + recipientsEmails);
+    public Map<SignBook, String> sendSignBook(SignBook signBook, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException {
+        User user = userService.getUserByEppn(userEppn);
+        logger.info(userEppn + " envoi d'une demande de signature à " + recipientsEmails);
         String message = null;
         if (allSignToComplete == null) {
             allSignToComplete = false;
@@ -825,7 +823,7 @@ public class SignBookService {
         signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
         workflowService.dispatchSignRequestParams(signBook);
         if (pending != null && pending) {
-            pendingSignBook(signBook.getId(), null, user.getEppn(), authUser.getEppn(), forceSendEmail);
+            pendingSignBook(signBook.getId(), null, userEppn, authUserEppn, forceSendEmail);
         } else {
             message = "Après vérification/annotation, vous devez cliquer sur 'Démarrer le circuit' pour transmettre la demande aux participants";
         }
@@ -835,7 +833,7 @@ public class SignBookService {
         Map<SignBook, String> signBookStringMap = new HashMap<>();
         signBookStringMap.put(signBook, message);
         if(recipientsEmails != null) {
-            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUser.getEppn()), recipientsEmails);
+            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), recipientsEmails);
         }
         return signBookStringMap;
     }

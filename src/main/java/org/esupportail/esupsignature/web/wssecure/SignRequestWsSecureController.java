@@ -253,12 +253,10 @@ public class SignRequestWsSecureController {
                                                           @RequestParam(value = "firstnames", required = false) List<String> firstnames,
                                                           @RequestParam(value = "phones", required = false) List<String> phones,
                                                           @RequestParam(value = "title", required = false) String title,
-                                                          Model model) throws EsupSignatureIOException, EsupSignatureFsException, EsupSignatureException {
-        User user = userService.getUserByEppn(userEppn);
-        User authUser = userService.getUserByEppn(authUserEppn);
+                                                          Model model) throws EsupSignatureException {
         recipientsEmails = recipientsEmails.stream().distinct().collect(Collectors.toList());
         List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
-        SignBook signBook = signBookService.createFullSignBook(title, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, authUser, false, forceAllSign);
+        SignBook signBook = signBookService.createFullSignBook(title, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, userEppn, authUserEppn, false, forceAllSign);
         model.addAttribute("signBookId", signBook.getId());
         return new ResponseEntity<>(signBook.getId(), HttpStatus.OK);
     }

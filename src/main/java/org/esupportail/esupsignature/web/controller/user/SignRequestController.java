@@ -108,10 +108,9 @@ public class SignRequestController {
         model.addAttribute("signBook", signRequest.getParentSignBook());
         Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
         model.addAttribute("workflow", workflow);
-        model.addAttribute("postits", signRequest.getComments().stream().filter(Comment::getPostit).collect(Collectors.toList()));
-        List<Comment> comments = signRequest.getComments().stream().filter(comment -> !comment.getPostit() && comment.getStepNumber() == null).collect(Collectors.toList());
-        model.addAttribute("comments", comments);
-        model.addAttribute("spots", signRequest.getComments().stream().filter(comment -> comment.getStepNumber() != null).collect(Collectors.toList()));
+        model.addAttribute("postits", signRequestService.getPostits(id));
+        model.addAttribute("comments", signRequestService.getComments(id));
+        model.addAttribute("spots", signRequestService.getSpots(id));
         boolean attachmentAlert = signRequestService.isAttachmentAlert(signRequest);
         model.addAttribute("attachmentAlert", attachmentAlert);
         boolean attachmentRequire = signRequestService.isAttachmentRequire(signRequest);
@@ -245,16 +244,14 @@ public class SignRequestController {
                                   @RequestParam(value = "title", required = false) String title,
                                   RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
-        User user = userService.getUserByEppn(userEppn);
-        User authUser = userService.getUserByEppn(authUserEppn);
         recipientsEmails = recipientsEmails.stream().distinct().collect(Collectors.toList());
-        logger.info(user.getEmail() + " envoi d'une demande de signature à " + recipientsEmails);
+        logger.info(userEppn + " envoi d'une demande de signature à " + recipientsEmails);
         List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
         if (multipartFiles != null) {
             try {
                 Map<SignBook, String> signBookStringMap = null;
                 try {
-                    signBookStringMap = signBookService.sendSignRequest(title, multipartFiles, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, authUser, false, forceAllSign, null);
+                    signBookStringMap = signBookService.sendSignRequest(title, multipartFiles, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, userEppn, authUserEppn, false, forceAllSign, null);
                 } catch(EsupSignatureIOException e) {
                     logger.warn("error on send signrequest, redirect to home");
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));

@@ -65,13 +65,10 @@ public class WebAppConfig implements WebMvcConfigurer {
 		registrationBean.addUrlPatterns(
 				"/user/", "/user/*",
 				"/otp/", "/otp/*",
-				"/error",
-//				"/ws-secure/", "/ws-secure/*",
+				"/error", "/error/*",
 				"/admin/", "/admin/*",
 				"/manager/", "/manager/*",
-				"/public/", "/public/*",
-				"/ws/", "/ws/*"
-		);
+				"/public/", "/public/*");
 		return registrationBean;
 	}
 
