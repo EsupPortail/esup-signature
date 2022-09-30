@@ -2,12 +2,12 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
-<div th:fragment="new" class="w-100" th:with="isUserOnSu = ${userEppn != authUserEppn}">
+<div id="new-fragment" th:fragment="new" class="position-fixed clear new-max-w" style="z-index: 1000;" th:with="isUserOnSu = ${userEppn != authUserEppn}">
     <div class="card border-0 mb-2 w-100" th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')') || #authorization.expression('hasRole(''ROLE_FRANCECONNECT'')')}">
         <div class="card-body bg-light">
-            <button id="toggleNewGrid" class="btn btn-transparent text-dark float-end"><i class="fas fa-th"></i> Affichage</button>
+            <button id="toggle-new-grid" class="btn btn-transparent text-dark float-end"><i class="fas fa-th"></i> Affichage</button>
             <h5 class="text-center"><b>Nouveau</b></h5>
-            <div id="newScroll" class="text-center text-nowrap col-12 text-wrap scrollbar-lite">
+            <div id="new-scroll" class="text-center text-nowrap col-12 text-wrap scrollbar-lite">
                 <div id="newContainer" class="d-inline">
                     <h5 class="newToggled d-none">Outils de signature</h5>
                     <a id="newfastSign" th:if="${userEppn == authUserEppn}" th:unless="${globalProperties.hideAutoSign}" role="button" data-bs-dismiss="modal" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0" data-bs-toggle="modal"

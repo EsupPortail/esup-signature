@@ -37,8 +37,8 @@ export class HomeUi {
     }
 
     initListeners() {
-        $('#toggleNewGrid').on('click', e => this.toggleNewMenu());
-        $('#newScroll').on('mousewheel DOMMouseScroll', e => this.activeHorizontalScrolling(e));
+        $('#toggle-new-grid').on('click', e => this.toggleNewMenu());
+        $('#new-scroll').on('mousewheel DOMMouseScroll', e => this.activeHorizontalScrolling(e));
         this.noFilterButton.on('click', e => this.showAll(e));
         this.workflowFilterButton.on('click', e => this.filterWorkflows(e));
         this.globalFilterButton.on('click', e => this.filterGlobal(e));
@@ -58,9 +58,11 @@ export class HomeUi {
 
     toggleNewMenu() {
         console.info("toggle new menu");
-        $('#newScroll').toggleClass('text-nowrap').toggleClass('new-min-h');
-        // $('#toSignList').toggleClass('d-flex d-none');
-        $('#toggleNewGrid').children().toggleClass('fa-th fa-chevron-up');
+        $('#new-scroll').toggleClass('text-nowrap').toggleClass('new-min-h');
+        // $('#to-sign-list').toggleClass('d-flex d-none');
+        $('#new-fragment').toggleClass('position-fixed');
+        $('#to-sign-list').toggleClass('margin-274');
+        $('#toggle-new-grid').children().toggleClass('fa-th fa-chevron-up');
         $('.newHr').toggleClass('d-none');
         $('#newContainer').toggleClass('d-inline').toggleClass("text-left");
         $('.newToggled').toggleClass('d-none');

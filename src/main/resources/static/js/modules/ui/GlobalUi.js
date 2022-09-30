@@ -144,7 +144,7 @@ export class GlobalUi {
     }
 
     initTooltips() {
-        $("#newScroll").tooltip({
+        $("#new-scroll").tooltip({
             disabled: false,
             show: { effect: "fade", duration: 500 },
             hide: { effect: "fade", duration: 500 }
