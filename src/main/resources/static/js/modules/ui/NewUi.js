@@ -58,6 +58,7 @@ export class NewUi {
     submitFastSignRequest(e) {
         e.target.remove();
         $("#fast-form-cancel").removeClass("d-none");
+        $("#fast-form-cancel").addClass("d-none");
         let form = $("#fast-sign-form");
         let fileInput = $("#fast-sign-file-input");
         this.finishSignBook(form, fileInput, true)

@@ -144,7 +144,7 @@ export class GlobalUi {
     }
 
     initTooltips() {
-        $("#newScroll").tooltip({
+        $("#new-scroll").tooltip({
             disabled: false,
             show: { effect: "fade", duration: 500 },
             hide: { effect: "fade", duration: 500 }
@@ -502,7 +502,6 @@ export class GlobalUi {
                     if(saveCommentButton.length && $("#postitComment").val() !== '') {
                         saveCommentButton.click();
                     }
-
                 }
                 if(event.which === 27) {
                     let hideCommentButton = $("#hideCommentButton");
