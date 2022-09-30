@@ -502,7 +502,6 @@ export class GlobalUi {
                     if(saveCommentButton.length && $("#postitComment").val() !== '') {
                         saveCommentButton.click();
                     }
-
                 }
                 if(event.which === 27) {
                     let hideCommentButton = $("#hideCommentButton");
