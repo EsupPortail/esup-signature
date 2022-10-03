@@ -332,6 +332,11 @@ code {
   100% { transform: rotate(360deg); }
 }
 
+.file-drop-zone {
+    border: 2px dashed #ddd;
+    min-height: revert;
+}
+
 .file-drop-zone-title {
      padding: 10px 10px !important;
  }
@@ -1520,6 +1525,14 @@ textarea:placeholder-shown.required-field {
     min-height: 70vh;
 }
 
+.new-max-w {
+    width: calc(100vw - 280px);
+}
+
+.margin-274 {
+    margin-top: 274px;
+}
+
 .zoom {
     text-align: center;
     min-width: 60px !important;
@@ -2048,10 +2061,6 @@ progress:before {
 }
 .france-connect:hover img.image-hover {
     display: inline;
-}
-
-.file-drop-zone {
-    min-height: revert;
 }
 
 #help-naming-template {

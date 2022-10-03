@@ -9,7 +9,6 @@ import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
-import org.hibernate.LazyInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -17,15 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller", "org.esupportail.esupsignature.web.otp"})
 @EnableConfigurationProperties(GlobalProperties.class)
@@ -81,7 +77,7 @@ public class GlobalAttributsControllerAdvice {
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
             User user = userService.getUserByEppn(userEppn);
-            parseRoles(userEppn, myGlobalProperties);
+            userService.parseRoles(userEppn, myGlobalProperties);
             model.addAttribute("user", user);
             model.addAttribute("authUser", userService.getUserByEppn(authUserEppn));
             model.addAttribute("keystoreFileName", user.getKeystoreFileName());
@@ -120,38 +116,4 @@ public class GlobalAttributsControllerAdvice {
 
     }
 
-    @Transactional
-    public void parseRoles(String userEppn, GlobalProperties myGlobalProperties) {
-        User user = userService.getByEppn(userEppn);
-        try {
-            List<String> roles = user.getRoles();
-            if(!Collections.disjoint(roles, globalProperties.getHideSendSignExceptRoles()))
-                myGlobalProperties.setHideSendSignRequest(!globalProperties.getHideSendSignRequest());
-            if(!Collections.disjoint(roles, globalProperties.getHideWizardExceptRoles()))
-                myGlobalProperties.setHideWizard(!globalProperties.getHideWizard());
-            if(!Collections.disjoint(roles, globalProperties.getHideAutoSignExceptRoles()))
-                myGlobalProperties.setHideAutoSign(!globalProperties.getHideAutoSign());
-
-            if(roles.contains("ROLE_CREATE_SIGNREQUEST")) {
-                myGlobalProperties.setHideSendSignRequest(false);
-            }
-            if(roles.contains("ROLE_CREATE_WIZARD")) {
-                myGlobalProperties.setHideWizard(false);
-            }
-            if(roles.contains("ROLE_CREATE_AUTOSIGN")) {
-                myGlobalProperties.setHideAutoSign(false);
-            }
-            if(roles.contains("ROLE_NO_CREATE_SIGNREQUEST")) {
-                myGlobalProperties.setHideSendSignRequest(true);
-            }
-            if(roles.contains("ROLE_NO_CREATE_WIZARD")) {
-                myGlobalProperties.setHideWizard(true);
-            }
-            if(roles.contains("ROLE_NO_CREATE_AUTOSIGN")) {
-                myGlobalProperties.setHideAutoSign(true);
-            }
-        } catch(LazyInitializationException e) {
-            logger.error("enable to find roles", e);
-        }
-    }
 }

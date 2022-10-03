@@ -147,7 +147,7 @@
             </th:block>
             <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
                 <div class="alert alert-success">
-                    Le document contenu dans cette demande de signature a été archivé. Vous avez la posibilité de le télécharger à l'aide du bouton en bas à droite.
+                    Le document contenu dans cette demande de signature a été archivé. Vous avez la possibilité de le télécharger à l’aide du bouton en bas à droite.
                 </div>
             </th:block>
             <div th:if="${signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace"
@@ -171,8 +171,8 @@
                 </div>
                 <script th:inline="javascript" type="module">
                     import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=[[${versionApp}]]';
-                    new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.originalDocuments}]], true, [[${_csrf}]]);
-                    new FilesInput($("#signedFiles"), "", "signedFiles", [[${signRequest.signedDocuments}]], true, [[${_csrf}]]);
+                    new FilesInput($("#multipartFiles"),[[${globalProperties.maxUploadSize}]], [[${_csrf}]], "multipartFiles", [[${signRequest.originalDocuments}]], true);
+                    new FilesInput($("#signedFiles"),[[${globalProperties.maxUploadSize}]], [[${_csrf}]], "signedFiles", [[${signRequest.signedDocuments}]], true);
                 </script>
             </div>
             <div th:if="${!signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" class="workspace alert alert-danger">
@@ -238,7 +238,9 @@
                     </div>
                 </div>
                 <div id="noOptions" class="alert alert-danger mt-1" style="display: none;">
-                    Aucune option de signature n'est disponible pour cette demande. Si vous en avez la possibilité, merci d’ajouter une signature sur le document et/ou de démarrer NexU.
+                    Votre profile ne possède pas les prérequis nécessaires pour signer cette demande. Si vous en avez la possibilité, merci de contrôler vos paramètres de signature, d’importer un certificat ou de démarrer NexU.
+                    <br>
+                    Sinon merci de contacter la personne ou le service émetteur de cette demande de signature.
                 </div>
                 <div id="noSeal" th:if="${!sealCertOK}" class="alert alert-danger mt-1" style="display: none;">
                     La signature par certificat cachet d’établissement et temporairement indisponible pour des raisons de maintenance. Merci refaire un essai ultérieurement.
@@ -258,8 +260,10 @@
                     </select>
                     <input class="form-control mt-2 mb-1" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" />
                 </div>
-                <label for="signComment">Vous pouvez ajouter un commentaire</label>
-                <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
+                <div id="signCommentDiv">
+                    <label for="signComment">Vous pouvez ajouter un commentaire</label>
+                    <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
+                </div>
                 <div id="nexuCheck" th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign ? 'd-none' : ''}">
                     <div id="nexu_version_alert" style="display: none;text-align: center;">
                         <div class="alert alert-warning float-start">

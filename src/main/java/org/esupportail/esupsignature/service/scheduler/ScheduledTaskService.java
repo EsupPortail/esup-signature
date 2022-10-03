@@ -131,6 +131,11 @@ public class ScheduledTaskService {
 		}
 	}
 
+	@Scheduled(initialDelay = 1000, fixedRate = 86400000)
+	public void cleanUploadingSignBooks() {
+		taskService.initCleanUploadingSignBooks();
+	}
+
 	@Scheduled(initialDelay = 86400000, fixedRate = 86400000)
 	public void refreshOJKeystore() {
 		if(oJService != null) {

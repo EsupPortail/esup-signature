@@ -15,6 +15,7 @@ import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.thymeleaf.dialect.springdata.SpringDataDialect;
 import org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect;
@@ -64,13 +65,10 @@ public class WebAppConfig implements WebMvcConfigurer {
 		registrationBean.addUrlPatterns(
 				"/user/", "/user/*",
 				"/otp/", "/otp/*",
-				"/error",
-				"/ws-secure/", "/ws-secure/*",
+				"/error", "/error/*",
 				"/admin/", "/admin/*",
 				"/manager/", "/manager/*",
-				"/public/", "/public/*",
-				"/ws/", "/ws/*"
-		);
+				"/public/", "/public/*");
 		return registrationBean;
 	}
 
@@ -85,6 +83,11 @@ public class WebAppConfig implements WebMvcConfigurer {
 				.externalDocs(new ExternalDocumentation()
 						.description("Wiki Esup Signature")
 						.url("https://www.esup-portail.org/wiki/display/SIGN/Accueil"));
+	}
+
+	@Bean
+	HandlerExceptionResolver customExceptionResolver () {
+		return new HandlerExceptionToViewResolver();
 	}
 
 }

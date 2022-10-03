@@ -9,8 +9,10 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.entity.Certificat;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.repository.CertificatRepository;
+import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +52,9 @@ public class CertificatService {
 
     @Resource
     private SignProperties signProperties;
+
+    @Resource
+    private WorkflowStepRepository workflowStepRepository;
 
     @Resource
     private final GlobalProperties globalProperties;
@@ -101,6 +106,10 @@ public class CertificatService {
     @Transactional
     public void delete(Long id) {
         Certificat certificat = getById(id);
+        List<WorkflowStep> workflowSteps = workflowStepRepository.findByCertificatId(id);
+        for(WorkflowStep workflowStep : workflowSteps) {
+            workflowStep.setCertificat(null);
+        }
         certificatRepository.delete(certificat);
     }
 

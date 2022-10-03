@@ -425,7 +425,12 @@ export class WorkspacePdf {
             "&commentPageNumber=" + $("#commentPageNumber").val() +
             "&spotStepNumber=" + spotStepNumber +
             "&" + this.csrf.parameterName + "=" + this.csrf.token;
-
+        let postitDiv = $("#postit");
+        if(postitDiv.length) {
+            postitDiv.html("<div class=\"spinner-border\" role=\"status\">\n" +
+                "  <span class=\"visually-hidden\">Enregistrement</span>\n" +
+                "</div>");
+        }
         $.ajax({
             method: 'POST',
             url: "/user/signrequests/comment/" + this.signRequestId + "/?" + commentUrlParams,

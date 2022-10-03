@@ -119,11 +119,11 @@ spring:
             max-request-size: 1280KB
             resolve-lazily: true
     thymeleaf:
-        cache: true
+        cache: false
         encoding: UTF-8
         mode: HTML
         servlet:
-            produce-partial-output-while-processing: true
+            produce-partial-output-while-processing: false
     web:
         resources:
             cache:
@@ -133,14 +133,12 @@ spring:
             static-locations: classpath:/static
     mvc:
         static-path-pattern: /**
-    devtools:
-        add-properties: false
+
 ldap:
     search-base: ou=people
     group-search-base: ou=groups
     group-search-filter: member={0}
     all-groups-search-filter: cn=*{0}
-    group-name-attribut: ou
     members-of-group-search-filter: memberOf=cn={0},ou=groups
     user-id-search-filter: (uid={0})
     member-search-filter: (&(uid={0})({1}))

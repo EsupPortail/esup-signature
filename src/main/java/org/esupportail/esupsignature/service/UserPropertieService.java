@@ -54,6 +54,7 @@ public class UserPropertieService {
         userPropertieRepository.save(userPropertie);
     }
 
+    @Transactional
     public List<String> getFavoritesEmails(String userEppn) {
         List<UserPropertie> userProperties = getUserProperties(userEppn);
         Map<User, Date> favorites = new HashMap<>();
@@ -65,6 +66,7 @@ public class UserPropertieService {
         return entrySet.stream().map(Map.Entry::getKey).map(User::getEmail).limit(5).collect(Collectors.toList());
     }
 
+    @Transactional
     public List<UserPropertie> getUserProperties(String userEppn) {
         return userPropertieRepository.findByUserEppn(userEppn);
     }
