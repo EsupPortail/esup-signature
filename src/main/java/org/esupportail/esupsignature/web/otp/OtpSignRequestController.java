@@ -42,6 +42,9 @@ public class OtpSignRequestController {
 
     @Resource
     private SignService signService;
+    
+    @Resource
+    private SignWithService signWithService;
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
@@ -102,6 +105,8 @@ public class OtpSignRequestController {
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
         model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
+        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest));
+        model.addAttribute("sealCertOK", false);
         if(!signRequest.getStatus().equals(SignRequestStatus.draft)) {
             try {
                 Object userShareString = httpSession.getAttribute("userShareId");
