@@ -176,6 +176,7 @@ export class SignUi {
                 signModal = $("#signModal");
             }
             signModal.modal('show');
+            this.confirmLaunchSignModal();
         }
     }
 
