@@ -263,6 +263,7 @@ public class WorkflowService {
         return workflows;
     }
 
+    @Transactional
     public List<Workflow> getAllWorkflows() {
         List<Workflow> allWorkflows = new ArrayList<>();
         allWorkflows.addAll(this.getDatabaseWorkflows());
@@ -278,6 +279,7 @@ public class WorkflowService {
         return null;
     }
 
+    @Transactional
     public Workflow getById(Long id) {
         return workflowRepository.findById(id).get();
     }
