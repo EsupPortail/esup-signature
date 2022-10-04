@@ -92,7 +92,6 @@ public class DataService {
         data.setForm(form);
         data.setFormName(form.getName());
         data.setFormVersion(form.getVersion());
-        data.setStatus(SignRequestStatus.draft);
         data.setUpdateBy(authUser);
         data.setUpdateDate(new Date());
         dataRepository.save(data);

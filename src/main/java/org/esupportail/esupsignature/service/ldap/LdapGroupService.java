@@ -140,15 +140,15 @@ public class LdapGroupService implements GroupService {
 
     @Override
     public List<String> getMembers(String groupName) {
-
-        String formattedFilter = MessageFormat.format(membersOfGroupSearchFilter, groupName);
-
-        List<String> eppns = ldapTemplate.search(memberSearchBase, formattedFilter, (ContextMapper<String>) ctx -> {
-                    DirContextAdapter searchResultContext = (DirContextAdapter)ctx;
-                    String eppn = searchResultContext.getStringAttribute("mail");
-                    return eppn;
-                });
-
+        List<String> eppns = new ArrayList<>();
+        if (membersOfGroupSearchFilter != null) {
+            String formattedFilter = MessageFormat.format(membersOfGroupSearchFilter, groupName);
+            eppns = ldapTemplate.search(memberSearchBase, formattedFilter, (ContextMapper<String>) ctx -> {
+                DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
+                String eppn = searchResultContext.getStringAttribute("mail");
+                return eppn;
+            });
+        }
         return eppns;
     }
 
