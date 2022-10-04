@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.service.SignRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.*;
@@ -47,6 +48,21 @@ public class DataExportService {
         return  dataDatas;
     }
 
+    @Transactional
+    public List<Map<String, String>> getDatasToExportByFormName(String name) {
+        List<Form> forms = formRepository.findFormByNameAndDeletedIsNullOrDeletedIsFalse(name);
+        if (forms.size() > 0) {
+            try {
+                return getDatasToExport(forms.stream().map(Form::getWorkflow).collect(Collectors.toList()));
+            } catch (Exception e) {
+                logger.error("get file error", e);
+            }
+        } else {
+            logger.warn("form " + name + " not found");
+        }
+        return null;
+    }
+
     public List<LinkedHashMap<String, String>> getDatasToExport(Workflow workflow) {
         List<Form> forms = formRepository.findByWorkflowIdEquals(workflow.getId());
         List<Data> datas = dataRepository.findByFormId(forms.get(0).getId());
@@ -59,6 +75,7 @@ public class DataExportService {
         return dataDatas;
     }
 
+    @Transactional
     public LinkedHashMap<String, String> getJsonDatasFromSignRequest(Long id) {
         SignRequest signRequest = signRequestService.getById(id);
         if(signRequest != null && signRequest.getParentSignBook() != null) {
