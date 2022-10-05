@@ -737,7 +737,7 @@ public class SignBookService {
     @Transactional
     public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
         int i = 0;
-        SignBook signBook = getById(signBookId);
+        SignBook signBook = signBookRepository.findWithLockingById(signBookId).orElseThrow();
         for (MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, authUserEppn, authUserEppn);
             try {
