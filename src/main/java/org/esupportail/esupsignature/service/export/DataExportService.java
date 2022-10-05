@@ -96,9 +96,11 @@ public class DataExportService {
         if(signBook != null) {
             toExportDatas.put("sign_request_id", signBook.getSignRequests().get(0).getId().toString());
             toExportDatas.put("sign_request_attachements_size", String.valueOf(signBook.getSignRequests().get(0).getAttachments().size()));
+            toExportDatas.put("sign_request_current_status", signBook.getSignRequests().get(0).getStatus().toString());
         } else {
             toExportDatas.put("sign_request_id", "");
             toExportDatas.put("sign_request_attachements_size", "");
+            toExportDatas.put("sign_request_current_status", "");
         }
         toExportDatas.put("form_name", data.getForm().getName());
         toExportDatas.put("form_desc", data.getForm().getDescription());

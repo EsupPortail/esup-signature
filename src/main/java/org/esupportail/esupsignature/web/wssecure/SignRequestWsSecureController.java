@@ -241,7 +241,7 @@ public class SignRequestWsSecureController {
     @PostMapping(value = "/create-full-sign-book")
     public ResponseEntity<Long> createFullSignFastRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                                           @RequestParam("signType") SignType signType,
-                                                          @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
+                                                          @RequestParam(value = "recipientsEmails") List<String> recipientsEmails,
                                                           @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
                                                           @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
                                                           @RequestParam(name = "forceAllSign", required = false) Boolean forceAllSign,
