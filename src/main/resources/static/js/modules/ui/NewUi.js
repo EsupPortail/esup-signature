@@ -83,6 +83,9 @@ export class NewUi {
                     });
                 });
                 fileInput.fileinput("upload");
+            },
+            error: function() {
+                $("#send-sign-submit").click();
             }
         });
     }
