@@ -52,15 +52,25 @@ export class NewUi {
     submitSendPending(send) {
         let form = $("#send-sign-form");
         let fileInput = $("#send-sign-file-input");
+        let nbFiles = fileInput.fileinput('getFilesCount')
+        if(nbFiles === 0) {
+            $("#send-sign-submit").click();
+            return;
+        }
         this.finishSignBook(form, fileInput, send)
     }
 
     submitFastSignRequest(e) {
-        e.target.remove();
-        $("#fast-form-cancel").removeClass("d-none");
-        $("#fast-form-cancel").addClass("d-none");
         let form = $("#fast-sign-form");
         let fileInput = $("#fast-sign-file-input");
+        let nbFiles = fileInput.fileinput('getFilesCount')
+        if(nbFiles === 0) {
+            $("#fast-form-submit").click();
+            return;
+        }
+        $("#fast-sign-button").addClass("d-none");
+        $("#fast-form-cancel").removeClass("d-none");
+        $("#fast-form-close").addClass("d-none");
         this.finishSignBook(form, fileInput, true)
     }
 
@@ -83,6 +93,9 @@ export class NewUi {
                     });
                 });
                 fileInput.fileinput("upload");
+            },
+            error: function() {
+                $("#send-sign-submit").click();
             }
         });
     }
