@@ -215,14 +215,12 @@ public class SignRequestWsSecureController {
     @ResponseBody
     @PostMapping(value = "/add-docs", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> addDocumentToNewSignRequest(@SessionAttribute("signBookId") Long signBookId,  @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles, @RequestParam(required = false) Boolean separated) throws EsupSignatureIOException {
-        synchronized (("sign_book_" + signBookId).intern()) {
-            logger.info("start add documents");
-            try {
-                signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn);
-                return new ResponseEntity<>("{}", HttpStatus.OK);
-            } catch (HibernateException e) {
-                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+        logger.info("start add documents");
+        try {
+            signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn);
+            return new ResponseEntity<>("{}", HttpStatus.OK);
+        } catch (HibernateException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
