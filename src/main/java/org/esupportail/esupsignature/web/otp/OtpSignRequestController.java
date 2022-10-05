@@ -42,6 +42,9 @@ public class OtpSignRequestController {
 
     @Resource
     private SignService signService;
+    
+    @Resource
+    private SignWithService signWithService;
 
     @Resource
     private SignWithService signWithService;
