@@ -16,7 +16,7 @@ public class Data {
     private Long id;
 
 	@JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.DETACH, fetch = FetchType.LAZY)
     private Form form;
 
 	private String formName;
@@ -45,8 +45,8 @@ public class Data {
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
-	@OneToOne
-	private SignBook signBook;
+	@OneToOne(cascade = CascadeType.DETACH)
+	private SignBook signBook = null;
 
 	public Long getId() {
 		return id;

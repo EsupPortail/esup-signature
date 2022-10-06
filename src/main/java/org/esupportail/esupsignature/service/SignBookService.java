@@ -446,11 +446,6 @@ public class SignBookService {
         return false;
     }
 
-    public void nullifySignBook(SignBook signBook) {
-        Data data = getBySignBook(signBook);
-        if(data != null) data.setSignBook(null);
-    }
-
     @Transactional
     public boolean deleteDefinitive(Long signBookId, String userEppn) {
         User user = userService.getUserByEppn(userEppn);
@@ -466,7 +461,6 @@ public class SignBookService {
             for (Long signRequestId : signRequestsIds) {
                 signRequestService.deleteDefinitive(signRequestId);
             }
-            nullifySignBook(signBook);
             dataService.deleteBySignBook(signBook);
             signBookRepository.delete(signBook);
             logger.info("definitive delete signbook : " + signBookId + " by " + userEppn);
