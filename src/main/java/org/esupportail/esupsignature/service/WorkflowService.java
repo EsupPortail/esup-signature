@@ -378,8 +378,8 @@ public class WorkflowService {
     @Transactional
     public void delete(Workflow workflow) throws EsupSignatureException {
         List<SignBook> signBooks = signBookRepository.findByLiveWorkflowWorkflow(workflow);
-        Form form = formRepository.findByWorkflowIdEquals(workflow.getId()).get(0);
-        if(form == null) {
+        List<Form> forms = formRepository.findByWorkflowIdEquals(workflow.getId());
+        if(forms.size() == 0) {
             if (signBooks.stream().allMatch(signBook -> signBook.getStatus() == SignRequestStatus.draft || signBook.getStatus() == SignRequestStatus.deleted)) {
                 List<LiveWorkflow> liveWorkflows = liveWorkflowService.getByWorkflow(workflow);
                 for (LiveWorkflow liveWorkflow : liveWorkflows) {
@@ -397,7 +397,7 @@ public class WorkflowService {
                 throw new EsupSignatureException("Le circuit ne peut pas être supprimé car il est en court d'utilisation");
             }
         } else {
-            throw new EsupSignatureException("Le circuit ne peut pas être supprimé car il associée au formulaire " + form.getTitle());
+            throw new EsupSignatureException("Le circuit ne peut pas être supprimé car il associée au formulaire " + forms.get(0).getTitle());
         }
     }
 
