@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
+import org.esupportail.esupsignature.entity.Field;
 import org.esupportail.esupsignature.entity.Form;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -18,4 +19,5 @@ public interface FormRepository extends CrudRepository<Form, Long> {
 	List<Form> findByRolesIn(List<String> role);
     List<Form> findByManagerRole(String role);
 	List<Form> findByWorkflowIdEquals(Long workflowId);
+	List<Form> findByFieldsContaining(Field field);
 }
