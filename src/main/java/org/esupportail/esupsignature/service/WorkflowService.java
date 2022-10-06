@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
+import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
@@ -75,6 +76,9 @@ public class WorkflowService {
 
     @Resource
     private UserListService userListService;
+
+    @Resource
+    private FormRepository formRepository;
 
     @PostConstruct
     public void initCreatorWorkflow() {
@@ -369,25 +373,31 @@ public class WorkflowService {
                 }
             }
         }
-   }
+    }
 
+    @Transactional
     public void delete(Workflow workflow) throws EsupSignatureException {
         List<SignBook> signBooks = signBookRepository.findByLiveWorkflowWorkflow(workflow);
-        if(signBooks.stream().allMatch(signBook -> signBook.getStatus() == SignRequestStatus.draft || signBook.getStatus() == SignRequestStatus.deleted)) {
-            List<LiveWorkflow> liveWorkflows = liveWorkflowService.getByWorkflow(workflow);
-            for(LiveWorkflow liveWorkflow : liveWorkflows) {
-                liveWorkflow.setWorkflow(null);
-                liveWorkflow.getLiveWorkflowSteps().forEach(lws -> lws.setWorkflowStep(null));
-            }
-            for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
-                List<Field> fields = fieldService.getFieldsByWorkflowStep(workflowStep);
-                for(Field field : fields) {
-                    field.getWorkflowSteps().remove(workflowStep);
+        Form form = formRepository.findByWorkflowIdEquals(workflow.getId()).get(0);
+        if(form == null) {
+            if (signBooks.stream().allMatch(signBook -> signBook.getStatus() == SignRequestStatus.draft || signBook.getStatus() == SignRequestStatus.deleted)) {
+                List<LiveWorkflow> liveWorkflows = liveWorkflowService.getByWorkflow(workflow);
+                for (LiveWorkflow liveWorkflow : liveWorkflows) {
+                    liveWorkflow.setWorkflow(null);
+                    liveWorkflow.getLiveWorkflowSteps().forEach(lws -> lws.setWorkflowStep(null));
                 }
+                for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
+                    List<Field> fields = fieldService.getFieldsByWorkflowStep(workflowStep);
+                    for (Field field : fields) {
+                        field.getWorkflowSteps().remove(workflowStep);
+                    }
+                }
+                workflowRepository.delete(workflow);
+            } else {
+                throw new EsupSignatureException("Le circuit ne peut pas être supprimé car il est en court d'utilisation");
             }
-            workflowRepository.delete(workflow);
         } else {
-            throw new EsupSignatureException("Le circuit ne peut pas être supprimé car il est en court d'utilisation");
+            throw new EsupSignatureException("Le circuit ne peut pas être supprimé car il associée au formulaire " + form.getTitle());
         }
     }
 
