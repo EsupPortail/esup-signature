@@ -7,7 +7,6 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.repository.AuditStepRepository;
 import org.esupportail.esupsignature.repository.AuditTrailRepository;
 import org.esupportail.esupsignature.service.utils.file.FileService;
-import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -60,10 +59,6 @@ public class AuditTrailService {
     @Resource
     private ServletContext servletContext;
 
-    @Resource
-    private PdfService pdfService;
-
-    @Transactional
     public AuditTrail create(String token) {
         AuditTrail auditTrail = new AuditTrail();
         auditTrail.setToken(token);
@@ -80,14 +75,12 @@ public class AuditTrailService {
         auditTrail.setDocumentId(document.getId().toString());
     }
 
-    @Transactional
     public void addAuditStep(String token, String userEppn, String certificat, String timeStampCertificat, Date timeStampDate, Boolean allScrolled, Integer page, Integer posX, Integer posY) {
         AuditTrail auditTrail = auditTrailRepository.findByToken(token);
         AuditStep auditStep = createAuditStep(userEppn, certificat, timeStampCertificat, timeStampDate, allScrolled, page, posX, posY);
         auditTrail.getAuditSteps().add(auditStep);
     }
 
-    @Transactional
     public AuditStep createAuditStep(String userEppn, String certificat, String timeStampCertificat, Date timeStampDate, Boolean allScrolled, Integer page, Integer posX, Integer posY) {
         User user = userService.getUserByEppn(userEppn);
         AuditStep auditStep = new AuditStep();
