@@ -455,7 +455,6 @@ public class SignBookService {
     public boolean deleteDefinitive(Long signBookId, String userEppn) {
         User user = userService.getUserByEppn(userEppn);
         SignBook signBook = getById(signBookId);
-        signBook.getHidedBy().clear();
         if(signBook.getCreateBy().equals(user) || userService.getSystemUser().equals(user) || user.getRoles().contains("ROLE_ADMIN")) {
             signBook.getLiveWorkflow().setCurrentStep(null);
             List<Long> liveWorkflowStepIds = signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getId).collect(Collectors.toList());
@@ -467,8 +466,8 @@ public class SignBookService {
             for (Long signRequestId : signRequestsIds) {
                 signRequestService.deleteDefinitive(signRequestId);
             }
-            dataService.deleteBySignBook(signBook);
             nullifySignBook(signBook);
+            dataService.deleteBySignBook(signBook);
             signBookRepository.delete(signBook);
             logger.info("definitive delete signbook : " + signBookId + " by " + userEppn);
             return true;

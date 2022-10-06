@@ -45,8 +45,8 @@ public class Data {
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
-	@OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
-	private SignBook signBook = null;
+	@OneToOne
+	private SignBook signBook;
 
 	public Long getId() {
 		return id;
