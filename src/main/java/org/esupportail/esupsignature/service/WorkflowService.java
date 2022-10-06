@@ -392,6 +392,9 @@ public class WorkflowService {
                         field.getWorkflowSteps().remove(workflowStep);
                     }
                 }
+                for(UserShare userShare : userShareService.getByWorkflowId(workflow.getId())) {
+                    userShareService.delete(userShare);
+                }
                 workflowRepository.delete(workflow);
             } else {
                 throw new EsupSignatureException("Le circuit ne peut pas être supprimé car il est en court d'utilisation");
