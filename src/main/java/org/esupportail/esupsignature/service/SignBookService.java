@@ -836,7 +836,7 @@ public class SignBookService {
     public void initWorkflowAndPendingSignBook(Long signRequestId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, String userEppn, String authUserEppn, Boolean draft) throws EsupSignatureFsException, EsupSignatureException {
         SignRequest signRequest = signRequestService.getById(signRequestId);
         SignBook signBook = signRequest.getParentSignBook();
-        if(signBook.getStatus().equals(SignRequestStatus.draft)) {
+        if(signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.uploading)) {
             if(draft != null) {
                 if(draft) {
                     initWorkflow(recipientsEmails, allSignToCompletes, externalUsersInfos, targetEmails, userEppn, authUserEppn, signBook);
