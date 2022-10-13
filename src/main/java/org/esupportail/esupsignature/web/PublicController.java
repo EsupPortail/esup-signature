@@ -72,7 +72,11 @@ public class PublicController {
         model.addAttribute("auditTrail", auditTrail);
         if(auditTrail != null && auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
             Reports reports = signRequestService.validate(signRequest.getId());
-            model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
+            if(reports != null) {
+                model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
+            } else {
+                model.addAttribute("signRequest", signRequest);
+            }
         } else {
             model.addAttribute("signRequest", signRequest);
         }
