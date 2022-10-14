@@ -119,7 +119,7 @@ export class SignUi {
                                     "<div class='alert alert-danger'>Dans ce cas, seules les signatures avec certificat électronique sont possibles</div>",
                                 buttons: {
                                     cancel: {
-                                        label: '<i class="fa fa-undo"></i> Modifier ma signature',
+                                        label: '<i class="fa fa-undo"></i> Retourner au document',
                                         className: 'btn-success'
                                     },
                                     confirm: {
@@ -379,7 +379,7 @@ export class SignUi {
                     document.location.href="/user/nexu-sign/" + self.signRequestId;
                 } else {
                     if (self.gotoNext) {
-                        document.location.href = $("#nextSignBookButton").attr('href');
+                        document.location.href = $("#nextSignRequest").attr('href');
                     } else {
                         if(self.isOtp== null || !self.isOtp) {
                             // TODO add user return to home settings
