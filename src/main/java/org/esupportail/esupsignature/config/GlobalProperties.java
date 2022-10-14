@@ -175,6 +175,15 @@ public class GlobalProperties {
      */
     public Boolean exportAttachements = true;
 
+    /**
+     *  Type de certificat cachet (PKCS11, PKCS12)
+     */
+    private String sealCertificatType;
+
+    /**
+     *  Emplacement du certificat cachet PKCS12
+     */
+    private String sealCertificatFile;
 
     /**
      *  Pilote du certificat cachet
@@ -484,6 +493,22 @@ public class GlobalProperties {
 
     public void setExportAttachements(boolean exportAttachements) {
         this.exportAttachements = exportAttachements;
+    }
+
+    public String getSealCertificatType() {
+        return sealCertificatType;
+    }
+
+    public void setSealCertificatType(String sealCertificatType) {
+        this.sealCertificatType = sealCertificatType;
+    }
+
+    public String getSealCertificatFile() {
+        return sealCertificatFile;
+    }
+
+    public void setSealCertificatFile(String sealCertificatFile) {
+        this.sealCertificatFile = sealCertificatFile;
     }
 
     public String getSealCertificatDriver() {
