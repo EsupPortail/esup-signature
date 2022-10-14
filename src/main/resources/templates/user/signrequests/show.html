@@ -121,10 +121,12 @@
                         <i class="fas fa-shield-alt "></i>
                     </a></li>
                    </th:block>
-                    <li th:if="${nextSignBook != null}" class="d-none">
+                    <li th:if="${nextSignBook != null}" class="">
                         <a id="nextSignBookButton" role="button" th:href="'/user/signbooks/' + ${nextSignBook.id}"
-                           class="btn-lg btn-floating bg-primary waves-effect" title="Demande suivante"><i
-                                class="fas fa-arrow-right"></i></a>
+                           class="btn-lg btn-floating bg-primary waves-effect" title="Demande suivante">
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <a id="nextSignRequest" th:href="'/user/signrequests/' + ${nextSignRequest.id}" class="d-none"></a>
                     </li>
                 </ul>
             </div>

@@ -1446,54 +1446,35 @@ public class SignBookService {
         return nbImportedFiles;
     }
 
-    public SignBook getNextSignBook(Long signRequestId, String userEppn, String authUserEppn) {
-        SignRequest currentsignRequest = signRequestService.getById(signRequestId);
-        if(currentsignRequest.getParentSignBook().getSignRequests().stream().anyMatch(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending))) {
-            return currentsignRequest.getParentSignBook();
-        }
-        List<SignRequest> toSignRequests = getSignRequestsForCurrentUserByStatus(userEppn, authUserEppn);
-        Optional<SignRequest> signRequest = toSignRequests.stream().filter(signRequest1 -> signRequest1.getId().equals(signRequestId)).findFirst();
-        if(signRequest.isPresent()) {
-            if (toSignRequests.size() > 0) {
-                if (!toSignRequests.contains(signRequest.get())) {
-                    return toSignRequests.get(0).getParentSignBook();
+    @Transactional
+    public SignBook getNextSignBook(Long signRequestId, String userEppn) {
+        SignRequest currentSignRequest = signRequestService.getById(signRequestId);
+        List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(userEppn);
+            List<SignRequest> signRequests = signRequestsToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).sorted(Comparator.comparingLong(SignRequest::getId)).collect(Collectors.toList());
+            int indexOfSignRequest = signRequests.indexOf(currentSignRequest);
+            if (indexOfSignRequest + 1 >= signRequests.size()) {
+                return signRequests.stream().filter(signRequest -> !signRequest.getId().equals(signRequestId)).min(Comparator.comparingLong(SignRequest::getId)).orElseThrow().getParentSignBook();
+            } else {
+                if(currentSignRequest.getParentSignBook().getSignRequests().size() == 1) {
+                    return signRequests.get(indexOfSignRequest + 1).getParentSignBook();
                 } else {
-                    if (toSignRequests.size() > 1) {
-                        int indexOfCurrentSignRequest = toSignRequests.indexOf(signRequest.get());
-                        if (indexOfCurrentSignRequest == 0) {
-                            return toSignRequests.get(indexOfCurrentSignRequest + 1).getParentSignBook();
-                        } else if (indexOfCurrentSignRequest == toSignRequests.size() - 1) {
-                            return toSignRequests.get(0).getParentSignBook();
-                        } else {
-                            return toSignRequests.get(indexOfCurrentSignRequest + 1).getParentSignBook();
-                        }
+                    if(indexOfSignRequest + currentSignRequest.getParentSignBook().getSignRequests().size() + 1 >= signRequests.size()) {
+                        return signRequests.get(0).getParentSignBook();
+                    } else {
+                        return signRequests.get(indexOfSignRequest + currentSignRequest.getParentSignBook().getSignRequests().size() + 1).getParentSignBook();
                     }
-                }
             }
         }
-        return null;
     }
 
-    public SignRequest getPreviousSignRequest(Long signRequestId, String userEppn, String authUserEppn) {
-        List<SignRequest> toSignRequests = getSignRequestsForCurrentUserByStatus(userEppn, authUserEppn);
-        Optional<SignRequest> signRequest = toSignRequests.stream().filter(signRequest1 -> signRequest1.getId().equals(signRequestId)).findFirst();
-        if(signRequest.isPresent()) {
-            if (toSignRequests.size() > 0) {
-                if (toSignRequests.size() > 1) {
-                    int indexOfCurrentSignRequest = toSignRequests.indexOf(signRequest.get());
-                    if (indexOfCurrentSignRequest > -1) {
-                        if (indexOfCurrentSignRequest == 0) {
-                            return toSignRequests.get(toSignRequests.size() - 1);
-                        } else if (indexOfCurrentSignRequest == toSignRequests.size() - 1) {
-                            return toSignRequests.get(indexOfCurrentSignRequest - 1);
-                        } else {
-                            return toSignRequests.get(indexOfCurrentSignRequest - 1);
-                        }
-                    }
-                }
-            }
+    public SignRequest getNextSignRequest(Long signRequestId, String userEppn) {
+        SignRequest currentSignRequest = signRequestService.getById(signRequestId);
+        Optional<SignRequest> inSameSignBookSignRequest = currentSignRequest.getParentSignBook().getSignRequests().stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.equals(currentSignRequest)).findAny();
+        if(inSameSignBookSignRequest.isPresent()) {
+            return inSameSignBookSignRequest.get();
         }
-        return null;
+        List<SignRequest> signRequests = signRequestService.getToSignRequests(userEppn).stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getId().equals(signRequestId)).sorted(Comparator.comparingLong(SignRequest::getId)).collect(Collectors.toList());
+        return signRequests.get(0);
     }
 
     @Transactional
