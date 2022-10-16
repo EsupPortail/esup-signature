@@ -1453,7 +1453,8 @@ public class SignBookService {
             List<SignRequest> signRequests = signRequestsToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).sorted(Comparator.comparingLong(SignRequest::getId)).collect(Collectors.toList());
             int indexOfSignRequest = signRequests.indexOf(currentSignRequest);
             if (indexOfSignRequest + 1 >= signRequests.size()) {
-                return signRequests.stream().filter(signRequest -> !signRequest.getId().equals(signRequestId)).min(Comparator.comparingLong(SignRequest::getId)).orElseThrow().getParentSignBook();
+                Optional<SignRequest> nextSignRequest = signRequests.stream().filter(signRequest -> !signRequest.getId().equals(signRequestId)).min(Comparator.comparingLong(SignRequest::getId));
+                return nextSignRequest.map(SignRequest::getParentSignBook).orElse(null);
             } else {
                 if(currentSignRequest.getParentSignBook().getSignRequests().size() == 1) {
                     return signRequests.get(indexOfSignRequest + 1).getParentSignBook();
@@ -1462,7 +1463,7 @@ public class SignBookService {
                         return signRequests.get(0).getParentSignBook();
                     } else {
                         return signRequests.get(indexOfSignRequest + currentSignRequest.getParentSignBook().getSignRequests().size() + 1).getParentSignBook();
-                    }
+                }
             }
         }
     }
