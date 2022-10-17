@@ -13,6 +13,7 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     List<Workflow> findByCreateByEppn(String userEppn);
     List<Workflow> findDistinctByAuthorizedShareTypesIsNotNull();
     List<Workflow> findByManagerRole(String role);
+    @Query(value = "select count(*) from workflow as w where w.name = :name", nativeQuery = true)
     Long countByName(String name);
     Long countByNameAndCreateByEppn(String name, String userEppn);
     @Query("select distinct w from Workflow w where w.publicUsage = true or (w.visibility = true and :role member of w.roles) order by w.name")
