@@ -57,7 +57,6 @@ public class DataService {
     public void deleteBySignBook(SignBook signBook) {
         Data data = getBySignBook(signBook);
         if(data != null) {
-            data.setForm(null);
             dataRepository.delete(data);
         }
     }

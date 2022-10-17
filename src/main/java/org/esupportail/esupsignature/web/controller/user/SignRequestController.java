@@ -127,7 +127,8 @@ public class SignRequestController {
             model.addAttribute("toSignDocument", toSignDocuments.get(0));
         }
         model.addAttribute("attachments", signRequestService.getAttachments(id));
-        model.addAttribute("nextSignBook", signBookService.getNextSignBook(signRequest.getId(), userEppn, authUserEppn));
+        model.addAttribute("nextSignBook", signBookService.getNextSignBook(signRequest.getId(), userEppn));
+        model.addAttribute("nextSignRequest", signBookService.getNextSignRequest(signRequest.getId(), userEppn));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
         model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
@@ -467,7 +468,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipent(#id, #authUserEppn)")
     @PostMapping(value = "/replay-notif/{id}")
     public String replayNotif(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws EsupSignatureMailException {
         if(signRequestService.replayNotif(id)) {

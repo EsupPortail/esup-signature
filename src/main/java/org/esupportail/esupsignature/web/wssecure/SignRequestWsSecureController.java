@@ -215,14 +215,12 @@ public class SignRequestWsSecureController {
     @ResponseBody
     @PostMapping(value = "/add-docs", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> addDocumentToNewSignRequest(@SessionAttribute("signBookId") Long signBookId,  @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles, @RequestParam(required = false) Boolean separated) throws EsupSignatureIOException {
-        synchronized (("sign_book_" + signBookId).intern()) {
-            logger.info("start add documents");
-            try {
-                signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn);
-                return new ResponseEntity<>("{}", HttpStatus.OK);
-            } catch (HibernateException e) {
-                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+        logger.info("start add documents");
+        try {
+            signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn);
+            return new ResponseEntity<>("{}", HttpStatus.OK);
+        } catch (HibernateException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -241,7 +239,7 @@ public class SignRequestWsSecureController {
     @PostMapping(value = "/create-full-sign-book")
     public ResponseEntity<Long> createFullSignFastRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                                           @RequestParam("signType") SignType signType,
-                                                          @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
+                                                          @RequestParam(value = "recipientsEmails") List<String> recipientsEmails,
                                                           @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
                                                           @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
                                                           @RequestParam(name = "forceAllSign", required = false) Boolean forceAllSign,

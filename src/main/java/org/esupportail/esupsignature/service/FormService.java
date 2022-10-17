@@ -211,7 +211,10 @@ public class FormService {
 				for (FieldPropertie fieldPropertie : fieldProperties) {
 					fieldPropertieService.delete(fieldPropertie.getId());
 				}
-				fieldService.deleteField(fieldId, formId);
+				List<Form> forms = formRepository.findByFieldsContaining(fieldService.getById(fieldId));
+				if(forms.size() == 0) {
+					fieldService.deleteField(fieldId, formId);
+				}
 			}
 			formRepository.delete(form);
 		} else {
