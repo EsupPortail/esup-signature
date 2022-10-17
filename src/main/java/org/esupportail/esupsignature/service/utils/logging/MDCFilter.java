@@ -17,8 +17,10 @@ public class MDCFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
-            String name = SecurityContextHolder.getContext().getAuthentication().getName();
-            MDC.put("userId", name);
+            if(SecurityContextHolder.getContext().getAuthentication() != null) {
+                String name = SecurityContextHolder.getContext().getAuthentication().getName();
+                MDC.put("userId", name);
+            }
             filterChain.doFilter(request, response);
         } finally {
             MDC.clear();
