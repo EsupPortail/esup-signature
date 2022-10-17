@@ -27,7 +27,7 @@ public class SecurityControllerAdvice {
             if (httpSession.getAttribute("suEppn") != null) {
                 eppn = httpSession.getAttribute("suEppn").toString();
             }
-            logger.info("userEppn used is : " + eppn);
+            logger.debug("userEppn used is : " + eppn);
             return eppn;
         } else {
             return null;
