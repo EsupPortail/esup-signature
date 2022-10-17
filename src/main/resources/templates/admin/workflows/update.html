@@ -36,7 +36,7 @@
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <h3>WORKFLOW ID : <input type="text" readonly disabled th:value="${workflow.id}"></h3>
-                    <div class="alert alert-info">Nombre de demandes pour ce circuit : <span th:text="${nbSignRequests}"></span></div>
+                    <div class="alert alert-info">Nombre de demandes pour ce circuit : <span th:text="${nbWorkflowSignRequests}"></span></div>
                     <form th:object="${workflow}" th:action="@{/admin/workflows/update}" method="post" id="updateSignBook">
                         <input type="hidden" th:field="*{id}">
                         <div class="form-group mb-3">
