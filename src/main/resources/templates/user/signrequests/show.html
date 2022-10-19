@@ -501,6 +501,7 @@
                                             th:data-signrequest-id="${signRequest.id}"
                                             th:id="'recipientEmailsSelect_' + ${iterator.index + 1}"
                                             multiple="multiple" name="recipientEmails" required="required">
+                                        <option data-placeholder="true"></option>
                                         <th:block th:each="user : ${step.users}">
                                             <option th:if="${user.email != null}" selected="selected"
                                                     th:text="${user.email}"
