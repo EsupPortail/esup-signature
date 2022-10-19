@@ -135,7 +135,7 @@ public class PreAuthorizeService {
     public boolean signRequestSign(Long id, String userEppn, String authUserEppn) {
         if(userEppn != null && authUserEppn != null) {
             Optional<SignRequest> signRequest = signRequestRepository.findById(id);
-            return signRequest.filter(request -> signBookService.checkUserSignRights(request, userEppn, authUserEppn)).isPresent();c
+            return signRequest.filter(request -> signBookService.checkUserSignRights(request, userEppn, authUserEppn)).isPresent();
         }
         return false;
     }
