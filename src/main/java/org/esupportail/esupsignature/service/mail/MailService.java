@@ -9,7 +9,6 @@ import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.service.CertificatService;
-import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
@@ -85,9 +84,6 @@ public class MailService {
 
     @Resource
     private UserShareService userShareService;
-
-    @Resource
-    private UserKeystoreService userKeystoreService;
 
     public void sendEmailAlerts(SignRequest signRequest, String userEppn, Data data, boolean forceSend) throws EsupSignatureMailException {
         for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
