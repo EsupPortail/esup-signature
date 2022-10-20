@@ -1387,6 +1387,7 @@ public class SignBookService {
                                 user = userService.getByEppn(fsFile.getCreateBy());
                             }
                             signRequestService.addDocsToSignRequest(signRequest, true, j, new ArrayList<>(), fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
+                            fsAccessService.remove(fsFile);
                             j++;
                             if (workflow.getScanPdfMetadatas()) {
                                 String signType = metadatas.get("sign_type_default_val");
@@ -1429,7 +1430,6 @@ public class SignBookService {
                                 workflowService.importWorkflow(signBook, workflow, null);
                             }
                             nextStepAndPending(signBook.getId(), null, user.getEppn(), authUser.getEppn());
-                            fsAccessService.remove(fsFile);
                             nbImportedFiles++;
                         }
                     } else {
