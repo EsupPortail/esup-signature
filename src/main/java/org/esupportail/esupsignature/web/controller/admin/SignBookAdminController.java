@@ -129,6 +129,18 @@ public class SignBookAdminController {
 		return templateEngine.process("admin/signbooks/includes/list-elem.html", ctx);
 	}
 
+	@GetMapping(value = "/{id}")
+	public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
+		SignBook signBook = signBookService.getById(id);
+		Long signRequestId = signBook.getSignRequests().get(0).getId();
+		if(signBook.getSignRequests().size() > 1) {
+			if(signBook.getSignRequests().stream().anyMatch(s -> s.getStatus().equals(SignRequestStatus.pending))) {
+				signRequestId = signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending)).findFirst().get().getId();
+			}
+		}
+		return "redirect:/admin/signrequests/" + signRequestId;
+	}
+
 	@PostMapping(value = "/delete-multiple", consumes = {"application/json"})
 	@ResponseBody
 	public ResponseEntity<Boolean> deleteMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<Long> ids, RedirectAttributes redirectAttributes) {
