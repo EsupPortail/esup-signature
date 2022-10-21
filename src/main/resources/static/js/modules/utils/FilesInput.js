@@ -93,7 +93,7 @@ export default class FilesInput extends EventFactory {
             uploadUrl: this.uploadUrl,
             maxAjaxThreads: 5,
             uploadAsync: true,
-            theme: 'explorer-fas',
+            theme: 'explorer-fa6',
             pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
             initialPreview: urls,
             initialPreviewConfig : previews,

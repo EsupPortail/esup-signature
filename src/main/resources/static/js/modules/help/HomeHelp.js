@@ -3,7 +3,7 @@ export class HomeHelp {
     constructor(doneTour) {
         this.doneTour = doneTour;
         this.intro = introJs();
-        this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'Passer', showStepNumbers: 'false', overlayOpacity: 0.3})
+        this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'x', showStepNumbers: 'false', overlayOpacity: 0.3})
         this.initListeners();
         this.initStep();
     }
