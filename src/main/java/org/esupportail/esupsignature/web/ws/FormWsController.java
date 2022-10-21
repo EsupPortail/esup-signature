@@ -8,8 +8,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureFsException;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.DataService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -18,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -61,7 +58,7 @@ public class FormWsController {
             Map<String, String> datas = objectMapper.readValue(formDatas, type);
             SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, signTypes, allSignToCompletes, null, targetEmails, targetUrls, eppn, eppn, true, datas, null, signRequestParamsJsonString, title);
             return signBook.getSignRequests().get(0).getId();
-        } catch (EsupSignatureException | EsupSignatureIOException | EsupSignatureFsException | JsonProcessingException e) {
+        } catch (EsupSignatureException | JsonProcessingException e) {
             return -1L;
         }
     }
@@ -93,7 +90,7 @@ public class FormWsController {
             SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, signTypes, allSignToCompletes, null, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), signRequestParamsJsonString, title);
             signRequestService.addAttachement(attachementMultipartFiles, null, signBook.getSignRequests().get(0).getId());
             return signBook.getSignRequests().get(0).getId();
-        } catch (EsupSignatureException | EsupSignatureIOException | EsupSignatureFsException | IOException e) {
+        } catch (Exception e) {
             return -1L;
         }
     }

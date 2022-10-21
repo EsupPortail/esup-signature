@@ -270,7 +270,7 @@ public class SignRequestController {
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Merci de compléter tous les utilisateurs externes"));
                 }
                 return "redirect:/user/signrequests/" + signRequestId;
-            } catch (EsupSignatureException | MessagingException | EsupSignatureFsException e) {
+            } catch (EsupSignatureException | MessagingException e) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
             }
         } else {
