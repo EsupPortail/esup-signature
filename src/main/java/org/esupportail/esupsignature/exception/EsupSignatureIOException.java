@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.exception;
 
-public class EsupSignatureIOException extends Exception {
+public class EsupSignatureIOException extends EsupSignatureException {
 
 	private static final long serialVersionUID = 1L;
 
