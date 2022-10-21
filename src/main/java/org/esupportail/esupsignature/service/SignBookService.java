@@ -870,6 +870,7 @@ public class SignBookService {
         SignBook signBook = getById(signBookId);
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
         updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber(), "SUCCESS", signBook.getComment(), userEppn, authUserEppn);
+        logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());
         boolean emailSended = false;
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getCurrentStep() != null && signBook.getLiveWorkflow().getCurrentStep().getAutoSign()) {
@@ -896,7 +897,6 @@ public class SignBookService {
                             }
                         }
                     }
-                    logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());
                     if(signBook.getLiveWorkflow().getCurrentStep().getAutoSign()) {
                         for(SignRequest signRequest1 : signBook.getSignRequests()) {
                             List<SignRequestParams> signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
@@ -930,7 +930,7 @@ public class SignBookService {
                         }
                     }
                 } else {
-                    completeSignBook(signBook.getId(), userEppn);
+                    completeSignBook(signBook.getId(), userEppn, "Tous les documents sont signés");
                     logger.info("Circuit " + signBook.getId() + " terminé car ne contient pas d'étape");
                     break;
                 }
@@ -938,7 +938,7 @@ public class SignBookService {
         }
     }
 
-    public void completeSignBook(Long signBookId, String userEppn) throws EsupSignatureException {
+    public void completeSignBook(Long signBookId, String userEppn, String message) throws EsupSignatureException {
         SignBook signBook = getById(signBookId);
         if (!signBook.getCreateBy().equals(userService.getSchedulerUser())) {
             try {
@@ -960,7 +960,7 @@ public class SignBookService {
                 logger.warn("seal all skipped : " + e.getMessage());
             }
         }
-        updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", "SUCCESS", "", userEppn, userEppn);
+        updateStatus(signBook, SignRequestStatus.completed, message, "SUCCESS", "", userEppn, userEppn);
         signBook.setEndDate(new Date());
     }
 
@@ -1234,7 +1234,7 @@ public class SignBookService {
                 if (signRequestService.nextWorkFlowStep(signRequest.getParentSignBook())) {
                     pendingSignBook(signRequest.getParentSignBook().getId(), null, userEppn, authUserEppn, false);
                 } else {
-                    completeSignBook(signRequest.getParentSignBook().getId(), authUserEppn);
+                    completeSignBook(signRequest.getParentSignBook().getId(), authUserEppn, "Tous les documents sont signés");
                     return true;
                 }
             }
@@ -1286,12 +1286,17 @@ public class SignBookService {
             }
             List<SignRequest> signRequests = new ArrayList<>(signBook.getSignRequests());
             signRequests.remove(signRequest);
-            boolean test = signRequests.stream().noneMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.pending));
-            if(test) {
+            if(signRequests.stream().noneMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.pending))) {
                 if(signRequestService.isMoreWorkflowStep(signRequest.getParentSignBook())) {
                     nextStepAndPending(signBook.getId(), null, userEppn, authUserEppn);
                 } else {
-                    updateStatus(signBook, SignRequestStatus.completed, "La demande est terminée un des documents à été refusé", "WARN", comment, userEppn, authUserEppn);
+                    if(signBook.getSignRequests().stream().allMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.completed))) {
+                        completeSignBook(signBook.getId(), userEppn, "Tous les documents sont signés");
+                    } else if(signBook.getSignRequests().stream().allMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.refused))) {
+                        refuseSignBook(signRequest.getParentSignBook(), comment, userEppn, authUserEppn);
+                    } else {
+                        completeSignBook(signBook.getId(), userEppn, "La demande est terminée mais au moins un des documents à été refusé");
+                    }
                 }
             }
         } else {

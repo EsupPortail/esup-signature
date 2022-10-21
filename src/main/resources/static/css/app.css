@@ -2,8 +2,8 @@
 
 @font-face {
     font-family: 'FontAwesome';
-    src: url('/webjars/font-awesome/5.15.3/webfonts/fa-solid-900.woff') format('woff'),
-    url('/webjars/font-awesome/5.15.3/webfonts/fa-solid-900.ttf') format('truetype');
+    src: url('/webjars/font-awesome/6.2.0/webfonts/fa-solid-900.woff2') format('woff2'),
+    url('/webjars/font-awesome/6.2.0/webfonts/fa-solid-900.ttf') format('truetype');
 }
 
 @font-face {
@@ -826,6 +826,10 @@ th .ss-content {
     top: 10px !important;
     min-width: 50% !important;
     max-width: 800px;
+}
+
+.introjs-helperLayer {
+    box-shadow: rgba(39,111,178, 1) 0px 0px 1px 2px, rgba(0,0,0, 0.5) 0px 0px 0px 5000px !important;
 }
 
 #stepper {
