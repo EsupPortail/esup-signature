@@ -138,7 +138,7 @@
                                     Les observateurs sont alertés à la fin d’un circuit et ont un accès en lecture. (Modifiable à la création du circuit)
                                 </div>
                             </div>
-                            <select id="viewersSelect" class="select-users" multiple="multiple" name="viewersEmails" style="display: none;">
+                            <select id="viewersSelect" class="select-users" multiple="multiple" name="viewersEmails">
                                 <option data-placeholder="true"></option>
                                 <th:block th:each="viewer : ${workflow.viewers}">
                                     <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>

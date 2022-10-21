@@ -5,8 +5,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureFsException;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
@@ -46,7 +44,7 @@ public class WorkflowWsController {
         try {
             SignRequest signRequest = signBookService.startWorkflow(id, multipartFiles, createByEppn, name, recipientEmails, allSignToCompletes, targetEmails, targetUrls, signRequestParamsJsonString);
             return signRequest.getId();
-        } catch (EsupSignatureException | EsupSignatureFsException | EsupSignatureIOException e) {
+        } catch (EsupSignatureException e) {
             logger.error(e.getMessage(), e);
             return -1L;
         }

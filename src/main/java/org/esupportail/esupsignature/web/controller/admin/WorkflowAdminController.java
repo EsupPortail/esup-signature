@@ -26,7 +26,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -212,7 +211,7 @@ public class WorkflowAdminController {
 	}
 
 	@GetMapping(value = "/get-files-from-source/{id}")
-	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureFsException {
+	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureException {
 		User authUser = userService.getUserByEppn(authUserEppn);
 		int nbImportedFiles = signBookService.importFilesFromSource(id, authUser, authUser);
 		if(nbImportedFiles == 0) {
@@ -266,7 +265,7 @@ public class WorkflowAdminController {
 			if(multipartFormSetup.getSize() > 0) {
 				workflowService.setWorkflowSetupFromJson(id, multipartFormSetup.getInputStream());
 			}
-		} catch (IOException | EsupSignatureException | EsupSignatureFsException e) {
+		} catch (Exception e) {
 			logger.error(e.getMessage());
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
 		}

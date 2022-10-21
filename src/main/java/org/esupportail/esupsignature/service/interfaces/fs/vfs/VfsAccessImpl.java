@@ -173,7 +173,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			}
 
 		} catch (IOException e) {
-			throw new EsupSignatureFsException(e);
+			throw new EsupSignatureFsException(e.getMessage(), e);
 		} finally {
 			mayClose(url, resource);
 		}

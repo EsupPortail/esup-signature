@@ -4,7 +4,6 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.slf4j.Logger;
@@ -125,7 +124,7 @@ public class TaskService {
                         continue;
                     }
                     signBookService.archiveSignRequests(signBook.getId(), "scheduler");
-                } catch(EsupSignatureFsException | EsupSignatureException e) {
+                } catch(EsupSignatureException e) {
                     logger.error(e.getMessage());
                 }
                 if(!isEnableArchiveTask()) {
