@@ -1359,84 +1359,85 @@ public class SignBookService {
     }
 
     @Transactional
-    public int importFilesFromSource(Long workflowId, User user, User authUser) throws EsupSignatureFsException {
+    public int importFilesFromSource(Long workflowId, User user, User authUser) throws EsupSignatureException {
         Workflow workflow = workflowService.getById(workflowId);
         int nbImportedFiles = 0;
         if (workflow.getDocumentsSourceUri() != null && !workflow.getDocumentsSourceUri().equals("")) {
             logger.info("retrieve from " + workflow.getProtectedDocumentsSourceUri());
             FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(workflow.getDocumentsSourceUri());
             if (fsAccessService != null) {
-                try {
-                    fsAccessService.open();
-                    fsAccessService.createURITree(workflow.getDocumentsSourceUri());
-                    List<FsFile> fsFiles = new ArrayList<>(fsAccessService.listFiles(workflow.getDocumentsSourceUri() + "/"));
-                    if (fsFiles.size() > 0) {
-                        int j = 0;
-                        for (FsFile fsFile : fsFiles) {
-                            logger.info("adding file : " + fsFile.getName());
-                            ByteArrayOutputStream baos = fileService.copyInputStream(fsFile.getInputStream());
-                            Map<String, String> metadatas = pdfService.readMetadatas(new ByteArrayInputStream(baos.toByteArray()));
-                            String documentName = fsFile.getName();
-                            if (metadatas.get("Title") != null && !metadatas.get("Title").isEmpty()) {
-                                documentName = metadatas.get("Title");
+                fsAccessService.open();
+                fsAccessService.createURITree(workflow.getDocumentsSourceUri());
+                List<FsFile> fsFiles = new ArrayList<>(fsAccessService.listFiles(workflow.getDocumentsSourceUri() + "/"));
+                if (fsFiles.size() > 0) {
+                    int j = 0;
+                    for (FsFile fsFile : fsFiles) {
+                        logger.info("adding file : " + fsFile.getName());
+                        ByteArrayOutputStream baos = fileService.copyInputStream(fsFile.getInputStream());
+                        Map<String, String> metadatas = pdfService.readMetadatas(new ByteArrayInputStream(baos.toByteArray()));
+                        String documentName = fsFile.getName();
+                        if (metadatas.get("Title") != null && !metadatas.get("Title").isEmpty()) {
+                            documentName = metadatas.get("Title");
+                        }
+                        SignBook signBook = createSignBook(fileService.getNameOnly(documentName), workflow, "", user.getEppn());
+                        signBook.getLiveWorkflow().setWorkflow(workflow);
+                        SignRequest signRequest = signRequestService.createSignRequest(null, signBook, user.getEppn(), authUser.getEppn());
+                        if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
+                            user = userService.getByEppn(fsFile.getCreateBy());
+                        }
+                        signRequestService.addDocsToSignRequest(signRequest, true, j, new ArrayList<>(), fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
+                        fsAccessService.remove(fsFile);
+                        j++;
+                        if (workflow.getScanPdfMetadatas()) {
+                            String signType = metadatas.get("sign_type_default_val");
+                            User creator = userService.createUserWithEppn(metadatas.get("Creator"));
+                            if (creator != null) {
+                                signRequest.setCreateBy(creator);
+                                signBook.setCreateBy(creator);
+                                addUserInTeam(creator.getId(), signBook.getId());
+                            } else {
+                                User systemUser = userService.getSystemUser();
+                                signRequest.setCreateBy(systemUser);
+                                signBook.setCreateBy(systemUser);
+                                addUserInTeam(systemUser.getId(), signBook.getId());
                             }
-                            SignBook signBook = createSignBook(fileService.getNameOnly(documentName), workflow, "", user.getEppn());
-                            signBook.getLiveWorkflow().setWorkflow(workflow);
-                            SignRequest signRequest = signRequestService.createSignRequest(null, signBook, user.getEppn(), authUser.getEppn());
-                            if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
-                                user = userService.getByEppn(fsFile.getCreateBy());
-                            }
-                            signRequestService.addDocsToSignRequest(signRequest, true, j, new ArrayList<>(), fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
-                            j++;
-                            if (workflow.getScanPdfMetadatas()) {
-                                String signType = metadatas.get("sign_type_default_val");
-                                User creator = userService.createUserWithEppn(metadatas.get("Creator"));
-                                if (creator != null) {
-                                    signRequest.setCreateBy(creator);
-                                    signBook.setCreateBy(creator);
-                                    addUserInTeam(creator.getId(), signBook.getId());
-                                } else {
-                                    User systemUser = userService.getSystemUser();
-                                    signRequest.setCreateBy(systemUser);
-                                    signBook.setCreateBy(systemUser);
-                                    addUserInTeam(systemUser.getId(), signBook.getId());
-                                }
-                                int i = 0;
-                                for (String metadataKey : metadatas.keySet()) {
-                                    String[] keySplit = metadataKey.split("_");
-                                    if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {
+                            int i = 0;
+                            for (String metadataKey : metadatas.keySet()) {
+                                String[] keySplit = metadataKey.split("_");
+                                if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {
+                                    try {
                                         ObjectMapper mapper = new ObjectMapper();
-                                        TypeReference<List<String>> type = new TypeReference<>(){};
+                                        TypeReference<List<String>> type = new TypeReference<>() {
+                                        };
                                         List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), type);
                                         WorkflowStep workflowStep = null;
-                                        if(workflow.getWorkflowSteps().size() > i) {
+                                        if (workflow.getWorkflowSteps().size() > i) {
                                             workflowStep = workflow.getWorkflowSteps().get(i);
                                         }
                                         LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, workflowStep, false, null, true, false, false, SignType.valueOf(signType), recipientList, null);
                                         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
-                                        i++;
+                                    } catch (Exception e) {
+                                        throw new EsupSignatureException(e.getMessage(), e);
                                     }
-                                    if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
-                                        String metadataTarget = metadatas.get(metadataKey);
-                                        for(Target target : workflow.getTargets()) {
-                                            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetUri() + "/" + metadataTarget));
-                                        }
-                                        logger.info("target set to : " + signBook.getLiveWorkflow().getTargets().get(0).getTargetUri());
-                                    }
+                                    i++;
                                 }
-                            } else {
-                                targetService.copyTargets(workflow.getTargets(), signBook, null);
-                                workflowService.importWorkflow(signBook, workflow, null);
+                                if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
+                                    String metadataTarget = metadatas.get(metadataKey);
+                                    for(Target target : workflow.getTargets()) {
+                                        signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetUri() + "/" + metadataTarget));
+                                    }
+                                    logger.info("target set to : " + signBook.getLiveWorkflow().getTargets().get(0).getTargetUri());
+                                }
                             }
-                            nextStepAndPending(signBook.getId(), null, user.getEppn(), authUser.getEppn());
-                            fsAccessService.remove(fsFile);
-                            nbImportedFiles++;
+                        } else {
+                            targetService.copyTargets(workflow.getTargets(), signBook, null);
+                            workflowService.importWorkflow(signBook, workflow, null);
                         }
-                    } else {
-                        logger.info("aucun fichier à importer depuis : " + workflow.getProtectedDocumentsSourceUri());
+                        nextStepAndPending(signBook.getId(), null, user.getEppn(), authUser.getEppn());
+                        nbImportedFiles++;
                     }
-                } catch (Exception e) {
-                    logger.error("error on import from " + workflow.getProtectedDocumentsSourceUri(), e.getMessage());
+                } else {
+                    logger.info("aucun fichier à importer depuis : " + workflow.getProtectedDocumentsSourceUri());
                 }
                 fsAccessService.close();
             } else {

@@ -162,7 +162,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 			file.delete();
 		} catch (SmbException e) {
 			logger.info("can't delete file because of SmbException : " + e.getMessage());
-			throw new EsupSignatureFsException(e);
+			throw new EsupSignatureFsException(e.getMessage());
 		}
 	}
 
@@ -256,9 +256,9 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 			return true;
 		} catch (MalformedURLException e) {
 			logger.error("problem in creation file that must not occur." +  e.getMessage(), e);
-			throw new EsupSignatureFsException(e);
+			throw new EsupSignatureFsException(e.getMessage());
 		} catch (IOException e) {
-			throw new EsupSignatureFsException(e);
+			throw new EsupSignatureFsException(e.getMessage());
 		}
 	}
 
@@ -374,7 +374,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 				}
 			}
 		} catch (Exception e) {
-			throw new EsupSignatureFsException(e);
+			throw new EsupSignatureFsException(e.getMessage(), e);
 		}
 		return fsFiles;
 	}

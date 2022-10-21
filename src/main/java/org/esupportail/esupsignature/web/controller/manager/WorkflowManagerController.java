@@ -198,7 +198,7 @@ public class WorkflowManagerController {
 
     @GetMapping(value = "/get-files-from-source/{id}")
     @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
-    public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureFsException {
+    public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureException {
         User authUser = userService.getUserByEppn(authUserEppn);
         int nbImportedFiles = signBookService.importFilesFromSource(id, authUser, authUser);
         if(nbImportedFiles == 0) {
