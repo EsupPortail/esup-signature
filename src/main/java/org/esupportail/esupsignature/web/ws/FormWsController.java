@@ -14,6 +14,8 @@ import org.esupportail.esupsignature.service.DataService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.export.DataExportService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +30,8 @@ import java.util.Map;
 @RequestMapping("/ws/forms")
 public class FormWsController {
 
+    private static final Logger logger = LoggerFactory.getLogger(FormWsController.class);
+    
     @Resource
     private DataService dataService;
 
@@ -61,6 +65,7 @@ public class FormWsController {
             SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, null, targetEmails, targetUrls, eppn, eppn, true, datas, null, signRequestParamsJsonString, title);
             return signBook.getSignRequests().get(0).getId();
         } catch (EsupSignatureException | EsupSignatureIOException | EsupSignatureFsException | JsonProcessingException e) {
+            logger.error(e.getMessage(), e);
             return -1L;
         }
     }
@@ -92,6 +97,7 @@ public class FormWsController {
             signRequestService.addAttachement(attachementMultipartFiles, null, signBook.getSignRequests().get(0).getId());
             return signBook.getSignRequests().get(0).getId();
         } catch (EsupSignatureException | EsupSignatureIOException | EsupSignatureFsException | IOException e) {
+            logger.error(e.getMessage(), e);
             return -1L;
         }
     }
