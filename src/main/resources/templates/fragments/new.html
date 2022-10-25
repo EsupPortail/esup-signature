@@ -62,11 +62,12 @@
                                 </div>
                                 <h7 th:text="'Circuit : ' + ${workflow.description}"></h7>
                                 <br>
-                                <button th:if="${workflow.createBy.eppn == userEppn}" type="button" th:id="'menu-toggle_' + ${workflow.id}" class="btn btn-light btn-sm text-dark toggle-mini-menu"
+                                <button class="btn btn-light btn-sm text-dark toggle-mini-menu rounded-0"
+                                        th:if="${workflow.createBy.eppn == userEppn}" type="button" th:id="'menu-toggle_' + ${workflow.id}"
                                         style="margin-top: auto;" th:data-bs-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-bs-toggle="collapse">
                                     <i class="fas fa-ellipsis-h" style="float: right;"></i>
                                 </button>
-                                <div style="" data-bs-backdrop="false" class="card collapse prevent" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
+                                <div style="" data-bs-backdrop="false" class="collapse rounded-0 border-0" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
                                     <div class="inline-flex">
                                         <form th:id="${'deleteWorkflow_' + workflow.id}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'">
                                         </form>
