@@ -867,7 +867,7 @@ public class SignBookService {
 
     @Transactional
     public void pendingSignBook(Long signBookId, Data data, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException {
-        SignBook signBook = getById(signBookId);
+        SignBook signBook = signBookRepository.findWithLockingById(signBookId).orElseThrow();
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
         updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber(), "SUCCESS", signBook.getComment(), userEppn, authUserEppn);
         logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());

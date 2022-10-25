@@ -285,7 +285,7 @@ public class WorkflowService {
 
     @Transactional
     public Workflow getById(Long id) {
-        return workflowRepository.findById(id).get();
+        return workflowRepository.findById(id).orElseThrow();
     }
 
 //    public Workflow getWorkflowByName(String name) {
