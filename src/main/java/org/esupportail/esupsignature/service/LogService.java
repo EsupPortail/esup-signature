@@ -162,4 +162,12 @@ public class LogService {
         return "?";
     }
 
+    @Transactional
+    public void anonymize(String userEppn) {
+        List<Log> logs = logRepository.findByEppn(userEppn);
+        for(Log log : logs) {
+            log.setEppn("anonymous");
+        }
+    }
+
 }

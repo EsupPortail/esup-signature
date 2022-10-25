@@ -61,4 +61,12 @@ public class CommentService {
         }
     }
 
+    @Transactional
+    public void anonymizeComment(Long userId) {
+        User user = userService.getById(userId);
+        for(Comment comment : commentRepository.findCommentByCreateBy(user)) {
+            comment.setCreateBy(userService.getAnonymousUser());
+        }
+    }
+
 }

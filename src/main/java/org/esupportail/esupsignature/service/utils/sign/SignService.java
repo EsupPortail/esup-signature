@@ -36,7 +36,10 @@ import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.CertificatService;
+import org.esupportail.esupsignature.service.DocumentService;
+import org.esupportail.esupsignature.service.UserKeystoreService;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.interfaces.certificat.impl.OpenXPKICertificatGenerationService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfParameters;
@@ -61,7 +64,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
@@ -153,8 +155,7 @@ public class SignService {
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
 			} else if (signWith.equals(SignWith.sealCert) && user.getRoles().contains("ROLE_SEAL")) {
 				try {
-					KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
-					abstractKeyStoreTokenConnection = new Pkcs11SignatureToken(globalProperties.getSealCertificatDriver(), passwordProtection);
+					abstractKeyStoreTokenConnection = certificatService.getSealToken();
 				} catch (Exception e) {
 					throw new EsupSignatureException("unable to open pkcs11 token", e);
 				}

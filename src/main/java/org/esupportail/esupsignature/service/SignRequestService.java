@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.zxing.WriterException;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
@@ -21,7 +23,6 @@ import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.metric.CustomMetricsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
@@ -96,9 +97,6 @@ public class SignRequestService {
 
 	@Resource
 	private SignService signService;
-
-	@Resource
-	private FileService fileService;
 
 	@Resource
 	private UserService userService;
@@ -324,6 +322,9 @@ public class SignRequestService {
 	public void pendingSignRequest(SignRequest signRequest, String authUserEppn) {
 		for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
 			signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
+			if(!signRequest.getParentSignBook().getTeam().contains(recipient.getUser())) {
+				signRequest.getParentSignBook().getTeam().add(recipient.getUser());
+			}
 		}
 		updateStatus(signRequest.getId(), SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS", null, null, null, authUserEppn, authUserEppn);
 		customMetricsService.incValue("esup-signature.signrequests", "new");
@@ -867,7 +868,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public List<SignRequestParams> getToUseSignRequestParams(long id, String userEppn) {
+	public List<SignRequestParams> getToUseSignRequestParams(Long id, String userEppn) {
 		User user = userService.getUserByEppn(userEppn);
 		List<SignRequestParams> toUserSignRequestParams = new ArrayList<>();
 		SignRequest signRequest = getById(id);
@@ -900,31 +901,6 @@ public class SignRequestService {
 
 	public List<SignRequest> getAll() {
 		return (List<SignRequest>) signRequestRepository.findAll();
-	}
-
-	public int transfer(String authUserEppn) {
-		int i = 0;
-		User user = userService.getUserByEppn(authUserEppn);
-		User replacedByUser = user.getCurrentReplaceUser();
-		if(replacedByUser != null) {
-			List<SignRequest> signRequests = getToSignRequests(authUserEppn).stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).collect(Collectors.toList());
-			for(SignRequest signRequest : signRequests) {
-				for(LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
-					for(Recipient recipient : liveWorkflowStep.getRecipients()) {
-						if(recipient.getUser().getEppn().equals(authUserEppn)) {
-							recipient.setUser(replacedByUser);
-						}
-					}
-					for(Recipient recipient : signRequest.getRecipientHasSigned().keySet()) {
-						if(recipient.getUser().getEppn().equals(authUserEppn)) {
-							recipient.setUser(replacedByUser);
-						}
-					}
-				}
-				i++;
-			}
-		}
-		return i;
 	}
 
 	public boolean isAttachmentAlert(SignRequest signRequest) {
@@ -989,4 +965,35 @@ public class SignRequestService {
 		}
 	}
 
+	@Transactional
+	public void anonymize(String userEppn, User anonymous) {
+		for(SignRequest signRequest : signRequestRepository.findByCreateByEppn(userEppn)) {
+			signRequest.setCreateBy(anonymous);
+		}
+	}
+
+	@Transactional
+	public List<Comment> getPostits(Long id) {
+		SignRequest signRequest = getById(id);
+		return signRequest.getComments().stream().filter(Comment::getPostit).collect(Collectors.toList());
+	}
+
+	@Transactional
+	public List<Comment> getComments(Long id) {
+		SignRequest signRequest = getById(id);
+		return signRequest.getComments().stream().filter(comment -> !comment.getPostit() && comment.getStepNumber() == null).collect(Collectors.toList());
+	}
+
+	@Transactional
+	public List<Comment> getSpots(Long id) {
+		SignRequest signRequest = getById(id);
+		return signRequest.getComments().stream().filter(comment -> comment.getStepNumber() != null).collect(Collectors.toList());
+	}
+
+	@Transactional
+	public String getJson(Long id) throws JsonProcessingException {
+		SignRequest signRequest = getById(id);
+		ObjectMapper objectMapper = new ObjectMapper();
+		return objectMapper.writeValueAsString(signRequest);
+	}
 }

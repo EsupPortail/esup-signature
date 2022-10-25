@@ -238,6 +238,9 @@ sign:
 
 logging:
     file.name: logs/esup-signature.log
+    pattern:
+        console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(%X{userId:-system}){cyan} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"
+        file: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(%X{userId:-system}){cyan} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"
     level:
         root: info
         org.esupportail.esupsignature: info

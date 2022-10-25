@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import org.esupportail.esupsignature.entity.LiveWorkflow;
+import org.esupportail.esupsignature.entity.LiveWorkflowStep;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -84,17 +86,17 @@ public class SignBookController {
                        @RequestParam(value = "dateFilter", required = false) String dateFilter,
                        @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
         if(statusFilter == null || statusFilter.equals("all")) statusFilter = "";
-        if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
-            workflowFilter = "%";
+        if(workflowFilter != null && (workflowFilter.isEmpty() || workflowFilter.equals("all"))) {
+            workflowFilter = null;
         }
-        if(creatorFilter == null || creatorFilter.isEmpty() || creatorFilter.equals("all")) {
-            creatorFilter = "%";
+        if(creatorFilter != null && (creatorFilter.isEmpty() || creatorFilter.equals("all"))) {
+            creatorFilter = null;
         }
-        if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
-            docTitleFilter = "%";
+        if(docTitleFilter != null && (docTitleFilter.isEmpty() || docTitleFilter.equals("all"))) {
+            docTitleFilter = null;
         }
-        if(recipientsFilter == null || recipientsFilter.isEmpty() || recipientsFilter.equals("all")) {
-            recipientsFilter = "%";
+        if(recipientsFilter != null && (recipientsFilter.isEmpty() || recipientsFilter.equals("all"))) {
+            recipientsFilter = null;
         }
         Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("statusFilter", statusFilter);
@@ -111,7 +113,7 @@ public class SignBookController {
         model.addAttribute("recipientsFilter", recipientsFilter);
         LinkedHashSet<String> workflowNames = new LinkedHashSet<>();
         LinkedHashSet<String> docTitles = new LinkedHashSet<>();
-        if(statusFilter.isEmpty() && (workflowFilter.equals("%") || workflowFilter.equals("Hors circuit")) && docTitleFilter.equals("%") && recipientsFilter.equals("%")) {
+        if(statusFilter.isEmpty() && (workflowFilter == null || workflowFilter.equals("Hors circuit")) && docTitleFilter == null && recipientsFilter == null) {
             docTitles.addAll(signBookService.getAllDocTitles(userEppn));
             workflowNames.addAll(signBookService.getWorkflowNames(userEppn));
         } else {
@@ -135,17 +137,17 @@ public class SignBookController {
                          @RequestParam(value = "dateFilter", required = false) String dateFilter,
                          @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
         if(statusFilter == null || statusFilter.equals("all")) statusFilter = "";
-        if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
-            workflowFilter = "%";
+        if(workflowFilter != null && (workflowFilter.isEmpty() || workflowFilter.equals("all"))) {
+            workflowFilter = null;
         }
-        if(creatorFilter == null || creatorFilter.isEmpty() || creatorFilter.equals("all")) {
-            creatorFilter = "%";
+        if(creatorFilter != null && (creatorFilter.isEmpty() || creatorFilter.equals("all"))) {
+            creatorFilter = null;
         }
-        if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
-            docTitleFilter = "%";
+        if(docTitleFilter != null && (docTitleFilter.isEmpty() || docTitleFilter.equals("all"))) {
+            docTitleFilter = null;
         }
-        if(recipientsFilter == null || recipientsFilter.isEmpty() || recipientsFilter.equals("all")) {
-            recipientsFilter = "%";
+        if(recipientsFilter != null && (recipientsFilter.isEmpty() || recipientsFilter.equals("all"))) {
+            recipientsFilter = null;
         }
         Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("signBooks", signBooks);
@@ -216,7 +218,12 @@ public class SignBookController {
     @GetMapping(value = "/update/{id}")
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
         SignBook signBook = signBookService.getById(id);
-        if((signBook.getLiveWorkflow().getWorkflow() == null || signBook.getCreateBy().equals(signBook.getLiveWorkflow().getWorkflow().getCreateBy())) && (signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.pending))) {
+        LiveWorkflow liveWorkflow = signBook.getLiveWorkflow();
+        List<LiveWorkflowStep> workflowSteps = liveWorkflow.getLiveWorkflowSteps();
+        LiveWorkflowStep liveWorkflowStep = liveWorkflow.getCurrentStep();
+        int toto = liveWorkflow.getCurrentStepNumber();
+        logger.debug(toto + "");
+        if(signBook != null && signBook.getCreateBy().getEppn().equals(authUserEppn) && (signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.pending))) {
             model.addAttribute("signBook", signBook);
             model.addAttribute("logs", signBookService.getLogsFromSignBook(signBook));
             model.addAttribute("allSteps", signBookService.getAllSteps(signBook));
@@ -281,7 +288,7 @@ public class SignBookController {
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "L'étape ne peut pas être supprimée"));
         }
-        return "redirect:/user/signbooks/" + id + "/?form";
+        return "redirect:/user/signbooks/update/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
@@ -311,7 +318,7 @@ public class SignBookController {
     @GetMapping(value = "/pending/{id}")
     public String pending(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws EsupSignatureException {
         signBookService.pendingSignBook(id, null, authUserEppn, authUserEppn, false);
-        return "redirect:/user/signrequests/" + id;
+        return "redirect:/user/signbooks/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #authUserEppn, #authUserEppn)")

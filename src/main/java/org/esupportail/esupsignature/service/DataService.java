@@ -57,7 +57,6 @@ public class DataService {
     public void deleteBySignBook(SignBook signBook) {
         Data data = getBySignBook(signBook);
         if(data != null) {
-            data.setForm(null);
             dataRepository.delete(data);
         }
     }
@@ -92,7 +91,6 @@ public class DataService {
         data.setForm(form);
         data.setFormName(form.getName());
         data.setFormVersion(form.getVersion());
-        data.setStatus(SignRequestStatus.draft);
         data.setUpdateBy(authUser);
         data.setUpdateDate(new Date());
         dataRepository.save(data);
@@ -183,6 +181,17 @@ public class DataService {
         Data data = dataRepository.findById(id).get();
         data.setForm(null);
         dataRepository.delete(data);
+    }
+
+    @Transactional
+    public void anonymize(String userEppn, User anonymous) {
+        User user = userService.getUserByEppn(userEppn);
+        for (Data data : dataRepository.findByCreateBy(user)) {
+            data.setCreateBy(anonymous);
+        }
+        for (Data data : dataRepository.findByUpdateBy(user)) {
+            data.setUpdateBy(anonymous);
+        }
     }
 
 }

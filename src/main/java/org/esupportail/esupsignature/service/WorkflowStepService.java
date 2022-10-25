@@ -182,4 +182,12 @@ public class WorkflowStepService {
         return workflowStepRepository.findById(workflowStepId).get();
     }
 
+    @Transactional
+    public void anonymize(String userEppn) {
+        User user = userService.getUserByEppn(userEppn);
+        for(WorkflowStep workflowStep : workflowStepRepository.findAll()) {
+            workflowStep.getUsers().removeIf(user1 -> user1.equals(user));
+        }
+    }
+
 }

@@ -1,7 +1,10 @@
 package org.esupportail.esupsignature.exception;
 
+import java.io.Serial;
+
 public class EsupSignatureException extends Exception {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	String message;

@@ -14,6 +14,10 @@
            title="Tous les logs" type="button" href="/admin/logs" class="mb-1 col-12 btn text-left">
             <i class="fas fa-clipboard-list"></i> <span class="sidebar-label">Logs</span>
         </a>
+        <a th:classappend="${activeMenu == 'users'} ? 'btn-secondary' : 'btn-light'"
+           title="Tous les logs" type="button" href="/admin/users" class="mb-1 col-12 btn text-left">
+            <i class="fas fa-users"></i> <span class="sidebar-label">Utilisateurs</span>
+        </a>
         <div class="hr"><i class="fas fa-cog me-1"></i><span class="sidebar-label"> Configuration</span></div>
         <a th:classappend="${activeMenu == 'workflows'} ? 'btn-secondary' : 'btn-light'"
            title="Circuits de signature" href="/admin/workflows" class="btn col-12 mb-1 text-left">

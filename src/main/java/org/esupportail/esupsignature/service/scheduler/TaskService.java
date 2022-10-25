@@ -4,7 +4,6 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.slf4j.Logger;
@@ -40,6 +39,9 @@ public class TaskService {
 
     private boolean enableCleanTask = false;
 
+    private boolean enableCleanUploadingSignBookTask = false;
+
+
     public boolean isEnableArchiveTask() {
         return enableArchiveTask;
     }
@@ -55,6 +57,14 @@ public class TaskService {
 
     public void setEnableCleanTask(boolean enableCleanTask) {
         this.enableCleanTask = enableCleanTask;
+    }
+
+    public boolean isEnableCleanUploadingSignBookTask() {
+        return enableCleanUploadingSignBookTask;
+    }
+
+    public void setEnableCleanUploadingSignBookTask(boolean enableCleanUploadingSignBookTask) {
+        this.enableCleanUploadingSignBookTask = enableCleanUploadingSignBookTask;
     }
 
     @Async
@@ -114,7 +124,7 @@ public class TaskService {
                         continue;
                     }
                     signBookService.archiveSignRequests(signBook.getId(), "scheduler");
-                } catch(EsupSignatureFsException | EsupSignatureException e) {
+                } catch(EsupSignatureException e) {
                     logger.error(e.getMessage());
                 }
                 if(!isEnableArchiveTask()) {
@@ -124,6 +134,16 @@ public class TaskService {
             }
         }
         setEnableArchiveTask(false);
+    }
+
+    @Async
+    public void initCleanUploadingSignBooks() {
+        if(!isEnableCleanUploadingSignBookTask()) {
+            setEnableCleanUploadingSignBookTask(true);
+            signBookService.cleanUploadingSignBooks();
+            setEnableCleanUploadingSignBookTask(false);
+        }
+
     }
 
 }

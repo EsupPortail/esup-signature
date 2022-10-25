@@ -97,7 +97,7 @@ public class SignRequestParamsService {
                             continue;
                         }
                         String signFieldName = pdSignatureField.getPartialName();
-                        if(pageNrByAnnotDict.get(signFieldName) != null) {
+                        if(pageNrByAnnotDict.containsKey(signFieldName) && pageNrByAnnotDict.get(signFieldName) != null) {
                             int pageNum = pageNrByAnnotDict.get(signFieldName);
                             PDPage pdPage = pdPages.get(pageNum);
                             SignRequestParams signRequestParams = createFromPdf(pdSignatureField, pageNrByAnnotDict.get(signFieldName) + 1, pdPage);

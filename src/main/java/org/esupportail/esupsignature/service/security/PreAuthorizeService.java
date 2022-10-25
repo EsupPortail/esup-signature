@@ -72,6 +72,12 @@ public class PreAuthorizeService {
         return false;
     }
 
+    public boolean signBookCreator(Long id, String userEppn) {
+        SignBook signBook = signBookService.getById(id);
+        User user = userService.getUserByEppn(userEppn);
+        return signBook.getCreateBy().equals(user);
+    }
+
     public boolean signBookManage(Long id, String userEppn) {
         if(userEppn != null) {
             SignBook signBook = signBookService.getById(id);
@@ -128,8 +134,8 @@ public class PreAuthorizeService {
 
     public boolean signRequestSign(Long id, String userEppn, String authUserEppn) {
         if(userEppn != null && authUserEppn != null) {
-            SignRequest signRequest = signRequestRepository.findById(id).get();
-            return signBookService.checkUserSignRights(signRequest, userEppn, authUserEppn);
+            Optional<SignRequest> signRequest = signRequestRepository.findById(id);
+            return signRequest.filter(request -> signBookService.checkUserSignRights(request, userEppn, authUserEppn)).isPresent();
         }
         return false;
     }
@@ -197,7 +203,7 @@ public class PreAuthorizeService {
                 List<SignRequest> signRequests = signRequestRepository.findByIdAndRecipient(signRequest.getId(), userEppn);
                 Data data = signBookService.getBySignBook(signRequest.getParentSignBook());
                 User authUser = userService.getUserByEppn(authUserEppn);
-                if ((data != null && (data.getForm() != null && data.getForm().getWorkflow().getManagers().contains(authUser.getEmail())))
+                if ((data != null && (data.getForm() != null && data.getForm().getWorkflow() != null && data.getForm().getWorkflow().getManagers().contains(authUser.getEmail())))
                         || signRequest.getCreateBy().getEppn().equals(userEppn)
                         || signRequest.getParentSignBook().getViewers().contains(userService.getUserByEppn(authUserEppn))
                         || signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getUsers).anyMatch(users -> users.contains(user))

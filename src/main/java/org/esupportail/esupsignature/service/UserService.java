@@ -17,6 +17,7 @@ import org.esupportail.esupsignature.service.interfaces.listsearch.UserListServi
 import org.esupportail.esupsignature.service.ldap.*;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
+import org.hibernate.LazyInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +99,10 @@ public class UserService {
         return createUser("system", "Esup-Signature", "Automate", "system", UserType.system, false);
     }
 
+    public User getAnonymousUser() {
+        return createUser("anonymous", "Anonyme", "Utilisateur", "anonymous", UserType.system, false);
+    }
+
     public User getCreatorUser() {
         return createUser("creator", "Createur de la demande", "", "creator", UserType.system, false);
     }
@@ -153,6 +158,9 @@ public class UserService {
         if (user != null) {
             user.setKeystoreFileName(this.getKeystoreFileName(user));
             user.setSignImagesIds(this.getSignImagesIds(user));
+            if (user.getDefaultSignImageNumber() == null || user.getDefaultSignImageNumber() >= user.getSignImages().size()) {
+                user.setDefaultSignImageNumber(0);
+            }
             return user;
         }
 		if(!eppn.startsWith("anonymousUser")) {
@@ -370,7 +378,7 @@ public class UserService {
             if(user.getReplaceByUser() != null) {
                 personLdaps.remove(personLdaps.stream().filter(personLdap -> personLdap.getMail().equals(user.getEmail())).findFirst().get());
             }
-            if(personLdaps.stream().noneMatch(personLdapLight -> personLdapLight.getMail().equals(user.getEmail()))) {
+            if(personLdaps.stream().noneMatch(personLdapLight -> user.getEmail().equals(personLdapLight.getMail()))) {
                 PersonLdapLight personLdapLight = getPersonLdapLightFromUser(user);
                 if(user.getUserType().equals(UserType.group)) {
                     personLdapLight.setDisplayName(personLdapLight.getDisplayName());
@@ -572,10 +580,12 @@ public class UserService {
         User authUser = getByEppn(authUserEppn);
         Document signDocument = documentService.getById(id);
         int test = authUser.getSignImages().indexOf(signDocument);
-        if(authUser.getDefaultSignImageNumber().equals(authUser.getSignImages().indexOf(signDocument))) {
+        if (authUser.getDefaultSignImageNumber().equals(test)) {
             authUser.setDefaultSignImageNumber(0);
         } else {
-            authUser.setDefaultSignImageNumber(authUser.getDefaultSignImageNumber() - 1);
+            if(test < authUser.getDefaultSignImageNumber()) {
+                authUser.setDefaultSignImageNumber(authUser.getDefaultSignImageNumber() - 1);
+            }
         }
         authUser.getSignImages().remove(signDocument);
     }
@@ -738,5 +748,63 @@ public class UserService {
     public List<String> getManagersRoles(String authUserEppn) {
         User user = getUserByEppn(authUserEppn);
         return user.getManagersRoles().stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void anonymize(Long id) {
+        User user = userRepository.findById(id).get();
+        List<User> users = userRepository.findByReplaceByUser(user);
+        for(User user1 : users) {
+            user1.setReplaceByUser(user.getReplaceByUser());
+        }
+        user.setEppn("");
+        user.setName("");
+        user.setFirstname("");
+        user.setEmail("");
+        user.getSignImages().clear();
+        user.setKeystore(null);
+        user.setPhone("");
+        user.getRoles().clear();
+    }
+
+    @Transactional
+    public void parseRoles(String userEppn, GlobalProperties myGlobalProperties) {
+        User user = getByEppn(userEppn);
+        try {
+            List<String> roles = user.getRoles();
+            if(!Collections.disjoint(roles, globalProperties.getHideSendSignExceptRoles()))
+                myGlobalProperties.setHideSendSignRequest(!globalProperties.getHideSendSignRequest());
+            if(!Collections.disjoint(roles, globalProperties.getHideWizardExceptRoles()))
+                myGlobalProperties.setHideWizard(!globalProperties.getHideWizard());
+            if(!Collections.disjoint(roles, globalProperties.getHideAutoSignExceptRoles()))
+                myGlobalProperties.setHideAutoSign(!globalProperties.getHideAutoSign());
+
+            if(roles.contains("ROLE_CREATE_SIGNREQUEST")) {
+                myGlobalProperties.setHideSendSignRequest(false);
+            }
+            if(roles.contains("ROLE_CREATE_WIZARD")) {
+                myGlobalProperties.setHideWizard(false);
+            }
+            if(roles.contains("ROLE_CREATE_AUTOSIGN")) {
+                myGlobalProperties.setHideAutoSign(false);
+            }
+            if(roles.contains("ROLE_NO_CREATE_SIGNREQUEST")) {
+                myGlobalProperties.setHideSendSignRequest(true);
+            }
+            if(roles.contains("ROLE_NO_CREATE_WIZARD")) {
+                myGlobalProperties.setHideWizard(true);
+            }
+            if(roles.contains("ROLE_NO_CREATE_AUTOSIGN")) {
+                myGlobalProperties.setHideAutoSign(true);
+            }
+        } catch(LazyInitializationException e) {
+            logger.error("enable to find roles", e);
+        }
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        User user = userRepository.findById(id).get();
+        userRepository.delete(user);
     }
 }

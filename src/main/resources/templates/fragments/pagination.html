@@ -2,7 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml">
 <nav th:fragment="pagination" id="pagination" aria-label="pagination">
     <div class="text-center">
-		Voir <span sd:page-size-selector="javascript"></span> elements
+		<span sd:pagination-summary></span>. Voir <span sd:page-size-selector="javascript"></span> elements par page.
 	</div>
     <div class="d-flex justify-content-center">
 		<nav class="pull-right">

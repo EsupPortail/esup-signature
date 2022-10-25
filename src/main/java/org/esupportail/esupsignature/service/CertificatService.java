@@ -1,12 +1,18 @@
 package org.esupportail.esupsignature.service;
 
 import eu.europa.esig.dss.model.x509.CertificateToken;
+import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
+import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.entity.Certificat;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.repository.CertificatRepository;
+import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +23,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.security.Key;
+import java.io.*;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.util.*;
 
 @Service
@@ -45,6 +51,16 @@ public class CertificatService {
 
     @Resource
     private SignProperties signProperties;
+
+    @Resource
+    private WorkflowStepRepository workflowStepRepository;
+
+    @Resource
+    private final GlobalProperties globalProperties;
+
+    public CertificatService(GlobalProperties globalProperties) {
+        this.globalProperties = globalProperties;
+    }
 
 
     public Certificat getById(Long id) {
@@ -89,6 +105,10 @@ public class CertificatService {
     @Transactional
     public void delete(Long id) {
         Certificat certificat = getById(id);
+        List<WorkflowStep> workflowSteps = workflowStepRepository.findByCertificatId(id);
+        for(WorkflowStep workflowStep : workflowSteps) {
+            workflowStep.setCertificat(null);
+        }
         certificatRepository.delete(certificat);
     }
 
@@ -116,6 +136,56 @@ public class CertificatService {
             logger.error(e.getMessage());
         }
         return null;
+    }
+
+    public AbstractKeyStoreTokenConnection getSealToken() throws EsupSignatureKeystoreException {
+        if(globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatPin() != null) {
+            if (globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals("PKCS11")) {
+                KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
+                return new Pkcs11SignatureToken(globalProperties.getSealCertificatDriver(), passwordProtection);
+            } else if (globalProperties.getSealCertificatFile() != null && globalProperties.getSealCertificatType().equals("PKCS12")) {
+                try {
+                    return userKeystoreService.getPkcs12Token(new FileInputStream(globalProperties.getSealCertificatFile()), globalProperties.getSealCertificatPin());
+                } catch (FileNotFoundException e) {
+                    logger.error(e.getMessage());
+                }
+            }
+        }
+        throw new EsupSignatureKeystoreException("no seal certificat present");
+    }
+
+    public KeyStore getSealKeyStore() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException, EsupSignatureKeystoreException {
+        if(globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatPin() != null) {
+            if (globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals("PKCS11")) {
+                KeyStore keyStore = KeyStore.getInstance("PKCS11");
+                KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
+                keyStore.load(CertificatService.class.getResourceAsStream(globalProperties.getSealCertificatDriver()), passwordProtection.getPassword());
+                return keyStore;
+            } else if (globalProperties.getSealCertificatFile() != null && globalProperties.getSealCertificatType().equals("PKCS12")) {
+                KeyStore keyStore = KeyStore.getInstance("PKCS12");
+                KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
+                keyStore.load(new FileInputStream(globalProperties.getSealCertificatFile()), passwordProtection.getPassword());
+                return keyStore;
+            }
+        }
+        throw new EsupSignatureKeystoreException("no seal certificat present");
+    }
+
+    public PrivateKey getSealPrivateKey() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, UnrecoverableKeyException, EsupSignatureKeystoreException {
+        KeyStore keyStore = getSealKeyStore();
+        KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
+        return (PrivateKey) keyStore.getKey(keyStore.aliases().nextElement(), passwordProtection.getPassword());
+
+    }
+
+    public List<DSSPrivateKeyEntry> getSealCertificats() {
+        List<DSSPrivateKeyEntry> dssPrivateKeyEntries = new ArrayList<>();
+        try {
+            dssPrivateKeyEntries = getSealToken().getKeys();
+        } catch (Exception e) {
+            logger.debug("no seal certificat found");
+        }
+        return dssPrivateKeyEntries;
     }
 
 }

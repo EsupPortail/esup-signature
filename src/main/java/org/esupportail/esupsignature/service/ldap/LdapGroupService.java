@@ -147,7 +147,7 @@ public class LdapGroupService implements GroupService {
                 DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                 String eppn = searchResultContext.getStringAttribute("mail");
                 return eppn;
-                });
+            });
         }
         return eppns;
     }

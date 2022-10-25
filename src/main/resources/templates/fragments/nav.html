@@ -118,14 +118,14 @@
                     </a>
                 </li>
                 <li class="nav-item text-white me-1" th:if="${isManager && userEppn == authUserEppn}" title="Menu gestionnaire">
-                    <a href="/manager/workflows" th:class="'btn text-white btn-transparent ' + ${managerMenu}"
+                    <a href="/manager/workflows" class="btn text-white btn-transparent"
                        th:classappend="${managerMenu == 'active'} ? 'bg-secondary'">
                         <i class="fas fa-user-tie"></i> <span class="nav-item-label d-none d-xxl-inline">Gestionnaire</span>
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')') && userEppn == authUserEppn}" title="Menu admin">
-                    <a href="/admin/" th:class="'btn text-white btn-transparent ' + ${adminMenu}"
-                       th:classappend="${adminMenu == 'active'} ? 'bg-secondary'">
+                    <a href="/admin/" class="btn text-white btn-transparent"
+                       th:classappend="${adminMenu == 'active'} ? 'bg-secondary' : ''">
                         <i class="fas fa-crown"></i><span class="nav-item-label d-none d-xxl-inline">Admin</span>
                         <span title="Statut DSS" th:if="${dssStatus == null || dssStatus == true}" class="badge bg-danger d-none d-md-inline">
                         </span>
@@ -145,22 +145,26 @@
 <!--                    <i class="fas fa-user-cog"></i>-->
 <!--                </a>-->
 <!--                </li>-->
-                <li class="nav-item text-white">
-                    <a id="user-toggle" th:classappend="${paramMenu}" type="button" href="#user-infos"
-                       aria-label="Paramètres utilisateur" class="btn bg-transparent text-white user-toggle"
-                       aria-controls="user-infos" data-bs-toggle="collapse">
-                        <b class="nav-item-label d-none d-lg-inline nav-link text-light"
+                <li class="nav-item">
+                    <a class="btn btn-transparent user-toggle d-inline-flex text-white align-middle me-1" id="user-toggle"
+                       th:classappend="${paramMenu}" type="button" href="#user-infos"
+                       aria-expanded="false"
+                       aria-controls="user-infos"
+                       data-bs-toggle="collapse">
+                        <b class="d-none d-lg-block align-middle"
                            th:text="${user.firstname} + ' ' + ${user.name}"></b>
-                        <div class="btn-floating btn-small btn-secondary user-toggle"><i class="fas fa-user"></i></div>
+                        <div class="user-toggle align-middle ms-2"><i class="fas fa-user"></i></div>
                     </a>
-                    <a rel="noreferrer" data-bs-toggle="modal"
-                       data-bs-target="#helpModal" aria-label="Guide utilisateur" style="background-color: #096fb2;" class="btn btn-sm text-white float-end mt-2 d-none d-md-inline" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur"><i class="fas fa-question"></i></a>
+                </li>
+                <li class="nav-item">
+                <a rel="noreferrer" title="Aide en ligne" data-bs-toggle="modal"
+                   data-bs-target="#helpModal" aria-label="Guide utilisateur" style="background-color: #096fb2;" class="btn text-white float-end align-middle d-none d-md-inline" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur"><i class="fas fa-question"></i></a>
                 </li>
             </ul>
         </div>
     </nav>
-    <div th:if="${user.name != null}" id="user-infos" class="card position-absolute user-infos collapse overflow-y-scroll drop-shadows">
-        <div class="card-body user-infos text-center">
+    <div th:if="${user.name != null}" id="user-infos" class="position-absolute user-infos collapse overflow-y-scroll drop-shadows">
+        <div class="card card-body user-infos text-center">
             <div id="manageShare" class="d-none">
             <h3 th:if="${isUserOnSu}">
                 Vous avez activé la délégation

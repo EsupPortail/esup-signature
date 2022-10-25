@@ -15,18 +15,18 @@ export default class SelectUser {
         if(selectNameSplit.length === 2) {
             this.valuePrefix = selectNameSplit[1] + "*";
         }
-        let defaultFavorites = [];
+        let defaultValues = [];
         $("#" + selectName + " > option").each(function() {
             if($(this).text() !== "") {
-                defaultFavorites.push({
+                defaultValues.push({
                     text: $(this).text(),
                     value: $(this).attr("value"),
                     selected: true
                 });
-                $(this).remove();
+                // $(this).remove();
             }
         });
-        this.favorites = defaultFavorites;
+        this.favorites = defaultValues;
         if(limit != null) {
             this.limit = limit;
         }
@@ -147,6 +147,7 @@ export default class SelectUser {
                     type: 'POST',
                     contentType: "application/json",
                     dataType: 'json',
+                    async: true,
                     data: JSON.stringify(recipientEmails),
                     success: data => this.displayTempUsersSuccess(data),
                     error: e => this.displayExternalsError()
@@ -256,23 +257,31 @@ export default class SelectUser {
 
     setFavorites(response) {
         if(response.length > 0) {
+            let toto = [];
             for (let j = 0; j < response.length; j++) {
                 let value = response[j];
                 if (this.favorites.filter(f => f.text === value).length === 0) {
-                    this.favorites.push({
+                    toto.push({
                         text: value,
                         value: this.valuePrefix + value,
                         selected: false
                     });
                 }
-            }
-            this.slimSelect.setData(this.favorites);
-            if (this.favorites.filter(f => f.selected).length > 0) {
-                this.slimSelect.set(this.favorites.filter(f => f.selected)[0].value);
-            } else {
-                this.slimSelect.set();
+                if(toto.length > 0) {
+                    this.slimSelect.setData(toto);
+                    this.slimSelect.set();
+                }
             }
         }
+        // if(this.favorites.length > 0) {
+        //     this.slimSelect.setData(this.favorites);
+        //     let selectedFavorites = this.favorites.filter(f => f.selected).map(f => f.value);
+        //     // if (selectedFavorites.length > 0) {
+        //     //     this.slimSelect.set(selectedFavorites);
+        //     // } else {
+        //     //     this.slimSelect.set();
+        //     // }
+        // }
     }
 
     populateWithFavorites() {
@@ -281,7 +290,7 @@ export default class SelectUser {
             type: 'GET',
             dataType: 'json',
             contentType: "application/json",
-            async: false,
+            async: true,
             success: response => this.setFavorites(response)
         });
     }

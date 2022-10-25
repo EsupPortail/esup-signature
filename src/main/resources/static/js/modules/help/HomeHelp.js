@@ -3,7 +3,7 @@ export class HomeHelp {
     constructor(doneTour) {
         this.doneTour = doneTour;
         this.intro = introJs();
-        this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'Passer', showStepNumbers: 'false', overlayOpacity: 0.3})
+        this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'x', showStepNumbers: 'false', overlayOpacity: 0.3})
         this.initListeners();
         this.initStep();
     }
@@ -87,7 +87,7 @@ export class HomeHelp {
         }
 
         this.intro.addStep({
-            element: '#toSignList',
+            element: '#to-sign-list',
             intro: "Lorsque vous avez un document à signer, il apparait dans cette liste.",
             position: 'right'
         });

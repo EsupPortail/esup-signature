@@ -3,7 +3,7 @@ export class UserParamsHelp {
     constructor(doneTour) {
         this.doneTour = doneTour;
         this.intro = introJs();
-        this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'Passer', showStepNumbers: 'false', overlayOpacity: 0.8, disableInteraction: true})
+        this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'x', showStepNumbers: 'false', overlayOpacity: 0.8, disableInteraction: true})
         this.initListeners();
         this.initStep();
     }

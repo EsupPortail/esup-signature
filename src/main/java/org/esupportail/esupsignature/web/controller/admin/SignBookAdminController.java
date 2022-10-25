@@ -34,9 +34,9 @@ import java.util.Locale;
 
 @RequestMapping("/admin/signbooks")
 @Controller
-public class AdminSignBookController {
+public class SignBookAdminController {
 
-	private static final Logger logger = LoggerFactory.getLogger(AdminSignBookController.class);
+	private static final Logger logger = LoggerFactory.getLogger(SignBookAdminController.class);
 
 	@ModelAttribute("adminMenu")
 	public String getAdminMenu() {
@@ -71,17 +71,19 @@ public class AdminSignBookController {
 					   @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
 					   @RequestParam(value = "dateFilter", required = false) String dateFilter,
 					   @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
-		if(statusFilter == null || statusFilter.isEmpty() || statusFilter.equals("all")) statusFilter = null;
-		if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
-			workflowFilter = "%";
+		if(statusFilter != null && (statusFilter.isEmpty() || statusFilter.equals("all"))) {
+			statusFilter = null;
 		}
-		if(creatorFilter == null || creatorFilter.isEmpty() || creatorFilter.equals("all") || creatorFilter.equals("undefined")) {
-			creatorFilter = "%";
+		if(workflowFilter != null && (workflowFilter.isEmpty() || workflowFilter.equals("all"))) {
+			workflowFilter = null;
 		}
-		if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
-			docTitleFilter = "%";
+		if(creatorFilter != null && (creatorFilter.isEmpty() || creatorFilter.equals("all"))) {
+			creatorFilter = null;
 		}
-		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter + "%", creatorFilter, dateFilter, pageable);
+		if(docTitleFilter != null && (docTitleFilter.isEmpty() || docTitleFilter.equals("all"))) {
+			docTitleFilter = null;
+		}
+		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
 		model.addAttribute("statusFilter", statusFilter);
 		model.addAttribute("signBooks", signBooks);
 		List<User> creators = signBookService.getCreators(null, workflowFilter, docTitleFilter, creatorFilter);
@@ -106,23 +108,37 @@ public class AdminSignBookController {
 						 @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
 						 @RequestParam(value = "dateFilter", required = false) String dateFilter,
 						 @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
-		if(statusFilter == null || statusFilter.isEmpty() || statusFilter.equals("all")) statusFilter = null;
-		if(workflowFilter == null || workflowFilter.isEmpty() || workflowFilter.equals("all")) {
-			workflowFilter = "%";
+		if(statusFilter != null && (statusFilter.isEmpty() || statusFilter.equals("all"))) {
+			statusFilter = null;
 		}
-		if(creatorFilter == null || creatorFilter.isEmpty() || creatorFilter.equals("all")) {
-			creatorFilter = "%";
+		if(workflowFilter != null && (workflowFilter.isEmpty() || workflowFilter.equals("all"))) {
+			workflowFilter = null;
 		}
-		if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
-			docTitleFilter = "%";
+		if(creatorFilter != null && (creatorFilter.isEmpty() || creatorFilter.equals("all"))) {
+			creatorFilter = null;
 		}
-		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter + "%", creatorFilter, dateFilter, pageable);
+		if(docTitleFilter != null && (docTitleFilter.isEmpty() || docTitleFilter.equals("all"))) {
+			docTitleFilter = null;
+		}
+		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
 		model.addAttribute("signBooks", signBooks);
 		CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
 		final Context ctx = new Context(Locale.FRENCH);
 		ctx.setVariables(model.asMap());
 		ctx.setVariable("_csrf", token);
 		return templateEngine.process("admin/signbooks/includes/list-elem.html", ctx);
+	}
+
+	@GetMapping(value = "/{id}")
+	public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
+		SignBook signBook = signBookService.getById(id);
+		Long signRequestId = signBook.getSignRequests().get(0).getId();
+		if(signBook.getSignRequests().size() > 1) {
+			if(signBook.getSignRequests().stream().anyMatch(s -> s.getStatus().equals(SignRequestStatus.pending))) {
+				signRequestId = signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending)).findFirst().get().getId();
+			}
+		}
+		return "redirect:/admin/signrequests/" + signRequestId;
 	}
 
 	@PostMapping(value = "/delete-multiple", consumes = {"application/json"})

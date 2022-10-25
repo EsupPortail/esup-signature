@@ -65,7 +65,7 @@ public class GlobalProperties {
      */
     private String archiveUri;
     /**
-     * Délai en nombre de jours avant que les documents des demandes archivées ne soient effacé de la base (-1 non actif)
+     * Délai en nombre de jours avant que les documents des demandes archivées ne soient effacés de la base (-1 non actif)
      */
     private Integer delayBeforeCleaning = -1;
     /**
@@ -175,6 +175,15 @@ public class GlobalProperties {
      */
     public Boolean exportAttachements = true;
 
+    /**
+     *  Type de certificat cachet (PKCS11, PKCS12)
+     */
+    private String sealCertificatType;
+
+    /**
+     *  Emplacement du certificat cachet PKCS12
+     */
+    private String sealCertificatFile;
 
     /**
      *  Pilote du certificat cachet
@@ -185,6 +194,11 @@ public class GlobalProperties {
      *  Pin du certificat cachet
      */
     private String sealCertificatPin;
+
+    /**
+     *  Pin du certificat cachet
+     */
+    private Boolean signEmailWithSealCertificat = false;
 
     /**
      *  Appliquer le cachet sur toutes les demandes terminées
@@ -481,6 +495,22 @@ public class GlobalProperties {
         this.exportAttachements = exportAttachements;
     }
 
+    public String getSealCertificatType() {
+        return sealCertificatType;
+    }
+
+    public void setSealCertificatType(String sealCertificatType) {
+        this.sealCertificatType = sealCertificatType;
+    }
+
+    public String getSealCertificatFile() {
+        return sealCertificatFile;
+    }
+
+    public void setSealCertificatFile(String sealCertificatFile) {
+        this.sealCertificatFile = sealCertificatFile;
+    }
+
     public String getSealCertificatDriver() {
         return sealCertificatDriver;
     }
@@ -495,6 +525,14 @@ public class GlobalProperties {
 
     public void setSealCertificatPin(String sealCertificatPin) {
         this.sealCertificatPin = sealCertificatPin;
+    }
+
+    public Boolean getSignEmailWithSealCertificat() {
+        return signEmailWithSealCertificat;
+    }
+
+    public void setSignEmailWithSealCertificat(Boolean signEmailWithSealCertificat) {
+        this.signEmailWithSealCertificat = signEmailWithSealCertificat;
     }
 
     public Boolean getSealAllDocs() {

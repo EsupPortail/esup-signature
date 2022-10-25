@@ -59,7 +59,7 @@
                         <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && signBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'/admin/signrequests/restore/' + ${signRequest.id}" role="button" title="Restaurer">
                             <i class="fas fa-trash-restore pr-2"></i> Restaurer
                         </a>
-                        <a th:if="${signBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
+                        <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
                             <i class="fas fa-trash-alt text-danger pr-2"></i> <span th:text="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
                         </a>
                     </div>

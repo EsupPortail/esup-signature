@@ -1,10 +1,8 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import org.esupportail.esupsignature.entity.FieldPropertie;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.UserPropertie;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.ldap.PersonLdapLight;
@@ -51,7 +49,7 @@ public class UserController {
 	private UserService userService;
 
 	@Resource
-	private SignRequestService signRequestService;
+	private SignBookService signBookService;
 
 	@Resource
 	private UserPropertieService userPropertieService;
@@ -212,7 +210,8 @@ public class UserController {
 
 	@GetMapping("/replace")
 	public String showReplace(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
-		List<SignRequest> signRequests = signRequestService.getToSignRequests(authUserEppn);
+		List<SignBook> signBooks = signBookService.getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).collect(Collectors.toList());
+		List<SignRequest> signRequests = signBookService.getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).flatMap(signBook -> signBook.getSignRequests().stream().distinct()).collect(Collectors.toList());
 		model.addAttribute("signRequests", signRequests);
 		return "user/users/replace";
 	}
@@ -230,7 +229,7 @@ public class UserController {
 
 	@GetMapping("/replace/transfer")
 	public String transfert(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
-		int result = signRequestService.transfer(authUserEppn);
+		int result = signBookService.transfer(authUserEppn);
 		if(result > 0) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Le transfert des demandes à bien été effectué. " + result + " demande(s) transférées."));
 		} else {
