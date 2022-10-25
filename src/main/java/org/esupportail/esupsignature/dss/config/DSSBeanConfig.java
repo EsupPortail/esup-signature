@@ -5,6 +5,10 @@ import eu.europa.esig.dss.alert.ExceptionOnStatusAlert;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
+import eu.europa.esig.dss.jaxb.common.DocumentBuilderFactoryBuilder;
+import eu.europa.esig.dss.jaxb.common.SchemaFactoryBuilder;
+import eu.europa.esig.dss.jaxb.common.ValidatorConfigurator;
+import eu.europa.esig.dss.jaxb.common.XmlDefinerUtils;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.service.crl.JdbcCacheCRLSource;
@@ -51,7 +55,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
+import javax.xml.XMLConstants;
 import java.io.File;
 import java.io.IOException;
 
@@ -69,6 +75,24 @@ public class DSSBeanConfig {
 		this.dssProperties = dssProperties;
 		this.proxyConfig = proxyConfig;
 	}
+
+	@PostConstruct
+	public void setXmlSecurity() {
+		XmlDefinerUtils xmlDefinerUtils = XmlDefinerUtils.getInstance();
+		DocumentBuilderFactoryBuilder documentBuilderFactoryBuilder = DocumentBuilderFactoryBuilder.getSecureDocumentBuilderFactoryBuilder();
+		documentBuilderFactoryBuilder.removeAttribute(XMLConstants.ACCESS_EXTERNAL_DTD);
+		documentBuilderFactoryBuilder.removeAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA);
+		xmlDefinerUtils.setDocumentBuilderFactoryBuilder(documentBuilderFactoryBuilder);
+		SchemaFactoryBuilder schemaFactoryBuilder = SchemaFactoryBuilder.getSecureSchemaBuilder();
+		schemaFactoryBuilder.removeAttribute(XMLConstants.ACCESS_EXTERNAL_DTD);
+		schemaFactoryBuilder.removeAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA);
+		xmlDefinerUtils.setSchemaFactoryBuilder(schemaFactoryBuilder);
+		ValidatorConfigurator validatorConfigurator = ValidatorConfigurator.getSecureValidatorConfigurator();
+		validatorConfigurator.removeAttribute(XMLConstants.ACCESS_EXTERNAL_DTD);
+		validatorConfigurator.removeAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA);
+		xmlDefinerUtils.setValidatorConfigurator(validatorConfigurator);
+	}
+
 
 	@Bean
 	public TSPSource tspSource() {
