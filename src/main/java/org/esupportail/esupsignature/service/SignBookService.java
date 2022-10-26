@@ -330,7 +330,7 @@ public class SignBookService {
     @Transactional
     public void finishSignBookUpload(Long signBookId, String userEppn) {
         User user = userService.getUserByEppn(userEppn);
-        SignBook signBook = getById(signBookId);
+        SignBook signBook = signBookRepository.findWithLockingById(signBookId).orElseThrow();
         if(signBook.getSubject().isEmpty()) {
             signBook.setSubject(generateName(signBook, null, user, false));
         }
