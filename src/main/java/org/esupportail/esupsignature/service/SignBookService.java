@@ -415,8 +415,7 @@ public class SignBookService {
 
     @Transactional
     public SignBook getById(Long id) {
-        Optional<SignBook> signBook = signBookRepository.findById(id);
-        return signBook.orElse(null);
+        return signBookRepository.findById(id).orElseThrow();
     }
 
     public List<SignBook> getByWorkflowId(Long id) {
