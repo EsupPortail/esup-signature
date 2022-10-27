@@ -63,7 +63,7 @@ public class FormWsController {
             TypeReference<Map<String, String>> type = new TypeReference<>(){};
             Map<String, String> datas = new HashMap<>();
             if(formDatas != null) {
-                objectMapper.readValue(formDatas, type);
+                datas = objectMapper.readValue(formDatas, type);
             }
             SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, signTypes, allSignToCompletes, null, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, signRequestParamsJsonString, title);
             return signBook.getSignRequests().get(0).getId();
