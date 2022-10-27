@@ -76,8 +76,6 @@ export class WorkspacePdf {
                 } else {
                     this.workspace.css("margin-top", "178px");
                 }
-            } else {
-                this.workspace.css("margin-top", "170px");
             }
         }
         let root = document.querySelector(':root');

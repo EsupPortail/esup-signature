@@ -46,6 +46,10 @@
             style="width: 150px;">
             <div th:replace="user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})"></div>
         </td>
+        <td class="clickable-td d-md-none"
+            style="width: 150px;">
+            <div th:replace="user/signbooks/includes/status-sm :: status(signBook=${signRequest.parentSignBook})"></div>
+        </td>
         <td>
             <div class="position-relative">
                 <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="collapse">
