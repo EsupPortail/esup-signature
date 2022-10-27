@@ -53,7 +53,7 @@ export class PdfViewer extends EventFactory {
         $('#rotateleft').on('click', e => this.rotateLeft());
         $('#rotateright').on('click', e => this.rotateRight());
         $(window).on('resize', e => this.adjustZoom());
-        this.addEventListener("fieldsReady", e => this.listenToSearchCompletion());
+        // this.addEventListener("renderFinished", e => this.listenToSearchCompletion());
         // this.addEventListener("ready", e => this.restoreScrolling());
    }
 
@@ -668,6 +668,7 @@ export class PdfViewer extends EventFactory {
         $(".annotationLayer").each(function() {
             $(this).removeClass("d-none");
         });
+        this.listenToSearchCompletion();
     }
 
     isFieldEnable(dataField) {
