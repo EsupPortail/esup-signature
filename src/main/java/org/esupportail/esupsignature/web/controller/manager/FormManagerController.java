@@ -314,10 +314,9 @@ public class FormManagerController {
 
     @PostMapping("/update-signs-order/{id}")
     @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
-    public String updateSignsOrder(@PathVariable("id") Long id,
+    public ResponseEntity<String> updateSignsOrder(@PathVariable("id") Long id,
                                    @ModelAttribute("authUserEppn") String authUserEppn,
-                                   @RequestParam Map<String, String> values,
-                                   RedirectAttributes redirectAttributes) throws JsonProcessingException {
+                                   @RequestParam Map<String, String> values) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         String[] stringStringMap = objectMapper.readValue(values.get("srpMap"), String[].class);
         Map<Long, Integer> signRequestParamsSteps = new HashMap<>();
@@ -325,7 +324,7 @@ public class FormManagerController {
             signRequestParamsSteps.put(Long.valueOf(stringStringMap[i]), Integer.valueOf(stringStringMap[i + 1]));
         }
         formService.setSignRequestParamsSteps(id, signRequestParamsSteps);
-        return "redirect:/managers/forms/" + id + "/signs";
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }
