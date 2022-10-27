@@ -71,7 +71,7 @@
                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
                             <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-stack">
                               <i class="fas fa-trash-alt" style="opacity: 0.85;"></i>
-                              <i class="fas fa-ban fa-stack-1x" style="font-size: 45px;"></i>
+                              <i class="fas fa-ban fa-stack-1x" style="font-size: 41px;"></i>
                             </span>
                             <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fas fa-trash-alt"></i>
                         </a>

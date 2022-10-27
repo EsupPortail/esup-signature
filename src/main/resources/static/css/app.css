@@ -1532,6 +1532,11 @@ textarea:placeholder-shown.required-field {
 .new-max-w {
     width: calc(100vw - 280px);
 }
+
+.workspace-margin-top {
+    margin-top: 132px;
+}
+
 @media (max-width: 992px) {
     .new-max-w {
         width: 100%;
