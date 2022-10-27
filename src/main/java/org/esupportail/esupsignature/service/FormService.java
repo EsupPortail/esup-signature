@@ -288,79 +288,81 @@ public class FormService {
 			Map<String, Integer> pageNrByAnnotDict = pdfService.getPageNumberByAnnotDict(pdDocument);
 			for (PDField pdField : pdFields) {
 				logger.info(pdField.getFullyQualifiedName() + " finded");
-				int page = pageNrByAnnotDict.get(pdField.getPartialName());
-				if (pdField instanceof PDTextField) {
-					Field field = fieldService.createField(pdField.getPartialName(), workflow, FieldType.text);
-					field.setLabel(pdField.getAlternateFieldName());
-					field.setRequired(pdField.isRequired());
-					field.setReadOnly(pdField.isReadOnly());
-					PDFormFieldAdditionalActions pdFormFieldAdditionalActions = pdField.getActions();
-					String type = "text";
-					if (pdFormFieldAdditionalActions != null) {
-						if (pdFormFieldAdditionalActions.getK() != null) {
-							type = pdFormFieldAdditionalActions.getK().getType();
-						}
-						PDAction pdAction = pdFormFieldAdditionalActions.getC();
-						if (pdAction != null) {
-							String actionsString = pdAction.getCOSObject().getString(COSName.JS);
-							if (actionsString != null) {
-								computeActions(field, actionsString);
-							}
-						}
-					}
-					PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
-					PDAnnotationAdditionalActions pdAnnotationAdditionalActions = pdAnnotationWidget.getActions();
-					if (pdAnnotationAdditionalActions != null && pdAnnotationAdditionalActions.getCOSObject().size() > 0) {
-						if (pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K) != null) {
-							COSString cosString = (COSString) pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K).getItem(COSName.JS);
-							type = cosString.toString();
-						}
-					}
-					if (type.equals("text")) {
-						field.setType(FieldType.text);
-					} else if (type.contains("Time")) {
-						field.setType(FieldType.time);
-					} else if (type.contains("Date")) {
-						field.setType(FieldType.date);
-					} else if (type.contains("Number")) {
-						field.setType(FieldType.number);
-					}
-					parseField(field, pdField, pdAnnotationWidget, page);
-					fields.add(field);
-					logger.info(field.getName() + " added");
-				} else if (pdField instanceof PDCheckBox) {
-					Field field = fieldService.createField(pdField.getPartialName(), workflow, FieldType.checkbox);
-					field.setRequired(pdField.isRequired());
-					field.setReadOnly(pdField.isReadOnly());
-					field.setLabel(pdField.getAlternateFieldName());
-					PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
-					parseField(field, pdField, pdAnnotationWidget, page);
-					fields.add(field);
-					logger.info(field.getName() + " added");
-				} else if (pdField instanceof PDRadioButton) {
-					PDRadioButton pdRadioButton = (PDRadioButton) pdField;
-					for (PDAnnotationWidget pdAnnotationWidget : pdRadioButton.getWidgets()) {
-						if(pdAnnotationWidget.getRectangle() == null) {
-							continue;
-						}
-						Field field = fieldService.createField(pdField.getPartialName(), workflow, FieldType.radio);
+				if(pageNrByAnnotDict.containsKey(pdField.getPartialName())) {
+					int page = pageNrByAnnotDict.get(pdField.getPartialName());
+					if (pdField instanceof PDTextField) {
+						Field field = fieldService.createField(pdField.getPartialName(), workflow, FieldType.text);
+						field.setLabel(pdField.getAlternateFieldName());
 						field.setRequired(pdField.isRequired());
 						field.setReadOnly(pdField.isReadOnly());
+						PDFormFieldAdditionalActions pdFormFieldAdditionalActions = pdField.getActions();
+						String type = "text";
+						if (pdFormFieldAdditionalActions != null) {
+							if (pdFormFieldAdditionalActions.getK() != null) {
+								type = pdFormFieldAdditionalActions.getK().getType();
+							}
+							PDAction pdAction = pdFormFieldAdditionalActions.getC();
+							if (pdAction != null) {
+								String actionsString = pdAction.getCOSObject().getString(COSName.JS);
+								if (actionsString != null) {
+									computeActions(field, actionsString);
+								}
+							}
+						}
+						PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
+						PDAnnotationAdditionalActions pdAnnotationAdditionalActions = pdAnnotationWidget.getActions();
+						if (pdAnnotationAdditionalActions != null && pdAnnotationAdditionalActions.getCOSObject().size() > 0) {
+							if (pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K) != null) {
+								COSString cosString = (COSString) pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K).getItem(COSName.JS);
+								type = cosString.toString();
+							}
+						}
+						if (type.equals("text")) {
+							field.setType(FieldType.text);
+						} else if (type.contains("Time")) {
+							field.setType(FieldType.time);
+						} else if (type.contains("Date")) {
+							field.setType(FieldType.date);
+						} else if (type.contains("Number")) {
+							field.setType(FieldType.number);
+						}
+						parseField(field, pdField, pdAnnotationWidget, page);
+						fields.add(field);
+						logger.info(field.getName() + " added");
+					} else if (pdField instanceof PDCheckBox) {
+						Field field = fieldService.createField(pdField.getPartialName(), workflow, FieldType.checkbox);
+						field.setRequired(pdField.isRequired());
+						field.setReadOnly(pdField.isReadOnly());
+						field.setLabel(pdField.getAlternateFieldName());
+						PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
+						parseField(field, pdField, pdAnnotationWidget, page);
+						fields.add(field);
+						logger.info(field.getName() + " added");
+					} else if (pdField instanceof PDRadioButton) {
+						PDRadioButton pdRadioButton = (PDRadioButton) pdField;
+						for (PDAnnotationWidget pdAnnotationWidget : pdRadioButton.getWidgets()) {
+							if (pdAnnotationWidget.getRectangle() == null) {
+								continue;
+							}
+							Field field = fieldService.createField(pdField.getPartialName(), workflow, FieldType.radio);
+							field.setRequired(pdField.isRequired());
+							field.setReadOnly(pdField.isReadOnly());
+							field.setLabel(pdField.getAlternateFieldName());
+							parseField(field, pdField, pdAnnotationWidget, page);
+							fields.add(field);
+							logger.info(field.getName() + " added");
+							break;
+						}
+					} else if (pdField instanceof PDChoice) {
+						Field field = fieldService.createField(pdField.getPartialName(), workflow, FieldType.select);
+						field.setRequired(pdField.isRequired());
+						field.setReadOnly(pdField.isReadOnly());
+						PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
 						field.setLabel(pdField.getAlternateFieldName());
 						parseField(field, pdField, pdAnnotationWidget, page);
 						fields.add(field);
 						logger.info(field.getName() + " added");
-						break;
 					}
-				} else if (pdField instanceof PDChoice) {
-					Field field = fieldService.createField(pdField.getPartialName(), workflow, FieldType.select);
-					field.setRequired(pdField.isRequired());
-					field.setReadOnly(pdField.isReadOnly());
-					PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
-					field.setLabel(pdField.getAlternateFieldName());
-					parseField(field, pdField, pdAnnotationWidget, page);
-					fields.add(field);
-					logger.info(field.getName() + " added");
 				}
 			}
 			fields = fields.stream().sorted(Comparator.comparingInt(Field::getLeftPos)).sorted(Comparator.comparingInt(Field::getTopPos).reversed()).sorted(Comparator.comparingInt(Field::getPage)).collect(Collectors.toList());
