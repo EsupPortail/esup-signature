@@ -1380,6 +1380,7 @@ textarea:placeholder-shown.required-field {
 }
 
 .fixed-action-btns {
+    pointer-events: none;
     position: fixed;
     right: 1vw;
     bottom: 80px;
@@ -1397,6 +1398,7 @@ textarea:placeholder-shown.required-field {
 }
 
 .fixed-action-btns ul {
+    pointer-events: initial;
     height: auto;
     opacity: 1;
     position: absolute;
