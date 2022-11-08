@@ -1737,7 +1737,7 @@ public class SignBookService {
                                         addUserInTeam(user.getId(), signBook.getId());
                                     }
                                 }
-                                mailService.sendFile(title, signRequests, targetUrl);
+                                mailService.sendFile(title, signBook, targetUrl);
                                 target.setTargetOk(true);
                             } catch (MessagingException | IOException e) {
                                 logger.error("unable to send mail to : " + target.getTargetUri(), e);
