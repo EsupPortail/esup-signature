@@ -1536,7 +1536,7 @@ textarea:placeholder-shown.required-field {
 }
 
 .workspace-margin-top {
-    margin-top: 132px;
+    margin-top: 170px;
 }
 
 @media (max-width: 992px) {
@@ -1652,7 +1652,7 @@ input:focus, textarea:focus, select:focus {
 
 .disable-selection {
     outline: none;
-    pointer-events:none;
+    pointer-events: none;
 }
 
 #signPad {

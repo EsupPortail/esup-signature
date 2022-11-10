@@ -1,39 +1,39 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <title>Demande signée</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 </head>
-<body class="bg-light">
-<div class="container">
-    <div class="card m-4">
-        <div class="card-header rounded-0 bg-dark">
+<body>
+<table width="90%" border="0" style="width: 90%;" bgcolor="#ffffff">
+    <tr>
+        <td width="100%" style="background-color:#343a40; border-bottom:1px solid rgba(0, 0, 0, 0.125); margin-bottom:0; padding:10px; width: 100%;" bgcolor="#343a40">
             <img height="40" class="mx-auto float-start" src="cid:logo" style="border-style:none; vertical-align:middle; float:left; margin-right:auto; margin-left:auto" valign="middle" align="left">
             <img height="40" class="mx-auto float-end" src="cid:logo-univ" style="border-style:none; vertical-align:middle; float:right; margin-right:auto; margin-left:auto" valign="middle" align="right">
-        </div>
-        <div class="card-body" style="box-sizing:border-box;-ms-flex:1 1 auto;flex:1 1 auto;padding-top:1.25rem;padding-bottom:1.25rem;padding-right:1.25rem;padding-left:1.25rem;" >
-            <p>Bonjour</p>
-            <p>Un document signé vous est destiné, pour y accéder cliquez sur le lien ci-dessous</p>
-            <table class="table table-borderless">
-                <thead class="table-secondary">
-                <tr>
-                    <th class="text-white" >Titre du document</th>
-                    <th class="text-white" >Auteur</th>
-                </tr>
-                </thead>
-                <th:block th:each="signRequest : ${signRequests}">
-                    <tr>
-                        <td th:text="${signRequest.title}"></td>
-                        <td>
-                            <a class="btn btn-sm btn-dark mx-auto" th:href="@{|${rootUrl}/user/signrequests/${signRequest.id}|}">Accéder au document</a>
-                        </td>
-                    </tr>
-                </th:block>
-            </table>
-        </div>
-        <div class="card-footer rounded-0 bg-secondary justify-content-center text-center" style="width:100%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;  -ms-flex-pack:center; justify-content:center; text-align:center" bgcolor="#6c757d" align="center">
+        </td>
+    </tr>
+    <tr>
+        <td style="width:100%; padding:10px;background-color:#f8f9fa;">
+            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;">Bonjour</p>
+            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;">Un document signé vous est destiné, pour y accéder cliquez sur le lien ci-dessous</p>
+            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
+                Nom de la demande : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.subject}" style="box-sizing:border-box;" ></span></b>
+                <br style="box-sizing:border-box;" >
+                Crée par : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}" style="box-sizing:border-box;" ></span></b>
+                <br style="box-sizing:border-box;" >
+                Date de création : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}" style="box-sizing:border-box;" ></span></b>
+                <br style="box-sizing:border-box;" >
+            </p>
+            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
+                <a th:href="@{|${rootUrl}/user/signbooks/${signBook.id}|}" class="btn btn-dark" style="box-sizing:border-box;text-decoration:none;display:inline-block;font-weight:400;text-align:center;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border-width:1px;border-style:solid;padding-top:.375rem;padding-bottom:.375rem;padding-right:.75rem;padding-left:.75rem;font-size:14px;line-height:1.5;border-radius:.25rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;color:#fff;background-color:#343a40;border-color:#343a40;" >Accéder à la demande</a>
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td style="width:100%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;  -ms-flex-pack:center; justify-content:center; text-align:center; font-size:14px;" bgcolor="#6c757d">
             <span class="text-white text-center" style="text-align:center; color:#fff" align="center" th:text="#{application.footer}"></span>
-        </div>
-    </div>
-</div>
+        </td>
+    </tr>
+</table>
 </body>
 </html>

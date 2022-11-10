@@ -392,14 +392,15 @@ public class MailService {
         }
     }
 
-    public void sendFile(String title, List<SignRequest> signRequests, String targetUri) throws MessagingException, IOException {
+    public void sendFile(String title, SignBook signBook, String targetUri) throws MessagingException, IOException {
         if (!checkMailSender()) {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("signRequests", signRequests);
-        User user = signRequests.get(0).getCreateBy();
+        ctx.setVariable("signBook", signBook);
+        ctx.setVariable("signRequests", signBook.getSignRequests());
+        User user = signBook.getCreateBy();
         ctx.setVariable("user", user);
         setTemplate(ctx);
         MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
