@@ -30,8 +30,8 @@ public class UserListService {
             if(listName.contains("*")) {
                 listName = listName.split("\\*")[1];
             }
-            User testUserIsGroup = userRepository.findByEmail(listName).get(0);
-            if(testUserIsGroup == null || testUserIsGroup.getUserType().equals(UserType.group)) {
+            List<User> testUserIsGroup = userRepository.findByEmail(listName);
+            if(testUserIsGroup.size() == 0 || testUserIsGroup.get(0).getUserType().equals(UserType.group)) {
                 List<String> emails = new ArrayList<>();
                 for (UserList userList : userLists) {
                     emails.addAll(userList.getUsersEmailFromList(listName));
