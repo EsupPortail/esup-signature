@@ -80,6 +80,9 @@ public class WorkflowService {
     @Resource
     private FormRepository formRepository;
 
+    @Resource
+    private ObjectMapper objectMapper;
+
     @PostConstruct
     public void initCreatorWorkflow() {
         User creator= userService.getByEppn("creator");
@@ -92,7 +95,12 @@ public class WorkflowService {
             workflow.setDescription("Signature du créateur de la demande");
             workflow.setCreateDate(new Date());
             workflow.setCreateBy(userService.getSystemUser());
-            WorkflowStep workflowStep = workflowStepService.createWorkflowStep("Ma signature", false, SignType.pdfImageStamp, creator.getEmail());
+            WorkflowStep workflowStep = null;
+            try {
+                workflowStep = workflowStepService.createWorkflowStep("Ma signature", false, SignType.pdfImageStamp, creator.getEmail());
+            } catch (EsupSignatureException e) {
+                logger.warn(e.getMessage());
+            }
             workflow.getWorkflowSteps().add(workflowStep);
             workflowRepository.save(workflow);
         }
@@ -177,7 +185,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public Workflow addStepToWorkflow(Long id, SignType signType, Boolean allSignToComplete, String[] recipientsEmails, User user) {
+    public Workflow addStepToWorkflow(Long id, SignType signType, Boolean allSignToComplete, String[] recipientsEmails, User user) throws EsupSignatureException {
         Workflow workflow;
         if (id != null) {
             workflow = getById(id);
@@ -352,7 +360,7 @@ public class WorkflowService {
         return users;
     }
 
-    public void replaceStepSystemUsers(String userEppn, WorkflowStep workflowStep) {
+    public void replaceStepSystemUsers(String userEppn, WorkflowStep workflowStep) throws EsupSignatureException {
         User user = userService.getByEppn(userEppn);
         if(TransactionSynchronizationManager.isActualTransactionActive()) {
             List<User> users = new ArrayList<>(workflowStep.getUsers());
@@ -517,7 +525,6 @@ public class WorkflowService {
     public InputStream getJsonWorkflowSetup(Long id) throws IOException {
         Workflow workflow = getById(id);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.writer().writeValue(outputStream, workflow);
         return new ByteArrayInputStream(outputStream.toByteArray());
     }
@@ -527,7 +534,6 @@ public class WorkflowService {
         Workflow workflow = getById(id);
         String savedName = workflow.getName();
         String savedTitle = workflow.getTitle();
-        ObjectMapper objectMapper = new ObjectMapper();
         Workflow workflowSetup = objectMapper.readValue(inputStream.readAllBytes(), Workflow.class);
         workflow.getWorkflowSteps().clear();
         for(WorkflowStep workflowStepSetup : workflowSetup.getWorkflowSteps()) {

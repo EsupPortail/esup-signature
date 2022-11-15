@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.web.controller.user;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.ldap.PersonLdapLight;
@@ -129,7 +130,7 @@ public class UserController {
 	public List<String> searchUserList(@RequestParam(value="searchString") String searchString) {
 		try {
 			return userListService.getUsersEmailFromList(searchString);
-		} catch (DataAccessException e) {
+		} catch (DataAccessException | EsupSignatureException e) {
 			logger.warn(e.getMessage());
 		}
 		return null;

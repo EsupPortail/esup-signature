@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
@@ -10,6 +9,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
@@ -54,6 +54,9 @@ public class UserService {
     private final LdapPersonService ldapPersonService;
 
     private final LdapOrganizationalUnitService ldapOrganizationalUnitService;
+
+    @Resource
+    private ObjectMapper objectMapper;
 
     public UserService(GlobalProperties globalProperties,
                        WebSecurityProperties webSecurityProperties,
@@ -292,7 +295,6 @@ public class UserService {
     public void updateUser(String authUserEppn, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, String signRequestParamsJsonString, Boolean returnToHomeAfterSign) throws IOException {
         User authUser = getByEppn(authUserEppn);
         if(signRequestParamsJsonString != null && !signRequestParamsJsonString.isEmpty()) {
-            ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             SignRequestParams signRequestParams = objectMapper.readValue(signRequestParamsJsonString, SignRequestParams.class);
             signRequestParams.setxPos(0);
             signRequestParams.setyPos(0);
@@ -488,6 +490,7 @@ public class UserService {
         return null;
     }
 
+    @Transactional
     public List<User> getTempUsersFromRecipientList(List<String> recipientsEmails) {
         List<User> tempUsers = new ArrayList<>();
         for (String recipientEmail : recipientsEmails) {
@@ -495,11 +498,19 @@ public class UserService {
                 if (recipientEmail.contains("*")) {
                     recipientEmail = recipientEmail.split("\\*")[1];
                 }
-                List<String> groupUsers = userListService.getUsersEmailFromList(recipientEmail);
-                if (groupUsers.size() == 0 && !recipientEmail.contains(globalProperties.getDomain())) {
-                    User recipientUser = getUserByEmail(recipientEmail);
-                    if (recipientUser.getUserType().equals(UserType.external)) {
-                        tempUsers.add(recipientUser);
+                List<User> users = userRepository.findByEmail(recipientEmail);
+                if (users.size() == 0 || users.get(0).getUserType().equals(UserType.external)) {
+                    List<String> groupUsers = new ArrayList<>();
+                    try {
+                        groupUsers.addAll(userListService.getUsersEmailFromList(recipientEmail));
+                    } catch (EsupSignatureException e) {
+                        logger.debug(e.getMessage());
+                    }
+                    if (groupUsers.size() == 0 && !recipientEmail.contains(globalProperties.getDomain())) {
+                        User recipientUser = getUserByEmail(recipientEmail);
+                        if (recipientUser.getUserType().equals(UserType.external)) {
+                            tempUsers.add(recipientUser);
+                        }
                     }
                 }
             }
@@ -507,7 +518,7 @@ public class UserService {
         return tempUsers;
     }
 
-    public List<User> getTempUsers(SignRequest signRequest, List<String> recipientsEmails) {
+    public List<User> getTempUsers(SignRequest signRequest, List<String> recipientsEmails) throws EsupSignatureException {
         Set<User> users = new HashSet<>();
         users.addAll(getTempUsers(signRequest));
         if(recipientsEmails != null) {
@@ -722,7 +733,6 @@ public class UserService {
 
     public String getFavoriteSignRequestParamsJson(String userEppn) throws JsonProcessingException {
         User user = getUserByEppn(userEppn);
-        ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.writer().writeValueAsString(user.getFavoriteSignRequestParams());
     }
 

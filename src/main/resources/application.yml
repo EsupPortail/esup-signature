@@ -139,9 +139,9 @@ ldap:
     group-search-base: ou=groups
     group-search-filter: member={0}
     all-groups-search-filter: cn=*{0}
-    members-of-group-search-filter: memberOf=cn={0},ou=groups
     user-id-search-filter: (uid={0})
     member-search-filter: (&(uid={0})({1}))
+    members-of-group-search-filter: memberOf=cn={0},ou=groups,dc=univ-ville,dc=fr
     mapping-filters-groups:
         student : "(eduPersonAffiliation:=student)"
         staff : "(eduPersonAffiliation:=staff)"

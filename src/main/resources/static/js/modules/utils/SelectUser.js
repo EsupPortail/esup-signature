@@ -113,7 +113,6 @@ export default class SelectUser {
         });
     }
 
-
     displayTempUsers(e) {
         if(this.checkList !== "false") {
             if (this.selectField.attr('id') === 'recipientsEmailsWiz') {
@@ -175,7 +174,7 @@ export default class SelectUser {
         let tempUsersDiv = $(name);
         tempUsersDiv.append(
             "<div class='alert alert-danger' id='externalUserInfos_'>" +
-            "<b>Destinataires externes non autorisés</b>" +
+            "<b>Le destinataire saisi n’est pas conforme</b><br>Soit les destinataires externes ne sont pas autorisés, soit il s’agit d’un groupe vide" +
             "</div>");
     }
 

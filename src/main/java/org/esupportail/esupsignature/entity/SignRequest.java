@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.hibernate.annotations.Synchronize;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -70,7 +68,7 @@ public class SignRequest {
     @NotNull
     private SignBook parentSignBook;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @OrderColumn
     private List<SignRequestParams> signRequestParams = new LinkedList<>();
 

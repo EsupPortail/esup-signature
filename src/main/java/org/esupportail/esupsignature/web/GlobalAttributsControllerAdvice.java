@@ -55,6 +55,9 @@ public class GlobalAttributsControllerAdvice {
     @Resource
     private OJService ojService;
 
+    @Resource
+    private ObjectMapper objectMapper;
+
     private final Environment environment;
 
     private final BuildProperties buildProperties;
@@ -90,7 +93,6 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("infiniteScrolling", globalProperties.getInfiniteScrolling());
             model.addAttribute("validationToolsEnabled", validationService != null);
             model.addAttribute("globalProperties", myGlobalProperties);
-            ObjectMapper objectMapper = new ObjectMapper();
             model.addAttribute("globalPropertiesJson", objectMapper.writer().writeValueAsString(myGlobalProperties));
             model.addAttribute("reportNumber", reportService.countByUser(authUserEppn));
             model.addAttribute("hoursBeforeRefreshNotif", myGlobalProperties.getHoursBeforeRefreshNotif());
