@@ -80,6 +80,9 @@ public class WorkflowService {
     @Resource
     private FormRepository formRepository;
 
+    @Resource
+    private ObjectMapper objectMapper;
+
     @PostConstruct
     public void initCreatorWorkflow() {
         User creator= userService.getByEppn("creator");
@@ -522,7 +525,6 @@ public class WorkflowService {
     public InputStream getJsonWorkflowSetup(Long id) throws IOException {
         Workflow workflow = getById(id);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.writer().writeValue(outputStream, workflow);
         return new ByteArrayInputStream(outputStream.toByteArray());
     }
@@ -532,7 +534,6 @@ public class WorkflowService {
         Workflow workflow = getById(id);
         String savedName = workflow.getName();
         String savedTitle = workflow.getTitle();
-        ObjectMapper objectMapper = new ObjectMapper();
         Workflow workflowSetup = objectMapper.readValue(inputStream.readAllBytes(), Workflow.class);
         workflow.getWorkflowSteps().clear();
         for(WorkflowStep workflowStepSetup : workflowSetup.getWorkflowSteps()) {

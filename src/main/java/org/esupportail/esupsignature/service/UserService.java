@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
@@ -55,6 +54,9 @@ public class UserService {
     private final LdapPersonService ldapPersonService;
 
     private final LdapOrganizationalUnitService ldapOrganizationalUnitService;
+
+    @Resource
+    private ObjectMapper objectMapper;
 
     public UserService(GlobalProperties globalProperties,
                        WebSecurityProperties webSecurityProperties,
@@ -293,7 +295,6 @@ public class UserService {
     public void updateUser(String authUserEppn, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, String signRequestParamsJsonString, Boolean returnToHomeAfterSign) throws IOException {
         User authUser = getByEppn(authUserEppn);
         if(signRequestParamsJsonString != null && !signRequestParamsJsonString.isEmpty()) {
-            ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             SignRequestParams signRequestParams = objectMapper.readValue(signRequestParamsJsonString, SignRequestParams.class);
             signRequestParams.setxPos(0);
             signRequestParams.setyPos(0);
@@ -732,7 +733,6 @@ public class UserService {
 
     public String getFavoriteSignRequestParamsJson(String userEppn) throws JsonProcessingException {
         User user = getUserByEppn(userEppn);
-        ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.writer().writeValueAsString(user.getFavoriteSignRequestParams());
     }
 

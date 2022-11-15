@@ -2,8 +2,6 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.google.zxing.WriterException;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
@@ -41,7 +39,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -65,7 +62,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -134,6 +130,9 @@ public class SignRequestService {
 
 	@Resource
 	private ValidationService validationService;
+
+	@Resource
+	private ObjectMapper objectMapper;
 
 	@PostConstruct
 	public void initSignrequestMetrics() {
@@ -997,13 +996,6 @@ public class SignRequestService {
 	@Transactional
 	public String getJson(Long id) throws JsonProcessingException {
 		SignRequest signRequest = getById(id);
-		Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
-		String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-		String dateTimeFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-		builder.simpleDateFormat(dateFormat);
-		builder.serializers(new LocalDateSerializer(DateTimeFormatter.ofPattern(dateFormat)));
-		builder.serializers(new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(dateTimeFormat)));
-		ObjectMapper objectMapper = builder.build();
 		return objectMapper.writeValueAsString(signRequest);
 	}
 

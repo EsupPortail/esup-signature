@@ -61,6 +61,9 @@ public class DataController {
 	@Resource
 	private UserService userService;
 
+	@Resource
+	private ObjectMapper objectMapper;
+
 	@PostMapping("/send-form/{id}")
 	public String sendForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 						   @RequestParam(required = false) List<String> recipientEmails,
@@ -93,7 +96,6 @@ public class DataController {
 						  RedirectAttributes redirectAttributes) throws JsonProcessingException {
 		User user = (User) model.getAttribute("user");
 		User authUser = userService.getUserByEppn(authUserEppn);
-		ObjectMapper objectMapper = new ObjectMapper();
 		TypeReference<Map<String, String>> type = new TypeReference<>(){};
 		Map<String, String> datas = objectMapper.readValue(formData.getFirst("formData"), type);
 		Long dataLongId = null;
