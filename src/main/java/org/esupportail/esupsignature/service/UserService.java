@@ -489,14 +489,19 @@ public class UserService {
         return null;
     }
 
-    public List<User> getTempUsersFromRecipientList(List<String> recipientsEmails) throws EsupSignatureException {
+    public List<User> getTempUsersFromRecipientList(List<String> recipientsEmails) {
         List<User> tempUsers = new ArrayList<>();
         for (String recipientEmail : recipientsEmails) {
             if(recipientEmail != null && userRepository.findByEmail(recipientEmail).size() == 0) {
                 if (recipientEmail.contains("*")) {
                     recipientEmail = recipientEmail.split("\\*")[1];
                 }
-                List<String> groupUsers = userListService.getUsersEmailFromList(recipientEmail);
+                List<String> groupUsers = new ArrayList<>();
+                try {
+                    groupUsers.addAll(userListService.getUsersEmailFromList(recipientEmail));
+                } catch (EsupSignatureException e) {
+                    logger.debug(e.getMessage());
+                }
                 if (groupUsers.size() == 0 && !recipientEmail.contains(globalProperties.getDomain())) {
                     User recipientUser = getUserByEmail(recipientEmail);
                     if (recipientUser.getUserType().equals(UserType.external)) {
