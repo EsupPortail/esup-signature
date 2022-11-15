@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
@@ -488,10 +489,10 @@ public class UserService {
         return null;
     }
 
-    public List<User> getTempUsersFromRecipientList(List<String> recipientsEmails) {
+    public List<User> getTempUsersFromRecipientList(List<String> recipientsEmails) throws EsupSignatureException {
         List<User> tempUsers = new ArrayList<>();
         for (String recipientEmail : recipientsEmails) {
-            if(recipientEmail != null) {
+            if(recipientEmail != null && userRepository.findByEmail(recipientEmail).size() == 0) {
                 if (recipientEmail.contains("*")) {
                     recipientEmail = recipientEmail.split("\\*")[1];
                 }
@@ -507,7 +508,7 @@ public class UserService {
         return tempUsers;
     }
 
-    public List<User> getTempUsers(SignRequest signRequest, List<String> recipientsEmails) {
+    public List<User> getTempUsers(SignRequest signRequest, List<String> recipientsEmails) throws EsupSignatureException {
         Set<User> users = new HashSet<>();
         users.addAll(getTempUsers(signRequest));
         if(recipientsEmails != null) {

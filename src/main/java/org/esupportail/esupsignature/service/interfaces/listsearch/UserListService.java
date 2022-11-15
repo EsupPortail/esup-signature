@@ -1,5 +1,9 @@
 package org.esupportail.esupsignature.service.interfaces.listsearch;
 
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.enums.UserType;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -14,23 +18,28 @@ public class UserListService {
 
     private final List<UserList> userLists;
 
-    public UserListService(@Autowired(required = false) List<UserList> userLists) {
+    private final UserRepository userRepository;
+
+    public UserListService(@Autowired(required = false) List<UserList> userLists, UserRepository userRepository) {
         this.userLists = userLists;
+        this.userRepository = userRepository;
     }
 
-    public List<String> getUsersEmailFromList(String listName) throws DataAccessException {
+    public List<String> getUsersEmailFromList(String listName) throws DataAccessException, EsupSignatureException {
         if(userLists != null && userLists.size() > 0) {
             if(listName.contains("*")) {
                 listName = listName.split("\\*")[1];
             }
-            List<String> emails = new ArrayList<>();
-            for (UserList userList : userLists) {
-                emails.addAll(userList.getUsersEmailFromList(listName));
+            User testUserIsGroup = userRepository.findByEmail(listName).get(0);
+            if(testUserIsGroup == null || testUserIsGroup.getUserType().equals(UserType.group)) {
+                List<String> emails = new ArrayList<>();
+                for (UserList userList : userLists) {
+                    emails.addAll(userList.getUsersEmailFromList(listName));
+                }
+                return emails;
             }
-            return emails;
-        } else {
-            return new ArrayList<>();
         }
+        return new ArrayList<>();
     }
 
     public Map<String, String> getListsNames(String search) throws DataAccessException {

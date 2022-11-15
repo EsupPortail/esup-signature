@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.web.wssecure;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UiParams;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.FieldPropertieService;
 import org.esupportail.esupsignature.service.UserPropertieService;
 import org.esupportail.esupsignature.service.UserService;
@@ -86,7 +87,7 @@ public class UserWsSecureController {
 
     @ResponseBody
     @PostMapping(value ="/check-temp-users")
-    private List<User> checkTempUsers(@RequestBody(required = false) List<String> recipientEmails) {
+    private List<User> checkTempUsers(@RequestBody(required = false) List<String> recipientEmails) throws EsupSignatureException {
         if (recipientEmails!= null && recipientEmails.size() > 0) {
             List<User> users = userService.getTempUsersFromRecipientList(recipientEmails);
             if (smsService != null) {

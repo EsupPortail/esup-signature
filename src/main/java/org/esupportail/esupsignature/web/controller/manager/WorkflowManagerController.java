@@ -181,8 +181,13 @@ public class WorkflowManagerController {
                                    @PathVariable("id") Long id,
                                    @PathVariable("workflowStepId") Long workflowStepId,
                                    @RequestParam String[] recipientsEmails, RedirectAttributes redirectAttributes) {
-        WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientsEmails);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant ajouté"));
+        WorkflowStep workflowStep = null;
+        try {
+            workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientsEmails);
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant ajouté"));
+        } catch (EsupSignatureException e) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Participant non ajouté"));
+        }
         return "redirect:/manager/workflows/" + id + "#" + workflowStep.getId();
     }
 
