@@ -489,23 +489,27 @@ public class UserService {
         return null;
     }
 
+    @Transactional
     public List<User> getTempUsersFromRecipientList(List<String> recipientsEmails) {
         List<User> tempUsers = new ArrayList<>();
         for (String recipientEmail : recipientsEmails) {
-            if(recipientEmail != null && userRepository.findByEmail(recipientEmail).size() == 0) {
+            if(recipientEmail != null) {
                 if (recipientEmail.contains("*")) {
                     recipientEmail = recipientEmail.split("\\*")[1];
                 }
-                List<String> groupUsers = new ArrayList<>();
-                try {
-                    groupUsers.addAll(userListService.getUsersEmailFromList(recipientEmail));
-                } catch (EsupSignatureException e) {
-                    logger.debug(e.getMessage());
-                }
-                if (groupUsers.size() == 0 && !recipientEmail.contains(globalProperties.getDomain())) {
-                    User recipientUser = getUserByEmail(recipientEmail);
-                    if (recipientUser.getUserType().equals(UserType.external)) {
-                        tempUsers.add(recipientUser);
+                List<User> users = userRepository.findByEmail(recipientEmail);
+                if (users.size() == 0 || users.get(0).getUserType().equals(UserType.external)) {
+                    List<String> groupUsers = new ArrayList<>();
+                    try {
+                        groupUsers.addAll(userListService.getUsersEmailFromList(recipientEmail));
+                    } catch (EsupSignatureException e) {
+                        logger.debug(e.getMessage());
+                    }
+                    if (groupUsers.size() == 0 && !recipientEmail.contains(globalProperties.getDomain())) {
+                        User recipientUser = getUserByEmail(recipientEmail);
+                        if (recipientUser.getUserType().equals(UserType.external)) {
+                            tempUsers.add(recipientUser);
+                        }
                     }
                 }
             }
