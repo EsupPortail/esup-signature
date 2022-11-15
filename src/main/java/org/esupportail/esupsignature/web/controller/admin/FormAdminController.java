@@ -75,6 +75,9 @@ public class FormAdminController {
 	@Resource
 	private FieldService fieldService;
 
+	@Resource
+	private ObjectMapper objectMapper;
+
 	@GetMapping()
 	public String list(Model model) {
 		List<Form> forms = formService.getAllForms();
@@ -123,7 +126,6 @@ public class FormAdminController {
 	@PostMapping("/update-signs-order/{id}")
 	public ResponseEntity<String> updateSignsOrder(@PathVariable("id") Long id,
 								   @RequestParam Map<String, String> values) throws JsonProcessingException {
-		ObjectMapper objectMapper = new ObjectMapper();
 		String[] stringStringMap = objectMapper.readValue(values.get("srpMap"), String[].class);
 		Map<Long, Integer> signRequestParamsSteps = new HashMap<>();
 		for (int i = 0; i < stringStringMap.length; i = i + 2) {

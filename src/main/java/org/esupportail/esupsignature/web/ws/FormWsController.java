@@ -39,6 +39,9 @@ public class FormWsController {
     @Resource
     private SignRequestService signRequestService;
 
+    @Resource
+    private ObjectMapper objectMapper;
+
     @CrossOrigin
     @PostMapping(value = "/{id}/new")
     @Operation(description = "Création d'une nouvelle instance d'un formulaire")
@@ -59,7 +62,6 @@ public class FormWsController {
         }
         try {
             Data data = dataService.addData(id, createByEppn);
-            ObjectMapper objectMapper = new ObjectMapper();
             TypeReference<Map<String, String>> type = new TypeReference<>(){};
             Map<String, String> datas = new HashMap<>();
             if(formDatas != null) {
@@ -91,7 +93,6 @@ public class FormWsController {
     ) {
         Data data = dataService.addData(id, createByEppn);
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             TypeReference<Map<String, String>> type = new TypeReference<>(){};
             Map<String, String> datas = new HashMap<>();
             if(formDatas != null) {

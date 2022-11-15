@@ -42,6 +42,7 @@ public class User {
     private String phone;
 
     @ElementCollection(targetClass=String.class)
+    @JsonIgnore
     private List<String> managersRoles = new ArrayList<>();
 
     @ElementCollection
@@ -91,6 +92,7 @@ public class User {
     private Date lastSendAlertDate = new Date(0);
 
     @ElementCollection
+    @JsonIgnore
     private List<String> roles = new ArrayList<>();
 
     @JsonIgnore

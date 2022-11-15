@@ -131,6 +131,9 @@ public class SignRequestService {
 	@Resource
 	private ValidationService validationService;
 
+	@Resource
+	private ObjectMapper objectMapper;
+
 	@PostConstruct
 	public void initSignrequestMetrics() {
 		customMetricsService.registerValue("esup-signature.signrequests", "new");
@@ -601,7 +604,7 @@ public class SignRequestService {
 		return userService.getTempUsers(signRequest).size() > 0;
 	}
 
-	public boolean checkTempUsers(Long id, List<String> recipientEmails, List<JsonExternalUserInfo> externalUsersInfos) throws MessagingException {
+	public boolean checkTempUsers(Long id, List<String> recipientEmails, List<JsonExternalUserInfo> externalUsersInfos) throws MessagingException, EsupSignatureException {
 		SignRequest signRequest = getById(id);
 		List<User> tempUsers = userService.getTempUsers(signRequest, recipientEmails);
 		if(tempUsers.size() > 0) {
@@ -993,7 +996,16 @@ public class SignRequestService {
 	@Transactional
 	public String getJson(Long id) throws JsonProcessingException {
 		SignRequest signRequest = getById(id);
-		ObjectMapper objectMapper = new ObjectMapper();
 		return objectMapper.writeValueAsString(signRequest);
+	}
+
+	@Transactional
+	public Long getParentIdIfSignRequestUnique(Long id) {
+		SignRequest signRequest = getById(id);
+		if(signRequest.getParentSignBook().getSignRequests().size() == 1) {
+			return signRequest.getParentSignBook().getId();
+		} else {
+			return null;
+		}
 	}
 }

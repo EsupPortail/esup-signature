@@ -490,7 +490,7 @@ public class PdfService {
 
     public byte[] convertGS(byte[] originalBytes) throws IOException, EsupSignatureException {
         if (!isPdfAComplient(originalBytes) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dNOSAFER -dBATCH -sFONTPATH=" + pdfConfig.getPdfProperties().getPathToFonts() + " -dNOPAUSE " + pdfConfig.getPdfProperties().getGsCommandParams() + " -sOutputFile=- -q '" + pdfConfig.getPdfADefPath() + "' -";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -sstdout=%stderr -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dNOPAUSE -dNOSAFER -dBATCH -sFONTPATH=" + pdfConfig.getPdfProperties().getPathToFonts() + " " + pdfConfig.getPdfProperties().getGsCommandParams() + " -sOutputFile=- '" + pdfConfig.getPdfADefPath() + "' - < test.txt 2>/dev/null";
             logger.info("GhostScript PDF/A convertion : " + cmd);
 
             ProcessBuilder processBuilder = new ProcessBuilder();

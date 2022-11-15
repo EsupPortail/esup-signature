@@ -32,7 +32,7 @@ public class LogAndSuppressRequestRejectedExceptionFilter extends GenericFilterB
             HttpServletResponse response = (HttpServletResponse) res;
 
             logger
-                    .error(
+                    .warn(
                             "request_rejected: remote={}, user_agent={}, request_url={}",
                             request.getRemoteHost(),
                             request.getHeader(HttpHeaders.USER_AGENT),

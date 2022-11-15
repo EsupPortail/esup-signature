@@ -72,6 +72,9 @@ public class FormService {
 	@Resource
 	private WebUtilsService webUtilsService;
 
+	@Resource
+	private ObjectMapper objectMapper;
+
 	public Form getById(Long formId) {
 		Form obj = formRepository.findById(formId).get();
 		return obj;
@@ -524,7 +527,6 @@ public class FormService {
     public InputStream getJsonFormSetup(Long id) throws IOException {
 		Form form = getById(id);
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.writer().writeValue(outputStream, form);
 		return new ByteArrayInputStream(outputStream.toByteArray());
     }
@@ -532,7 +534,6 @@ public class FormService {
     @Transactional
 	public void setFormSetupFromJson(Long id, InputStream inputStream) throws IOException {
 		Form form = getById(id);
-		ObjectMapper objectMapper = new ObjectMapper();
 		Form formSetup = objectMapper.readValue(inputStream.readAllBytes(), Form.class);
 		for(Field field : form.getFields()) {
 			Optional<Field> optFieldSetup = formSetup.getFields().stream().filter(field1 -> field1.getName().equals(field.getName())).findFirst();
