@@ -26,7 +26,6 @@ import eu.europa.esig.dss.validation.timestamp.TimestampToken;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 import org.apache.commons.codec.binary.Base64;
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.dss.DssUtils;
 import org.esupportail.esupsignature.dss.model.*;
@@ -75,8 +74,6 @@ public class SignService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignService.class);
 
-	final private GlobalProperties globalProperties;
-
 	final private SignProperties signProperties;
 
 	@Resource
@@ -123,9 +120,8 @@ public class SignService {
 
 	private final OpenXPKICertificatGenerationService openXPKICertificatGenerationService;
 
-	public SignService(@Autowired(required = false) OpenXPKICertificatGenerationService openXPKICertificatGenerationService, GlobalProperties globalProperties, SignProperties signProperties) {
+	public SignService(@Autowired(required = false) OpenXPKICertificatGenerationService openXPKICertificatGenerationService, SignProperties signProperties) {
 		this.openXPKICertificatGenerationService = openXPKICertificatGenerationService;
-		this.globalProperties = globalProperties;
 		this.signProperties = signProperties;
 	}
 

@@ -490,9 +490,8 @@ public class PdfService {
 
     public byte[] convertGS(byte[] originalBytes) throws IOException, EsupSignatureException {
         if (!isPdfAComplient(originalBytes) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dNOSAFER -dBATCH -sFONTPATH=" + pdfConfig.getPdfProperties().getPathToFonts() + " -dNOPAUSE -dSubsetFonts=false -dEmbedAllFonts=true -dAlignToPixels=0 -dGridFitTT=2 -dCompatibilityLevel=1.4 -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile=- -q '" + pdfConfig.getPdfADefPath() + "' -";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -sstdout=%stderr -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dNOPAUSE -dNOSAFER -dBATCH -sFONTPATH=" + pdfConfig.getPdfProperties().getPathToFonts() + " " + pdfConfig.getPdfProperties().getGsCommandParams() + " -sOutputFile=- '" + pdfConfig.getPdfADefPath() + "' - 2>/dev/null";
             logger.info("GhostScript PDF/A convertion : " + cmd);
-
             ProcessBuilder processBuilder = new ProcessBuilder();
             if(SystemUtils.IS_OS_WINDOWS) {
                 processBuilder.command("cmd", "/C", cmd);

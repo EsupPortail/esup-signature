@@ -195,7 +195,7 @@ public class WorkflowAdminController {
 	public String addStepRecipient(@ModelAttribute("authUserEppn") String authUserEppn,
 								   @PathVariable("id") Long id,
 								   @PathVariable("workflowStepId") Long workflowStepId,
-								   @RequestParam String[] recipientsEmails, RedirectAttributes redirectAttributes) {
+								   @RequestParam String[] recipientsEmails, RedirectAttributes redirectAttributes) throws EsupSignatureException {
 		WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientsEmails);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant ajouté"));
 		return "redirect:/admin/workflows/" + id + "#" + workflowStep.getId();

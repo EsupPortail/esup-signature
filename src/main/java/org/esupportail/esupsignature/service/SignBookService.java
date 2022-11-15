@@ -178,6 +178,9 @@ public class SignBookService {
     @Resource
     private SignRequestParamsRepository signRequestParamsRepository;
 
+    @Resource
+    private ObjectMapper objectMapper;
+
     public GlobalProperties getGlobalProperties() {
         return globalProperties;
     }
@@ -1007,8 +1010,7 @@ public class SignBookService {
         if(formData != null) {
             try {
                 TypeReference<Map<String, String>> type = new TypeReference<>(){};
-                ObjectMapper objectMapper = new ObjectMapper();
-                formDataMap = objectMapper.readValue(formData, type);
+                    formDataMap = objectMapper.readValue(formData, type);
                 formDataMap.remove("_csrf");
                 Data data = dataService.getBySignBook(signRequest.getParentSignBook());
                 if(data != null && data.getForm() != null) {
@@ -1056,7 +1058,6 @@ public class SignBookService {
     public String initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String password, String signWith) throws IOException, EsupSignatureException {
         String error = null;
         TypeReference<List<String>> type = new TypeReference<>(){};
-        ObjectMapper objectMapper = new ObjectMapper();
         List<String> idsString = objectMapper.readValue(ids, type);
         List<Long> idsLong = new ArrayList<>();
         idsString.forEach(s -> idsLong.add(Long.parseLong(s)));
@@ -1737,7 +1738,7 @@ public class SignBookService {
                                         addUserInTeam(user.getId(), signBook.getId());
                                     }
                                 }
-                                mailService.sendFile(title, signRequests, targetUrl);
+                                mailService.sendFile(title, signBook, targetUrl);
                                 target.setTargetOk(true);
                             } catch (MessagingException | IOException e) {
                                 logger.error("unable to send mail to : " + target.getTargetUri(), e);

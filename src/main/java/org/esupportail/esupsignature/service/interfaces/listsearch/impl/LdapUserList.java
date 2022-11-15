@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.interfaces.listsearch.impl;
 
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserList;
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -25,7 +26,7 @@ public class LdapUserList implements UserList {
     }
 
     @Override
-    public List<String> getUsersEmailFromList(String listName) throws DataAccessException {
+    public List<String> getUsersEmailFromList(String listName) throws DataAccessException, EsupSignatureException {
         List<String> userEmails = ldapGroupService.getMembers(listName);
         return userEmails;
     }

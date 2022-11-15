@@ -140,14 +140,19 @@ public class WizardController {
         User user = (User) model.getAttribute("user");
         String[] recipientsEmailsArray = new String[step.getRecipientsEmails().size()];
         recipientsEmailsArray = step.getRecipientsEmails().toArray(recipientsEmailsArray);
-        Workflow  workflow = workflowService.addStepToWorkflow(step.getWorkflowId(), SignType.valueOf(step.getSignType()), step.getAllSignToComplete(), recipientsEmailsArray, user);
-        model.addAttribute("workflow", workflow);
-        if(end != null && end) {
-            if(workflow.getWorkflowSteps().size() >  0) {
-                return "user/wizard/wiz-save-workflow";
-            }else {
-                return "user/wizard/wizend";
+        Workflow  workflow = null;
+        try {
+            workflow = workflowService.addStepToWorkflow(step.getWorkflowId(), SignType.valueOf(step.getSignType()), step.getAllSignToComplete(), recipientsEmailsArray, user);
+            model.addAttribute("workflow", workflow);
+            if(end != null && end) {
+                if(workflow.getWorkflowSteps().size() >  0) {
+                    return "user/wizard/wiz-save-workflow";
+                }else {
+                    return "user/wizard/wizend";
+                }
             }
+        } catch (EsupSignatureException e) {
+            logger.warn(e.getMessage());
         }
         return "user/wizard/wiz-init-steps-workflow";
     }

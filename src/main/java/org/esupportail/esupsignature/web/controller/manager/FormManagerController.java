@@ -12,7 +12,6 @@ import org.esupportail.esupsignature.service.FieldService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -61,7 +60,7 @@ public class FormManagerController {
     private PreFillService preFillService;
 
     @Resource
-    private DataExportService dataExportService;
+    private ObjectMapper objectMapper;
 
     @Resource
     private FieldService fieldService;
@@ -317,7 +316,6 @@ public class FormManagerController {
     public ResponseEntity<String> updateSignsOrder(@PathVariable("id") Long id,
                                    @ModelAttribute("authUserEppn") String authUserEppn,
                                    @RequestParam Map<String, String> values) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
         String[] stringStringMap = objectMapper.readValue(values.get("srpMap"), String[].class);
         Map<Long, Integer> signRequestParamsSteps = new HashMap<>();
         for (int i = 0; i < stringStringMap.length; i = i + 2) {

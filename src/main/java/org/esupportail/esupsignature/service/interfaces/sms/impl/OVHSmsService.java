@@ -22,7 +22,10 @@ public class OVHSmsService implements SmsService {
     private static final Logger logger = LoggerFactory.getLogger(OVHSmsService.class);
 
     @Resource
-    SmsProperties smsProperties;
+    private SmsProperties smsProperties;
+
+    @Resource
+    private ObjectMapper objectMapper;
 
     @Override
     public String getName() {
@@ -33,7 +36,6 @@ public class OVHSmsService implements SmsService {
     public void sendSms(String phoneNumber, String message) throws EsupSignatureException {
         String METHOD = "POST";
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             String ServiceName = objectMapper.readValue(getSmsAccount(), String[].class)[0];
             URL    QUERY  = new URL("https://eu.api.ovh.com/1.0/sms/"+ServiceName+"/jobs");
             String BODY   = "{\"receivers\":[\"+33" + phoneNumber.substring(1, 10) + "\"],\"message\":\""+ message + "\",\"priority\":\"high\",\"senderForResponse\":true}";
@@ -47,7 +49,6 @@ public class OVHSmsService implements SmsService {
 
     @Override
     public boolean testSms() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.readValue(getSmsAccount(), String[].class).length > 0;
     }
 
