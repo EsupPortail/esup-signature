@@ -87,7 +87,7 @@ public class WebAppConfig implements WebMvcConfigurer {
 
 	@Bean
 	HandlerExceptionResolver customExceptionResolver () {
-		return new HandlerExceptionToViewResolver();
+		return new HandlerExceptionToViewResolver(globalProperties);
 	}
 
 }

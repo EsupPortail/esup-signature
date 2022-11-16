@@ -222,7 +222,7 @@ server:
         remoteip:
             remote-ip-header: X-Forwarded-For
         basedir: ./temp
-
+        max-swallow-size: -1
 sign:
     aes-key : "0000000000000000"
     cades-digest-algorithm: SHA256
