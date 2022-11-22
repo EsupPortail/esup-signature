@@ -338,7 +338,7 @@ public class SignRequestController {
         }
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipent(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
     @PostMapping(value = "/add-attachment/{id}")
     public String addAttachement(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                  @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles,
@@ -436,7 +436,7 @@ public class SignRequestController {
     }
 
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipent(#id, #userEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #userEppn)")
     @PostMapping(value = "/comment/{id}")
     public String comment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
@@ -470,7 +470,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipent(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
     @PostMapping(value = "/replay-notif/{id}")
     public String replayNotif(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws EsupSignatureMailException {
         if(signRequestService.replayNotif(id)) {
