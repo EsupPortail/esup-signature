@@ -61,7 +61,7 @@ public class OtpAccessController {
 //    }
 
     @GetMapping(value = "/{urlId}")
-    public String signin(@PathVariable String urlId, Model model, HttpServletRequest httpServletRequest) {
+    public String signin(@PathVariable String urlId, Model model) {
         model.addAttribute("urlId", urlId);
         Otp otp = otpService.getOtp(urlId);
         if(otp != null) {
@@ -157,11 +157,11 @@ public class OtpAccessController {
                 return "redirect:/otp/signrequests/" + otp.getSignRequestId();
             } else {
                 model.addAttribute("result", "KO");
-                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Mauvais mot de passe"));
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Mauvais code SMS, un nouveau code vous à été envoyé"));
                 return "redirect:/otp-access/" + urlId;
             }
         } else {
-            return "redirect:/denied/" + urlId;
+            return "redirect:/otp-access/" + urlId;
         }
     }
 

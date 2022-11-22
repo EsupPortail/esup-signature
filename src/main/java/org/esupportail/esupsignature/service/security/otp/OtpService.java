@@ -128,8 +128,10 @@ public class OtpService {
                 if(otp.getTries() > 2) {
                     clearOTP(urlId);
                     return null;
+                } else {
+                    otp.setSmsSended(false);
+                    return false;
                 }
-                return false;
             }
         }
         return null;

@@ -1287,16 +1287,16 @@ public class SignBookService {
             List<SignRequest> signRequests = new ArrayList<>(signBook.getSignRequests());
             signRequests.remove(signRequest);
             if(signRequests.stream().noneMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.pending))) {
-                if(signRequestService.isMoreWorkflowStep(signRequest.getParentSignBook())) {
-                    nextStepAndPending(signBook.getId(), null, userEppn, authUserEppn);
+                if(signBook.getSignRequests().stream().allMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.completed))) {
+                    completeSignBook(signBook.getId(), userEppn, "Tous les documents sont signés");
+                } else if(signBook.getSignRequests().stream().allMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.refused))) {
+                    refuseSignBook(signRequest.getParentSignBook(), comment, userEppn, authUserEppn);
                 } else {
-                    if(signBook.getSignRequests().stream().allMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.completed))) {
-                        completeSignBook(signBook.getId(), userEppn, "Tous les documents sont signés");
-                    } else if(signBook.getSignRequests().stream().allMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.refused))) {
-                        refuseSignBook(signRequest.getParentSignBook(), comment, userEppn, authUserEppn);
-                    } else {
-                        completeSignBook(signBook.getId(), userEppn, "La demande est terminée mais au moins un des documents à été refusé");
-                    }
+                    completeSignBook(signBook.getId(), userEppn, "La demande est terminée mais au moins un des documents à été refusé");
+                }
+            } else {
+                if (signRequestService.isMoreWorkflowStep(signRequest.getParentSignBook())) {
+                    nextStepAndPending(signBook.getId(), null, userEppn, authUserEppn);
                 }
             }
         } else {

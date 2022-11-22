@@ -911,9 +911,9 @@ export class SignRequestParams extends EventFactory {
         $("#signPrevImage_" + this.id).hide();
         $("#signNextImage_" + this.id).hide();
         $("#hideMoreTools_" + this.id).hide();
-        $("#signExtra_" + this.id).hide();
-        $("#signExtraOnTop_" + this.id).hide();
-        $("#watermark_" + this.id).hide();
+        // $("#signExtra_" + this.id).hide();
+        // $("#signExtraOnTop_" + this.id).hide();
+        // $("#watermark_" + this.id).hide();
         $("#allPages_" + this.id).hide();
         $("#signColorPicker_" + this.id).hide();
         this.addWatermark = true;
