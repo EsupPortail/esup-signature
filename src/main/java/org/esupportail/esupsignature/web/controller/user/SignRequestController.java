@@ -34,8 +34,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 @Controller
 @RequestMapping("/user/signrequests")
@@ -226,59 +228,59 @@ public class SignRequestController {
 //        return "redirect:" + request.getHeader(HttpHeaders.REFERER);
 //    }
 
-    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
-    @PostMapping(value = "/send-sign-request")
-    public String sendSignRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
-                                  @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
-                                  @RequestParam("signType") SignType signType,
-                                  @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
-                                  @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
-                                  @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
-                                  @RequestParam(name = "forceAllSign", required = false) Boolean forceAllSign,
-                                  @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
-                                  @RequestParam(value = "pending", required = false) Boolean pending,
-                                  @RequestParam(value = "comment", required = false) String comment,
-                                  @RequestParam(value = "emails", required = false) List<String> emails,
-                                  @RequestParam(value = "names", required = false) List<String> names,
-                                  @RequestParam(value = "firstnames", required = false) List<String> firstnames,
-                                  @RequestParam(value = "phones", required = false) List<String> phones,
-                                  @RequestParam(value = "title", required = false) String title,
-                                  RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
-        String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
-        recipientsEmails = recipientsEmails.stream().distinct().collect(Collectors.toList());
-        logger.info(userEppn + " envoi d'une demande de signature à " + recipientsEmails);
-        List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
-        if (multipartFiles != null) {
-            try {
-                Map<SignBook, String> signBookStringMap = null;
-                try {
-                    signBookStringMap = signBookService.sendSignRequest(title, multipartFiles, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, userEppn, authUserEppn, false, forceAllSign, null);
-                } catch(EsupSignatureIOException e) {
-                    logger.warn("error on send signrequest, redirect to home");
-                    redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
-                    return "redirect:" + referer;
-                }
-                if (signBookStringMap.values().iterator().next() != null) {
-                    redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", signBookStringMap.values().toArray()[0].toString()));
-                } else {
-                    if(userSignFirst == null || !userSignFirst) {
-                        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été envoyée"));
-                    }
-                }
-                long signRequestId = signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
-                if(signRequestService.checkTempUsers(signRequestId, recipientsEmails, externalUsersInfos)) {
-                    redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Merci de compléter tous les utilisateurs externes"));
-                }
-                return "redirect:/user/signrequests/" + signRequestId;
-            } catch (EsupSignatureException | MessagingException e) {
-                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
-            }
-        } else {
-            logger.warn("no file to import");
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("error","Pas de fichier à importer"));
-        }
-        return "redirect:" + referer;
-    }
+//    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
+//    @PostMapping(value = "/send-sign-request")
+//    public String sendSignRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+//                                  @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
+//                                  @RequestParam("signType") SignType signType,
+//                                  @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
+//                                  @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
+//                                  @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
+//                                  @RequestParam(name = "forceAllSign", required = false) Boolean forceAllSign,
+//                                  @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
+//                                  @RequestParam(value = "pending", required = false) Boolean pending,
+//                                  @RequestParam(value = "comment", required = false) String comment,
+//                                  @RequestParam(value = "emails", required = false) List<String> emails,
+//                                  @RequestParam(value = "names", required = false) List<String> names,
+//                                  @RequestParam(value = "firstnames", required = false) List<String> firstnames,
+//                                  @RequestParam(value = "phones", required = false) List<String> phones,
+//                                  @RequestParam(value = "title", required = false) String title,
+//                                  RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
+//        String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+//        recipientsEmails = recipientsEmails.stream().distinct().collect(Collectors.toList());
+//        logger.info(userEppn + " envoi d'une demande de signature à " + recipientsEmails);
+//        List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
+//        if (multipartFiles != null) {
+//            try {
+//                Map<SignBook, String> signBookStringMap = null;
+//                try {
+//                    signBookStringMap = signBookService.sendSignRequest(title, multipartFiles, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, userEppn, authUserEppn, false, forceAllSign, null);
+//                } catch(EsupSignatureIOException e) {
+//                    logger.warn("error on send signrequest, redirect to home");
+//                    redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+//                    return "redirect:" + referer;
+//                }
+//                if (signBookStringMap.values().iterator().next() != null) {
+//                    redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", signBookStringMap.values().toArray()[0].toString()));
+//                } else {
+//                    if(userSignFirst == null || !userSignFirst) {
+//                        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été envoyée"));
+//                    }
+//                }
+//                long signRequestId = signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
+//                if(signRequestService.checkTempUsers(signRequestId, recipientsEmails, externalUsersInfos)) {
+//                    redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Merci de compléter tous les utilisateurs externes"));
+//                }
+//                return "redirect:/user/signrequests/" + signRequestId;
+//            } catch (EsupSignatureException | MessagingException e) {
+//                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+//            }
+//        } else {
+//            logger.warn("no file to import");
+//            redirectAttributes.addFlashAttribute("message", new JsonMessage("error","Pas de fichier à importer"));
+//        }
+//        return "redirect:" + referer;
+//    }
 
     @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
     @PostMapping(value = "/refuse/{id}")
