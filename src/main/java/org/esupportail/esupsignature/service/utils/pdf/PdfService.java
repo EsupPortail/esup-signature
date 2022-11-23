@@ -143,7 +143,7 @@ public class PdfService {
             signImage = fileService.getFaImageByIndex(signRequestParams.getSignImageNumber());
         } else {
             if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) || !signRequestParams.getAddImage()) {
-                signImage = fileService.addTextToImage(fileService.getEmptyImage(), signRequestParams, signType, user, newDate, fixFactor);
+                signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname()), signRequestParams, signType, user, newDate, fixFactor);
             } else if (signRequestParams.getAddExtra()) {
                 if(signRequestParams.getSignImageNumber() == null || signRequestParams.getSignImageNumber() >= user.getSignImages().size()) {
                     signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname()), signRequestParams, signType, user, newDate, fixFactor);

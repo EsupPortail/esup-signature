@@ -104,7 +104,7 @@ public class PreAuthorizeService {
         return false;
     }
 
-    public boolean signRequestRecipent(Long id, String userEppn) {
+    public boolean signRequestRecipient(Long id, String userEppn) {
         if(userEppn != null) {
             SignRequest signRequest = signRequestRepository.findById(id).get();
             return (signRequest.getStatus().equals(SignRequestStatus.pending) &&

@@ -164,7 +164,7 @@ public class OtpSignRequestController {
         return "redirect:/otp/signrequests/" + id;
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipent(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
     @PostMapping(value = "/add-attachment/{id}")
     public String addAttachement(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                  @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles,
@@ -194,7 +194,7 @@ public class OtpSignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipent(#id, #userEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #userEppn)")
     @PostMapping(value = "/comment/{id}")
     public String comment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,

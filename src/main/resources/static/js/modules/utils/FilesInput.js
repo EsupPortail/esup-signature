@@ -17,7 +17,6 @@ export default class FilesInput extends EventFactory {
         }
         console.info("Enable Bootstrap FileInput for : " + name);
         this.csrf = new CsrfToken(csrf);
-        this.async = true;
         this.uploadUrl = '/ws-secure/signrequests/add-docs?'+ this.csrf.parameterName + '=' + this.csrf.token;
         this.title = $("#title-wiz");
         this.initFileInput(documents, readOnly);
@@ -25,14 +24,10 @@ export default class FilesInput extends EventFactory {
     }
 
     initListeners() {
-        if(!this.async) {
-            console.info("set async");
-            this.input.on('fileloaded', e => this.uploadFile());
-        }
-        this.input.on('fileloaded', e => this.checkUniqueFile());
+        this.input.on('fileselect', e => this.checkUniqueFile());
         this.input.on('fileremoved', e => this.checkUniqueFile());
-        this.input.on('fileclear', e => this.input.fileinput('unlock'));
         this.input.on('filecleared', e => this.checkUniqueFile());
+        this.input.on('fileclear', e => this.input.fileinput('unlock'));
     }
 
     uploadFile() {
@@ -167,15 +162,10 @@ export default class FilesInput extends EventFactory {
     checkUniqueFile() {
         let nbFiles = this.input.fileinput('getFilesCount', true);
         let compare = 1;
-        if(!this.async) {
-            compare = 0;
-        }
         if(nbFiles > compare) {
-            $('#unique').removeClass('d-none');
             $('#forceAllSign').removeClass('d-none');
             $('#forceAllSign2').removeClass('d-none');
         } else {
-            $('#unique').addClass('d-none');
             $('#forceAllSign').addClass('d-none');
             $('#forceAllSign2').addClass('d-none');
         }
