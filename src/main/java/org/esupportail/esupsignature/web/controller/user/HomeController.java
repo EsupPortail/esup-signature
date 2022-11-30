@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
@@ -27,6 +26,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 @RequestMapping("/user/")
 @Controller
@@ -73,6 +73,9 @@ public class HomeController {
     @Resource
     private UserService userService;
 
+    @Resource
+    private UserShareService userShareService;
+
     @GetMapping
     public String home(@ModelAttribute("userEppn") String userEppn,
                        @ModelAttribute("authUserEppn") String authUserEppn,
@@ -100,9 +103,17 @@ public class HomeController {
                 messages.addAll(messageService.getByUser(authUser));
             }
             model.addAttribute("messageNews", messages);
-            Slice<SignBook> signBooksToSign = signBookService.getSignBooks(userEppn, "toSign", null, null, null, null, null, pageable);
+            List<SignBook> signBooksToSign = signBookService.getSignBooks(userEppn, "toSign", null, null, null, null, null, pageable).toList();
+            List<UserShare> userShares = userShareService.getUserSharesByUser(userEppn);
+            List<Workflow> workflows = userShares.stream().map(UserShare::getWorkflow).collect(Collectors.toList());
+            if(userShares.stream().noneMatch(UserShare::getAllSignRequests) && !userEppn.equals(authUserEppn)) {
+                signBooksToSign = signBooksToSign.stream().filter(signBook -> workflows.contains(signBook.getLiveWorkflow().getWorkflow())).collect(Collectors.toList());
+            }
             model.addAttribute("signBooksToSign", signBooksToSign);
-            Slice<SignBook> signBooksPending = signBookService.getSignBooks(userEppn, "pending", null, null, null, null, null, pageable);
+            List<SignBook> signBooksPending = new ArrayList<>();
+            if(userEppn.equals(authUserEppn)) {
+                signBooksPending = signBookService.getSignBooks(userEppn, "pending", null, null, null, null, null, pageable).toList();
+            }
             model.addAttribute("signBooksPending", signBooksPending);
             List<Data> datas = dataRepository.findByCreateByAndStatus(authUser, SignRequestStatus.draft);
             model.addAttribute("datas", datas);

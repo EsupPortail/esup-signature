@@ -33,7 +33,7 @@
                                         <select th:id="${'rolesManagersSelect' + status.index}" class="select-users" multiple="multiple" name="rolesManagers">
                                             <option data-placeholder="true"></option>
                                             <th:block th:each="user : ${roleManagers.get(role)}">
-                                                <option th:value="${user.email}" th:text="${user.firstname} + ' ' + ${user.name}"
+                                                <option th:value="${user.email}" th:text="${user.email}" th:placeholder="${user.email}"
                                                         selected></option>
                                             </th:block>
                                         </select>
