@@ -104,6 +104,7 @@ public class SignRequestParamsService {
                             signRequestParamsList.add(signRequestParams);
                         }
                     }
+                    //Un bouton dont le nom commence par signature est considéré comme un champ signature
                     if(pdField instanceof PDPushButton) {
                         PDPushButton pdSignatureField = (PDPushButton) pdField;
                         String signFieldName = pdSignatureField.getPartialName();
