@@ -31,7 +31,7 @@ export class SignRequestParams extends EventFactory {
         this.divExtra = null;
         this.textareaExtra = null;
         this.textareaPart = null;
-        this.textPart = "";
+        this.textPart = null;
         this.signColorPicker = null;
         this.pdSignatureFieldName = null;
         this.restoreExtraOnTop = false;

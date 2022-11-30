@@ -42,6 +42,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -1168,9 +1169,10 @@ public class SignBookService {
         } else {
             reports = validationService.validate(signRequestService.getToValidateFile(signRequest.getId()), null);
             DiagnosticData diagnosticData = reports.getDiagnosticData();
+            long nbSignatures = signRequestParamses.stream().filter(srp -> srp.getSignImageNumber() >= 0 && srp.getTextPart() == null).count();
             if(diagnosticData.getAllSignatures().size() == 0) {
                 for (SignRequestParams signRequestParams : signRequestParamses) {
-                    if (signRequestParams.getSignImageNumber() < 0) {
+                    if (nbSignatures > 1 || signRequestParams.getSignImageNumber() < 0 || StringUtils.hasText(signRequestParams.getTextPart())) {
                         filledInputStream = pdfService.stampImage(filledInputStream, signRequest, signRequestParams, 1, signerUser, date);
                         lastSignLogs.add(signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Ajout d'un élément", "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn));
                         auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Ajout d'un élément", "Pas de timestamp", date, null, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
