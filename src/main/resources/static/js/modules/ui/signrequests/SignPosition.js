@@ -119,10 +119,11 @@ export class SignPosition extends EventFactory {
     }
 
     addText(page) {
-        let signRequestParams = this. addSign(page, false, null);
+        let signRequestParams = this.addSign(page, false, null);
         signRequestParams.turnToText();
         signRequestParams.cross.css("background-image", "");
         signRequestParams.changeSignSize(null);
+        signRequestParams.mini
     }
 
 }
