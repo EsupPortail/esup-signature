@@ -273,19 +273,17 @@ export class SignRequestParams extends EventFactory {
             this.updateSize();
         }
         if(this.isShare) {
-            this.toggleMinimalTools();
             this.signColorPicker.spectrum("destroy");
             this.signColorPicker.hide();
+            this.addExtra = false;
             this.toggleExtra();
+            $("#signExtra_" + this.id).hide();
             this.toggleName();
-            this.toggleText();
             $("#extraTools_" + this.id).addClass("d-none");
             $("#crossTools_" + this.id).css("top", "-45px");
-            this.textPart = this.userName + "\nP.O.\n" + this.authUserName;
-            this.textareaExtra.val(this.textPart);
+            this.savedText = this.userName + "\nP.O.\n" + this.authUserName;
+            this.toggleText();
             this.textareaExtra.attr("readonly", true);
-            this.refreshExtraDiv();
-            this.updateSize();
         }
 
         if(this.isOtp){
@@ -845,9 +843,9 @@ export class SignRequestParams extends EventFactory {
                 }
                 this.signWidth += this.extraWidth;
                 this.cross.css("width", this.signWidth * this.currentScale + "px");
-                if(this.divExtra != null) {
-                    this.divExtra.css("width", this.extraWidth * this.currentScale + "px");
-                }
+                // if(this.divExtra != null) {
+                //     this.divExtra.css("width", this.extraWidth * this.currentScale + "px");
+                // }
             }
         }
     }
