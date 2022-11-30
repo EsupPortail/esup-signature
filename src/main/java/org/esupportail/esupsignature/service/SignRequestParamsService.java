@@ -104,6 +104,7 @@ public class SignRequestParamsService {
                             signRequestParamsList.add(signRequestParams);
                         }
                     }
+                    //Un bouton dont le nom commence par signature est considéré comme un champ signature
                     if(pdField instanceof PDPushButton) {
                         PDPushButton pdSignatureField = (PDPushButton) pdField;
                         String signFieldName = pdSignatureField.getPartialName();
@@ -143,10 +144,11 @@ public class SignRequestParamsService {
                 signRequestParams.setExtraDate(signRequestParamses.get(i).getExtraDate());
                 signRequestParams.setExtraText(signRequestParamses.get(i).getExtraText());
                 signRequestParams.setAddExtra(signRequestParamses.get(i).getAddExtra());
+                signRequestParams.setTextPart(signRequestParamses.get(i).getTextPart());
                 signRequestParams.setAddWatermark(signRequestParamses.get(i).getAddWatermark());
                 signRequestParams.setAllPages(signRequestParamses.get(i).getAllPages());
                 signRequestParams.setExtraOnTop(signRequestParamses.get(i).getExtraOnTop());
-                liveWfSignRequestParams.add(signRequestParams);
+                signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().add(signRequestParams);
             } else {
                 liveWfSignRequestParams.get(i).setSignImageNumber(signRequestParamses.get(i).getSignImageNumber());
                 liveWfSignRequestParams.get(i).setSignPageNumber(signRequestParamses.get(i).getSignPageNumber());
@@ -164,6 +166,7 @@ public class SignRequestParamsService {
                 liveWfSignRequestParams.get(i).setAddWatermark(signRequestParamses.get(i).getAddWatermark());
                 liveWfSignRequestParams.get(i).setAllPages(signRequestParamses.get(i).getAllPages());
                 liveWfSignRequestParams.get(i).setExtraOnTop(signRequestParamses.get(i).getExtraOnTop());
+                liveWfSignRequestParams.get(i).setTextPart(signRequestParamses.get(i).getTextPart());
             }
         }
     }

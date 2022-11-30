@@ -30,7 +30,7 @@
                     <div class="col-12 col-lg-10 card mb-2 mx-auto">
                         <div class="card-body">
                             <h5 class="text-center"><b>Demandes à signer</b></h5>
-                            <table th:if="${signBooksToSign.getNumberOfElements() > 0}"
+                            <table th:if="${signBooksToSign.size() > 0}"
                                    class="table table-sm table-borderless table-hover">
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksToSign}">
@@ -84,7 +84,7 @@
                                 </th:block>
                                 </tbody>
                             </table>
-                            <div th:unless="${signBooksToSign.getNumberOfElements() > 0}"
+                            <div th:unless="${signBooksToSign.size() > 0}"
                                  class="alert alert-secondary">
                                 Aucun document à signer pour le moment
                             </div>
@@ -112,11 +112,11 @@
 <!--                            </table>-->
 <!--                        </div>-->
                 </div>
-                <div id="pendingList" class="d-flex col-12">
+                <div id="pendingList" class="d-flex col-12" th:if="${userEppn == authUserEppn}">
                     <div class="col-12 col-lg-10 card mb-2 mx-auto">
                         <div class="card-body">
                             <h5 class="text-center"><b>Demandes en attente de signature</b></h5>
-                            <table th:if="${signBooksPending.getNumberOfElements() > 0}"
+                            <table th:if="${signBooksPending.size() > 0}"
                                    class="table table-sm table-borderless table-hover">
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksPending}">
@@ -170,9 +170,9 @@
                                 </th:block>
                                 </tbody>
                             </table>
-                            <div th:unless="${signBooksPending.getNumberOfElements() > 0}"
+                            <div th:unless="${signBooksPending.size() > 0}"
                                  class="alert alert-secondary">
-                                Aucun document à signer pour le moment
+                                Aucun document en attente
                             </div>
                         </div>
                     </div>

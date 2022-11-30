@@ -59,6 +59,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.verapdf.gf.foundry.VeraGreenfieldFoundryProvider;
 import org.verapdf.pdfa.Foundries;
 import org.verapdf.pdfa.PDFAParser;
@@ -150,7 +151,7 @@ public class PdfService {
                 } else {
                     signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType, user, newDate, fixFactor);
                 }
-            } else if (signRequestParams.getTextPart() == null || signRequestParams.getTextPart().isEmpty()) {
+            } else if (signRequestParams.getTextPart() == null) {
                 if(user.getSignImages().size() >= signRequestParams.getSignImageNumber() + 1) {
                     signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
                 } else {
@@ -197,7 +198,7 @@ public class PdfService {
             if (signRequestParams.getSignImageNumber() >= 0) {
                 addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted);
             }
-        } else if (signRequestParams.getTextPart() != null && !signRequestParams.getTextPart().isEmpty()) {
+        } else if (StringUtils.hasText(signRequestParams.getTextPart())) {
             int fontSize = (int) (signRequestParams.getFontSize() * signRequestParams.getSignScale() * .75);
             PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), WinAnsiEncoding.INSTANCE);
             contentStream.beginText();

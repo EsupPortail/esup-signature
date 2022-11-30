@@ -67,6 +67,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @EnableConfigurationProperties(SignProperties.class)
@@ -184,8 +185,10 @@ public class SignService {
 				aSiCWithXAdESSignatureParameters.aSiC().setMimeType("application/vnd.etsi.asic-e+zip");
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else {
-				if(abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > 0) {
-					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), new Color(214, 0, 128), user, signatureDocumentForm.getSigningDate());
+				List<SignRequestParams> signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
+				List<SignRequestParams> signRequestParamsesForSign = signRequestParamses.stream().filter(srp -> srp.getSignImageNumber() >= 0 && srp.getTextPart() == null).collect(Collectors.toList());
+				if(abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken && signRequestParamsesForSign.size() == 1) {
+					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequestParamsesForSign.get(0) , new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), new Color(214, 0, 128), user, signatureDocumentForm.getSigningDate());
 				} else {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, user);
 				}
@@ -484,13 +487,13 @@ public class SignService {
 				}
 				bytes = inputStream.readAllBytes();
 				if(isNotSigned(signRequest) && !pdfService.isPdfAComplient(bytes)) {
-					int i = 0;
-					if(sealSign) i = 1;
-					List<SignRequestParams> signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
-					for(SignRequestParams signRequestParams : signRequestParamses) {
-						bytes = pdfService.stampImage(bytes, signRequest, signRequestParams, i, user, date);
-						i++;
-					}
+//					int i = 0;
+//					if(sealSign) i = 1;
+//					List<SignRequestParams> signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
+//					for(SignRequestParams signRequestParams : signRequestParamses.stream().filter(srp -> srp.getSignImageNumber() < 0).collect(Collectors.toList())) {
+//						bytes = pdfService.stampImage(bytes, signRequest, signRequestParams, i, user, date);
+//						i++;
+//					}
 					bytes = pdfService.convertGS(pdfService.writeMetadatas(bytes, toSignFile.getFileName(), signRequest, new ArrayList<>()));
 				}
 			} else {
