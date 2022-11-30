@@ -1696,7 +1696,7 @@ public class SignBookService {
                 }
             }
         }
-        signImages.add(userService.getDefaultImage(userEppn));
+        signImages.add(userService.getDefaultImage(authUserEppn));
         return signImages;
     }
 
