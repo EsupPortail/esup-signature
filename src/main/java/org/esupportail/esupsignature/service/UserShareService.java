@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
@@ -163,7 +164,7 @@ public class UserShareService {
                     userShare.getShareTypes().add(ShareType.valueOf(type));
                 }
             }
-            if (beginDate != null && endDate != null) {
+            if (StringUtils.hasText(beginDate) && StringUtils.hasText(endDate)) {
                 try {
                     userShare.setBeginDate(new SimpleDateFormat(DATE_PATTERN).parse(beginDate));
                     userShare.setEndDate(new SimpleDateFormat(DATE_PATTERN).parse(endDate));
