@@ -51,7 +51,7 @@ public class SignRequestParams {
 
     private Integer extraHeight = 0;
 
-    private String textPart = "";
+    private String textPart = null;
 
 	private Float signScale = 1F;
 

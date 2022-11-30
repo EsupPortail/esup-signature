@@ -78,14 +78,13 @@
 
                         <div class="form-group mb-3">
                             <label for="selectUsers">Choix des utilisateurs</label>
-                            <select id="selectUsers" class="select-users" name="userIds" multiple="multiple"
-                                    required="required">
+                            <select id="selectUsers" class="select-users" name="userIds" multiple="multiple" required="required">
                                 <option data-placeholder="true"></option>
                                 <th:block th:each="user : ${userShare.toUsers}">
-                                    <option th:value="${user.email}" th:text="${user.firstname} + ' ' + ${user.name}"
-                                            selected></option>
+                                    <option th:value="${user.email}"
+                                            th:placeholder="${user.email}"
+                                            th:text="${user.email}" selected></option>
                                 </th:block>
-
                             </select>
                         </div>
                         <div class="form-group mb-3">
