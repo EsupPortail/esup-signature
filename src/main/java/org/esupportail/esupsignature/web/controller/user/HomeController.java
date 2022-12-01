@@ -106,7 +106,8 @@ public class HomeController {
             List<SignBook> signBooksToSign = signBookService.getSignBooks(userEppn, "toSign", null, null, null, null, null, pageable).toList();
             List<UserShare> userShares = userShareService.getUserSharesByUser(userEppn);
             List<Workflow> workflows = userShares.stream().map(UserShare::getWorkflow).collect(Collectors.toList());
-            if(userShares.stream().noneMatch(UserShare::getAllSignRequests) && !userEppn.equals(authUserEppn)) {
+            if(userShares.stream().noneMatch(us -> us.getAllSignRequests() != null && us.getAllSignRequests())
+                    && !userEppn.equals(authUserEppn)) {
                 signBooksToSign = signBooksToSign.stream().filter(signBook -> workflows.contains(signBook.getLiveWorkflow().getWorkflow())).collect(Collectors.toList());
             }
             model.addAttribute("signBooksToSign", signBooksToSign);
