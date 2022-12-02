@@ -106,9 +106,11 @@ public class HomeController {
             List<SignBook> signBooksToSign = signBookService.getSignBooks(userEppn, "toSign", null, null, null, null, null, pageable).toList();
             List<UserShare> userShares = userShareService.getUserSharesByUser(userEppn);
             List<Workflow> workflows = userShares.stream().map(UserShare::getWorkflow).collect(Collectors.toList());
-            if(userShares.stream().noneMatch(us -> us.getAllSignRequests() != null && us.getAllSignRequests())
-                    && !userEppn.equals(authUserEppn)) {
-                signBooksToSign = signBooksToSign.stream().filter(signBook -> workflows.contains(signBook.getLiveWorkflow().getWorkflow())).collect(Collectors.toList());
+            if(!userEppn.equals(authUserEppn)) {
+                signBooksToSign = signBooksToSign.stream().filter(sb -> sb.getSignRequests().size() > 0 && userShareService.checkAllShareTypesForSignRequest(userEppn, authUserEppn, sb.getSignRequests().get(0))).collect(Collectors.toList());
+                if (userShares.stream().noneMatch(us -> us.getAllSignRequests() != null && us.getAllSignRequests())) {
+                    signBooksToSign = signBooksToSign.stream().filter(signBook -> workflows.contains(signBook.getLiveWorkflow().getWorkflow())).collect(Collectors.toList());
+                }
             }
             model.addAttribute("signBooksToSign", signBooksToSign);
             List<SignBook> signBooksPending = new ArrayList<>();
