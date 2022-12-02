@@ -36,9 +36,9 @@
         <nav th:replace="fragments/sides/side-sign :: side-sign"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
-                <li th:if="${editable}" class="breadcrumb-item"><a href="/user/signbooks">Tableau
+                <li th:if="${editable && userEppn == authUserEppn}" class="breadcrumb-item"><a href="/user/signbooks">Tableau
                     de bord</a></li>
-                <li th:unless="${editable}" class="breadcrumb-item"><a
+                <li th:if="${userEppn == authUserEppn}" th:unless="${editable}" class="breadcrumb-item"><a
                         href="/user/signbooks/?statusFilter=toSign">Documents à signer</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Demande : <span
                         th:text="${signRequest.title}"></span>&nbsp;du&nbsp;<span
