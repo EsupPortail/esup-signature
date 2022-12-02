@@ -77,6 +77,7 @@ public class SignBookController {
     private TemplateEngine templateEngine;
 
     @GetMapping
+    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn)")
     public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                        @RequestParam(value = "statusFilter", required = false) String statusFilter,
                        @RequestParam(value = "recipientsFilter", required = false) String recipientsFilter,
@@ -128,6 +129,7 @@ public class SignBookController {
 
     @GetMapping(value = "/list-ws")
     @ResponseBody
+    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn)")
     public String listWs(@ModelAttribute(name = "userEppn") String userEppn, @ModelAttribute(name = "authUserEppn") String authUserEppn,
                          @RequestParam(value = "statusFilter", required = false) String statusFilter,
                          @RequestParam(value = "recipientsFilter", required = false) String recipientsFilter,

@@ -1271,7 +1271,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public void refuse(Long signRequestId, String comment, String userEppn, String authUserEppn) throws EsupSignatureMailException, EsupSignatureException {
+    public void refuse(Long signRequestId, String comment, String userEppn, String authUserEppn) throws EsupSignatureException {
         SignRequest signRequest = signRequestService.getById(signRequestId);
         SignBook signBook = signRequest.getParentSignBook();
         if(signBook.getSignRequests().size() > 1 && (signBook.getForceAllDocsSign() == null || !signBook.getForceAllDocsSign())) {
@@ -1288,21 +1288,23 @@ public class SignBookService {
             }
             List<SignRequest> signRequests = new ArrayList<>(signBook.getSignRequests());
             signRequests.remove(signRequest);
-            if(signRequests.stream().noneMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.pending))) {
-                if(signBook.getSignRequests().stream().allMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.completed))) {
-                    completeSignBook(signBook.getId(), userEppn, "Tous les documents sont signés");
-                } else if(signBook.getSignRequests().stream().allMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.refused))) {
-                    refuseSignBook(signRequest.getParentSignBook(), comment, userEppn, authUserEppn);
-                } else {
-                    completeSignBook(signBook.getId(), userEppn, "La demande est terminée mais au moins un des documents à été refusé");
-                }
+            if (signRequests.stream().allMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.refused))) {
+                refuseSignBook(signRequest.getParentSignBook(), comment, userEppn, authUserEppn);
             } else {
-                if (signRequestService.isMoreWorkflowStep(signRequest.getParentSignBook())) {
-                    nextStepAndPending(signBook.getId(), null, userEppn, authUserEppn);
+                if (signRequests.stream().noneMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.pending))) {
+                    if (signRequestService.isMoreWorkflowStep(signRequest.getParentSignBook())) {
+                        nextStepAndPending(signBook.getId(), null, userEppn, authUserEppn);
+                    } else {
+                        if (signBook.getSignRequests().stream().allMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.completed))) {
+                            completeSignBook(signBook.getId(), userEppn, "Tous les documents sont signés");
+                        } else if (signBook.getSignRequests().stream().allMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.refused))) {
+                            refuseSignBook(signRequest.getParentSignBook(), comment, userEppn, authUserEppn);
+                        } else {
+                            completeSignBook(signBook.getId(), userEppn, "La demande est terminée mais au moins un des documents à été refusé");
+                        }
+                    }
                 }
             }
-        } else {
-            refuseSignBook(signRequest.getParentSignBook(), comment, userEppn, authUserEppn);
         }
     }
 
