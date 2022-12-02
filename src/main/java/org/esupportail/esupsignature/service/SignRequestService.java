@@ -511,17 +511,19 @@ public class SignRequestService {
 		logService.create(signRequestId, signRequestStatus, action, comment, returnCode, pageNumber, posX, posY, stepNumber, userEppn, authUserEppn);
 	}
 
-	public long generateUniqueId() {
-		long val = -1;
-		while (val < 0) {
+	@Transactional
+	public String generateUniqueId() {
+		while (true) {
 			final UUID uid = UUID.randomUUID();
 			final ByteBuffer buffer = ByteBuffer.wrap(new byte[16]);
 			buffer.putLong(uid.getLeastSignificantBits());
 			buffer.putLong(uid.getMostSignificantBits());
 			final BigInteger bi = new BigInteger(buffer.array());
-			val = bi.longValue();
+			String token = String.valueOf(Math.abs(bi.longValue()));
+			if(signRequestRepository.findByToken(token) == null) {
+				return token;
+			}
 		}
-		return val;
 	}
 
 	@Transactional
