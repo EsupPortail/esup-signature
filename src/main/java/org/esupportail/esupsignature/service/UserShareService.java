@@ -213,7 +213,7 @@ public class UserShareService {
                 || signBook.getViewers().stream().anyMatch(u -> u.getEppn().equals(authUserEppn))
                 || signBook.getCreateBy().getEppn().equals(authUserEppn)
                 || recipientService.recipientsContainsUser(recipients, authUserEppn) > 0
-                || signBook.getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail())) {
+                || (signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail()))) {
             return true;
         }
         return false;
