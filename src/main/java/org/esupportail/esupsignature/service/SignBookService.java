@@ -1305,6 +1305,8 @@ public class SignBookService {
                     }
                 }
             }
+        } else {
+            refuseSignBook(signRequest.getParentSignBook(), comment, userEppn, authUserEppn);
         }
     }
 
