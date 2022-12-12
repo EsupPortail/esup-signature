@@ -83,8 +83,10 @@ public class LogService {
     public List<Log> getFullBySignRequest(Long id) {
         List<Log> logs = logRepository.findBySignRequestId(id);
         for (Log log : logs) {
-            User user = userService.getUserByEppn(log.getEppn());
-            log.setUser(user);
+            if(log.getEppn() != null) {
+                User user = userService.getUserByEppn(log.getEppn());
+                log.setUser(user);
+            }
         }
         return logs;
     }
@@ -135,8 +137,8 @@ public class LogService {
         log.setComment(comment);
         if(pageNumber != null) {
             log.setPageNumber(pageNumber);
-            log.setPosX(posX);
-            log.setPosY(posY);
+            log.setPosX(Math.round(posX * .75f));
+            log.setPosY(Math.round(posY * .75f));
         }
         if(stepNumber != null) {
             log.setStepNumber(stepNumber);
