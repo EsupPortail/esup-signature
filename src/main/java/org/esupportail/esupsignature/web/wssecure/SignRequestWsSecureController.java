@@ -269,7 +269,7 @@ public class SignRequestWsSecureController {
         SignBook signBook;
         if(workflowId != null) {
             Workflow workflow = workflowService.getById(workflowId);
-            signBook = signBookService.createSignBook(title, workflow, workflow.getName(), userEppn);
+            signBook = signBookService.createSignBook(title, workflow, null, userEppn);
         } else {
             signBook = signBookService.createSignBook(title, null, "Demande personnalisée", userEppn);
         }

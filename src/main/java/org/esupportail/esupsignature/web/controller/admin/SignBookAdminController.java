@@ -130,15 +130,20 @@ public class SignBookAdminController {
 	}
 
 	@GetMapping(value = "/{id}")
-	public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
+	public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
 		SignBook signBook = signBookService.getById(id);
-		Long signRequestId = signBook.getSignRequests().get(0).getId();
-		if(signBook.getSignRequests().size() > 1) {
-			if(signBook.getSignRequests().stream().anyMatch(s -> s.getStatus().equals(SignRequestStatus.pending))) {
-				signRequestId = signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending)).findFirst().get().getId();
+		if(signBook.getSignRequests().size() > 0) {
+			Long signRequestId = signBook.getSignRequests().get(0).getId();
+			if (signBook.getSignRequests().size() > 1) {
+				if (signBook.getSignRequests().stream().anyMatch(s -> s.getStatus().equals(SignRequestStatus.pending))) {
+					signRequestId = signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending)).findFirst().get().getId();
+				}
 			}
+			return "redirect:/admin/signrequests/" + signRequestId;
+		} else {
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Cette demande de signature n'est pas conforme car elle est vide, elle peut être supprimée"));
+			return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 		}
-		return "redirect:/admin/signrequests/" + signRequestId;
 	}
 
 	@PostMapping(value = "/delete-multiple", consumes = {"application/json"})
