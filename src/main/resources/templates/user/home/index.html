@@ -44,8 +44,7 @@
                                         </td>
                                         <td class="text-break w-30">
                                             <span th:if="${signBook.signRequests.size() > 1}">
-                                                <i class="fas fa-caret-down"></i>
-                                                <span th:text="' Contient ' + ${signBook.signRequests.size()} + ' documents '"></span>
+                                                <span th:text="${signBook.signRequests.get(0).getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
                                                 <i class="fas fa-caret-down"></i>
                                             </span>
                                             <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>
@@ -130,8 +129,7 @@
                                         </td>
                                         <td class="text-break w-30">
                                             <span th:if="${signBook.signRequests.size() > 1}">
-                                                <i class="fas fa-caret-down"></i>
-                                                <span th:text="' Contient ' + ${signBook.signRequests.size()} + ' documents '"></span>
+                                                <span th:text="${signBook.signRequests.get(0).getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
                                                 <i class="fas fa-caret-down"></i>
                                             </span>
                                             <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>

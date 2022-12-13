@@ -2084,3 +2084,7 @@ progress:before {
     -moz-user-select: text !important;
     -webkit-user-select: text !important;
 }
+
+.multi-doc-font {
+    font-weight: 300;
+}
