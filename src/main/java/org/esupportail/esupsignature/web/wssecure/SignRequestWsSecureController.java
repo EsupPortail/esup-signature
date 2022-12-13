@@ -228,7 +228,7 @@ public class SignRequestWsSecureController {
     @ResponseBody
     @PostMapping(value = "/create-sign-book")
     public ResponseEntity<Long> createSignFastRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) {
-        SignBook signBook = signBookService.createSignBook(null, null, "Auto signature", userEppn);
+        SignBook signBook = signBookService.createSignBook(null, null, "Auto signature", userEppn, false);
         signBookService.initSignBookWorkflow(signBook.getId(), SignType.pdfImageStamp, userEppn);
         model.addAttribute("signBookId", signBook.getId());
         return new ResponseEntity<>(signBook.getId(), HttpStatus.OK);
@@ -269,9 +269,9 @@ public class SignRequestWsSecureController {
         SignBook signBook;
         if(workflowId != null) {
             Workflow workflow = workflowService.getById(workflowId);
-            signBook = signBookService.createSignBook(title, workflow, null, userEppn);
+            signBook = signBookService.createSignBook(title, workflow, null, userEppn, false);
         } else {
-            signBook = signBookService.createSignBook(title, null, "Demande personnalisée", userEppn);
+            signBook = signBookService.createSignBook(title, null, "Demande personnalisée", userEppn, false);
         }
         model.addAttribute("signBookId", signBook.getId());
         return new ResponseEntity<>(signBook.getId(), HttpStatus.OK);
