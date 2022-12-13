@@ -41,7 +41,7 @@
                 <li th:if="${userEppn == authUserEppn}" th:unless="${editable}" class="breadcrumb-item"><a
                         href="/user/signbooks/?statusFilter=toSign">Documents à signer</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Demande : <span
-                        th:text="${signRequest.title}"></span>&nbsp;du&nbsp;<span
+                        th:text="${signRequest.parentSignBook.subject}"></span>&nbsp;du&nbsp;<span
                         th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                 </li>
             </ol>
