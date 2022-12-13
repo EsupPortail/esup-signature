@@ -350,7 +350,7 @@ public class SignBookService {
     public SignBook createSignBook(String subject, Workflow workflow, String workflowName, String userEppn) {
         User user = userService.getUserByEppn(userEppn);
         SignBook signBook = new SignBook();
-        if(workflowName == null || workflowName.isEmpty()) {
+        if(!StringUtils.hasText(workflowName)) {
             if(workflow != null) {
                 if(workflow.getDescription() != null && !workflow.getDescription().isEmpty()) {
                     workflowName = workflow.getDescription();
@@ -363,7 +363,6 @@ public class SignBookService {
                 }
             }
         }
-
         signBook.setStatus(SignRequestStatus.uploading);
         signBook.setWorkflowName(workflowName);
         signBook.setCreateBy(user);
@@ -735,6 +734,9 @@ public class SignBookService {
     public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
         int i = 0;
         SignBook signBook = signBookRepository.findWithLockingById(signBookId).orElseThrow();
+        if(signBook.getSubject().equals(signBook.getWorkflowName()) && multipartFiles.length == 1) {
+            signBook.setSubject(fileService.getNameOnly(multipartFiles[0].getOriginalFilename()));
+        }
         for (MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, authUserEppn, authUserEppn);
             try {

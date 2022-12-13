@@ -7,7 +7,22 @@
                    th:data-id-signbook="${signBook.id}">
         </td>
         <td class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/user/signrequests/' + ${signRequest.id}" th:text="${signBook.workflowName}"></td>
-        <td class="clickable-td text-break overflow-hidden" style="white-space: pre-line" th:text="${signBook.subject}"></td>
+        <td th:if="${signBook.signRequests.size() == 1}" class="clickable-td text-break overflow-hidden" style="white-space: pre-line" th:text="${signBook.subject}"></td>
+        <td th:if="${signBook.signRequests.size() > 1}" class="d-none d-xl-table-cell">
+            <div class="dropdown">
+                <button onclick="event.stopPropagation();" class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" th:id="'dropdownFilesButton-' + ${signBook.id}" data-bs-toggle="dropdown">
+                    <i class="fas fa-folder-open"></i> Contient plusieurs documents
+                </button>
+                <ul class="dropdown-menu" th:aria-labelledby="'dropdownFilesButton-' + ${signBook.id}">
+                    <th:block th:each="signRequest : ${signBook.signRequests}">
+                        <li class="dropdown-item" th:title="${signRequest.getOriginalDocuments().get(0).getFileName()}">
+                            <a th:href="'/user/signrequests/' + ${signRequest.id}" th:text="${signRequest.getOriginalDocuments().get(0).getFileName()}"></a>
+                        </li>
+                    </th:block>
+                </ul>
+            </div>
+            </div>
+        </td>
         <td class="clickable-td d-none d-xxl-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
         <td class="clickable-td d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
         </td>
