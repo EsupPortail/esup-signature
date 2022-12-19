@@ -18,7 +18,7 @@
 		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
 		<java.version>14</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<dss.framework.version>5.11</dss.framework.version>
+		<dss.framework.version>5.11.1</dss.framework.version>
 		<dss.framework.safeVersion>5.4.3</dss.framework.safeVersion>
 		<nexu.version>1.23</nexu.version>
 	</properties>
@@ -27,22 +27,7 @@
 			<id>localrepository</id>
 			<url>file:///${pom.basedir}/src/libs</url>
 		</repository>
-		<repository>
-			<id>cefdigital</id>
-			<name>cefdigital</name>
-			<url>https://ec.europa.eu/cefdigital/artifact/content/repositories/esignaturedss/</url>
-		</repository>
 	</repositories>
-	<distributionManagement>
-		<repository>
-			<id>cefdigital-nexus</id>
-			<url>https://ec.europa.eu/cefdigital/artifact/content/repositories/esignaturedss</url>
-		</repository>
-		<snapshotRepository>
-			<id>cefdigital-nexus</id>
-			<url>https://ec.europa.eu/cefdigital/artifact/content/repositories/esignaturedss-snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

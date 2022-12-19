@@ -33,6 +33,7 @@ export default class SelectUser {
         this.createUserSelect(selectName,  this.valuePrefix);
         this.populateWithFavorites();
         this.selectField.addClass("slim-select-hack");
+        //$("." + this.slimSelect.settings.id).each(function() { DANS slimselect 2.3.3
         $("." + this.slimSelect.config.id).each(function() {
            $(this).removeAttr("style");
         });
