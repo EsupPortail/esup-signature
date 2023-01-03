@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.entity.Workflow;
-import org.esupportail.esupsignature.web.ws.json.JsonWorkflow;
+import org.esupportail.esupsignature.web.ws.json.JsonDtoWorkflow;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
@@ -10,7 +10,7 @@ import java.util.List;
 public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     List<Workflow> findAll();
     @Query("select w from Workflow w")
-    List<JsonWorkflow> findAllJson();
+    List<JsonDtoWorkflow> findAllJson();
     Workflow findByName(String name);
     List<Workflow> findByFromCodeIsTrue();
     List<Workflow> findByCreateByEppn(String userEppn);
@@ -24,6 +24,7 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     @Query("select distinct w from Workflow w where w.id not in (select distinct f.workflow from Form f) and w.createBy.eppn = 'system'")
     List<Workflow> findNotInForm();
     List<Workflow> findWorkflowByManagersIn(List<String> emails);
-
     List<Workflow> findByViewersEppn(String userEppn);
+    @Query("select w from Workflow w where w.id = :id")
+    JsonDtoWorkflow getByIdJson(Long id);
 }

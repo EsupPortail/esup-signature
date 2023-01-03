@@ -7,7 +7,7 @@ import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.web.ws.json.JsonWorkflow;
+import org.esupportail.esupsignature.web.ws.json.JsonDtoWorkflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -53,13 +53,13 @@ public class WorkflowWsController {
 
     @CrossOrigin
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Workflow get(@PathVariable Long id) {
-        return workflowService.getById(id);
+    public JsonDtoWorkflow get(@PathVariable Long id) {
+        return workflowService.getByIdJson(id);
     }
 
     @CrossOrigin
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<JsonWorkflow> getAll() {
+    public List<JsonDtoWorkflow> getAll() {
         return workflowService.getAllWorkflowsJson();
     }
 

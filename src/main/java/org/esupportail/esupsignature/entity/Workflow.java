@@ -41,12 +41,12 @@ public class Workflow {
 
     private String updateBy;
 
-    @ElementCollection(targetClass=String.class, fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
     private Set<String> roles = new HashSet<>();
 
     private String managerRole;
 
-    @ElementCollection(targetClass= ShareType.class)
+    @ElementCollection(targetClass =  ShareType.class)
     private List<ShareType> authorizedShareTypes = new ArrayList<>();
 
     private Boolean publicUsage = false;
@@ -57,7 +57,7 @@ public class Workflow {
 
     private String documentsSourceUri;
     
-    @ElementCollection(targetClass=String.class, fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
     private Set<String> managers = new HashSet<>();
 
     @OrderColumn

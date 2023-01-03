@@ -4,7 +4,7 @@ import org.esupportail.esupsignature.entity.User;
 
 import java.util.Set;
 
-public interface JsonWorkflow {
+public interface JsonDtoWorkflow {
 
     Long getId();
 

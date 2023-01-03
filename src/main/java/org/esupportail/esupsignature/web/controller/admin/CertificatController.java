@@ -12,7 +12,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.List;
+import java.util.Set;
 
 @RequestMapping("/admin/certificats")
 @Controller
@@ -44,7 +44,7 @@ public class CertificatController {
     @PostMapping
     public String addCertificat(
             @RequestParam MultipartFile keystore,
-            @RequestParam List<String> roleNames,
+            @RequestParam Set<String> roleNames,
             @RequestParam String password,
             RedirectAttributes redirectAttributes) {
         try {

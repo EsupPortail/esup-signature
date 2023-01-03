@@ -720,7 +720,7 @@ public class SignRequestService {
 
 	public void removeLink(Long id, Integer linkId) {
 		SignRequest signRequest = getById(id);
-		String toRemove = signRequest.getLinks().get(linkId);
+		String toRemove = new ArrayList<>(signRequest.getLinks()).get(linkId);
 		signRequest.getLinks().remove(toRemove);
 	}
 

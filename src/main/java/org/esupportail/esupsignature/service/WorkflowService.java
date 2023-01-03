@@ -13,7 +13,7 @@ import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryServic
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
-import org.esupportail.esupsignature.web.ws.json.JsonWorkflow;
+import org.esupportail.esupsignature.web.ws.json.JsonDtoWorkflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -284,7 +284,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public List<JsonWorkflow> getAllWorkflowsJson() {
+    public List<JsonDtoWorkflow> getAllWorkflowsJson() {
         return workflowRepository.findAllJson();
     }
 
@@ -656,5 +656,8 @@ public class WorkflowService {
         }
     }
 
+    public JsonDtoWorkflow getByIdJson(Long id) {
+        return workflowRepository.getByIdJson(id);
+    }
 }
 
