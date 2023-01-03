@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryServic
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
+import org.esupportail.esupsignature.web.ws.json.JsonWorkflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -282,6 +283,11 @@ public class WorkflowService {
         return allWorkflows;
     }
 
+    @Transactional
+    public List<JsonWorkflow> getAllWorkflowsJson() {
+        return workflowRepository.findAllJson();
+    }
+
     public Workflow getWorkflowByClassName(String className) {
         for (Workflow workflow : workflows) {
             if (className.equals(workflow.getName())) {
@@ -431,7 +437,7 @@ public class WorkflowService {
         return workflows;
     }
 
-    public Workflow update(Workflow workflow, User user, String[] types, List<String> managers) {
+    public Workflow update(Workflow workflow, User user, String[] types, Set<String> managers) {
         Workflow workflowToUpdate = getById(workflow.getId());
         if(managers != null && managers.size() > 0) {
             workflowToUpdate.getManagers().clear();

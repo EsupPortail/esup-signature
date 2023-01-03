@@ -5,9 +5,7 @@ import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,8 +41,8 @@ public class Workflow {
 
     private String updateBy;
 
-    @ElementCollection(targetClass=String.class)
-    private List<String> roles = new ArrayList<>();
+    @ElementCollection(targetClass=String.class, fetch = FetchType.EAGER)
+    private Set<String> roles = new HashSet<>();
 
     private String managerRole;
 
@@ -59,8 +57,8 @@ public class Workflow {
 
     private String documentsSourceUri;
     
-    @ElementCollection(targetClass=String.class)
-    private List<String> managers = new ArrayList<>();
+    @ElementCollection(targetClass=String.class, fetch = FetchType.EAGER)
+    private Set<String> managers = new HashSet<>();
 
     @OrderColumn
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE, CascadeType.DETACH})
@@ -202,11 +200,11 @@ public class Workflow {
         this.targets = targets;
     }
 
-    public List<String> getManagers() {
+    public Set<String> getManagers() {
         return managers;
     }
 
-    public void setManagers(List<String> managers) {
+    public void setManagers(Set<String> managers) {
         this.managers = managers;
     }
 
@@ -218,11 +216,11 @@ public class Workflow {
         this.workflowSteps = workflowSteps;
     }
 
-    public List<String> getRoles() {
+    public Set<String> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<String> roles) {
+    public void setRoles(Set<String> roles) {
         this.roles = roles;
     }
 

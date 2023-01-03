@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.entity.Workflow;
+import org.esupportail.esupsignature.web.ws.json.JsonWorkflow;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
@@ -8,6 +9,8 @@ import java.util.List;
 
 public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     List<Workflow> findAll();
+    @Query("select w from Workflow w")
+    List<JsonWorkflow> findAllJson();
     Workflow findByName(String name);
     List<Workflow> findByFromCodeIsTrue();
     List<Workflow> findByCreateByEppn(String userEppn);
