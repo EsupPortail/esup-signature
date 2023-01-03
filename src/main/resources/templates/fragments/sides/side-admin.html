@@ -54,7 +54,7 @@
         </a>
         <a th:classappend="${activeMenu == 'dss'} ? 'btn-secondary' : 'btn-light'" th:if="${validationToolsEnabled}"
            title="Statut DSS" type="button" href="/admin/dss" class="mb-1 col-12 btn text-left">
-            <i class="fab fa-expeditedssl"></i> <span class="sidebar-label">Statut DSS</span>
+            <i class="fas fa-shield-heart" th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : 'text-success'"></i> <span class="sidebar-label">Statut DSS</span>
         </a>
         <a title="Doc des APIs" target="_blank" type="button" href="/swagger-ui.html" class="mb-1 col-12 btn btn-light text-left">
             <i class="fas fa-code"></i> <span class="sidebar-label">APIs Doc</span>
