@@ -781,7 +781,7 @@ public class UserService {
     public void parseRoles(String userEppn, GlobalProperties myGlobalProperties) {
         User user = getByEppn(userEppn);
         try {
-            List<String> roles = user.getRoles();
+            Set<String> roles = user.getRoles();
             if(!Collections.disjoint(roles, globalProperties.getHideSendSignExceptRoles()))
                 myGlobalProperties.setHideSendSignRequest(!globalProperties.getHideSendSignRequest());
             if(!Collections.disjoint(roles, globalProperties.getHideWizardExceptRoles()))

@@ -68,13 +68,13 @@ public class CertificatService {
     }
 
     public Certificat getCertificatByRole(String role) {
-        return certificatRepository.findByRolesIn(Collections.singletonList(role)).get(0);
+        return certificatRepository.findByRolesIn(Collections.singleton(role)).get(0);
     }
 
     @Transactional
     public List<Certificat> getCertificatByUser(String userEppn) {
         User user = userService.getUserByEppn(userEppn);
-        List<String> roles = user.getRoles();
+        Set<String> roles = user.getRoles();
         Set<Certificat> certificats = new HashSet<>(certificatRepository.findByRolesIn(roles));
         return new ArrayList<>(certificats);
     }
@@ -86,7 +86,7 @@ public class CertificatService {
     }
 
     @Transactional
-    public void addCertificat(MultipartFile keystore, List<String> roles, String password) throws IOException, EsupSignatureKeystoreException {
+    public void addCertificat(MultipartFile keystore, Set<String> roles, String password) throws IOException, EsupSignatureKeystoreException {
         if(userKeystoreService != null) {
             Certificat certificat = new Certificat();
             byte[] keystoreBytes = keystore.getBytes();

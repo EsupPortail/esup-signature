@@ -11,6 +11,7 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RequestMapping("/manager/roles-managers")
 @Controller
@@ -33,7 +34,7 @@ public class RolesManagersManagerController {
     public String getRoles(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
         Map<String, List<User>> roleManagers = new HashMap<>();
         User manager = userService.getByEppn(authUserEppn);
-        List<String> allRoles =  manager.getManagersRoles();
+        Set<String> allRoles =  manager.getManagersRoles();
         for (String role : allRoles) {
             roleManagers.put(role, userService.getByManagersRoles(role));
         }
