@@ -41,9 +41,8 @@ public class User {
     @Column(unique=true)
     private String phone;
 
-    @ElementCollection(targetClass=String.class)
-    @JsonIgnore
-    private List<String> managersRoles = new ArrayList<>();
+    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    private Set<String> managersRoles = new HashSet<>();
 
     @ElementCollection
     @JsonIgnore
@@ -91,9 +90,8 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastSendAlertDate = new Date(0);
 
-    @ElementCollection
-    @JsonIgnore
-    private List<String> roles = new ArrayList<>();
+    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    private Set<String> roles = new HashSet<>();
 
     @JsonIgnore
     @ManyToOne
@@ -166,11 +164,11 @@ public class User {
         this.phone = phone;
     }
 
-    public List<String> getManagersRoles() {
+    public Set<String> getManagersRoles() {
         return managersRoles;
     }
 
-    public void setManagersRoles(List<String> managersRoles) {
+    public void setManagersRoles(Set<String> managersRoles) {
         this.managersRoles = managersRoles;
     }
 
@@ -285,11 +283,11 @@ public class User {
     public void setEmailAlertFrequency(EmailAlertFrequency emailAlertFrequency) {
         this.emailAlertFrequency = emailAlertFrequency;
     }
-    public List<String> getRoles() {
+    public Set<String> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<String> roles) {
+    public void setRoles(Set<String> roles) {
         this.roles = roles;
     }
 

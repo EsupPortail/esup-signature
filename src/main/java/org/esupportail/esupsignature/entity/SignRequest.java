@@ -57,9 +57,8 @@ public class SignRequest {
     @OrderColumn
     private List<Document> attachments = new ArrayList<>();
 
-    @JsonIgnore
-    @ElementCollection
-    private List<String> links = new ArrayList<>();
+    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    private Set<String> links = new HashSet<>();
 
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
@@ -183,11 +182,11 @@ public class SignRequest {
         this.attachments = attachments;
     }
 
-    public List<String> getLinks() {
+    public Set<String> getLinks() {
         return links;
     }
 
-    public void setLinks(List<String> links) {
+    public void setLinks(Set<String> links) {
         this.links = links;
     }
 
