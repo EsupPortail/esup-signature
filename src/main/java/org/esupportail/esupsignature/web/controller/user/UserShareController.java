@@ -45,7 +45,6 @@ public class UserShareController {
         model.addAttribute("shareTypes", ShareType.values());
         model.addAttribute("forms", formService.getAuthorizedToShareForms());
         model.addAttribute("workflows", workflowService.getAuthorizedToShareWorkflows());
-        model.addAttribute("users", userService.getAllUsers());
         model.addAttribute("activeMenu", "shares");
         return "user/users/shares/list";
     }
@@ -109,6 +108,7 @@ public class UserShareController {
     public String change(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(required = false) String eppn, @RequestParam(required = false) Long userShareId, RedirectAttributes redirectAttributes, HttpSession httpSession, HttpServletRequest httpServletRequest) {
         if(eppn == null || eppn.isEmpty()) {
             httpSession.setAttribute("suEppn", null);
+            httpSession.removeAttribute("userShareId");
             redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation désactivée"));
         } else {
             if(userShareService.isOneShareActive(eppn, authUserEppn)) {

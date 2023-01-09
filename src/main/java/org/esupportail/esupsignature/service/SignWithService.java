@@ -58,6 +58,7 @@ public class SignWithService {
         if(dataService.getBySignBook(signRequest.getParentSignBook()) != null && signRequestService.isMoreWorkflowStep(signRequest.getParentSignBook())) {
             signWiths.removeIf(signWith -> signWith.getValue() > 2);
         }
+        signWiths.remove(SignWith.autoCert);
         return signWiths;
     }
 
