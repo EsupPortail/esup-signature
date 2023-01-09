@@ -909,7 +909,7 @@ public class SignBookService {
                                     signRequest1.setSignable(true);
                                 }
                                 try {
-                                    sign(signRequest1, "", "groupCert", signRequestParamses, null, "system", "system", null, "");
+                                    sign(signRequest1, "", "autoCert", signRequestParamses, null, "system", "system", null, "");
                                 } catch (IOException | EsupSignatureMailException e) {
                                     refuse(signRequest1.getId(), "Signature refusée par le système automatique", "system", "system");
                                     logger.error("auto sign fail", e);

@@ -13,6 +13,7 @@ public class WebSecurityProperties {
     private Map<String, String> groupMappingSpel;
     private String franceConnectAcr = "eidas1";
     private String franceConnectLogoutEndpoint;
+    private String[] excludedEmails = new String[] {"vincent.bonamy.univ-rouen.fr"};
 
     public String[] getWsAccessAuthorizeIps() {
         return wsAccessAuthorizeIps;
@@ -58,5 +59,13 @@ public class WebSecurityProperties {
 
     public void setFranceConnectLogoutEndpoint(String franceConnectLogoutEndpoint) {
         this.franceConnectLogoutEndpoint = franceConnectLogoutEndpoint;
+    }
+
+    public String[] getExcludedEmails() {
+        return excludedEmails;
+    }
+
+    public void setExcludedEmails(String[] excludedEmails) {
+        this.excludedEmails = excludedEmails;
     }
 }
