@@ -357,7 +357,8 @@ public class UserService {
         return false;
     }
 
-    public List<PersonLdapLight> getPersonLdapsLight(String searchString) {
+    @Transactional
+    public List<PersonLdapLight> getPersonLdapsLight(String searchString, String authUserEppn) {
         List<PersonLdapLight> personLdaps = new ArrayList<>();
         Set<User> users = new HashSet<>();
         users.addAll(userRepository.findByEppnStartingWith(searchString));
@@ -400,7 +401,12 @@ public class UserService {
                 personLdaps.add(personLdapLight);
             }
         }
-        return personLdaps;
+        User user = getUserByEppn(authUserEppn);
+        if(user.getRoles().contains("ROLE_ADMIN")) {
+            return personLdaps;
+        } else {
+            return personLdaps.stream().filter(personLdapLight -> !webSecurityProperties.getExcludedEmails().contains(personLdapLight.getMail())).collect(Collectors.toList());
+        }
     }
 
     public PersonLdap getPersonLdapFromUser(User user) {
