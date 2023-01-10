@@ -357,7 +357,8 @@ public class UserService {
         return false;
     }
 
-    public List<PersonLdapLight> getPersonLdapsLight(String searchString) {
+    @Transactional
+    public List<PersonLdapLight> getPersonLdapsLight(String searchString, String authUserEppn) {
         List<PersonLdapLight> personLdaps = new ArrayList<>();
         Set<User> users = new HashSet<>();
         users.addAll(userRepository.findByEppnStartingWith(searchString));
@@ -369,7 +370,7 @@ public class UserService {
                 List<PersonLdapLight> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdapLight::getCn)).collect(Collectors.toList());
                 for (PersonLdapLight personLdapList : ldapList) {
                     if (personLdapList.getMail() != null) {
-                        if (personLdaps.stream().noneMatch(personLdap -> personLdap.getMail().equals(personLdapList.getMail()))) {
+                        if (personLdaps.stream().noneMatch(personLdap -> personLdap.getMail() != null && personLdap.getMail().equals(personLdapList.getMail()))) {
                             personLdaps.add(personLdapList);
                         }
                     }
@@ -378,7 +379,7 @@ public class UserService {
         }
         for (User user : users) {
             if(user.getReplaceByUser() != null) {
-                personLdaps.remove(personLdaps.stream().filter(personLdap -> personLdap.getMail().equals(user.getEmail())).findFirst().get());
+                personLdaps.remove(personLdaps.stream().filter(personLdap -> personLdap.getMail() != null && personLdap.getMail().equals(user.getEmail())).findFirst().get());
             }
             if(personLdaps.stream().noneMatch(personLdapLight -> user.getEmail().equals(personLdapLight.getMail()))) {
                 PersonLdapLight personLdapLight = getPersonLdapLightFromUser(user);
@@ -389,7 +390,7 @@ public class UserService {
             }
         }
         for(Map.Entry<String,String> string : userListService.getListsNames(searchString).entrySet()) {
-            if(personLdaps.stream().noneMatch(personLdapLight -> personLdapLight.getMail().equals(string.getKey()))) {
+            if(personLdaps.stream().noneMatch(personLdapLight -> personLdapLight.getMail() != null && personLdapLight.getMail().equals(string.getKey()))) {
                 PersonLdapLight personLdapLight = new PersonLdapLight();
                 personLdapLight.setMail(string.getKey());
                 if(string.getValue() != null) {
@@ -400,7 +401,12 @@ public class UserService {
                 personLdaps.add(personLdapLight);
             }
         }
-        return personLdaps;
+        User user = getUserByEppn(authUserEppn);
+        if(user.getRoles().contains("ROLE_ADMIN")) {
+            return personLdaps;
+        } else {
+            return personLdaps.stream().filter(personLdapLight -> !webSecurityProperties.getExcludedEmails().contains(personLdapLight.getMail())).collect(Collectors.toList());
+        }
     }
 
     public PersonLdap getPersonLdapFromUser(User user) {

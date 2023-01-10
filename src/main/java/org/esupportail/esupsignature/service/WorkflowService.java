@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
@@ -13,7 +14,6 @@ import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryServic
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
-import org.esupportail.esupsignature.web.ws.json.JsonDtoWorkflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -284,8 +284,8 @@ public class WorkflowService {
     }
 
     @Transactional
-    public List<JsonDtoWorkflow> getAllWorkflowsJson() {
-        return workflowRepository.findAllJson();
+    public String getAllWorkflowsJson() throws JsonProcessingException {
+        return objectMapper.writeValueAsString(workflowRepository.findAllJson());
     }
 
     public Workflow getWorkflowByClassName(String className) {
@@ -656,8 +656,9 @@ public class WorkflowService {
         }
     }
 
-    public JsonDtoWorkflow getByIdJson(Long id) {
-        return workflowRepository.getByIdJson(id);
+    @Transactional
+    public String getByIdJson(Long id) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(workflowRepository.getByIdJson(id));
     }
 }
 

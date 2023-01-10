@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -77,8 +79,8 @@ public class LiveWorkflowStepService {
                     JsonExternalUserInfo jsonExternalUserInfo = optionalJsonExternalUserInfo.get();
                     recipientUser.setName(jsonExternalUserInfo.getName());
                     recipientUser.setFirstname(jsonExternalUserInfo.getFirstname());
-                    if(jsonExternalUserInfo.getPhone() != null) {
-                        recipientUser.setPhone(jsonExternalUserInfo.getPhone());
+                    if(StringUtils.hasText(jsonExternalUserInfo.getPhone())) {
+                        recipientUser.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(jsonExternalUserInfo.getPhone()));
                     }
                 }
             }
