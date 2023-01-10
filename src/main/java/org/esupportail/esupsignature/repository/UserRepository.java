@@ -15,7 +15,7 @@ public interface UserRepository extends CrudRepository<User, Long>  {
     List<User> findByReplaceByUser(User user);
     List<User> findByEmailAndUserType(String email, UserType userType);
     List<User> findByUserType(UserType userType);
-    Page<User> findByEppn(String eppn, Pageable pageable);
+    Page<User> findByEppnOrPhoneOrEmail(String eppn, String phone, String email, Pageable pageable);
     List<User> findByEppn(String eppn);
     @Query("select u from User u where u.eppn like :eppn%")
     List<User> findByEppnStartingWith(String eppn);

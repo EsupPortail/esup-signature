@@ -87,7 +87,7 @@ public class UserShareService {
         userShare.getShareTypes().addAll(shareTypes);
         for(Long formId : formsIds) {
             Form form = formRepository.findById(formId).get();
-            if(form.getAuthorizedShareTypes().containsAll(shareTypes)) {
+            if(new HashSet<>(form.getAuthorizedShareTypes()).containsAll(shareTypes)) {
                 userShare.setForm(form);
             } else {
                 throw new EsupSignatureUserException("La délégation du formulaire : " + form.getTitle() + " n'est pas autorisée");
@@ -96,7 +96,7 @@ public class UserShareService {
         for(Long workflowId : workflowsIds) {
             Workflow workflow = workflowRepository.findById(workflowId).get();
             if(userShareRepository.findByUserEppnAndWorkflow(user.getEppn(), workflow).size() == 0) {
-                if (workflow.getAuthorizedShareTypes().containsAll(shareTypes)) {
+                if (new HashSet<>(workflow.getAuthorizedShareTypes()).containsAll(shareTypes)) {
                  userShare.setWorkflow(workflow);
                 } else {
                  throw new EsupSignatureUserException("La délégation du circuit : " + workflow.getDescription() + " n'est pas autorisée");
@@ -175,46 +175,24 @@ public class UserShareService {
         }
     }
 
-    public Boolean checkShareForSignRequest(String fromUserEppn, String toUserEppn, SignRequest signRequest, ShareType shareType) {
-        List<UserShare> userShares = userShareRepository.findByUserEppnAndToUsersEppnInAndAllSignRequestsIsTrueAndShareTypesContains(fromUserEppn, Arrays.asList(toUserEppn), shareType);
-        if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
-            Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
-            userShares.addAll(userShareRepository.findByUserEppnAndToUsersEppnInAndWorkflowAndShareTypesContains(fromUserEppn, Arrays.asList(toUserEppn), workflow, shareType));
-
+    @Transactional
+    public Boolean checkShareForSignRequest(String fromUserEppn, String toUserEppn, SignBook signbook, ShareType shareType) {
+        List<UserShare> userShares = userShareRepository.findByUserEppnAndToUsersEppnInAndAllSignRequestsIsTrueAndShareTypesContains(fromUserEppn, Collections.singletonList(toUserEppn), shareType);
+        if (signbook.getLiveWorkflow().getWorkflow() != null) {
+            userShares.addAll(userShareRepository.findByUserEppnAndToUsersEppnInAndWorkflowAndShareTypesContains(fromUserEppn, Collections.singletonList(toUserEppn), signbook.getLiveWorkflow().getWorkflow(), shareType));
+            List<Form> forms = formRepository.findByWorkflowIdEquals(signbook.getLiveWorkflow().getWorkflow().getId());
+            if(forms.size() > 0 && forms.get(0) != null) {
+                userShares.addAll(userShareRepository.findByUserEppnAndToUsersEppnInAndFormAndShareTypesContains(fromUserEppn, Collections.singletonList(toUserEppn), forms.get(0), shareType));
+            }
         }
-        Data data = dataRepository.findBySignBook(signRequest.getParentSignBook());
+        Data data = dataRepository.findBySignBook(signbook);
         if(data != null && data.getForm() != null) {
-            userShares.addAll(userShareRepository.findByUserEppnAndToUsersEppnInAndFormAndShareTypesContains(fromUserEppn, Arrays.asList(toUserEppn), data.getForm(), shareType));
+            userShares.addAll(userShareRepository.findByUserEppnAndToUsersEppnInAndFormAndShareTypesContains(fromUserEppn, Collections.singletonList(toUserEppn), data.getForm(), shareType));
         }
         for (UserShare userShare : userShares) {
-            if (checkUserShareDate(userShare) && checkUserShareDate(userShare, signRequest.getCreateDate())) {
+            if (checkUserShareDate(userShare) && checkUserShareDate(userShare, signbook.getCreateDate())) {
                 return true;
             }
-        }
-        return false;
-    }
-
-    public Boolean checkAllShareTypesForSignRequest(String fromUserEppn, String toUserEppn, SignRequest signRequest) {
-        for(ShareType shareType : ShareType.values()) {
-            if(checkShareForSignRequest(fromUserEppn, toUserEppn, signRequest, shareType)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean checkUserViewRights(String userEppn, String authUserEppn, SignBook signBook) {
-        User user = userService.getUserByEppn(userEppn);
-        List<Recipient> recipients = new ArrayList<>();
-        for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
-            recipients.addAll(liveWorkflowStep.getRecipients());
-        }
-        if(signBook.getSignRequests().size() > 0 && checkAllShareTypesForSignRequest(userEppn, authUserEppn, signBook.getSignRequests().get(0))
-                || signBook.getViewers().stream().anyMatch(u -> u.getEppn().equals(authUserEppn))
-                || signBook.getCreateBy().getEppn().equals(authUserEppn)
-                || recipientService.recipientsContainsUser(recipients, authUserEppn) > 0
-                || (signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail()))) {
-            return true;
         }
         return false;
     }
@@ -280,7 +258,7 @@ public class UserShareService {
     }
 
     public UserShare getById(Long id) {
-        return userShareRepository.findById(id).get();
+        return userShareRepository.findById(id).orElseThrow();
     }
 
     public void delete(Long userShareId, String authUserEppn) {

@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.otp;
 
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -20,6 +21,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -141,9 +143,8 @@ public class OtpAccessController {
                 otp.setSmsSended(true);
                 logger.info("otp success for : " + urlId);
                 User user = userService.getUserByEmail(otp.getEmail());
-                //TODO fix update phone
-                if(otp.getPhoneNumber() != null) {
-                    userService.updatePhone(user.getEppn(), otp.getPhoneNumber());
+                if(StringUtils.hasText(otp.getPhoneNumber())) {
+                    userService.updatePhone(user.getEppn(), PhoneNumberUtil.normalizeDiallableCharsOnly(otp.getPhoneNumber()));
                 }
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(user.getEppn(), "");
                 Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
