@@ -1019,4 +1019,10 @@ public class SignRequestService {
 			return null;
 		}
 	}
+
+	@Transactional
+	public String getAuditTrailJson(Long id) throws JsonProcessingException {
+		SignRequest signRequest = getById(id);
+		return objectMapper.writeValueAsString(signRequest.getAuditTrail());
+	}
 }

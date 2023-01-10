@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import org.esupportail.esupsignature.entity.AuditTrail;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -78,6 +79,14 @@ public class SignRequestWsController {
     @ResponseBody
     public String getStatus(@Parameter(description = "Identifiant de la demande") @PathVariable Long id) {
         return signRequestService.getStatus(id);
+    }
+
+    @CrossOrigin
+    @GetMapping(value = "/audit-trail/{id}")
+    @Operation(description = "Récupération du statut d'une demande de signature", responses = @ApiResponse(description = "AuditTrail", content = @Content(schema = @Schema(implementation = AuditTrail.class))))
+    @ResponseBody
+    public String getAuditTail(@Parameter(description = "Dossier de preuve de la demande") @PathVariable Long id) throws JsonProcessingException {
+        return signRequestService.getAuditTrailJson(id);
     }
 
     @CrossOrigin
