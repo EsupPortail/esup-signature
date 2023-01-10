@@ -215,6 +215,11 @@ public class GlobalProperties {
      */
     private String restExtValueUrl;
 
+    /**
+     *  Envoyer un email au créateur de la demande lors de l’ajout d’un postit
+     */
+    private Boolean sendPostitByEmail = false;
+
     public String getRootUrl() {
         return rootUrl;
     }
@@ -557,5 +562,13 @@ public class GlobalProperties {
 
     public void setRestExtValueUrl(String restExtValueUrl) {
         this.restExtValueUrl = restExtValueUrl;
+    }
+
+    public Boolean getSendPostitByEmail() {
+        return sendPostitByEmail;
+    }
+
+    public void setSendPostitByEmail(Boolean sendPostitByEmail) {
+        this.sendPostitByEmail = sendPostitByEmail;
     }
 }
