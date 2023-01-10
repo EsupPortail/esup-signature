@@ -421,7 +421,7 @@ public class SignBookService {
 
     @Transactional
     public SignBook getById(Long id) {
-        return signBookRepository.findById(id).orElseThrow();
+        return signBookRepository.findById(id).orElse(null);
     }
 
     public List<SignBook> getByWorkflowId(Long id) {
@@ -431,6 +431,7 @@ public class SignBookService {
     @Transactional
     public Boolean delete(Long signBookId, String userEppn) {
         SignBook signBook = getById(signBookId);
+        if(signBook == null) return false;
         if(signBook.getStatus().equals(SignRequestStatus.deleted)) {
             deleteDefinitive(signBookId, userEppn);
             return true;
@@ -545,7 +546,7 @@ public class SignBookService {
 
     @Transactional
     public void addLiveStep(Long id, List<String> recipientsEmails, int stepNumber, Boolean allSignToComplete, SignType signType, boolean repeatable, SignType repeatableSignType, boolean multiSign, Boolean autoSign, String authUserEppn) throws EsupSignatureException {
-        SignBook signBook = this.getById(id);
+        SignBook signBook = getById(id);
         int currentStepNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
         LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, null, repeatable, repeatableSignType, multiSign, autoSign, allSignToComplete, signType, recipientsEmails, null);
         if (stepNumber == -1) {

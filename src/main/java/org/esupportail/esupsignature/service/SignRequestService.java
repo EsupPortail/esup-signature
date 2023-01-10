@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.zxing.WriterException;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
@@ -41,6 +42,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -619,8 +621,8 @@ public class SignRequestService {
 						JsonExternalUserInfo jsonExternalUserInfo = externalUsersInfos.stream().filter(jsonExternalUserInfo1 -> jsonExternalUserInfo1.getEmail().equals(tempUser.getEmail())).findFirst().get();
 						tempUser.setFirstname(jsonExternalUserInfo.getFirstname());
 						tempUser.setName(jsonExternalUserInfo.getName());
-						if(jsonExternalUserInfo.getPhone() != null) {
-							tempUser.setPhone(jsonExternalUserInfo.getPhone());
+						if(StringUtils.hasText(jsonExternalUserInfo.getPhone())) {
+							tempUser.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(jsonExternalUserInfo.getPhone()));
 						}
 					}
 				}
