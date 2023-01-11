@@ -7,12 +7,12 @@
                    th:data-id-signbook="${signBook.id}">
         </td>
         <td class="w-20 d-none d-lg-table-cell">
-            <button title="Afficher les postits" th:if="${signRequest.comments.size() > 0}" th:text="${signRequest.comments.size()}" type="button" class="badge badge-warning bg-warning border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
+            <button title="Afficher les postits" th:if="${signRequest.postits.size() > 0}" th:text="${signRequest.postits.size()}" type="button" class="badge badge-warning bg-warning border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
             </button>
-            <ul class="dropdown-menu" th:aria-labelledby="'commentButton-' + ${signBook.id}">
-                <th:block th:each="comment : ${signRequest.comments}">
-                    <li class="dropdown-item" style="display: inline-flex;">
-                        <span class="me-1" th:text="${comment.createBy.firstname} + ' ' + ${comment.createBy.name} + ' : ' + ${comment.text}"></span>
+            <ul class="dropdown-menu striped-list" th:aria-labelledby="'commentButton-' + ${signBook.id}">
+                <th:block th:each="postit : ${signRequest.postits}">
+                    <li th:if="${postit}" class="dropdown-item">
+                        <pre class="me-1" th:text="${postit.createBy.firstname} + ' ' + ${postit.createBy.name} + ' : ' + ${postit.text}"></pre>
                     </li>
                 </th:block>
             </ul>
