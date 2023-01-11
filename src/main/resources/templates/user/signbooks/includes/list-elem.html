@@ -6,6 +6,17 @@
                    th:data-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"
                    th:data-id-signbook="${signBook.id}">
         </td>
+        <td class="w-20 d-none d-lg-table-cell">
+            <button title="Afficher les postits" th:if="${signRequest.comments.size() > 0}" th:text="${signRequest.comments.size()}" type="button" class="badge badge-warning bg-warning border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
+            </button>
+            <ul class="dropdown-menu" th:aria-labelledby="'commentButton-' + ${signBook.id}">
+                <th:block th:each="comment : ${signRequest.comments}">
+                    <li class="dropdown-item" style="display: inline-flex;">
+                        <span class="me-1" th:text="${comment.createBy.firstname} + ' ' + ${comment.createBy.name} + ' : ' + ${comment.text}"></span>
+                    </li>
+                </th:block>
+            </ul>
+        </td>
         <td class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/user/signrequests/' + ${signRequest.id}" th:text="${signBook.workflowName}"></td>
         <td th:if="${signBook.signRequests.size() == 1}" class="clickable-td text-break overflow-hidden" style="white-space: pre-line" th:text="${signBook.subject}"></td>
         <td th:if="${signBook.signRequests.size() > 1}" class="d-none d-xl-table-cell">

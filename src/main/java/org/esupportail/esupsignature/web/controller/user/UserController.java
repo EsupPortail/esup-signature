@@ -123,9 +123,9 @@ public class UserController {
 
 	@GetMapping(value="/search-user")
 	@ResponseBody
-	public List<PersonLdapLight> searchLdap(@RequestParam(value="searchString") String searchString) {
+	public List<PersonLdapLight> searchLdap(@RequestParam(value="searchString") String searchString, @ModelAttribute("authUserEppn") String authUserEppn) {
 		logger.debug("ldap search for : " + searchString);
-		return userService.getPersonLdapsLight(searchString).stream().sorted(Comparator.comparing(PersonLdapLight::getDisplayName)).collect(Collectors.toList());
+		return userService.getPersonLdapsLight(searchString, authUserEppn).stream().sorted(Comparator.comparing(PersonLdapLight::getDisplayName)).collect(Collectors.toList());
    }
 
 	@GetMapping(value = "/search-user-list")

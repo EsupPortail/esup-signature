@@ -38,14 +38,14 @@ public class UserAdminController {
     private AnonymizeService anonymizeService;
 
     @GetMapping
-    public String list(@RequestParam(required = false) String eppn, @SortDefault(value = "name", direction = Sort.Direction.ASC) @PageableDefault(size = 10) Pageable pageable, Model model) {
+    public String list(@RequestParam(required = false) String searchText, @SortDefault(value = "name", direction = Sort.Direction.ASC) @PageableDefault(size = 10) Pageable pageable, Model model) {
         Page<User> users;
-        if(eppn == null) {
+        if(searchText == null) {
             users = userRepository.findAll(pageable);
         } else {
-            users = userRepository.findByEppn (eppn, pageable);
+            users = userRepository.findByEppnOrPhoneOrEmail(searchText, searchText, searchText, pageable);
         }
-        model.addAttribute("eppn", eppn);
+        model.addAttribute("searchText", searchText);
         model.addAttribute("users", users);
         return "admin/users/list";
     }

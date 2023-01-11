@@ -7,7 +7,9 @@ import org.esupportail.esupsignature.entity.enums.ShareType;
 import javax.persistence.*;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "form")
@@ -31,8 +33,8 @@ public class Form {
 	private Integer version;
 
 	@Deprecated
-	@ElementCollection(targetClass=String.class)
-	private List<String> managers = new ArrayList<>();
+	@ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+	private Set<String> managers = new HashSet<>();
 
 	private String managerRole;
 
@@ -41,10 +43,10 @@ public class Form {
 	
 	private String preFillType;
 
-	@ElementCollection(targetClass=String.class)
-	private List<String> roles = new ArrayList<>();
+	@ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+	private Set<String> roles = new HashSet<>();
 
-	@ElementCollection(targetClass= ShareType.class)
+	@ElementCollection(targetClass =  ShareType.class)
 	private List<ShareType> authorizedShareTypes = new ArrayList<>();
 
 	private Boolean publicUsage = false;
@@ -125,12 +127,12 @@ public class Form {
 	}
 
 	@Deprecated
-	public List<String> getManagers() {
+	public Set<String> getManagers() {
 		return managers;
 	}
 
 	@Deprecated
-	public void setManagers(List<String> managers) {
+	public void setManagers(Set<String> managers) {
 		this.managers = managers;
 	}
 
@@ -158,11 +160,11 @@ public class Form {
 		this.preFillType = preFillType;
 	}
 
-	public List<String> getRoles() {
+	public Set<String> getRoles() {
 		return roles;
 	}
 
-	public void setRoles(List<String> roles) {
+	public void setRoles(Set<String> roles) {
 		this.roles = roles;
 	}
 

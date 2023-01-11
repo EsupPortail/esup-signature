@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Set;
 
 @RequestMapping("/admin/workflows")
 @Controller
@@ -116,7 +117,7 @@ public class WorkflowAdminController {
 						 @Valid Workflow workflow,
 						 @RequestParam(value = "types", required = false) String[] types,
 						 @RequestParam(required = false) List<String> viewersEmails,
-						 @RequestParam(required = false) List<String> managers) {
+						 @RequestParam(required = false) Set<String> managers) {
 		User authUser = userService.getUserByEppn(authUserEppn);
 		Workflow updateWorkflow = workflowService.update(workflow, authUser, types, managers);
 		workflowService.addViewers(updateWorkflow.getId(), viewersEmails);

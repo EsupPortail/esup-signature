@@ -6,6 +6,20 @@
 		<a th:unless="${user.userType.name() == 'external'}" class="btn btn-light btn-outline-dark d-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
 			<i class="fas fa-info-circle"></i>
 		</a>
+		<a class="btn btn-light btn-outline-dark d-block ms-1"
+		   onclick="printIt()" target="_blank"
+		   title="Imprimer le document"><i class="fas fa-print"></i></a>
+		<script th:inline="javascript">
+			function printIt() {
+				let win = window.open('/ws-secure/signrequests/get-last-file-inline/[[${id}]]', '', '');
+				win.window.onafterprint = function () {alert("TOTO")};
+				$(win).ready(function() {
+					setTimeout(function(){
+						win.window.print();
+					},500);
+				});
+			}
+		</script>
 		<div class="border ms-3 me-3 d-none d-lg-block ms-1"></div>
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf'}">
 			<button id="zoomout" title="Zoom arrière" class="btn btn-light btn-outline-dark"><i

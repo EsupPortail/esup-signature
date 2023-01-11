@@ -1,12 +1,16 @@
 package org.esupportail.esupsignature.web.ws;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.web.ws.json.JsonDtoWorkflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -52,14 +56,16 @@ public class WorkflowWsController {
 
     @CrossOrigin
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Workflow get(@PathVariable Long id) {
-        return workflowService.getById(id);
+    @Operation(description = "Récupération d'un circuit", responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = JsonDtoWorkflow.class))))
+    public String get(@PathVariable Long id) throws JsonProcessingException {
+        return workflowService.getByIdJson(id);
     }
 
     @CrossOrigin
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Workflow> getAll() {
-        return workflowService.getAllWorkflows();
+    @Operation(description = "Récupération d'une demande de signature", responses = @ApiResponse(description = "List<JsonDtoWorkflow>", content = @Content(schema = @Schema(implementation = List.class))))
+    public String getAll() throws JsonProcessingException {
+        return workflowService.getAllWorkflowsJson();
     }
 
 }

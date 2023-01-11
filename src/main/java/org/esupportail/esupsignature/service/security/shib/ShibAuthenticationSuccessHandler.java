@@ -38,7 +38,7 @@ public class ShibAuthenticationSuccessHandler extends SavedRequestAwareAuthentic
 			firstname = new String(firstname.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
 			User user = userService.getUserByEmail(email);
 			if(user != null) {
-				userService.updateUserInfos(user.getId(), eppn, name, firstname);
+				userService.updateUserInfos(user.getId(), eppn, name, firstname, UserType.shib);
 			} else {
 				userService.createUser(eppn, name, firstname, email, UserType.shib, true);
 			}

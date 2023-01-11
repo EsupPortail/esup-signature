@@ -8,7 +8,6 @@ import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
-import org.esupportail.esupsignature.service.CertificatService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
@@ -73,8 +72,8 @@ public class MailService {
     @Resource
     private UserService userService;
 
-    @Resource
-    private CertificatService certificatService;
+//    @Resource
+//    private CertificatService certificatService;
 
     @Resource
     private FileService fileService;
@@ -148,6 +147,35 @@ public class MailService {
                 logger.error("unable to send COMPLETE email", e);
                 throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
             }
+        }
+    }
+
+    public void sendPostit(SignBook signBook, Comment comment) throws EsupSignatureMailException {
+        if (!checkMailSender()) {
+            return;
+        }
+        final Context ctx = new Context(Locale.FRENCH);
+        ctx.setVariable("signBook", signBook);
+        ctx.setVariable("comment", comment);
+        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("userService", userService);
+        setTemplate(ctx);
+        Set<String> toEmails = new HashSet<>();
+        toEmails.add(signBook.getCreateBy().getEmail());
+        try {
+            MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
+            String htmlContent = templateEngine.process("mail/email-postit.html", ctx);
+            addInLineImages(mimeMessage, htmlContent);
+            mimeMessage.setSubject("Un postit a été déposé sur votre demande");
+            mimeMessage.setFrom(mailConfig.getMailFrom());
+            mimeMessage.setTo(toEmails.toArray(String[]::new));
+            logger.info("send email completed to : " + StringUtils.join(toEmails.toArray(String[]::new), ";"));
+            if (mailSender != null) {
+                mailSender.send(mimeMessage.getMimeMessage());
+            }
+        } catch (MailSendException | MessagingException e) {
+            logger.error("unable to send COMPLETE email", e);
+            throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
         }
     }
 

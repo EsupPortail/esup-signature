@@ -66,8 +66,7 @@ public class PreAuthorizeService {
 
     public boolean signBookView(Long id, String userEppn, String authUserEppn) {
         if(userEppn != null && authUserEppn != null) {
-            SignBook signBook = signBookService.getById(id);
-            return userShareService.checkUserViewRights(userEppn, authUserEppn, signBook);
+            return signBookService.checkUserViewRights(userEppn, authUserEppn, id);
         }
         return false;
     }
@@ -199,7 +198,7 @@ public class PreAuthorizeService {
     public boolean checkUserViewRights(SignRequest signRequest, String userEppn, String authUserEppn) {
         if(userEppn != null && authUserEppn != null) {
             User user = userService.getUserByEppn(userEppn);
-            if (userEppn.equals(authUserEppn) || userShareService.checkAllShareTypesForSignRequest(userEppn, authUserEppn, signRequest)) {
+            if (userEppn.equals(authUserEppn) || signBookService.checkAllShareTypesForSignRequest(userEppn, authUserEppn, signRequest.getParentSignBook().getId())) {
                 List<SignRequest> signRequests = signRequestRepository.findByIdAndRecipient(signRequest.getId(), userEppn);
                 Data data = signBookService.getBySignBook(signRequest.getParentSignBook());
                 User authUser = userService.getUserByEppn(authUserEppn);
