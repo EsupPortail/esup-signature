@@ -43,7 +43,7 @@ public class UserAdminController {
         if(searchText == null) {
             users = userRepository.findAll(pageable);
         } else {
-            users = userRepository.findByEppnOrPhoneOrEmail(searchText, searchText, searchText, pageable);
+            users = userRepository.findByEppnOrPhoneOrEmailAndUserTypeNot(searchText, searchText, searchText, pageable);
         }
         model.addAttribute("searchText", searchText);
         model.addAttribute("users", users);
