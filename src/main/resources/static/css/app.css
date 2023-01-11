@@ -2088,3 +2088,13 @@ progress:before {
 .multi-doc-font {
     font-weight: 300;
 }
+
+ul.striped-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+ul.striped-list > li:nth-of-type(odd) {
+    background-color: #e9e9f9 ;
+}
