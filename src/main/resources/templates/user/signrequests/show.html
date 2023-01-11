@@ -79,8 +79,24 @@
                     <li th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a class="btn-lg btn-floating bg-primary waves-effect"
                            th:href="'/ws-secure/signrequests/get-last-file/' + ${id}" target="_blank"
-                           title="Télécharger la précédente version du document"><i class="fas fa-file-download"></i></a>
+                           title="Télécharger le document"><i class="fas fa-file-download"></i></a>
                     </li>
+                    <li th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                        <a class="btn-lg btn-floating bg-primary waves-effect"
+                           onclick="printIt()" target="_blank"
+                           title="Imprimer le document"><i class="fas fa-print"></i></a>
+                    </li>
+                    <script th:inline="javascript">
+                        function printIt() {
+                            let win = window.open('/ws-secure/signrequests/get-last-file-inline/[[${id}]]', '', '');
+                            win.window.onafterprint = function () {alert("TOTO")};
+                            $(win).ready(function() {
+                                setTimeout(function(){
+                                    win.window.print();
+                                },500);
+                            });
+                        }
+                    </script>
                     <li th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a class="btn-lg btn-floating bg-primary waves-effect"
                            th:href="'/ws-secure/signrequests/get-last-file/' + ${id}" target="_blank"

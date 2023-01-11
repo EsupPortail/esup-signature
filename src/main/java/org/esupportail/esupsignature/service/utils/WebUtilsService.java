@@ -21,9 +21,9 @@ public class WebUtilsService {
         this.request = request;
     }
 
-    public void copyFileStreamToHttpResponse(String name, String contentType, InputStream inputStream, HttpServletResponse httpServletResponse) throws IOException {
+    public void copyFileStreamToHttpResponse(String name, String contentType, String disposition, InputStream inputStream, HttpServletResponse httpServletResponse) throws IOException {
         httpServletResponse.setContentType(contentType);
-        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(name, StandardCharsets.UTF_8.toString()));
+        httpServletResponse.setHeader("Content-Disposition", disposition + "; filename=" + URLEncoder.encode(name, StandardCharsets.UTF_8));
         IOUtils.copyLarge(inputStream, httpServletResponse.getOutputStream());
     }
 

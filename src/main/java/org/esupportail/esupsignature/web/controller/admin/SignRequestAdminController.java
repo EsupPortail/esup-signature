@@ -136,7 +136,7 @@ public class SignRequestAdminController {
 				httpServletResponse.sendRedirect("/user/signrequests/" + id);
 			} else {
 				Document document = documents.get(0);
-				webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), document.getInputStream(), httpServletResponse);
+				webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), "attachment", document.getInputStream(), httpServletResponse);
 			}
 		} catch (Exception e) {
 			logger.error("get file error", e);
