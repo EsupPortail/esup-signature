@@ -72,9 +72,6 @@ public class HomeController {
     @Resource
     private UserService userService;
 
-    @Resource
-    private UserShareService userShareService;
-
     @GetMapping
     public String home(@ModelAttribute("userEppn") String userEppn,
                        @ModelAttribute("authUserEppn") String authUserEppn,
