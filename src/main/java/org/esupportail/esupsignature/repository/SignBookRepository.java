@@ -58,7 +58,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "left join sb.team team " +
             "left join sb.signRequests sr " +
             "left join sr.recipientHasSigned rhs " +
-            "where team = :user " +
+            "where :user in team " +
             "and (sb.status != 'pending' or key(rhs).user = :user or sb.createBy = :user) " +
             "and (:workflowFilter is null or sb.workflowName = :workflowFilter) " +
             "and (:docTitleFilter is null or sb.subject = :docTitleFilter) " +
