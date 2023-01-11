@@ -1506,7 +1506,7 @@ public class SignBookService {
     @Transactional
     public void getToSignFileReportResponse(Long signRequestId, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
         SignRequest signRequest = signRequestService.getById(signRequestId);
-        webUtilsService.copyFileStreamToHttpResponse(signRequest.getTitle() + "-avec_rapport", "application/zip; charset=utf-8", new ByteArrayInputStream(getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse)), httpServletResponse);
+        webUtilsService.copyFileStreamToHttpResponse(signRequest.getTitle() + "-avec_rapport", "application/zip; charset=utf-8", "attachment", new ByteArrayInputStream(getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse)), httpServletResponse);
     }
 
     public byte[] getZipWithDocAndReport(SignRequest signRequest, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {

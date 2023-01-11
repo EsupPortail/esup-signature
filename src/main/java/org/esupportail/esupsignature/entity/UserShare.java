@@ -36,6 +36,9 @@ public class UserShare {
     @Temporal(TemporalType.TIMESTAMP)
     private Date endDate;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createDate = new Date();
+
     @ElementCollection(targetClass = ShareType.class)
     private List<ShareType> shareTypes = new ArrayList<>();
 
@@ -110,6 +113,14 @@ public class UserShare {
 
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
+    }
+
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
     }
 
     public List<ShareType> getShareTypes() {

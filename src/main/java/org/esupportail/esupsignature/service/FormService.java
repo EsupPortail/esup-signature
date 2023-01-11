@@ -458,7 +458,7 @@ public class FormService {
 		Form form = getById(id);
 		Document attachment = documentService.getById(form.getDocument().getId());
 		if (attachment != null) {
-			webUtilsService.copyFileStreamToHttpResponse(attachment.getFileName(), attachment.getContentType(), attachment.getInputStream(), httpServletResponse);
+			webUtilsService.copyFileStreamToHttpResponse(attachment.getFileName(), attachment.getContentType(), "attachment", attachment.getInputStream(), httpServletResponse);
 			return true;
 		}
 		return false;

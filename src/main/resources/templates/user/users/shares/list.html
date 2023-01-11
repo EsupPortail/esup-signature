@@ -33,6 +33,7 @@
                             <th style="width: 15%">Type de délégation</th>
                             <th style="width: 15%">Modalité de signature</th>
                             <th style="width: 15%">Délégataire</th>
+                            <th style="width: 10%">Date de création</th>
                             <th style="width: 10%">Date de début</th>
                             <th style="width: 10%">Date de fin</th>
                             <th style="width: 15%">Actions</th>
@@ -65,6 +66,9 @@
                                         <li th:text="${toUser.firstname} + ' ' + ${toUser.name}"></li>
                                     </th:block>
                                     </ul>
+                                </td>
+                                <td>
+                                    <span th:text="${#dates.format(userShare.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                 </td>
                                 <td>
                                     <span th:text="${#dates.format(userShare.beginDate, 'dd/MM/yyyy HH:mm')}"></span>

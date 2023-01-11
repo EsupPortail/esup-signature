@@ -116,7 +116,7 @@ public class SignRequestWsController {
     @Operation(description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
     public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
-            signRequestService.getToSignFileResponse(id, httpServletResponse);
+            signRequestService.getToSignFileResponse(id, "attachment", httpServletResponse);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

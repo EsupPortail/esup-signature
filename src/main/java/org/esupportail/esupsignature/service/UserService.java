@@ -743,11 +743,12 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUserInfos(Long id, String eppn, String name, String firstname) {
+    public void updateUserInfos(Long id, String eppn, String name, String firstname, UserType userType) {
         User user = getById(id);
         user.setEppn(eppn);
         user.setName(name);
         user.setFirstname(firstname);
+        user.setUserType(userType);
     }
 
     @Transactional
