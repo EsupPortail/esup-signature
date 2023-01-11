@@ -56,7 +56,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -785,14 +784,14 @@ public class SignRequestService {
 		SignRequest signRequest = getById(signRequestId);
 		Document attachement = documentService.getById(attachementId);
 		if (attachement != null && attachement.getParentId().equals(signRequest.getId())) {
-			webUtilsService.copyFileStreamToHttpResponse(attachement.getFileName(), attachement.getContentType(), attachement.getInputStream(), httpServletResponse);
+			webUtilsService.copyFileStreamToHttpResponse(attachement.getFileName(), attachement.getContentType(), "attachment", attachement.getInputStream(), httpServletResponse);
 			return true;
 		}
 		return false;
 	}
 
 	@Transactional
-	public void getToSignFileResponse(Long signRequestId, HttpServletResponse httpServletResponse) throws SQLException, EsupSignatureFsException, IOException, EsupSignatureException {
+	public void getToSignFileResponse(Long signRequestId, String disposition, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureException {
 		SignRequest signRequest = getById(signRequestId);
 		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			List<Document> documents = signService.getToSignDocuments(signRequest.getId());
@@ -802,15 +801,15 @@ public class SignRequestService {
 			} else {
 				document = signRequest.getOriginalDocuments().get(0);
 			}
-			webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), document.getInputStream(), httpServletResponse);
+			webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), disposition, document.getInputStream(), httpServletResponse);
 		} else {
 			FsFile fsFile = getLastSignedFsFile(signRequest);
-			webUtilsService.copyFileStreamToHttpResponse(fsFile.getName(), fsFile.getContentType(), fsFile.getInputStream(), httpServletResponse);
+			webUtilsService.copyFileStreamToHttpResponse(fsFile.getName(), fsFile.getContentType(), disposition, fsFile.getInputStream(), httpServletResponse);
 		}
 	}
 
 	@Transactional
-	public void getToSignFileResponseWithCode(Long signRequestId, HttpServletResponse httpServletResponse) throws SQLException, EsupSignatureFsException, IOException, EsupSignatureException, WriterException {
+	public void getToSignFileResponseWithCode(Long signRequestId, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureException, WriterException {
 		SignRequest signRequest = getById(signRequestId);
 		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			List<Document> documents = signService.getToSignDocuments(signRequest.getId());
@@ -821,18 +820,18 @@ public class SignRequestService {
 				document = signRequest.getOriginalDocuments().get(0);
 			}
 			InputStream inputStream = pdfService.addQrCode(signRequest, document.getInputStream());
-			webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), inputStream, httpServletResponse);
+			webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), "attachment", inputStream, httpServletResponse);
 		} else {
 			FsFile fsFile = getLastSignedFsFile(signRequest);
 			InputStream inputStream = pdfService.addQrCode(signRequest, fsFile.getInputStream());
-			webUtilsService.copyFileStreamToHttpResponse(fsFile.getName(), fsFile.getContentType(), inputStream, httpServletResponse);
+			webUtilsService.copyFileStreamToHttpResponse(fsFile.getName(), fsFile.getContentType(), "attachment", inputStream, httpServletResponse);
 		}
 	}
 
 	@Transactional
 	public void getFileResponse(Long documentId, HttpServletResponse httpServletResponse) throws IOException {
 		Document document = documentService.getById(documentId);
-		webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), document.getInputStream(), httpServletResponse);
+		webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), "attachment", document.getInputStream(), httpServletResponse);
 	}
 
 	@Transactional

@@ -101,7 +101,7 @@ public class SignRequestWsSecureController {
     @GetMapping(value = "/get-last-file/{id}")
     public ResponseEntity<Void> getLastFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
-            signRequestService.getToSignFileResponse(id, httpServletResponse);
+            signRequestService.getToSignFileResponse(id, "attachment", httpServletResponse);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             logger.error("get file error", e);
@@ -123,6 +123,18 @@ public class SignRequestWsSecureController {
             logger.warn("document is not present in signResquest");
         }
         return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+    }
+
+
+    @GetMapping(value = "/get-last-file-inline/{id}")
+    public ResponseEntity<Void> getLastFileFromSignRequestInLine(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
+        try {
+            signRequestService.getToSignFileResponse(id, "inline", httpServletResponse);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
