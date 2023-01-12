@@ -62,10 +62,11 @@ public class AnonymizeService {
             throw new EsupSignatureUserException("L'utilisateur possède des demandes en cours, merci de les transférer à un autre utilisateur");
         }
         for(SignBook signBook : signBooks) {
-            signBook.getTeam().removeIf(user1 -> user1.equals(user));
             if(signBook.getCreateBy().equals(user)) {
                 signBook.setCreateBy(anonymous);
             }
+            signBook.getViewers().remove(user);
+            signBook.getTeam().remove(user);
         }
         signBookService.anonymize(user.getEppn(), anonymous);
         signRequestService.anonymize(user.getEppn(), anonymous);

@@ -23,7 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.List;
+import java.util.Set;
 
 @RequestMapping("/manager/workflows")
 @Controller
@@ -105,7 +105,7 @@ public class WorkflowManagerController {
     public String update(@ModelAttribute("authUserEppn") String authUserEppn,
                          @Valid Workflow workflow,
                          @RequestParam(value = "types", required = false) String[] types,
-                         @RequestParam(required = false) List<String> managers, Model model) {
+                         @RequestParam(required = false) Set<String> managers, Model model) {
         User authUser = userService.getUserByEppn(authUserEppn);
         workflow.setPublicUsage(false);
         Workflow updateWorkflow = workflowService.update(workflow, authUser, types, managers);

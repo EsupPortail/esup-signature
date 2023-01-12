@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import org.bouncycastle.util.encoders.Hex;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignRequest;
@@ -17,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
@@ -70,8 +72,8 @@ public class OtpService {
             removeOtpFromCache(extUser.getEppn());
             removeOtpFromCache(extUser.getEmail());
             otpCache.put(urlId, otp);
-            if(phone != null) {
-                extUser.setPhone(phone);
+            if(StringUtils.hasText(phone)) {
+                extUser.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(phone));
             }
             logger.info("new url for otp : " + urlId);
             return true;

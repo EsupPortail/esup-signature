@@ -18,7 +18,7 @@
                     <h5 class="text-center"><b>Utilisateurs</b></h5>
                     <form method="get">
                         <div class="input-group">
-                            <input class="form-control" type="text" name="eppn" placeholder="Recherche par eppn" th:value="${eppn}">
+                            <input class="form-control" type="text" name="searchText" placeholder="Recherche par email, eppn ou numéro de mobile" th:value="${searchText}">
                                 <input class="btn btn-success" type="submit" value="OK">
                                 <a type="button" href="/admin/users" class="btn btn-danger" >X</a>
                         </div>
@@ -32,6 +32,7 @@
                             <th>Nom</th>
                             <th>EPPN</th>
                             <th>Email</th>
+                            <th>Type</th>
                             <th></th>
                         </tr>
                         </thead>
@@ -43,6 +44,7 @@
                                 <td><span th:text="${user.name}"></span></td>
                                 <td><span th:text="${user.eppn}"></span></td>
                                 <td><span th:text="${user.email}"></span></td>
+                                <td><span th:text="${user.userType}"></span></td>
                                 <td>
                                     <div class="position-relative">
                                         <button type="button" th:id="'menu-toggle_' + ${user.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${user.eppn}" th:data-bs-target="'#menu-' + ${user.id}" th:aria-controls="'menu-' + ${user.id}" data-bs-toggle="collapse">

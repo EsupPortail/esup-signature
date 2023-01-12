@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
@@ -282,6 +283,11 @@ public class WorkflowService {
         return allWorkflows;
     }
 
+    @Transactional
+    public String getAllWorkflowsJson() throws JsonProcessingException {
+        return objectMapper.writeValueAsString(workflowRepository.findAllJson());
+    }
+
     public Workflow getWorkflowByClassName(String className) {
         for (Workflow workflow : workflows) {
             if (className.equals(workflow.getName())) {
@@ -431,7 +437,7 @@ public class WorkflowService {
         return workflows;
     }
 
-    public Workflow update(Workflow workflow, User user, String[] types, List<String> managers) {
+    public Workflow update(Workflow workflow, User user, String[] types, Set<String> managers) {
         Workflow workflowToUpdate = getById(workflow.getId());
         if(managers != null && managers.size() > 0) {
             workflowToUpdate.getManagers().clear();
@@ -650,5 +656,9 @@ public class WorkflowService {
         }
     }
 
+    @Transactional
+    public String getByIdJson(Long id) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(workflowRepository.getByIdJson(id));
+    }
 }
 

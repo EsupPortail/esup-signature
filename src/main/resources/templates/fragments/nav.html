@@ -127,7 +127,8 @@
                     <a href="/admin/" class="btn text-white btn-transparent"
                        th:classappend="${adminMenu == 'active'} ? 'bg-secondary' : ''">
                         <i class="fas fa-crown"></i><span class="nav-item-label d-none d-xxl-inline">Admin</span>
-                        <span title="Statut DSS" th:if="${dssStatus == null || dssStatus == true}" class="badge bg-danger d-none d-md-inline">
+                        <span title="Statut DSS" th:if="${dssStatus == null || dssStatus == true}" class="badge bg-danger d-none d-md-inline ms-1">
+                            !
                         </span>
                     </a>
                 </li>

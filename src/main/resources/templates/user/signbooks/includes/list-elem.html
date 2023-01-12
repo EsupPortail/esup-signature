@@ -6,11 +6,22 @@
                    th:data-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"
                    th:data-id-signbook="${signBook.id}">
         </td>
+        <td class="w-20 d-none d-lg-table-cell">
+            <button title="Afficher les postits" th:if="${signRequest.postits.size() > 0}" th:text="${signRequest.postits.size()}" type="button" class="badge badge-warning bg-warning border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
+            </button>
+            <ul class="dropdown-menu striped-list" th:aria-labelledby="'commentButton-' + ${signBook.id}">
+                <th:block th:each="postit : ${signRequest.postits}">
+                    <li th:if="${postit}" class="dropdown-item">
+                        <pre class="me-1" th:text="${postit.createBy.firstname} + ' ' + ${postit.createBy.name} + ' : ' + ${postit.text}"></pre>
+                    </li>
+                </th:block>
+            </ul>
+        </td>
         <td class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/user/signrequests/' + ${signRequest.id}" th:text="${signBook.workflowName}"></td>
-        <td th:if="${signBook.signRequests.size() == 1}" class="clickable-td text-break overflow-hidden" style="white-space: pre-line" th:text="${signBook.subject}"></td>
+        <td th:if="${signBook.signRequests.size() == 1}" class="clickable-td text-break overflow-hidden" th:text="${signBook.subject}"></td>
         <td th:if="${signBook.signRequests.size() > 1}" class="d-none d-xl-table-cell">
             <div class="dropdown">
-                <button onclick="event.stopPropagation();" class="btn btn-sm multi-doc-font dropdown-toggle" type="button" th:id="'dropdownFilesButton-' + ${signBook.id}" data-bs-toggle="dropdown">
+                <button th:title="${signBook.subject}" style="max-width: 200px; overflow: clip;" onclick="event.stopPropagation();" class="btn btn-sm multi-doc-font dropdown-toggle" type="button" th:id="'dropdownFilesButton-' + ${signBook.id}" data-bs-toggle="dropdown">
                     <i class="fas fa-folder-open"></i>
                     <span th:if="${signBook.subject == signRequest.getOriginalDocuments().get(0).getFileName()}" th:text="${signRequest.getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
                     <span th:if="${signBook.subject != signRequest.getOriginalDocuments().get(0).getFileName()}" th:text="${signBook.subject}"></span>

@@ -26,7 +26,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 @RequestMapping("/user/")
 @Controller
@@ -73,9 +72,6 @@ public class HomeController {
     @Resource
     private UserService userService;
 
-    @Resource
-    private UserShareService userShareService;
-
     @GetMapping
     public String home(@ModelAttribute("userEppn") String userEppn,
                        @ModelAttribute("authUserEppn") String authUserEppn,
@@ -103,19 +99,11 @@ public class HomeController {
                 messages.addAll(messageService.getByUser(authUser));
             }
             model.addAttribute("messageNews", messages);
-            List<SignBook> signBooksToSign = signBookService.getSignBooks(userEppn, "toSign", null, null, null, null, null, pageable).toList();
-            List<UserShare> userShares = userShareService.getUserSharesByUser(userEppn);
-            List<Workflow> workflows = userShares.stream().map(UserShare::getWorkflow).collect(Collectors.toList());
-            if(!userEppn.equals(authUserEppn)) {
-                signBooksToSign = signBooksToSign.stream().filter(sb -> sb.getSignRequests().size() > 0 && userShareService.checkAllShareTypesForSignRequest(userEppn, authUserEppn, sb.getSignRequests().get(0))).collect(Collectors.toList());
-                if (userShares.stream().noneMatch(us -> us.getAllSignRequests() != null && us.getAllSignRequests())) {
-                    signBooksToSign = signBooksToSign.stream().filter(signBook -> workflows.contains(signBook.getLiveWorkflow().getWorkflow())).collect(Collectors.toList());
-                }
-            }
+            List<SignBook> signBooksToSign = signBookService.getSignBooks(userEppn, authUserEppn, "toSign", null, null, null, null, null, pageable).toList();
             model.addAttribute("signBooksToSign", signBooksToSign);
             List<SignBook> signBooksPending = new ArrayList<>();
             if(userEppn.equals(authUserEppn)) {
-                signBooksPending = signBookService.getSignBooks(userEppn, "pending", null, null, null, null, null, pageable).toList();
+                signBooksPending = signBookService.getSignBooks(userEppn, authUserEppn, "pending", null, null, null, null, null, pageable).toList();
             }
             model.addAttribute("signBooksPending", signBooksPending);
             List<Data> datas = dataRepository.findByCreateByAndStatus(authUser, SignRequestStatus.draft);

@@ -79,7 +79,7 @@
                     <li th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a class="btn-lg btn-floating bg-primary waves-effect"
                            th:href="'/ws-secure/signrequests/get-last-file/' + ${id}" target="_blank"
-                           title="Télécharger la précédente version du document"><i class="fas fa-file-download"></i></a>
+                           title="Télécharger le document"><i class="fas fa-file-download"></i></a>
                     </li>
                     <li th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a class="btn-lg btn-floating bg-primary waves-effect"

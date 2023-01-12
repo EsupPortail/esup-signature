@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import org.esupportail.esupsignature.entity.AuditTrail;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -81,6 +82,14 @@ public class SignRequestWsController {
     }
 
     @CrossOrigin
+    @GetMapping(value = "/audit-trail/{id}")
+    @Operation(description = "Récupération du statut d'une demande de signature", responses = @ApiResponse(description = "AuditTrail", content = @Content(schema = @Schema(implementation = AuditTrail.class))))
+    @ResponseBody
+    public String getAuditTail(@Parameter(description = "Dossier de preuve de la demande") @PathVariable Long id) throws JsonProcessingException {
+        return signRequestService.getAuditTrailJson(id);
+    }
+
+    @CrossOrigin
     @DeleteMapping("/{id}")
     @Operation(description = "Supprimer une demande de signature")
     public ResponseEntity<String> delete(@PathVariable Long id) {
@@ -107,7 +116,7 @@ public class SignRequestWsController {
     @Operation(description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
     public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
-            signRequestService.getToSignFileResponse(id, httpServletResponse);
+            signRequestService.getToSignFileResponse(id, "attachment", httpServletResponse);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
