@@ -18,10 +18,10 @@
             </ul>
         </td>
         <td class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/user/signrequests/' + ${signRequest.id}" th:text="${signBook.workflowName}"></td>
-        <td th:if="${signBook.signRequests.size() == 1}" class="clickable-td text-break overflow-hidden" style="white-space: pre-line" th:text="${signBook.subject}"></td>
+        <td th:if="${signBook.signRequests.size() == 1}" class="clickable-td text-break overflow-hidden" th:text="${signBook.subject}"></td>
         <td th:if="${signBook.signRequests.size() > 1}" class="d-none d-xl-table-cell">
             <div class="dropdown">
-                <button onclick="event.stopPropagation();" class="btn btn-sm multi-doc-font dropdown-toggle" type="button" th:id="'dropdownFilesButton-' + ${signBook.id}" data-bs-toggle="dropdown">
+                <button th:title="${signBook.subject}" style="max-width: 200px; overflow: clip;" onclick="event.stopPropagation();" class="btn btn-sm multi-doc-font dropdown-toggle" type="button" th:id="'dropdownFilesButton-' + ${signBook.id}" data-bs-toggle="dropdown">
                     <i class="fas fa-folder-open"></i>
                     <span th:if="${signBook.subject == signRequest.getOriginalDocuments().get(0).getFileName()}" th:text="${signRequest.getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
                     <span th:if="${signBook.subject != signRequest.getOriginalDocuments().get(0).getFileName()}" th:text="${signBook.subject}"></span>
