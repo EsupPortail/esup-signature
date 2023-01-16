@@ -381,7 +381,7 @@ public class UserService {
             if(user.getReplaceByUser() != null) {
                 personLdaps.remove(personLdaps.stream().filter(personLdap -> personLdap.getMail() != null && personLdap.getMail().equals(user.getEmail())).findFirst().get());
             }
-            if(personLdaps.stream().noneMatch(personLdapLight -> user.getEmail().equals(personLdapLight.getMail()))) {
+            if(personLdaps.stream().noneMatch(personLdapLight -> personLdapLight.getMail() != null && user.getEmail().equals(personLdapLight.getMail()))) {
                 PersonLdapLight personLdapLight = getPersonLdapLightFromUser(user);
                 if(user.getUserType().equals(UserType.group)) {
                     personLdapLight.setDisplayName(personLdapLight.getDisplayName());
