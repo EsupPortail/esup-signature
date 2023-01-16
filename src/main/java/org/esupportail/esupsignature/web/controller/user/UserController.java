@@ -154,7 +154,6 @@ public class UserController {
 		List<FieldPropertie> fieldProperties = fieldPropertieService.getFieldProperties(authUserEppn);
 		model.addAttribute("fieldProperties", fieldProperties);
 		model.addAttribute("forms", formService.getFormsByUser(authUserEppn, authUserEppn));
-		model.addAttribute("users", userService.getAllUsers());
 		model.addAttribute("activeMenu", "properties");
 		return "user/users/properties";
 	}
