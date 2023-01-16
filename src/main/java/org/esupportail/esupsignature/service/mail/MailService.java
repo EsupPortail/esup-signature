@@ -162,6 +162,7 @@ public class MailService {
         setTemplate(ctx);
         Set<String> toEmails = new HashSet<>();
         toEmails.add(signBook.getCreateBy().getEmail());
+        //TODO envoi dans les deux sens ?
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-postit.html", ctx);

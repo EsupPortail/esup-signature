@@ -52,7 +52,7 @@ public class TasksController {
     @PostMapping("/run-clean")
     public String runClean(RedirectAttributes redirectAttributes) {
         if(!taskService.isEnableCleanTask()) {
-            taskService.initCleanning();
+            taskService.initCleanning("system");
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Nettoyage démarré"));
         } else {
             taskService.setEnableCleanTask(false);
