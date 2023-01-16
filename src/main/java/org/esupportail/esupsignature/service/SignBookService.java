@@ -344,7 +344,7 @@ public class SignBookService {
         User user = userService.getUserByEppn(userEppn);
         SignBook signBook = signBookRepository.findWithLockingById(signBookId).orElseThrow();
         if(signBook.getSubject().isEmpty()) {
-            signBook.setSubject(generateName(signBook, null, user, false));
+            signBook.setSubject(generateName(signBookId, null, user, false));
         }
         signBook.setStatus(SignRequestStatus.draft);
     }
@@ -380,7 +380,7 @@ public class SignBookService {
         signBook.setSubject(subject);
         signBookRepository.save(signBook);
         if(geneateName) {
-            subject = generateName(signBook, workflow, user, false);
+            subject = generateName(signBook.getId(), workflow, user, false);
         }
         signBook.setSubject(subject);
         return signBook;
@@ -456,7 +456,7 @@ public class SignBookService {
     public boolean deleteDefinitive(Long signBookId, String userEppn) {
         User user = userService.getUserByEppn(userEppn);
         SignBook signBook = getById(signBookId);
-        if(signBook.getCreateBy().equals(user) || userService.getSystemUser().equals(user) || user.getRoles().contains("ROLE_ADMIN")) {
+        if(signBook != null && (signBook.getCreateBy().equals(user) || userService.getSystemUser().equals(user) || user.getRoles().contains("ROLE_ADMIN"))) {
             signBook.getLiveWorkflow().setCurrentStep(null);
             List<Long> liveWorkflowStepIds = signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getId).collect(Collectors.toList());
             signBook.getLiveWorkflow().getLiveWorkflowSteps().clear();
@@ -753,7 +753,7 @@ public class SignBookService {
             i++;
         }
         if(!StringUtils.hasText(signBook.getSubject())) {
-            signBook.setSubject(generateName(signBook, null, signBook.getCreateBy(), false));
+            signBook.setSubject(generateName(signBookId, null, signBook.getCreateBy(), false));
         }
     }
 
@@ -1732,7 +1732,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public void sendSignRequestsToTarget(Long id, String authUserEppn) throws EsupSignatureException, EsupSignatureFsException {
+    public void sendSignRequestsToTarget(Long id, String authUserEppn) throws EsupSignatureException {
         SignBook signBook = getById(id);
         if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
             List<SignRequest> signRequests = signBook.getSignRequests();
@@ -1744,23 +1744,7 @@ public class SignBookService {
                     DocumentIOType documentIOType = fsAccessFactoryService.getPathIOType(target.getTargetUri());
                     String targetUrl = target.getTargetUri();
                     if (documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
-                        if (documentIOType.equals(DocumentIOType.mail)) {
-                            logger.info("send by email to " + targetUrl);
-                            try {
-                                for (String email : targetUrl.replace("mailto:", "").split(",")) {
-                                    User user = userService.getUserByEmail(email);
-                                    if (!signBook.getViewers().contains(user)) {
-                                        signBook.getViewers().add(user);
-                                        addUserInTeam(user.getId(), signBook.getId());
-                                    }
-                                }
-                                mailService.sendFile(title, signBook, targetUrl);
-                                target.setTargetOk(true);
-                            } catch (MessagingException | IOException e) {
-                                logger.error("unable to send mail to : " + target.getTargetUri(), e);
-                                allTargetsDone = false;
-                            }
-                        } else {
+                        if (!documentIOType.equals(DocumentIOType.mail)) {
                             for (SignRequest signRequest : signRequests) {
                                 if (fsAccessFactoryService.getPathIOType(target.getTargetUri()).equals(DocumentIOType.rest)) {
                                     RestTemplate restTemplate = new RestTemplate();
@@ -1793,7 +1777,7 @@ public class SignBookService {
                                                 documentService.exportDocument(documentIOType, targetUrl, attachment, attachment.getFileName());
                                             }
                                         }
-                                        String name = generateName(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), true);
+                                        String name = generateName(id, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), true);
                                         documentService.exportDocument(documentIOType, targetUrl, signedFile, name);
                                         target.setTargetOk(true);
                                     } catch (EsupSignatureFsException e) {
@@ -1801,6 +1785,31 @@ public class SignBookService {
                                         allTargetsDone = false;
                                     }
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+            for (Target target : targets) {
+                if (!target.getTargetOk()) {
+                    DocumentIOType documentIOType = fsAccessFactoryService.getPathIOType(target.getTargetUri());
+                    String targetUrl = target.getTargetUri();
+                    if (documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
+                        if (documentIOType.equals(DocumentIOType.mail)) {
+                            logger.info("send by email to " + targetUrl);
+                            try {
+                                for (String email : targetUrl.replace("mailto:", "").split(",")) {
+                                    User user = userService.getUserByEmail(email);
+                                    if (!signBook.getViewers().contains(user)) {
+                                        signBook.getViewers().add(user);
+                                        addUserInTeam(user.getId(), signBook.getId());
+                                    }
+                                }
+                                mailService.sendFile(title, signBook, targetUrl);
+                                target.setTargetOk(true);
+                            } catch (MessagingException | IOException e) {
+                                logger.error("unable to send mail to : " + target.getTargetUri(), e);
+                                allTargetsDone = false;
                             }
                         }
                     }
@@ -1819,7 +1828,7 @@ public class SignBookService {
 
 
     @Transactional
-    public void archiveSignRequests(Long signBookId, String authUserEppn) throws EsupSignatureFsException, EsupSignatureException {
+    public void archiveSignRequests(Long signBookId, String authUserEppn) throws EsupSignatureException {
         if(globalProperties.getArchiveUri() != null) {
             logger.info("start archiving documents");
             boolean result = true;
@@ -1829,7 +1838,7 @@ public class SignBookService {
                 if(signedFile != null) {
                     String subPath = "/" + signRequest.getParentSignBook().getWorkflowName() + "/";
                     if (signRequest.getExportedDocumentURI() == null) {
-                        String name = generateName(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), true);
+                        String name = generateName(signBookId, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), true);
                         String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath, signedFile.getId() + "_" + name);
                         if (documentUri != null) {
                             signRequest.setExportedDocumentURI(documentUri);
@@ -1869,7 +1878,9 @@ public class SignBookService {
         return signBook.getStatus().equals(SignRequestStatus.completed) && signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0;
     }
 
-    public String generateName(SignBook signBook, Workflow workflow, User user, Boolean target) {
+    @Transactional
+    public String generateName(Long signBookId, Workflow workflow, User user, Boolean target) {
+        SignBook signBook = getById(signBookId);
 //        if(signBook.getSubject() != null && signBook.getSubject().contains("[to_replace]")) {
 //            signBook.setSubject(signBook.getSubject().replace("[to_replace]", fileService.getNameOnly(signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName())));
 //            if(signBook.getSignRequests().size() > 1) {
@@ -1919,20 +1930,24 @@ public class SignBookService {
             if(signBook.getSignRequests().size() > 0 && signBook.getSignRequests().get(0).getOriginalDocuments().size() > 0) {
                 template = template.replace("[originalFileName]", signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName());
             } else {
-                template = template.replace("[originalFileName]", signBook.getSubject());
+                template = template.replace("[originalFileName]", "no original file name");
             }
         }
         if(template.contains("[signedFileName]")) {
             if(signBook.getSignRequests().size() > 0 && signBook.getSignRequests().get(0).getSignedDocuments().size() > 0) {
                 template = template.replace("[signedFileName]", signBook.getSignRequests().get(0).getSignedDocuments().get(0).getFileName());
-            } if(signBook.getSignRequests().size() > 0 && signBook.getSignRequests().get(0).getOriginalDocuments().size() > 0) {
-                template = template.replace("[originalFileName]", signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName());
             } else {
-                template = template.replace("[originalFileName]", signBook.getSubject());
+                template = template.replace("[signedFileName]", "no signed file name");
             }
         }
         if(template.contains("[fileNameOnly]")) {
-            template = template.replace("[fileNameOnly]", fileService.getNameOnly(signBook.getSignRequests().get(0).getSignedDocuments().get(0).getFileName()));
+            if(signBook.getSignRequests().size() > 0 && signBook.getSignRequests().get(0).getSignedDocuments().size() > 0) {
+                template = template.replace("[fileNameOnly]", fileService.getNameOnly(signBook.getSignRequests().get(0).getSignedDocuments().get(0).getFileName()));
+            } if(signBook.getSignRequests().size() > 0 && signBook.getSignRequests().get(0).getOriginalDocuments().size() > 0) {
+                template = template.replace("[fileNameOnly]", fileService.getNameOnly(signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName()));
+            } else {
+                template = template.replace("[fileNameOnly]", "no file name");
+            }
         }
         if(template.contains("[fileExtension]")) {
             template = template.replace("[fileExtension]", fileService.getExtension(signBook.getSignRequests().get(0).getSignedDocuments().get(0).getFileName()));

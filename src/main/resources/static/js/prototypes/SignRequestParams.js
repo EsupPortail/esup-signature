@@ -19,7 +19,7 @@ export class SignRequestParams extends EventFactory {
         this.userName = userName;
         this.authUserName = authUserName;
         this.ready = null;
-        this.isShare = userName !== authUserName;
+        this.isShare = (userName !== authUserName);
         this.restore = restore;
         this.isSign = isSign;
         this.isVisa = isVisa;
@@ -275,13 +275,20 @@ export class SignRequestParams extends EventFactory {
         if(this.isShare) {
             this.signColorPicker.spectrum("destroy");
             this.signColorPicker.hide();
+            this.addWatermark = true;
+            this.toggleWatermark();
             this.addExtra = false;
             this.toggleExtra();
+            this.isExtraText = false;
+            this.toggleText();
             $("#signExtra_" + this.id).hide();
             this.toggleName();
             this.toggleType();
-            $("#extraTools_" + this.id).addClass("d-none");
-            $("#crossTools_" + this.id).css("top", "-45px");
+            // $("#extraTools_" + this.id).addClass("d-none");
+            // $("#crossTools_" + this.id).css("top", "-45px");
+            $("#extraType_" + this.id).addClass("d-none");
+            $("#extraName_" + this.id).addClass("d-none");
+            $("#extraText_" + this.id).addClass("d-none");
             this.savedText = this.userName + "\nP.O.\n" + this.authUserName;
             this.extraText = this.savedText;
             this.textareaExtra.val(this.savedText);
@@ -588,7 +595,7 @@ export class SignRequestParams extends EventFactory {
             }
             this.addWatermark = true;
         }
-        if(!this.firstLaunch) {
+        if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('addWatermark', this.addWatermark);
         }
     }
@@ -612,7 +619,9 @@ export class SignRequestParams extends EventFactory {
                 $("#signExtraOnTop_" + this.id).attr("disabled", true);
                 $("#signPrevImage_" + this.id).attr("disabled", true);
                 $("#signNextImage_" + this.id).attr("disabled", true);
-                localStorage.setItem('addImage', false);
+                if(!this.isShare) {
+                    localStorage.setItem('addImage', false);
+                }
                 this.addImage = !this.addImage;
                 this.refreshExtraDiv()
                 this.updateSize();
@@ -635,8 +644,10 @@ export class SignRequestParams extends EventFactory {
                 this.restoreExtraOnTop = false;
                 this.toggleExtraOnTop();
             }
-            localStorage.setItem('addExtra', true);
-            localStorage.setItem('addImage', true);
+            if(!this.isShare) {
+                localStorage.setItem('addExtra', true);
+                localStorage.setItem('addImage', true);
+            }
             this.addImage = !this.addImage;
             this.refreshExtraDiv()
             this.updateSize();
@@ -697,7 +708,7 @@ export class SignRequestParams extends EventFactory {
         // this.toggleName();
         // this.toggleText();
         this.updateSize();
-        if(!this.firstLaunch) {
+        if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('addExtra', this.addExtra);
         }
     }
@@ -741,7 +752,7 @@ export class SignRequestParams extends EventFactory {
                 this.divExtra.addClass("div-extra-right");
                 this.divExtra.removeClass("div-extra-top");
             }
-            if(!this.firstLaunch) {
+            if(!this.firstLaunch && !this.isShare) {
                 localStorage.setItem('extraOnTop', this.extraOnTop);
             }
         }
@@ -764,7 +775,7 @@ export class SignRequestParams extends EventFactory {
         this.extraType = !this.extraType;
         this.updateSize();
         this.refreshExtraDiv();
-        if(!this.firstLaunch) {
+        if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('extraType', this.extraType);
         }
     }
@@ -781,7 +792,7 @@ export class SignRequestParams extends EventFactory {
         this.extraName = !this.extraName;
         this.updateSize();
         this.refreshExtraDiv();
-        if(!this.firstLaunch) {
+        if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('extraName', this.extraName);
         }
     }
@@ -798,7 +809,7 @@ export class SignRequestParams extends EventFactory {
         this.extraDate = !this.extraDate;
         this.updateSize();
         this.refreshExtraDiv();
-        if(!this.firstLaunch) {
+        if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('extraDate', this.extraDate);
         }
     }
@@ -826,7 +837,7 @@ export class SignRequestParams extends EventFactory {
         this.isExtraText = !this.isExtraText;
         this.updateSize();
         this.refreshExtraDiv();
-        if(!this.firstLaunch) {
+        if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('extraText', this.isExtraText);
         }
     }

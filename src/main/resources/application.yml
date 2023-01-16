@@ -166,7 +166,7 @@ dss:
     server-signing-keystore-filename: validate_service.p12
     server-signing-keystore-password: password
     server-signing-keystore-type: PKCS12
-    tsp-server: http://timestamp.sectigo.com
+    tsp-server: http://timestamp.sectigo.com/qualified
     lotl-country-code: EU
     lotl-url: https://ec.europa.eu/tools/lotl/eu-lotl.xml
     oj-url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG

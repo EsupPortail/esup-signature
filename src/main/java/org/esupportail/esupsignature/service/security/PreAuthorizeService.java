@@ -23,9 +23,6 @@ public class PreAuthorizeService {
     private UserService userService;
 
     @Resource
-    private UserShareService userShareService;
-
-    @Resource
     private SignBookService signBookService;
 
     @Resource

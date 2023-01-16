@@ -335,8 +335,4 @@ public class SignRequest {
         }
     }
 
-    public List<Comment> getPostits() {
-        return comments.stream().filter(Comment::getPostit).collect(Collectors.toList());
-    }
-
 }

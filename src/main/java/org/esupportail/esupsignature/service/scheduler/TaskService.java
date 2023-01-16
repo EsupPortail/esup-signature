@@ -68,41 +68,43 @@ public class TaskService {
     }
 
     @Async
-    public void initCleanning() {
-        logger.debug("scan all signRequest to clean");
+    public void initCleanning(String userEppn) {
         if(globalProperties.getDelayBeforeCleaning() > -1 && !isEnableCleanTask()) {
+            logger.info("start cleanning archives");
             setEnableCleanTask(true);
-            logger.info("start cleanning documents");
             List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.archived);
+            int i = 0;
             for (SignBook signBook : signBooks) {
                 logger.info("clean signbook : " + signBook.getId());
-                signBookService.cleanFiles(signBook.getId(), "scheduler");
+                signBookService.cleanFiles(signBook.getId(), userEppn);
+                i++;
                 if(!isEnableCleanTask()) {
                     logger.info("cleanning stopped");
                     return;
                 }
             }
-            logger.info("cleanning documents done");
+            logger.info(i + " achived item are cleaned");
         } else {
             logger.debug("cleaning documents was skipped because neg value");
         }
         if(globalProperties.getTrashKeepDelay() > -1) {
+            logger.info("start cleanning trashes");
             List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.deleted);
             int i = 0;
             for (SignBook signBook : signBooks) {
+                Date date = signBook.getCreateDate();
                 if (signBook.getUpdateDate() != null) {
-                    LocalDateTime deleteDate = LocalDateTime.ofInstant(signBook.getUpdateDate().toInstant(), ZoneId.systemDefault());
-                    LocalDateTime nowDate = LocalDateTime.ofInstant(new Date().toInstant(), ZoneId.systemDefault());
-                    long nbDays = ChronoUnit.DAYS.between(deleteDate, nowDate);
-                    if (Math.abs(nbDays) >= globalProperties.getTrashKeepDelay()) {
-                        signBookService.deleteDefinitive(signBook.getId(), "system");
-                        i++;
-                    }
+                    date = signBook.getUpdateDate();
+                }
+                LocalDateTime deleteDate = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+                LocalDateTime nowDate = LocalDateTime.ofInstant(new Date().toInstant(), ZoneId.systemDefault());
+                long nbDays = ChronoUnit.DAYS.between(deleteDate, nowDate);
+                if (Math.abs(nbDays) >= globalProperties.getTrashKeepDelay()) {
+                    signBookService.deleteDefinitive(signBook.getId(), userEppn);
+                    i++;
                 }
             }
-            if(i > 0) {
-                logger.info(i + " item are deleted");
-            }
+            logger.info(i + " deleted item are cleaned");
         } else {
             logger.debug("cleaning trashes was skipped because neg value");
         }
