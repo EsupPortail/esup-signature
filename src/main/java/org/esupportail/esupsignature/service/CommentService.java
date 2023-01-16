@@ -50,7 +50,7 @@ public class CommentService {
         Optional<Comment> comment = commentRepository.findById(commentId);
         if(comment.isPresent()) {
             SignRequest signRequest = signRequestRepository.findSignRequestByCommentsContains(comment.get());
-            if (comment.get().getStepNumber() != null) {
+            if (comment.get().getStepNumber() != null && comment.get().getStepNumber() > 0 && signRequest.getSignRequestParams().size() > comment.get().getStepNumber() - 1) {
                 signRequest.getSignRequestParams().remove(comment.get().getStepNumber() - 1);
                 if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size() > comment.get().getStepNumber()) {
                     signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(comment.get().getStepNumber() - 1).setSignRequestParams(null);
