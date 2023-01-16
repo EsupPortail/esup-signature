@@ -1732,7 +1732,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public void sendSignRequestsToTarget(Long id, String authUserEppn) throws EsupSignatureException, EsupSignatureFsException {
+    public void sendSignRequestsToTarget(Long id, String authUserEppn) throws EsupSignatureException {
         SignBook signBook = getById(id);
         if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
             List<SignRequest> signRequests = signBook.getSignRequests();
@@ -1744,23 +1744,7 @@ public class SignBookService {
                     DocumentIOType documentIOType = fsAccessFactoryService.getPathIOType(target.getTargetUri());
                     String targetUrl = target.getTargetUri();
                     if (documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
-                        if (documentIOType.equals(DocumentIOType.mail)) {
-                            logger.info("send by email to " + targetUrl);
-                            try {
-                                for (String email : targetUrl.replace("mailto:", "").split(",")) {
-                                    User user = userService.getUserByEmail(email);
-                                    if (!signBook.getViewers().contains(user)) {
-                                        signBook.getViewers().add(user);
-                                        addUserInTeam(user.getId(), signBook.getId());
-                                    }
-                                }
-                                mailService.sendFile(title, signBook, targetUrl);
-                                target.setTargetOk(true);
-                            } catch (MessagingException | IOException e) {
-                                logger.error("unable to send mail to : " + target.getTargetUri(), e);
-                                allTargetsDone = false;
-                            }
-                        } else {
+                        if (!documentIOType.equals(DocumentIOType.mail)) {
                             for (SignRequest signRequest : signRequests) {
                                 if (fsAccessFactoryService.getPathIOType(target.getTargetUri()).equals(DocumentIOType.rest)) {
                                     RestTemplate restTemplate = new RestTemplate();
@@ -1801,6 +1785,31 @@ public class SignBookService {
                                         allTargetsDone = false;
                                     }
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+            for (Target target : targets) {
+                if (!target.getTargetOk()) {
+                    DocumentIOType documentIOType = fsAccessFactoryService.getPathIOType(target.getTargetUri());
+                    String targetUrl = target.getTargetUri();
+                    if (documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
+                        if (documentIOType.equals(DocumentIOType.mail)) {
+                            logger.info("send by email to " + targetUrl);
+                            try {
+                                for (String email : targetUrl.replace("mailto:", "").split(",")) {
+                                    User user = userService.getUserByEmail(email);
+                                    if (!signBook.getViewers().contains(user)) {
+                                        signBook.getViewers().add(user);
+                                        addUserInTeam(user.getId(), signBook.getId());
+                                    }
+                                }
+                                mailService.sendFile(title, signBook, targetUrl);
+                                target.setTargetOk(true);
+                            } catch (MessagingException | IOException e) {
+                                logger.error("unable to send mail to : " + target.getTargetUri(), e);
+                                allTargetsDone = false;
                             }
                         }
                     }
