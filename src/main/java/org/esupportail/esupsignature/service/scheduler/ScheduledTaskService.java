@@ -117,7 +117,7 @@ public class ScheduledTaskService {
 			Date date = new Date(System.currentTimeMillis());
 			System.out.println(formatter.format(date));
 			logger.info("init clean : " + formatter.format(date));
-			taskService.initCleanning();
+			taskService.initCleanning("scheduler");
 			Date date2 = new Date(System.currentTimeMillis());
 			logger.info("end clean : " + formatter.format(date2));
 		}
