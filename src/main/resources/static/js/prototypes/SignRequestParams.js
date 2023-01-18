@@ -288,7 +288,7 @@ export class SignRequestParams extends EventFactory {
             // $("#crossTools_" + this.id).css("top", "-45px");
             $("#extraType_" + this.id).addClass("d-none");
             $("#extraName_" + this.id).addClass("d-none");
-            $("#extraText_" + this.id).addClass("d-none");
+            // $("#extraText_" + this.id).addClass("d-none");
             this.savedText = this.userName + "\nP.O.\n" + this.authUserName;
             this.extraText = this.savedText;
             this.textareaExtra.val(this.savedText);
