@@ -288,7 +288,7 @@ export class SignRequestParams extends EventFactory {
             // $("#crossTools_" + this.id).css("top", "-45px");
             $("#extraType_" + this.id).addClass("d-none");
             $("#extraName_" + this.id).addClass("d-none");
-            $("#extraText_" + this.id).addClass("d-none");
+            // $("#extraText_" + this.id).addClass("d-none");
             this.savedText = this.userName + "\nP.O.\n" + this.authUserName;
             this.extraText = this.savedText;
             this.textareaExtra.val(this.savedText);
@@ -798,7 +798,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     toggleDate() {
-        if(!this.extraType && !this.extraName && !this.isExtraText && this.extraDate) return;
+        if(!this.extraType && !this.extraName && !this.isExtraText && this.extraDate && !this.isShare) return;
         if(this.extraDate) {
             $("#extraDateDiv_" + this.id).hide();
             $("#extraDate_" + this.id).removeClass("btn-outline-light");
@@ -815,7 +815,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     toggleText() {
-        if((!this.extraType && !this.extraDate && !this.extraName && this.isExtraText) || this.divExtra == null) return;
+        if((!this.extraType && !this.extraDate && !this.extraName && this.isExtraText && !this.isShare) || this.divExtra == null) return;
         let textExtra = $("#textExtra_" + this.id);
         if(this.isExtraText) {
             $("#extraText_" + this.id).removeClass("btn-outline-light");
