@@ -273,8 +273,10 @@ export class SignRequestParams extends EventFactory {
             this.updateSize();
         }
         if(this.isShare) {
-            this.signColorPicker.spectrum("destroy");
-            this.signColorPicker.hide();
+            if(this.signColorPicker != null) {
+                this.signColorPicker.spectrum("destroy");
+                this.signColorPicker.hide();
+            }
             this.addWatermark = true;
             this.toggleWatermark();
             this.addExtra = false;
