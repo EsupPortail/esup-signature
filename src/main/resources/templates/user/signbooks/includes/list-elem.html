@@ -21,14 +21,14 @@
         <td th:if="${signBook.signRequests.size() == 1}" class="clickable-td text-break overflow-hidden" th:text="${signBook.subject}"></td>
         <td th:if="${signBook.signRequests.size() > 1}" class="d-none d-xl-table-cell">
             <div class="dropdown">
-                <button th:title="${signBook.subject}" style="max-width: 200px; overflow: clip;" onclick="event.stopPropagation();" class="btn btn-sm multi-doc-font dropdown-toggle" type="button" th:id="'dropdownFilesButton-' + ${signBook.id}" data-bs-toggle="dropdown">
+                <button th:if="${signRequest.originalDocuments.size() > 0}" th:title="${signBook.subject}" style="max-width: 200px; overflow: clip;" onclick="event.stopPropagation();" class="btn btn-sm multi-doc-font dropdown-toggle" type="button" th:id="'dropdownFilesButton-' + ${signBook.id}" data-bs-toggle="dropdown">
                     <i class="fas fa-folder-open"></i>
-                    <span th:if="${signBook.subject == signRequest.getOriginalDocuments().get(0).getFileName()}" th:text="${signRequest.getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
-                    <span th:if="${signBook.subject != signRequest.getOriginalDocuments().get(0).getFileName()}" th:text="${signBook.subject}"></span>
+                    <span th:if="${signBook.subject == signRequest.originalDocuments.get(0).getFileName()}" th:text="${signRequest.getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
+                    <span th:if="${signBook.subject != signRequest.originalDocuments.get(0).getFileName()}" th:text="${signBook.subject}"></span>
                 </button>
                 <ul class="dropdown-menu" th:aria-labelledby="'dropdownFilesButton-' + ${signBook.id}">
                     <th:block th:each="signRequest : ${signBook.signRequests}">
-                        <li class="dropdown-item" th:title="${signRequest.getOriginalDocuments().get(0).getFileName()}">
+                        <li class="dropdown-item" th:if="${signRequest.originalDocuments.size() > 0}" th:title="${signRequest.originalDocuments.get(0).getFileName()}">
                             <a th:href="'/user/signrequests/' + ${signRequest.id}" th:text="${signRequest.getOriginalDocuments().get(0).getFileName()}"></a>
                         </li>
                     </th:block>

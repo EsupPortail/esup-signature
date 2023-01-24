@@ -1,5 +1,4 @@
 import {CsrfToken} from "../../../prototypes/CsrfToken.js?version=@version@";
-import SelectUser from "../../utils/SelectUser.js?version=@version@";
 
 export class ListSignBooksUi {
 
@@ -32,12 +31,10 @@ export class ListSignBooksUi {
         this.initListeners();
         this.massSignButtonHide = true;
         this.rowHeight = null;
-        // if(signRequests.totalElements > 10 && signRequests.numberOfElements === 10) {
-        //     this.scaleList();
-        // }
     }
 
     initListeners() {
+        $('#toggle-new-grid').on('click', e => this.toggleNewMenu());
         $('#massSignButton').on('click', e => this.launchMassSign(false));
         $('#checkCertSignButton').on("click", e => this.checkCertSign());
         $('#workflowFilter').on('change', e => this.buildUrlFilter());
@@ -84,20 +81,20 @@ export class ListSignBooksUi {
         });
     }
 
-    scaleList() {
-        let tbodyRowCount = 10;
-        if(this.rowHeight == null) {
-            this.rowHeight = Math.round(parseInt(this.signRequestTable.css("height")) / tbodyRowCount)
-        } else {
-            tbodyRowCount = $('#signRequestTable tr').length - 10;
-        }
-        let tableHeight = this.rowHeight * tbodyRowCount;
-        let windowHeight = $(window).height();
-        let height = tableHeight
-        if(tableHeight <= windowHeight) {
-            height = tableHeight + (windowHeight - tableHeight);
-        }
-        this.signRequestTable.css("height", height)
+    toggleNewMenu() {
+        console.info("toggle new menu");
+        $('#new-scroll').toggleClass('text-nowrap').toggleClass('new-min-h');
+        // $('#to-sign-list').toggleClass('d-flex d-none');
+        // $('#new-fragment').toggleClass('position-fixed');
+        $('#to-sign-list').toggleClass('margin-274');
+        $('#toggle-new-grid').children().toggleClass('fa-th fa-chevron-up');
+        $('.newHr').toggleClass('d-none');
+        $('#newContainer').toggleClass('d-inline').toggleClass("text-left");
+        $('.newToggled').toggleClass('d-none');
+        $('.noForm').toggleClass('d-none');
+        $('.noWorkflow').toggleClass('d-none');
+        // this.menuToggled = !this.menuToggled;
+        // localStorage.setItem('menuToggled', this.menuToggled);
     }
 
     checkNbCheckboxes() {
@@ -308,7 +305,7 @@ export class ListSignBooksUi {
             },
             error: function(e) {
                 bootbox.alert("La signature s'est terminée, d'une façon inattendue. La page va s'actualiser", function() {
-                    location.href = "/" + this.mode + "/reports";
+                    location.href = "/" + self.mode + "/reports";
                 });
             }
         });

@@ -2,7 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
-<div id="new-fragment" th:fragment="new" class="clear new-max-w" th:with="isUserOnSu = ${userEppn != authUserEppn}">
+<div id="new-fragment" th:fragment="new" class="clear" th:with="isUserOnSu = ${userEppn != authUserEppn}">
     <div class="card border-0 mb-2 w-100" th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')') || #authorization.expression('hasRole(''ROLE_FRANCECONNECT'')')}">
         <div class="card-body bg-light">
             <button id="toggle-new-grid" class="btn btn-transparent text-dark float-end"><i class="fas fa-th"></i> Affichage</button>
