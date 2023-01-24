@@ -1,5 +1,4 @@
 import {CsrfToken} from "../../../prototypes/CsrfToken.js?version=@version@";
-import SelectUser from "../../utils/SelectUser.js?version=@version@";
 
 export class ListSignBooksUi {
 
@@ -308,7 +307,7 @@ export class ListSignBooksUi {
             },
             error: function(e) {
                 bootbox.alert("La signature s'est terminée, d'une façon inattendue. La page va s'actualiser", function() {
-                    location.href = "/" + this.mode + "/reports";
+                    location.href = "/" + self.mode + "/reports";
                 });
             }
         });
