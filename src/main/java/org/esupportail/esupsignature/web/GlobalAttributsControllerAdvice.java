@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller", "org.esupportail.esupsignature.web.otp"})
@@ -75,7 +77,8 @@ public class GlobalAttributsControllerAdvice {
     }
 
     @ModelAttribute
-    public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) throws JsonProcessingException {
+    public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) throws JsonProcessingException {
+        HttpSession httpSession = httpServletRequest.getSession();
         if(userEppn != null) {
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
@@ -115,7 +118,7 @@ public class GlobalAttributsControllerAdvice {
             }
         }
         model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
-
+        model.addAttribute("maxInactiveInterval", httpSession.getMaxInactiveInterval());
     }
 
 }

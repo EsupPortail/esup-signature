@@ -3,12 +3,13 @@ import {WizUi} from "./WizUi.js";
 
 export class GlobalUi {
 
-    constructor(authUserEppn, csrf, applicationEmail, maxSize) {
+    constructor(authUserEppn, csrf, applicationEmail, maxSize, maxInactiveInterval) {
         console.info("Starting global UI");
         this.checkBrowser();
         this.checkOS();
         this.csrf = csrf;
         this.maxSize = maxSize;
+        this.maxInactiveInterval = maxInactiveInterval;
         this.applicationEmail = applicationEmail;
         this.sideBarStatus = localStorage.getItem('sideBarStatus');
         this.sideBar = $('#sidebar');
@@ -472,6 +473,16 @@ export class GlobalUi {
         this.checkSlimSelect();
         this.enableSummerNote();
         this.adjustUi();
+        this.sessionTimeout();
+    }
+
+    sessionTimeout() {
+        setInterval(function(){
+            $("#timeoutModal").modal("show");
+        }, this.maxInactiveInterval * 1000);
+        $("#timeoutModal").on('hidden.bs.modal', function(){
+            window.location.href = "/user/";
+        });
     }
 
     bindKeyboardKeys() {
