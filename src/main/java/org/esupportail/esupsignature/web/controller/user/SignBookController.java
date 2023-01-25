@@ -222,11 +222,6 @@ public class SignBookController {
     @GetMapping(value = "/update/{id}")
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
         SignBook signBook = signBookService.getById(id);
-        LiveWorkflow liveWorkflow = signBook.getLiveWorkflow();
-        List<LiveWorkflowStep> workflowSteps = liveWorkflow.getLiveWorkflowSteps();
-        LiveWorkflowStep liveWorkflowStep = liveWorkflow.getCurrentStep();
-        int toto = liveWorkflow.getCurrentStepNumber();
-        logger.debug(toto + "");
         if(signBook != null && signBook.getCreateBy().getEppn().equals(authUserEppn) && (signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.pending))) {
             model.addAttribute("signBook", signBook);
             model.addAttribute("logs", signBookService.getLogsFromSignBook(signBook));
