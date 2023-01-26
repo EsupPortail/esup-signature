@@ -161,7 +161,7 @@ public class UserService {
         if (user != null) {
             user.setKeystoreFileName(this.getKeystoreFileName(user));
             user.setSignImagesIds(this.getSignImagesIds(user));
-            if (user.getDefaultSignImageNumber() == null || user.getDefaultSignImageNumber() >= user.getSignImages().size()) {
+            if (user.getDefaultSignImageNumber() == null || user.getDefaultSignImageNumber() < 0 || user.getDefaultSignImageNumber() >= user.getSignImages().size()) {
                 user.setDefaultSignImageNumber(0);
             }
             return user;
