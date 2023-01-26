@@ -32,7 +32,7 @@ public class UpgradeService {
     @Resource
     private FileService fileService;
 
-    private final String[] updates = new String[] {"1.19", "1.22"};
+    private final String[] updates = new String[] {"1.19", "1.22", "1.23"};
 
     @Resource
     private FormService formService;
@@ -84,10 +84,23 @@ public class UpgradeService {
     }
 
     @SuppressWarnings("unused")
+    public void update_1_23() {
+        logger.info("#### Starting update end dates of refused signBooks ####");
+        List<SignBook> signBooks = signBookRepository.findAll(Pageable.unpaged()).getContent();
+        for(SignBook signBook : signBooks.stream().filter(signBook -> signBook.getEndDate() == null && signBook.getStatus().equals(SignRequestStatus.refused)).collect(Collectors.toList())) {
+            List<Action> actions = signBook.getSignRequests().stream().map(SignRequest::getRecipientHasSigned).map(Map::values).flatMap(Collection::stream).filter(action -> action.getDate() != null).sorted(Comparator.comparing(Action::getDate).reversed()).collect(Collectors.toList());
+            if(actions.size() > 0) {
+                signBook.setEndDate(actions.get(0).getDate());
+            }
+        }
+        logger.info("#### Update end dates of refused signBooks completed ####");
+    }
+
+    @SuppressWarnings("unused")
     public void update_1_22() {
         logger.info("#### Starting update end dates of signBooks ####");
         List<SignBook> signBooks = signBookRepository.findAll(Pageable.unpaged()).getContent();
-        for(SignBook signBook : signBooks) {
+        for(SignBook signBook : signBooks.stream().filter(signBook -> signBook.getEndDate() == null).collect(Collectors.toList())) {
             if((signBook.getStatus().equals(SignRequestStatus.completed)
                     || signBook.getStatus().equals(SignRequestStatus.exported)
                     || signBook.getStatus().equals(SignRequestStatus.refused)

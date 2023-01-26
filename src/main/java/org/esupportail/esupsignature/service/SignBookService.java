@@ -292,20 +292,6 @@ public class SignBookService {
             status = SignRequestStatus.valueOf(statusFilter);
         }
         Page<SignBook> signBooks = signBookRepository.findSignBooksAllPaged(status, workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
-        for(SignBook signBook : signBooks) {
-            if(signBook.getEndDate() == null &&
-                    (signBook.getStatus().equals(SignRequestStatus.completed)
-                            || signBook.getStatus().equals(SignRequestStatus.exported)
-                            || signBook.getStatus().equals(SignRequestStatus.refused)
-                            || signBook.getStatus().equals(SignRequestStatus.signed)
-                            || signBook.getStatus().equals(SignRequestStatus.archived)
-                            || signBook.getStatus().equals(SignRequestStatus.deleted))) {
-                List<Action> actions = signBook.getSignRequests().stream().map(SignRequest::getRecipientHasSigned).map(Map::values).flatMap(Collection::stream).filter(action -> action.getDate() != null).sorted(Comparator.comparing(Action::getDate).reversed()).collect(Collectors.toList());
-                if(actions.size() > 0) {
-                    signBook.setEndDate(actions.get(0).getDate());
-                }
-            }
-        }
         return signBooks;
     }
 
@@ -1274,6 +1260,7 @@ public class SignBookService {
         if(data != null) {
             data.setStatus(SignRequestStatus.refused);
         }
+        signBook.setEndDate(new Date());
     }
 
     @Transactional
@@ -1734,7 +1721,7 @@ public class SignBookService {
     @Transactional
     public void sendSignRequestsToTarget(Long id, String authUserEppn) throws EsupSignatureException {
         SignBook signBook = getById(id);
-        if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
+        if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
             List<SignRequest> signRequests = signBook.getSignRequests();
             String title = signBook.getSubject();
             List<Target> targets = signBook.getLiveWorkflow().getTargets();
