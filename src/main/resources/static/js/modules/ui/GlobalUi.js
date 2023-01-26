@@ -16,6 +16,7 @@ export class GlobalUi {
         this.sideBar2 = $('#sidebar2');
         this.sideBarLabels = $('.sidebar-label');
         this.content = $('#content');
+        this.newDiv = $('#new-div');
         this.breadcrumb = $('#breadcrumb');
         this.inputFiles = $(".custom-file-input");
         this.clickableRow = $(".clickable-row");
@@ -372,6 +373,7 @@ export class GlobalUi {
         this.sideBar2.removeClass('d-none');
         this.sideBarLabels.removeClass('d-none');
         this.content.removeClass('content-full');
+        this.newDiv.removeClass('new-width-full');
         this.breadcrumb.removeClass('breadcrumb-nav-full');
     }
 
@@ -381,6 +383,7 @@ export class GlobalUi {
         this.sideBar2.addClass('d-none');
         this.sideBarLabels.addClass('d-none');
         this.content.addClass('content-full');
+        this.newDiv.addClass('new-width-full');
         this.breadcrumb.addClass('breadcrumb-nav-full');
     }
 

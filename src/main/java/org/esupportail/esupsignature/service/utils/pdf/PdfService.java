@@ -624,8 +624,12 @@ public class PdfService {
                 PDResources resources = pdAcroForm.getDefaultResources();
                 resources.put(COSName.getPDFName("LiberationSans"), pdFont);
                 pdAcroForm.setDefaultResources(resources);
+                pdAcroForm.setDefaultAppearance("/LiberationSans 10 Tf 0 g");
                 List<PDField> fields = pdAcroForm.getFields();
                 for(PDField pdField : fields) {
+                    for(PDAnnotationWidget pdAnnotationWidget : pdField.getWidgets()) {
+                        pdAnnotationWidget.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
+                    }
                     String filedName = pdField.getPartialName().split("\\$|#|!")[0];
                     if(datas.containsKey(filedName)) {
                         if (pdField instanceof PDCheckBox) {
@@ -693,6 +697,7 @@ public class PdfService {
                         pdField.setReadOnly(false);
                         pdField.setRequired(true);
                     }
+
                 }
                 if(isLastStep) {
                     pdAcroForm.flatten();
