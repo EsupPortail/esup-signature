@@ -1721,7 +1721,7 @@ public class SignBookService {
     @Transactional
     public void sendSignRequestsToTarget(Long id, String authUserEppn) throws EsupSignatureException {
         SignBook signBook = getById(id);
-        if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
+        if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
             List<SignRequest> signRequests = signBook.getSignRequests();
             String title = signBook.getSubject();
             List<Target> targets = signBook.getLiveWorkflow().getTargets();
