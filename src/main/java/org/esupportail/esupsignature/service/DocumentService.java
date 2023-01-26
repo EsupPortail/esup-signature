@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -59,20 +60,21 @@ public class DocumentService {
 
 	@Transactional
 	public Document createDocument(InputStream inputStream, String name, String contentType) throws IOException {
-		Document document = new Document();
-		document.setCreateDate(new Date());
-		document.setFileName(name);
-		document.setContentType(contentType);
-		if(contentType.equals("application/pdf")) {
-//			document.setNbPages(getNbPages(inputStream));
-		}
-		BigFile bigFile = new BigFile();
 		long size = inputStream.available();
 		if(size == 0) {
 			logger.warn("upload aborted cause file size is 0");
 			throw new EsupSignatureRuntimeException("File size is 0");
 		}
-		bigFileService.setBinaryFileStream(bigFile, inputStream, size);
+		byte[] bytes = inputStream.readAllBytes();
+		Document document = new Document();
+		document.setCreateDate(new Date());
+		document.setFileName(name);
+		document.setContentType(contentType);
+		if(contentType.equals("application/pdf")) {
+			document.setNbPages(getNbPages(new ByteArrayInputStream(bytes)));
+		}
+		BigFile bigFile = new BigFile();
+		bigFileService.setBinaryFileStream(bigFile, new ByteArrayInputStream(bytes), size);
 		document.setBigFile(bigFile);
 		document.setSize(size);
 		documentRepository.save(document);
