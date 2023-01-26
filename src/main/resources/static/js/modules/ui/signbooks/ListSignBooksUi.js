@@ -56,6 +56,7 @@ export class ListSignBooksUi {
         document.addEventListener("massSign", e => this.updateWaitModal(e));
         document.addEventListener("sign", e => this.updateErrorWaitModal(e));
         $("#more-sign-request").on("click", e => this.addToPage());
+        $('#new-scroll').on('mousewheel DOMMouseScroll', e => this.activeHorizontalScrolling(e));
     }
 
     refreshListeners() {
@@ -400,6 +401,14 @@ export class ListSignBooksUi {
             $('#checkCertSignModal').modal('show');
         } else {
             this.launchMassSign(true)
+        }
+    }
+
+    activeHorizontalScrolling(e){
+        if(!this.menuToggled) {
+            let delta = Math.max(-1, Math.min(1, (e.originalEvent.wheelDelta || -e.originalEvent.detail)));
+            $(e.currentTarget).scrollLeft($(e.currentTarget).scrollLeft() - ( delta * 40 ) );
+            e.preventDefault();
         }
     }
 }
