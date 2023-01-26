@@ -709,6 +709,14 @@ th .ss-content {
     margin-left: 60px;
 }
 
+.new-width {
+    width: calc(100vw - 282px);
+}
+
+.new-width-full {
+    width: calc(100vw - 82px);
+}
+
 #sidebar {
     top: 50px;
     padding-right: 5px;
