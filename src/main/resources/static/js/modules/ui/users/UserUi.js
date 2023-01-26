@@ -11,13 +11,13 @@ export class UserUi {
         this.emailAlertHour = document.getElementById("emailAlertHour");
         this.userSignaturePad = new UserSignaturePad();
         this.userSignatureCrop = new UserSignatureCrop();
-        this.saveSignRequestParams = true;
+        this.saveSignRequestParams = false;
         this.checkAlertFrequency();
         if(signRequestParams != null) {
             this.saveSignRequestParams = true;
-            this.toggleSaveSignRequest();
         }
-        if($("#signRequestParamsForm").length) {
+        this.toggleSaveSignRequest();
+        if($("#signRequestParamsFormDiv").length) {
             this.signRequestParams = new SignRequestParams(signRequestParams, 0, 1, 1, userName, userName, false, true, false, true, false, null, true, 0);
         }
         this.initListeners();
@@ -38,19 +38,32 @@ export class UserUi {
                     if(result) {
                         location.href = $(target).attr('href');
                     }
-                })
+                });
             });
         });
         $("#saveSignRequestParams").on("click", e => this.toggleSaveSignRequest(e));
+        $("#signRequestParamsClean").on("click", e => this.clearLocalStorage())
+    }
+
+    clearLocalStorage() {
+        bootbox.confirm("Vous allez remettre à zéro les paramètres par défaut de votre signature", function(result){
+            if(result) {
+                localStorage.clear();
+                bootbox.alert("Vous paramètres ont été réinitialisés", null);
+
+            }
+        });
     }
 
     toggleSaveSignRequest() {
         if(this.saveSignRequestParams) {
             this.saveSignRequestParams = false;
-            $("#signRequestParamsForm").removeClass("d-none");
+            $("#signRequestParamsFormDiv").removeClass("d-none");
+            $("#signRequestParamsCleanDiv").addClass("d-none");
         } else {
             this.saveSignRequestParams = true;
-            $("#signRequestParamsForm").addClass("d-none");
+            $("#signRequestParamsFormDiv").addClass("d-none");
+            $("#signRequestParamsCleanDiv").removeClass("d-none");
         }
 
     }
