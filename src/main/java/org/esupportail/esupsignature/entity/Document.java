@@ -27,7 +27,9 @@ public class Document {
 	private String fileName;
 
     private Long size;
-    
+
+    private Long nbPages;
+
     private Long parentId;
 
     private String contentType;
@@ -71,7 +73,15 @@ public class Document {
         this.size = size;
     }
 
-	public Long getParentId() {
+    public Long getNbPages() {
+        return nbPages;
+    }
+
+    public void setNbPages(Long nbPages) {
+        this.nbPages = nbPages;
+    }
+
+    public Long getParentId() {
         return this.parentId;
     }
 
