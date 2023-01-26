@@ -4,6 +4,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.AppliVersionRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
@@ -28,6 +29,9 @@ public class UpgradeService {
 
     @Resource
     private AppliVersionRepository appliVersionRepository;
+
+    @Resource
+    private DocumentService documentService;
 
     @Resource
     private FileService fileService;
@@ -82,6 +86,22 @@ public class UpgradeService {
         }
         return 0;
     }
+
+//    @SuppressWarnings("unused")
+//    public void update_1_23_16() {
+//        List<Document> documents = documentService.getAll().stream().filter(document -> document.getNbPages() == null).collect(Collectors.toList());
+//        logger.info("#### Starting update documents nbPages for " + documents.size() + " documents ####");
+//        for(Document document : documents) {
+//            if(document.getContentType() != null && document.getContentType().equals("application/pdf") && document.getNbPages() == null) {
+//                try {
+//                    documentService.updateNbPages(document);
+//                } catch (IOException e) {
+//                    logger.warn("Document " + document.getId() + " : " + e.getMessage());
+//                }
+//            }
+//        }
+//        logger.info("#### Update update documents nbPages completed ####");
+//    }
 
     @SuppressWarnings("unused")
     public void update_1_23() {
