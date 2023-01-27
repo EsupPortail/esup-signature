@@ -60,7 +60,7 @@ export class HomeUi {
         console.info("toggle new menu");
         $('#new-scroll').toggleClass('text-nowrap').toggleClass('new-min-h');
         // $('#to-sign-list').toggleClass('d-flex d-none');
-        $('#new-fragment').toggleClass('position-fixed');
+        $('#new-div').toggleClass('position-fixed');
         $('#to-sign-list').toggleClass('margin-274');
         $('#toggle-new-grid').children().toggleClass('fa-th fa-chevron-up');
         $('.newHr').toggleClass('d-none');
