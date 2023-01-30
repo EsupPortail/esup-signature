@@ -118,11 +118,11 @@ export default class SelectUser {
         if(this.checkList !== "false") {
             if (this.selectField.attr('id') === 'recipientsEmailsWiz') {
                 if (this.slimSelect.selected().length > 0) {
-                    $('#addNew').show();
+                    // $('#addNew').show();
                     $('#endStart').hide();
                     $('#end').hide();
                 } else {
-                    $('#addNew').hide();
+                    // $('#addNew').hide();
                     $('#endStart').show();
                     $('#end').show();
                 }
