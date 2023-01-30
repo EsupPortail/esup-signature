@@ -370,7 +370,7 @@ public class UserService {
                 List<PersonLdapLight> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdapLight::getCn)).collect(Collectors.toList());
                 for (PersonLdapLight personLdapList : ldapList) {
                     if (personLdapList.getMail() != null) {
-                        if (personLdaps.stream().noneMatch(personLdap -> personLdap.getMail() != null && personLdap.getMail().equals(personLdapList.getMail()))) {
+                        if (personLdaps.stream().noneMatch(personLdap -> personLdap != null &&  personLdap.getMail() != null && personLdap.getMail().equals(personLdapList.getMail()))) {
                             personLdaps.add(personLdapList);
                         }
                     }
@@ -381,7 +381,7 @@ public class UserService {
             if(user.getReplaceByUser() != null) {
                 personLdaps.remove(personLdaps.stream().filter(personLdap -> personLdap.getMail() != null && personLdap.getMail().equals(user.getEmail())).findFirst().get());
             }
-            if(personLdaps.stream().noneMatch(personLdapLight -> personLdapLight.getMail() != null && user.getEmail().equals(personLdapLight.getMail()))) {
+            if(personLdaps.size() > 0 && personLdaps.stream().noneMatch(personLdapLight -> personLdapLight != null && personLdapLight.getMail() != null && user.getEmail().equals(personLdapLight.getMail()))) {
                 PersonLdapLight personLdapLight = getPersonLdapLightFromUser(user);
                 if(user.getUserType().equals(UserType.group)) {
                     personLdapLight.setDisplayName(personLdapLight.getDisplayName());
@@ -390,7 +390,7 @@ public class UserService {
             }
         }
         for(Map.Entry<String,String> string : userListService.getListsNames(searchString).entrySet()) {
-            if(personLdaps.stream().noneMatch(personLdapLight -> personLdapLight.getMail() != null && personLdapLight.getMail().equals(string.getKey()))) {
+            if(personLdaps.size() > 0 && personLdaps.stream().noneMatch(personLdapLight -> personLdapLight != null && personLdapLight.getMail() != null && personLdapLight.getMail().equals(string.getKey()))) {
                 PersonLdapLight personLdapLight = new PersonLdapLight();
                 personLdapLight.setMail(string.getKey());
                 if(string.getValue() != null) {
