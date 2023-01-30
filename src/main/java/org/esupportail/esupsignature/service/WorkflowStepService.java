@@ -42,7 +42,7 @@ public class WorkflowStepService {
     private UserListService userListService;
 
     @Transactional
-    public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, String... recipientEmails) {
+    public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, String... recipientEmails) throws EsupSignatureException {
         WorkflowStep workflowStep = new WorkflowStep();
         if (name != null) {
             workflowStep.setName(name);
@@ -60,7 +60,7 @@ public class WorkflowStepService {
         return workflowStep;
     }
 
-    public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, String... recipientsEmail) {
+    public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, String... recipientsEmail) throws EsupSignatureException {
         recipientsEmail = Arrays.stream(recipientsEmail).distinct().toArray(String[]::new);
         for (String recipientEmail : recipientsEmail) {
             List<String> groupList = userListService.getUsersEmailFromList(recipientEmail);
@@ -88,7 +88,7 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public WorkflowStep addStepRecipients(Long workflowStepId, String[] recipientsEmails) {
+    public WorkflowStep addStepRecipients(Long workflowStepId, String[] recipientsEmails) throws EsupSignatureException {
         WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
         addRecipientsToWorkflowStep(workflowStep, recipientsEmails);
         return workflowStep;
@@ -180,6 +180,14 @@ public class WorkflowStepService {
 
     public WorkflowStep getById(Long workflowStepId) {
         return workflowStepRepository.findById(workflowStepId).get();
+    }
+
+    @Transactional
+    public void anonymize(String userEppn) {
+        User user = userService.getUserByEppn(userEppn);
+        for(WorkflowStep workflowStep : workflowStepRepository.findAll()) {
+            workflowStep.getUsers().removeIf(user1 -> user1.equals(user));
+        }
     }
 
 }

@@ -157,7 +157,10 @@
                             <label class="form-check-label" for="saveSignRequestParams">Enregistrer automatiquement mes paramètres après chaque signature</label>
                         </div>
                     </div>
-                    <div class="card-body mx-auto" style="min-height: 400px;">
+                    <div id="signRequestParamsCleanDiv" class="card-body mx-auto">
+                        <button type="button" id="signRequestParamsClean" class="btn btn-warning">Nettoyer mes paramètres enregistrés</button>
+                    </div>
+                    <div id="signRequestParamsFormDiv" class="card-body mx-auto" style="min-height: 400px;">
                         <div th:replace="fragments/signrequestparams :: signrequestparam"></div>
                     </div>
                 </div>

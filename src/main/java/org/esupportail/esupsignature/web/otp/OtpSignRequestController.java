@@ -101,7 +101,8 @@ public class OtpSignRequestController {
             model.addAttribute("toSignDocument", toSignDocuments.get(0));
         }
         model.addAttribute("attachments", signRequestService.getAttachments(id));
-        model.addAttribute("nextSignBook", signBookService.getNextSignBook(signRequest.getId(), userEppn, authUserEppn));
+        model.addAttribute("nextSignBook", signBookService.getNextSignBook(signRequest.getId(), userEppn));
+        model.addAttribute("nextSignRequest", signBookService.getNextSignRequest(signRequest.getId(), userEppn));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
         model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
@@ -112,7 +113,7 @@ public class OtpSignRequestController {
                 Object userShareString = httpSession.getAttribute("userShareId");
                 Long userShareId = null;
                 if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
-                List<String> signImages = signBookService.getSignImagesForSignRequest(signRequest, userEppn, authUserEppn, userShareId);
+                List<String> signImages = signBookService.getSignImagesForSignRequest(id, userEppn, authUserEppn, userShareId);
                 model.addAttribute("signImages", signImages);
             } catch (EsupSignatureUserException e) {
                 model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
@@ -163,7 +164,7 @@ public class OtpSignRequestController {
         return "redirect:/otp/signrequests/" + id;
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipent(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
     @PostMapping(value = "/add-attachment/{id}")
     public String addAttachement(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                  @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles,
@@ -193,7 +194,7 @@ public class OtpSignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipent(#id, #userEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #userEppn)")
     @PostMapping(value = "/comment/{id}")
     public String comment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,

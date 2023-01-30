@@ -59,10 +59,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.verapdf.gf.foundry.VeraGreenfieldFoundryProvider;
 import org.verapdf.pdfa.Foundries;
 import org.verapdf.pdfa.PDFAParser;
 import org.verapdf.pdfa.PDFAValidator;
-import org.verapdf.pdfa.VeraGreenfieldFoundryProvider;
 import org.verapdf.pdfa.results.TestAssertion;
 import org.verapdf.pdfa.results.ValidationResult;
 
@@ -143,15 +144,19 @@ public class PdfService {
             signImage = fileService.getFaImageByIndex(signRequestParams.getSignImageNumber());
         } else {
             if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) || !signRequestParams.getAddImage()) {
-                signImage = fileService.addTextToImage(fileService.getEmptyImage(), signRequestParams, signType, user, newDate, fixFactor);
+                signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname()), signRequestParams, signType, user, newDate, fixFactor);
             } else if (signRequestParams.getAddExtra()) {
                 if(signRequestParams.getSignImageNumber() == null || signRequestParams.getSignImageNumber() >= user.getSignImages().size()) {
                     signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname()), signRequestParams, signType, user, newDate, fixFactor);
                 } else {
                     signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType, user, newDate, fixFactor);
                 }
-            } else if (signRequestParams.getTextPart() == null || signRequestParams.getTextPart().isEmpty()) {
-                signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
+            } else if (signRequestParams.getTextPart() == null) {
+                if(user.getSignImages().size() >= signRequestParams.getSignImageNumber() + 1) {
+                    signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
+                } else {
+                    signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname()), signRequestParams, signType, user, newDate, fixFactor);
+                }
             }
             if (signRequestParams.getAddWatermark()) {
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -193,7 +198,7 @@ public class PdfService {
             if (signRequestParams.getSignImageNumber() >= 0) {
                 addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted);
             }
-        } else if (signRequestParams.getTextPart() != null && !signRequestParams.getTextPart().isEmpty()) {
+        } else if (StringUtils.hasText(signRequestParams.getTextPart())) {
             int fontSize = (int) (signRequestParams.getFontSize() * signRequestParams.getSignScale() * .75);
             PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), WinAnsiEncoding.INSTANCE);
             contentStream.beginText();
@@ -486,9 +491,8 @@ public class PdfService {
 
     public byte[] convertGS(byte[] originalBytes) throws IOException, EsupSignatureException {
         if (!isPdfAComplient(originalBytes) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dNOSAFER -dBATCH -sFONTPATH=" + pdfConfig.getPdfProperties().getPathToFonts() + " -dNOPAUSE -dSubsetFonts=false -dEmbedAllFonts=true -dAlignToPixels=0 -dGridFitTT=2 -dCompatibilityLevel=1.4 -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile=- -q '" + pdfConfig.getPdfADefPath() + "' -";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -sstdout=%stderr -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dNOPAUSE -dNOSAFER -dBATCH -sFONTPATH=" + pdfConfig.getPdfProperties().getPathToFonts() + " " + pdfConfig.getPdfProperties().getGsCommandParams() + " -sOutputFile=- '" + pdfConfig.getPdfADefPath() + "' - 2>/dev/null";
             logger.info("GhostScript PDF/A convertion : " + cmd);
-
             ProcessBuilder processBuilder = new ProcessBuilder();
             if(SystemUtils.IS_OS_WINDOWS) {
                 processBuilder.command("cmd", "/C", cmd);
@@ -534,7 +538,7 @@ public class PdfService {
     public byte[] normalizeGS(byte[] originalBytes) throws IOException, EsupSignatureException {
         Reports reports = validationService.validate(new ByteArrayInputStream(originalBytes), null);
         if (!isAcroForm(new ByteArrayInputStream(originalBytes)) && (reports == null || reports.getSimpleReport() == null || reports.getSimpleReport().getSignatureIdList().size() == 0)) {
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite -d -sOutputFile=- -q -";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite -d -sOutputFile=- - 2>/dev/null";
             logger.info("GhostScript PDF/A conversion : " + cmd);
             ProcessBuilder processBuilder = new ProcessBuilder();
             if(SystemUtils.IS_OS_WINDOWS) {
@@ -620,8 +624,12 @@ public class PdfService {
                 PDResources resources = pdAcroForm.getDefaultResources();
                 resources.put(COSName.getPDFName("LiberationSans"), pdFont);
                 pdAcroForm.setDefaultResources(resources);
+                pdAcroForm.setDefaultAppearance("/LiberationSans 10 Tf 0 g");
                 List<PDField> fields = pdAcroForm.getFields();
                 for(PDField pdField : fields) {
+                    for(PDAnnotationWidget pdAnnotationWidget : pdField.getWidgets()) {
+                        pdAnnotationWidget.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
+                    }
                     String filedName = pdField.getPartialName().split("\\$|#|!")[0];
                     if(datas.containsKey(filedName)) {
                         if (pdField instanceof PDCheckBox) {
@@ -689,6 +697,7 @@ public class PdfService {
                         pdField.setReadOnly(false);
                         pdField.setRequired(true);
                     }
+
                 }
                 if(isLastStep) {
                     pdAcroForm.flatten();

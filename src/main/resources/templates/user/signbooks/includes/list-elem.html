@@ -1,13 +1,41 @@
 <html th:remove="tag" lang="fr" xmlns:th="http://www.thymeleaf.org">
 <th:block th:each="signBook : ${signBooks}">
-    <tr th:if="${statusFilter != 'empty'}" th:with="signRequest = ${signBook.signRequests.get(0)}" th:data-href="'/user/signbooks/' + ${signBook.id}" data-bs-toggle="tooltip" th:title="${signBook.description}">
+    <tr th:if="${statusFilter != 'empty' && signBook.signRequests.size() > 0}" th:with="signRequest = ${signBook.signRequests.get(0)}" th:data-href="'/user/signbooks/' + ${signBook.id}" data-bs-toggle="tooltip" th:title="${signBook.description}">
         <td class="w-20 d-none d-lg-table-cell">
             <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"
                    th:data-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"
                    th:data-id-signbook="${signBook.id}">
         </td>
+        <td class="w-20 d-none d-lg-table-cell">
+            <button title="Afficher les postits" th:if="${signBook.postits.size() > 0}" th:text="${signBook.postits.size()}" type="button" class="badge badge-warning bg-warning border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
+            </button>
+            <ul class="dropdown-menu striped-list" th:aria-labelledby="'commentButton-' + ${signBook.id}">
+                <th:block th:each="postit : ${signBook.postits}">
+                    <li th:if="${postit}" class="dropdown-item">
+                        <pre class="me-1" th:text="${postit.createBy.firstname} + ' ' + ${postit.createBy.name} + ' : ' + ${postit.text}"></pre>
+                    </li>
+                </th:block>
+            </ul>
+        </td>
         <td class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/user/signrequests/' + ${signRequest.id}" th:text="${signBook.workflowName}"></td>
-        <td class="clickable-td text-break overflow-hidden" style="white-space: pre-line" th:text="${signBook.subject}"></td>
+        <td th:if="${signBook.signRequests.size() == 1}" class="clickable-td text-break overflow-hidden" th:text="${signBook.subject}"></td>
+        <td th:if="${signBook.signRequests.size() > 1}" class="d-none d-xl-table-cell">
+            <div class="dropdown">
+                <button th:if="${signRequest.originalDocuments.size() > 0}" th:title="${signBook.subject}" style="max-width: 200px; overflow: clip;" onclick="event.stopPropagation();" class="btn btn-sm multi-doc-font dropdown-toggle" type="button" th:id="'dropdownFilesButton-' + ${signBook.id}" data-bs-toggle="dropdown">
+                    <i class="fas fa-folder-open"></i>
+                    <span th:if="${signBook.subject == signRequest.originalDocuments.get(0).getFileName()}" th:text="${signRequest.getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
+                    <span th:if="${signBook.subject != signRequest.originalDocuments.get(0).getFileName()}" th:text="${signBook.subject}"></span>
+                </button>
+                <ul class="dropdown-menu" th:aria-labelledby="'dropdownFilesButton-' + ${signBook.id}">
+                    <th:block th:each="signRequest : ${signBook.signRequests}">
+                        <li class="dropdown-item" th:if="${signRequest.originalDocuments.size() > 0}" th:title="${signRequest.originalDocuments.get(0).getFileName()}">
+                            <a th:href="'/user/signrequests/' + ${signRequest.id}" th:text="${signRequest.getOriginalDocuments().get(0).getFileName()}"></a>
+                        </li>
+                    </th:block>
+                </ul>
+            </div>
+            </div>
+        </td>
         <td class="clickable-td d-none d-xxl-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
         <td class="clickable-td d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
         </td>
@@ -45,6 +73,10 @@
         <td class="clickable-td d-none d-md-table-cell"
             style="width: 150px;">
             <div th:replace="user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})"></div>
+        </td>
+        <td class="clickable-td d-md-none"
+            style="width: 150px;">
+            <div th:replace="user/signbooks/includes/status-sm :: status(signBook=${signRequest.parentSignBook})"></div>
         </td>
         <td>
             <div class="position-relative">

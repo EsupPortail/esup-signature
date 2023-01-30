@@ -9,6 +9,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
@@ -74,6 +75,9 @@ public class SignBook {
 
     @ManyToMany
     private List<User> viewers = new ArrayList<>();
+
+    @ManyToMany
+    private List<User> team = new ArrayList<>();
 
     @ManyToMany
     private List<User> hidedBy = new ArrayList<>();
@@ -214,6 +218,14 @@ public class SignBook {
         this.viewers = viewers;
     }
 
+    public List<User> getTeam() {
+        return team;
+    }
+
+    public void setTeam(List<User> team) {
+        this.team = team;
+    }
+
     public Boolean getForceAllDocsSign() {
         return forceAllDocsSign;
     }
@@ -237,4 +249,10 @@ public class SignBook {
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
     }
+
+
+    public List<Comment> getPostits() {
+        return signRequests.stream().map(SignRequest::getComments).flatMap(comments -> comments.stream().filter(Comment::getPostit)).collect(Collectors.toList());
+    }
+
 }

@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.web.ws;
 
-import com.google.zxing.WriterException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -8,16 +8,13 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import org.esupportail.esupsignature.entity.AuditTrail;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureFsException;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,10 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import javax.persistence.NoResultException;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -46,9 +40,6 @@ public class SignRequestWsController {
 
     @Resource
     private SignBookService signBookService;
-
-    @Resource
-    private UserService userService;
 
     @CrossOrigin
     @PostMapping("/new")
@@ -66,11 +57,10 @@ public class SignRequestWsController {
                        @Parameter(description = "EPPN du créateur/propriétaire de la demande") @RequestParam String eppn,
                        @Parameter(description = "Un titre (facultatif)") @RequestParam(value = "title", required = false) String title,
                        @RequestParam(required = false) @Parameter(description = "Emplacement final", example = "smb://drive.univ-ville.fr/forms-archive/") String targetUrl) {
-        User user = userService.getByEppn(eppn);
         try {
-            Map<SignBook, String> signBookStringMap = signBookService.sendSignRequest(title, multipartFiles, SignType.valueOf(signType), allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, user, true, forceAllSign, targetUrl);
+            Map<SignBook, String> signBookStringMap = signBookService.sendSignRequest(title, multipartFiles, SignType.valueOf(signType), allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, eppn, eppn, true, forceAllSign, targetUrl);
             return signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
-        } catch (EsupSignatureException | EsupSignatureIOException | EsupSignatureFsException e) {
+        } catch (EsupSignatureException e) {
             logger.error(e.getMessage(), e);
             return -1L;
         }
@@ -78,9 +68,9 @@ public class SignRequestWsController {
 
     @CrossOrigin
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(description = "Récupération d'une demande de signature")
-    public SignRequest get(@Parameter(description = "Identifiant de la demande") @PathVariable Long id) {
-        return signRequestService.getById(id);
+    @Operation(description = "Récupération d'une demande de signature", responses = @ApiResponse(description = "SignRequest", content = @Content(schema = @Schema(implementation = SignRequest.class))))
+    public String get(@Parameter(description = "Identifiant de la demande") @PathVariable Long id) throws JsonProcessingException {
+        return signRequestService.getJson(id);
     }
 
     @CrossOrigin
@@ -92,10 +82,32 @@ public class SignRequestWsController {
     }
 
     @CrossOrigin
+    @GetMapping(value = "/audit-trail/{id}")
+    @Operation(description = "Récupération du statut d'une demande de signature", responses = @ApiResponse(description = "AuditTrail", content = @Content(schema = @Schema(implementation = AuditTrail.class))))
+    @ResponseBody
+    public String getAuditTail(@Parameter(description = "Dossier de preuve de la demande") @PathVariable Long id) throws JsonProcessingException {
+        return signRequestService.getAuditTrailJson(id);
+    }
+
+    @CrossOrigin
     @DeleteMapping("/{id}")
     @Operation(description = "Supprimer une demande de signature")
     public ResponseEntity<String> delete(@PathVariable Long id) {
-        signRequestService.deleteDefinitive(id);
+        Long signBookId = signRequestService.getParentIdIfSignRequestUnique(id);
+        if(signBookId != null) {
+            signBookService.deleteDefinitive(signBookId, "system");
+        } else {
+            signRequestService.deleteDefinitive(id);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @CrossOrigin
+    @DeleteMapping("/{id}/signbook")
+    @Operation(description = "Supprimer le parapheur dans lequel se trouve la demande ciblée")
+    public ResponseEntity<String> deleteSignBook(@PathVariable Long id) {
+        SignRequest signRequest = signRequestService.getById(id);
+        signBookService.deleteDefinitive(signRequest.getParentSignBook().getId(), "system");
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -104,9 +116,9 @@ public class SignRequestWsController {
     @Operation(description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
     public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
-            signRequestService.getToSignFileResponse(id, httpServletResponse);
+            signRequestService.getToSignFileResponse(id, "attachment", httpServletResponse);
             return new ResponseEntity<>(HttpStatus.OK);
-        } catch (NoResultException | IOException | EsupSignatureFsException | SQLException | EsupSignatureException e) {
+        } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -119,7 +131,7 @@ public class SignRequestWsController {
         try {
             signRequestService.getToSignFileResponseWithCode(id, httpServletResponse);
             return new ResponseEntity<>(HttpStatus.OK);
-        } catch (NoResultException | IOException | EsupSignatureFsException | SQLException | EsupSignatureException | WriterException e) {
+        } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

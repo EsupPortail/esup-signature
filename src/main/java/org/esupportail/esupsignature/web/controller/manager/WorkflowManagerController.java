@@ -23,7 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.List;
+import java.util.Set;
 
 @RequestMapping("/manager/workflows")
 @Controller
@@ -105,7 +105,7 @@ public class WorkflowManagerController {
     public String update(@ModelAttribute("authUserEppn") String authUserEppn,
                          @Valid Workflow workflow,
                          @RequestParam(value = "types", required = false) String[] types,
-                         @RequestParam(required = false) List<String> managers, Model model) {
+                         @RequestParam(required = false) Set<String> managers, Model model) {
         User authUser = userService.getUserByEppn(authUserEppn);
         workflow.setPublicUsage(false);
         Workflow updateWorkflow = workflowService.update(workflow, authUser, types, managers);
@@ -181,8 +181,13 @@ public class WorkflowManagerController {
                                    @PathVariable("id") Long id,
                                    @PathVariable("workflowStepId") Long workflowStepId,
                                    @RequestParam String[] recipientsEmails, RedirectAttributes redirectAttributes) {
-        WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientsEmails);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant ajouté"));
+        WorkflowStep workflowStep = null;
+        try {
+            workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientsEmails);
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant ajouté"));
+        } catch (EsupSignatureException e) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Participant non ajouté"));
+        }
         return "redirect:/manager/workflows/" + id + "#" + workflowStep.getId();
     }
 
@@ -198,7 +203,7 @@ public class WorkflowManagerController {
 
     @GetMapping(value = "/get-files-from-source/{id}")
     @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
-    public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureFsException {
+    public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureException {
         User authUser = userService.getUserByEppn(authUserEppn);
         int nbImportedFiles = signBookService.importFilesFromSource(id, authUser, authUser);
         if(nbImportedFiles == 0) {

@@ -40,7 +40,7 @@
                                             <option data-placeholder="true"></option>
                                             <th:block th:each="user : ${roleManagers.get(role)}">
                                                 <option th:value="${user.email}"
-                                                        th:text="${user.firstname} + ' ' + ${user.name}"
+                                                        th:text="${user.email}"
                                                         selected></option>
                                             </th:block>
                                         </select>

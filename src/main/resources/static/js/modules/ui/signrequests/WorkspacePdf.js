@@ -76,8 +76,6 @@ export class WorkspacePdf {
                 } else {
                     this.workspace.css("margin-top", "178px");
                 }
-            } else {
-                this.workspace.css("margin-top", "170px");
             }
         }
         let root = document.querySelector(':root');
@@ -321,7 +319,7 @@ export class WorkspacePdf {
         let testSign = Array.from(this.signPosition.signRequestParamses.values());
         if(testSign.filter(s => s.signImageNumber >= 0 && s.isSign).length > 0) {
             for (let i = 0; i < this.currentSignRequestParamses.length; i++) {
-                if (this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready) {
+                if ((this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready) && (this.formId != null || this.dataId != null)) {
                     return i;
                 }
             }
@@ -425,7 +423,12 @@ export class WorkspacePdf {
             "&commentPageNumber=" + $("#commentPageNumber").val() +
             "&spotStepNumber=" + spotStepNumber +
             "&" + this.csrf.parameterName + "=" + this.csrf.token;
-
+        let postitDiv = $("#postit");
+        if(postitDiv.length) {
+            postitDiv.html("<div class=\"spinner-border\" role=\"status\">\n" +
+                "  <span class=\"visually-hidden\">Enregistrement</span>\n" +
+                "</div>");
+        }
         $.ajax({
             method: 'POST',
             url: "/user/signrequests/comment/" + this.signRequestId + "/?" + commentUrlParams,

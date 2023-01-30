@@ -17,40 +17,19 @@
  */
 package org.esupportail.esupsignature.exception;
 
-public class EsupSignatureFsException extends Exception {
-	
-	protected String codeI18n = "exception.general";
-	
-	public EsupSignatureFsException(Exception e) {
-		super(e);
-	}
+public class EsupSignatureFsException extends EsupSignatureException {
+
+	private static final long serialVersionUID = 1L;
+
+	String message;
 
 	public EsupSignatureFsException(String message) {
 		super(message);
+		this.message = message;
 	}
 
-	public EsupSignatureFsException(String message, Exception e) {
+	public EsupSignatureFsException(String message, Throwable e) {
 		super(message, e);
+		this.message = message;
 	}
-
-	public EsupSignatureFsException(String message, String codeI18n) {
-		super(message);
-		this.codeI18n = codeI18n;
-	}
-
-	public String getRootCause() {
-	    Throwable t = this;
-	    while(t.getCause() != null)
-		t = t.getCause();
-	    return t.getMessage();
-	}
-
-	public String getCodeI18n() {
-		return codeI18n;
-	}
-
-
-
-	private static final long serialVersionUID = 1L;
-	
 }

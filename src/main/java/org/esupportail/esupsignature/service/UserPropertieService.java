@@ -30,6 +30,7 @@ public class UserPropertieService {
         }
     }
 
+    @Transactional
     public void createUserPropertie(User user, User favoriteUser) {
         List<UserPropertie> userProperties = getUserProperties(user.getEppn());
         if (userProperties == null || userProperties.size() == 0) {
@@ -39,6 +40,8 @@ public class UserPropertieService {
                 if(!userPropertie.getFavorites().containsKey(favoriteUser)) {
                     userPropertie.getFavorites().put(favoriteUser, new Date());
                     userPropertieRepository.save(userPropertie);
+                } else {
+                    userPropertie.getFavorites().put(favoriteUser, new Date());
                 }
             }
         }
@@ -51,6 +54,7 @@ public class UserPropertieService {
         userPropertieRepository.save(userPropertie);
     }
 
+    @Transactional
     public List<String> getFavoritesEmails(String userEppn) {
         List<UserPropertie> userProperties = getUserProperties(userEppn);
         Map<User, Date> favorites = new HashMap<>();
@@ -62,6 +66,7 @@ public class UserPropertieService {
         return entrySet.stream().map(Map.Entry::getKey).map(User::getEmail).limit(5).collect(Collectors.toList());
     }
 
+    @Transactional
     public List<UserPropertie> getUserProperties(String userEppn) {
         return userPropertieRepository.findByUserEppn(userEppn);
     }
@@ -80,4 +85,21 @@ public class UserPropertieService {
             userPropertie.getFavorites().remove(user);
         }
     }
+
+    @Transactional
+    public void deleteAll(String authUserEppn) {
+        User user = userService.getUserByEppn(authUserEppn);
+        List<UserPropertie> userProperties2 = userPropertieRepository.findByFavoritesContains(user);
+        for(UserPropertie userPropertie : userProperties2) {
+            userPropertie.getFavorites().clear();
+        }
+        userPropertieRepository.deleteAll(userProperties2);
+        List<UserPropertie> userProperties = getUserProperties(authUserEppn);
+        for(UserPropertie userPropertie : userProperties) {
+            userPropertie.getFavorites().clear();
+        }
+        userPropertieRepository.deleteAll(userProperties);
+    }
+
+
 }

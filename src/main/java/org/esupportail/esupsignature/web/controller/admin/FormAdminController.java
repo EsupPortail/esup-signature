@@ -75,6 +75,9 @@ public class FormAdminController {
 	@Resource
 	private FieldService fieldService;
 
+	@Resource
+	private ObjectMapper objectMapper;
+
 	@GetMapping()
 	public String list(Model model) {
 		List<Form> forms = formService.getAllForms();
@@ -121,17 +124,15 @@ public class FormAdminController {
 	}
 
 	@PostMapping("/update-signs-order/{id}")
-	public String updateSignsOrder(@PathVariable("id") Long id,
-								   @RequestParam Map<String, String> values,
-								   RedirectAttributes redirectAttributes) throws JsonProcessingException {
-		ObjectMapper objectMapper = new ObjectMapper();
+	public ResponseEntity<String> updateSignsOrder(@PathVariable("id") Long id,
+								   @RequestParam Map<String, String> values) throws JsonProcessingException {
 		String[] stringStringMap = objectMapper.readValue(values.get("srpMap"), String[].class);
 		Map<Long, Integer> signRequestParamsSteps = new HashMap<>();
 		for (int i = 0; i < stringStringMap.length; i = i + 2) {
 			signRequestParamsSteps.put(Long.valueOf(stringStringMap[i]), Integer.valueOf(stringStringMap[i + 1]));
 		}
 		formService.setSignRequestParamsSteps(id, signRequestParamsSteps);
-		return "redirect:/admin/forms/" + id + "/signs";
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@PostMapping("/add-signrequestparams/{id}")

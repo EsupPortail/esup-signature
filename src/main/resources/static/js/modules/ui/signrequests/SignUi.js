@@ -15,6 +15,8 @@ export class SignUi {
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
         this.isPdf = isPdf;
+        this.formId = formId;
+        this.dataId = dataId;
         this.currentSignType = currentSignType;
         this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, currentSignType, fields, stepRepeatable, status, this.csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone);
         this.signRequestUrlParams = "";
@@ -102,11 +104,14 @@ export class SignUi {
             this.workspace.pdfViewer.checkForm().then(function (result) {
                 if (result === "ok") {
                     let signId = self.workspace.checkSignsPositions();
-                    if (signId != null) {
+                    if (signId != null && (self.formId != null || self.dataId != null || signId < 1)) {
                         $("#certType > option[value='imageStamp']").remove();
                         if(self.workspace.currentSignRequestParamses.length > 0 || self.stepRepeatable) {
-                            bootbox.alert("Merci de placer la signature", function() {
-                                window.scrollTo(0, $("#signSpace_" + signId).offset().top - self.workspace.pdfViewer.initialOffset);
+                            bootbox.alert("Merci de placer la signature", function () {
+                                let signSpace = $("#signSpace_" + signId);
+                                if(signSpace.length) {
+                                    window.scrollTo(0, signSpace.offset().top - self.workspace.pdfViewer.initialOffset);
+                                }
                             });
                         } else {
                             bootbox.confirm({
@@ -114,7 +119,7 @@ export class SignUi {
                                     "<div class='alert alert-danger'>Dans ce cas, seules les signatures avec certificat électronique sont possibles</div>",
                                 buttons: {
                                     cancel: {
-                                        label: '<i class="fa fa-undo"></i> Modifier ma signature',
+                                        label: '<i class="fa fa-undo"></i> Retourner au document',
                                         className: 'btn-success'
                                     },
                                     confirm: {
@@ -171,6 +176,7 @@ export class SignUi {
                 signModal = $("#signModal");
             }
             signModal.modal('show');
+            this.confirmLaunchSignModal();
         }
     }
 
@@ -180,12 +186,14 @@ export class SignUi {
             if (nbOptions === 0) {
                 $("#nexuCheck").removeClass("d-none");
                 $("#noOptions").show();
+                $("#signCommentDiv").hide();
                 $("#selectTypeDiv").hide();
                 $("#checkValidateSignButtonEnd").hide();
                 $("#checkValidateSignButtonNext").hide();
             } else {
                 $("#nexuCheck").addClass("d-none");
                 $("#noOptions").hide();
+                $("#signCommentDiv").show();
                 $("#selectTypeDiv").show();
                 $("#checkValidateSignButtonEnd").show();
                 $("#checkValidateSignButtonNext").show();
@@ -371,10 +379,9 @@ export class SignUi {
                     document.location.href="/user/nexu-sign/" + self.signRequestId;
                 } else {
                     if (self.gotoNext) {
-                        document.location.href = $("#nextSignBookButton").attr('href');
+                        document.location.href = $("#nextSignRequest").attr('href');
                     } else {
                         if(self.isOtp== null || !self.isOtp) {
-                            // TODO add user return to home settings
                             if(self.returnToHome == null) {
                                 if (self.nbSignRequests > 1 || !self.globalProperties.returnToHomeAfterSign) {
                                     document.location.href = "/user/signrequests/" + self.signRequestId;

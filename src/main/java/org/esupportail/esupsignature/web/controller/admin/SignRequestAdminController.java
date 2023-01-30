@@ -12,7 +12,6 @@ import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
@@ -42,9 +41,9 @@ import java.util.stream.Collectors;
 
 @RequestMapping("/admin/signrequests")
 @Controller
-public class AdminSignRequestController {
+public class SignRequestAdminController {
 
-	private static final Logger logger = LoggerFactory.getLogger(AdminSignRequestController.class);
+	private static final Logger logger = LoggerFactory.getLogger(SignRequestAdminController.class);
 
 	@Resource
 	private SignService signService;
@@ -76,9 +75,6 @@ public class AdminSignRequestController {
 
 	@Resource
 	private LogService logService;
-
-	@Resource
-	private FileService fileService;
 
 	@GetMapping
 	public String list(
@@ -140,7 +136,7 @@ public class AdminSignRequestController {
 				httpServletResponse.sendRedirect("/user/signrequests/" + id);
 			} else {
 				Document document = documents.get(0);
-				webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), document.getInputStream(), httpServletResponse);
+				webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), "attachment", document.getInputStream(), httpServletResponse);
 			}
 		} catch (Exception e) {
 			logger.error("get file error", e);

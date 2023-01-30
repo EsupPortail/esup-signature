@@ -36,11 +36,26 @@
                                 <div class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
                                 </div>
                             </div>
-                            <span th:unless="${isEnableCleanTask}">Lancer le nettoyage</span>
+                            <span th:unless="${isEnableCleanTask}">Lancer le nettoyage des demandes archivées et des corbeilles</span>
                         </button>
                     </form>
                 </div>
             </div>
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-body">
+                    <form th:action="@{/admin/tasks/run-clean-uploading-sign-books}" method="POST">
+                        <button class="btn btn-lg btn-primary btn-block" type="submit">
+                            <div th:if="${isEnableCleanUploadingSignBookTask}" class="justify-content-center">
+                                Stopper le nettoyage
+                                <div class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
+                                </div>
+                            </div>
+                            <span th:unless="${isEnableCleanUploadingSignBookTask}">Lancer le nettoyage des brouillons</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
         </div>
     </div>
 </main>

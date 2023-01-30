@@ -57,9 +57,8 @@ public class SignRequest {
     @OrderColumn
     private List<Document> attachments = new ArrayList<>();
 
-    @JsonIgnore
-    @ElementCollection
-    private List<String> links = new ArrayList<>();
+    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    private Set<String> links = new HashSet<>();
 
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
@@ -68,12 +67,9 @@ public class SignRequest {
     @NotNull
     private SignBook parentSignBook;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @OrderColumn
     private List<SignRequestParams> signRequestParams = new LinkedList<>();
-
-    @Transient
-    private Date endDate;
 
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
@@ -183,11 +179,11 @@ public class SignRequest {
         this.attachments = attachments;
     }
 
-    public List<String> getLinks() {
+    public Set<String> getLinks() {
         return links;
     }
 
-    public void setLinks(List<String> links) {
+    public void setLinks(Set<String> links) {
         this.links = links;
     }
 
@@ -253,14 +249,6 @@ public class SignRequest {
 
     public void setData(Data data) {
         this.data = data;
-    }
-
-    public Date getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate;
     }
 
     public Map<Recipient, Action> getRecipientHasSigned() {

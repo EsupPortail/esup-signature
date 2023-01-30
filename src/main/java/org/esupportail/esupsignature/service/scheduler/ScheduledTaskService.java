@@ -7,7 +7,7 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
-import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
@@ -70,12 +70,16 @@ public class ScheduledTaskService {
 
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
-	public void scanAllWorkflowsSources() throws EsupSignatureFsException {
+	public void scanAllWorkflowsSources() {
 		logger.debug("scan workflows sources");
 		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
 		User userScheduler = userService.getSchedulerUser();
 		for(Workflow workflow : workflows) {
-			signBookService.importFilesFromSource(workflow.getId(), userScheduler, userScheduler);
+			try {
+				signBookService.importFilesFromSource(workflow.getId(), userScheduler, userScheduler);
+			} catch (EsupSignatureException e) {
+				logger.error("unable to import into " + workflow.getName(), e);
+			}
 		}
 	}
 
@@ -87,7 +91,7 @@ public class ScheduledTaskService {
 			try {
 				signBookService.sendSignRequestsToTarget(signBook.getId(), "scheduler");
 			} catch(Exception e) {
-				logger.error("export error for signbook " + signBook.getId() + " - " + e.getMessage());
+				logger.error("export error for signbook " + signBook.getId(), e);
 			}
 		}
 	}
@@ -113,7 +117,7 @@ public class ScheduledTaskService {
 			Date date = new Date(System.currentTimeMillis());
 			System.out.println(formatter.format(date));
 			logger.info("init clean : " + formatter.format(date));
-			taskService.initCleanning();
+			taskService.initCleanning("scheduler");
 			Date date2 = new Date(System.currentTimeMillis());
 			logger.info("end clean : " + formatter.format(date2));
 		}
@@ -129,6 +133,11 @@ public class ScheduledTaskService {
 				signBookService.sendEmailAlertSummary(user);
 			}
 		}
+	}
+
+	@Scheduled(initialDelay = 1000, fixedRate = 86400000)
+	public void cleanUploadingSignBooks() {
+		taskService.initCleanUploadingSignBooks();
 	}
 
 	@Scheduled(initialDelay = 86400000, fixedRate = 86400000)

@@ -1,5 +1,8 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.zxing.WriterException;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
@@ -21,7 +24,6 @@ import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.metric.CustomMetricsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
@@ -40,6 +42,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -53,7 +56,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -98,9 +100,6 @@ public class SignRequestService {
 	private SignService signService;
 
 	@Resource
-	private FileService fileService;
-
-	@Resource
 	private UserService userService;
 
 	@Resource
@@ -132,6 +131,9 @@ public class SignRequestService {
 
 	@Resource
 	private ValidationService validationService;
+
+	@Resource
+	private ObjectMapper objectMapper;
 
 	@PostConstruct
 	public void initSignrequestMetrics() {
@@ -324,6 +326,9 @@ public class SignRequestService {
 	public void pendingSignRequest(SignRequest signRequest, String authUserEppn) {
 		for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
 			signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
+			if(!signRequest.getParentSignBook().getTeam().contains(recipient.getUser())) {
+				signRequest.getParentSignBook().getTeam().add(recipient.getUser());
+			}
 		}
 		updateStatus(signRequest.getId(), SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS", null, null, null, authUserEppn, authUserEppn);
 		customMetricsService.incValue("esup-signature.signrequests", "new");
@@ -507,17 +512,19 @@ public class SignRequestService {
 		logService.create(signRequestId, signRequestStatus, action, comment, returnCode, pageNumber, posX, posY, stepNumber, userEppn, authUserEppn);
 	}
 
-	public long generateUniqueId() {
-		long val = -1;
-		while (val < 0) {
+	@Transactional
+	public String generateUniqueId() {
+		while (true) {
 			final UUID uid = UUID.randomUUID();
 			final ByteBuffer buffer = ByteBuffer.wrap(new byte[16]);
 			buffer.putLong(uid.getLeastSignificantBits());
 			buffer.putLong(uid.getMostSignificantBits());
 			final BigInteger bi = new BigInteger(buffer.array());
-			val = bi.longValue();
+			String token = String.valueOf(Math.abs(bi.longValue()));
+			if(signRequestRepository.findByToken(token) == null) {
+				return token;
+			}
 		}
-		return val;
 	}
 
 	@Transactional
@@ -600,7 +607,7 @@ public class SignRequestService {
 		return userService.getTempUsers(signRequest).size() > 0;
 	}
 
-	public boolean checkTempUsers(Long id, List<String> recipientEmails, List<JsonExternalUserInfo> externalUsersInfos) throws MessagingException {
+	public boolean checkTempUsers(Long id, List<String> recipientEmails, List<JsonExternalUserInfo> externalUsersInfos) throws MessagingException, EsupSignatureException {
 		SignRequest signRequest = getById(id);
 		List<User> tempUsers = userService.getTempUsers(signRequest, recipientEmails);
 		if(tempUsers.size() > 0) {
@@ -613,8 +620,8 @@ public class SignRequestService {
 						JsonExternalUserInfo jsonExternalUserInfo = externalUsersInfos.stream().filter(jsonExternalUserInfo1 -> jsonExternalUserInfo1.getEmail().equals(tempUser.getEmail())).findFirst().get();
 						tempUser.setFirstname(jsonExternalUserInfo.getFirstname());
 						tempUser.setName(jsonExternalUserInfo.getName());
-						if(jsonExternalUserInfo.getPhone() != null) {
-							tempUser.setPhone(jsonExternalUserInfo.getPhone());
+						if(StringUtils.hasText(jsonExternalUserInfo.getPhone())) {
+							tempUser.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(jsonExternalUserInfo.getPhone()));
 						}
 					}
 				}
@@ -714,7 +721,7 @@ public class SignRequestService {
 
 	public void removeLink(Long id, Integer linkId) {
 		SignRequest signRequest = getById(id);
-		String toRemove = signRequest.getLinks().get(linkId);
+		String toRemove = new ArrayList<>(signRequest.getLinks()).get(linkId);
 		signRequest.getLinks().remove(toRemove);
 	}
 
@@ -729,9 +736,16 @@ public class SignRequestService {
 			signRequest.getSignRequestParams().add(signRequestParams);
 			signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getSignRequestParams().add(signRequestParams);
 		}
-		commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, "on".equals(postit), null, authUserEppn);
+		Comment comment = commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, "on".equals(postit), null, authUserEppn);
 		if(!(spotStepNumber != null && spotStepNumber > 0)) {
 			updateStatus(signRequest.getId(), null, "Ajout d'un commentaire", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
+			if(globalProperties.getSendPostitByEmail() && !authUserEppn.equals(signRequest.getCreateBy().getEppn())) {
+				try {
+					mailService.sendPostit(signRequest.getParentSignBook(), comment);
+				} catch (EsupSignatureMailException e) {
+					logger.warn("postit not sended", e);
+				}
+			}
 		} else {
 			updateStatus(signRequest.getId(), null, "Ajout d'un emplacement de signature", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
 		}
@@ -770,14 +784,14 @@ public class SignRequestService {
 		SignRequest signRequest = getById(signRequestId);
 		Document attachement = documentService.getById(attachementId);
 		if (attachement != null && attachement.getParentId().equals(signRequest.getId())) {
-			webUtilsService.copyFileStreamToHttpResponse(attachement.getFileName(), attachement.getContentType(), attachement.getInputStream(), httpServletResponse);
+			webUtilsService.copyFileStreamToHttpResponse(attachement.getFileName(), attachement.getContentType(), "attachment", attachement.getInputStream(), httpServletResponse);
 			return true;
 		}
 		return false;
 	}
 
 	@Transactional
-	public void getToSignFileResponse(Long signRequestId, HttpServletResponse httpServletResponse) throws SQLException, EsupSignatureFsException, IOException, EsupSignatureException {
+	public void getToSignFileResponse(Long signRequestId, String disposition, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureException {
 		SignRequest signRequest = getById(signRequestId);
 		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			List<Document> documents = signService.getToSignDocuments(signRequest.getId());
@@ -787,15 +801,15 @@ public class SignRequestService {
 			} else {
 				document = signRequest.getOriginalDocuments().get(0);
 			}
-			webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), document.getInputStream(), httpServletResponse);
+			webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), disposition, document.getInputStream(), httpServletResponse);
 		} else {
 			FsFile fsFile = getLastSignedFsFile(signRequest);
-			webUtilsService.copyFileStreamToHttpResponse(fsFile.getName(), fsFile.getContentType(), fsFile.getInputStream(), httpServletResponse);
+			webUtilsService.copyFileStreamToHttpResponse(fsFile.getName(), fsFile.getContentType(), disposition, fsFile.getInputStream(), httpServletResponse);
 		}
 	}
 
 	@Transactional
-	public void getToSignFileResponseWithCode(Long signRequestId, HttpServletResponse httpServletResponse) throws SQLException, EsupSignatureFsException, IOException, EsupSignatureException, WriterException {
+	public void getToSignFileResponseWithCode(Long signRequestId, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureException, WriterException {
 		SignRequest signRequest = getById(signRequestId);
 		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			List<Document> documents = signService.getToSignDocuments(signRequest.getId());
@@ -806,18 +820,18 @@ public class SignRequestService {
 				document = signRequest.getOriginalDocuments().get(0);
 			}
 			InputStream inputStream = pdfService.addQrCode(signRequest, document.getInputStream());
-			webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), inputStream, httpServletResponse);
+			webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), "attachment", inputStream, httpServletResponse);
 		} else {
 			FsFile fsFile = getLastSignedFsFile(signRequest);
 			InputStream inputStream = pdfService.addQrCode(signRequest, fsFile.getInputStream());
-			webUtilsService.copyFileStreamToHttpResponse(fsFile.getName(), fsFile.getContentType(), inputStream, httpServletResponse);
+			webUtilsService.copyFileStreamToHttpResponse(fsFile.getName(), fsFile.getContentType(), "attachment", inputStream, httpServletResponse);
 		}
 	}
 
 	@Transactional
 	public void getFileResponse(Long documentId, HttpServletResponse httpServletResponse) throws IOException {
 		Document document = documentService.getById(documentId);
-		webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), document.getInputStream(), httpServletResponse);
+		webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), "attachment", document.getInputStream(), httpServletResponse);
 	}
 
 	@Transactional
@@ -867,7 +881,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public List<SignRequestParams> getToUseSignRequestParams(long id, String userEppn) {
+	public List<SignRequestParams> getToUseSignRequestParams(Long id, String userEppn) {
 		User user = userService.getUserByEppn(userEppn);
 		List<SignRequestParams> toUserSignRequestParams = new ArrayList<>();
 		SignRequest signRequest = getById(id);
@@ -900,31 +914,6 @@ public class SignRequestService {
 
 	public List<SignRequest> getAll() {
 		return (List<SignRequest>) signRequestRepository.findAll();
-	}
-
-	public int transfer(String authUserEppn) {
-		int i = 0;
-		User user = userService.getUserByEppn(authUserEppn);
-		User replacedByUser = user.getCurrentReplaceUser();
-		if(replacedByUser != null) {
-			List<SignRequest> signRequests = getToSignRequests(authUserEppn).stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).collect(Collectors.toList());
-			for(SignRequest signRequest : signRequests) {
-				for(LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
-					for(Recipient recipient : liveWorkflowStep.getRecipients()) {
-						if(recipient.getUser().getEppn().equals(authUserEppn)) {
-							recipient.setUser(replacedByUser);
-						}
-					}
-					for(Recipient recipient : signRequest.getRecipientHasSigned().keySet()) {
-						if(recipient.getUser().getEppn().equals(authUserEppn)) {
-							recipient.setUser(replacedByUser);
-						}
-					}
-				}
-				i++;
-			}
-		}
-		return i;
 	}
 
 	public boolean isAttachmentAlert(SignRequest signRequest) {
@@ -989,4 +978,50 @@ public class SignRequestService {
 		}
 	}
 
+	@Transactional
+	public void anonymize(String userEppn, User anonymous) {
+		for(SignRequest signRequest : signRequestRepository.findByCreateByEppn(userEppn)) {
+			signRequest.setCreateBy(anonymous);
+		}
+	}
+
+	@Transactional
+	public List<Comment> getPostits(Long id) {
+		SignRequest signRequest = getById(id);
+		return signRequest.getComments().stream().filter(Comment::getPostit).collect(Collectors.toList());
+	}
+
+	@Transactional
+	public List<Comment> getComments(Long id) {
+		SignRequest signRequest = getById(id);
+		return signRequest.getComments().stream().filter(comment -> !comment.getPostit() && comment.getStepNumber() == null).collect(Collectors.toList());
+	}
+
+	@Transactional
+	public List<Comment> getSpots(Long id) {
+		SignRequest signRequest = getById(id);
+		return signRequest.getComments().stream().filter(comment -> comment.getStepNumber() != null).collect(Collectors.toList());
+	}
+
+	@Transactional
+	public String getJson(Long id) throws JsonProcessingException {
+		SignRequest signRequest = getById(id);
+		return objectMapper.writeValueAsString(signRequest);
+	}
+
+	@Transactional
+	public Long getParentIdIfSignRequestUnique(Long id) {
+		SignRequest signRequest = getById(id);
+		if(signRequest.getParentSignBook().getSignRequests().size() == 1) {
+			return signRequest.getParentSignBook().getId();
+		} else {
+			return null;
+		}
+	}
+
+	@Transactional
+	public String getAuditTrailJson(Long id) throws JsonProcessingException {
+		SignRequest signRequest = getById(id);
+		return objectMapper.writeValueAsString(signRequest.getAuditTrail());
+	}
 }

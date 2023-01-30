@@ -61,9 +61,13 @@ public class DataController {
 	@Resource
 	private UserService userService;
 
+	@Resource
+	private ObjectMapper objectMapper;
+
 	@PostMapping("/send-form/{id}")
 	public String sendForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 						   @RequestParam(required = false) List<String> recipientEmails,
+						   @RequestParam(required = false) List<String> signTypes,
 						   @RequestParam(required = false) List<String> allSignToCompletes,
 						   @RequestParam(required = false) List<String> targetEmails,
 						   @RequestParam(value = "emails", required = false) List<String> emails,
@@ -74,7 +78,7 @@ public class DataController {
 		List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			Data data = dataService.addData(id, userEppn);
-			SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, externalUsersInfos, targetEmails, null, userEppn, authUserEppn, false, null, null, null, null);
+			SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, signTypes, allSignToCompletes, externalUsersInfos, targetEmails, null, userEppn, authUserEppn, false, null, null, null, null);
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Formulaire non autorisé"));
@@ -92,7 +96,6 @@ public class DataController {
 						  RedirectAttributes redirectAttributes) throws JsonProcessingException {
 		User user = (User) model.getAttribute("user");
 		User authUser = userService.getUserByEppn(authUserEppn);
-		ObjectMapper objectMapper = new ObjectMapper();
 		TypeReference<Map<String, String>> type = new TypeReference<>(){};
 		Map<String, String> datas = objectMapper.readValue(formData.getFirst("formData"), type);
 		Long dataLongId = null;

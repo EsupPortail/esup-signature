@@ -57,7 +57,6 @@ public class DataService {
     public void deleteBySignBook(SignBook signBook) {
         Data data = getBySignBook(signBook);
         if(data != null) {
-            data.setForm(null);
             dataRepository.delete(data);
         }
     }
@@ -66,7 +65,7 @@ public class DataService {
         SignBook signBook = data.getSignBook();
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user, data.getSignBook().getSignRequests().get(0));
         for(Field field : fields) {
-            if(!field.getWorkflowSteps().contains(signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep())) {
+            if(field.getWorkflowSteps().stream().noneMatch(workflowStep -> workflowStep.getId().equals(signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getId()))) {
                 formDatas.put(field.getName(), data.getDatas().get(field.getName()));
             }
             if(!field.getStepZero()) {
@@ -92,7 +91,6 @@ public class DataService {
         data.setForm(form);
         data.setFormName(form.getName());
         data.setFormVersion(form.getVersion());
-        data.setStatus(SignRequestStatus.draft);
         data.setUpdateBy(authUser);
         data.setUpdateDate(new Date());
         dataRepository.save(data);
@@ -183,6 +181,17 @@ public class DataService {
         Data data = dataRepository.findById(id).get();
         data.setForm(null);
         dataRepository.delete(data);
+    }
+
+    @Transactional
+    public void anonymize(String userEppn, User anonymous) {
+        User user = userService.getUserByEppn(userEppn);
+        for (Data data : dataRepository.findByCreateBy(user)) {
+            data.setCreateBy(anonymous);
+        }
+        for (Data data : dataRepository.findByUpdateBy(user)) {
+            data.setUpdateBy(anonymous);
+        }
     }
 
 }

@@ -1,7 +1,5 @@
 package org.esupportail.esupsignature.service;
 
-import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
-import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.entity.SignRequest;
@@ -12,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +30,6 @@ public class SignWithService {
     private CertificatService certificatService;
 
     @Resource
-
     private final GlobalProperties globalProperties;
 
     public SignWithService(GlobalProperties globalProperties) {
@@ -62,18 +58,16 @@ public class SignWithService {
         if(dataService.getBySignBook(signRequest.getParentSignBook()) != null && signRequestService.isMoreWorkflowStep(signRequest.getParentSignBook())) {
             signWiths.removeIf(signWith -> signWith.getValue() > 2);
         }
+        signWiths.remove(SignWith.autoCert);
         return signWiths;
     }
 
     public boolean checkSealCertificat(String userEppn) {
         User user = userService.getUserByEppn(userEppn);
         if(globalProperties.getSealCertificatDriver() != null && user.getRoles().contains("ROLE_SEAL")) {
-            try {
-                KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
-                AbstractKeyStoreTokenConnection abstractKeyStoreTokenConnection = new Pkcs11SignatureToken(globalProperties.getSealCertificatDriver(), passwordProtection);
-                abstractKeyStoreTokenConnection.getKeys();
+            if(certificatService.getSealCertificats().size() > 0) {
                 return true;
-            } catch (Exception e) {
+            } else {
                 return false;
             }
         } else {

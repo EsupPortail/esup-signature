@@ -1,10 +1,6 @@
 package org.esupportail.esupsignature.dss.service;
 
 
-import eu.europa.esig.dss.jaxb.common.DocumentBuilderFactoryBuilder;
-import eu.europa.esig.dss.jaxb.common.SchemaFactoryBuilder;
-import eu.europa.esig.dss.jaxb.common.ValidatorConfigurator;
-import eu.europa.esig.dss.jaxb.common.XmlDefinerUtils;
 import eu.europa.esig.dss.spi.tsl.LOTLInfo;
 import eu.europa.esig.dss.spi.tsl.TLInfo;
 import eu.europa.esig.dss.spi.tsl.TLValidationJobSummary;
@@ -25,7 +21,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import javax.xml.XMLConstants;
 import java.io.IOException;
 
 @Service
@@ -97,19 +92,6 @@ public class OJService {
 	@Async
 	@EventListener(ApplicationReadyEvent.class)
 	public void init() throws EsupSignatureException {
-		XmlDefinerUtils xmlDefinerUtils = XmlDefinerUtils.getInstance();
-		DocumentBuilderFactoryBuilder documentBuilderFactoryBuilder = DocumentBuilderFactoryBuilder.getSecureDocumentBuilderFactoryBuilder();
-		documentBuilderFactoryBuilder.removeAttribute(XMLConstants.ACCESS_EXTERNAL_DTD);
-		documentBuilderFactoryBuilder.removeAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA);
-		xmlDefinerUtils.setDocumentBuilderFactoryBuilder(documentBuilderFactoryBuilder);
-		SchemaFactoryBuilder schemaFactoryBuilder = SchemaFactoryBuilder.getSecureSchemaBuilder();
-		schemaFactoryBuilder.removeAttribute(XMLConstants.ACCESS_EXTERNAL_DTD);
-		schemaFactoryBuilder.removeAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA);
-		xmlDefinerUtils.setSchemaFactoryBuilder(schemaFactoryBuilder);
-		ValidatorConfigurator validatorConfigurator = ValidatorConfigurator.getSecureValidatorConfigurator();
-		validatorConfigurator.removeAttribute(XMLConstants.ACCESS_EXTERNAL_DTD);
-		validatorConfigurator.removeAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA);
-		xmlDefinerUtils.setValidatorConfigurator(validatorConfigurator);
 		logger.info("Checking Workflow classes...");
 		workflowService.copyClassWorkflowsIntoDatabase();
 		logger.info("Check done.");

@@ -50,7 +50,7 @@ public class CommentService {
         Optional<Comment> comment = commentRepository.findById(commentId);
         if(comment.isPresent()) {
             SignRequest signRequest = signRequestRepository.findSignRequestByCommentsContains(comment.get());
-            if (comment.get().getStepNumber() != null) {
+            if (comment.get().getStepNumber() != null && comment.get().getStepNumber() > 0 && signRequest.getSignRequestParams().size() > comment.get().getStepNumber() - 1) {
                 signRequest.getSignRequestParams().remove(comment.get().getStepNumber() - 1);
                 if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size() > comment.get().getStepNumber()) {
                     signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(comment.get().getStepNumber() - 1).setSignRequestParams(null);
@@ -58,6 +58,14 @@ public class CommentService {
             }
             signRequest.getComments().remove(comment.get());
             commentRepository.delete(comment.get());
+        }
+    }
+
+    @Transactional
+    public void anonymizeComment(Long userId) {
+        User user = userService.getById(userId);
+        for(Comment comment : commentRepository.findCommentByCreateBy(user)) {
+            comment.setCreateBy(userService.getAnonymousUser());
         }
     }
 

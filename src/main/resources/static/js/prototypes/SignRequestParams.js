@@ -19,7 +19,7 @@ export class SignRequestParams extends EventFactory {
         this.userName = userName;
         this.authUserName = authUserName;
         this.ready = null;
-        this.isShare = userName !== authUserName;
+        this.isShare = (userName !== authUserName);
         this.restore = restore;
         this.isSign = isSign;
         this.isVisa = isVisa;
@@ -31,7 +31,7 @@ export class SignRequestParams extends EventFactory {
         this.divExtra = null;
         this.textareaExtra = null;
         this.textareaPart = null;
-        this.textPart = "";
+        this.textPart = null;
         this.signColorPicker = null;
         this.pdSignatureFieldName = null;
         this.restoreExtraOnTop = false;
@@ -273,19 +273,31 @@ export class SignRequestParams extends EventFactory {
             this.updateSize();
         }
         if(this.isShare) {
-            this.toggleMinimalTools();
-            this.signColorPicker.spectrum("destroy");
-            this.signColorPicker.hide();
+            if(this.signColorPicker != null) {
+                this.signColorPicker.spectrum("destroy");
+                this.signColorPicker.hide();
+            }
+            this.addWatermark = true;
+            this.toggleWatermark();
+            this.addExtra = false;
             this.toggleExtra();
-            this.toggleName();
+            this.isExtraText = false;
             this.toggleText();
-            $("#extraTools_" + this.id).addClass("d-none");
-            $("#crossTools_" + this.id).css("top", "-45px");
-            this.textPart = this.userName + "\nP.O.\n" + this.authUserName;
-            this.textareaExtra.val(this.textPart);
-            this.textareaExtra.attr("readonly", true);
+            $("#signExtra_" + this.id).hide();
+            this.toggleName();
+            this.toggleType();
+            // $("#extraTools_" + this.id).addClass("d-none");
+            // $("#crossTools_" + this.id).css("top", "-45px");
+            $("#extraType_" + this.id).addClass("d-none");
+            $("#extraName_" + this.id).addClass("d-none");
+            // $("#extraText_" + this.id).addClass("d-none");
+            this.savedText = this.userName + "\nP.O.\n" + this.authUserName;
+            this.extraText = this.savedText;
+            this.textareaExtra.val(this.savedText);
+            // this.toggleText();
             this.refreshExtraDiv();
             this.updateSize();
+            this.textareaExtra.attr("readonly", true);
         }
 
         if(this.isOtp){
@@ -585,7 +597,7 @@ export class SignRequestParams extends EventFactory {
             }
             this.addWatermark = true;
         }
-        if(!this.firstLaunch) {
+        if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('addWatermark', this.addWatermark);
         }
     }
@@ -609,7 +621,9 @@ export class SignRequestParams extends EventFactory {
                 $("#signExtraOnTop_" + this.id).attr("disabled", true);
                 $("#signPrevImage_" + this.id).attr("disabled", true);
                 $("#signNextImage_" + this.id).attr("disabled", true);
-                localStorage.setItem('addImage', false);
+                if(!this.isShare) {
+                    localStorage.setItem('addImage', false);
+                }
                 this.addImage = !this.addImage;
                 this.refreshExtraDiv()
                 this.updateSize();
@@ -632,8 +646,10 @@ export class SignRequestParams extends EventFactory {
                 this.restoreExtraOnTop = false;
                 this.toggleExtraOnTop();
             }
-            localStorage.setItem('addExtra', true);
-            localStorage.setItem('addImage', true);
+            if(!this.isShare) {
+                localStorage.setItem('addExtra', true);
+                localStorage.setItem('addImage', true);
+            }
             this.addImage = !this.addImage;
             this.refreshExtraDiv()
             this.updateSize();
@@ -694,7 +710,7 @@ export class SignRequestParams extends EventFactory {
         // this.toggleName();
         // this.toggleText();
         this.updateSize();
-        if(!this.firstLaunch) {
+        if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('addExtra', this.addExtra);
         }
     }
@@ -738,7 +754,7 @@ export class SignRequestParams extends EventFactory {
                 this.divExtra.addClass("div-extra-right");
                 this.divExtra.removeClass("div-extra-top");
             }
-            if(!this.firstLaunch) {
+            if(!this.firstLaunch && !this.isShare) {
                 localStorage.setItem('extraOnTop', this.extraOnTop);
             }
         }
@@ -761,7 +777,7 @@ export class SignRequestParams extends EventFactory {
         this.extraType = !this.extraType;
         this.updateSize();
         this.refreshExtraDiv();
-        if(!this.firstLaunch) {
+        if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('extraType', this.extraType);
         }
     }
@@ -778,13 +794,13 @@ export class SignRequestParams extends EventFactory {
         this.extraName = !this.extraName;
         this.updateSize();
         this.refreshExtraDiv();
-        if(!this.firstLaunch) {
+        if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('extraName', this.extraName);
         }
     }
 
     toggleDate() {
-        if(!this.extraType && !this.extraName && !this.isExtraText && this.extraDate) return;
+        if(!this.extraType && !this.extraName && !this.isExtraText && this.extraDate && !this.isShare) return;
         if(this.extraDate) {
             $("#extraDateDiv_" + this.id).hide();
             $("#extraDate_" + this.id).removeClass("btn-outline-light");
@@ -795,13 +811,13 @@ export class SignRequestParams extends EventFactory {
         this.extraDate = !this.extraDate;
         this.updateSize();
         this.refreshExtraDiv();
-        if(!this.firstLaunch) {
+        if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('extraDate', this.extraDate);
         }
     }
 
     toggleText() {
-        if((!this.extraType && !this.extraDate && !this.extraName && this.isExtraText) || this.divExtra == null) return;
+        if((!this.extraType && !this.extraDate && !this.extraName && this.isExtraText && !this.isShare) || this.divExtra == null) return;
         let textExtra = $("#textExtra_" + this.id);
         if(this.isExtraText) {
             $("#extraText_" + this.id).removeClass("btn-outline-light");
@@ -823,7 +839,7 @@ export class SignRequestParams extends EventFactory {
         this.isExtraText = !this.isExtraText;
         this.updateSize();
         this.refreshExtraDiv();
-        if(!this.firstLaunch) {
+        if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('extraText', this.isExtraText);
         }
     }
@@ -845,9 +861,9 @@ export class SignRequestParams extends EventFactory {
                 }
                 this.signWidth += this.extraWidth;
                 this.cross.css("width", this.signWidth * this.currentScale + "px");
-                if(this.divExtra != null) {
-                    this.divExtra.css("width", this.extraWidth * this.currentScale + "px");
-                }
+                // if(this.divExtra != null) {
+                //     this.divExtra.css("width", this.extraWidth * this.currentScale + "px");
+                // }
             }
         }
     }

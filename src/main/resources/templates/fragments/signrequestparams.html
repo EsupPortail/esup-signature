@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<div id="signRequestParamsForm" th:fragment="signrequestparam" class="d-none">
+<div th:fragment="signrequestparam">
     <div id="crossTools" class="badge bg-primary btn-small cross-tools text-left">
         <div id="defaultTools">
             <button type="button" id="textReduce"
@@ -43,25 +43,25 @@
         </div>
         <div id="extraTools_0" class="d-none">
             <button type="button" id="extraType_0"
-                    title="Afficher le type de signature"
+                    title="Afficher/Masquer le type de signature"
                     class="btn btn-sm btn-transparent text-white btn-outline-light"
                     style="z-index: 3;">
                 Type
             </button>
             <button type="button" id="extraName_0"
-                    title="Afficher le nom"
+                    title="Afficher/Masquer le nom"
                     class="btn btn-sm btn-transparent text-white btn-outline-light"
                     style="z-index: 3;">
                 Nom
             </button>
             <button type="button" id="extraDate_0"
-                    title="Afficher la date"
+                    title="Afficher/Masquer la date"
                     class="btn btn-sm btn-transparent text-white btn-outline-light"
                     style="z-index: 3;">
                 Date
             </button>
             <button type="button" id="extraText_0"
-                    title="Ajouter un texte libre"
+                    title="Ajouter/Masquer un texte libre"
                     class="btn btn-sm btn-transparent text-white btn-outline-light"
                     style="z-index: 3;">
                 Texte

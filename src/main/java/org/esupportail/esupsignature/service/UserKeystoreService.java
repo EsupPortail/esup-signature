@@ -7,7 +7,6 @@ import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import eu.europa.esig.dss.validation.CertificateValidator;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.reports.CertificateReports;
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.slf4j.Logger;
@@ -29,7 +28,7 @@ public class UserKeystoreService {
 
 	private final CertificateVerifier certificateVerifier;
 
-	public UserKeystoreService(CertificateVerifier certificateVerifier, GlobalProperties globalProperties) {
+	public UserKeystoreService(CertificateVerifier certificateVerifier) {
 		this.certificateVerifier = certificateVerifier;
 	}
 
@@ -43,7 +42,7 @@ public class UserKeystoreService {
 			if(e.getCause() != null && e.getCause().getMessage() != null && e.getCause().getMessage().equals("keystore password was incorrect")) {
 				logger.warn("keystore password was incorrect");
 			} else {
-				logger.error("open keystore fail :" + e.getMessage());
+				logger.warn("open keystore fail :" + e.getMessage());
 			}
 			throw new EsupSignatureKeystoreException("Mot de passe incorrect", e);
 		}
@@ -54,7 +53,7 @@ public class UserKeystoreService {
 			KSPrivateKeyEntry ksPrivateKeyEntry = (KSPrivateKeyEntry) token.getKeys().get(0);
 			return ksPrivateKeyEntry.getCertificate();
 		} catch (Exception e) {
-			logger.error("open keystore fail : " + e.getMessage());
+			logger.warn("open keystore fail : " + e.getMessage());
 			throw new EsupSignatureKeystoreException("get certificat token fail", e);
 		}
 	}

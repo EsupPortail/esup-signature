@@ -5,6 +5,8 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.ldap.PersonLdapLight;
@@ -51,7 +53,7 @@ public class UserController {
 	private UserService userService;
 
 	@Resource
-	private SignRequestService signRequestService;
+	private SignBookService signBookService;
 
 	@Resource
 	private UserPropertieService userPropertieService;
@@ -66,7 +68,7 @@ public class UserController {
 	UserListService userListService;
 
     @GetMapping
-    public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
+	public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
 		model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
 		model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
 		model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
@@ -78,7 +80,7 @@ public class UserController {
     }
 
 	@PostMapping
-    public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
+	public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
 						 @RequestParam(value = "returnToHomeAfterSign", required=false) Boolean returnToHomeAfterSign,
 						 @RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
 						 @RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
@@ -101,7 +103,7 @@ public class UserController {
 	}
 
 	@PostMapping(value = "/view-cert")
-    public String viewCert(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttributes) {
+	public String viewCert(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttributes) {
 		try {
         	redirectAttributes.addFlashAttribute("message", new JsonMessage("custom", userKeystoreService.checkKeystore(authUserEppn, password)));
         } catch (Exception e) {
@@ -121,9 +123,9 @@ public class UserController {
 
 	@GetMapping(value="/search-user")
 	@ResponseBody
-	public List<PersonLdapLight> searchLdap(@RequestParam(value="searchString") String searchString) {
+	public List<PersonLdapLight> searchLdap(@RequestParam(value="searchString") String searchString, @ModelAttribute("authUserEppn") String authUserEppn) {
 		logger.debug("ldap search for : " + searchString);
-		return userService.getPersonLdapsLight(searchString).stream().sorted(Comparator.comparing(PersonLdapLight::getDisplayName)).collect(Collectors.toList());
+		return userService.getPersonLdapsLight(searchString, authUserEppn).stream().sorted(Comparator.comparing(PersonLdapLight::getDisplayName)).collect(Collectors.toList());
    }
 
 	@GetMapping(value = "/search-user-list")
@@ -131,7 +133,7 @@ public class UserController {
 	public List<String> searchUserList(@RequestParam(value="searchString") String searchString) {
 		try {
 			return userListService.getUsersEmailFromList(searchString);
-		} catch (DataAccessException e) {
+		} catch (DataAccessException | EsupSignatureException e) {
 			logger.warn(e.getMessage());
 		}
 		return null;
@@ -152,7 +154,6 @@ public class UserController {
 		List<FieldPropertie> fieldProperties = fieldPropertieService.getFieldProperties(authUserEppn);
 		model.addAttribute("fieldProperties", fieldProperties);
 		model.addAttribute("forms", formService.getFormsByUser(authUserEppn, authUserEppn));
-		model.addAttribute("users", userService.getAllUsers());
 		model.addAttribute("activeMenu", "properties");
 		return "user/users/properties";
 	}
@@ -212,7 +213,7 @@ public class UserController {
 
 	@GetMapping("/replace")
 	public String showReplace(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
-		List<SignRequest> signRequests = signRequestService.getToSignRequests(authUserEppn);
+		List<SignRequest> signRequests = signBookService.getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).flatMap(signBook -> signBook.getSignRequests().stream().distinct()).collect(Collectors.toList());
 		model.addAttribute("signRequests", signRequests);
 		return "user/users/replace";
 	}
@@ -230,7 +231,7 @@ public class UserController {
 
 	@GetMapping("/replace/transfer")
 	public String transfert(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
-		int result = signRequestService.transfer(authUserEppn);
+		int result = signBookService.transfer(authUserEppn);
 		if(result > 0) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Le transfert des demandes à bien été effectué. " + result + " demande(s) transférées."));
 		} else {

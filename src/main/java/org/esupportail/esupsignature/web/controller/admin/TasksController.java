@@ -33,6 +33,7 @@ public class TasksController {
     public String scheduler(Model model) {
         model.addAttribute("isEnableArchiveTask", taskService.isEnableArchiveTask());
         model.addAttribute("isEnableCleanTask", taskService.isEnableCleanTask());
+        model.addAttribute("isEnableCleanUploadingSignBookTask", taskService.isEnableCleanUploadingSignBookTask());
         return "admin/tasks";
     }
 
@@ -51,11 +52,23 @@ public class TasksController {
     @PostMapping("/run-clean")
     public String runClean(RedirectAttributes redirectAttributes) {
         if(!taskService.isEnableCleanTask()) {
-            taskService.initCleanning();
+            taskService.initCleanning("system");
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Nettoyage démarré"));
         } else {
             taskService.setEnableCleanTask(false);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Nettoyage arrêté"));
+        }
+        return "redirect:/admin/tasks";
+    }
+
+    @PostMapping("/run-clean-uploading-sign-books")
+    public String runCleanUploadingSignBooks(RedirectAttributes redirectAttributes) {
+        if(!taskService.isEnableCleanUploadingSignBookTask()) {
+            taskService.initCleanUploadingSignBooks();
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Nettoyage signbooks temporaires démarré"));
+        } else {
+            taskService.setEnableCleanUploadingSignBookTask(false);
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Nettoyage signbooks temporaires arrêté"));
         }
         return "redirect:/admin/tasks";
     }

@@ -36,12 +36,12 @@
         <nav th:replace="fragments/sides/side-sign :: side-sign"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
-                <li th:if="${editable}" class="breadcrumb-item"><a href="/user/signbooks">Tableau
+                <li th:if="${editable && userEppn == authUserEppn}" class="breadcrumb-item"><a href="/user/signbooks">Tableau
                     de bord</a></li>
-                <li th:unless="${editable}" class="breadcrumb-item"><a
+                <li th:if="${userEppn == authUserEppn}" th:unless="${editable}" class="breadcrumb-item"><a
                         href="/user/signbooks/?statusFilter=toSign">Documents à signer</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Demande : <span
-                        th:text="${signRequest.title}"></span>&nbsp;du&nbsp;<span
+                        th:text="${signRequest.parentSignBook.subject}"></span>&nbsp;du&nbsp;<span
                         th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                 </li>
             </ol>
@@ -71,7 +71,7 @@
                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
                             <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-stack">
                               <i class="fas fa-trash-alt" style="opacity: 0.85;"></i>
-                              <i class="fas fa-ban fa-stack-1x" style="font-size: 45px;"></i>
+                              <i class="fas fa-ban fa-stack-1x" style="font-size: 41px;"></i>
                             </span>
                             <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fas fa-trash-alt"></i>
                         </a>
@@ -79,7 +79,7 @@
                     <li th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a class="btn-lg btn-floating bg-primary waves-effect"
                            th:href="'/ws-secure/signrequests/get-last-file/' + ${id}" target="_blank"
-                           title="Télécharger la précédente version du document"><i class="fas fa-file-download"></i></a>
+                           title="Télécharger le document"><i class="fas fa-file-download"></i></a>
                     </li>
                     <li th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a class="btn-lg btn-floating bg-primary waves-effect"
@@ -121,10 +121,12 @@
                         <i class="fas fa-shield-alt "></i>
                     </a></li>
                    </th:block>
-                    <li th:if="${nextSignBook != null}" class="d-none">
+                    <li th:if="${nextSignBook != null}" class="">
                         <a id="nextSignBookButton" role="button" th:href="'/user/signbooks/' + ${nextSignBook.id}"
-                           class="btn-lg btn-floating bg-primary waves-effect" title="Demande suivante"><i
-                                class="fas fa-arrow-right"></i></a>
+                           class="btn-lg btn-floating bg-primary waves-effect" title="Demande suivante">
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <a id="nextSignRequest" th:href="'/user/signrequests/' + ${nextSignRequest.id}" class="d-none"></a>
                     </li>
                 </ul>
             </div>
@@ -147,7 +149,7 @@
             </th:block>
             <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
                 <div class="alert alert-success">
-                    Le document contenu dans cette demande de signature a été archivé. Vous avez la posibilité de le télécharger à l'aide du bouton en bas à droite.
+                    Le document contenu dans cette demande de signature a été archivé. Vous avez la possibilité de le télécharger à l’aide du bouton en bas à droite.
                 </div>
             </th:block>
             <div th:if="${signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace"
@@ -171,8 +173,8 @@
                 </div>
                 <script th:inline="javascript" type="module">
                     import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=[[${versionApp}]]';
-                    new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.originalDocuments}]], true, [[${_csrf}]]);
-                    new FilesInput($("#signedFiles"), "", "signedFiles", [[${signRequest.signedDocuments}]], true, [[${_csrf}]]);
+                    new FilesInput($("#multipartFiles"),[[${globalProperties.maxUploadSize}]], [[${_csrf}]], "multipartFiles", [[${signRequest.originalDocuments}]], true);
+                    new FilesInput($("#signedFiles"),[[${globalProperties.maxUploadSize}]], [[${_csrf}]], "signedFiles", [[${signRequest.signedDocuments}]], true);
                 </script>
             </div>
             <div th:if="${!signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" class="workspace alert alert-danger">
@@ -238,7 +240,9 @@
                     </div>
                 </div>
                 <div id="noOptions" class="alert alert-danger mt-1" style="display: none;">
-                    Aucune option de signature n'est disponible pour cette demande. Si vous en avez la possibilité, merci d’ajouter une signature sur le document et/ou de démarrer NexU.
+                    Votre profile ne possède pas les prérequis nécessaires pour signer cette demande. Si vous en avez la possibilité, merci de contrôler vos paramètres de signature, d’importer un certificat ou de démarrer NexU.
+                    <br>
+                    Sinon merci de contacter la personne ou le service émetteur de cette demande de signature.
                 </div>
                 <div id="noSeal" th:if="${!sealCertOK}" class="alert alert-danger mt-1" style="display: none;">
                     La signature par certificat cachet d’établissement et temporairement indisponible pour des raisons de maintenance. Merci refaire un essai ultérieurement.
@@ -258,8 +262,10 @@
                     </select>
                     <input class="form-control mt-2 mb-1" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" />
                 </div>
-                <label for="signComment">Vous pouvez ajouter un commentaire</label>
-                <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
+                <div id="signCommentDiv">
+                    <label for="signComment">Vous pouvez ajouter un commentaire</label>
+                    <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
+                </div>
                 <div id="nexuCheck" th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign ? 'd-none' : ''}">
                     <div id="nexu_version_alert" style="display: none;text-align: center;">
                         <div class="alert alert-warning float-start">
@@ -344,7 +350,7 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="stepRepeatableModalLabel">Etape supplémentaire ?</h5>
+                <h5 class="modal-title" id="stepRepeatableModalLabel">Étape supplémentaire ?</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -495,6 +501,7 @@
                                             th:data-signrequest-id="${signRequest.id}"
                                             th:id="'recipientEmailsSelect_' + ${iterator.index + 1}"
                                             multiple="multiple" name="recipientEmails" required="required">
+                                        <option data-placeholder="true"></option>
                                         <th:block th:each="user : ${step.users}">
                                             <option th:if="${user.email != null}" selected="selected"
                                                     th:text="${user.email}"
@@ -626,7 +633,7 @@
                                 class="btn btn-danger me-1" title="Refuser" autofocus>
                             <span>Refuser</span>
                         </button>
-                        <button type="submit" id="refuseNext" th:if="${nextSignBook != null}"  name="redirect" th:value="${nextSignBook.id}"
+                        <button type="submit" id="refuseNext" th:if="${nextSignBook != null}" name="redirect" th:value="${nextSignRequest.id}"
                                 class="btn btn-danger" title="Refuser et aller à la suivante" autofocus>
                             <span>Refuser et aller à la suivante </span>
                             <i class="fas fa-arrow-alt-circle-right"></i>

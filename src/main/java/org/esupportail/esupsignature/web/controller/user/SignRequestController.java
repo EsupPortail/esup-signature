@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -35,8 +34,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 @Controller
 @RequestMapping("/user/signrequests")
@@ -109,10 +110,9 @@ public class SignRequestController {
         model.addAttribute("signBook", signRequest.getParentSignBook());
         Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
         model.addAttribute("workflow", workflow);
-        model.addAttribute("postits", signRequest.getComments().stream().filter(Comment::getPostit).collect(Collectors.toList()));
-        List<Comment> comments = signRequest.getComments().stream().filter(comment -> !comment.getPostit() && comment.getStepNumber() == null).collect(Collectors.toList());
-        model.addAttribute("comments", comments);
-        model.addAttribute("spots", signRequest.getComments().stream().filter(comment -> comment.getStepNumber() != null).collect(Collectors.toList()));
+        model.addAttribute("postits", signRequestService.getPostits(id));
+        model.addAttribute("comments", signRequestService.getComments(id));
+        model.addAttribute("spots", signRequestService.getSpots(id));
         boolean attachmentAlert = signRequestService.isAttachmentAlert(signRequest);
         model.addAttribute("attachmentAlert", attachmentAlert);
         boolean attachmentRequire = signRequestService.isAttachmentRequire(signRequest);
@@ -129,21 +129,22 @@ public class SignRequestController {
             model.addAttribute("toSignDocument", toSignDocuments.get(0));
         }
         model.addAttribute("attachments", signRequestService.getAttachments(id));
-        model.addAttribute("nextSignBook", signBookService.getNextSignBook(signRequest.getId(), userEppn, authUserEppn));
+        model.addAttribute("nextSignBook", signBookService.getNextSignBook(signRequest.getId(), userEppn));
+        model.addAttribute("nextSignRequest", signBookService.getNextSignRequest(signRequest.getId(), userEppn));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
         model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
         model.addAttribute("favoriteSignRequestParamsJson", userService.getFavoriteSignRequestParamsJson(userEppn));
-        if(!signRequest.getStatus().equals(SignRequestStatus.draft)) {
-            try {
-                Object userShareString = httpSession.getAttribute("userShareId");
-                Long userShareId = null;
-                if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
-                List<String> signImages = signBookService.getSignImagesForSignRequest(signRequest, userEppn, authUserEppn, userShareId);
-                model.addAttribute("signImages", signImages);
-            } catch (EsupSignatureUserException e) {
-                model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
+        try {
+            Object userShareString = httpSession.getAttribute("userShareId");
+            Long userShareId = null;
+            if(userShareString != null) {
+                userShareId = Long.valueOf(userShareString.toString());
             }
+            List<String> signImages = signBookService.getSignImagesForSignRequest(id, userEppn, authUserEppn, userShareId);
+            model.addAttribute("signImages", signImages);
+        } catch (EsupSignatureUserException e) {
+            model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
         }
         model.addAttribute("signatureIds", new ArrayList<>());
         Reports reports = signRequestService.validate(id);
@@ -176,7 +177,7 @@ public class SignRequestController {
         model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
         model.addAttribute("viewRight", preAuthorizeService.checkUserViewRights(signRequest, userEppn, authUserEppn));
         model.addAttribute("frameMode", frameMode);
-        if(signRequest.getData() != null && signRequest.getData().getForm() != null) {
+        if(signRequest.getData() != null && signRequest.getData().getForm() != null && signRequest.getData().getForm().getWorkflow() != null) {
             model.addAttribute("action", signRequest.getData().getForm().getAction());
             model.addAttribute("supervisors", signRequest.getData().getForm().getWorkflow().getManagers());
         }
@@ -197,94 +198,6 @@ public class SignRequestController {
         return "user/signrequests/show";
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
-    @ResponseBody
-    @PostMapping(value = "/add-docs/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentToNewSignRequest(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
-        logger.info("start add documents");
-        SignRequest signRequest = signRequestService.getById(id);
-        int i = 0;
-        for (MultipartFile multipartFile : multipartFiles) {
-            signRequestService.addDocsToSignRequest(signRequest, true, i, new ArrayList<>(), multipartFile);
-            i++;
-        }
-        return new String[]{"ok"};
-    }
-
-    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
-    @PostMapping(value = "/fast-sign-request")
-    public String createSignRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
-                                    @RequestParam("signType") SignType signType,
-                                    HttpServletRequest request, RedirectAttributes redirectAttributes) {
-        if (multipartFiles != null) {
-            try {
-                SignBook signBook = signBookService.addFastSignRequestInNewSignBook(multipartFiles, signType, userEppn, authUserEppn);
-                return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
-            } catch (EsupSignatureException e) {
-                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
-            }
-        } else {
-            logger.warn("no file to import");
-        }
-        return "redirect:" + request.getHeader(HttpHeaders.REFERER);
-    }
-
-    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
-    @PostMapping(value = "/send-sign-request")
-    public String sendSignRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
-                                  @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
-                                  @RequestParam("signType") SignType signType,
-                                  @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
-                                  @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
-                                  @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
-                                  @RequestParam(name = "forceAllSign", required = false) Boolean forceAllSign,
-                                  @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
-                                  @RequestParam(value = "pending", required = false) Boolean pending,
-                                  @RequestParam(value = "comment", required = false) String comment,
-                                  @RequestParam(value = "emails", required = false) List<String> emails,
-                                  @RequestParam(value = "names", required = false) List<String> names,
-                                  @RequestParam(value = "firstnames", required = false) List<String> firstnames,
-                                  @RequestParam(value = "phones", required = false) List<String> phones,
-                                  @RequestParam(value = "title", required = false) String title,
-                                  Model model, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
-        String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
-        User user = (User) model.getAttribute("user");
-        User authUser = userService.getUserByEppn(authUserEppn);
-        recipientsEmails = recipientsEmails.stream().distinct().collect(Collectors.toList());
-        logger.info(user.getEmail() + " envoi d'une demande de signature à " + recipientsEmails);
-        List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
-        if (multipartFiles != null) {
-            try {
-                Map<SignBook, String> signBookStringMap = null;
-                try {
-                    signBookStringMap = signBookService.sendSignRequest(title, multipartFiles, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, authUser, false, forceAllSign, null);
-                } catch(EsupSignatureIOException e) {
-                    logger.warn("error on send signrequest, redirect to home");
-                    redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
-                    return "redirect:" + referer;
-                }
-                if (signBookStringMap.values().iterator().next() != null) {
-                    redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", signBookStringMap.values().toArray()[0].toString()));
-                } else {
-                    if(userSignFirst == null || !userSignFirst) {
-                        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été envoyée"));
-                    }
-                }
-                long signRequestId = signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
-                if(signRequestService.checkTempUsers(signRequestId, recipientsEmails, externalUsersInfos)) {
-                    redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Merci de compléter tous les utilisateurs externes"));
-                }
-                return "redirect:/user/signrequests/" + signRequestId;
-            } catch (EsupSignatureException | MessagingException | EsupSignatureFsException e) {
-                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
-            }
-        } else {
-            logger.warn("no file to import");
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("error","Pas de fichier à importer"));
-        }
-        return "redirect:" + referer;
-    }
-
     @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
     @PostMapping(value = "/refuse/{id}")
     public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, @RequestParam(value = "redirect") String redirect, RedirectAttributes redirectAttributes) throws EsupSignatureMailException, EsupSignatureException {
@@ -293,7 +206,7 @@ public class SignRequestController {
         if(redirect.equals("end")) {
             return "redirect:/user/signbooks/";
         } else {
-            return "redirect:/user/signbooks/" + redirect;
+            return "redirect:/user/signrequests/" + redirect;
         }
     }
 
@@ -341,7 +254,7 @@ public class SignRequestController {
         }
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipent(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
     @PostMapping(value = "/add-attachment/{id}")
     public String addAttachement(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                  @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles,
@@ -439,7 +352,7 @@ public class SignRequestController {
     }
 
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipent(#id, #userEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #userEppn)")
     @PostMapping(value = "/comment/{id}")
     public String comment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
@@ -473,7 +386,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipent(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
     @PostMapping(value = "/replay-notif/{id}")
     public String replayNotif(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws EsupSignatureMailException {
         if(signRequestService.replayNotif(id)) {

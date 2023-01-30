@@ -4,45 +4,30 @@ import {EventFactory} from "./EventFactory.js?version=@version@";
 
 export default class FilesInput extends EventFactory {
 
-    constructor(input, workflowName, name, documents, readOnly, csrf, signRequestId) {
+    constructor(input, maxSize, csrf, name, documents, readOnly) {
         super();
         this.input = input;
         this.name = name;
+        this.maxSize = 1000000;
+        if(maxSize != null) {
+            this.maxSize = maxSize / 1000;
+        }
         if(this.name == null) {
             this.name = "Demande personnalisée"
         }
-        console.info("enable complete file input for : " + name);
-        this.workflowName = workflowName;
-        if(workflowName === "") {
-            this.workflowName = "custom";
-        }
+        console.info("Enable Bootstrap FileInput for : " + name);
         this.csrf = new CsrfToken(csrf);
-        this.async = false;
-        this.uploadUrl = null;
-        if(signRequestId != null) {
-            this.async = false;
-            this.uploadUrl = '/user/signrequests/add-docs/' + signRequestId + '?'+ this.csrf.parameterName + '=' + this.csrf.token;
-        } else {
-            if(workflowName != null) {
-                this.async = false;
-                this.uploadUrl = '/ws-secure/signrequests/start-workflow/' + this.workflowName + '?' + this.csrf.parameterName + '=' + this.csrf.token;
-            }
-        }
-        this.title = $("#titleWiz");
+        this.uploadUrl = '/ws-secure/signrequests/add-docs?'+ this.csrf.parameterName + '=' + this.csrf.token;
+        this.title = $("#title-wiz");
         this.initFileInput(documents, readOnly);
         this.initListeners();
     }
 
     initListeners() {
-        $("#fileUploadBtn").on('click', e => this.fileUpload());
-        if(!this.async) {
-            console.info("set async");
-            this.input.on('fileloaded', e => this.uploadFile());
-        }
-        this.input.on('fileloaded', e => this.checkUniqueFile());
+        this.input.on('fileselect', e => this.checkUniqueFile());
         this.input.on('fileremoved', e => this.checkUniqueFile());
-        this.input.on('fileclear', e => this.input.fileinput('unlock'));
         this.input.on('filecleared', e => this.checkUniqueFile());
+        this.input.on('fileclear', e => this.input.fileinput('unlock'));
     }
 
     uploadFile() {
@@ -52,7 +37,7 @@ export default class FilesInput extends EventFactory {
     initFileInput(documents, readOnly) {
         let urls = [];
         let previews = [];
-        let csrf = this.csrf
+        let csrf = this.csrf;
         if (documents != null) {
             documents.forEach(function (document) {
                 let type;
@@ -91,15 +76,19 @@ export default class FilesInput extends EventFactory {
             language: "fr",
             showCaption: false,
             minFileSize: 1,
+            maxFileSize: this.maxSize,
             showClose: false,
-            showBrowse: !readOnly,
+            showBrowse: true,
             showUpload: false,
+            showUploadStats: false,
+            progressDelay: 50,
             showRemove: !readOnly,
-            dropZoneEnabled: !readOnly && !this.async,
+            dropZoneEnabled: !readOnly,
             browseOnZoneClick: !readOnly,
             uploadUrl: this.uploadUrl,
-            uploadAsync: this.async,
-            theme: 'explorer-fas',
+            maxAjaxThreads: 5,
+            uploadAsync: true,
+            theme: 'explorer-fa6',
             pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
             initialPreview: urls,
             initialPreviewConfig : previews,
@@ -170,37 +159,13 @@ export default class FilesInput extends EventFactory {
         });
     }
 
-    fileUpload() {
-        console.info("file upload");
-        let self = this;
-        let title = $("#titleWiz");
-        if(this.workflowName === "custom" && title.val() === "") {
-            $(window).on('scroll', function(e){
-                window.scrollTo(0,0);
-            });
-            $("#titleWizSubmit").click();
-
-        } else {
-            this.input.fileinput('upload');
-            this.input.on('filebatchuploadsuccess', function(event, data) {
-                console.info("submit form");
-                self.fireEvent("uploaded", data.response);
-            });
-        }
-    }
-
     checkUniqueFile() {
         let nbFiles = this.input.fileinput('getFilesCount', true);
         let compare = 1;
-        if(!this.async) {
-            compare = 0;
-        }
         if(nbFiles > compare) {
-            $('#unique').removeClass('d-none');
             $('#forceAllSign').removeClass('d-none');
             $('#forceAllSign2').removeClass('d-none');
         } else {
-            $('#unique').addClass('d-none');
             $('#forceAllSign').addClass('d-none');
             $('#forceAllSign2').addClass('d-none');
         }

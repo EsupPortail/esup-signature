@@ -4,8 +4,6 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureFsException;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.export.WorkflowExportService;
@@ -145,8 +143,8 @@ public class ManageController {
         Data data = dataService.addData(id, creator.getEppn());
         try {
             Map<String, String> datas = new HashMap<>();
-            signBookService.sendForSign(data.getId(), null, null, null, null, null, creator.getEppn(), creator.getEppn(), true, datas, null, null, null);
-        } catch (EsupSignatureException | EsupSignatureIOException | EsupSignatureFsException e) {
+            signBookService.sendForSign(data.getId(), null, null, null, null, null, null, creator.getEppn(), creator.getEppn(), true, datas, null, null, null);
+        } catch (EsupSignatureException e) {
             logger.error("error on create form instance", e);
         }
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Nouveau formulaire envoyé"));

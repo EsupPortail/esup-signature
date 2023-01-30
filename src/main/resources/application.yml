@@ -139,9 +139,9 @@ ldap:
     group-search-base: ou=groups
     group-search-filter: member={0}
     all-groups-search-filter: cn=*{0}
-    members-of-group-search-filter: memberOf=cn={0},ou=groups
     user-id-search-filter: (uid={0})
     member-search-filter: (&(uid={0})({1}))
+    members-of-group-search-filter: memberOf=cn={0},ou=groups,dc=univ-ville,dc=fr
     mapping-filters-groups:
         student : "(eduPersonAffiliation:=student)"
         staff : "(eduPersonAffiliation:=staff)"
@@ -166,7 +166,7 @@ dss:
     server-signing-keystore-filename: validate_service.p12
     server-signing-keystore-password: password
     server-signing-keystore-type: PKCS12
-    tsp-server: http://timestamp.sectigo.com
+    tsp-server: http://tsa.belgium.be/connect
     lotl-country-code: EU
     lotl-url: https://ec.europa.eu/tools/lotl/eu-lotl.xml
     oj-url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG
@@ -222,7 +222,7 @@ server:
         remoteip:
             remote-ip-header: X-Forwarded-For
         basedir: ./temp
-
+        max-swallow-size: -1
 sign:
     aes-key : "0000000000000000"
     cades-digest-algorithm: SHA256
@@ -238,6 +238,9 @@ sign:
 
 logging:
     file.name: logs/esup-signature.log
+    pattern:
+        console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(%X{userId:-system}){cyan} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"
+        file: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(%X{userId:-system}){cyan} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"
     level:
         root: info
         org.esupportail.esupsignature: info

@@ -26,9 +26,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Set;
 
 @RequestMapping("/admin/workflows")
 @Controller
@@ -104,7 +104,7 @@ public class WorkflowAdminController {
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
 		Workflow workflow = workflowService.getById(id);
 		model.addAttribute("workflow", workflow);
-		model.addAttribute("nbSignRequests", signBookService.countSignBooksByWorkflow(id));
+		model.addAttribute("nbWorkflowSignRequests", signBookService.countSignBooksByWorkflow(id));
 		model.addAttribute("roles", userService.getAllRoles());
 		model.addAttribute("sourceTypes", DocumentIOType.values());
 		model.addAttribute("targetTypes", DocumentIOType.values());
@@ -117,7 +117,7 @@ public class WorkflowAdminController {
 						 @Valid Workflow workflow,
 						 @RequestParam(value = "types", required = false) String[] types,
 						 @RequestParam(required = false) List<String> viewersEmails,
-						 @RequestParam(required = false) List<String> managers) {
+						 @RequestParam(required = false) Set<String> managers) {
 		User authUser = userService.getUserByEppn(authUserEppn);
 		Workflow updateWorkflow = workflowService.update(workflow, authUser, types, managers);
 		workflowService.addViewers(updateWorkflow.getId(), viewersEmails);
@@ -196,7 +196,7 @@ public class WorkflowAdminController {
 	public String addStepRecipient(@ModelAttribute("authUserEppn") String authUserEppn,
 								   @PathVariable("id") Long id,
 								   @PathVariable("workflowStepId") Long workflowStepId,
-								   @RequestParam String[] recipientsEmails, RedirectAttributes redirectAttributes) {
+								   @RequestParam String[] recipientsEmails, RedirectAttributes redirectAttributes) throws EsupSignatureException {
 		WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientsEmails);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant ajouté"));
 		return "redirect:/admin/workflows/" + id + "#" + workflowStep.getId();
@@ -212,7 +212,7 @@ public class WorkflowAdminController {
 	}
 
 	@GetMapping(value = "/get-files-from-source/{id}")
-	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureFsException {
+	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureException {
 		User authUser = userService.getUserByEppn(authUserEppn);
 		int nbImportedFiles = signBookService.importFilesFromSource(id, authUser, authUser);
 		if(nbImportedFiles == 0) {
@@ -266,7 +266,7 @@ public class WorkflowAdminController {
 			if(multipartFormSetup.getSize() > 0) {
 				workflowService.setWorkflowSetupFromJson(id, multipartFormSetup.getInputStream());
 			}
-		} catch (IOException | EsupSignatureException | EsupSignatureFsException e) {
+		} catch (Exception e) {
 			logger.error(e.getMessage());
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
 		}

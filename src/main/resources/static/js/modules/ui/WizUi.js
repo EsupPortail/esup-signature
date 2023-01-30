@@ -5,12 +5,16 @@ import {ExternalUserInfos} from "../../prototypes/ExternalUserInfos.js?version=@
 
 export class WizUi {
 
-    constructor(workflowId, div, workflowName, csrf) {
+    constructor(workflowId, div, workflowName, csrf, maxSize) {
         this.workflowId = workflowId;
         this.signBookId = "";
         this.div = div;
         this.workflowName = workflowName;
+        if(workflowName === "" || workflowName == null) {
+            this.workflowName = "custom";
+        }
         this.csrf = csrf;
+        this.maxSize = maxSize;
         this.mode = "";
         this.input;
         this.fileInput;
@@ -26,6 +30,26 @@ export class WizUi {
 
     initListeners() {
         this.modal.on('hidden.bs.modal', e => this.checkOnModalClose());
+    }
+
+    submitStartWorkflow() {
+        let self = this;
+        let form = $("#start-workflow-form");
+        let title = $("#title-wiz");
+        if(this.workflowName === "custom" && title.val() === "") {
+            $(window).on('scroll', function(e) {
+                window.scrollTo(0,0);
+            });
+            $("#title-wiz-submit").click();
+        } else {
+            $.post({
+                url: form.attr("action"),
+                data: form.serialize(),
+                success: function () {
+                    self.input.fileinput("upload");
+                }
+            });
+        }
     }
 
     checkOnModalClose() {
@@ -82,10 +106,11 @@ export class WizUi {
 
     initWiz1(html) {
         this.div.html(html);
+        $("#wiz-start-button").on('click', e => this.submitStartWorkflow());
         this.input = $("#multipartFiles_" + this.workflowId);
         if(!this.workflowId) this.input = $("#multipartFiles_0");
-        this.fileInput = new FilesInput(this.input, this.workflowName, this.workflowName, null, false, this.csrf, null);
-        this.fileInput.addEventListener("uploaded", e => this.gotoStep2(e));
+        this.fileInput = new FilesInput(this.input, this.maxSize, this.csrf, this.workflowName, null, false);
+        this.input.on("filebatchuploadsuccess", e => this.gotoStep2(e));
         let id = this.workflowId;
         if(id === "") {
             id = 0;
@@ -114,8 +139,9 @@ export class WizUi {
     }
 
     gotoStep2(e) {
+        console.log(e);
         let comment = $("#commentWiz");
-        let title = $("#titleWiz");
+        let title = $("#title-wiz");
         let id = this.workflowId;
         if(id === "") {
             id = 0;
@@ -129,7 +155,7 @@ export class WizUi {
         this.signBookId = e;
         $.ajax({
             type: "GET",
-            url: '/user/wizard/wiz-init-steps/' + this.signBookId + '?workflowId=' + this.workflowId + "&recipientsCCEmailsWiz=" + recipientsCCEmailsWiz + "&forceAllSign=" + forceAllSign + "&comment=" + encodeURIComponent(comment.val()) + "&title=" + title.val(),
+            url: '/user/wizard/wiz-init-steps/?workflowId=' + id + "&recipientsCCEmailsWiz=" + recipientsCCEmailsWiz + "&forceAllSign=" + forceAllSign + "&comment=" + encodeURIComponent(comment.val()) + "&title=" + title.val(),
             dataType : 'html',
             cache: false,
             success : html => this.initWiz2(html)
@@ -185,7 +211,7 @@ export class WizUi {
         console.log(signBookId);
         let self = this;
         $.ajax({
-            url: "/user/wizard/wiz-add-step"+ this.mode +"/" + signBookId + "?end=" + self.end + "&userSignFirst=" + userSignFirst + "&start=" + self.start + "&close=" + self.close + "&" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/wizard/wiz-add-step"+ this.mode +"/?end=" + self.end + "&userSignFirst=" + userSignFirst + "&start=" + self.start + "&close=" + self.close + "&" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             contentType: "application/json",
             data: JSON.stringify(step),
@@ -217,10 +243,9 @@ export class WizUi {
 
     exit() {
         let csrf = this.csrf;
-        let self = this;
         if(this.signBookId !== ""){
             $.ajax({
-                url: "/user/wizard/wizend/" + self.signBookId + "?name=" + name + "&close=" + $('#close').val() + "&" + csrf.parameterName + "=" + csrf.token,
+                url: "/user/wizard/wizend?name=" + name + "&close=" + $('#close').val() + "&" + csrf.parameterName + "=" + csrf.token,
                 type: 'POST',
                 success: html => this.initWiz2(html)
             });

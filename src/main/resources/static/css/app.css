@@ -2,8 +2,8 @@
 
 @font-face {
     font-family: 'FontAwesome';
-    src: url('/webjars/font-awesome/5.15.3/webfonts/fa-solid-900.woff') format('woff'),
-    url('/webjars/font-awesome/5.15.3/webfonts/fa-solid-900.ttf') format('truetype');
+    src: url('/webjars/font-awesome/6.2.0/webfonts/fa-solid-900.woff2') format('woff2'),
+    url('/webjars/font-awesome/6.2.0/webfonts/fa-solid-900.ttf') format('truetype');
 }
 
 @font-face {
@@ -127,6 +127,15 @@ main {
     -ms-user-select: none;
     user-select: none;
     padding-bottom: 6px;
+}
+
+.main-selectable {
+    -webkit-touch-callout: initial !important;
+    -webkit-user-select: initial !important;
+    -khtms-user-select: initial !important;
+    -moz-user-select: initial !important;
+    -ms-user-select: initial !important;
+    user-select: initial !important;
 }
 
 pre {
@@ -321,6 +330,11 @@ code {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.file-drop-zone {
+    border: 2px dashed #ddd;
+    min-height: revert;
 }
 
 .file-drop-zone-title {
@@ -695,6 +709,14 @@ th .ss-content {
     margin-left: 60px;
 }
 
+.new-width {
+    width: calc(100vw - 282px);
+}
+
+.new-width-full {
+    width: calc(100vw - 82px);
+}
+
 #sidebar {
     top: 50px;
     padding-right: 5px;
@@ -812,6 +834,10 @@ th .ss-content {
     top: 10px !important;
     min-width: 50% !important;
     max-width: 800px;
+}
+
+.introjs-helperLayer {
+    box-shadow: rgba(39,111,178, 1) 0px 0px 1px 2px, rgba(0,0,0, 0.5) 0px 0px 0px 5000px !important;
 }
 
 #stepper {
@@ -1168,9 +1194,9 @@ textarea:placeholder-shown.required-field {
 }
 
 .crop {
-    overflow:hidden;
-    margin:0;
-    margin-bottom: 20px;
+    overflow: hidden;
+    margin: 0;
+    padding-bottom: 10px;
 }
 
 .fa-4x {
@@ -1362,6 +1388,7 @@ textarea:placeholder-shown.required-field {
 }
 
 .fixed-action-btns {
+    pointer-events: none;
     position: fixed;
     right: 1vw;
     bottom: 80px;
@@ -1379,6 +1406,7 @@ textarea:placeholder-shown.required-field {
 }
 
 .fixed-action-btns ul {
+    pointer-events: initial;
     height: auto;
     opacity: 1;
     position: absolute;
@@ -1511,6 +1539,24 @@ textarea:placeholder-shown.required-field {
     min-height: 70vh;
 }
 
+.new-max-w {
+    width: calc(100vw - 280px);
+}
+
+.workspace-margin-top {
+    margin-top: 170px;
+}
+
+@media (max-width: 992px) {
+    .new-max-w {
+        width: 100%;
+    }
+}
+
+.margin-274 {
+    margin-top: 274px;
+}
+
 .zoom {
     text-align: center;
     min-width: 60px !important;
@@ -1614,7 +1660,7 @@ input:focus, textarea:focus, select:focus {
 
 .disable-selection {
     outline: none;
-    pointer-events:none;
+    pointer-events: none;
 }
 
 #signPad {
@@ -2041,12 +2087,22 @@ progress:before {
     display: inline;
 }
 
-.file-drop-zone {
-    min-height: revert;
-}
-
 #help-naming-template {
     user-select: text !important;
     -moz-user-select: text !important;
     -webkit-user-select: text !important;
+}
+
+.multi-doc-font {
+    font-weight: 300;
+}
+
+ul.striped-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+ul.striped-list > li:nth-of-type(odd) {
+    background-color: #e9e9f9 ;
 }

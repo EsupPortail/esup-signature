@@ -2,6 +2,8 @@ package org.esupportail.esupsignature.config.security;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @ConfigurationProperties(prefix="security.web")
@@ -13,6 +15,7 @@ public class WebSecurityProperties {
     private Map<String, String> groupMappingSpel;
     private String franceConnectAcr = "eidas1";
     private String franceConnectLogoutEndpoint;
+    private List<String> excludedEmails = new ArrayList<>();
 
     public String[] getWsAccessAuthorizeIps() {
         return wsAccessAuthorizeIps;
@@ -58,5 +61,13 @@ public class WebSecurityProperties {
 
     public void setFranceConnectLogoutEndpoint(String franceConnectLogoutEndpoint) {
         this.franceConnectLogoutEndpoint = franceConnectLogoutEndpoint;
+    }
+
+    public List<String> getExcludedEmails() {
+        return excludedEmails;
+    }
+
+    public void setExcludedEmails(List<String> excludedEmails) {
+        this.excludedEmails = excludedEmails;
     }
 }

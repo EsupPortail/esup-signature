@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "certificat")
@@ -26,8 +26,8 @@ public class Certificat {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date expireDate;
 
-    @ElementCollection(targetClass=String.class)
-    private List<String> roles = new ArrayList<>();
+    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    private Set<String> roles = new HashSet<>();
 
     public void setId(Long id) {
         this.id = id;
@@ -61,11 +61,11 @@ public class Certificat {
         this.password = password;
     }
 
-    public List<String> getRoles() {
+    public Set<String> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<String> roles) {
+    public void setRoles(Set<String> roles) {
         this.roles = roles;
     }
 }

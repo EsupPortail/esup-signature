@@ -23,16 +23,18 @@
         </nav>
         <div id="content" class="content flex align-content-center">
             <div class="row">
-                <div th:replace="fragments/new :: new"></div>
-                <div id="toSignList" class="d-flex col-12">
+                <div id="new-div" class="position-fixed new-width" style="z-index: 1000;">
+                    <div th:replace="fragments/new :: new"></div>
+                </div>
+                <div id="to-sign-list" class="d-flex col-12 margin-274">
                     <div class="col-12 col-lg-10 card mb-2 mx-auto">
                         <div class="card-body">
                             <h5 class="text-center"><b>Demandes à signer</b></h5>
-                            <table th:if="${signBooksToSign.getNumberOfElements() > 0}"
+                            <table th:if="${signBooksToSign.size() > 0}"
                                    class="table table-sm table-borderless table-hover">
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksToSign}">
-                                    <tr th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}">
+                                    <tr th:if="${signBook.signRequests.size() > 0}" th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}">
                                         <td class="text-break d-none d-md-table-cell"><a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fas fa-plus"></i></a></td>
                                         <td class="text-break w-5 d-none d-md-table-cell">
                                             <i th:if="${signBook.signRequests.size() > 1}" class="fas fa-folder-open p-2"></i>
@@ -42,8 +44,7 @@
                                         </td>
                                         <td class="text-break w-30">
                                             <span th:if="${signBook.signRequests.size() > 1}">
-                                                <i class="fas fa-caret-down"></i>
-                                                <span th:text="' Contient ' + ${signBook.signRequests.size()} + ' documents '"></span>
+                                                <span th:text="${signBook.signRequests.get(0).getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
                                                 <i class="fas fa-caret-down"></i>
                                             </span>
                                             <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>
@@ -82,7 +83,7 @@
                                 </th:block>
                                 </tbody>
                             </table>
-                            <div th:unless="${signBooksToSign.getNumberOfElements() > 0}"
+                            <div th:unless="${signBooksToSign.size() > 0}"
                                  class="alert alert-secondary">
                                 Aucun document à signer pour le moment
                             </div>
@@ -110,11 +111,11 @@
 <!--                            </table>-->
 <!--                        </div>-->
                 </div>
-                <div id="pendingList" class="d-flex col-12">
+                <div id="pendingList" class="d-flex col-12" th:if="${userEppn == authUserEppn}">
                     <div class="col-12 col-lg-10 card mb-2 mx-auto">
                         <div class="card-body">
                             <h5 class="text-center"><b>Demandes en attente de signature</b></h5>
-                            <table th:if="${signBooksPending.getNumberOfElements() > 0}"
+                            <table th:if="${signBooksPending.size() > 0}"
                                    class="table table-sm table-borderless table-hover">
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksPending}">
@@ -128,8 +129,7 @@
                                         </td>
                                         <td class="text-break w-30">
                                             <span th:if="${signBook.signRequests.size() > 1}">
-                                                <i class="fas fa-caret-down"></i>
-                                                <span th:text="' Contient ' + ${signBook.signRequests.size()} + ' documents '"></span>
+                                                <span th:text="${signBook.signRequests.get(0).getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
                                                 <i class="fas fa-caret-down"></i>
                                             </span>
                                             <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>
@@ -168,9 +168,9 @@
                                 </th:block>
                                 </tbody>
                             </table>
-                            <div th:unless="${signBooksPending.getNumberOfElements() > 0}"
+                            <div th:unless="${signBooksPending.size() > 0}"
                                  class="alert alert-secondary">
-                                Aucun document à signer pour le moment
+                                Aucun document en attente
                             </div>
                         </div>
                     </div>

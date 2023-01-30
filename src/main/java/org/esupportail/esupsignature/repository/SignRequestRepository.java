@@ -14,14 +14,14 @@ import java.util.List;
 
 public interface SignRequestRepository extends CrudRepository<SignRequest, Long>, PagingAndSortingRepository<SignRequest, Long> {
 
-    @Query("select count(distinct  s) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and r.user.eppn = :recipientUserEppn")
+    @Query("select count(distinct  s) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and s.parentSignBook.hidedBy is empty and r.user.eppn = :recipientUserEppn")
     Long countByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
 
     List<SignRequest> findByIdIn(List<Long> ids);
 
     SignRequest findByToken(String token);
 
-    @Query("select distinct s from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and r.user.eppn = :recipientUserEppn")
+    @Query("select distinct s from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and s.parentSignBook.hidedBy is empty and r.user.eppn = :recipientUserEppn")
     List<SignRequest> findByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
 
     List<SignRequest> findByCreateByEppnAndStatus(String createByEppn, SignRequestStatus status);
@@ -39,6 +39,8 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
 
     @Query(value = "select * from sign_request where create_by_id = :userId and DATE_PART('day', now() - create_date) > :nbBeforeWarning and status = 'pending' and warning_readed = false", nativeQuery = true)
     List<SignRequest> findByCreateByEppnAndOlderPending(Long userId, Integer nbBeforeWarning);
+
+    List<SignRequest> findByCreateByEppn(String userEpppn);
 
     @Query(value = "select * from sign_request where DATE_PART('day', now() - create_date) > :nbBeforeDelete and status = 'pending' and warning_readed = true", nativeQuery = true)
     List<SignRequest> findByOlderPendingAndWarningReaded(Integer nbBeforeDelete);

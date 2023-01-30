@@ -26,7 +26,6 @@ import eu.europa.esig.dss.validation.timestamp.TimestampToken;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 import org.apache.commons.codec.binary.Base64;
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.dss.DssUtils;
 import org.esupportail.esupsignature.dss.model.*;
@@ -36,7 +35,10 @@ import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.CertificatService;
+import org.esupportail.esupsignature.service.DocumentService;
+import org.esupportail.esupsignature.service.UserKeystoreService;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.interfaces.certificat.impl.OpenXPKICertificatGenerationService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfParameters;
@@ -61,19 +63,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @EnableConfigurationProperties(SignProperties.class)
 public class SignService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignService.class);
-
-	final private GlobalProperties globalProperties;
 
 	final private SignProperties signProperties;
 
@@ -121,9 +121,8 @@ public class SignService {
 
 	private final OpenXPKICertificatGenerationService openXPKICertificatGenerationService;
 
-	public SignService(@Autowired(required = false) OpenXPKICertificatGenerationService openXPKICertificatGenerationService, GlobalProperties globalProperties, SignProperties signProperties) {
+	public SignService(@Autowired(required = false) OpenXPKICertificatGenerationService openXPKICertificatGenerationService, SignProperties signProperties) {
 		this.openXPKICertificatGenerationService = openXPKICertificatGenerationService;
-		this.globalProperties = globalProperties;
 		this.signProperties = signProperties;
 	}
 
@@ -148,13 +147,15 @@ public class SignService {
 		try {
 			if(signWith.equals(SignWith.userCert)) {
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
-			} else if(signWith.equals(SignWith.groupCert)){
+			} else if(signWith.equals(SignWith.autoCert)){
 				Certificat certificat = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getCertificat();
+				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
+			} else if(signWith.equals(SignWith.groupCert)){
+				Certificat certificat = certificatService.getCertificatByUser(userEppn).get(0);
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
 			} else if (signWith.equals(SignWith.sealCert) && user.getRoles().contains("ROLE_SEAL")) {
 				try {
-					KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
-					abstractKeyStoreTokenConnection = new Pkcs11SignatureToken(globalProperties.getSealCertificatDriver(), passwordProtection);
+					abstractKeyStoreTokenConnection = certificatService.getSealToken();
 				} catch (Exception e) {
 					throw new EsupSignatureException("unable to open pkcs11 token", e);
 				}
@@ -187,8 +188,10 @@ public class SignService {
 				aSiCWithXAdESSignatureParameters.aSiC().setMimeType("application/vnd.etsi.asic-e+zip");
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else {
-				if(abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > 0) {
-					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), new Color(214, 0, 128), user, signatureDocumentForm.getSigningDate());
+				List<SignRequestParams> signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
+				List<SignRequestParams> signRequestParamsesForSign = signRequestParamses.stream().filter(srp -> srp.getSignImageNumber() >= 0 && srp.getTextPart() == null).collect(Collectors.toList());
+				if(abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken && signRequestParamsesForSign.size() == 1) {
+					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequestParamsesForSign.get(0) , new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), new Color(214, 0, 128), user, signatureDocumentForm.getSigningDate());
 				} else {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, user);
 				}
@@ -487,13 +490,13 @@ public class SignService {
 				}
 				bytes = inputStream.readAllBytes();
 				if(isNotSigned(signRequest) && !pdfService.isPdfAComplient(bytes)) {
-					int i = 0;
-					if(sealSign) i = 1;
-					List<SignRequestParams> signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
-					for(SignRequestParams signRequestParams : signRequestParamses) {
-						bytes = pdfService.stampImage(bytes, signRequest, signRequestParams, i, user, date);
-						i++;
-					}
+//					int i = 0;
+//					if(sealSign) i = 1;
+//					List<SignRequestParams> signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
+//					for(SignRequestParams signRequestParams : signRequestParamses.stream().filter(srp -> srp.getSignImageNumber() < 0).collect(Collectors.toList())) {
+//						bytes = pdfService.stampImage(bytes, signRequest, signRequestParams, i, user, date);
+//						i++;
+//					}
 					bytes = pdfService.convertGS(pdfService.writeMetadatas(bytes, toSignFile.getFileName(), signRequest, new ArrayList<>()));
 				}
 			} else {

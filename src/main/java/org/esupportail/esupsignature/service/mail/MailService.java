@@ -72,6 +72,9 @@ public class MailService {
     @Resource
     private UserService userService;
 
+//    @Resource
+//    private CertificatService certificatService;
+
     @Resource
     private FileService fileService;
 
@@ -144,6 +147,36 @@ public class MailService {
                 logger.error("unable to send COMPLETE email", e);
                 throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
             }
+        }
+    }
+
+    public void sendPostit(SignBook signBook, Comment comment) throws EsupSignatureMailException {
+        if (!checkMailSender()) {
+            return;
+        }
+        final Context ctx = new Context(Locale.FRENCH);
+        ctx.setVariable("signBook", signBook);
+        ctx.setVariable("comment", comment);
+        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("userService", userService);
+        setTemplate(ctx);
+        Set<String> toEmails = new HashSet<>();
+        toEmails.add(signBook.getCreateBy().getEmail());
+        //TODO envoi dans les deux sens ?
+        try {
+            MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
+            String htmlContent = templateEngine.process("mail/email-postit.html", ctx);
+            addInLineImages(mimeMessage, htmlContent);
+            mimeMessage.setSubject("Un postit a été déposé sur votre demande");
+            mimeMessage.setFrom(mailConfig.getMailFrom());
+            mimeMessage.setTo(toEmails.toArray(String[]::new));
+            logger.info("send email completed to : " + StringUtils.join(toEmails.toArray(String[]::new), ";"));
+            if (mailSender != null) {
+                mailSender.send(mimeMessage.getMimeMessage());
+            }
+        } catch (MailSendException | MessagingException e) {
+            logger.error("unable to send COMPLETE email", e);
+            throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
         }
     }
 
@@ -265,9 +298,10 @@ public class MailService {
             mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             logger.info("send email alert for " + recipientsEmails.get(0));
+//            mailSender.send(signMessage(mimeMessage.getMimeMessage()));
             mailSender.send(mimeMessage.getMimeMessage());
             signRequest.setLastNotifDate(new Date());
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             logger.error("unable to send ALERT email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
         }
@@ -387,14 +421,15 @@ public class MailService {
         }
     }
 
-    public void sendFile(String title, List<SignRequest> signRequests, String targetUri) throws MessagingException, IOException {
+    public void sendFile(String title, SignBook signBook, String targetUri) throws MessagingException, IOException {
         if (!checkMailSender()) {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("signRequests", signRequests);
-        User user = signRequests.get(0).getCreateBy();
+        ctx.setVariable("signBook", signBook);
+        ctx.setVariable("signRequests", signBook.getSignRequests());
+        User user = signBook.getCreateBy();
         ctx.setVariable("user", user);
         setTemplate(ctx);
         MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
@@ -460,4 +495,40 @@ public class MailService {
     public JavaMailSenderImpl getMailSender() {
         return mailSender;
     }
+
+//    public MimeMessage signMessage(MimeMessage message) {
+//        try {
+//            if(globalProperties.getSignEmailWithSealCertificat()) {
+//                AbstractKeyStoreTokenConnection tokenConnection = certificatService.getSealToken();
+//                DSSPrivateKeyEntry dssPrivateKeyEntry = tokenConnection.getKeys().get(0);
+//                X509Certificate x509Certificate = dssPrivateKeyEntry.getCertificate().getCertificate();
+//                PrivateKey privateKey = certificatService.getSealPrivateKey();
+//                SMIMECapabilityVector capabilities = new SMIMECapabilityVector();
+//                capabilities.addCapability(SMIMECapability.dES_EDE3_CBC);
+//                capabilities.addCapability(SMIMECapability.rC2_CBC, 128);
+//                capabilities.addCapability(SMIMECapability.dES_CBC);
+//                capabilities.addCapability(SMIMECapability.aES256_CBC);
+//                ASN1EncodableVector attributes = new ASN1EncodableVector();
+//                attributes.add(new SMIMECapabilitiesAttribute(capabilities));
+//                IssuerAndSerialNumber issAndSer = new IssuerAndSerialNumber(new X500Name(x509Certificate.getIssuerX500Principal().getName()), x509Certificate.getSerialNumber());
+//                attributes.add(new SMIMEEncryptionKeyPreferenceAttribute(issAndSer));
+//                SMIMESignedGenerator signer = new SMIMESignedGenerator();
+//                signer.addSignerInfoGenerator(new JcaSimpleSignerInfoGeneratorBuilder()
+//                        .setSignedAttributeGenerator(new AttributeTable(attributes))
+//                        .build("SHA1withRSA", privateKey, x509Certificate));
+//                List<X509Certificate> certList = new ArrayList<>();
+//                certList.add(x509Certificate);
+//                JcaCertStore jcaCertStore = new JcaCertStore(certList);
+//                signer.addCertificates(jcaCertStore);
+//                MimeMultipart mm = signer.generate(message);
+//                message.setContent(mm, mm.getContentType());
+//                message.saveChanges();
+//            }
+//            return message;
+//        } catch (Exception e) {
+//            logger.debug(e.getMessage(), e);
+//        }
+//        return message;
+//    }
+
 }

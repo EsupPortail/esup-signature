@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.BigFile;
 import org.esupportail.esupsignature.entity.Document;
@@ -20,9 +21,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Service
 @EnableConfigurationProperties(GlobalProperties.class)
@@ -48,23 +52,37 @@ public class DocumentService {
 		this.globalProperties = globalProperties;
 	}
 
+	public List<Document> getAll() {
+		List<Document> documents = new ArrayList<>();
+		documentRepository.findAll().forEach(documents::add);
+		return documents;
+	}
+
 	@Transactional
 	public Document createDocument(InputStream inputStream, String name, String contentType) throws IOException {
-		Document document = new Document();
-		document.setCreateDate(new Date());
-		document.setFileName(name);
-		document.setContentType(contentType);
-		BigFile bigFile = new BigFile();
 		long size = inputStream.available();
 		if(size == 0) {
 			logger.warn("upload aborted cause file size is 0");
 			throw new EsupSignatureRuntimeException("File size is 0");
 		}
-		bigFileService.setBinaryFileStream(bigFile, inputStream, size);
+		byte[] bytes = inputStream.readAllBytes();
+		Document document = new Document();
+		document.setCreateDate(new Date());
+		document.setFileName(name);
+		document.setContentType(contentType);
+		if(contentType.equals("application/pdf")) {
+			document.setNbPages(getNbPages(new ByteArrayInputStream(bytes)));
+		}
+		BigFile bigFile = new BigFile();
+		bigFileService.setBinaryFileStream(bigFile, new ByteArrayInputStream(bytes), size);
 		document.setBigFile(bigFile);
 		document.setSize(size);
 		documentRepository.save(document);
 		return document;
+	}
+
+	public void updateNbPages(Document document) throws IOException {
+		document.setNbPages(getNbPages(document.getInputStream()));
 	}
 
 	public String getSignedName(String originalName) {
@@ -136,5 +154,15 @@ public class DocumentService {
 		document.setParentId(signRequest.getId());
 		signRequest.getSignedDocuments().add(document);
 		return document;
+	}
+
+	public long getNbPages(InputStream inputStream) {
+		try {
+			PDDocument pdDocument = PDDocument.load(inputStream);
+			return pdDocument.getNumberOfPages();
+		} catch (Exception e) {
+			logger.debug(e.getMessage(), e);
+		}
+		return 0;
 	}
 }

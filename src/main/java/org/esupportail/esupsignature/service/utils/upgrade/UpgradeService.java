@@ -4,6 +4,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.AppliVersionRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
@@ -30,9 +31,12 @@ public class UpgradeService {
     private AppliVersionRepository appliVersionRepository;
 
     @Resource
+    private DocumentService documentService;
+
+    @Resource
     private FileService fileService;
 
-    private final String[] updates = new String[] {"1.19", "1.22"};
+    private final String[] updates = new String[] {"1.19", "1.22", "1.23"};
 
     @Resource
     private FormService formService;
@@ -83,11 +87,40 @@ public class UpgradeService {
         return 0;
     }
 
+//    @SuppressWarnings("unused")
+//    public void update_1_23_16() {
+//        List<Document> documents = documentService.getAll().stream().filter(document -> document.getNbPages() == null).collect(Collectors.toList());
+//        logger.info("#### Starting update documents nbPages for " + documents.size() + " documents ####");
+//        for(Document document : documents) {
+//            if(document.getContentType() != null && document.getContentType().equals("application/pdf") && document.getNbPages() == null) {
+//                try {
+//                    documentService.updateNbPages(document);
+//                } catch (IOException e) {
+//                    logger.warn("Document " + document.getId() + " : " + e.getMessage());
+//                }
+//            }
+//        }
+//        logger.info("#### Update update documents nbPages completed ####");
+//    }
+
+    @SuppressWarnings("unused")
+    public void update_1_23() {
+        logger.info("#### Starting update end dates of refused signBooks ####");
+        List<SignBook> signBooks = signBookRepository.findAll(Pageable.unpaged()).getContent();
+        for(SignBook signBook : signBooks.stream().filter(signBook -> signBook.getEndDate() == null && signBook.getStatus().equals(SignRequestStatus.refused)).collect(Collectors.toList())) {
+            List<Action> actions = signBook.getSignRequests().stream().map(SignRequest::getRecipientHasSigned).map(Map::values).flatMap(Collection::stream).filter(action -> action.getDate() != null).sorted(Comparator.comparing(Action::getDate).reversed()).collect(Collectors.toList());
+            if(actions.size() > 0) {
+                signBook.setEndDate(actions.get(0).getDate());
+            }
+        }
+        logger.info("#### Update end dates of refused signBooks completed ####");
+    }
+
     @SuppressWarnings("unused")
     public void update_1_22() {
         logger.info("#### Starting update end dates of signBooks ####");
         List<SignBook> signBooks = signBookRepository.findAll(Pageable.unpaged()).getContent();
-        for(SignBook signBook : signBooks) {
+        for(SignBook signBook : signBooks.stream().filter(signBook -> signBook.getEndDate() == null).collect(Collectors.toList())) {
             if((signBook.getStatus().equals(SignRequestStatus.completed)
                     || signBook.getStatus().equals(SignRequestStatus.exported)
                     || signBook.getStatus().equals(SignRequestStatus.refused)
