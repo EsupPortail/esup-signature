@@ -1,17 +1,24 @@
 package org.esupportail.esupsignature.web.ws;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.service.DataService;
+import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.export.DataExportService;
+import org.esupportail.esupsignature.web.ws.json.JsonDtoWorkflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,6 +36,9 @@ public class FormWsController {
 
     @Resource
     private DataService dataService;
+
+    @Resource
+    private FormService formService;
 
     @Resource
     private SignBookService signBookService;
@@ -73,6 +83,13 @@ public class FormWsController {
             logger.error(e.getMessage(), e);
             return -1L;
         }
+    }
+
+    @CrossOrigin
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(description = "Récupération d'un circuit", responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = JsonDtoWorkflow.class))))
+    public String get(@PathVariable Long id) throws JsonProcessingException {
+        return formService.getByIdJson(id);
     }
 
     @CrossOrigin
