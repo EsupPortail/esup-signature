@@ -379,7 +379,10 @@ public class UserService {
         }
         for (User user : users) {
             if(user.getReplaceByUser() != null) {
-                personLdaps.remove(personLdaps.stream().filter(personLdap -> personLdap.getMail() != null && personLdap.getMail().equals(user.getEmail())).findFirst().get());
+                PersonLdapLight personLdapToRemove = personLdaps.stream().filter(personLdap -> personLdap.getMail() != null && personLdap.getMail().equals(user.getEmail())).findFirst().orElse(null);
+                if(personLdapToRemove != null) {
+                    personLdaps.remove(personLdapToRemove);
+                }
             }
             if(personLdaps.size() > 0 && personLdaps.stream().noneMatch(personLdapLight -> personLdapLight != null && personLdapLight.getMail() != null && user.getEmail().equals(personLdapLight.getMail()))) {
                 PersonLdapLight personLdapLight = getPersonLdapLightFromUser(user);
