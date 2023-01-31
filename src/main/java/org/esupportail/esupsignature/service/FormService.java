@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSString;
@@ -559,5 +560,10 @@ public class FormService {
 	public int getTotalPagesCount(Long id) {
 		Form form = getById(id);
 		return pdfService.getPdfParameters(form.getDocument().getInputStream(), 1).getTotalNumberOfPages();
+	}
+
+	@Transactional
+	public String getByIdJson(Long id) throws JsonProcessingException {
+		return objectMapper.writeValueAsString(formRepository.getByIdJson(id));
 	}
 }
