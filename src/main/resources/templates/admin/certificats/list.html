@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="certificats" type="java.util.List<org.esupportail.esupsignature.entity.Certificat>"*/-->
+<!--/*@thymesVar id="sealCertificats" type="java.util.List<eu.europa.esig.dss.token.DSSPrivateKeyEntry>"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
 <header th:replace="fragments/nav :: nav"></header>
@@ -13,17 +14,41 @@
             </ol>
         </nav>
         <div id="content" class="content">
+            <div class="card mb-1 col-lg-10 mx-auto" th:if="${sealCertificats != null && sealCertificats.size() > 0}">
+                <div class="card-body">
+                    <h5 class="text-center"><b>Certificats cachet</b></h5>
+                    <table class="table table-sm table-hover">
+                        <thead class="table-secondary">
+                        <tr>
+                            <th>Titre</th>
+                            <th>Date de création</th>
+                            <th>Date de fin</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="certificat : ${sealCertificats}">
+                            <tr>
+                                <td th:text="${certificat.certificate.subject}"></td>
+                                <td th:text="${certificat.certificate.creationDate}"></td>
+                                <td th:text="${certificat.certificate.notAfter}"></td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div id="addButton" class="fixed-action-btn-simple" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <a title="Ajouter un certificat" data-bs-toggle="modal" data-bs-target="#newCertificat" class="btn-floating btn-lg bg-primary waves-effect"><i class="fas fa-plus"></i></a>
             </div>
             <div class="card mb-1 col-lg-10 mx-auto">
                 <div class="card-body">
-                    <h5 class="text-center"><b>Certificats</b></h5>
+                    <h5 class="text-center"><b>Certificats pour les rôles</b></h5>
                     <table class="table table-sm table-hover">
                         <thead class="table-secondary">
                         <tr>
                             <th>Nom</th>
-                            <th>Date d'expiration</th>
+                            <th>Date d’expiration</th>
                             <th>Roles</th>
                             <th>Actions</th>
                         </tr>
@@ -93,7 +118,7 @@
                             </div>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="roleNames" class="col-form-label">Nom du role autorisé à acceder au formulaire</label>
+                            <label for="roleNames" class="col-form-label">Nom du role autorisé à accéder au formulaire</label>
                             <select id="roleNames" class="form-select" type="text" name="roleNames" multiple>
                                 <th:block th:each="newRole : ${roles}">
                                     <option th:text="${newRole}" th:value="${newRole}"></option>

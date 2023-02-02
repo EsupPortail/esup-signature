@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.exception;
 
 import java.io.Serial;
 
-public class EsupSignatureException extends Exception {
+public class EsupSignatureException extends RuntimeException {
 
 	@Serial
 	private static final long serialVersionUID = 1L;
