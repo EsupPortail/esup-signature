@@ -8,7 +8,6 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
@@ -63,7 +62,7 @@ public class DocumentService {
 		long size = inputStream.available();
 		if(size == 0) {
 			logger.warn("upload aborted cause file size is 0");
-			throw new EsupSignatureRuntimeException("File size is 0");
+			throw new EsupSignatureException("File size is 0");
 		}
 		byte[] bytes = inputStream.readAllBytes();
 		Document document = new Document();
