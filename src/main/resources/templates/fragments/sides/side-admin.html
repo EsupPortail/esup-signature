@@ -50,7 +50,7 @@
         </a>
         <a th:classappend="${activeMenu == 'tasks'} ? 'btn-secondary' : 'btn-light'"
            title="Sessions courantes" href="/admin/tasks" class="btn col-12 mb-1 text-left">
-            <i class="fas fa-tasks"></i> <span class="sidebar-label">Taches planifiées</span>
+            <i class="fas fa-tasks"></i> <span class="sidebar-label">Tâches planifiées</span>
         </a>
         <a th:classappend="${activeMenu == 'dss'} ? 'btn-secondary' : 'btn-light'" th:if="${validationToolsEnabled}"
            title="Statut DSS" type="button" href="/admin/dss" class="mb-1 col-12 btn text-left">

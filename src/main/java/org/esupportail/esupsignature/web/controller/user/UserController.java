@@ -215,6 +215,7 @@ public class UserController {
 	public String showReplace(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
 		List<SignRequest> signRequests = signBookService.getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).flatMap(signBook -> signBook.getSignRequests().stream().distinct()).collect(Collectors.toList());
 		model.addAttribute("signRequests", signRequests);
+		model.addAttribute("activeMenu", "replace");
 		return "user/users/replace";
 	}
 
