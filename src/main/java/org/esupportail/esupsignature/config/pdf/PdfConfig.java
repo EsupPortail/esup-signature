@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.config.pdf;
 
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -58,7 +58,7 @@ public class PdfConfig {
             Files.write(Path.of(pdfAFile.getAbsolutePath()), lines, StandardCharsets.UTF_8);
         } catch (IOException e) {
             logger.error("PDFA_def.ps read error", e);
-            throw new EsupSignatureRuntimeException("unable to modify PDFA_def.ps", e);
+            throw new EsupSignatureException("unable to modify PDFA_def.ps", e);
         }
 
     }
