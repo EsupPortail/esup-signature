@@ -14,7 +14,7 @@
         <nav th:replace="fragments/sides/side-user :: side-user"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item active">Délégations</li>
+                <li class="breadcrumb-item active">Remplacements</li>
             </ol>
         </nav>
         <div id="content" class="content">
@@ -26,6 +26,7 @@
             </div>
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
+                    <h5 class="text-center"><b>Remplacements</b></h5>
                     <div class="alert alert-success" th:if="${user.replaceByUser != null}">
                         Vos demandes sont redirigées vers <b th:text="${user.replaceByUser.name + ' ' + user.replaceByUser.firstname}"></b>
                         <div th:if="${signRequests.size() > 0}" class="m-2">

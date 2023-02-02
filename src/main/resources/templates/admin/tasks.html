@@ -9,10 +9,15 @@
         <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item active">Taches planifiées</li>
+                <li class="breadcrumb-item active">Tâches planifiées</li>
             </ol>
         </nav>
         <div id="content" class="content">
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-body">
+                    <h5 class="text-center"><b>Tâches planifiées</b></h5>
+                </div>
+            </div>
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <form th:action="@{/admin/tasks/run-archive}" method="POST">
