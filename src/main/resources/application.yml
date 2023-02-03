@@ -54,8 +54,7 @@ management:
 spring:
     session:
         jdbc:
-          initialize-schema: always
-          save-mode: always
+          initialize-schema: ALWAYS
     data:
         ldap:
             repositories:

@@ -125,15 +125,22 @@ public class UserService {
     }
 
     public User getUserByEmail(String email) {
-        if (userRepository.countByEmail(email) > 0) {
+        if (userRepository.countByEmail(email.toUpperCase()) > 0) {
             return userRepository.findByEmail(email).get(0);
         } else {
             return createUserWithEmail(email);
         }
     }
 
+    public boolean isUserByEmailExist(String email) {
+        if (userRepository.countByEmail(email.toUpperCase()) > 0) {
+            return true;
+        }
+        return false;
+    }
+
     public User getGroupUserByEmail(String email) {
-        if (userRepository.countByEmailAndUserType(email, UserType.group) > 0) {
+        if (userRepository.countByEmailIgnoreCaseAndUserType(email, UserType.group) > 0) {
             return userRepository.findByEmailAndUserType(email, UserType.group).get(0);
         } else {
             return createGroupUserWithEmail(email);
@@ -256,7 +263,7 @@ public class UserService {
         User user;
         if (userRepository.countByEppn(eppn) > 0) {
             user = getByEppn(eppn);
-        } else if(userRepository.countByEmail(email) > 0) {
+        } else if(userRepository.countByEmail(email.toUpperCase()) > 0) {
             user = userRepository.findByEmail(email).get(0);
         } else {
             logger.info("creation de l'utilisateur " + eppn);
@@ -379,8 +386,7 @@ public class UserService {
         }
         List<PersonLdapLight> personLdapLightsToRemove = new ArrayList<>();
         for(PersonLdapLight personLdapLight : personLdapLights) {
-            User user = getUserByEmail(personLdapLight.getMail());
-            if(user.getReplaceByUser() != null) {
+            if(isUserByEmailExist(personLdapLight.getMail())) {
                 personLdapLightsToRemove.add(personLdapLight);
             }
         }
