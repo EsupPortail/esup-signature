@@ -8,7 +8,9 @@ import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class VisaAndSignWorkflow extends DefaultWorkflow {
@@ -59,7 +61,7 @@ public class VisaAndSignWorkflow extends DefaultWorkflow {
         workflowStep2.setName("Président de l’université");
         workflowStep2.setSignType(SignType.pdfImageStamp);
         workflowStep2.setDescription("Signature du Président de l’université");
-        List<User> recipientsStep2 = new ArrayList<>();
+        Set<User> recipientsStep2 = new HashSet<>();
         recipientsStep2.add(userService.getUserByEmail(step2Recipient));
         workflowStep2.setUsers(recipientsStep2);
         workflowStep2.setAllSignToComplete(false);
