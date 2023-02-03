@@ -157,16 +157,7 @@ export class SignRequestParams extends EventFactory {
         this.cross.resizable({
             aspectRatio: true,
             resize: function(event, ui) {
-                if(self.isVisa) {
-                    let newScale = self.getNewScale(self, ui);
-                    self.signWidth = self.signWidth / self.signScale * newScale;
-                    self.signHeight = self.signHeight / self.signScale * newScale;
-                    self.extraWidth = self.extraWidth / self.signScale * newScale;
-                    self.extraHeight = self.extraHeight / self.signScale * newScale;
-                    self.signScale = newScale
-                    self.refreshExtraDiv();
-                    self.updateSize();
-                } else if(self.textareaPart != null) {
+                if(self.textareaPart != null) {
                     self.signScale = self.getNewScale(self, ui);
                     self.resizeText();
                     self.signWidth = parseInt(self.textareaPart.css("width")) / self.currentScale;
