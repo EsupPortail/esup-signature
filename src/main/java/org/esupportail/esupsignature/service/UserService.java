@@ -132,11 +132,11 @@ public class UserService {
         }
     }
 
-    public boolean isUserByEmailExist(String email) {
+    public User isUserByEmailExist(String email) {
         if (userRepository.countByEmail(email.toUpperCase()) > 0) {
-            return true;
+            return userRepository.findByEmail(email).get(0);
         }
-        return false;
+        return null;
     }
 
     public User getGroupUserByEmail(String email) {
@@ -386,7 +386,8 @@ public class UserService {
         }
         List<PersonLdapLight> personLdapLightsToRemove = new ArrayList<>();
         for(PersonLdapLight personLdapLight : personLdapLights) {
-            if(isUserByEmailExist(personLdapLight.getMail())) {
+            User user = isUserByEmailExist(personLdapLight.getMail());
+            if(user != null && user.getReplaceByUser() != null) {
                 personLdapLightsToRemove.add(personLdapLight);
             }
         }
