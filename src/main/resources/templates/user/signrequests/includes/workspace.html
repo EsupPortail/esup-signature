@@ -123,7 +123,7 @@
                     style="z-index: 3;">
                 <i class="fas fa-sync"></i>
             </button>
-            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')') && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}" type="button" id="signImage_x"
+            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signImage_x"
                     title="Ajouter une image de votre signature"
                     class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
