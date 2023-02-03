@@ -28,9 +28,9 @@
                         <tbody>
                         <th:block th:each="certificat : ${sealCertificats}">
                             <tr>
-                                <td th:text="${certificat.certificate.subject}"></td>
-                                <td th:text="${certificat.certificate.creationDate}"></td>
-                                <td th:text="${certificat.certificate.notAfter}"></td>
+                                <td th:text="${certificat.certificate.subject.principal}"></td>
+                                <td th:text="${#dates.format(certificat.certificate.creationDate, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td th:text="${#dates.format(certificat.certificate.notAfter, 'dd/MM/yyyy HH:mm')}"></td>
                             </tr>
                         </th:block>
                         </tbody>
