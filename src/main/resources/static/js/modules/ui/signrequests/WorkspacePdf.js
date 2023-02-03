@@ -104,6 +104,19 @@ export class WorkspacePdf {
                 $(this).parent().toggleClass("postit-small");
             });
 
+            $(".postit-copy").on('click', function (e) {
+                let snackbar = document.getElementById("snackbar");
+                snackbar.className = "show";
+                let text = $("#postit-text-" + $(e.target).attr("es-postit-id")).text();
+                if (window.isSecureContext && navigator.clipboard) {
+                    navigator.clipboard.writeText(text);
+                    snackbar.innerText = "Texte copié dans le presse papier";
+                } else {
+                    snackbar.innerText = "Impossible de copier le texte d'une application non sécurisée";
+                }
+                setTimeout(function(){ snackbar.className = snackbar.className.replace("show", ""); }, 3000);
+            });
+
             this.postits.forEach((postit, index) => {
                 let postitButton = $('#postit' + postit.id);
                 postitButton.on('click', e => this.focusComment(postit));

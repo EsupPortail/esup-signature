@@ -139,8 +139,11 @@
                             <i class="fas fa-eye"></i>
                         </button>
                         <b th:text="${postit.createBy.firstname + ' ' + postit.createBy.name}"></b>
-                        <p th:text="'le ' + ${#dates.format(postit.createDate, 'dd/MM/yyyy HH:mm')}"></p>
-                        <p class="postitarea" th:text="${postit.text}"></p>
+                        <span th:text="'le ' + ${#dates.format(postit.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                        <button th:es-postit-id="${postit.id}" type="button" title="Copier le texte du postit" class="postit-copy btn btn-sm btn-transparent text-dark">
+                            <i th:es-postit-id="${postit.id}" class="far fa-copy"></i>
+                        </button>
+                        <p  th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></p>
                     </div>
                 </th:block>
             </div>
