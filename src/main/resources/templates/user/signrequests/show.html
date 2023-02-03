@@ -573,7 +573,7 @@
                         </th:block>
                         <th:block th:each="target : ${signRequest.parentSignBook.liveWorkflow.targets}">
                         <div th:if="${target.targetUri.contains('mailto:')}" class="form-group mb-3">
-                            <label>Etape finale : Envoi par mail à </label>
+                            <label>Etape finale : Envoi par mail à </label>
                             <select class="select-users" id="targetEmailsSelect" multiple="multiple" name="targetEmails" required>
                                 <th:block th:each="targetEmail : ${target.targetUri.replace('mailto:', '').split(',')}">
                                     <option selected="selected" th:if="${targetEmail != ''}" th:text="${targetEmail}" th:value="${targetEmail}"></option>
@@ -661,6 +661,31 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="forwardModal" tabindex="-1" role="dialog" aria-labelledby="forwardModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="forwardModalLabel">Transférer la demande</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group mb-3">
+                    <form id="send-sign-form" method="post" th:action="'/user/signrequests/transfert/' + ${signRequest.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
+                    <label class="form-label" for="transfertRecipientsEmails">Choisir le destinataire</label>
+                    <select class="select-users" name="transfertRecipientsEmails" id="transfertRecipientsEmails" size="1" multiple="multiple" required="required">
+                        <option data-placeholder="true"></option>
+                    </select>
+                    <div class="mt-2 mb-2" id="tempUsers-recipientsEmails"></div>
+                    <button type="submit" class="btn btn-success float-end">Valider</button>
+                    <button type="button" class="btn btn-secondary float-end me-1" data-bs-dismiss="modal">Fermer</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

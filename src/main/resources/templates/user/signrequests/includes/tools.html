@@ -6,7 +6,7 @@
 		<a th:unless="${user.userType.name() == 'external'}" class="btn btn-light btn-outline-dark d-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
 			<i class="fas fa-info-circle"></i>
 		</a>
-		<a class="btn btn-light btn-outline-dark d-block ms-1"
+		<a class="btn btn-light btn-outline-dark d-block ms-1 me-1"
 		   onclick="printIt()" target="_blank"
 		   title="Imprimer le document"><i class="fas fa-print"></i></a>
 		<script th:inline="javascript">
@@ -20,6 +20,9 @@
 				});
 			}
 		</script>
+		<a th:if="${signable}" class="btn btn-light btn-outline-dark d-block" title="Transférer la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
+			<i class="fas fa-share"></i>
+		</a>
 		<div class="border ms-3 me-3 d-none d-lg-block ms-1"></div>
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf'}">
 			<button id="zoomout" title="Zoom arrière" class="btn btn-light btn-outline-dark"><i

@@ -19,7 +19,7 @@
         </nav>
         <div id="content" class="content">
             <div class="fixed-action-btn">
-                <a title="Mettre en place une redirection" data-bs-toggle="modal" data-bs-target="#newReplaceModal" type="button"
+                <a th:if="${user.replaceByUser == null}" title="Mettre en place une redirection" data-bs-toggle="modal" data-bs-target="#newReplaceModal" type="button"
                    class="btn-floating btn-lg bg-primary wave-effect">
                     <i class="fas fa-plus"></i>
                 </a>
@@ -31,14 +31,14 @@
                         Vos demandes sont redirigées vers <b th:text="${user.replaceByUser.name + ' ' + user.replaceByUser.firstname}"></b>
                         <div th:if="${signRequests.size() > 0}" class="m-2">
                             <a onclick="return confirm('Merci de confirmer le transfert de toutes vos demandes. Les demandes ne pourront plus être récupérées')"
-                               class="btn btn-primary" href="/user/users/replace/transfer">Tranférer toutes mes demandes en cours</a>
+                               class="btn btn-primary" href="/user/users/replace/transfer">Transférer toutes mes demandes en cours</a>
                         </div>
                         <form id="shareForm" th:action="'/user/users/replace/update'" method="post" class="m-2">
                             <input type="submit" class="btn btn-danger" value="Supprimer la redirection">
                         </form>
                     </div>
                     <div class="alert alert-danger" th:unless="${user.replaceByUser != null}">
-                        Aucune redirection n'est mise en place actuellement
+                        Aucune redirection n’est mise en place actuellement
                     </div>
                 </div>
             </div>

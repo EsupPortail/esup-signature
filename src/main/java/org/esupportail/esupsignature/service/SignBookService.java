@@ -2056,6 +2056,7 @@ public class SignBookService {
         return signBookRepository.findByTeamContaining(user);
     }
 
+    @Transactional
     public int transfer(String authUserEppn) {
         int i = 0;
         User user = userService.getUserByEppn(authUserEppn);
@@ -2063,24 +2064,39 @@ public class SignBookService {
         if(replacedByUser != null) {
             List<SignRequest> signRequests = getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).flatMap(signBook -> signBook.getSignRequests().stream().distinct()).collect(Collectors.toList());
             for(SignRequest signRequest : signRequests) {
-                signRequest.getParentSignBook().getTeam().remove(user);
-                signRequest.getParentSignBook().getTeam().add(replacedByUser);
-                for(LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
-                    for(Recipient recipient : liveWorkflowStep.getRecipients()) {
-                        if(recipient.getUser().getEppn().equals(authUserEppn)) {
-                            recipient.setUser(replacedByUser);
-                        }
-                    }
-                    for(Recipient recipient : signRequest.getRecipientHasSigned().keySet()) {
-                        if(recipient.getUser().getEppn().equals(authUserEppn)) {
-                            recipient.setUser(replacedByUser);
-                        }
-                    }
-                }
+                transfertSignRequest(signRequest, user, replacedByUser);
                 i++;
             }
         }
         return i;
+    }
+
+    @Transactional
+    public void transfertSignRequest(Long signRequestId, String userEppn, String replacedByUserEmail) {
+        SignRequest signRequest = signRequestService.getById(signRequestId);
+        User user = userService.getUserByEppn(userEppn);
+        User replacedByUser = userService.getUserByEmail(replacedByUserEmail);
+        if(user.equals(replacedByUser)) {
+            throw new EsupSignatureException("Transfer impossible");
+        }
+        transfertSignRequest(signRequest, user, replacedByUser);
+    }
+
+    public void transfertSignRequest(SignRequest signRequest, User user, User replacedByUser) {
+        signRequest.getParentSignBook().getTeam().remove(user);
+        signRequest.getParentSignBook().getTeam().add(replacedByUser);
+        for(LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
+            for(Recipient recipient : liveWorkflowStep.getRecipients()) {
+                if(recipient.getUser().equals(user)) {
+                    recipient.setUser(replacedByUser);
+                }
+            }
+            for(Recipient recipient : signRequest.getRecipientHasSigned().keySet()) {
+                if(recipient.getUser().equals(user)) {
+                    recipient.setUser(replacedByUser);
+                }
+            }
+        }
     }
 
     @Transactional

@@ -351,6 +351,18 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @PostMapping(value = "/transfert/{id}")
+    public String transfer(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+                                @RequestParam(value = "transfertRecipientsEmails") List<String> transfertRecipientsEmails, RedirectAttributes redirectAttributes) throws EsupSignatureException {
+        try {
+            signBookService.transfertSignRequest(id, authUserEppn, transfertRecipientsEmails.get(0));
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Demande transférée"));
+        } catch (EsupSignatureException e) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande non transférée"));
+        }
+        return "redirect:/user/signrequests/" + id;
+    }
 
     @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #userEppn)")
     @PostMapping(value = "/comment/{id}")
