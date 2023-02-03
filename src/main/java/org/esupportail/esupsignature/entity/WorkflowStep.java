@@ -6,7 +6,9 @@ import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 public class WorkflowStep {
@@ -26,7 +28,7 @@ public class WorkflowStep {
 
     @Fetch(FetchMode.JOIN)
     @ManyToMany(cascade = CascadeType.DETACH)
-    private List<User> users = new ArrayList<>();
+    private Set<User> users = new HashSet<>();
 
     private Boolean changeable = false;
 
@@ -78,11 +80,11 @@ public class WorkflowStep {
         this.name = name;
     }
 
-    public List<User> getUsers() {
+    public Set<User> getUsers() {
         return users;
     }
 
-    public void setUsers(List<User> users) {
+    public void setUsers(Set<User> users) {
         this.users = users;
     }
 
