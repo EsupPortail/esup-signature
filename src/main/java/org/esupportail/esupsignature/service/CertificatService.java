@@ -183,7 +183,7 @@ public class CertificatService {
         try {
             dssPrivateKeyEntries = getSealToken().getKeys();
         } catch (Exception e) {
-            logger.debug("no seal certificat found");
+            logger.debug("no seal certificat found", e);
         }
         return dssPrivateKeyEntries;
     }
