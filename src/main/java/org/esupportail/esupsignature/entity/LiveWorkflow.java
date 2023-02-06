@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
@@ -27,7 +29,7 @@ public class LiveWorkflow {
     private LiveWorkflowStep currentStep;
 
     @OneToMany(cascade = CascadeType.REMOVE)
-    private List<Target> targets = new ArrayList<>();
+    private Set<Target> targets = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Workflow workflow;
@@ -72,11 +74,11 @@ public class LiveWorkflow {
         this.currentStep = currentStep;
     }
 
-    public List<Target> getTargets() {
+    public Set<Target> getTargets() {
         return targets;
     }
 
-    public void setTargets(List<Target> targets) {
+    public void setTargets(Set<Target> targets) {
         this.targets = targets;
     }
 

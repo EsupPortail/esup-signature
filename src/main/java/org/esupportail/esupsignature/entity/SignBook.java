@@ -6,9 +6,7 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
@@ -74,13 +72,13 @@ public class SignBook {
     transient String comment;
 
     @ManyToMany
-    private List<User> viewers = new ArrayList<>();
+    private Set<User> viewers = new HashSet<>();
 
     @ManyToMany
-    private List<User> team = new ArrayList<>();
+    private Set<User> team = new HashSet<>();
 
     @ManyToMany
-    private List<User> hidedBy = new ArrayList<>();
+    private Set<User> hidedBy = new HashSet<>();
 
     private Boolean forceAllDocsSign = false;
 
@@ -210,19 +208,19 @@ public class SignBook {
         this.comment = comment;
     }
 
-    public List<User> getViewers() {
+    public Set<User> getViewers() {
         return viewers;
     }
 
-    public void setViewers(List<User> viewers) {
+    public void setViewers(Set<User> viewers) {
         this.viewers = viewers;
     }
 
-    public List<User> getTeam() {
+    public Set<User> getTeam() {
         return team;
     }
 
-    public void setTeam(List<User> team) {
+    public void setTeam(Set<User> team) {
         this.team = team;
     }
 
@@ -234,11 +232,11 @@ public class SignBook {
         this.forceAllDocsSign = forceAllDocsSign;
     }
 
-    public List<User> getHidedBy() {
+    public Set<User> getHidedBy() {
         return hidedBy;
     }
 
-    public void setHidedBy(List<User> hidedBy) {
+    public void setHidedBy(Set<User> hidedBy) {
         this.hidedBy = hidedBy;
     }
 

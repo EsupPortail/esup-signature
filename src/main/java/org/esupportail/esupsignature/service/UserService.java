@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
+import org.esupportail.esupsignature.dto.UserDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
@@ -116,6 +117,10 @@ public class UserService {
 
     public User getGenericUser() {
         return createUser("generic", "Utilisateur issue des favoris", "", "generic", UserType.system, false);
+    }
+
+    public List<UserDto> getAllUsersDto() {
+        return userRepository.findAllUsersDto();
     }
 
     public List<User> getAllUsers() {

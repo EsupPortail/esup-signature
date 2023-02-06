@@ -46,8 +46,8 @@ public class Workflow {
 
     private String managerRole;
 
-    @ElementCollection(targetClass =  ShareType.class)
-    private List<ShareType> authorizedShareTypes = new ArrayList<>();
+    @ElementCollection(targetClass =  ShareType.class, fetch = FetchType.EAGER)
+    private Set<ShareType> authorizedShareTypes = new HashSet<>();
 
     private Boolean publicUsage = false;
 
@@ -232,11 +232,11 @@ public class Workflow {
         this.managerRole = managerRole;
     }
 
-    public List<ShareType> getAuthorizedShareTypes() {
+    public Set<ShareType> getAuthorizedShareTypes() {
         return authorizedShareTypes;
     }
 
-    public void setAuthorizedShareTypes(List<ShareType> authorizedShareTypes) {
+    public void setAuthorizedShareTypes(Set<ShareType> authorizedShareTypes) {
         this.authorizedShareTypes = authorizedShareTypes;
     }
 

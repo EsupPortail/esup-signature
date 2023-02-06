@@ -1,11 +1,13 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
+import org.esupportail.esupsignature.dto.SlimSelectDto;
+import org.esupportail.esupsignature.dto.UserDto;
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
@@ -29,6 +31,7 @@ import org.thymeleaf.context.Context;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -50,6 +53,9 @@ public class SignBookAdminController {
 
 	@Resource
 	private FormService formService;
+
+	@Resource
+	private UserService userService;
 
 	@Resource
 	private WorkflowService workflowService;
@@ -86,17 +92,28 @@ public class SignBookAdminController {
 		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
 		model.addAttribute("statusFilter", statusFilter);
 		model.addAttribute("signBooks", signBooks);
-		List<User> creators = signBookService.getCreators(null, workflowFilter, docTitleFilter, creatorFilter);
-		model.addAttribute("creators", creators);
+		model.addAttribute("creators", userService.getAllUsersDto());
 		model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
 		model.addAttribute("statuses", SignRequestStatus.values());
 		model.addAttribute("forms", formService.getAllForms());
 		model.addAttribute("workflows", workflowService.getAllWorkflows());
 		model.addAttribute("workflowFilter", workflowFilter);
+		model.addAttribute("creatorFilter", creatorFilter);
 		if(docTitleFilter != "%") model.addAttribute("docTitleFilter", docTitleFilter);
 		model.addAttribute("dateFilter", dateFilter);
 		model.addAttribute("workflowNames", signBookRepository.findWorkflowNames());
 		return "admin/signbooks/list";
+	}
+
+	@GetMapping("/creators")
+	@ResponseBody
+	public Object[] creators() {
+		List<SlimSelectDto> slimSelectDtos = new ArrayList<>();
+		slimSelectDtos.add(new SlimSelectDto("Tout", ""));
+		for(UserDto userDto : userService.getAllUsersDto()) {
+			slimSelectDtos.add(new SlimSelectDto(userDto.getFirstname() + " " + userDto.getName(), userDto.getEmail()));
+		}
+		return slimSelectDtos.toArray();
 	}
 
 	@GetMapping(value = "/list-ws")

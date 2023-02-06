@@ -1430,7 +1430,7 @@ public class SignBookService {
                                     for(Target target : workflow.getTargets()) {
                                         signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetUri() + "/" + metadataTarget));
                                     }
-                                    logger.info("target set to : " + signBook.getLiveWorkflow().getTargets().get(0).getTargetUri());
+                                    logger.info("target set to : " + signBook.getLiveWorkflow().getTargets().stream().toList().get(0).getTargetUri());
                                 }
                             }
                         } else {
@@ -1724,7 +1724,7 @@ public class SignBookService {
         if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
             List<SignRequest> signRequests = signBook.getSignRequests();
             String title = signBook.getSubject();
-            List<Target> targets = signBook.getLiveWorkflow().getTargets();
+            Set<Target> targets = signBook.getLiveWorkflow().getTargets();
             boolean allTargetsDone = true;
             for (Target target : targets) {
                 if (!target.getTargetOk()) {
@@ -1997,7 +1997,6 @@ public class SignBookService {
             return signBookRepository.findUserByRecipientAndCreateBy(user, workflowFilter, docTitleFilter, creatorFilterUser);
         } else {
             return signBookRepository.findSignBookAllUserByRecipientAndCreateBy(workflowFilter, docTitleFilter, creatorFilterUser);
-
         }
     }
 
