@@ -4,6 +4,8 @@ export default class SelectUser {
         console.info("init select-user : " + selectName);
         this.slimSelect = null;
         this.selectField = $("#" + selectName);
+        this.afterDiv = "<div id='" + selectName + "_ss'></div>";
+        $(this.afterDiv).insertAfter(this.selectField);
         this.selectField.attr("stepSelection", "true");
         this.checkList = this.selectField.attr("data-es-check-list");
         this.signRequestId = signRequestId;
@@ -32,9 +34,9 @@ export default class SelectUser {
         }
         this.createUserSelect(selectName,  this.valuePrefix);
         this.populateWithFavorites();
-        this.selectField.addClass("slim-select-hack");
-        //$("." + this.slimSelect.settings.id).each(function() { DANS slimselect 2.3.3
-        $("." + this.slimSelect.config.id).each(function() {
+        // this.selectField.addClass("slim-select-hack");
+        $("." + this.slimSelect.settings.id).each(function() {
+        // $("." + this.slimSelect.config.id).each(function() {
            $(this).removeAttr("style");
         });
         this.selectField.slim = this.slimSelect;
@@ -53,71 +55,82 @@ export default class SelectUser {
         } else {
             placeHolder = "Choisir une personne";
         }
+        let self = this;
         this.slimSelect = new SlimSelect({
             select: "#" + selectName,
-            // data: self.favorites,
-            placeholder: placeHolder,
-            searchText: 'Aucun résultat',
-            searchPlaceholder: 'Rechercher',
-            searchHighlight: false,
-            hideSelectedOption: true,
-            closeOnSelect: true,
-            limit: this.limit,
-            onChange : e => this.displayTempUsers(e),
-            addable: e => this.validateEmail(e),
-            searchFilter: (option, search) => {
-                return true;
+            settings: {
+                contentLocation: document.getElementById(selectName + "_ss"),
+                placeholderText: placeHolder,
+                searchText: 'Aucun résultat',
+                searchingText: 'Recherche en cours',
+                searchPlaceholder: 'Rechercher',
+                searchHighlight: false,
+                hideSelectedOption: true,
+                closeOnSelect: true,
             },
-            ajax: (search, callback) => {
-                callback('Recherche en cours');
-                controller.abort();
-                controller = new AbortController()
-                signal = controller.signal;
-                if (search.length < 3) {
-                    callback('Merci de saisir au moins 3 caractères');
-                } else {
-                    fetch('/user/users/search-user?searchString=' + search, {
-                        method: 'get',
-                        signal: signal,
-                    })
-                    .then((response) => {
-                            return response.json()
-                    })
-                    .then((json) => {
-                        let data = []
-                        for (let i = 0; i < json.length; i++) {
-                            if(json[i].displayName !== json[i].mail) {
-                                data.push({text: json[i].displayName + ' (' + json[i].mail + ')', value: valuePrefix + json[i].mail});
-                            } else {
-                                data.push({text: json[i].displayName, value: valuePrefix + json[i].mail});
-                            }
-                        }
-                        this.flag = true;
+            events: {
+                onChange: e => this.displayTempUsers(e),
+                addable: e => this.validateEmail(e),
+                searchFilter: (option, search) => {
+                    return true;
+                },
+                search: (search, currentData) => {
+                    return new Promise((resolve, reject) => {
                         controller.abort();
-                        controller = new AbortController();
+                        controller = new AbortController()
                         signal = controller.signal;
-                        if(data.length > 0) {
-                            callback(data);
+                        if (search.length < 3) {
+                            return reject('Merci de saisir au moins 3 caractères');
                         } else {
-                            if(this.validateEmail(search)) {
-                                callback("Email non trouvé, utilisez le '+' pour ajouter cette adresse");
-                            } else {
-                                callback("Aucun résultat. Pour ajouter une personne externe entrer une adresse email");
+                            fetch('/user/users/search-user?searchString=' + search, {
+                                method: 'get',
+                                signal: signal,
+                            })
+                                .then((response) => {
+                                    return response.json()
+                                })
+                                .then((json) => {
+                                    let data = []
+                                    for (let i = 0; i < json.length; i++) {
+                                        if(json[i].displayName !== json[i].mail) {
+                                            data.push({text: json[i].displayName + ' (' + json[i].mail + ')', value: valuePrefix + json[i].mail});
+                                        } else {
+                                            data.push({text: json[i].displayName, value: valuePrefix + json[i].mail});
+                                        }
+                                    }
+                                    this.flag = true;
+                                    controller.abort();
+                                    controller = new AbortController();
+                                    signal = controller.signal;
+                                    if(data.length > 0) {
+                                        return resolve(data);
+                                    } else {
+                                        if(this.validateEmail(search)) {
+                                            return reject("Email non trouvé, utilisez le '+' pour ajouter cette adresse");
+                                        } else {
+                                            return reject("Aucun résultat. Pour ajouter une personne externe entrer une adresse email");
+                                        }
+                                    }
+                                })
+                                .catch(function () {
+                                    return reject("Recherche en cours");
+                                });
                             }
-                        }
-                    })
-                    .catch(function () {
-                        callback("Recherche en cours");
-                    })
+                        });
+                    }
                 }
-            }
-        });
+            });
+        this.selectField.css("display", "block");
+        this.selectField.css("position", "absolute");
+        this.selectField.css("marginTop", "15px");
+        this.selectField.css("opacity", 0);
+        this.selectField.css("z-index", -1);
     }
 
     displayTempUsers(e) {
         if(this.checkList !== "false") {
             if (this.selectField.attr('id') === 'recipientsEmailsWiz') {
-                if (this.slimSelect.selected().length > 0) {
+                if (this.slimSelect.getSelected().length > 0) {
                     // $('#addNew').show();
                     $('#endStart').hide();
                     $('#end').hide();
@@ -128,10 +141,10 @@ export default class SelectUser {
                 }
             }
             let recipientEmails;
-            if (Array.isArray(this.slimSelect.selected())) {
-                recipientEmails = this.slimSelect.selected();
+            if (Array.isArray(this.slimSelect.getSelected())) {
+                recipientEmails = this.slimSelect.getSelected();
             } else {
-                recipientEmails = new Array(this.slimSelect.selected());
+                recipientEmails = new Array(this.slimSelect.getSelected());
             }
             $('[id^="allSignToComplete-"]').each(function () {
                 if (recipientEmails.length > 1) {
@@ -184,7 +197,7 @@ export default class SelectUser {
             this.flag = false;
             let arrayTexts = [];
             let arrayValues = [];
-            let prevData = this.slimSelect.selected()
+            let prevData = this.slimSelect.getSelected()
             if (Array.isArray(prevData)) {
                 for (let i = 0; i < prevData.length; i++) {
                     let onePrevData = prevData[i];
@@ -214,7 +227,7 @@ export default class SelectUser {
                 }
             }
             this.slimSelect.setData(arrayTexts);
-            this.slimSelect.set(arrayValues);
+            this.slimSelect.setSelected(arrayValues);
         }
     }
 
@@ -269,7 +282,7 @@ export default class SelectUser {
                 }
                 if(toto.length > 0) {
                     this.slimSelect.setData(toto);
-                    this.slimSelect.set();
+                    this.slimSelect.setSelected();
                 }
             }
         }

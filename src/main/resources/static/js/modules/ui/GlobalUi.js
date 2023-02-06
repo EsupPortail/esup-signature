@@ -406,48 +406,75 @@ export class GlobalUi {
         $("select[class='slim-select']").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select for : " + selectName);
+            this.afterDiv = "<div id='" + selectName + "_ss'></div>";
+            $(this.afterDiv).insertAfter(this.selectField);
             new SlimSelect({
-                select: '#' + selectName
+                select: '#' + selectName,
+                settings: {
+                    contentLocation: document.getElementById(selectName + "_ss")
+                }
             });
-            $(this).addClass("slim-select-hack");
+            $(this).css("display", "block");
+            $(this).css("position", "absolute");
+            $(this).css("marginTop", "15px");
+            $(this).css("opacity", 0);
+            $(this).css("z-index", -1);
         })
 
         $(".slim-select-filter").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-filter for : " + selectName);
+            this.afterDiv = "<div id='" + selectName + "_ss'></div>";
+            $(this.afterDiv).insertAfter(this.selectField);
             let select = $("#" + selectName);
             new SlimSelect({
                 select: '#' + selectName,
-                hideSelectedOption: false,
-                placeholder: $(this).attr('data-placeholder'),
-                closeOnSelect: true,
-                searchFilter: (option, search) => {
-                    return option.text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").indexOf(search.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")) !== -1
+                settings: {
+                    contentLocation: document.getElementById(selectName + "_ss"),
+                    hideSelectedOption: false,
+                    placeholderText: $(this).attr('data-placeholder'),
+                    closeOnSelect: true,
+                },
+                events: {
+                    searchFilter: (option, search) => {
+                        return option.text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").indexOf(search.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")) !== -1
+                    }
                 }
             });
             select.removeClass("spinner-border");
-
+            $(this).css("display", "block");
+            $(this).css("position", "absolute");
+            $(this).css("marginTop", "15px");
+            $(this).css("opacity", 0);
+            $(this).css("z-index", -1);
         })
 
         $(".slim-select-simple").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-simple for : " + selectName);
+            this.afterDiv = "<div id='" + selectName + "_ss'></div>";
+            $(this.afterDiv).insertAfter(this.selectField);
             let allowDeselect = Boolean($(this).attr('data-allow-deselect'));
             new SlimSelect({
                 select: '#' + selectName,
-                showSearch: false,
-                searchHighlight: false,
-                hideSelectedOption: false,
-                allowDeselect: allowDeselect.valueOf(),
-                placeholder: $(this).attr('data-placeholder'),
-                closeOnSelect: true,
+                settings: {
+                    contentLocation: document.getElementById(selectName + "_ss"),
+                    showSearch: false,
+                    searchHighlight: false,
+                    hideSelectedOption: false,
+                    allowDeselect: allowDeselect.valueOf(),
+                    placeholderText: $(this).attr('data-placeholder'),
+                    closeOnSelect: true,
+                },
                 ajax: function (search, callback) {
                     callback(false)
                 }
             });
-            if(!$(this).hasClass("slim-select-no-hack")) {
-                $(this).addClass("slim-select-hack");
-            }
+            $(this).css("display", "block");
+            $(this).css("position", "absolute");
+            $(this).css("marginTop", "15px");
+            $(this).css("opacity", 0);
+            $(this).css("z-index", -1);
         });
     }
 

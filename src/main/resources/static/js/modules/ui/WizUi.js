@@ -194,7 +194,7 @@ export class WizUi {
         let csrf = this.csrf;
         let step = new Step();
         step.workflowId = $('#wizWorkflowId').val();
-        step.recipientsEmails = $('#recipientsEmailsWiz').find(`[data-es-check-cert='true']`).prevObject[0].slim.selected();
+        step.recipientsEmails = $('#recipientsEmailsWiz').find(`[data-es-check-cert='true']`).prevObject[0].slim.getSelected();
         step.allSignToComplete = $('#allSignToCompleteWiz').is(':checked');
         step.autoSign = $('#autoSign').is(':checked');
         let userSignFirst = $('#userSignFirstWiz').is(':checked');
@@ -235,7 +235,7 @@ export class WizUi {
         let elementId = $("#elementId");
         let self = this;
         $.ajax({
-            url: "/user/wizard/wiz-save"+ this.mode +"/" + elementId.val() + "?name=" + name + "&viewers=" + self.recipientCCSelect.slimSelect.selected() + "&" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/wizard/wiz-save"+ this.mode +"/" + elementId.val() + "?name=" + name + "&viewers=" + self.recipientCCSelect.slimSelect.getSelected() + "&" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             success: html => this.initWiz2(html)
         });
