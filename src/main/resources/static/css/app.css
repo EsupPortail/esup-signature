@@ -532,6 +532,7 @@ input:checked + .slider:before {
 
 .ss-content {
     position: fixed;
+    width: initial !important;
 }
 
 .text-left {
