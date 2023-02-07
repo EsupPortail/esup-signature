@@ -23,10 +23,11 @@
         </nav>
         <div id="content" class="content flex align-content-center">
             <div class="row">
-                <div id="new-div" class="position-fixed new-width" style="z-index: 1000;">
+                <div id="new-div" style="z-index: 1000;">
                     <div th:replace="fragments/new :: new"></div>
                 </div>
-                <div id="to-sign-list" class="d-flex col-12 margin-274">
+                <div id="listSignRequestTable" class="div-scrollable scrollbar-style">
+                <div id="to-sign-list" class="d-flex col-12">
                     <div class="col-12 col-lg-10 card mb-2 mx-auto">
                         <div class="card-body">
                             <h5 class="text-center"><b>Demandes à signer</b></h5>
@@ -89,27 +90,6 @@
                             </div>
                         </div>
                     </div>
-<!--                    <div class="card mb-2" th:if="${datas.size() > 0}">-->
-<!--                        <div class="card-body">-->
-<!--                            <h5 class="text-center"><b>Bouillons</b></h5>-->
-<!--                            <table class="table table-sm table-borderless">-->
-<!--                                <tbody>-->
-<!--                                <th:block th:each="data : ${datas}">-->
-<!--                                    <tr>-->
-<!--                                        <td class="text-break w-50" th:text="${data.name}"></td>-->
-<!--                                        <td class="text-break w-40"-->
-<!--                                            th:text="${#dates.format(data.createDate, 'dd/MM/yyyy HH:mm')}"></td>-->
-<!--                                        <td class="text-center w-10">-->
-<!--                                            <a title="Voir" th:href="'/user/datas/' + ${data.id} + '/update'"-->
-<!--                                               class="btn btn-warning">-->
-<!--                                                <i class="fas fa-pencil-alt"></i>-->
-<!--                                            </a>-->
-<!--                                        </td>-->
-<!--                                    </tr>-->
-<!--                                </th:block>-->
-<!--                                </tbody>-->
-<!--                            </table>-->
-<!--                        </div>-->
                 </div>
                 <div id="pendingList" class="d-flex col-12" th:if="${userEppn == authUserEppn}">
                     <div class="col-12 col-lg-10 card mb-2 mx-auto">
@@ -195,6 +175,7 @@
                     <!--                                </tbody>-->
                     <!--                            </table>-->
                     <!--                        </div>-->
+                </div>
                 </div>
             </div>
         </div>

@@ -57,7 +57,7 @@
             </div>
             <div class="card col-sm-9 col-md-10 col-xl-11">
                 <div class="card-body">
-                    <div id="listSignRequestTable" class="table-fix-head">
+                    <div id="listSignRequestTable" class="table-fix-head scrollbar-style">
                         <div id="loader" class="loader" style="position: fixed; left: 50%; top: 40%; z-index:100000000; display: none;"></div>
                         <table class="table table-borderless table-hover">
                         <thead class="table-secondary">
@@ -139,7 +139,7 @@
                         <tfoot>
                         <tr>
                             <td colspan="100%">
-                                <a id="more-sign-request" href="javascript:void(0);" th:if="${infiniteScrolling}">Afficher plus d'éléments</a>
+                                <a id="more-sign-request" href="javascript:void(0);" th:if="${infiniteScrolling}">Afficher plus d’éléments</a>
                             </td>
                         </tr>
                         </tfoot>

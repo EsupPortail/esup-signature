@@ -51,7 +51,7 @@
     <div>
     <label class="form-label" th:for="'recipientsCCEmailsWiz' + ${workflow != null ? workflow.id : '0'}">Choisir les observateurs en copie</label>
     <div class="form-group mb-3">
-        <select class="select-users" data-es-check-cert="true" th:name="'recipientsCCEmailsWiz' + ${workflow != null ? workflow.id : '0'}" th:id="'recipientsCCEmailsWiz' + ${workflow != null ? workflow.id : '0'}" size="5" multiple="multiple">
+        <select class="select-users" data-es-check-cert="true" th:name="'recipientsCCEmailsWiz' + ${workflow != null ? workflow.id : '0'}" th:id="'recipientsCCEmailsWiz' + ${workflow != null ? workflow.id : '0'}" multiple="multiple">
             <option data-placeholder="true"></option>
             <th:block th:if="${workflow != null}">
             <th:block th:each="viewer : ${workflow.viewers}">

@@ -203,7 +203,7 @@ export class GlobalUi {
         } else if (windowsPlatforms.indexOf(platform) !== -1) {
             os = 'Windows';
             document.styleSheets[document.styleSheets.length - 1].addRule("html", `scrollbar-width: thin;`);
-            document.styleSheets[document.styleSheets.length - 1].addRule(".scrollbar-lite", `scrollbar-width: thin;`);
+            document.styleSheets[document.styleSheets.length - 1].addRule(".scrollbar-lite scrollbar-style", `scrollbar-width: thin;`);
             document.styleSheets[document.styleSheets.length - 1].addRule(".table-fix-head", `scrollbar-width: thin;`);
         } else if (/Android/.test(userAgent)) {
             os = 'Android';
@@ -403,6 +403,7 @@ export class GlobalUi {
     }
 
     checkSlimSelect() {
+        let self = this;
         $("select[class='slim-select']").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select for : " + selectName);
@@ -414,11 +415,7 @@ export class GlobalUi {
                     contentLocation: document.getElementById(selectName + "_ss")
                 }
             });
-            $(this).css("display", "block");
-            $(this).css("position", "absolute");
-            $(this).css("marginTop", "15px");
-            $(this).css("opacity", 0);
-            $(this).css("z-index", -1);
+            self.slimSelectHack($(this))
         })
 
         $(".slim-select-filter").each(function () {
@@ -442,11 +439,7 @@ export class GlobalUi {
                 }
             });
             select.removeClass("spinner-border");
-            $(this).css("display", "block");
-            $(this).css("position", "absolute");
-            $(this).css("marginTop", "15px");
-            $(this).css("opacity", 0);
-            $(this).css("z-index", -1);
+            self.slimSelectHack($(this))
         })
 
         $(".slim-select-simple").each(function () {
@@ -470,12 +463,16 @@ export class GlobalUi {
                     callback(false)
                 }
             });
-            $(this).css("display", "block");
-            $(this).css("position", "absolute");
-            $(this).css("marginTop", "15px");
-            $(this).css("opacity", 0);
-            $(this).css("z-index", -1);
+            self.slimSelectHack($(this))
         });
+    }
+
+    slimSelectHack(slim) {
+        slim.css("display", "block");
+        slim.css("position", "absolute");
+        slim.css("height", 38);
+        slim.css("opacity", 0);
+        slim.css("z-index", -1);
     }
 
     enableSummerNote() {

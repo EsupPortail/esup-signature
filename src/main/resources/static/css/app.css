@@ -83,7 +83,11 @@ html::-webkit-scrollbar-thumb {
     border: solid 3px #CECECE;
 }
 
-.table-fix-head::-webkit-scrollbar {
+.scrollbar-lite {
+    overflow-y: hidden;
+}
+
+.scrollbar-style::-webkit-scrollbar {
     background-color: #CECECE;
     width: 12px;
     height: 12px;
@@ -91,31 +95,17 @@ html::-webkit-scrollbar-thumb {
     margin: 2px;
 }
 
-.table-fix-head::-webkit-scrollbar-thumb {
+.scrollbar-style::-webkit-scrollbar-thumb {
     background-color: #E10F46;
     border-radius: 10px;
     width: 8px !important;
     border: solid 3px #CECECE;
 }
 
-.scrollbar-lite::-webkit-scrollbar {
-    background-color: #CECECE;
-    width: 12px;
-    height: 12px;
-    padding: 2px;
-    margin: 2px;
-}
-
-.scrollbar-lite::-webkit-scrollbar-thumb {
-    background-color: #E10F46;
-    border-radius: 10px;
-    width: 8px !important;
-    border: solid 3px #CECECE;
-}
 body {
     font-family: "Gravity", sans-serif;
     margin-bottom: 40px;
-    overflow-y: scroll;
+    /*overflow-y: scroll;*/
     width: 100%;
 }
 
@@ -387,6 +377,11 @@ code {
     -o-user-select: none;
 }
 
+.div-scrollable {
+    overflow-y: auto;
+    height: calc(100vh - 420px);
+}
+
 
 .static-border {
     position: absolute;
@@ -515,7 +510,6 @@ input:checked + .slider:before {
 }
 
 /* custom slimselect */
-
 
 :root {
     --ss-disabled-color: #e9ecef;
@@ -673,23 +667,23 @@ input:checked + .slider:before {
 }
 
 .content {
-    width: calc(100vw - 275px);
+    /*width: calc(100vw - 275px);*/
     margin-top: 86px;
     margin-left: 260px;
     padding-left: 5px;
 }
 
 .content-full {
-    width: calc(100vw - 75px);
+    /*width: calc(100vw - 75px);*/
     margin-left: 60px;
 }
 
 .new-width {
-    width: calc(100vw - 282px);
+    width: calc(100vw - 270px);
 }
 
 .new-width-full {
-    width: calc(100vw - 82px);
+    width: calc(100vw - 70px);
 }
 
 #sidebar {
@@ -723,10 +717,6 @@ input:checked + .slider:before {
 #sidebar.active {
     min-width: 60px;
     max-width: 60px;
-}
-
-.scrollbar-lite {
-    overflow-y: hidden;
 }
 
 .tools {
@@ -1526,10 +1516,6 @@ textarea:placeholder-shown.required-field {
     .new-max-w {
         width: 100%;
     }
-}
-
-.margin-274 {
-    margin-top: 274px;
 }
 
 .zoom {

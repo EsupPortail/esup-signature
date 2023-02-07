@@ -90,7 +90,6 @@ export class ListSignBooksUi {
         $('#new-scroll').toggleClass('text-nowrap').toggleClass('new-min-h');
         // $('#to-sign-list').toggleClass('d-flex d-none');
         // $('#new-fragment').toggleClass('position-fixed');
-        $('#to-sign-list').toggleClass('margin-274');
         $('#toggle-new-grid').children().toggleClass('fa-th fa-chevron-up');
         $('.newHr').toggleClass('d-none');
         $('#newContainer').toggleClass('d-inline').toggleClass("text-left");

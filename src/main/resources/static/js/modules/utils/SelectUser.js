@@ -69,7 +69,7 @@ export default class SelectUser {
                 closeOnSelect: true,
             },
             events: {
-                onChange: e => this.displayTempUsers(e),
+                afterChange: e => this.displayTempUsers(e),
                 addable: e => this.validateEmail(e),
                 searchFilter: (option, search) => {
                     return true;
@@ -122,7 +122,7 @@ export default class SelectUser {
             });
         this.selectField.css("display", "block");
         this.selectField.css("position", "absolute");
-        this.selectField.css("marginTop", "15px");
+        this.selectField.css("height", 38);
         this.selectField.css("opacity", 0);
         this.selectField.css("z-index", -1);
     }
