@@ -58,7 +58,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal fade" id="addStep" tabindex="-1" role="dialog" aria-labelledby="addStepLabel" aria-hidden="true">
+            <div class="modal fade" id="addStep" data-bs-focus="false" role="dialog" aria-labelledby="addStepLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
                         <form th:action="'/admin/workflows/add-step/' + ${workflow.id}" method="post">
@@ -154,7 +154,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal fade" id="addAutoStep" tabindex="-1" role="dialog" aria-labelledby="addAutoStepLabel" aria-hidden="true">
+            <div class="modal fade" id="addAutoStep" data-bs-focus="false" role="dialog" aria-labelledby="addAutoStepLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
                         <form th:action="'/admin/workflows/add-auto-step/' + ${workflow.id}" method="post">

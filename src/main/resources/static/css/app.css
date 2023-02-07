@@ -530,24 +530,11 @@ input:checked + .slider:before {
     min-height: 38px;
 }
 
-/*.table .ss-content {*/
-/*    width: initial !important;*/
-/*    position: fixed;*/
-/*    margin-top: 10px !important;*/
-/*}*/
-
-.modal .ss-content {
-    position:fixed;
-    width:inherit;
-    max-width:inherit;
+.slim-select-filter {
+    width: initial !important;
+    margin-top: 10px !important;
 }
 
-.ss-container {
-    display: flex;
-    flex-direction: row;
-    /*width:100%;*/
-    /*max-width:800px;*/
-}
 
 .text-left {
   text-align: left !important;

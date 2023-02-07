@@ -407,13 +407,8 @@ export class GlobalUi {
         $("select[class='slim-select']").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select for : " + selectName);
-            this.afterDiv = "<div id='" + selectName + "_ss'></div>";
-            $(this.afterDiv).insertAfter(this.selectField);
             new SlimSelect({
                 select: '#' + selectName,
-                settings: {
-                    contentLocation: document.getElementById(selectName + "_ss")
-                }
             });
             self.slimSelectHack($(this))
         })
@@ -421,13 +416,10 @@ export class GlobalUi {
         $(".slim-select-filter").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-filter for : " + selectName);
-            this.afterDiv = "<div id='" + selectName + "_ss'></div>";
-            $(this.afterDiv).insertAfter($(this));
             let select = $("#" + selectName);
             new SlimSelect({
                 select: '#' + selectName,
                 settings: {
-                    contentLocation: document.getElementById(selectName + "_ss"),
                     hideSelectedOption: false,
                     placeholderText: $(this).attr('data-placeholder'),
                     closeOnSelect: true,
@@ -445,13 +437,10 @@ export class GlobalUi {
         $(".slim-select-simple").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-simple for : " + selectName);
-            this.afterDiv = "<div id='" + selectName + "_ss'></div>";
-            $(this.afterDiv).insertAfter(this.selectField);
             let allowDeselect = Boolean($(this).attr('data-allow-deselect'));
             new SlimSelect({
                 select: '#' + selectName,
                 settings: {
-                    contentLocation: document.getElementById(selectName + "_ss"),
                     showSearch: false,
                     searchHighlight: false,
                     hideSelectedOption: false,
@@ -496,6 +485,7 @@ export class GlobalUi {
 
     onDocumentLoad() {
         console.info("global on load");
+        $.fn.modal.Constructor.prototype.enforceFocus = function () {};
         this.checkSelectUser();
         this.checkSlimSelect();
         this.enableSummerNote();
