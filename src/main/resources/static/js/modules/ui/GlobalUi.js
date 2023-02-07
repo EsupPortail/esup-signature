@@ -422,7 +422,7 @@ export class GlobalUi {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-filter for : " + selectName);
             this.afterDiv = "<div id='" + selectName + "_ss'></div>";
-            $(this.afterDiv).insertAfter(this.selectField);
+            $(this.afterDiv).insertAfter($(this));
             let select = $("#" + selectName);
             new SlimSelect({
                 select: '#' + selectName,

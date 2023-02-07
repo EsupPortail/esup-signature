@@ -4,7 +4,7 @@ export default class SelectUser {
         console.info("init select-user : " + selectName);
         this.slimSelect = null;
         this.selectField = $("#" + selectName);
-        this.afterDiv = "<div id='" + selectName + "_ss'></div>";
+        this.afterDiv = "<div id='" + selectName + "_ss' class='ss-container'></div>";
         $(this.afterDiv).insertAfter(this.selectField);
         this.selectField.attr("stepSelection", "true");
         this.checkList = this.selectField.attr("data-es-check-list");
@@ -56,9 +56,14 @@ export default class SelectUser {
             placeHolder = "Choisir une personne";
         }
         let self = this;
+        let position = "absolute";
+        if(this.selectField.attr("data-es-relative")) {
+            position = "relative";
+        }
         this.slimSelect = new SlimSelect({
             select: "#" + selectName,
             settings: {
+                contentPosition: position,
                 contentLocation: document.getElementById(selectName + "_ss"),
                 placeholderText: placeHolder,
                 searchText: 'Aucun résultat',

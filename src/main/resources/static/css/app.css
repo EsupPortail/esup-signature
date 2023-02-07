@@ -530,9 +530,23 @@ input:checked + .slider:before {
     min-height: 38px;
 }
 
-.ss-content {
-    position: fixed;
-    width: initial !important;
+/*.table .ss-content {*/
+/*    width: initial !important;*/
+/*    position: fixed;*/
+/*    margin-top: 10px !important;*/
+/*}*/
+
+.modal .ss-content {
+    position:fixed;
+    width:inherit;
+    max-width:inherit;
+}
+
+.ss-container {
+    display: flex;
+    flex-direction: row;
+    /*width:100%;*/
+    /*max-width:800px;*/
 }
 
 .text-left {
