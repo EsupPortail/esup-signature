@@ -321,9 +321,10 @@ public class SignRequestController {
                           @RequestParam(value = "names", required = false) List<String> names,
                           @RequestParam(value = "firstnames", required = false) List<String> firstnames,
                           @RequestParam(value = "phones", required = false) List<String> phones,
+                          @RequestParam(value = "forcesmses", required = false) List<String> forcesmses,
                           @RequestParam(value = "draft", required = false) Boolean draft,
-                          RedirectAttributes redirectAttributes) throws MessagingException, EsupSignatureException, EsupSignatureFsException {
-        List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
+                          RedirectAttributes redirectAttributes) throws MessagingException, EsupSignatureException {
+        List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones, forcesmses);
         if(signRequestService.checkTempUsers(id, recipientEmails, externalUsersInfos)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
             return "redirect:/user/signrequests/" + id;

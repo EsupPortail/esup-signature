@@ -72,7 +72,7 @@ public class OtpAccessController {
         Otp otp = otpService.getOtp(urlId);
         if(otp != null) {
             User user = userService.getUserByEmail(otp.getEmail());
-            if(globalProperties.getSmsRequired()) {
+            if(globalProperties.getSmsRequired() || otp.isForceSms()) {
                 if (!otp.isSmsSended() && smsService != null) {
                     if (user.getPhone() != null && !user.getPhone().isEmpty()) {
                         Pattern pattern = Pattern.compile("^(\\d{2}[- .]?){5}$");

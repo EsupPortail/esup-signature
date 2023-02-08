@@ -665,7 +665,7 @@ public class UserService {
         user.setDefaultSignImageNumber(signImageNumber);
     }
 
-    public List<JsonExternalUserInfo> getJsonExternalUserInfos(List<String> emails, List<String> names, List<String> firstnames, List<String> phones) {
+    public List<JsonExternalUserInfo> getJsonExternalUserInfos(List<String> emails, List<String> names, List<String> firstnames, List<String> phones, List<String> forcesmses) {
         List<JsonExternalUserInfo> externalUsersInfos = new ArrayList<>();
         if(emails != null) {
             for (int i = 0; i < emails.size(); i++) {
@@ -673,6 +673,9 @@ public class UserService {
                 jsonExternalUserInfo.setEmail(emails.get(i));
                 jsonExternalUserInfo.setName(names.get(i));
                 jsonExternalUserInfo.setFirstname(firstnames.get(i));
+                if(forcesmses != null && forcesmses.size() > i + 1) {
+                    jsonExternalUserInfo.setForcesms(forcesmses.get(i));
+                }
                 if(phones.size() >= i + 1) {
                     jsonExternalUserInfo.setPhone(phones.get(i));
                 }

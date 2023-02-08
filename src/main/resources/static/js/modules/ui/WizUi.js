@@ -205,6 +205,7 @@ export class WizUi {
             externalUserInfos.name = $(this).find("#names").val();
             externalUserInfos.firstname = $(this).find("#firstnames").val();
             externalUserInfos.phone = $(this).find("#phones").val();
+            externalUserInfos.forcesms = $(this).find("#forcesmses").val();
             step.externalUsersInfos.push(externalUserInfos);
         });
         let signBookId = this.signBookId;

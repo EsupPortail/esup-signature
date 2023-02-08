@@ -2,6 +2,7 @@ export default class SelectUser {
 
     constructor(selectName, limit, signRequestId, csrf) {
         console.info("init select-user : " + selectName);
+        this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.slimSelect = null;
         this.selectField = $("#" + selectName);
         this.selectField.attr("stepSelection", "true");
@@ -245,17 +246,33 @@ export default class SelectUser {
         if(e.phone == null) {
             e.phone = "";
         }
-        tempUsersDiv.append(
-            "<div class='alert alert-primary' id='externalUserInfos_" + e.email + "'>" +
-            "<b>Destinataire externe : <span>"+ e.email +"</span></b>" +
-            "<input id=\"emails\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\""+ e.email +"\">" +
-            "<div class=\"d-flex col-10\"><label for=\"name\" class='col-2'>Nom</label>" +
-            "<input id=\"names\" class=\"form-control \" type=\"text\" name=\"names\" value=\""+ e.name +"\" required></div>" +
-            "<div class=\"d-flex col-10\"><label for=\"firstname\" class='col-2'>Prénom</label>" +
-            "<input id=\"firstnames\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\""+ e.firstname +"\" required></div>" +
-            "<div class=\"d-flex col-10\"><label for=\"phones\" class='col-2'>Mobile</label>" +
-            "<input id=\"phones\" class=\"form-control \" type=\"text\" name=\"phones\" value=\""+ e.phone +"\"></div>" +
-            "</div>");
+        if(this.globalProperties.smsRequired) {
+            tempUsersDiv.append(
+                "<div class='alert alert-primary' id='externalUserInfos_" + e.email + "'>" +
+                "<b>Destinataire externe : <span>" + e.email + "</span></b>" +
+                "<input id=\"emails\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\"" + e.email + "\">" +
+                "<div class=\"d-flex col-12\"><label for=\"name\" class='col-3'>Nom</label>" +
+                "<input id=\"names\" class=\"form-control \" type=\"text\" name=\"names\" value=\"" + e.name + "\" required></div>" +
+                "<div class=\"d-flex col-12\"><label for=\"firstname\" class='col-3'>Prénom</label>" +
+                "<input id=\"firstnames\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + e.firstname + "\" required></div>" +
+                "<div class=\"d-flex col-12\"><label for=\"phones\" class='col-3'>Mobile</label>" +
+                "<input id=\"phones\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + e.phone + "\" required></div>" +
+                "</div>");
+        } else {
+            tempUsersDiv.append(
+                "<div class='alert alert-primary' id='externalUserInfos_" + e.email + "'>" +
+                "<b>Destinataire externe : <span>" + e.email + "</span></b>" +
+                "<input id=\"emails\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\"" + e.email + "\">" +
+                "<div class=\"d-flex col-12\"><label for=\"name\" class='col-3'>Nom</label>" +
+                "<input id=\"names\" class=\"form-control \" type=\"text\" name=\"names\" value=\"" + e.name + "\" required></div>" +
+                "<div class=\"d-flex col-12\"><label for=\"firstname\" class='col-3'>Prénom</label>" +
+                "<input id=\"firstnames\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + e.firstname + "\" required></div>" +
+                "<div class=\"d-flex col-12\"><label for=\"phones\" class='col-3'>Mobile</label>" +
+                "<input id=\"phones\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + e.phone + "\"></div>" +
+                "<div class=\"d-flex col-12\"><label for=\"forcesms\" class='col-3'>Autentification SMS</label>" +
+                "<input id=\"forcesmses\" class=\"form-check-input \" type=\"checkbox\" name=\"forcesmses\" value='true'></div>" +
+                "</div>");
+        }
     }
 
     validateEmail(email) {
