@@ -3,9 +3,7 @@ package org.esupportail.esupsignature.entity;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Entity
 public class UserShare {
@@ -39,8 +37,8 @@ public class UserShare {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createDate = new Date();
 
-    @ElementCollection(targetClass = ShareType.class)
-    private List<ShareType> shareTypes = new ArrayList<>();
+    @ElementCollection(targetClass = ShareType.class, fetch = FetchType.EAGER)
+    private Set<ShareType> shareTypes = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -123,11 +121,11 @@ public class UserShare {
         this.createDate = createDate;
     }
 
-    public List<ShareType> getShareTypes() {
+    public Set<ShareType> getShareTypes() {
         return shareTypes;
     }
 
-    public void setShareTypes(List<ShareType> shareTypes) {
+    public void setShareTypes(Set<ShareType> shareTypes) {
         this.shareTypes = shareTypes;
     }
 }

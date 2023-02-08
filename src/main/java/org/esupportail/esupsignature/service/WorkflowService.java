@@ -255,10 +255,6 @@ public class WorkflowService {
         return this.workflows;
     }
 
-    public List<Workflow> getDatabaseWorkflows() {
-        return workflowRepository.findAll();
-    }
-
     public Set<Workflow> getWorkflowsBySystemUser() {
         User systemUser = userService.getSystemUser();
         return getWorkflowsByUser(systemUser.getEppn(), systemUser.getEppn());
@@ -278,9 +274,7 @@ public class WorkflowService {
 
     @Transactional
     public List<Workflow> getAllWorkflows() {
-        List<Workflow> allWorkflows = new ArrayList<>();
-        allWorkflows.addAll(this.getDatabaseWorkflows());
-        return allWorkflows;
+        return workflowRepository.findAll();
     }
 
     @Transactional

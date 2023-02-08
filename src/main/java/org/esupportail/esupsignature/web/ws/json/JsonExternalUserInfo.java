@@ -6,6 +6,7 @@ public class JsonExternalUserInfo {
     private String name;
     private String firstname;
     private String phone;
+    private String forcesms;
 
     public String getEmail() {
         return email;
@@ -37,5 +38,13 @@ public class JsonExternalUserInfo {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getForcesms() {
+        return forcesms;
+    }
+
+    public void setForcesms(String forcesms) {
+        this.forcesms = forcesms;
     }
 }

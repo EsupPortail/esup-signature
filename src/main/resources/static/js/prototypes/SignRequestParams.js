@@ -294,7 +294,12 @@ export class SignRequestParams extends EventFactory {
         if(this.isOtp){
             this.toggleExtra();
             this.toggleText()
-            $("#extraTypeDiv_" + this.id).html("<span>Signature OTP : " + this.phone + "<br></span>");
+            if(this.phone != null) {
+                $("#extraTypeDiv_" + this.id).html("<span>Signature OTP : " + this.phone + "<br></span>");
+            } else {
+                $("#extraTypeDiv_" + this.id).html("<span>Signature OTP<br></span>");
+            }
+
             $("#extraTools_" + this.id).remove();
             $("#crossTools_" + this.id).css("top", "-45px");
         }

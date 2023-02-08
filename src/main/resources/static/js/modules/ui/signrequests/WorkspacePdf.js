@@ -704,7 +704,7 @@ export class WorkspacePdf {
         $('#commentModeButton').toggleClass('btn-outline-warning');
         $('#commentsTools').show();
         if (this.changeModeSelector != null) {
-            this.changeModeSelector.set("comment");
+            this.changeModeSelector.setSelected("comment");
         }
         $('#commentsBar').show();
         $('#infos').show();
@@ -922,7 +922,7 @@ export class WorkspacePdf {
         let data = [];
         if(this.signable) {
             data.push({
-                innerHTML: '<div style="width: 200px;"><i style="font-size: 0.6rem;" class="fas fa-signature text-success"></i><i class="fas fa-pen text-success pr-2"></i></i> <b>Remplir et signer</b></div>',
+                html: '<div style="width: 200px;"><i style="font-size: 0.6rem;" class="fas fa-signature text-success"></i><i class="fas fa-pen text-success pr-2"></i></i> <b>Remplir et signer</b></div>',
                 text: 'Remplir et signer',
                 value: 'sign',
                 selected: true
@@ -930,20 +930,20 @@ export class WorkspacePdf {
         }
         if(this.status === "draft" || this.status === "pending") {
             data.push({
-                innerHTML: '<div style="width: 200px;"><i class="fas fa-comment text-warning pr-2 m-1"></i><b>Annoter</b></div>',
+                html: '<div style="width: 200px;"><i class="fas fa-comment text-warning pr-2 m-1"></i><b>Annoter</b></div>',
                 text: 'Annoter',
                 value: 'comment'
             });
         }
         if(this.status !== "draft" && this.status !== "pending" && this.postits.length > 0) {
             data.push({
-                innerHTML: '<div style="width: 200px;"><i class="fas fa-comment text-warning pr-2 m-1"></i><b>Voir les annotations</b></div>',
+                html: '<div style="width: 200px;"><i class="fas fa-comment text-warning pr-2 m-1"></i><b>Voir les annotations</b></div>',
                 text: 'Consulter les annotations',
                 value: 'comment'
             });
         }
         data.push({
-            innerHTML: '<div style="width: 200px;"><i class="fas fa-eye text-info pr-2 m-1"></i><b>Mode lecture</b></div>',
+            html: '<div style="width: 200px;"><i class="fas fa-eye text-info pr-2 m-1"></i><b>Mode lecture</b></div>',
             text: 'Lecture',
             value: 'read'
         });
@@ -951,23 +951,29 @@ export class WorkspacePdf {
         if($("#changeMode").length) {
             this.changeModeSelector = new SlimSelect({
                 select: '#changeMode',
-                showSearch: false,
-                valuesUseText: false,
-                onChange: e => this.changeMode(e),
-                data: data
+                settings: {
+                    showSearch: false,
+                    valuesUseText: false,
+                },
+                events: {
+                    afterChange: (val) => {
+                        this.changeMode(val)
+                    }
+                },
             });
+            this.changeModeSelector.setData(data);
         }
         if(this.changeModeSelector != null) {
             if(this.signable) {
-                this.changeModeSelector.set("sign");
+                this.changeModeSelector.setSelected("sign");
             } else {
-                this.changeModeSelector.set("read");
+                this.changeModeSelector.setSelected("read");
             }
         }
     }
 
     changeMode(e) {
-        let mode = e.value;
+        let mode = e[0].value;
         console.info("change mode to : " + mode);
         if (mode === "sign" && this.signable) {
             this.enableSignMode();

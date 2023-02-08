@@ -133,7 +133,7 @@
 				   th:title="${signRequestTab.title}">
 					<div class="truncate">
 						<span title="À signer" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-							<i class="fas fa-exclamation-circle text-warning"></i>
+							<i class="fas fa-clock text-warning"></i>
 						</span>
 						<span title="Document signé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
 							<i class="fas fa-check-circle text-success"></i>

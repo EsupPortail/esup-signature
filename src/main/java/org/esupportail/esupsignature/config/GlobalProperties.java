@@ -220,6 +220,11 @@ public class GlobalProperties {
      */
     private Boolean sendPostitByEmail = false;
 
+    /**
+     *  Imposer la double authentification par SMS pour les externes
+     */
+    private Boolean smsRequired = true;
+
     public String getRootUrl() {
         return rootUrl;
     }
@@ -570,5 +575,13 @@ public class GlobalProperties {
 
     public void setSendPostitByEmail(Boolean sendPostitByEmail) {
         this.sendPostitByEmail = sendPostitByEmail;
+    }
+
+    public Boolean getSmsRequired() {
+        return smsRequired;
+    }
+
+    public void setSmsRequired(Boolean smsRequired) {
+        this.smsRequired = smsRequired;
     }
 }

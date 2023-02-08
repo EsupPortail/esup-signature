@@ -125,7 +125,7 @@
     </div>
 </main>
 
-<div class="modal fade" id="addDoc" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
+<div class="modal fade" id="addDoc" data-bs-focus="false" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form th:action="'/user/signbooks/add-docs/' + ${signBook.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
@@ -156,7 +156,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="addStep" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="addStep" data-bs-focus="false" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form th:action="'/user/signbooks/add-live-step/' + ${id}" method="post">
@@ -179,7 +179,7 @@
                         </div>
                         <label for="recipientsEmails2">Choisir les participants</label>
                         <div class="form-group mb-3">
-                            <select name="recipientsEmails" id="recipientsEmails2" size="5" multiple="multiple" required="required"></select>
+                            <select name="recipientsEmails" id="recipientsEmails2" multiple="multiple" required="required"></select>
                         </div>
                         <br><br>
                         <div class="form-group mb-3" id="allSignToComplete-update">
@@ -215,7 +215,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="sendModal" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="sendModal" data-bs-focus="false" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form th:action="'/user/signbooks/pending/' + ${id}" method="post">
