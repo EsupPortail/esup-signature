@@ -532,7 +532,6 @@ input:checked + .slider:before {
 
 .slim-select-filter {
     width: initial !important;
-    margin-top: 10px !important;
 }
 
 
