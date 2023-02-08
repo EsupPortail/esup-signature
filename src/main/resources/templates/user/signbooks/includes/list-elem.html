@@ -52,7 +52,7 @@
                             <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
                                 <li class="dropdown-item" th:title="${recipient.user.email}" style="display: inline-flex;">
                                    <span class="me-1" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
-                                    <div th:switch="${recipient.signed}">
+                                    <div th:switch="${recipient.signed}" th:if="${signBook.signRequests.s}">
                                         <th:block th:case="true">
                                             <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" title="A signé le document" class="fas fa-check-circle text-success"></i>
                                             <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}"  title="A refusé le document" class="fas fa-times-circle text-danger"></i>

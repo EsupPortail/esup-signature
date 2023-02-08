@@ -36,7 +36,9 @@
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksToSign}">
                                     <tr th:if="${signBook.signRequests.size() > 0}" th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}">
-                                        <td class="text-break d-none d-md-table-cell"><a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fas fa-plus"></i></a></td>
+                                        <td class="text-break d-none d-md-table-cell">
+                                            <a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fas fa-plus"></i></a>
+                                        </td>
                                         <td class="text-break w-5 d-none d-md-table-cell">
                                             <i th:if="${signBook.signRequests.size() > 1}" class="fas fa-folder-open p-2"></i>
                                             <i th:unless="${signBook.signRequests.size() > 1}" class="fas fa-file-alt p-2"></i>
@@ -68,7 +70,11 @@
                                                 <table class="table table-hover">
                                                     <th:block th:each="signRequest : ${signBook.signRequests}">
                                                         <tr class='clickable-row' th:data-href="'/user/signbooks/' + ${signBook.id}">
-                                                            <td><i class="fas fa-file-alt"></i></td>
+                                                            <td>
+                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fas fa-clock text-warning"></span>
+                                                                <span th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fas fa-circle-check text-success"></span>
+                                                                <i class="fas fa-file-alt"></i>
+                                                            </td>
                                                             <td th:text="${signRequest.title}"></td>
                                                             <td class="text-center w-5">
                                                                 <a aria-label="Accéder à la demande"
@@ -132,7 +138,11 @@
                                                 <table class="table table-hover">
                                                     <th:block th:each="signRequest : ${signBook.signRequests}">
                                                         <tr class='clickable-row' th:data-href="'/user/signbooks/' + ${signRequest.parentSignBook.id}">
-                                                            <td><i class="fas fa-file-alt"></i></td>
+                                                            <td>
+                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fas fa-clock text-warning"></span>
+                                                                <span th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fas fa-circle-check text-success"></span>
+                                                                <i class="fas fa-file-alt"></i>
+                                                            </td>
                                                             <td th:text="${signRequest.title}"></td>
                                                             <td class="text-center w-5">
                                                                 <a aria-label="Accéder à la demande"
