@@ -32,7 +32,7 @@ import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.SignWith;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.CertificatService;
@@ -138,7 +138,7 @@ public class SignService {
 		return documents;
 	}
 
-	public Document certSign(SignRequest signRequest, String userEppn, String password, SignWith signWith) throws EsupSignatureException {
+	public Document certSign(SignRequest signRequest, String userEppn, String password, SignWith signWith) throws EsupSignatureRuntimeException {
 		User user = userService.getUserByEppn(userEppn);
 		logger.info("start certSign for signRequest : " + signRequest.getId());
 		SignatureForm signatureForm;
@@ -157,12 +157,12 @@ public class SignService {
 				try {
 					abstractKeyStoreTokenConnection = certificatService.getSealToken();
 				} catch (Exception e) {
-					throw new EsupSignatureException("unable to open pkcs11 token", e);
+					throw new EsupSignatureRuntimeException("unable to open pkcs11 token", e);
 				}
 			} else if (signWith.equals(SignWith.openPkiCert)) {
 				abstractKeyStoreTokenConnection = openXPKICertificatGenerationService.generateTokenForUser(user);
 			} else {
-				throw new EsupSignatureException("Aucun certificat disponible pour signer le document");
+				throw new EsupSignatureRuntimeException("Aucun certificat disponible pour signer le document");
 			}
 
 			CertificateToken certificateToken = userKeystoreService.getCertificateToken(abstractKeyStoreTokenConnection);
@@ -218,7 +218,7 @@ public class SignService {
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
 		} catch (Exception e) {
 			if(abstractKeyStoreTokenConnection != null) abstractKeyStoreTokenConnection.close();
-			throw new EsupSignatureException(e.getMessage(), e);
+			throw new EsupSignatureRuntimeException(e.getMessage(), e);
 		}
 	}
 
@@ -464,7 +464,7 @@ public class SignService {
 		}
 	}
 
-	public AbstractSignatureForm getSignatureDocumentForm(List<Document> documents, SignRequest signRequest, User user, Date date, boolean sealSign) throws IOException, EsupSignatureException {
+	public AbstractSignatureForm getSignatureDocumentForm(List<Document> documents, SignRequest signRequest, User user, Date date, boolean sealSign) throws IOException, EsupSignatureRuntimeException {
 		SignatureForm signatureForm;
 		AbstractSignatureForm abstractSignatureForm;
 		if(documents.size() > 1) {
@@ -674,7 +674,7 @@ public class SignService {
 	}
 
 	@Transactional
-	public AbstractSignatureForm getAbstractSignatureForm(Long signRequestId, String userEppn) throws IOException, EsupSignatureException {
+	public AbstractSignatureForm getAbstractSignatureForm(Long signRequestId, String userEppn) throws IOException, EsupSignatureRuntimeException {
 		User user = userService.getUserByEppn(userEppn);
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		List<SignRequestParams> liveWfSignRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
@@ -703,7 +703,7 @@ public class SignService {
 	}
 
 	@Transactional
-	public SignDocumentResponse getSignDocumentResponse(Long signRequestId, SignatureValueAsString signatureValue, AbstractSignatureForm abstractSignatureForm, String userEppn, String authUserEppn) throws EsupSignatureException {
+	public SignDocumentResponse getSignDocumentResponse(Long signRequestId, SignatureValueAsString signatureValue, AbstractSignatureForm abstractSignatureForm, String userEppn, String authUserEppn) throws EsupSignatureRuntimeException {
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		SignDocumentResponse signedDocumentResponse;
 		abstractSignatureForm.setBase64SignatureValue(signatureValue.getSignatureValue());
@@ -715,7 +715,7 @@ public class SignService {
 				return signedDocumentResponse;
 			}
 		} catch (IOException e) {
-			throw new EsupSignatureException("unable to sign" , e);
+			throw new EsupSignatureRuntimeException("unable to sign" , e);
 		}
 		return null;
 	}

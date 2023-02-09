@@ -9,7 +9,7 @@ import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import org.esupportail.esupsignature.dss.config.DSSBeanConfig;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,7 +91,7 @@ public class OJService {
 
 	@Async
 	@EventListener(ApplicationReadyEvent.class)
-	public void init() throws EsupSignatureException {
+	public void init() throws EsupSignatureRuntimeException {
 		logger.info("Checking Workflow classes...");
 		workflowService.copyClassWorkflowsIntoDatabase();
 		logger.info("Check done.");

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.FormRepository;
@@ -99,7 +99,7 @@ public class WorkflowService {
             WorkflowStep workflowStep = null;
             try {
                 workflowStep = workflowStepService.createWorkflowStep("Ma signature", false, SignType.pdfImageStamp, creator.getEmail());
-            } catch (EsupSignatureException e) {
+            } catch (EsupSignatureRuntimeException e) {
                 logger.warn(e.getMessage());
             }
             workflow.getWorkflowSteps().add(workflowStep);
@@ -108,7 +108,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public void copyClassWorkflowsIntoDatabase() throws EsupSignatureException {
+    public void copyClassWorkflowsIntoDatabase() throws EsupSignatureRuntimeException {
         for (Workflow classWorkflow : getClassesWorkflows()) {
             logger.info("workflow class found : " + classWorkflow.getName());
             if (!isWorkflowExist(classWorkflow.getName(), "system")) {
@@ -186,7 +186,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public Workflow addStepToWorkflow(Long id, SignType signType, Boolean allSignToComplete, String[] recipientsEmails, User user) throws EsupSignatureException {
+    public Workflow addStepToWorkflow(Long id, SignType signType, Boolean allSignToComplete, String[] recipientsEmails, User user) throws EsupSignatureRuntimeException {
         Workflow workflow;
         if (id != null) {
             workflow = getById(id);
@@ -205,7 +205,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public Workflow createWorkflow(String title, String description, User user) throws EsupSignatureException {
+    public Workflow createWorkflow(String title, String description, User user) throws EsupSignatureRuntimeException {
         String name;
         if (userService.getSystemUser().equals(user)) {
             name = title;
@@ -224,7 +224,7 @@ public class WorkflowService {
             workflowRepository.save(workflow);
             return workflow;
         } else {
-            throw new EsupSignatureException("already exist");
+            throw new EsupSignatureRuntimeException("already exist");
         }
     }
 
@@ -310,7 +310,7 @@ public class WorkflowService {
         return workflow;
     }
 
-    public Workflow computeWorkflow(Long workflowId, List<String> recipientEmails, List<String> signTypes,  List<String> allSignToCompletes, String userEppn, boolean computeForDisplay) throws EsupSignatureException {
+    public Workflow computeWorkflow(Long workflowId, List<String> recipientEmails, List<String> signTypes,  List<String> allSignToCompletes, String userEppn, boolean computeForDisplay) throws EsupSignatureRuntimeException {
         try {
             Workflow modelWorkflow = getById(workflowId);
             if (modelWorkflow.getFromCode() != null && modelWorkflow.getFromCode()) {
@@ -344,7 +344,7 @@ public class WorkflowService {
             entityManager.detach(modelWorkflow);
             return modelWorkflow;
         } catch (Exception e) {
-            throw new EsupSignatureException("compute workflow error", e);
+            throw new EsupSignatureRuntimeException("compute workflow error", e);
         }
     }
 
@@ -360,7 +360,7 @@ public class WorkflowService {
         return users;
     }
 
-    public void replaceStepSystemUsers(String userEppn, WorkflowStep workflowStep) throws EsupSignatureException {
+    public void replaceStepSystemUsers(String userEppn, WorkflowStep workflowStep) throws EsupSignatureRuntimeException {
         User user = userService.getByEppn(userEppn);
         if(TransactionSynchronizationManager.isActualTransactionActive()) {
             List<User> users = new ArrayList<>(workflowStep.getUsers());
@@ -384,7 +384,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public void delete(Workflow workflow) throws EsupSignatureException {
+    public void delete(Workflow workflow) throws EsupSignatureRuntimeException {
         List<SignBook> signBooks = signBookRepository.findByLiveWorkflowWorkflow(workflow);
         List<Form> forms = formRepository.findByWorkflowIdEquals(workflow.getId());
         if(forms.size() == 0) {
@@ -405,10 +405,10 @@ public class WorkflowService {
                 }
                 workflowRepository.delete(workflow);
             } else {
-                throw new EsupSignatureException("Le circuit ne peut pas être supprimé car il est en court d'utilisation");
+                throw new EsupSignatureRuntimeException("Le circuit ne peut pas être supprimé car il est en court d'utilisation");
             }
         } else {
-            throw new EsupSignatureException("Le circuit ne peut pas être supprimé car il associée au formulaire " + forms.get(0).getTitle());
+            throw new EsupSignatureRuntimeException("Le circuit ne peut pas être supprimé car il associée au formulaire " + forms.get(0).getTitle());
         }
     }
 
@@ -477,7 +477,7 @@ public class WorkflowService {
         return workflowToUpdate;
     }
 
-    public List<WorkflowStep> getWorkflowStepsFromSignRequest(SignRequest signRequest, String userEppn) throws EsupSignatureException {
+    public List<WorkflowStep> getWorkflowStepsFromSignRequest(SignRequest signRequest, String userEppn) throws EsupSignatureRuntimeException {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
             Workflow workflow = computeWorkflow(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId(), null, null, null, userEppn, true);
@@ -530,7 +530,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public void setWorkflowSetupFromJson(Long id, InputStream inputStream) throws IOException, EsupSignatureException, EsupSignatureFsException {
+    public void setWorkflowSetupFromJson(Long id, InputStream inputStream) throws IOException, EsupSignatureRuntimeException, EsupSignatureFsException {
         Workflow workflow = getById(id);
         String savedName = workflow.getName();
         String savedTitle = workflow.getTitle();

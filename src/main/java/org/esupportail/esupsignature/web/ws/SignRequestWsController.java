@@ -12,7 +12,7 @@ import org.esupportail.esupsignature.entity.AuditTrail;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
@@ -60,7 +60,7 @@ public class SignRequestWsController {
         try {
             Map<SignBook, String> signBookStringMap = signBookService.sendSignRequest(title, multipartFiles, SignType.valueOf(signType), allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, eppn, eppn, true, forceAllSign, targetUrl);
             return signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
-        } catch (EsupSignatureException e) {
+        } catch (EsupSignatureRuntimeException e) {
             logger.error(e.getMessage(), e);
             return -1L;
         }

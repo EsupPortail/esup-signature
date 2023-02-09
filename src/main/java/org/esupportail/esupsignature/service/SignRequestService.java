@@ -11,7 +11,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.UserType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
@@ -304,7 +304,7 @@ public class SignRequestService {
 			} catch (IOException e) {
 				logger.warn("error on adding files", e);
 				throw new EsupSignatureIOException("Erreur lors de l'ajout des fichiers", e);
-			} catch (EsupSignatureException e) {
+			} catch (EsupSignatureRuntimeException e) {
 				logger.warn("error on converting files", e);
 				throw new EsupSignatureIOException("Erreur lors de la conversion du document", e);
 			}
@@ -607,7 +607,7 @@ public class SignRequestService {
 		return userService.getTempUsers(signRequest).size() > 0;
 	}
 
-	public boolean checkTempUsers(Long id, List<String> recipientEmails, List<JsonExternalUserInfo> externalUsersInfos) throws MessagingException, EsupSignatureException {
+	public boolean checkTempUsers(Long id, List<String> recipientEmails, List<JsonExternalUserInfo> externalUsersInfos) throws MessagingException, EsupSignatureRuntimeException {
 		SignRequest signRequest = getById(id);
 		List<User> tempUsers = userService.getTempUsers(signRequest, recipientEmails);
 		if(tempUsers.size() > 0) {
@@ -791,7 +791,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void getToSignFileResponse(Long signRequestId, String disposition, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureException {
+	public void getToSignFileResponse(Long signRequestId, String disposition, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureRuntimeException {
 		SignRequest signRequest = getById(signRequestId);
 		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			List<Document> documents = signService.getToSignDocuments(signRequest.getId());
@@ -809,7 +809,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void getToSignFileResponseWithCode(Long signRequestId, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureException, WriterException {
+	public void getToSignFileResponseWithCode(Long signRequestId, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureRuntimeException, WriterException {
 		SignRequest signRequest = getById(signRequestId);
 		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			List<Document> documents = signService.getToSignDocuments(signRequest.getId());

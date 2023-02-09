@@ -8,7 +8,7 @@ import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.DataService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignBookService;
@@ -73,7 +73,7 @@ public class DataController {
 						   @RequestParam(value = "firstnames", required = false) List<String> firstnames,
 						   @RequestParam(value = "phones", required = false) List<String> phones,
 						   @RequestParam(value = "forcesmses", required = false) List<String> forcesmses,
-						   @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureException {
+						   @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
 		List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones, forcesmses);
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			Data data = dataService.addData(id, userEppn);

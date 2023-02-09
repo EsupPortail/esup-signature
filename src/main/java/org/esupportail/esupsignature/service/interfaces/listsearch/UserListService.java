@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.service.interfaces.listsearch;
 
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UserType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -25,7 +25,7 @@ public class UserListService {
         this.userRepository = userRepository;
     }
 
-    public List<String> getUsersEmailFromList(String listName) throws DataAccessException, EsupSignatureException {
+    public List<String> getUsersEmailFromList(String listName) throws DataAccessException, EsupSignatureRuntimeException {
         if(userLists != null && userLists.size() > 0) {
             if(listName.contains("*")) {
                 listName = listName.split("\\*")[1];

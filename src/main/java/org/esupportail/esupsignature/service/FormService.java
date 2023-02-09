@@ -13,7 +13,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
@@ -103,7 +103,7 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage) throws IOException, EsupSignatureException {
+	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage) throws IOException, EsupSignatureRuntimeException {
 		byte[] bytes = multipartFile.getInputStream().readAllBytes();
 		Document document = documentService.createDocument(new ByteArrayInputStream(bytes), multipartFile.getOriginalFilename(), multipartFile.getContentType());
 		Form form = createForm(document, name, title, workflowId, prefillType, roleNames, publicUsage, null, null);
@@ -173,7 +173,7 @@ public class FormService {
 	}
 
 	@Transactional
-	public void updateFormModel(Long id, MultipartFile multipartModel) throws EsupSignatureException {
+	public void updateFormModel(Long id, MultipartFile multipartModel) throws EsupSignatureRuntimeException {
 		Form form = getById(id);
 		if(multipartModel != null) {
 			Document oldModel = form.getDocument();
@@ -227,7 +227,7 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form createForm(Document document, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String[] fieldNames, String[] fieldTypes) throws IOException, EsupSignatureException {
+	public Form createForm(Document document, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String[] fieldNames, String[] fieldTypes) throws IOException, EsupSignatureRuntimeException {
 		Workflow workflow = workflowRepository.findById(workflowId).get();
 		Form form = new Form();
 		form.setName(name);
@@ -283,7 +283,7 @@ public class FormService {
 		}
 	}
 
-	private List<Field> getFields(InputStream inputStream, Workflow workflow) throws IOException, EsupSignatureException {
+	private List<Field> getFields(InputStream inputStream, Workflow workflow) throws IOException, EsupSignatureRuntimeException {
 		List<Field> fields = new ArrayList<>();
 		List<Field> fieldsOrdered = new LinkedList<>();
 		PDDocument pdDocument = PDDocument.load(inputStream);

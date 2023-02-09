@@ -49,7 +49,7 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
@@ -490,7 +490,7 @@ public class PdfService {
         return inputStream;
     }
 
-    public byte[] convertGS(byte[] originalBytes) throws IOException, EsupSignatureException {
+    public byte[] convertGS(byte[] originalBytes) throws IOException, EsupSignatureRuntimeException {
         if (!isPdfAComplient(originalBytes) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -sstdout=%stderr -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dNOPAUSE -dNOSAFER -dBATCH -sFONTPATH=" + pdfConfig.getPdfProperties().getPathToFonts() + " " + pdfConfig.getPdfProperties().getGsCommandParams() + " -sOutputFile=- '" + pdfConfig.getPdfADefPath() + "' - 2>/dev/null";
             logger.info("GhostScript PDF/A convertion : " + cmd);
@@ -536,7 +536,7 @@ public class PdfService {
         }
     }
 
-    public byte[] normalizeGS(byte[] originalBytes) throws IOException, EsupSignatureException {
+    public byte[] normalizeGS(byte[] originalBytes) throws IOException, EsupSignatureRuntimeException {
         Reports reports = validationService.validate(new ByteArrayInputStream(originalBytes), null);
         if (!isAcroForm(new ByteArrayInputStream(originalBytes)) && (reports == null || reports.getSimpleReport() == null || reports.getSimpleReport().getSignatureIdList().size() == 0)) {
             String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite -d -sOutputFile=- - 2>/dev/null";
@@ -579,7 +579,7 @@ public class PdfService {
         }
     }
 
-    public boolean isPdfAComplient(byte[] pdfFile) throws EsupSignatureException {
+    public boolean isPdfAComplient(byte[] pdfFile) throws EsupSignatureRuntimeException {
         List<String> result = checkPDFA(pdfFile, false);
         if (result.size() > 0 && "success".equals(result.get(0))) {
             return true;
@@ -587,7 +587,7 @@ public class PdfService {
         return false;
     }
 
-    public List<String> checkPDFA(byte[] pdfFile, boolean fillResults) throws EsupSignatureException {
+    public List<String> checkPDFA(byte[] pdfFile, boolean fillResults) throws EsupSignatureRuntimeException {
         List<String> result = new ArrayList<>();
         VeraGreenfieldFoundryProvider.initialise();
         try {
@@ -715,7 +715,7 @@ public class PdfService {
         return null;
     }
 
-    public PDFieldTree getFields(PDDocument pdDocument) throws EsupSignatureException {
+    public PDFieldTree getFields(PDDocument pdDocument) throws EsupSignatureRuntimeException {
         try {
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
             if(pdAcroForm != null) {
