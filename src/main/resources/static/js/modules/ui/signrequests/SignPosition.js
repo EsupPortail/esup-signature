@@ -3,7 +3,7 @@ import {EventFactory} from "../../utils/EventFactory.js?version=@version@";
 
 export class SignPosition extends EventFactory {
 
-    constructor(signType, currentSignRequestParamses, signImageNumber, signImages, userName, authUserName, signable, forceResetSignPos, isOtp, phone) {
+    constructor(signType, currentSignRequestParamses, signImageNumber, signImages, userName, authUserName, signable, forceResetSignPos, isOtp, phone, csrf) {
         super();
         console.info("Starting sign positioning tools");
         this.userName = userName;
@@ -12,6 +12,7 @@ export class SignPosition extends EventFactory {
         this.signImages = signImages;
         this.isOtp = isOtp;
         this.phone = phone;
+        this.csrf = csrf;
         this.currentSignRequestParamsNum = 0;
         this.currentSignRequestParamses = currentSignRequestParamses;
         this.currentSignRequestParamses.sort((a,b) => (a.xPos > b.xPos) ? 1 : ((b.xPos > a.xPos) ? -1 : 0))
@@ -86,24 +87,30 @@ export class SignPosition extends EventFactory {
                     }
                 }
                 this.signRequestParamses.set(id, new SignRequestParams(favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, this.signImages, this.scrollTop));
+            } else if (signImageNumber === -999999) {
+                id = 999999;
+                this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, false, false, false, -999999, this.scrollTop, this.csrf));
             } else {
                 this.signRequestParamses.set(id, new SignRequestParams(favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, this.signImages, this.scrollTop));
             }
-            this.signRequestParamses.get(id).changeSignImage(signImageNumber);
+            if (signImageNumber !== -999999) {
+                this.signRequestParamses.get(id).changeSignImage(signImageNumber);
+            }
         } else {
             this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page, this.userName, this.authUserName, restore, signImageNumber != null && signImageNumber >= 0, false, this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, this.signImages, this.scrollTop));
         }
         this.signRequestParamses.get(id).addEventListener("unlock", e => this.lockSigns());
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(id));
-        if(signImageNumber != null && signImageNumber >= 0) {
+        if (signImageNumber != null && signImageNumber >= 0) {
             this.signRequestParamses.get(id).cross.addClass("drop-sign");
         }
-        if(signImageNumber < 0) {
+        if (signImageNumber < 0) {
             $("#signImage_" + id).addClass("d-none");
         }
         this.signRequestParamses.get(id).simulateDrop();
+        let srp = this.signRequestParamses.get(id);
         this.id++;
-        return this.signRequestParamses.get(id);
+        return srp;
     }
 
     addCheckImage(page) {
@@ -123,7 +130,5 @@ export class SignPosition extends EventFactory {
         signRequestParams.turnToText();
         signRequestParams.cross.css("background-image", "");
         signRequestParams.changeSignSize(null);
-        signRequestParams.mini
     }
-
 }
