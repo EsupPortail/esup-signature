@@ -30,16 +30,14 @@ public class LogAndSuppressRequestRejectedExceptionFilter extends GenericFilterB
         } catch (RequestRejectedException e) {
             HttpServletRequest request = (HttpServletRequest) req;
             HttpServletResponse response = (HttpServletResponse) res;
-
             logger
-                    .warn(
-                            "request_rejected: remote={}, user_agent={}, request_url={}",
-                            request.getRemoteHost(),
-                            request.getHeader(HttpHeaders.USER_AGENT),
-                            request.getRequestURL(),
-                            e
-                    );
-
+                .warn(
+                        "request_rejected: remote={}, user_agent={}, request_url={}",
+                        request.getRemoteHost(),
+                        request.getHeader(HttpHeaders.USER_AGENT),
+                        request.getRequestURL(),
+                        e
+                );
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
