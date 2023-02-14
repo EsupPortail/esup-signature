@@ -10,7 +10,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
@@ -526,7 +526,7 @@ public class UserService {
                     List<String> groupUsers = new ArrayList<>();
                     try {
                         groupUsers.addAll(userListService.getUsersEmailFromList(recipientEmail));
-                    } catch (EsupSignatureException e) {
+                    } catch (EsupSignatureRuntimeException e) {
                         logger.debug(e.getMessage());
                     }
                     if (groupUsers.size() == 0 && !recipientEmail.contains(globalProperties.getDomain())) {
@@ -541,7 +541,7 @@ public class UserService {
         return tempUsers;
     }
 
-    public List<User> getTempUsers(SignRequest signRequest, List<String> recipientsEmails) throws EsupSignatureException {
+    public List<User> getTempUsers(SignRequest signRequest, List<String> recipientsEmails) throws EsupSignatureRuntimeException {
         Set<User> users = new HashSet<>();
         users.addAll(getTempUsers(signRequest));
         if(recipientsEmails != null) {

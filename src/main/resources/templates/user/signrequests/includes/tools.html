@@ -114,11 +114,11 @@
 				<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addText" title="Ajouter un texte" class="btn btn-light btn-outline-primary ms-1"><i class="fas fa-i-cursor"></i><i class="fas fa-font d-none d-md-inline"></i></button>
 			</div>
 			<div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable}" style="display: none;">
-				<button id="addCommentButton" title="Ajouter une annotation"
+				<button id="addCommentButton"
 						class="btn btn-outline-primary ms-1">
 					<i class="fas fa-comment"></i> Ajouter une annotation
 				</button>
-				<button th:if="${signRequest.createBy.eppn == user.eppn}" id="addSpotButton" title="Ajouter un emplacement"
+				<button th:if="${signRequest.createBy.eppn == user.eppn}" id="addSpotButton"
 						class="btn btn-outline-primary ms-1">
 					<i class="fas fa-map-marker-alt"></i> Ajouter un emplacement de signature
 				</button>

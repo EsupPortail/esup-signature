@@ -6,7 +6,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.FieldService;
 import org.esupportail.esupsignature.service.FormService;
@@ -107,7 +107,7 @@ public class FormManagerController {
             Form form = formService.createForm(null, name, null, null, null, null, publicUsage, fieldNames, null);
             form.setManagerRole(managerRole);
             return "redirect:/manager/forms/" + form.getId();
-        } catch (EsupSignatureException e) {
+        } catch (EsupSignatureRuntimeException e) {
             logger.error(e.getMessage());
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
             return "redirect:/manager/forms/";
@@ -131,7 +131,7 @@ public class FormManagerController {
             Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, publicUsage);
             form.setManagerRole(managerRole);
             return "redirect:/manager/forms/" + form.getId();
-        } catch (EsupSignatureException e) {
+        } catch (EsupSignatureRuntimeException e) {
             logger.error(e.getMessage());
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
             return "redirect:/manager/forms/";
@@ -186,7 +186,7 @@ public class FormManagerController {
             if(multipartModel.getSize() > 0) {
                 formService.updateFormModel(id, multipartModel);
             }
-        } catch (EsupSignatureException e) {
+        } catch (EsupSignatureRuntimeException e) {
             logger.error(e.getMessage());
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
             return "redirect:/manager/forms/";

@@ -3,7 +3,7 @@ package org.esupportail.esupsignature.web.otp;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
@@ -82,7 +82,7 @@ public class OtpAccessController {
                             logger.info("sending password by sms : " + password + " to " + otp.getPhoneNumber());
                             try {
                                 smsService.sendSms(user.getPhone(), "Votre code de connexion esup-signature " + password);
-                            } catch (EsupSignatureException e) {
+                            } catch (EsupSignatureRuntimeException e) {
                                 logger.error(e.getMessage(), e);
                             }
                             otp.setSmsSended(true);
@@ -122,7 +122,7 @@ public class OtpAccessController {
                         logger.info("sending password by sms : " + password + " to " + phone);
                         try {
                             smsService.sendSms(phone, "Votre code de connexion esup-signature " + password);
-                        } catch(EsupSignatureException e) {
+                        } catch(EsupSignatureRuntimeException e) {
                             logger.error(e.getMessage(), e);
                         }
                         otp.setPhoneNumber(phone);

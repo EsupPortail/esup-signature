@@ -7,7 +7,7 @@ import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
@@ -66,7 +66,7 @@ public class NexuProcessController implements Serializable {
 	public GetDataToSignResponse getDataToSign(@ModelAttribute("userEppn") String userEppn,
 											   @ModelAttribute("authUserEppn") String authUserEppn,
 											   @RequestBody @Valid DataToSignParams params,
-											   @ModelAttribute("id") Long id, HttpSession httpSession) throws IOException, EsupSignatureException {
+											   @ModelAttribute("id") Long id, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
 		logger.info("get data to sign for signRequest: " + id);
 		AbstractSignatureForm abstractSignatureForm = signService.getAbstractSignatureForm(id, userEppn);
 		abstractSignatureForm.setBase64Certificate(params.getSigningCertificate());
@@ -82,7 +82,7 @@ public class NexuProcessController implements Serializable {
 			responseJson.setDataToSign(DatatypeConverter.printBase64Binary(dataToSign.getBytes()));
 			return responseJson;
 		} catch (DSSException e) {
-			throw new EsupSignatureException(e.getMessage());
+			throw new EsupSignatureRuntimeException(e.getMessage());
 		}
 	}
 
@@ -92,7 +92,7 @@ public class NexuProcessController implements Serializable {
 	@ResponseBody
 	public SignDocumentResponse signDocument(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 											 @RequestBody @Valid SignatureValueAsString signatureValue,
-											 @ModelAttribute("id") Long id, HttpSession httpSession) throws EsupSignatureException, IOException {
+											 @ModelAttribute("id") Long id, HttpSession httpSession) throws EsupSignatureRuntimeException, IOException {
 		AbstractSignatureForm abstractSignatureForm = (AbstractSignatureForm) httpSession.getAttribute("abstractSignatureForm");
 		abstractSignatureForm.setBase64SignatureValue(signatureValue.getSignatureValue());
 		SignDocumentResponse signDocumentResponse = signService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn, authUserEppn);

@@ -66,7 +66,7 @@
                         <a th:href="'/user/signrequests/restore/' + ${signRequest.id}" role="button" class="btn-floating btn-lg bg-primary waves-effect" title="Restaurer"><i class="fas fa-trash-restore"></i></a>
                     </li>
                     <li th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}">
-                        <a role="button" class="btn-floating btn-lg bg-danger waves-effect"
+                        <a id="trashLaunchButton" role="button" class="btn-floating btn-lg bg-danger waves-effect"
                            th:title="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"
                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
                             <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-stack">
@@ -266,7 +266,7 @@
                     <input class="form-control mt-2 mb-1" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" />
                 </div>
                 <div id="signCommentDiv">
-                    <label for="signComment">Vous pouvez ajouter un commentaire</label>
+                    <label for="signComment">Commentaire (facultatif)</label>
                     <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
                 </div>
                 <div id="nexuCheck" th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign ? 'd-none' : ''}">

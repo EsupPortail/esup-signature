@@ -9,7 +9,7 @@ import org.esupportail.esupsignature.entity.enums.DisplayWorkflowType;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -93,7 +93,7 @@ public class WorkflowAdminController {
 		Workflow workflow;
 		try {
 			workflow = workflowService.createWorkflow(title, description, userService.getSystemUser());
-		} catch (EsupSignatureException e) {
+		} catch (EsupSignatureRuntimeException e) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit possède déjà ce préfixe"));
 			return "redirect:/admin/workflows/";
 		}
@@ -129,7 +129,7 @@ public class WorkflowAdminController {
     	Workflow workflow = workflowService.getById(id);
 		try {
 			workflowService.delete(workflow);
-		} catch (EsupSignatureException e) {
+		} catch (EsupSignatureRuntimeException e) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
 		}
 		return "redirect:/admin/workflows";
@@ -143,7 +143,7 @@ public class WorkflowAdminController {
 						  @RequestParam(name="changeable", required = false) Boolean changeable,
 						  @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
-						  @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) throws EsupSignatureException {
+						  @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) throws EsupSignatureRuntimeException {
 		workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, maxRecipients, authUserEppn, false, attachmentRequire, false, null);
 		return "redirect:/admin/workflows/" + id;
 	}
@@ -152,7 +152,7 @@ public class WorkflowAdminController {
 	public String addAutoStep(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
 							  @RequestParam(name="description", required = false) String description,
 							  @RequestParam(name="certificatId", required = false) Long certificatId
-	) throws EsupSignatureException {
+	) throws EsupSignatureRuntimeException {
 		workflowStepService.addStep(id, SignType.certSign.name(), description, null, false, false, 1, userEppn, true, false, true, certificatId);
 
 		return "redirect:/user/workflows/" + id;
@@ -177,7 +177,7 @@ public class WorkflowAdminController {
 		Workflow workflow = workflowService.getById(id);
 		try {
 			workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, autoSign, certificatId);
-		} catch (EsupSignatureException e) {
+		} catch (EsupSignatureRuntimeException e) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Type de signature impossible pour une étape infinie"));
 		}
 		return "redirect:/admin/workflows/" + id;
@@ -196,7 +196,7 @@ public class WorkflowAdminController {
 	public String addStepRecipient(@ModelAttribute("authUserEppn") String authUserEppn,
 								   @PathVariable("id") Long id,
 								   @PathVariable("workflowStepId") Long workflowStepId,
-								   @RequestParam String[] recipientsEmails, RedirectAttributes redirectAttributes) throws EsupSignatureException {
+								   @RequestParam String[] recipientsEmails, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
 		WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientsEmails);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant ajouté"));
 		return "redirect:/admin/workflows/" + id + "#" + workflowStep.getId();
@@ -212,7 +212,7 @@ public class WorkflowAdminController {
 	}
 
 	@GetMapping(value = "/get-files-from-source/{id}")
-	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureException {
+	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
 		User authUser = userService.getUserByEppn(authUserEppn);
 		int nbImportedFiles = signBookService.importFilesFromSource(id, authUser, authUser);
 		if(nbImportedFiles == 0) {

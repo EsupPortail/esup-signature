@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.web.ws.json.JsonDtoWorkflow;
@@ -48,7 +48,7 @@ public class WorkflowWsController {
         try {
             SignRequest signRequest = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, recipientEmails, allSignToCompletes, targetEmails, targetUrls, signRequestParamsJsonString);
             return signRequest.getId();
-        } catch (EsupSignatureException e) {
+        } catch (EsupSignatureRuntimeException e) {
             logger.error(e.getMessage(), e);
             return -1L;
         }

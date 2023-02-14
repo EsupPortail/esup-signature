@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.service.ldap;
 
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.security.GroupService;
 import org.springframework.ldap.core.ContextMapper;
 import org.springframework.ldap.core.DirContextAdapter;
@@ -140,7 +140,7 @@ public class LdapGroupService implements GroupService {
     }
 
     @Override
-    public List<String> getMembers(String groupName) throws EsupSignatureException {
+    public List<String> getMembers(String groupName) throws EsupSignatureRuntimeException {
         List<String> eppns = new ArrayList<>();
         List<Map.Entry<String, String>> group = getAllGroups(groupName);
         if (membersOfGroupSearchFilter != null) {
@@ -152,7 +152,7 @@ public class LdapGroupService implements GroupService {
             });
         }
         if(group.size() > 0 && eppns.size() == 0) {
-            throw new EsupSignatureException("empty group " + groupName);
+            throw new EsupSignatureRuntimeException("empty group " + groupName);
         }
         return eppns;
     }

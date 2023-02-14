@@ -138,11 +138,6 @@ pre {
     user-select: text;
 }
 
-:not(section) > textarea::placeholder {
-    background-color: #ffeeba;
-    color: black !important;
-}
-
 section {
     border-width: 0px !important;
 }
@@ -517,7 +512,8 @@ input:checked + .slider:before {
 }
 
 .ss-value-text {
-    font-size: 1rem !important;
+    font-size: initial !important;
+    line-height: 24px !important;
 }
 
 .ss-placeholder {
@@ -859,12 +855,12 @@ height: 100%;
     height: 30px !important;
 }
 
-.postitarea
-{
-    width: 100%;
-    margin:5px 0;
-    padding:3px;
-}
+/*.postitarea*/
+/*{*/
+/*    width: 100%;*/
+/*    margin:5px 0;*/
+/*    padding:3px;*/
+/*}*/
 
 .postit {
     width: 350px;

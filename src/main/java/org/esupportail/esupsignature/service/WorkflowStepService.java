@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
@@ -42,7 +42,7 @@ public class WorkflowStepService {
     private UserListService userListService;
 
     @Transactional
-    public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, String... recipientEmails) throws EsupSignatureException {
+    public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, String... recipientEmails) throws EsupSignatureRuntimeException {
         WorkflowStep workflowStep = new WorkflowStep();
         if (name != null) {
             workflowStep.setName(name);
@@ -60,7 +60,7 @@ public class WorkflowStepService {
         return workflowStep;
     }
 
-    public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, String... recipientsEmail) throws EsupSignatureException {
+    public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, String... recipientsEmail) throws EsupSignatureRuntimeException {
         recipientsEmail = Arrays.stream(recipientsEmail).distinct().toArray(String[]::new);
         for (String recipientEmail : recipientsEmail) {
             List<String> groupList = userListService.getUsersEmailFromList(recipientEmail);
@@ -88,7 +88,7 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public WorkflowStep addStepRecipients(Long workflowStepId, String[] recipientsEmails) throws EsupSignatureException {
+    public WorkflowStep addStepRecipients(Long workflowStepId, String[] recipientsEmails) throws EsupSignatureRuntimeException {
         WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
         addRecipientsToWorkflowStep(workflowStep, recipientsEmails);
         return workflowStep;
@@ -103,9 +103,9 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentAlert, Boolean attachmentRequire, Boolean autoSign, Long certificatId) throws EsupSignatureException {
+    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentAlert, Boolean attachmentRequire, Boolean autoSign, Long certificatId) throws EsupSignatureRuntimeException {
         if(repeatable != null && repeatable && signType.getValue() > 2) {
-            throw new EsupSignatureException(signType.name() + " not possible for infinite workflow");
+            throw new EsupSignatureRuntimeException(signType.name() + " not possible for infinite workflow");
         }
         if(autoSign == null) autoSign = false;
         if(autoSign) {
@@ -135,9 +135,9 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void addStep(Long workflowId, String signType, String description, String[] recipientsEmails, Boolean changeable, Boolean allSignToComplete, Integer maxRecipients, String authUserEppn, boolean saveFavorite, Boolean attachmentRequire, Boolean autoSign, Long certificatId) throws EsupSignatureException {
+    public void addStep(Long workflowId, String signType, String description, String[] recipientsEmails, Boolean changeable, Boolean allSignToComplete, Integer maxRecipients, String authUserEppn, boolean saveFavorite, Boolean attachmentRequire, Boolean autoSign, Long certificatId) throws EsupSignatureRuntimeException {
         if(autoSign && certificatId == null) {
-            throw new EsupSignatureException("Certificat is empty");
+            throw new EsupSignatureRuntimeException("Certificat is empty");
         }
         Workflow workflow = workflowRepository.findById(workflowId).get();
         WorkflowStep workflowStep = createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
