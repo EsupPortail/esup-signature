@@ -54,6 +54,8 @@ public class UserService {
 
     private final LdapPersonService ldapPersonService;
 
+    private final LdapGroupService ldapGroupService;
+
     private final LdapOrganizationalUnitService ldapOrganizationalUnitService;
 
     @Resource
@@ -62,10 +64,12 @@ public class UserService {
     public UserService(GlobalProperties globalProperties,
                        WebSecurityProperties webSecurityProperties,
                        @Autowired(required = false) LdapPersonService ldapPersonService,
+                       @Autowired(required = false) LdapGroupService ldapGroupService,
                        @Autowired(required = false) LdapOrganizationalUnitService ldapOrganizationalUnitService) {
         this.globalProperties = globalProperties;
         this.webSecurityProperties = webSecurityProperties;
         this.ldapPersonService = ldapPersonService;
+        this.ldapGroupService = ldapGroupService;
         this.ldapOrganizationalUnitService = ldapOrganizationalUnitService;
     }
 
@@ -703,6 +707,15 @@ public class UserService {
         for(String role : webSecurityProperties.getMappingGroupsRoles().values()){
             if(!roles.contains(role)) {
                 roles.add(role);
+            }
+        }
+        if(ldapGroupService != null && webSecurityProperties.getGroupToRoleFilterPattern() != null) {
+            List<String> prefixGroups = ldapGroupService.getAllPrefixGroups(webSecurityProperties.getGroupToRoleFilterPattern());
+            for (String prefixGroup : prefixGroups) {
+                String prefixRole = "ROLE_" + prefixGroup.split("\\.")[prefixGroup.split("\\.").length - 1].toUpperCase();
+                if(!roles.contains(prefixRole)) {
+                    roles.add(prefixRole);
+                }
             }
         }
         return roles.stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
