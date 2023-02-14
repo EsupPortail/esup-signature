@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.service.interfaces.sms.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.config.sms.SmsProperties;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,7 @@ public class OVHSmsService implements SmsService {
     }
 
     @Override
-    public void sendSms(String phoneNumber, String message) throws EsupSignatureException {
+    public void sendSms(String phoneNumber, String message) throws EsupSignatureRuntimeException {
         String METHOD = "POST";
         try {
             String ServiceName = objectMapper.readValue(getSmsAccount(), String[].class)[0];
@@ -42,7 +42,7 @@ public class OVHSmsService implements SmsService {
             StringBuffer response = getStringBuffer(METHOD, QUERY, BODY,  true);
             logger.info("sms sended : " + response.toString());
         } catch (IOException e) {
-            throw new EsupSignatureException(e.getMessage(), e);
+            throw new EsupSignatureRuntimeException(e.getMessage(), e);
         }
 
     }

@@ -5,11 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
+import org.esupportail.esupsignature.dto.UserDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
@@ -116,6 +117,10 @@ public class UserService {
 
     public User getGenericUser() {
         return createUser("generic", "Utilisateur issue des favoris", "", "generic", UserType.system, false);
+    }
+
+    public List<UserDto> getAllUsersDto() {
+        return userRepository.findAllUsersDto();
     }
 
     public List<User> getAllUsers() {
@@ -521,7 +526,7 @@ public class UserService {
                     List<String> groupUsers = new ArrayList<>();
                     try {
                         groupUsers.addAll(userListService.getUsersEmailFromList(recipientEmail));
-                    } catch (EsupSignatureException e) {
+                    } catch (EsupSignatureRuntimeException e) {
                         logger.debug(e.getMessage());
                     }
                     if (groupUsers.size() == 0 && !recipientEmail.contains(globalProperties.getDomain())) {
@@ -536,7 +541,7 @@ public class UserService {
         return tempUsers;
     }
 
-    public List<User> getTempUsers(SignRequest signRequest, List<String> recipientsEmails) throws EsupSignatureException {
+    public List<User> getTempUsers(SignRequest signRequest, List<String> recipientsEmails) throws EsupSignatureRuntimeException {
         Set<User> users = new HashSet<>();
         users.addAll(getTempUsers(signRequest));
         if(recipientsEmails != null) {
@@ -660,7 +665,7 @@ public class UserService {
         user.setDefaultSignImageNumber(signImageNumber);
     }
 
-    public List<JsonExternalUserInfo> getJsonExternalUserInfos(List<String> emails, List<String> names, List<String> firstnames, List<String> phones) {
+    public List<JsonExternalUserInfo> getJsonExternalUserInfos(List<String> emails, List<String> names, List<String> firstnames, List<String> phones, List<String> forcesmses) {
         List<JsonExternalUserInfo> externalUsersInfos = new ArrayList<>();
         if(emails != null) {
             for (int i = 0; i < emails.size(); i++) {
@@ -668,6 +673,9 @@ public class UserService {
                 jsonExternalUserInfo.setEmail(emails.get(i));
                 jsonExternalUserInfo.setName(names.get(i));
                 jsonExternalUserInfo.setFirstname(firstnames.get(i));
+                if(forcesmses != null && forcesmses.size() > i + 1) {
+                    jsonExternalUserInfo.setForcesms(forcesmses.get(i));
+                }
                 if(phones.size() >= i + 1) {
                     jsonExternalUserInfo.setPhone(phones.get(i));
                 }

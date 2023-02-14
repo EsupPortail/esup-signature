@@ -6,7 +6,7 @@ import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.*;
@@ -262,10 +262,11 @@ public class SignRequestWsSecureController {
                                                           @RequestParam(value = "names", required = false) List<String> names,
                                                           @RequestParam(value = "firstnames", required = false) List<String> firstnames,
                                                           @RequestParam(value = "phones", required = false) List<String> phones,
+                                                          @RequestParam(value = "forcesmses", required = false) List<String> forcesmses,
                                                           @RequestParam(value = "title", required = false) String title,
-                                                          Model model) throws EsupSignatureException {
+                                                          Model model) throws EsupSignatureRuntimeException {
         recipientsEmails = recipientsEmails.stream().distinct().collect(Collectors.toList());
-        List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
+        List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones, forcesmses);
         SignBook signBook = signBookService.createFullSignBook(title, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, userEppn, authUserEppn, false, forceAllSign);
         model.addAttribute("signBookId", signBook.getId());
         return new ResponseEntity<>(signBook.getId(), HttpStatus.OK);

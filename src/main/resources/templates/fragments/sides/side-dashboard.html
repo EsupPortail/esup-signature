@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
-<nav th:fragment="side-dashboard" id="sidebar" class="scrollbar-lite">
+<nav th:fragment="side-dashboard" id="sidebar" class="scrollbar-lite scrollbar-style">
     <div class="ms-1 mt-2">
         <h5 class="text-center sidebar-label"><b>Filtres</b></h5>
         <a th:classappend="${statusFilter == ''} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signbooks/?statusFilter=all">Tout voir</a>

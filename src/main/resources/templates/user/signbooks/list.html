@@ -8,7 +8,7 @@
 <head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
     import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=[[${versionApp}]]';
-    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user");
+    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[creatorFilter]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user");
 </script>
 <body>
 <header th:replace="fragments/nav :: nav"></header>
@@ -57,7 +57,7 @@
             </div>
             <div class="card col-sm-9 col-md-10 col-xl-11">
                 <div class="card-body">
-                    <div id="listSignRequestTable" class="table-fix-head">
+                    <div id="listSignRequestTable" class="table-fix-head scrollbar-style">
                         <div id="loader" class="loader" style="position: fixed; left: 50%; top: 40%; z-index:100000000; display: none;"></div>
                         <table class="table table-borderless table-hover">
                         <thead class="table-secondary">
@@ -139,7 +139,7 @@
                         <tfoot>
                         <tr>
                             <td colspan="100%">
-                                <a id="more-sign-request" href="javascript:void(0);" th:if="${infiniteScrolling}">Afficher plus d'éléments</a>
+                                <a id="more-sign-request" href="javascript:void(0);" th:if="${infiniteScrolling}">Afficher plus d’éléments</a>
                             </td>
                         </tr>
                         </tfoot>
@@ -152,7 +152,7 @@
     </div>
 </main>
 <div class="modal fade" id="checkCertSignModal"
-     tabindex="-1" role="dialog" aria-labelledby="checkCertSignModalLabel" aria-hidden="true">
+     data-bs-focus="false" role="dialog" aria-labelledby="checkCertSignModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -180,7 +180,7 @@
         </div>
     </div>
 </div>
-<div class="modal fade" id="newFomModal" tabindex="-1" role="dialog"
+<div class="modal fade" id="newFomModal" data-bs-focus="false" role="dialog"
      aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
@@ -198,7 +198,7 @@
         </div>
     </div>
 </div>
-<div id="wait" class="modal fade" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
+<div id="wait" class="modal fade" data-bs-focus="false" role="dialog" data-keyboard="false" data-backdrop="static">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-body text-center">

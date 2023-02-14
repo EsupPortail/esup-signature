@@ -264,7 +264,7 @@ public class MailService {
             mimeMessage.setTo(toEmails.toArray(String[]::new));
             String[] viewersArray = new String[signBook.getViewers().size()];
             for (int i = 0 ;  i < signBook.getViewers().size() ; i++) {
-                viewersArray[i] =  signBook.getViewers().get(i).getEmail();
+                viewersArray[i] =  signBook.getViewers().stream().toList().get(i).getEmail();
             }
             mimeMessage.setCc(viewersArray);
             logger.info("send email refused to : " + StringUtils.join(toEmails.toArray(String[]::new), ";"));

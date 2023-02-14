@@ -36,9 +36,9 @@ export class FormFieldsUi {
         let valueServiceSlim = $("#valueServiceName_" + id)[0].slim;
         let valueTypeSlim = $("#valueType_" + id)[0].slim;
         if(!$("#prefillCheckbox_" + id).is(':checked') && !$("#searchCheckbox_" + id).is(':checked') && valueServiceSlim.config.isEnabled) {
-            valueServiceSlim.set();
+            valueServiceSlim.setSelected();
             valueServiceSlim.disable();
-            valueTypeSlim.set();
+            valueTypeSlim.setSelected();
             valueTypeSlim.disable();
         } else {
             valueServiceSlim.enable();
@@ -60,10 +60,10 @@ export class FormFieldsUi {
                     typeValues[j] = {text : value};
                 }
                 console.log(slim);
-                slim.set();
+                slim.setSelected();
                 slim.setData([]);
                 slim.setData(typeValues);
-                slim.set();
+                slim.setSelected();
                 slim.enable();
             }
         }

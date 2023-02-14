@@ -6,7 +6,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.ldap.PersonLdapLight;
@@ -125,7 +125,7 @@ public class UserController {
 	@ResponseBody
 	public List<PersonLdapLight> searchLdap(@RequestParam(value="searchString") String searchString, @ModelAttribute("authUserEppn") String authUserEppn) {
 		logger.debug("ldap search for : " + searchString);
-		return userService.getPersonLdapsLight(searchString, authUserEppn).stream().sorted(Comparator.comparing(PersonLdapLight::getDisplayName)).collect(Collectors.toList());
+		return userService.getPersonLdapsLight(searchString, authUserEppn).stream().sorted(Comparator.comparing(PersonLdapLight::getDisplayName, Comparator.nullsLast(String::compareTo))).collect(Collectors.toList());
    }
 
 	@GetMapping(value = "/search-user-list")
@@ -133,7 +133,7 @@ public class UserController {
 	public List<String> searchUserList(@RequestParam(value="searchString") String searchString) {
 		try {
 			return userListService.getUsersEmailFromList(searchString);
-		} catch (DataAccessException | EsupSignatureException e) {
+		} catch (DataAccessException | EsupSignatureRuntimeException e) {
 			logger.warn(e.getMessage());
 		}
 		return null;

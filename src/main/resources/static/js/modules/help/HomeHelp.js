@@ -29,7 +29,7 @@ export class HomeHelp {
             element: '#navbar-buttons',
             intro: "Voici les principaux éléments de navigation : " +
                 "<ul>" +
-                "<li>\"Tableau de bord\" : la liste des demandes à signer, ou en cours de signature.</li>" +
+                "<li>\"Tableau de bord\" : la liste des demandes à signer, ou en cours de signature.</li>" +
                 "<li>\"Outils\" : vous pouvez créer vos propres circuits de signature ou contrôler des documents.</li>" +
                 "<li>\"Autorisation\" : pour rediriger vos demandes ou pour mettre en place une déléguation de siganture.</li>" +
                 "</ul>",

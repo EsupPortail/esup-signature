@@ -9,7 +9,7 @@ import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
 import org.esupportail.esupsignature.config.sms.SmsProperties;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public class SMSUSmsService implements SmsService {
     }
 
     @Override
-    public void sendSms(String phoneNumber, String message) throws EsupSignatureException {
+    public void sendSms(String phoneNumber, String message) throws EsupSignatureRuntimeException {
         BasicCredentialsProvider provider = new BasicCredentialsProvider();
         UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(smsProperties.getUsername(), smsProperties.getPassword().toCharArray());
         provider.setCredentials(new AuthScope(null, null, -1, null, null), credentials);
@@ -45,12 +45,12 @@ public class SMSUSmsService implements SmsService {
             HttpResponse response = client.execute(new HttpGet(smsProperties.getUrl() + "?action=SendSms&phoneNumber=" + phoneNumber + "&message=" + URLEncoder.encode(message, Charset.defaultCharset())));
             int statusCode = response.getCode();
             if (statusCode != HttpStatus.SC_OK) {
-                throw new EsupSignatureException("Problème d'envoi sms");
+                throw new EsupSignatureRuntimeException("Problème d'envoi sms");
             } else {
                 logger.info("SMS envoyé : " + phoneNumber);
             }
         } catch (IOException e) {
-            throw new EsupSignatureException("Problème d'envoi sms : " + e.getMessage(), e);
+            throw new EsupSignatureRuntimeException("Problème d'envoi sms : " + e.getMessage(), e);
         }
 
     }

@@ -4,7 +4,7 @@
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <div th:fragment="new-modals" class="w-100" th:with="isUserOnSu = ${userEppn != authUserEppn}">
     <div th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')') || #authorization.expression('hasRole(''ROLE_FRANCECONNECT'')')}">
-        <div class="modal fade" id="fastSignRequestModal" th:unless="${globalProperties.hideAutoSign}" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel"
+        <div class="modal fade" id="fastSignRequestModal" th:unless="${globalProperties.hideAutoSign}" data-bs-focus="false" role="dialog" aria-labelledby="addSignRequestLabel"
              aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
@@ -45,7 +45,7 @@
             </div>
         </div>
 
-        <div class="modal fade" id="wizModal" th:unless="${globalProperties.hideWizard}" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel"
+        <div class="modal fade" id="wizModal" th:unless="${globalProperties.hideWizard}" data-bs-focus="false" role="dialog" aria-labelledby="addSignRequestLabel"
              aria-hidden="true">
             <div class="modal-dialog modal-xl" role="document">
                 <div class="modal-content">
@@ -62,7 +62,7 @@
             </div>
         </div>
 
-        <div class="modal fade" id="sendSignRequestModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal fade" id="sendSignRequestModal" data-bs-focus="false" role="dialog" aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
                     <form id="send-sign-form" th:action="'/ws-secure/signrequests/create-full-sign-book/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
@@ -99,7 +99,7 @@
                             </div>
                             <div class="form-group mb-3">
                                 <label class="form-label"for="recipientsEmails">Choisir les participants</label>
-                                <select class="select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple" required="required">
+                                <select class="select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmails" multiple="multiple" required="required">
                                     <option data-placeholder="true"></option>
                                 </select>
                                 <div id="tempUsers-recipientsEmails"></div>
@@ -118,12 +118,12 @@
                             </div>
                             <div class="form-group mb-3">
                                 <label class="form-label" for="recipientsCCEmails">Choisir les observateurs en copie</label>
-                                <select class="select-users" data-es-check-cert="true" name="recipientsCCEmails" id="recipientsCCEmails" size="5" multiple="multiple">
+                                <select class="select-users" data-es-check-cert="true" name="recipientsCCEmails" id="recipientsCCEmails" multiple="multiple">
                                     <option data-placeholder="true"></option>
                                 </select>
                             </div>
                             <div class="form-group mb-3">
-                                <label class="form-label" for="comment" >Commentaire</label>
+                                <label class="form-label" for="comment" >Commentaire (facultatif)</label>
                                 <textarea id="comment" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
                             </div>
                         </div>
@@ -141,7 +141,8 @@
                 </div>
             </div>
         </div>
-        <div id="sendPending" class="modal fade">
+
+        <div id="sendPending" class="modal fade" data-bs-focus="false">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -161,7 +162,7 @@
             </div>
         </div>
 
-<!--    <div class="modal fade" id="newFomModal" tabindex="-1" role="dialog"-->
+<!--    <div class="modal fade" id="newFomModal" data-bs-focus="false" role="dialog"-->
 <!--         aria-labelledby="exampleModalLabel" aria-hidden="true">-->
 <!--         aria-labelledby="exampleModalLabel" aria-hidden="true">-->
 <!--        <div class="modal-dialog modal-lg" role="document">-->
@@ -210,7 +211,7 @@
 <!--        </div>-->
 <!--    </div>-->
 
-    <div class="modal fade" id="wizModalCustom" tabindex="-1" role="dialog"
+    <div class="modal fade" id="wizModalCustom" data-bs-focus="false" role="dialog"
          aria-labelledby="#newRequestlabel'" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
@@ -228,7 +229,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="wizModalWorkflow" tabindex="-1" role="dialog"
+    <div class="modal fade" id="wizModalWorkflow" data-bs-focus="false" role="dialog"
          aria-labelledby="addSignRequestLabel"
          aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
@@ -247,7 +248,7 @@
     </div>
 
     <th:block th:each="form : ${forms}">
-        <div class="modal fade" th:id="'sendModal_' +  ${form.id}" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal fade" th:id="'sendModal_' +  ${form.id}" data-bs-focus="false" role="dialog" aria-hidden="true">
             <div th:if="${form.messageToDisplay != null}" class="toast toast-xl bg-white show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="999999999" style="z-index: 3;">
                 <div class="toast-body toast-body-news">
                     <button type="button" class="btn-close float-end" data-bs-dismiss="toast" aria-label="Close"></button>

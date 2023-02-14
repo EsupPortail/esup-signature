@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.web.ws.json.JsonDtoWorkflow;
@@ -34,11 +34,11 @@ public class WorkflowWsController {
 
     @CrossOrigin
     @PostMapping(value = "/{id}/new")
-    @Operation(description = "Création d'une nouvelle instance d'un formulaire")
+    @Operation(description = "Dépôt d'un document dans une nouvelle instance d'un circuit")
     public Long start(@PathVariable Long id,
                       @Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
                       @RequestParam @Parameter(description = "Eppn du propriétaire du futur document") String createByEppn,
-                      @RequestParam(required = false) @Parameter(description = "Nom de la demande (facultatif)") String name,
+                      @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title,
                       @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*email]") List<String> recipientEmails,
                       @RequestParam(required = false) @Parameter(description = "Lites des numéros d'étape pour lesquelles tous les participants doivent signer", example = "[stepNumber]") List<String> allSignToCompletes,
                       @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
@@ -46,9 +46,9 @@ public class WorkflowWsController {
                       @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls
     ) {
         try {
-            SignRequest signRequest = signBookService.startWorkflow(id, multipartFiles, createByEppn, name, recipientEmails, allSignToCompletes, targetEmails, targetUrls, signRequestParamsJsonString);
+            SignRequest signRequest = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, recipientEmails, allSignToCompletes, targetEmails, targetUrls, signRequestParamsJsonString);
             return signRequest.getId();
-        } catch (EsupSignatureException e) {
+        } catch (EsupSignatureRuntimeException e) {
             logger.error(e.getMessage(), e);
             return -1L;
         }

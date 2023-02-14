@@ -3,7 +3,7 @@ package org.esupportail.esupsignature.web.controller.user;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignBookService;
@@ -220,7 +220,7 @@ public class SignBookController {
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @GetMapping(value = "/update/{id}")
-    public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
+    public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookService.getById(id);
         if(signBook != null && signBook.getCreateBy().getEppn().equals(authUserEppn) && (signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.pending))) {
             model.addAttribute("signBook", signBook);
@@ -229,7 +229,8 @@ public class SignBookController {
             model.addAttribute("workflows", workflowService.getWorkflowsByUser(authUserEppn, authUserEppn));
             return "user/signbooks/update";
         } else {
-            return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande non trouvée"));
+            return "redirect:/user/signbooks/";
         }
     }
 
@@ -257,7 +258,7 @@ public class SignBookController {
         try {
             signBookService.addLiveStep(id, recipientsEmails, stepNumber, allSignToComplete, signType, false, null, true, autoSign, authUserEppn);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Étape ajoutée"));
-        } catch (EsupSignatureException e) {
+        } catch (EsupSignatureRuntimeException e) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
         }
 
@@ -273,7 +274,7 @@ public class SignBookController {
         try {
             signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), step.getRecipientsEmails(), step.getStepNumber(), step.getAllSignToComplete(), SignType.valueOf(step.getSignType()), true, SignType.valueOf(step.getSignType()), true, step.getAutoSign(), authUserEppn);
             return new ResponseEntity<>(HttpStatus.OK);
-        } catch (EsupSignatureException e) {
+        } catch (EsupSignatureRuntimeException e) {
             logger.error(e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -293,7 +294,7 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @PostMapping(value = "/add-workflow/{id}")
     public String addWorkflow(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                          @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) throws EsupSignatureException {
+                          @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) throws EsupSignatureRuntimeException {
         SignBook signBook = signBookService.getById(id);
         signBookService.addWorkflowToSignBook(signBook, authUserEppn, workflowSignBookId);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "/?form";
@@ -315,7 +316,7 @@ public class SignBookController {
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @GetMapping(value = "/pending/{id}")
-    public String pending(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws EsupSignatureException {
+    public String pending(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws EsupSignatureRuntimeException {
         signBookService.pendingSignBook(id, null, authUserEppn, authUserEppn, false);
         return "redirect:/user/signbooks/" + id;
     }
@@ -353,7 +354,7 @@ public class SignBookController {
                                            @RequestParam String ids,
                                            @RequestParam(value = "password", required = false) String password,
                                            @RequestParam(value = "certType", required = false) String certType,
-                                           HttpSession httpSession) throws EsupSignatureException, IOException {
+                                           HttpSession httpSession) throws EsupSignatureRuntimeException, IOException {
         String error = signBookService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, certType);
         if(error == null) {
             return new ResponseEntity<>(HttpStatus.OK);

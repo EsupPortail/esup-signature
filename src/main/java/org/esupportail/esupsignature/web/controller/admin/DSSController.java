@@ -7,7 +7,7 @@ import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
 import org.esupportail.esupsignature.dss.config.DSSBeanConfig;
 import org.esupportail.esupsignature.dss.service.KeystoreService;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.dss.DSSService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -58,20 +58,20 @@ public class DSSController {
 	}
 
 	@GetMapping(value = "/lotl/{id}")
-	public String lotlInfoPage(@PathVariable(value = "id") String id, Model model) throws EsupSignatureException {
+	public String lotlInfoPage(@PathVariable(value = "id") String id, Model model) throws EsupSignatureRuntimeException {
 		LOTLInfo lotlInfo = dssService.getLOTLInfoById(id);
 		if (lotlInfo == null) {
-			throw new EsupSignatureException(String.format("The LOTL with the specified id [%s] is not found!", id));
+			throw new EsupSignatureRuntimeException(String.format("The LOTL with the specified id [%s] is not found!", id));
 		}
 		model.addAttribute("lotlInfo", lotlInfo);
 		return "admin/dss/lotl-info";
 	}
 
 	@GetMapping(value = "/tl/{id}")
-	public String tlInfoPageByCountry(@PathVariable(value = "id") String id, Model model) throws EsupSignatureException {
+	public String tlInfoPageByCountry(@PathVariable(value = "id") String id, Model model) throws EsupSignatureRuntimeException {
 		TLInfo tlInfo = dssService.getTLInfoById(id);
 		if (tlInfo == null) {
-			throw new EsupSignatureException(String.format("The TL with the specified id [%s] is not found!", id));
+			throw new EsupSignatureRuntimeException(String.format("The TL with the specified id [%s] is not found!", id));
 		}
 		model.addAttribute("tlInfo", tlInfo);
 		return "admin/dss/tl-info-country";
@@ -79,7 +79,7 @@ public class DSSController {
 
 
 	@GetMapping(value = "/pivot-changes/{lotlId}")
-	public String getPivotChangesPage(@PathVariable("lotlId") String lotlId, Model model) throws EsupSignatureException {
+	public String getPivotChangesPage(@PathVariable("lotlId") String lotlId, Model model) throws EsupSignatureRuntimeException {
 		LOTLInfo lotlInfo = dssService.getLOTLInfoById(lotlId);
 		if (lotlInfo != null) {
 			model.addAttribute("lotl", lotlInfo);
@@ -87,7 +87,7 @@ public class DSSController {
 					lotlInfo.getValidationCacheInfo().getPotentialSigners() : Collections.emptyList());
 			return "admin/dss/pivot-changes";
 		} else {
-			throw new EsupSignatureException(String.format("The requested LOTL with id [%s] does not exist!", lotlId));
+			throw new EsupSignatureRuntimeException(String.format("The requested LOTL with id [%s] does not exist!", lotlId));
 		}
 	}
 

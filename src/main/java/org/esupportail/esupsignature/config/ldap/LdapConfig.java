@@ -38,20 +38,16 @@ public class LdapConfig {
         for(Map.Entry<String, String> entry : ldapProperties.getMappingFiltersGroups().entrySet()) {
             ldapFiltersGroups.put(entry.getValue(), entry.getKey());
         }
-
         LdapGroupService ldapGroupService = new LdapGroupService();
         ldapGroupService.setLdapFiltersGroups(ldapFiltersGroups);
         ldapGroupService.setLdapTemplate(ldapTemplate);
         ldapGroupService.setGroupSearchBase(ldapProperties.getGroupSearchBase());
         ldapGroupService.setGroupSearchFilter(ldapProperties.getGroupSearchFilter());
-        if(ldapProperties.getAllGroupsSearchFilter() != null) {
-            ldapGroupService.setAllGroupsSearchFilter(ldapProperties.getAllGroupsSearchFilter());
-        }
+        ldapGroupService.setAllGroupsSearchFilter(ldapProperties.getAllGroupsSearchFilter());
         ldapGroupService.setMembersOfGroupSearchFilter(ldapProperties.getMembersOfGroupSearchFilter());
         ldapGroupService.setMemberSearchBase(ldapProperties.getSearchBase());
         ldapGroupService.setMemberSearchFilter(ldapProperties.getMemberSearchFilter());
         ldapGroupService.setDomain(globalProperties.getDomain());
-
         return ldapGroupService;
     }
     
