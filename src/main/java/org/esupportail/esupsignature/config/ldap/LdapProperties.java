@@ -8,13 +8,35 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "ldap")
 public class LdapProperties {
 
+    /**
+     * Base de recherche des utilisateurs, ex : ou=people
+     */
     private String searchBase;
+    /**
+     * Base de recherche des groupes, ex : ou=groups
+     */
     private String groupSearchBase;
+    /**
+     * Filtre utilisé pour rechercher les groupes d’un utilisateur, ex : member={0}
+     */
     private String groupSearchFilter;
+    /**
+     * Filtre utilisé pour rechercher des groupes, ex : mail=*{0}
+     */
     private String allGroupsSearchFilter;
+    /**
+     * Filtre utilisé pour retrouver les membres d’un groupe, ex : memberOf=cn={0},ou=groups,dc=univ-ville,dc=fr
+     */
     private String membersOfGroupSearchFilter;
+    /**
+     * Filtre pour contrôler l’appartenance d’un utilisateur à un groupe, ex : &(uid={0})({1}))
+     */
     private String memberSearchFilter;
+    /**
+     * Le champ dans lequel on trouve le login des utilisateurs, ex : (uid={0})
+     */
     private String userIdSearchFilter;
+
     private Map<String, String> mappingFiltersGroups = new HashMap<>();
 
     public String getSearchBase() {
