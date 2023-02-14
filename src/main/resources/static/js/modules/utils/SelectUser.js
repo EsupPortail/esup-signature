@@ -94,10 +94,23 @@ export default class SelectUser {
                                 .then((json) => {
                                     let data = []
                                     for (let i = 0; i < json.length; i++) {
-                                        if(json[i].displayName !== json[i].mail) {
-                                            data.push({text: json[i].displayName + ' (' + json[i].mail + ')', value: valuePrefix + json[i].mail});
+                                        if(json[i].displayName != null) {
+                                            if (json[i].displayName !== json[i].mail) {
+                                                data.push({
+                                                    text: json[i].displayName + ' (' + json[i].mail + ')',
+                                                    value: valuePrefix + json[i].mail
+                                                });
+                                            } else {
+                                                data.push({
+                                                    text: json[i].displayName,
+                                                    value: valuePrefix + json[i].mail
+                                                });
+                                            }
                                         } else {
-                                            data.push({text: json[i].displayName, value: valuePrefix + json[i].mail});
+                                            data.push({
+                                                text: json[i].mail,
+                                                value: valuePrefix + json[i].mail
+                                            });
                                         }
                                     }
                                     this.flag = true;

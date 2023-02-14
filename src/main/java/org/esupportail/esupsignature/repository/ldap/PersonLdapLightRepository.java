@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface PersonLdapLightRepository extends LdapRepository<PersonLdapLight> {
 
-    @Query(value = "(|(displayName={0}*)(cn={0}*)(uid={0})(mail={0}*))", countLimit = 9)
+    @Query(value = "(&(|(displayName={0}*)(cn={0}*)(uid={0})(mail={0}*))(mail=*))", countLimit = 9)
     List<PersonLdapLight> fullTextSearch(String searchText);
 }
 

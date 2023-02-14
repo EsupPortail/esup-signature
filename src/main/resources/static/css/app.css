@@ -512,7 +512,8 @@ input:checked + .slider:before {
 }
 
 .ss-value-text {
-    font-size: 1rem !important;
+    font-size: initial !important;
+    line-height: 24px !important;
 }
 
 .ss-placeholder {
