@@ -82,45 +82,62 @@
         </td>
         <td>
             <div class="position-relative">
-                <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="collapse">
+                <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}"
+                        th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="dropdown">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
-                <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signBook.id}">
-                    <div class=" card-body">
+                <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signBook.id}">
+                    <li>
                         <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                             <i class="fas fa-signature pr-2 text-success"></i> Signer
                         </a>
+                    </li>
+                    <li>
                         <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                             <i class="fas fa-eye pr-2"></i> Consulter
                         </a>
+                    </li>
+                    <li>
                         <form th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
                               th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
                             <button type="submit" class="btn btn-transparent text-dark text-left col-12">
                                 <i class="fas fa-bullhorn"></i> <span class="d-none d-xxl-inline">Relancer</span>
                             </button>
                         </form>
+                    </li>
+                    <li>
                         <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">
                             <i class="fas fa-eye-slash pr-2"></i> Masquer
                         </a>
+                    </li>
+                    <li>
                         <a th:if="${signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">
                             <i class="fas fa-eye-slash pr-2"></i> Afficher dans la liste
                         </a>
+                    </li>
+                    <li>
                         <a target="_blank" th:if="${signBook.signRequests.size() > 1 && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
                            th:href="'/ws-secure/signrequests/get-last-files/' + ${signBook.id}">
                             <i class="fas fa-download pr-2"></i> Télécharger tout
                         </a>
+                    </li>
+                    <li>
                         <a target="_blank" th:if="${signBook.signRequests.size() == 1 && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
                            th:href="'/ws-secure/signrequests/get-last-file/' + ${signRequest.id}">
                             <i class="fas fa-download pr-2"></i> Télécharger
                         </a>
+                    </li>
+                    <li>
                         <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && signBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'/user/signrequests/restore/' + ${signRequest.id}" role="button" title="Restaurer">
                             <i class="fas fa-trash-restore pr-2"></i> Restaurer
                         </a>
+                    </li>
+                    <li>
                         <a th:if="${signBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
                             <i class="fas fa-trash-alt text-danger pr-2"></i> <span th:text="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
                         </a>
-                    </div>
-                </div>
+                    </li>
+                </ul>
             </div>
             <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signBook.id}">
                 <div class="modal-dialog">
