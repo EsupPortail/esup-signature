@@ -46,23 +46,23 @@
                                 <td><span th:text="${user.email}"></span></td>
                                 <td><span th:text="${user.userType}"></span></td>
                                 <td>
-                                    <div class="position-relative">
-                                        <button type="button" th:id="'menu-toggle_' + ${user.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${user.eppn}" th:data-bs-target="'#menu-' + ${user.id}" th:aria-controls="'menu-' + ${user.id}" data-bs-toggle="collapse">
+                                    <div class="dropdown position-relative">
+                                        <button type="button" th:id="'menu-toggle_' + ${user.id}" class="btn text-dark" th:title="'Actions ' + ${user.eppn}" th:data-bs-target="'#menu-' + ${user.id}" th:aria-controls="'menu-' + ${user.id}" data-bs-toggle="dropdown">
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
-                                        <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${user.id}">
-                                            <div class=" card-body">
+                                        <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${user.id}">
                                                 <!--                        <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">-->
                                                 <!--                            <i class="fas fa-eye-slash pr-2"></i> Masquer-->
                                                 <!--                        </a>-->
                                                 <!--                        <a th:if="${signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">-->
                                                 <!--                            <i class="fas fa-eye-slash pr-2"></i> Afficher dans la liste-->
                                                 <!--                        </a>-->
+                                            <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-delete-' + ${user.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-delete-' + ${user.id}">
                                                     <i class="fas fa-trash-alt pr-2"></i> Supprimer définitivement l’utilisateur <span th:text="${user.firstname} + ' ' + ${user.name}"></span>
                                                 </a>
-                                            </div>
-                                        </div>
+                                            </li>
+                                        </ul>
                                     </div>
                                     <div class="modal modal-warning fade in" th:id="'modal-delete-' + ${user.id}">
                                         <div class="modal-dialog">

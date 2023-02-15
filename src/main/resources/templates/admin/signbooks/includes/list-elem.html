@@ -47,23 +47,27 @@
             <div th:replace="user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})"></div>
         </td>
         <td>
-            <div class="position-relative">
-                <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="collapse">
+            <div class="dropdown position-relative">
+                <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="dropdown">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
-                <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signBook.id}">
-                    <div class=" card-body">
+                <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signBook.id}">
+                    <li>
                         <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/admin/signrequests/' + ${signRequest.id}">
                             <i class="fas fa-eye pr-2"></i> Consulter
                         </a>
+                    </li>
+                    <li>
                         <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && signBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'/admin/signrequests/restore/' + ${signRequest.id}" role="button" title="Restaurer">
                             <i class="fas fa-trash-restore pr-2"></i> Restaurer
                         </a>
+                    </li>
+                    <li>
                         <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
                             <i class="fas fa-trash-alt text-danger pr-2"></i> <span th:text="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
                         </a>
-                    </div>
-                </div>
+                    </li>
+                </ul>
             </div>
             <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signBook.id}">
                 <div class="modal-dialog">
@@ -123,17 +127,17 @@
             <div th:replace="user/signbooks/includes/status :: status(signBook=${signBook})"></div>
         </td>
         <td>
-            <div class="position-relative">
-                <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signBook.subject}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="collapse">
+            <li class="dropdown position-relative">
+                <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark" th:title="'Actions ' + ${signBook.subject}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="dropdown">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
-                <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signBook.id}">
-                    <div class=" card-body">
+                <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signBook.id}">
+                    <li>
                         <a th:if="${signBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
                             <i class="fas fa-trash-alt pr-2"></i> <span th:text="${signBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
                         </a>
-                    </div>
-                </div>
+                    </li>
+                </ul>
             </div>
             <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signBook.id}">
                 <div class="modal-dialog">

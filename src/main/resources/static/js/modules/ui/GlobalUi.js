@@ -79,7 +79,7 @@ export class GlobalUi {
             $('html, body').animate({scrollTop: $($(".invalid")[0]).offset().top - offset }, delay);
         }, true);
 
-        // $(document).click(e => this.hideMenus(e));
+        $(document).click(e => this.hideMenus(e));
 
         $('#returnButton').click(function () {
             window.history.back();
@@ -101,12 +101,12 @@ export class GlobalUi {
             });
         });
 
-        // $('.toggle-mini-menu').each(function(e) {
-        //     $(this).on('click', function(e) {
-        //         // e.preventDefault();
-        //         e.stopPropagation();
-        //     })
-        // });
+        $('.toggle-mini-menu').each(function(e) {
+            $(this).on('click', function(e) {
+                // e.preventDefault();
+                e.stopPropagation();
+            })
+        });
 
         $('.prevent').each(function(e) {
             $(this).on('click', function(e) {
