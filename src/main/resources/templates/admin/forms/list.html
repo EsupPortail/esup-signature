@@ -45,7 +45,9 @@
                             <tr th:each="form : ${forms}">
                                 <td th:text="${form.title}"></td>
                                 <td th:text="${form.name}"></td>
-                                <td><span th:if="${form.workflow != null}" th:text="${form.workflow.description}"></span></td>
+                                <td>
+                                    <a th:if="${form.workflow != null}" th:href="'/admin/workflows/update/' + ${form.workflow.id}" th:text="${form.workflow.description}"></a>
+                                </td>
                                 <td th:text="${form.version}"></td>
                                 <td>
                                     <i th:if="${form.activeVersion}" class="fas fa-check text-success"></i>

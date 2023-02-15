@@ -301,10 +301,11 @@ export default class SelectUser {
 
     setFavorites(response) {
         if(response.length > 0) {
-            let favorites = [];
+            let selected = this.slimSelect.getSelected();
+            let favorites = this.slimSelect.getData();
             for (let j = 0; j < response.length; j++) {
                 let value = response[j];
-                if (this.favorites.filter(f => f.text === value).length === 0) {
+                if (this.favorites.filter(f => f.value === this.valuePrefix + value).length === 0) {
                     favorites.push({
                         text: value,
                         value: this.valuePrefix + value,
@@ -313,7 +314,7 @@ export default class SelectUser {
                 }
                 if(favorites.length > 0) {
                     this.slimSelect.setData(favorites);
-                    this.slimSelect.setSelected();
+                    // this.slimSelect.setSelected(selected);
                 }
             }
         }
