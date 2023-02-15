@@ -301,18 +301,18 @@ export default class SelectUser {
 
     setFavorites(response) {
         if(response.length > 0) {
-            let toto = [];
+            let favorites = [];
             for (let j = 0; j < response.length; j++) {
                 let value = response[j];
                 if (this.favorites.filter(f => f.text === value).length === 0) {
-                    toto.push({
+                    favorites.push({
                         text: value,
                         value: this.valuePrefix + value,
                         selected: false
                     });
                 }
-                if(toto.length > 0) {
-                    this.slimSelect.setData(toto);
+                if(favorites.length > 0) {
+                    this.slimSelect.setData(favorites);
                     this.slimSelect.setSelected();
                 }
             }

@@ -26,7 +26,7 @@
             </div>
             <ul class="nav nav-tabs">
                 <li class="nav-item">
-                    <a class="nav-link active" href="#" onclick="return false;">Paramètres</a>
+                    <a class="nav-link active" th:href="'/admin/forms/update/' + ${form.id}">Paramètres</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" th:href="'/admin/forms/' + ${form.id} + '/fields'">Configuration des champs</a>
@@ -97,7 +97,7 @@
                             </select>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="workflowType">Type de workflow</label>
+                            <label for="workflowType">Circuit associé au formulaire</label>
                             <select class="slim-select-simple" id="workflowType" th:field="*{workflow}">
                                 <option value="">-- dissocier d'un circuit --</option>
                                 <th:block th:each="workflowType : ${workflowTypes}">

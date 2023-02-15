@@ -55,41 +55,50 @@
                                     <i th:if="${form.deleted}" class="fas fa-times text-danger"></i>
                                 </td>
                                 <td th:text="${form.roles}"></td>
-
                                 <td class="text-center">
-                                    <div class="position-relative">
-                                        <button type="button" th:id="'menu-toggle_' + ${form.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${form.title}"
-                                                th:data-bs-target="'#menu-' + ${form.id}" th:aria-controls="'menu-' + ${form.id}" data-bs-toggle="collapse">
+                                    <div class="dropdown position-relative">
+                                        <button type="button" th:id="'menu-toggle_' + ${form.id}" class="btn text-dark" th:title="'Actions ' + ${form.title}"
+                                                th:data-bs-target="'#menu-' + ${form.id}" th:aria-controls="'menu-' + ${form.id}" data-bs-toggle="dropdown">
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
-                                        <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${form.id}">
-                                            <div class=" card-body">
+                                        <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${form.id}">
+                                            <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
                                                    th:href="'/admin/forms/update/' + ${form.id}">
                                                     <i class="fas fa-pencil-alt pr-2"></i> Modifier les paramètres
                                                 </a>
+                                            </li>
+                                            <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
                                                    th:href="'/admin/forms/' + ${form.id} + '/fields'">
                                                     <i class="fas fa-align-justify pr-2"></i> Modifier les champs
                                                 </a>
+                                            </li>
+                                            <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
                                                    th:href="'/admin/forms/' + ${form.id} + '/signs'">
                                                     <i class="fas fa-signature pr-2"></i> Configurer les champs signatures
                                                 </a>
+                                            <li>
+                                            </li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Exporter   " role="button"
                                                    th:href="'/admin/forms/export/' + ${form.id}">
                                                     <i class="fas fa-cloud-download-alt pr-2"></i> Exporter la configuration
                                                 </a>
+                                            </li>
+                                            <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
                                                    th:href="'/admin/forms/' + ${form.name} + '/datas/csv'">
                                                     <i class="fas fa-file-export pr-2"></i> Exporter les données saisies
                                                 </a>
+                                            </li>
+                                            <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${form.id}" role="button" title="Supprimer"
                                                    data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${form.id}">
                                                     <i class="fas fa-trash-alt pr-2"></i> Supprimer
                                                 </a>
-                                            </div>
-                                        </div>
+                                            </li>
+                                        </ul>
                                     </div>
 
                                     <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${form.id}">

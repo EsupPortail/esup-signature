@@ -402,6 +402,9 @@ public class UserService {
         }
         personLdapLights.removeAll(personLdapLightsToRemove);
         for (User user : users) {
+            if(user.getEppn().equals("creator")) {
+                personLdapLights.add(getPersonLdapLightFromUser(user));
+            }
             if(personLdapLights.size() > 0 && personLdapLights.stream().noneMatch(personLdapLight -> personLdapLight != null && personLdapLight.getMail() != null && user.getEmail().equals(personLdapLight.getMail()))) {
                 PersonLdapLight personLdapLight = getPersonLdapLightFromUser(user);
                 if(user.getUserType().equals(UserType.group)) {

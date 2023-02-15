@@ -15,9 +15,11 @@ export class SignPosition extends EventFactory {
         this.csrf = csrf;
         this.currentSignRequestParamsNum = 0;
         this.currentSignRequestParamses = currentSignRequestParamses;
-        this.currentSignRequestParamses.sort((a,b) => (a.xPos > b.xPos) ? 1 : ((b.xPos > a.xPos) ? -1 : 0))
-        this.currentSignRequestParamses.sort((a,b) => (a.yPos > b.yPos) ? 1 : ((b.yPos > a.yPos) ? -1 : 0))
-        this.currentSignRequestParamses.sort((a,b) => (a.signPageNumber > b.signPageNumber) ? 1 : ((b.signPageNumber > a.signPageNumber) ? -1 : 0))
+        if(currentSignRequestParamses != null) {
+            this.currentSignRequestParamses.sort((a, b) => (a.xPos > b.xPos) ? 1 : ((b.xPos > a.xPos) ? -1 : 0))
+            this.currentSignRequestParamses.sort((a, b) => (a.yPos > b.yPos) ? 1 : ((b.yPos > a.yPos) ? -1 : 0))
+            this.currentSignRequestParamses.sort((a, b) => (a.signPageNumber > b.signPageNumber) ? 1 : ((b.signPageNumber > a.signPageNumber) ? -1 : 0))
+        }
         this.signRequestParamses = new Map();
         this.id = 0;
         this.currentScale = 1;
@@ -89,7 +91,7 @@ export class SignPosition extends EventFactory {
                 this.signRequestParamses.set(id, new SignRequestParams(favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, this.signImages, this.scrollTop));
             } else if (signImageNumber === -999999) {
                 id = 999999;
-                this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, false, false, false, -999999, this.scrollTop, this.csrf));
+                this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, false, false, false, -999999, this.scrollTop, this.csrf, this.signType));
             } else {
                 this.signRequestParamses.set(id, new SignRequestParams(favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, this.signImages, this.scrollTop));
             }

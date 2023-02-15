@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
+<!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
+<div th:fragment="tools" id="tools" class="tools tools-admin" th:if="${document != null}">
+	<div class="d-flex mb-1">
+		<th:block th:if="${document.contentType == 'application/pdf'}">
+			<button id="zoomout" title="Zoom arrière" class="btn btn-light btn-outline-dark"><i
+					class="fas fa-search-minus"></i></button>
+			<button id="zoomin" title="Zoom avant" class="btn btn-light btn-outline-dark ms-1"><i
+					class="fas fa-search-plus"></i></button>
+			<button id="fullwidth" title="Pleine largeur" class="btn btn-light btn-outline-dark ms-1"><i
+					class="fas fa-expand"></i></button>
+			<button id="fullheight" title="Pleine hauteur" class="btn btn-light btn-outline-dark ms-1"><i
+					class="fas fa-compress"></i></button>
+			<div class="zoom bg-light ms-1 p-1 pt-2 d-inline fw-bold"><span id="zoom"></span> %</div>
+			<div class="border ms-3 me-3 d-none d-lg-block"></div>
+			<button id="prev" title="Page précédente" class="btn btn-light btn-outline-dark ms-1" aria-label="Précédent">
+				<i class="fas fa-arrow-up"></i>
+			</button>
+			<div class="bg-light ms-1 p-1 pt-2  d-none d-lg-inline fw-bold text-center" style="min-width: 150px;">
+				<span>Page <span id="page_num"></span> / <span id="page_count"></span></span>
+			</div>
+			<button id="next" title="Page suivante" class="btn btn-light btn-outline-dark ms-1" aria-label="Prochain">
+				<i class="fas fa-arrow-down"></i>
+			</button>
+		</th:block>
+	</div>
+	<div id="second-tools" class="d-none mb-1">
+		<th:block th:if="${document.contentType == 'application/pdf' && form.workflow != null && form.workflow.workflowSteps.size() > form.signRequestParams.size()}">
+			<div id="commentsTools" th:if="${document.contentType == 'application/pdf'}" style="display: none;">
+				<button id="addSpotButton"
+						class="btn btn-outline-primary ms-1">
+					<i class="fas fa-map-marker-alt"></i> Ajouter un emplacement de signature
+				</button>
+			</div>
+		</th:block>
+	</div>
+</div>
+</html>
