@@ -2,7 +2,6 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="field" type="org.esupportail.esupsignature.entity.Field"*/-->
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
-<!--/*@thymesVar id="srpMap" type="java.util.Map<java.lang.Long, java.lang.Integer>"*/-->
 <head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
     import {default as FormSignsUi} from '/js/modules/ui/forms/FormSignsUi.js?version=[[${versionApp}]]';
@@ -20,21 +19,16 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div class="fixed-action-btns active" >
+            <div class="fixed-action-btns active" th:if="${form.workflow != null}">
                 <ul class="list-unstyled">
                     <li th:if="${form.document != null}">
-                        <a id="addSignRequestParams" title="Ajouté un champ signature" type="button" data-bs-toggle="modal" data-bs-target="#addSignRequestParamsModal" class="btn-floating btn-lg bg-primary">
-                            <i class="fas fa-plus"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a id="saveButton" title="Enregistrer les modifications" type="button" class="btn-floating btn-lg bg-success">
-                            <i class="fas fa-save"></i>
+                        <a id="addSignRequestParams" title="Modifier les champs signature" type="button" data-bs-toggle="modal" data-bs-target="#updateSignsModal" class="btn-floating btn-lg bg-warning">
+                            <i class="fas fa-pencil"></i>
                         </a>
                     </li>
                 </ul>
             </div>
-            <ul class="nav nav-tabs">
+            <ul class="nav nav-tabs nav-tab-admin" style="top: 86px;z-index: 1000;">
                 <li class="nav-item">
                     <a class="nav-link" th:href="'/admin/forms/update/' + ${form.id}">Paramètres</a>
                 </li>
@@ -45,116 +39,123 @@
                     <a class="nav-link active" th:href="'/admin/forms/' + ${form.id} + '/signs'">Configuration des signatures</a>
                 </li>
             </ul>
-            <br>
-            <div class="card col-lg-11">
-                <div class="card-body">
-                    <div th:if="${form.document != null}" id="listSignRequestTable" class="table-fix-head scrollbar-style">
-                        <table class="table table-borderless table-hover">
-                            <thead class="table-secondary">
-                                <tr>
-                                    <th class="align-middle th-fixed">Champ signature</th>
-                                    <th class="align-middle th-fixed">Etapes</th>
-                                    <th class="align-middle th-fixed">Supprimer</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            <th:block th:each="signRequestParams : ${form.signRequestParams}">
-                                <form id="form">
-                                    <tr>
-                                        <td><span th:if="${signRequestParams.pdSignatureFieldName != null}" th:text="${signRequestParams.pdSignatureFieldName} + ' :'" ></span> page <span th:text="${signRequestParams.signPageNumber + ' (' + signRequestParams.xPos + ', ' + signRequestParams.yPos + ')'}"></span></td>
-                                        <td>
-                                            <select th:id="'srp_' + ${signRequestParams.id}"  name="test[]" class="slim-select-simple" size="3" data-placeholder="Choisir des étapes">
-                                                <th:block th:each="workflow, iterator : ${workflow.workflowSteps}">
-                                                    <option th:value="${iterator.index + 1}" th:text="${iterator.index + 1}" th:selected="${srpMap.get(signRequestParams.id) == iterator.index + 1}"></option>
-                                                </th:block>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <a class="btn btn-danger" th:href="'#modal-warning-' + ${signRequestParams.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequestParams.id}">
-                                                <i class="fas fa-trash-alt pr-2"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                </form>
-                                <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequestParams.id}">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <form th:action="'/admin/forms/remove-signRequestParams/' + ${form.id} + '/' + ${signRequestParams.id}" th:method="delete">
-                                                <div class="modal-header">
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                            aria-label="Close">
-
-                                                    </button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <div class="alert alert-danger text-center">Confirmez-vous la
-                                                        suppression du champ signature ?
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-outline pull-left"
-                                                            data-bs-dismiss="modal">Non
-                                                    </button>
-                                                    <button type="submit"
-                                                            class="btn btn-outline pull-left btn-danger">
-                                                        Oui
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </th:block>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div th:unless="${form.document != null}" class="alert alert-warning">
-                        Ce formulaire ne contient pas de modèle
-                    </div>
-                </div>
-            </div>
+            <div th:replace="admin/forms/includes/tools :: tools"></div>
+            <div th:replace="admin/forms/includes/workspace :: workspace"></div>
         </div>
     </div>
 </main>
-<div th:if="${form.document != null}" class="modal fade" id="addSignRequestParamsModal" data-bs-focus="false" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
+<script th:inline="javascript" type="module">
+    import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=[[${versionApp}]]';
+    new SignUi(
+        [[${form.id}]],
+        null,
+        [[${form.id}]],
+        null,
+        0,
+        'form',
+        true,
+        true,
+        [[${spots}]],
+        [[${document != null && document.contentType == 'application/pdf'}]],
+        1,
+        0,
+        false,
+        null,
+        null,
+        "admin",
+        "forms",
+        [[${_csrf}]],
+        null,
+        null,
+        'pending',
+        null,
+        1,
+        true,
+        false,
+        false,
+        false,
+        true,
+        null,
+        false
+    );
+</script>
+<div class="modal fade" id="updateSignsModal" tabindex="-1" aria-labelledby="updateSignsModalTitle" data-bs-focus="false" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Ajouter un emplacement de signature</h5>
+                <h1 class="modal-title fs-5" id="updateSignsModalTitle">Modifier les champs signatures</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form th:action="'/admin/forms/add-signrequestparams/' + ${form.id}" method="post">
-                    <div class="form-group mb-3">
-                        <label for="step" class="col-form-label">Etape</label>
-                        <select id="step" name="step" class="slim-select-simple">
-                            <option></option>
-                            <th:block th:each="step, iterator : ${form.workflow.workflowSteps}">
-                                <option th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}"></option>
-                            </th:block>
-                        </select>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label for="signPageNumber" class="col-form-label">Page de la signature</label>
-                        <input id="signPageNumber" type="number" min="1" th:max="${form.totalPageCount}" name="signPageNumber" class="form-control" required>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label for="xPos" class="col-form-label">Coordonnée X</label>
-                        <input id="xPos" type="number" min="0" name="xPos" class="form-control" required>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label for="yPos" class="col-form-label">Coordonnée Y</label>
-                        <input id="yPos" type="number" min="0" name="yPos" class="form-control" required>
-                    </div>
-                    <hr>
-                    <input class="btn btn-success float-end" type="submit" value="Valider"/>
-                </form>
+                <table class="table table-borderless table-hover">
+                    <thead class="table-secondary">
+                    <tr>
+                        <th class="align-middle th-fixed">Champ signature</th>
+                        <th class="align-middle th-fixed">Etapes</th>
+                        <th class="align-middle th-fixed">Supprimer</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <th:block th:each="signRequestParams : ${form.signRequestParams}">
+                        <form id="form">
+                            <tr>
+                                <td><span th:if="${signRequestParams.pdSignatureFieldName != null}" th:text="${signRequestParams.pdSignatureFieldName} + ' :'" ></span> page <span th:text="${signRequestParams.signPageNumber + ' (' + signRequestParams.xPos + ', ' + signRequestParams.yPos + ')'}"></span></td>
+                                <td>
+                                    <select th:id="'srp_' + ${signRequestParams.id}"  name="test[]" class="slim-select-simple" size="3" data-placeholder="Choisir des étapes">
+                                        <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
+                                            <option th:value="${iterator.index + 1}" th:text="${iterator.index + 1}" th:selected="${srpMap.get(iterator.index + 1) == signRequestParams.id}"></option>
+                                        </th:block>
+                                    </select>
+                                </td>
+                                <td>
+                                    <a class="btn btn-danger" th:href="'#modal-warning-' + ${signRequestParams.id}" role="button" title="Supprimer" data-bs-toggle="modal">
+                                        <i class="fas fa-trash-alt pr-2"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </form>
+
+                    </th:block>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button id="saveButton" type="button" class="btn btn-primary">Enregistrer</button>
             </div>
         </div>
     </div>
 </div>
+<th:block th:each="signRequestParams : ${form.signRequestParams}">
+<div class="modal" th:id="'modal-warning-' + ${signRequestParams.id}" data-bs-focus="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form th:action="'/admin/forms/remove-signRequestParams/' + ${form.id} + '/' + ${signRequestParams.id}" th:method="delete">
+                <div class="modal-header">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Close">
 
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger text-center">
+                        Confirmez-vous la suppression du champ signature ?
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline pull-left"
+                            data-bs-dismiss="modal">Non
+                    </button>
+                    <button type="submit"
+                            class="btn btn-outline pull-left btn-danger">
+                        Oui
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</th:block>
 <footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

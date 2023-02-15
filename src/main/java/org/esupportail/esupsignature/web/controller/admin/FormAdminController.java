@@ -10,8 +10,8 @@ import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.FieldService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.UserService;
@@ -105,13 +105,17 @@ public class FormAdminController {
 	}
 
 	@GetMapping("{id}/signs")
-	public String signs(@PathVariable("id") Long id, Model model) throws EsupSignatureIOException {
+	public String addSigns(@PathVariable("id") Long id, Model model) throws EsupSignatureIOException {
 		Form form = formService.getById(id);
-		Map<Long, Integer> srpMap = new HashMap<>();
-		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
-			for(SignRequestParams signRequestParams : workflowStep.getSignRequestParams()) {
-				srpMap.put(signRequestParams.getId(), form.getWorkflow().getWorkflowSteps().indexOf(workflowStep) + 1);
+		Map<Integer, Long> srpMap = new HashMap<>();
+		if(form.getWorkflow() != null) {
+			for (WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
+				for (SignRequestParams signRequestParams : workflowStep.getSignRequestParams()) {
+					srpMap.put(form.getWorkflow().getWorkflowSteps().indexOf(workflowStep) + 1, signRequestParams.getId());
+				}
 			}
+			model.addAttribute("spots", formService.getSpots(id));
+			model.addAttribute("srpMap", srpMap);
 		}
 		if(form.getDocument() != null) {
 			form.setTotalPageCount(formService.getTotalPagesCount(id));
@@ -135,24 +139,22 @@ public class FormAdminController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@PostMapping("/add-signrequestparams/{id}")
-	public String addSignRequestParams(@PathVariable("id") Long id,
-								   Integer step,
-								   Integer signPageNumber,
-								   Integer xPos,
-								   Integer yPos,
-								   RedirectAttributes redirectAttributes) throws JsonProcessingException {
-		formService.addSignRequestParamsSteps(id, step, signPageNumber, xPos, yPos);
-		return "redirect:/admin/forms/" + id + "/signs";
-	}
-
 	@DeleteMapping("/remove-signRequestParams/{formId}/{id}")
 	public String removeSignRequestParams(@PathVariable("formId") Long formId,
 									   @PathVariable("id") Long id,
-									   RedirectAttributes redirectAttributes) throws JsonProcessingException {
+									   RedirectAttributes redirectAttributes) {
 		formService.removeSignRequestParamsSteps(formId, id);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Champ signature supprimé"));
 		return "redirect:/admin/forms/" + formId + "/signs";
+	}
+
+	@DeleteMapping("/delete-spot/{formId}/{id}")
+	@ResponseBody
+	public void deleteSport(@PathVariable("formId") Long formId,
+										  @PathVariable("id") Long id,
+										  RedirectAttributes redirectAttributes) {
+		formService.removeSignRequestParamsSteps(formId, id);
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Champ signature supprimé"));
 	}
 
 	@PostMapping()
@@ -357,6 +359,18 @@ public class FormAdminController {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
 		}
 		return "redirect:/admin/forms/update/" + id;
+	}
+
+	@PostMapping(value = "/add-spot/{id}")
+	@ResponseBody
+	public void addSpot(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+						  @RequestParam(value = "spotStepNumber", required = false) Integer spotStepNumber,
+						  @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
+						  @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
+						  @RequestParam(value = "commentPosY", required = false) Integer commentPosY) {
+		if(spotStepNumber != null) {
+			formService.addSignRequestParamsSteps(id, spotStepNumber, commentPageNumber, commentPosX, commentPosY);
+		}
 	}
 
 }

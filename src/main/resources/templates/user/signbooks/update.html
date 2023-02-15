@@ -42,9 +42,8 @@
                             <textarea id="description" name="description" class="form-control" th:text="${signBook.description}"></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="description">Observateurs</label>
-                            <select id="viewersSelect" class="select-users" multiple="multiple" name="viewers" style="display: none;">
-                                <option data-placeholder="true"></option>
+                            <label for="viewersSelect">Observateurs</label>
+                            <select id="viewersSelect" class="select-users" multiple="multiple" name="viewers">
                                 <th:block th:each="viewer : ${signBook.viewers}">
                                     <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
                                 </th:block>
@@ -56,8 +55,7 @@
             <div class="card col-lg-10 mx-auto mb-1">
                 <div class="card-body">
                     <h5 class="text-center"><b>Demandes à signer dans ce parapheur</b></h5>
-                    <div th:if="${#lists.size(signBook.signRequests) > 0}" class="table-responsive">
-                        <table class="table table-sm table-hover">
+                    <table class="table table-sm table-hover">
                             <thead class="table-secondary">
                             <tr>
                                 <th>Titre</th>
@@ -73,17 +71,18 @@
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span></td>
                                     <td class="">
-                                        <button type="button" th:id="'menu-t    oggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-bs-toggle="collapse">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}" style="width:200px; right: 100px;z-index: 1000;">
-                                            <div class=" card-body">
-                                                <a th:if="${signRequest.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-bs-toggle="modal" data-bs-target="#modal-warning" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
-                                                    <i class="fas fa-trash-alt pr-2"></i> Supprimer
-                                                </a>
-                                            </div>
+                                        <div class="dropdown position-relative">
+                                            <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signRequest.id}">
+                                                <li>
+                                                    <a th:if="${signRequest.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-bs-toggle="modal" data-bs-target="#modal-warning" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
+                                                        <i class="fas fa-trash-alt pr-2"></i> Supprimer
+                                                    </a>
+                                                </li>
+                                            </ul>
                                         </div>
-
                                         <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
@@ -110,7 +109,6 @@
                             </th:block>
                             </tbody>
                         </table>
-                    </div>
                     <div th:unless="${#lists.size(signBook.signRequests) > 0}" class="alert alert-secondary">
                         Aucun document à signer pour le moment
                     </div>

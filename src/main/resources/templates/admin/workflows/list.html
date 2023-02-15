@@ -63,34 +63,42 @@
                                     Aucun
                                 </td>
                                 <td class="text-center">
-                                    <div class="position-relative" th:if="${workflow.id != null}">
-                                        <button type="button" th:id="'menu-toggle_' + ${workflow.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${workflow.title}"
-                                                th:data-bs-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-bs-toggle="collapse">
+                                    <div class="dropdown position-relative" th:if="${workflow.id != null}">
+                                        <button type="button" th:id="'menu-toggle_' + ${workflow.id}" class="btn text-dark" th:title="'Actions ' + ${workflow.title}"
+                                                th:data-bs-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-bs-toggle="dropdown">
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
-                                        <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${workflow.id}">
-                                            <div class=" card-body">
+                                        <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${workflow.id}">
+                                            <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
                                                    th:href="'/admin/workflows/update/' + ${workflow.id}">
-                                                    <i class="fas fa-pencil-alt pr-2"></i> Voir/Modifier les paramètres
+                                                    <i class="fas fa-pencil-alt pr-2"></i> Modifier les paramètres
                                                 </a>
+                                            </li>
+                                            <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
                                                    th:href="'/admin/workflows/' + ${workflow.id}">
-                                                    <i class="fas fa-shoe-prints pr-2"></i> Voir/Modifier les étapes
+                                                    <i class="fas fa-shoe-prints pr-2"></i> Modifier les étapes
                                                 </a>
+                                            </li>
+                                            <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Exporter le circuit" role="button"
                                                    th:href="'/admin/workflows/export/' + ${workflow.id}">
                                                     <i class="fas fa-file-export pr-2"></i> Exporter le circuit
                                                 </a>
+                                            </li>
+                                            <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" th:if="${workflow.documentsSourceUri != null}" title="Scanner la source" type="button" th:href="'/admin/workflows/get-files-from-source/' + ${workflow.id}">
                                                     <i class="fas fa-binoculars pr-2"></i> Scanner la source
                                                 </a>
+                                            </li>
+                                            <li>
                                                 <a th:if="${workflow.fromCode == null || !workflow.fromCode}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${workflow.id}" role="button" title="Supprimer"
                                                    data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${workflow.id}">
                                                     <i class="fas fa-trash-alt pr-2"></i> Supprimer
                                                 </a>
-                                            </div>
-                                        </div>
+                                            </li>
+                                        </ul>
                                     </div>
 
                                     <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${workflow.id}">

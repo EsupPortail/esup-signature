@@ -14,6 +14,7 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class LdapGroupService implements GroupService {
 
@@ -91,6 +92,14 @@ public class LdapGroupService implements GroupService {
                     });
         }
         return groups;
+    }
+
+    public List<String>  getAllPrefixGroups(String search) {
+        return ldapTemplate.search(LdapQueryBuilder.query().attributes("cn", "description").base(groupSearchBase).filter("cn=" + search.replace("(\\w*)", "") + "*"),
+                (ContextMapper<Map.Entry<String, String>>) ctx -> {
+                    DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
+                    return new AbstractMap.SimpleEntry<>(searchResultContext.getStringAttribute("cn"), searchResultContext.getStringAttribute("description"));
+                }).stream().map(Map.Entry::getKey).collect(Collectors.toList());
     }
 
     @Override
