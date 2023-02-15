@@ -3,7 +3,7 @@ import {Color} from "../modules/utils/Color.js?version=@version@";
 
 export class SignRequestParams extends EventFactory {
 
-    constructor(signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone, light, signImages, scrollTop, csrf) {
+    constructor(signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone, light, signImages, scrollTop, csrf, signType) {
         super();
         Object.assign(this, signRequestParamsModel);
         this.id = id;
@@ -47,6 +47,7 @@ export class SignRequestParams extends EventFactory {
         this.offset = 0;
         this.scrollTop = scrollTop;
         this.csrf = csrf;
+        this.signType = signType;
         if(!light) {
             this.offset = ($("#page_" + this.signPageNumber).offset().top) + (10 * (parseInt(this.signPageNumber) - 1));
         }
@@ -141,25 +142,28 @@ export class SignRequestParams extends EventFactory {
     }
 
     saveSpot() {
-        let commentUrlParams = "comment=" + encodeURIComponent($("#spotComment").val()) +
-            "&commentPosX=" + Math.round(this.xPos) +
-            "&commentPosY=" + Math.round(this.yPos) +
-            "&commentPageNumber=" + this.signPageNumber +
-            "&spotStepNumber=" + $("#spotStepNumber").val() +
-            "&" + this.csrf.parameterName + "=" + this.csrf.token;
-        // let postitDiv = $("#spot-form");
-        // if(postitDiv.length) {
-        //     postitDiv.html("<div class=\"spinner-border\" role=\"status\">\n" +
-        //         "  <span class=\"visually-hidden\">Enregistrement</span>\n" +
-        //         "</div>");
-        // }
-        $.ajax({
-            method: 'POST',
-            url: "/user/signrequests/comment/" + $("#saveSpotButton").attr("data-es-signrequest-id") + "/?" + commentUrlParams,
-            success: function () {
-                document.location.reload();
+        let spotStepNumber = $("#spotStepNumber").val();
+        if(spotStepNumber == null || spotStepNumber === "") {
+            alert("Merci de selectionner une étape");
+        } else {
+            let commentUrlParams = "comment=" + encodeURIComponent($("#spotComment").val()) +
+                "&commentPosX=" + Math.round(this.xPos) +
+                "&commentPosY=" + Math.round(this.yPos) +
+                "&commentPageNumber=" + this.signPageNumber +
+                "&spotStepNumber=" + spotStepNumber +
+                "&" + this.csrf.parameterName + "=" + this.csrf.token;
+            let url = "/user/signrequests/comment/" + $("#saveSpotButton").attr("data-es-signrequest-id") + "/?" + commentUrlParams;
+            if (this.signType === "form") {
+                url = "/admin/forms/add-spot/" + $("#saveSpotButton").attr("data-es-signrequest-id") + "/?" + commentUrlParams;
             }
-        });
+            $.ajax({
+                method: 'POST',
+                url: url,
+                success: function () {
+                    document.location.reload();
+                }
+            });
+        }
     }
 
     initLight() {

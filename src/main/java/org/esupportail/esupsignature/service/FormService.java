@@ -10,11 +10,12 @@ import org.apache.pdfbox.pdmodel.interactive.action.PDAnnotationAdditionalAction
 import org.apache.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
+import org.esupportail.esupsignature.dto.Spot;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
@@ -566,4 +567,24 @@ public class FormService {
 	public String getByIdJson(Long id) throws JsonProcessingException {
 		return objectMapper.writeValueAsString(formRepository.getByIdJson(id));
 	}
+
+	public List<Spot> getSpots(Long id) {
+		List<Spot> spots = new ArrayList<>();
+		Form form = getById(id);
+		int step = 1;
+		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
+			if(workflowStep.getSignRequestParams().size() > 0) {
+				SignRequestParams signRequestParams = workflowStep.getSignRequestParams().get(0);
+				spots.add(new Spot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
+			}
+			step++;
+		}
+		return spots;
+	}
+
+//	@Transactional
+//	public void addSpot(Long id, String comment, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, String postit, Integer spotStepNumber, String authUserEppn) {
+//		Form form = getById(id);
+//
+//	}
 }

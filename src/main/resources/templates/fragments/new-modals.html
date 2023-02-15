@@ -297,7 +297,7 @@
                                         <span th:if="${step.repeatable}"> (cette étape peut donner lieu à plusieurs validations en séries)</span>
                                     </div>
                                         <div th:if="${step.changeable == true}" class="form-group mb-3">
-                                            <label><span th:text="'Merci de saisir le' + ${step.maxRecipients != null && step.maxRecipients > 1 ? '(s)' : ''} + 'participant' + ${step.maxRecipients != null && step.maxRecipients > 1 ? '(s)' : ''} + ' pour l\'étape ' + ${iterator.index + 1}"></span></label>
+                                            <label><span th:text="'Merci de saisir le' + ${step.maxRecipients != null && step.maxRecipients > 1 ? '(s)' : ''} + ' participant' + ${step.maxRecipients != null && step.maxRecipients > 1 ? '(s)' : ''} + ' pour l\'étape ' + ${iterator.index + 1}"></span></label>
                                             <select class="select-users" th:id="'recipientEmailsSelect-' + ${form.id} + '_' + ${iterator.index + 1}"
                                                     multiple="multiple" name="recipientEmails" required="required" th:maxlength="${step.maxRecipients}">
                                                 <option data-placeholder="true"></option>
@@ -325,10 +325,10 @@
                                 <hr>
                                 <th:block th:each="target : ${form.workflow.targets}">
                                     <div th:if="${target.targetUri.contains('mailto:')}" class="form-group mb-3">
-                                        <label>Etape finale : Envoi par mail à </label>
+                                        <label>Étape finale : Envoi par mail à </label>
                                         <select class="select-users" th:id="'targetEmailsSelect-' + ${form.id}" multiple="multiple" name="targetEmails">
                                             <option data-placeholder="true"></option>
-                                            <option th:if="${target.targetUri != null && target.targetUri != ''}" th:value="${target.targetUri}" th:text="${target.targetUri}" selected></option>
+                                            <option th:if="${target.targetUri != null && target.targetUri != ''}" th:value="${target.targetUri.split(':')[1]}" th:text="${target.targetUri.split(':')[1]}" selected></option>
                                         </select>
                                     </div>
                                 </th:block>

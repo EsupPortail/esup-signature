@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<!--/*@thymesVar id="signRequestParams" type="org.esupportail.esupsignature.entity.SignRequestParams"*/-->
+<!--/*@thymesVar id="spots" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
+<!--/*@thymesVar id="form" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
+<div th:fragment="workspace" id="workspace" class="alert justify-content-center workspace-pdf workspace-margin-top-admin">
+
+    <form th:id="'signForm'" th:action="''">
+        <input id="checkDataSubmit" type="submit" style="display: none;"/>
+        <div id="pdf" class="mx-auto" style="position: relative !important;">
+            <th:block th:each="spot : ${srpMap.entrySet()}">
+                <div class="spot" th:id="'inDocSpot_' + ${spot.value}" style=" opacity: 1;" title="Cliquer pour supprimer l'emplacement de signature">
+                    <i class="fas fa-map-marker-alt fa-3x"></i>
+                    <div style="width: 300px; height: 150px; margin-left: 18px;color: #000;" class="sign-field">
+                        <b>Signature associée à l’étape <span th:text="${spot.key}"></span></b>
+                        <br><br>
+                        Cliquer pour supprimer l’emplacement de signature
+                    </div>
+                </div>
+            </th:block>
+        </div>
+    </form>
+
+    <div id="crossTools_x" class="badge bg-primary btn-small position-absolute cross-tools d-none">
+        <div id="defaultTools_x">
+            <button type="button" id="signDrop_x"
+                    title="Supprimer la signature"
+                    class="btn btn-sm btn-transparent text-white"
+                    style="z-index: 3;">
+                <i class="far fa-trash-alt"></i>
+            </button>
+            <button type="button" id="textReduce_x"
+                    title="Agrandir le text"
+                    class="btn btn-sm btn-transparent text-white"
+                    style="z-index: 3; display: none">
+                <b style="font-size: 11px;">A</b>
+            </button>
+            <button type="button" id="textGrow_x"
+                    title="Reduire le text"
+                    class="btn btn-sm btn-transparent text-white"
+                    style="z-index: 3; display: none">
+                <b style="font-size: 14px;">A</b>
+            </button>
+            <button type="button" id="signUndo_x"
+                    class="btn btn-sm btn-transparent text-white d-none"
+                    style="z-index: 3;">
+                <i class="fas fa-sync"></i>
+            </button>
+            <button type="button" id="signPrevImage_x"
+                    title="Signature précédente"
+                    class="btn btn-sm btn-transparent text-white"
+                    style="z-index: 3;">
+                <i class="fas fa-chevron-up"></i>
+            </button>
+            <button type="button" id="signNextImage_x"
+                    title="Signature suivante"
+                    class="btn btn-sm btn-transparent text-white"
+                    style="z-index: 3;">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <button type="button" id="hideMoreTools_x"
+                    title="Moins d'outils"
+                    class="btn btn-sm btn-transparent text-white d-none"
+                    style="z-index: 3;">
+                <i style="line-height: 1.8em;" class="fas fa-arrow-left"></i>
+            </button>
+            <button type="button" id="signExtraOnTop_x"
+                    title="Texte au dessus/texte sur la droite"
+                    class="btn btn-sm btn-transparent text-white"
+                    disabled
+                    style="z-index: 3;">
+                <i class="fas fa-retweet"></i>
+            </button>
+            <input id="signColorPicker_x" value='#000000'/>
+            <button type="button" id="displayMoreTools_x"
+                    title="Plus d'outils"
+                    class="btn btn-sm btn-transparent text-white d-none"
+                    style="z-index: 3;">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+        </div>
+        <div id="extraTools_x" class="d-none" >
+            <button type="button" id="extraType_x"
+                    title="Afficher/Masquer le type de signature"
+                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    style="z-index: 3;">
+                Type
+            </button>
+            <button type="button" id="extraName_x"
+                    title="Afficher/Masquer le nom"
+                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    style="z-index: 3;">
+                Nom
+            </button>
+            <button type="button" id="extraDate_x"
+                    title="Afficher/Masquer la date"
+                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    style="z-index: 3;">
+                Date
+            </button>
+            <button type="button" id="extraText_x"
+                    title="Ajouter/Masquer un texte libre"
+                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    style="z-index: 3;">
+                Texte
+            </button>
+        </div>
+    </div>
+    <div id="spot-modal" class="modal text-black">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <form id="spot-form">
+                        <input id="submit-spot" name="submitPostit" type="submit" class="d-none"/>
+                        <input id="spotPosX" name="commentPosX" type="hidden"/>
+                        <input id="spotPosY" name="commentPosY" type="hidden"/>
+                        <input id="spotPageNumber" name="commentPageNumber" type="hidden"/>
+                        <div id="divSpotStepNumber" class="form-group mb-3">
+                            <label for="spotStepNumber">Choisir l’étape concernée</label>
+                            <br/>
+                            <select th:if="${workflow != null}" id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
+                                <option></option>
+                                <th:block th:each="step, iterator : ${workflow.workflowSteps}">
+                                    <option th:unless="${srpMap.containsKey(iterator.index + 1)}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <input id="spotComment" name="comment" type="hidden">
+                        <button id="hideSpotButton" type="button" class="btn btn-sm btn-dark float-start" data-bs-dismiss="modal">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <button id="saveSpotButton" th:data-es-signrequest-id="${form.id}" type="button" class="btn btn-sm btn-dark float-end">
+                            <i class="fas fa-save"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

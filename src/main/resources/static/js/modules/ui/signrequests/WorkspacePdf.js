@@ -18,6 +18,7 @@ export class WorkspacePdf {
         this.dataId = dataId;
         this.formId = formId;
         this.signImageNumber = signImageNumber;
+        this.currentSignType = currentSignType;
         this.restore = restore;
         this.postits = postits;
         this.notSigned = notSigned;
@@ -33,15 +34,21 @@ export class WorkspacePdf {
         this.pointItEnable = true;
         this.first = true;
         this.scrollTop = 0;
-        for (let i = 0; i < fields.length; i++) {
-            let field = fields[i];
-            if (field.workflowSteps != null && field.workflowSteps.includes(currentStepNumber) && field.required) {
-                this.forcePageNum = field.page;
-                break;
+        if(fields != null) {
+            for (let i = 0; i < fields.length; i++) {
+                let field = fields[i];
+                if (field.workflowSteps != null && field.workflowSteps.includes(currentStepNumber) && field.required) {
+                    this.forcePageNum = field.page;
+                    break;
+                }
             }
         }
         if (this.isPdf) {
-            this.pdfViewer = new PdfViewer('/ws-secure/signrequests/get-last-file/' + id, signable, editable, currentStepNumber, currentStepId, this.forcePageNum, fields, false);
+            if(currentSignType === "form") {
+                this.pdfViewer = new PdfViewer('/admin/forms/get-file/' + id, signable, editable, currentStepNumber, currentStepId, this.forcePageNum, fields, false);
+            } else {
+                this.pdfViewer = new PdfViewer('/ws-secure/signrequests/get-last-file/' + id, signable, editable, currentStepNumber, currentStepId, this.forcePageNum, fields, false);
+            }
         }
         this.signPosition = new SignPosition(
             signType,
@@ -62,7 +69,7 @@ export class WorkspacePdf {
         this.wsTabs = $("#ws-tabs");
         this.workspace = $("#workspace");
         this.secondTools = $("#second-tools");
-        if ((formId == null && !workflow) || currentSignRequestParamses.length === 0) {
+        if (signType === "form" || (formId == null && !workflow) || currentSignRequestParamses.length === 0) {
             this.secondTools.toggleClass("d-none d-flex");
             if(this.wsTabs.length) {
                 this.autocollapse();
@@ -115,19 +122,20 @@ export class WorkspacePdf {
                 }
                 setTimeout(function(){ snackbar.className = snackbar.className.replace("show", ""); }, 3000);
             });
-
-            this.postits.forEach((postit, index) => {
-                let postitButton = $('#postit' + postit.id);
-                postitButton.on('click', e => this.focusComment(postit));
-                postitButton.on('mouseover', function () {
-                    $('#inDocComment_' + postit.id).addClass('text-danger');
-                    postitButton.addClass('circle-border');
+            if(this.postits != null) {
+                this.postits.forEach((postit, index) => {
+                    let postitButton = $('#postit' + postit.id);
+                    postitButton.on('click', e => this.focusComment(postit));
+                    postitButton.on('mouseover', function () {
+                        $('#inDocComment_' + postit.id).addClass('text-danger');
+                        postitButton.addClass('circle-border');
+                    });
+                    postitButton.on('mouseout', function () {
+                        $('#inDocComment_' + postit.id).removeClass('text-danger');
+                        postitButton.removeClass('circle-border');
+                    });
                 });
-                postitButton.on('mouseout', function () {
-                    $('#inDocComment_' + postit.id).removeClass('text-danger');
-                    postitButton.removeClass('circle-border');
-                });
-            });
+            }
         }
         $('#addSignButton').on('click', e => this.addSign());
         $("#addCheck").on("click", e => this.signPosition.addCheckImage(this.pdfViewer.pageNum));
@@ -243,6 +251,9 @@ export class WorkspacePdf {
             this.wheelDetector.addEventListener("up", e => this.pdfViewer.checkCurrentPage(e));
             this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
             this.wheelDetector.addEventListener("zoomout", e => this.pdfViewer.zoomOut());
+            if(this.currentSignType === "form") {
+                this.enableCommentMode();
+            }
         }
     }
 
@@ -509,9 +520,13 @@ export class WorkspacePdf {
                         e.stopPropagation();
                         bootbox.confirm("Supprimer cet emplacement de signature ?", function (result) {
                             if (result) {
+                                let url = "/ws-secure/signrequests/delete-comment/" + self.signRequestId + "/" + spot.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token;
+                                if(this.currentSignType !== "form") {
+                                    url = "/admin/forms/delete-spot/" + self.formId + "/" + spot.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token;
+                                }
                                 $.ajax({
                                     method: 'DELETE',
-                                    url: "/ws-secure/signrequests/delete-comment/" + self.signRequestId + "/" + spot.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
+                                    url: url,
                                     success: function () {
                                         document.location.reload();
                                     }
@@ -551,7 +566,9 @@ export class WorkspacePdf {
             });
         }
         this.initFormAction();
-        this.initSignFields();
+        if(this.currentSignType !== "form") {
+            this.initSignFields();
+        }
         $("div[id^='cross_']").each((index, e) => this.toggleSign(e));
     }
 

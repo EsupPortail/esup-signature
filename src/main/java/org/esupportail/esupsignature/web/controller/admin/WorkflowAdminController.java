@@ -155,7 +155,7 @@ public class WorkflowAdminController {
 	) throws EsupSignatureRuntimeException {
 		workflowStepService.addStep(id, SignType.certSign.name(), description, null, false, false, 1, userEppn, true, false, true, certificatId);
 
-		return "redirect:/user/workflows/" + id;
+		return "redirect:/admin/workflows/" + id;
 	}
 
 	@PostMapping(value = "/update-step/{id}/{step}")

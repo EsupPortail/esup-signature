@@ -63,23 +63,31 @@
                         <thead class="table-secondary">
                         <tr style="z-index: 2;">
                             <th class="w-20 d-none d-lg-table-cell">
-                                <div class="position-relative">
-                                    <button type="button" id="menu-toggle_multiple" class="btn toggle-mini-menu" title="Menu global" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="collapse">
+                                <div class="dropdown position-relative">
+                                    <button type="button" id="menu-toggle_multiple" class="btn" title="Menu global" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="dropdown">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
-                                    <div class="card position-absolute collapse mini-menu-thead" id="menu-multiple">
-                                        <div class="card-body">
+                                    <ul class="dropdown-menu position-absolute ps-2 pe-2 mt-2" id="menu-multiple">
+                                        <li>
                                             <button id="selectAllButton" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button">
                                                 <i class="far fa-check-square"></i> Tout sélectionner
                                             </button>
+                                        </li>
+                                        <li>
                                             <button id="unSelectAllButton" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button">
                                                 <i class="far fa-minus-square"></i> Tout dé-sélectionner
                                             </button>
+                                        </li>
+                                        <li>
                                             <button id="menuDeleteMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fas fa-trash-alt pr-2"></i> Supprimer la sélection</button>
+                                        </li>
+                                        <li>
                                             <button id="menuDownloadMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fas fa-download pr-2"></i> Télécharger la sélection</button>
+                                        </li>
+                                        <li>
                                             <button id="menuDownloadMultipleButtonWithReport" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fas fa-download pr-2"></i> Télécharger la sélection avec rapports</button>
-                                        </div>
-                                    </div>
+                                        </li>
+                                    </ul>
                                 </div>
                             </th>
                             <th class="w-20 d-none d-lg-table-cell"></th>
