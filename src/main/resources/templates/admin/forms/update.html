@@ -39,21 +39,20 @@
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <h3>FORM ID : <input type="text" readonly disabled th:value="${form.id}"></h3>
-                    <form id="formUpdateModel" th:action="'/admin/forms/update-model/' + ${form.id} + '/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
-                        <div class="form-group mb-3" th:if="${form.document != null}">
-                            Modele actuel : <a th:href="'/admin/forms/get-file/' + ${form.id}" target="_blank">
-                            <span th:text="${form.document.fileName}"></span></a>
-                        </div>
-                        <div class="form-group mb-3">
-                            <div class="custom-file">
-                                <input id="multipartModel" type="file" accept="application/pdf"
-                                       class="form-control" name="multipartModel" value="Choose a file"
-                                       aria-describedby="multipartModel"/>
-                                <label for="multipartModel" class="custom-file-label"> Choisir un nouveau modèle au format PDF</label>
+                    <div class="alert alert-dark bg-white">
+                        <p>Modification du modèle (<span th:if="${form.document != null}">Modele actuel : <a th:href="'/admin/forms/get-file/' + ${form.id}" target="_blank"><span th:text="${form.document.fileName}"></span></a></span>)</p>
+                        <form id="formUpdateModel" th:action="'/admin/forms/update-model/' + ${form.id} + '/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
+                            <div class="form-group mb-3">
+                                <div class="custom-file">
+                                    <label for="multipartModel" class="custom-file-label"> Choisir un nouveau modèle au format PDF</label>
+                                    <input id="multipartModel" type="file" accept="application/pdf"
+                                           class="form-control" name="multipartModel" value="Choose a file"
+                                           aria-describedby="multipartModel"/>
+                                </div>
                             </div>
-                        </div>
-                        <button id="submitModel" type="submit" class="btn btn-success d-none">Modifier le modèle</button>
-                    </form>
+                            <button id="submitModel" type="submit" class="btn btn-success d-none">Modifier le modèle</button>
+                        </form>
+                    </div>
                     <form id="formUpdate" th:action="'/admin/forms'" th:object="${form}" th:method="'put'">
                         <input type="hidden" th:field="*{id}">
                         <div class="form-group mb-3">
