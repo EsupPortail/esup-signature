@@ -6,7 +6,7 @@ import {UserUi} from '../users/UserUi.js?version=@version@';
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
+    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
         console.info("Starting workspace UI");
         this.ready = false;
         this.formInitialized = false;
@@ -45,9 +45,9 @@ export class WorkspacePdf {
         }
         if (this.isPdf) {
             if(currentSignType === "form") {
-                this.pdfViewer = new PdfViewer('/admin/forms/get-file/' + id, signable, editable, currentStepNumber, currentStepId, this.forcePageNum, fields, false);
+                this.pdfViewer = new PdfViewer('/admin/forms/get-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, false);
             } else {
-                this.pdfViewer = new PdfViewer('/ws-secure/signrequests/get-last-file/' + id, signable, editable, currentStepNumber, currentStepId, this.forcePageNum, fields, false);
+                this.pdfViewer = new PdfViewer('/ws-secure/signrequests/get-last-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, false);
             }
         }
         this.signPosition = new SignPosition(
