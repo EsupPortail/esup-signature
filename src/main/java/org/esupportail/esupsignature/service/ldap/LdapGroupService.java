@@ -36,6 +36,8 @@ public class LdapGroupService implements GroupService {
 
     private String domain;
 
+    private String userIdSearchFilter;
+
     public Map<String, String> getLdapFiltersGroups() {
         return ldapFiltersGroups;
     }
@@ -80,6 +82,10 @@ public class LdapGroupService implements GroupService {
         this.domain = domain;
     }
 
+    public void setUserIdSearchFilter(String userIdSearchFilter) {
+        this.userIdSearchFilter = userIdSearchFilter;
+    }
+
     @Override
     public List<Map.Entry<String, String>> getAllGroups(String search) {
         List<Map.Entry<String, String>> groups = new ArrayList<>();
@@ -105,7 +111,8 @@ public class LdapGroupService implements GroupService {
     @Override
     public List<String> getGroups(String eppn) {
         String username = eppn.replaceAll("@.*", "");
-        List<String> dns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").where("uid").is(username),
+        String formattedFilter = MessageFormat.format(userIdSearchFilter, (Object[]) new String[] { username });
+        List<String> dns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").filter(formattedFilter),
                 (ContextMapper<String>) ctx -> {
                     DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                     return searchResultContext.getNameInNamespace();
