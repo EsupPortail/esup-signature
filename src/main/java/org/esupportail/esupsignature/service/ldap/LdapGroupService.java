@@ -73,8 +73,7 @@ public class LdapGroupService implements GroupService {
     }
 
     @Override
-    public List<String> getGroups(String eppn) {
-        String username = eppn.replaceAll("@.*", "");
+    public List<String> getGroups(String username) {
         String formattedFilter = MessageFormat.format(ldapProperties.getEppnLeftPartSearchFilter(), (Object[]) new String[] { username });
         List<String> dns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").filter(formattedFilter),
                 (ContextMapper<String>) ctx -> {

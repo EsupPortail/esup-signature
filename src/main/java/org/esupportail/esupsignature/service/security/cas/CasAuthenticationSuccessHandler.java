@@ -1,9 +1,15 @@
 package org.esupportail.esupsignature.service.security.cas;
 
+import org.esupportail.esupsignature.config.security.cas.CasProperties;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.cas.authentication.CasAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
@@ -15,6 +21,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class CasAuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
@@ -24,12 +32,22 @@ public class CasAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
 	@Resource
 	private UserService userService;
 
+	@Resource
+	private CasProperties casProperties;
+
 	private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
 		logger.info("authentication success for " + authentication.getName());
-        userService.createUserWithAuthentication(authentication);
+        User user = userService.createUserWithAuthentication(authentication);
+		if(user.getManagersRoles().size() > 0) {
+			CasAuthenticationToken auth = (CasAuthenticationToken) authentication;
+			List<GrantedAuthority> updatedAuthorities = new ArrayList<>(auth.getAuthorities());
+			updatedAuthorities.add(new SimpleGrantedAuthority("ROLE_MANAGER"));
+			Authentication newAuth = new CasAuthenticationToken("EsupSignatureCAS", auth.getPrincipal(), auth.getCredentials(), updatedAuthorities, auth.getUserDetails(), auth.getAssertion());
+			SecurityContextHolder.getContext().setAuthentication(newAuth);
+		}
 		httpServletRequest.getSession().setAttribute("securityServiceName", "CasSecurityServiceImpl");
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpServletRequest.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 		if(defaultSavedRequest != null) {

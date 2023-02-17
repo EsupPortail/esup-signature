@@ -9,9 +9,10 @@ import org.esupportail.esupsignature.entity.enums.DisplayWorkflowType;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,15 +31,11 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
 
-@RequestMapping("/admin/workflows")
+@RequestMapping({"/namager/workflows", "/admin/workflows"})
 @Controller
-
 public class WorkflowAdminController {
 
 	private static final Logger logger = LoggerFactory.getLogger(WorkflowAdminController.class);
-
-	@Resource
-	private SignRequestService signRequestService;
 
 	@ModelAttribute("adminMenu")
 	public String getAdminMenu() {
@@ -65,34 +62,57 @@ public class WorkflowAdminController {
 	@Resource
 	private CertificatService certificatService;
 
+	@Resource
+	private PreAuthorizeService preAuthorizeService;
+
 	@GetMapping
-	public String list(@RequestParam(name = "displayWorkflowType", required = false) DisplayWorkflowType displayWorkflowType, Model model) {
-		if(displayWorkflowType == null) {
-			displayWorkflowType = DisplayWorkflowType.system;
+	public String list(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(name = "displayWorkflowType", required = false) DisplayWorkflowType displayWorkflowType, Model model) {
+		User user = userService.getUserByEppn(authUserEppn);
+		if(user.getRoles().contains("ROLE_ADMIN")) {
+			if (displayWorkflowType == null) {
+				displayWorkflowType = DisplayWorkflowType.system;
+			}
+			model.addAttribute("displayWorkflowType", displayWorkflowType);
+			model.addAttribute("workflows", workflowService.getWorkflowsByDisplayWorkflowType(displayWorkflowType));
+		} else {
+			model.addAttribute("workflows", workflowService.getManagerWorkflows(authUserEppn));
+			model.addAttribute("roles", userService.getManagersRoles(authUserEppn));
 		}
-		model.addAttribute("displayWorkflowType", displayWorkflowType);
-		model.addAttribute("workflows", workflowService.getWorkflowsByDisplayWorkflowType(displayWorkflowType));
 		return "admin/workflows/list";
 	}
 
-	@GetMapping(value = "/{id}")
-	public String show(@PathVariable("id") Long id, Model model) {
-		model.addAttribute("fromAdmin", true);
-		Workflow workflow = workflowService.getById(id);
-		model.addAttribute("workflow", workflow);
-		List<Certificat> certificats = certificatService.getAllCertificats();
-		model.addAttribute("certificats", certificats);
-		return "admin/workflows/show";
+	@GetMapping(value = "/steps/{id}")
+	public String show(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+		User user = userService.getUserByEppn(authUserEppn);
+		if(preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+			model.addAttribute("fromAdmin", true);
+			Workflow workflow = workflowService.getById(id);
+			model.addAttribute("workflow", workflow);
+			List<Certificat> certificats = certificatService.getAllCertificats();
+			model.addAttribute("certificats", certificats);
+			return "admin/workflows/steps";
+		}
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
+		return "redirect:/admin/workflows";
 	}
 
 	@PostMapping(produces = "text/html")
-	public String create(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(name = "title", required = false) String title, @RequestParam(name = "description") String description, RedirectAttributes redirectAttributes) {
+	public String create(@ModelAttribute("authUserEppn") String authUserEppn,
+						 @RequestParam(name = "title") String title,
+						 @RequestParam(name = "description") String description,
+						 @RequestParam(name = "managerRole", required = false) String managerRole, RedirectAttributes redirectAttributes) {
+		User user = userService.getUserByEppn(authUserEppn);
 		if(title == null) {
 			title = description;
 		}
 		Workflow workflow;
 		try {
-			workflow = workflowService.createWorkflow(title, description, userService.getSystemUser());
+			if(user.getRoles().contains("ROLE_ADMIN")) {
+				workflow = workflowService.createWorkflow(title, description, userService.getSystemUser());
+			} else {
+				workflow = workflowService.createWorkflow(title, description, userService.getUserByEppn(authUserEppn));
+				workflow.setManagerRole(managerRole);
+			}
 		} catch (EsupSignatureRuntimeException e) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit possède déjà ce préfixe"));
 			return "redirect:/admin/workflows/";
@@ -101,15 +121,20 @@ public class WorkflowAdminController {
 	}
 
     @GetMapping(value = "/update/{id}")
-    public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
-		Workflow workflow = workflowService.getById(id);
-		model.addAttribute("workflow", workflow);
-		model.addAttribute("nbWorkflowSignRequests", signBookService.countSignBooksByWorkflow(id));
-		model.addAttribute("roles", userService.getAllRoles());
-		model.addAttribute("sourceTypes", DocumentIOType.values());
-		model.addAttribute("targetTypes", DocumentIOType.values());
-		model.addAttribute("shareTypes", ShareType.values());
-        return "admin/workflows/update";
+    public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+		User user = userService.getUserByEppn(authUserEppn);
+		if(preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+			Workflow workflow = workflowService.getById(id);
+			model.addAttribute("workflow", workflow);
+			model.addAttribute("nbWorkflowSignRequests", signBookService.countSignBooksByWorkflow(id));
+			model.addAttribute("roles", userService.getAllRoles());
+			model.addAttribute("sourceTypes", DocumentIOType.values());
+			model.addAttribute("targetTypes", DocumentIOType.values());
+			model.addAttribute("shareTypes", ShareType.values());
+			return "admin/workflows/update";
+		}
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
+		return "redirect:/user/";
     }
 
     @PostMapping(value = "/update")
@@ -117,22 +142,32 @@ public class WorkflowAdminController {
 						 @Valid Workflow workflow,
 						 @RequestParam(value = "types", required = false) String[] types,
 						 @RequestParam(required = false) List<String> viewersEmails,
-						 @RequestParam(required = false) Set<String> managers) {
-		User authUser = userService.getUserByEppn(authUserEppn);
-		Workflow updateWorkflow = workflowService.update(workflow, authUser, types, managers);
-		workflowService.addViewers(updateWorkflow.getId(), viewersEmails);
-        return "redirect:/admin/workflows/update/" + updateWorkflow.getId();
+						 @RequestParam(required = false) Set<String> managers, RedirectAttributes redirectAttributes) {
+		User user = userService.getUserByEppn(authUserEppn);
+		if(preAuthorizeService.workflowManager(workflow.getId(), authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+			Workflow updateWorkflow = workflowService.update(workflow, user, types, managers);
+			workflowService.addViewers(updateWorkflow.getId(), viewersEmails);
+			return "redirect:/admin/workflows/update/" + updateWorkflow.getId();
+		}
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
+		return "redirect:/user/";
     }
 
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-    	Workflow workflow = workflowService.getById(id);
-		try {
-			workflowService.delete(workflow);
-		} catch (EsupSignatureRuntimeException e) {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+		User user = userService.getUserByEppn(authUserEppn);
+		if(preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+			Workflow workflow = workflowService.getById(id);
+			try {
+				workflowService.delete(workflow);
+			} catch (EsupSignatureRuntimeException e) {
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+			}
+			return "redirect:/admin/workflows";
+
 		}
-		return "redirect:/admin/workflows";
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
+		return "redirect:/user/";
     }
 
 	@PostMapping(value = "/add-step/{id}")
@@ -143,19 +178,27 @@ public class WorkflowAdminController {
 						  @RequestParam(name="changeable", required = false) Boolean changeable,
 						  @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
-						  @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) throws EsupSignatureRuntimeException {
-		workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, maxRecipients, authUserEppn, false, attachmentRequire, false, null);
-		return "redirect:/admin/workflows/" + id;
+						  @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
+		User user = userService.getUserByEppn(authUserEppn);
+		if(preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+			workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, maxRecipients, authUserEppn, false, attachmentRequire, false, null);
+			return "redirect:/admin/workflows/steps/" + id;
+		}
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
+		return "redirect:/user/";
 	}
 
 	@PostMapping(value = "/add-auto-step/{id}")
-	public String addAutoStep(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
+	public String addAutoStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 							  @RequestParam(name="description", required = false) String description,
-							  @RequestParam(name="certificatId", required = false) Long certificatId
-	) throws EsupSignatureRuntimeException {
-		workflowStepService.addStep(id, SignType.certSign.name(), description, null, false, false, 1, userEppn, true, false, true, certificatId);
-
-		return "redirect:/admin/workflows/" + id;
+							  @RequestParam(name="certificatId", required = false) Long certificatId, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
+		User user = userService.getUserByEppn(authUserEppn);
+		if(preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+			workflowStepService.addStep(id, SignType.certSign.name(), description, null, false, false, 1, authUserEppn, true, false, true, certificatId);
+			return "redirect:/admin/workflows/steps/" + id;
+		}
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
+		return "redirect:/user/";
 	}
 
 	@PostMapping(value = "/update-step/{id}/{step}")
@@ -174,22 +217,33 @@ public class WorkflowAdminController {
 							 @RequestParam(name="autoSign", required = false) Boolean autoSign,
 							 @RequestParam(name="certificatId", required = false) Long certificatId,
 							 RedirectAttributes redirectAttributes) {
-		Workflow workflow = workflowService.getById(id);
-		try {
-			workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, autoSign, certificatId);
-		} catch (EsupSignatureRuntimeException e) {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Type de signature impossible pour une étape infinie"));
+		User user = userService.getUserByEppn(authUserEppn);
+		if(preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+			Workflow workflow = workflowService.getById(id);
+			try {
+				workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, autoSign, certificatId);
+			} catch (EsupSignatureRuntimeException e) {
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Type de signature impossible pour une étape infinie"));
+				return "redirect:/admin/workflows/steps/" + id;
+
+			}
 		}
-		return "redirect:/admin/workflows/" + id;
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
+		return "redirect:/user/";
 	}
 
 	@DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
 	public String removeStepRecipient(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 									  @PathVariable("workflowStepId") Long workflowStepId,
 									  @RequestParam(value = "userToRemoveEppn") String userToRemoveEppn, RedirectAttributes redirectAttributes) {
-		WorkflowStep workflowStep = workflowStepService.removeStepRecipient(workflowStepId, userToRemoveEppn);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant supprimé"));
-		return "redirect:/admin/workflows/" + id + "#" + workflowStep.getId();
+		User user = userService.getUserByEppn(authUserEppn);
+		if(preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+			WorkflowStep workflowStep = workflowStepService.removeStepRecipient(workflowStepId, userToRemoveEppn);
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant supprimé"));
+			return "redirect:/admin/workflows/steps/" + id + "#" + workflowStep.getId();
+		}
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
+		return "redirect:/user/";
 	}
 
 	@PostMapping(value = "/add-step-recipents/{id}/{workflowStepId}")
@@ -197,80 +251,115 @@ public class WorkflowAdminController {
 								   @PathVariable("id") Long id,
 								   @PathVariable("workflowStepId") Long workflowStepId,
 								   @RequestParam String[] recipientsEmails, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
-		WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientsEmails);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant ajouté"));
-		return "redirect:/admin/workflows/" + id + "#" + workflowStep.getId();
+		User user = userService.getUserByEppn(authUserEppn);
+		if(preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+			WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientsEmails);
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant ajouté"));
+			return "redirect:/admin/workflows/steps/" + id + "#" + workflowStep.getId();
+		}
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
+		return "redirect:/user/";
 	}
 
 	@DeleteMapping(value = "/remove-step/{id}/{stepNumber}")
 	public String addStep(@ModelAttribute("authUserEppn") String authUserEppn,
 						  @PathVariable("id") Long id,
-						  @PathVariable("stepNumber") Integer stepNumber) {
-		Workflow workflow = workflowService.getById(id);
-		workflowStepService.removeStep(workflow, stepNumber);
-		return "redirect:/admin/workflows/" + id;
+						  @PathVariable("stepNumber") Integer stepNumber, RedirectAttributes redirectAttributes) {
+		User user = userService.getUserByEppn(authUserEppn);
+		if(preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+			Workflow workflow = workflowService.getById(id);
+			workflowStepService.removeStep(workflow, stepNumber);
+			return "redirect:/admin/workflows/steps/" + id;
+		}
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
+		return "redirect:/user/";
 	}
 
 	@GetMapping(value = "/get-files-from-source/{id}")
 	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
-		User authUser = userService.getUserByEppn(authUserEppn);
-		int nbImportedFiles = signBookService.importFilesFromSource(id, authUser, authUser);
-		if(nbImportedFiles == 0) {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucun fichier à importer"));
-		} else {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", nbImportedFiles + " ficher(s) importé(s)"));
+		User user = userService.getUserByEppn(authUserEppn);
+		if(preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+			int nbImportedFiles = signBookService.importFilesFromSource(id, user, user);
+			if (nbImportedFiles == 0) {
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucun fichier à importer"));
+			} else {
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("info", nbImportedFiles + " ficher(s) importé(s)"));
+			}
+			return "redirect:/admin/workflows/steps/" + id;
 		}
-		return "redirect:/admin/workflows/" + id;
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
+		return "redirect:/user/";
 	}
 
 	@PostMapping(value = "/add-target/{id}")
-	public String addTarget(@PathVariable("id") Long id,
+	public String addTarget(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 							@RequestParam("documentsTargetUri") String documentsTargetUri,
 							RedirectAttributes redirectAttributes) throws EsupSignatureFsException {
-		if(workflowService.addTarget(id, documentsTargetUri)) {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Destination ajoutée"));
-		} else {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Une destination mail existe déjà"));
+		User user = userService.getUserByEppn(authUserEppn);
+		if(preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+			if (workflowService.addTarget(id, documentsTargetUri)) {
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Destination ajoutée"));
+			} else {
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Une destination mail existe déjà"));
+			}
+			return "redirect:/admin/workflows/update/" + id;
 		}
-		return "redirect:/admin/workflows/update/" + id;
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
+		return "redirect:/user/";
 	}
 
 	@GetMapping(value = "/delete-target/{id}/{targetId}")
-	public String deleteTarget(@PathVariable("id") Long id,
+	public String deleteTarget(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 							   @PathVariable("targetId") Long targetId,
 							   RedirectAttributes redirectAttributes) {
-		workflowService.deleteTarget(id, targetId);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Destination supprimée"));
-		return "redirect:/admin/workflows/update/" + id;
+		User user = userService.getUserByEppn(authUserEppn);
+		if(preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+			if (preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+				workflowService.deleteTarget(id, targetId);
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Destination supprimée"));
+				return "redirect:/admin/workflows/update/" + id;
+			}
+		}
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
+		return "redirect:/user/";
 	}
 
 	@GetMapping(value = "/export/{id}", produces="text/json")
-	public ResponseEntity<Void> exportFormSetup(@PathVariable("id") Long id, HttpServletResponse response) {
-		Workflow workflow = workflowService.getById(id);
-		try {
-			response.setContentType("text/json; charset=utf-8");
-			response.setHeader("Content-Disposition", "attachment; filename=" + workflow.getName() + ".json");
-			InputStream csvInputStream = workflowService.getJsonWorkflowSetup(id);
-			IOUtils.copy(csvInputStream, response.getOutputStream());
-			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (Exception e) {
-			logger.error("get file error", e);
+	public ResponseEntity<Void> exportFormSetup(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse response) {
+		User user = userService.getUserByEppn(authUserEppn);
+		if(preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+			Workflow workflow = workflowService.getById(id);
+			try {
+				response.setContentType("text/json; charset=utf-8");
+				response.setHeader("Content-Disposition", "attachment; filename=" + workflow.getName() + ".json");
+				InputStream csvInputStream = workflowService.getJsonWorkflowSetup(id);
+				IOUtils.copy(csvInputStream, response.getOutputStream());
+				return new ResponseEntity<>(HttpStatus.OK);
+			} catch (Exception e) {
+				logger.error("get file error", e);
+			}
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 	}
 
 	@PostMapping("/import/{id}")
-	public String importWorkflowSetup(@PathVariable("id") Long id,
+	public String importWorkflowSetup(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 								  @RequestParam(value = "multipartFormSetup", required=false) MultipartFile multipartFormSetup, RedirectAttributes redirectAttributes) {
-		try {
-			if(multipartFormSetup.getSize() > 0) {
-				workflowService.setWorkflowSetupFromJson(id, multipartFormSetup.getInputStream());
+		User user = userService.getUserByEppn(authUserEppn);
+		if(preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+			try {
+				if (multipartFormSetup.getSize() > 0) {
+					workflowService.setWorkflowSetupFromJson(id, multipartFormSetup.getInputStream());
+				}
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
 			}
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+			return "redirect:/admin/workflows/update/" + id;
 		}
-		return "redirect:/admin/workflows/update/" + id;
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
+		return "redirect:/user/";
 	}
 
 }

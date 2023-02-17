@@ -5,7 +5,8 @@
 <header th:replace="fragments/nav :: nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav th:if="${#authorization.expression('hasRole(''ROLE_MANAGER'')')}" th:replace="fragments/sides/side-manager :: side-manager"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Managers Roles</li>

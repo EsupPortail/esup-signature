@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.controller.admin;
 
 import org.esupportail.esupsignature.service.scheduler.TaskService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +15,7 @@ import javax.annotation.Resource;
 
 @RequestMapping("/admin/tasks")
 @Controller
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class TasksController {
 
     @ModelAttribute("adminMenu")

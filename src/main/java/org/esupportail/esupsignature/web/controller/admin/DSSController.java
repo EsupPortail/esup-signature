@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.dss.DSSService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,7 @@ import java.util.Collections;
 @Controller
 @RequestMapping(value = "/admin/dss" )
 @ConditionalOnBean(DSSBeanConfig.class)
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class DSSController {
 
 	@ModelAttribute("adminMenu")

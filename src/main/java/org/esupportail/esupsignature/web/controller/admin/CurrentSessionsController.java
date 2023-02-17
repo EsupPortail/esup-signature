@@ -20,6 +20,7 @@ package org.esupportail.esupsignature.web.controller.admin;
 import org.apache.commons.io.FileUtils;
 import org.esupportail.esupsignature.service.security.SessionService;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsImpl;
@@ -38,6 +39,7 @@ import java.util.Map;
 
 @RequestMapping("/admin/currentsessions")
 @Controller
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class CurrentSessionsController {
 	
 	@ModelAttribute("adminMenu")

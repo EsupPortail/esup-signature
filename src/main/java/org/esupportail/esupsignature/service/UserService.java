@@ -248,7 +248,7 @@ public class UserService {
     }
 
     @Transactional
-    public void createUserWithAuthentication(Authentication authentication) {
+    public User createUserWithAuthentication(Authentication authentication) {
         String authName;
         if (authentication.getName().contains("@")) {
             authName = authentication.getName().substring(0, authentication.getName().indexOf("@"));
@@ -264,7 +264,7 @@ public class UserService {
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
         String firstName = personLdaps.get(0).getGivenName();
-        createUser(eppn, name, firstName, mail, UserType.ldap, true);
+        return createUser(eppn, name, firstName, mail, UserType.ldap, true);
     }
 
     @Transactional
@@ -469,7 +469,7 @@ public class UserService {
             if (personLdaps.size() > 0) {
                 personLdap = personLdaps.get(0);
             } else {
-                personLdaps =  ldapPersonService.getPersonLdap(user.getEppn().split("@")[0]);
+                personLdaps =  ldapPersonService.getPersonLdapByEppn(user.getEppn());
                 if (personLdaps.size() > 0) {
                     personLdap = personLdaps.get(0);
                 }
