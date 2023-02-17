@@ -214,8 +214,8 @@ public class FormAdminController {
 
 	@DeleteMapping("/delete-spot/{formId}/{id}")
 	@ResponseBody
-	@PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
-	public void deleteSport(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("formId") Long formId,
+	@PreAuthorize("@preAuthorizeService.formManager(#formId, #authUserEppn) || hasRole('ROLE_ADMIN')")
+	public void deleteSpot(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("formId") Long formId,
 										  @PathVariable("id") Long id,
 										  RedirectAttributes redirectAttributes) {
 		formService.removeSignRequestParamsSteps(formId, id);
