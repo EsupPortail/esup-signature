@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
-<nav th:fragment="side-admin" id="sidebar">
+<nav th:fragment="side-admin" id="sidebar" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
     <div class="ms-1 mt-2">
         <a href="/admin/"><h5 class="text-center sidebar-label"><b>Administration</b></h5></a>
         <div class="hr"><i class="fas fa-eye me-1"></i><span class="sidebar-label"> Supervision</span></div>

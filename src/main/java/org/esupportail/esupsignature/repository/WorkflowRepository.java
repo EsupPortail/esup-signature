@@ -19,7 +19,7 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     @Query(value = "select count(*) from workflow as w where w.name = :name", nativeQuery = true)
     Long countByName(String name);
     Long countByNameAndCreateByEppn(String name, String userEppn);
-    @Query("select distinct w from Workflow w where w.publicUsage = true or (w.visibility = true and :role member of w.roles) order by w.name")
+    @Query("select distinct w from Workflow w where w.publicUsage = true or :role member of w.roles order by w.name")
     List<Workflow> findAuthorizedForms(String role);
     @Query("select distinct w from Workflow w where w.id not in (select distinct f.workflow from Form f) and w.createBy.eppn = 'system'")
     List<Workflow> findNotInForm();

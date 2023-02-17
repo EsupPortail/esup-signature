@@ -105,7 +105,7 @@ public class WorkflowStepService {
     @Transactional
     public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentAlert, Boolean attachmentRequire, Boolean autoSign, Long certificatId) throws EsupSignatureRuntimeException {
         if(repeatable != null && repeatable && signType.getValue() > 2) {
-            throw new EsupSignatureRuntimeException(signType.name() + " not possible for infinite workflow");
+            throw new EsupSignatureRuntimeException(signType.name() + ", type de signature impossible pour une étape infinie");
         }
         if(autoSign == null) autoSign = false;
         if(autoSign) {

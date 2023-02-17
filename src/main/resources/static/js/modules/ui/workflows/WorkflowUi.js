@@ -2,27 +2,13 @@ export class WorkflowUi {
 
     constructor() {
         console.info("Starting workflow UI");
-        this.visibility = $("#visibility");
         this.initListeners();
     }
 
     initListeners() {
         $(document).ready(e => this.initDeleteListener());
         $("#delete-button").on("click", e => this.confirmDelete());
-        this.visibility.on("change", function(e){
-            if(this.checked) {
-                $("#roles").next('.ss-main').removeClass("d-none");
-            } else {
-                $("#roles").next('.ss-main').addClass("d-none");
-            }
-        });
-        this.visibility.on("load", function(e){
-            if(this.checked) {
-                $("#roles").next('.ss-main').removeClass("d-none");
-            } else {
-                $("#roles").next('.ss-main').addClass("d-none");
-            }
-        });
+        let self = this;
         $("#autoSign").on('change', function(){
            if($(this).is(":checked")) {
                let id = $(this).attr("data-es-step-id");

@@ -112,7 +112,7 @@ public class IndexController {
 
 	@GetMapping("/login/**")
 	public String loginRedirection() {
-		return "redirect:/";
+		return "redirect:/user/";
 	}
 
 	@RequestMapping(value = "/denied/ws/**", method = {RequestMethod.GET, RequestMethod.POST})

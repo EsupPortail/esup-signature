@@ -8,8 +8,8 @@
 <header th:replace="fragments/nav :: nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" th:replace="fragments/sides/side-admin :: side-admin"></nav>
-        <nav th:if="${#authorization.expression('hasRole(''ROLE_MANAGER'')')}" th:replace="fragments/sides/side-manager :: side-manager"></nav>
+        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav th:replace="fragments/sides/side-manager :: side-manager"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item active">Liste des formulaires</li>
@@ -34,7 +34,7 @@
                             <tr>
                                 <th class="w-50">Titre</th>
                                 <th>Nom</th>
-                                <th>Circuit</th>
+                                <th>Circuit associé</th>
                                 <th>Version</th>
                                 <th>Actif</th>
                                 <th>Supprimé</th>
@@ -167,8 +167,20 @@
                         <label for="nameManual" class="col-form-label">Nom (nom technique sans espace ni accents)</label>
                         <input type="text" id="nameManual" name="name" class="form-control" required>
                     </div>
+                    <div class="form-check mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+                        <label for="publicUsage" class="form-check-label">Visibilité publique (diffusion immédiate)</label>
+                        <input type="checkbox" class="form-check-input" id="publicUsage" name="publicUsage">
+                    </div>
+                    <div class="form-group mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" >
+                        <label for="roleNames" class="col-form-label">Nom du role autorisé à accéder au formulaire</label>
+                        <select id="roleNames" class="slim-select" type="text" name="roleNames" multiple>
+                            <th:block th:each="newRole : ${roles}">
+                                <option th:text="${newRole}" th:value="${newRole}"></option>
+                            </th:block>
+                        </select>
+                    </div>
                     <div class="form-group mb-3">
-                        <label for="workflowIdManual" class="col-form-label">Type de workflow</label>
+                        <label for="workflowIdManual" class="col-form-label">Circuit associé</label>
                         <select class="slim-select-simple" id="workflowIdManual" name="workflowId">
                             <th:block th:each="workflowType : ${workflowTypes}">
                                 <option th:value="${workflowType.id}" th:text="${workflowType.description}"></option>
@@ -221,20 +233,28 @@
                                    type="file" required/>
                         </div>
                     </div>
-                    <div class="form-check mb-3">
+                    <div class="form-group mb-3" th:unless="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+                        <label for="managerRole">Pour quel rôle ce formulaire pourra être diffusé</label>
+                        <select id="managerRole" name="managerRole" class="form-select" required>
+                            <th:block th:each="role : ${roles}">
+                                <option th:value="${role}" th:text="${role}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                    <div class="form-check mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
                         <label for="publicUsage" class="form-check-label">Visibilité publique (diffusion immédiate)</label>
                         <input type="checkbox" class="form-check-input" id="publicUsage" name="publicUsage">
                     </div>
-                    <div class="form-group mb-3">
-                        <label for="roleNames" class="col-form-label">Nom du role autorisé à acceder au formulaire</label>
-                        <select id="roleNames" class="form-control" type="text" name="roleNames" multiple>
+                    <div class="form-group mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" >
+                        <label for="roleNames2" class="col-form-label">Nom du role autorisé à accéder au formulaire</label>
+                        <select id="roleNames2" class="slim-select" type="text" name="roleNames" multiple>
                             <th:block th:each="newRole : ${roles}">
                                 <option th:text="${newRole}" th:value="${newRole}"></option>
                             </th:block>
                         </select>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="workflowId" class="col-form-label">Type de workflow</label>
+                        <label for="workflowId" class="col-form-label">Circuit associé</label>
                         <select class="slim-select-simple" id="workflowId" name="workflowId">
                             <th:block th:each="workflowType : ${workflowTypes}">
                                 <option th:value="${workflowType.id}" th:text="${workflowType.description}"></option>
