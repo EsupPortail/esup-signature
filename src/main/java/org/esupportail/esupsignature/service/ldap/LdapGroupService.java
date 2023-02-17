@@ -1,7 +1,12 @@
 package org.esupportail.esupsignature.service.ldap;
 
+import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.security.GroupService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.data.ldap.repository.config.EnableLdapRepositories;
 import org.springframework.ldap.core.ContextMapper;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.LdapTemplate;
@@ -9,89 +14,48 @@ import org.springframework.ldap.query.LdapQuery;
 import org.springframework.ldap.query.LdapQueryBuilder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@Service
+@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base"})
+@EnableConfigurationProperties({GlobalProperties.class, LdapProperties.class})
+@EnableLdapRepositories(basePackages = "org.esupportail.esupsignature.repository.ldap")
 public class LdapGroupService implements GroupService {
 
-    Map<String, String> ldapFiltersGroups;
+    Map<String, String> ldapFiltersGroups = new HashMap<>();
 
+    private final LdapProperties ldapProperties;
+
+    private final GlobalProperties globalProperties;
+
+    @Resource
     private LdapTemplate ldapTemplate;
 
-    private String groupSearchBase;
-
-    private String groupSearchFilter;
-
-    private String allGroupsSearchFilter;
-
-    private String membersOfGroupSearchFilter;
-
-    private String memberSearchBase;
-
-    private String memberSearchFilter;
-
-    private String domain;
-
-    private String userIdSearchFilter;
+    public LdapGroupService(LdapProperties ldapProperties, GlobalProperties globalProperties) {
+        this.ldapProperties = ldapProperties;
+        this.globalProperties = globalProperties;
+        for(Map.Entry<String, String> entry : ldapProperties.getMappingFiltersGroups().entrySet()) {
+            ldapFiltersGroups.put(entry.getValue(), entry.getKey());
+        }
+    }
 
     public Map<String, String> getLdapFiltersGroups() {
         return ldapFiltersGroups;
     }
 
-    public void setLdapFiltersGroups(Map<String, String> ldapFiltersGroups) {
-        this.ldapFiltersGroups = ldapFiltersGroups;
-    }
-
-    public void setLdapTemplate(LdapTemplate ldapTemplate) {
-        this.ldapTemplate = ldapTemplate;
-    }
-
-    public void setGroupSearchBase(String groupSearchBase) {
-        this.groupSearchBase = groupSearchBase;
-    }
-
-    public void setGroupSearchFilter(String groupSearchFilter) {
-        this.groupSearchFilter = groupSearchFilter;
-    }
-
-    public void setAllGroupsSearchFilter(String allGroupsSearchFilter) {
-        this.allGroupsSearchFilter = allGroupsSearchFilter;
-    }
-
-    public void setMembersOfGroupSearchFilter(String membersOfGroupSearchFilter) {
-        this.membersOfGroupSearchFilter = membersOfGroupSearchFilter;
-    }
-
-    public void setMemberSearchBase(String memberSearchBase) {
-        this.memberSearchBase = memberSearchBase;
-    }
-
-    public void setMemberSearchFilter(String memberSearchFilter) {
-        this.memberSearchFilter = memberSearchFilter;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
-
-    public void setUserIdSearchFilter(String userIdSearchFilter) {
-        this.userIdSearchFilter = userIdSearchFilter;
-    }
-
     @Override
     public List<Map.Entry<String, String>> getAllGroups(String search) {
         List<Map.Entry<String, String>> groups = new ArrayList<>();
-        if(allGroupsSearchFilter != null) {
-            String hardcodedFilter = MessageFormat.format(allGroupsSearchFilter, search);
-            groups = ldapTemplate.search(LdapQueryBuilder.query().attributes("cn", "description").base(groupSearchBase).filter(hardcodedFilter + "*"),
+        if(ldapProperties.getAllGroupsSearchFilter() != null) {
+            String hardcodedFilter = MessageFormat.format(ldapProperties.getAllGroupsSearchFilter(), search);
+            groups = ldapTemplate.search(LdapQueryBuilder.query().attributes("cn", "description").base(ldapProperties.getGroupSearchBase()).filter(hardcodedFilter + "*"),
                     (ContextMapper<Map.Entry<String, String>>) ctx -> {
                         DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                         return new AbstractMap.SimpleEntry<>(searchResultContext.getStringAttribute("cn"), searchResultContext.getStringAttribute("description"));
@@ -101,7 +65,7 @@ public class LdapGroupService implements GroupService {
     }
 
     public List<String>  getAllPrefixGroups(String search) {
-        return ldapTemplate.search(LdapQueryBuilder.query().attributes("cn", "description").base(groupSearchBase).filter("cn=" + search.replace("(\\w*)", "") + "*"),
+        return ldapTemplate.search(LdapQueryBuilder.query().attributes("cn", "description").base(ldapProperties.getGroupSearchBase()).filter("cn=" + search.replace("(\\w*)", "") + "*"),
                 (ContextMapper<Map.Entry<String, String>>) ctx -> {
                     DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                     return new AbstractMap.SimpleEntry<>(searchResultContext.getStringAttribute("cn"), searchResultContext.getStringAttribute("description"));
@@ -111,7 +75,7 @@ public class LdapGroupService implements GroupService {
     @Override
     public List<String> getGroups(String eppn) {
         String username = eppn.replaceAll("@.*", "");
-        String formattedFilter = MessageFormat.format(userIdSearchFilter, (Object[]) new String[] { username });
+        String formattedFilter = MessageFormat.format(ldapProperties.getEppnLeftPartSearchFilter(), (Object[]) new String[] { username });
         List<String> dns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").filter(formattedFilter),
                 (ContextMapper<String>) ctx -> {
                     DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
@@ -120,15 +84,15 @@ public class LdapGroupService implements GroupService {
         List<String> groups = new ArrayList<>();
         if(!dns.isEmpty()) {
             String userDn = dns.get(0);
-            String formattedGroupSearchFilter = MessageFormat.format(groupSearchFilter, userDn, username);
-            LdapQuery groupSearchQuery = LdapQueryBuilder.query().attributes("cn").base(groupSearchBase).filter(formattedGroupSearchFilter);
+            String formattedGroupSearchFilter = MessageFormat.format(ldapProperties.getGroupSearchFilter(), userDn, username);
+            LdapQuery groupSearchQuery = LdapQueryBuilder.query().attributes("cn").base(ldapProperties.getGroupSearchBase()).filter(formattedGroupSearchFilter);
             groups = ldapTemplate.search(groupSearchQuery, (ContextMapper<String>) ctx -> {
                         DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                         return searchResultContext.getStringAttribute("cn");
                     });
         }
         for(String ldapFilter: ldapFiltersGroups.keySet()) {
-            String hardcodedFilter = MessageFormat.format(memberSearchFilter, username, ldapFilter);
+            String hardcodedFilter = MessageFormat.format(ldapProperties.getMemberSearchFilter(), username, ldapFilter);
             List<String> filterDns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").filter(hardcodedFilter),
                     (ContextMapper<String>) ctx -> {
                         DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
@@ -159,9 +123,9 @@ public class LdapGroupService implements GroupService {
     public List<String> getMembers(String groupName) throws EsupSignatureRuntimeException {
         List<String> eppns = new ArrayList<>();
         List<Map.Entry<String, String>> group = getAllGroups(groupName);
-        if (membersOfGroupSearchFilter != null) {
-            String formattedFilter = MessageFormat.format(membersOfGroupSearchFilter, groupName);
-            eppns = ldapTemplate.search(memberSearchBase, formattedFilter, (ContextMapper<String>) ctx -> {
+        if (ldapProperties.getMembersOfGroupSearchFilter() != null) {
+            String formattedFilter = MessageFormat.format(ldapProperties.getMembersOfGroupSearchFilter(), groupName);
+            eppns = ldapTemplate.search(ldapProperties.getSearchBase(), formattedFilter, (ContextMapper<String>) ctx -> {
                 DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                 String eppn = searchResultContext.getStringAttribute("mail");
                 return eppn;
@@ -173,4 +137,7 @@ public class LdapGroupService implements GroupService {
         return eppns;
     }
 
+    public String getDomain() {
+        return globalProperties.getDomain();
+    }
 }

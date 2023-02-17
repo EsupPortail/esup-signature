@@ -45,4 +45,8 @@ public class LdapPersonService {
         return ldapTemplate.search(ldapProperties.getSearchBase(), formattedFilter, new PersonLdapAttributesMapper());
     }
 
+    public List<PersonLdap> getPersonLdapByEppn(String eppn) {
+        String formattedFilter = MessageFormat.format("(eduPersonPrincipalName={0})", (Object[]) new String[] { eppn });
+        return ldapTemplate.search(ldapProperties.getSearchBase(), formattedFilter, new PersonLdapAttributesMapper());
+    }
 }
