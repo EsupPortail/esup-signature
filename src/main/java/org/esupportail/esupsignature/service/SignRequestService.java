@@ -11,10 +11,10 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.UserType;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
@@ -54,8 +54,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -255,7 +253,7 @@ public class SignRequestService {
 		} else {
 			signRequest.setTitle(name);
 		}
-		signRequest.setToken(String.valueOf(generateUniqueId()));
+		signRequest.setToken(UUID.randomUUID().toString());
 		signRequest.setCreateBy(user);
 		signRequest.setCreateDate(new Date());
 		signRequest.setParentSignBook(signBook);
@@ -510,21 +508,6 @@ public class SignRequestService {
 
 	public void updateStatus(Long signRequestId, SignRequestStatus signRequestStatus, String action, String comment, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, String userEppn, String authUserEppn) {
 		logService.create(signRequestId, signRequestStatus, action, comment, returnCode, pageNumber, posX, posY, stepNumber, userEppn, authUserEppn);
-	}
-
-	@Transactional
-	public String generateUniqueId() {
-		while (true) {
-			final UUID uid = UUID.randomUUID();
-			final ByteBuffer buffer = ByteBuffer.wrap(new byte[16]);
-			buffer.putLong(uid.getLeastSignificantBits());
-			buffer.putLong(uid.getMostSignificantBits());
-			final BigInteger bi = new BigInteger(buffer.array());
-			String token = String.valueOf(Math.abs(bi.longValue()));
-			if(signRequestRepository.findByToken(token) == null) {
-				return token;
-			}
-		}
 	}
 
 	@Transactional
