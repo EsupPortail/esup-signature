@@ -526,6 +526,7 @@ export class PdfViewer extends EventFactory {
                         inputField.attr("checked", "checked");
                         inputField.prop("checked", true);
                     }
+                    inputField.on('click', e => this.fireEvent('change', ['checked']));
                 }
                 if (dataField.type === "date") {
                     datePickerIndex--;
