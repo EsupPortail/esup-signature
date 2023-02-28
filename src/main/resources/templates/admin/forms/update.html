@@ -14,6 +14,7 @@
         <nav th:replace="fragments/sides/side-manager :: side-manager"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
                 <li class="breadcrumb-item active" th:text="'Modifier le formulaire : ' + ${form.name}"></li>
             </ol>

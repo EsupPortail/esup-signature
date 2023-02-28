@@ -33,7 +33,7 @@ public class ExportController {
 
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
-		return "validation";
+		return "export";
 	}
 
 	@Resource

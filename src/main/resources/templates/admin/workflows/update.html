@@ -14,6 +14,7 @@
         <nav th:replace="fragments/sides/side-manager :: side-manager"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/workflows">Liste des circuits</a></li>
                 <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span></li>
             </ol>

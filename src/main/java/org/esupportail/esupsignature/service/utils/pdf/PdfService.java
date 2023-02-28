@@ -596,10 +596,10 @@ public class PdfService {
             ValidationResult validationResult = validator.validate(parser);
             if (validationResult.isCompliant()) {
                 result.add("success");
-                result.add("File is compliant with PDF/A-" + validationResult.getPDFAFlavour().getId() + " !");
+                result.add("Le document est conforme PDF/A-" + validationResult.getPDFAFlavour().getId() + " !");
             } else {
                 result.add("danger");
-                result.add("File is not compliant with PDF/A-" + validationResult.getPDFAFlavour().getId() + " !");
+                result.add("Le document n'est pas conforme PDF/A-" + validationResult.getPDFAFlavour().getId() + " !");
                 if (fillResults) {
                     for (TestAssertion test : validationResult.getTestAssertions()) {
                         result.add(test.getRuleId().getClause() + " : " + test.getMessage());
