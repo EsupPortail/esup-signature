@@ -87,7 +87,7 @@
                                 <label for="publicUsage">Visibilité publique ?</label>
                             </div>
                             <label for="roles" class="form-check-label">Diffusion du workflow pour les rôles</label>
-                            <select id="roles" class="slim-select-simple" type="text" th:field="*{roles}" multiple>
+                            <select id="roles" class="slim-select-filter" type="text" th:field="*{roles}" data-placeholder="Choisir des roles" multiple>
                                 <th:block th:each="newRole : ${roles}">
                                     <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(form.roles, newRole)}"></option>
                                 </th:block>
