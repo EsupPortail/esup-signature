@@ -5,11 +5,14 @@ export class FormManualAdd {
         this.btnAddField = $('#btn-add-field');
         this.btnRemove = $('#btn-remove');
         this.initListeners();
+
     }
 
     initListeners() {
         this.btnAddField.on('click', e => this.addField(e));
         this.btnRemove.on('click', e => this.removeField(e));
+        $("#title").on('input', e => this.computeName());
+        $("#titleManual").on('change', e => this.computeNameManual());
     }
 
     addField(e) {
@@ -29,4 +32,11 @@ export class FormManualAdd {
         return false;
     }
 
+    computeName() {
+        $("#name").val($("#title").val().toLowerCase().replace(/[\W_]/g, "_"));
+    }
+
+    computeNameManual() {
+        $("#nameManual").val($("#titleManual").val().replace(/[^a-zA-Z0-9 ]/g, ''));
+    }
 }

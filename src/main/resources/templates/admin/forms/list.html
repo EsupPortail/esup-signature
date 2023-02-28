@@ -146,6 +146,10 @@
         </div>
     </div>
 </main>
+<script th:inline="javascript" type="module">
+    import {FormManualAdd } from '/js/modules/ui/forms/FormManualAdd.js?version=[[${versionApp}]]';
+    new FormManualAdd();
+</script>
 <div class="modal fade" id="newManualForm" data-bs-focus="false" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
@@ -154,10 +158,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <script th:inline="javascript" type="module">
-                    import {FormManualAdd } from '/js/modules/ui/forms/FormManualAdd.js?version=[[${versionApp}]]';
-                    new FormManualAdd();
-                </script>
                 <form th:action="'/admin/forms'" method="post">
                     <div class="form-group mb-3">
                         <label for="titleManual" class="col-form-label">Titre (affiché aux utilisateurs)</label>
@@ -218,8 +218,8 @@
             <form id="addModel" th:action="'/admin/forms/generate?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="form-group mb-3">
-                        <label for="name" class="col-form-label">Titre (affiché aux utilisateurs)</label>
-                        <input type="text" id="title" name="title" class="form-control" required>
+                        <label for="title" class="col-form-label">Titre (affiché aux utilisateurs)</label>
+                        <input type="text" id="title" name="title" class="form-control" onchange="" required>
                     </div>
                     <div class="form-group mb-3">
                         <label for="name" class="col-form-label">Nom (nom technique sans espace ni accents)</label>
@@ -228,9 +228,7 @@
                     <div class="form-group mb-3">
                         <label class="col-form-label">Modèle PDF Form</label>
                         <div class="custom-file">
-                            <input aria-describedby="inputGroupFileAddon01" class="form-control"
-                                   data-buttonText="Choisir fichier" id="modelFile" name="multipartFile"
-                                   type="file" required/>
+                            <input aria-describedby="inputGroupFileAddon01" class="form-control" data-buttonText="Choisir fichier" id="modelFile" name="multipartFile" type="file" required/>
                         </div>
                     </div>
                     <div class="form-group mb-3" th:unless="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">

@@ -165,8 +165,12 @@
                                 <label for="multipartFormSetup" class="custom-file-label"> Choisir un fichier de configuration au format JSON</label>
                             </div>
                         </div>
-                        <button id="submitFormSetup" type="submit" class="btn btn-primary">Charger la configuration</button>
+                        <button id="submitFormSetup" type="submit" class="btn btn-primary">Importer la configuration</button>
+                        <a class="btn btn-primary" title="Exporter" role="button"
+                           th:href="'/admin/forms/export/' + ${form.id}">Exporter la configuration
+                        </a>
                     </form>
+
                 </div>
             </div>
         </div>
