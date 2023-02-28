@@ -256,7 +256,7 @@ public class FormAdminController {
 							 @RequestParam(value = "types", required = false) String[] types,
 							 RedirectAttributes redirectAttributes) {
 		User user = userService.getUserByEppn(authUserEppn);
-		if(preAuthorizeService.workflowManager(updateForm.getId(), authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+		if(preAuthorizeService.formManager(updateForm.getId(), authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
 			formService.updateForm(updateForm.getId(), updateForm, types, true);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
 			return "redirect:/admin/forms/update/" + updateForm.getId();
@@ -295,7 +295,7 @@ public class FormAdminController {
 		List<Form> forms = formService.getFormByName(name);
 		if (forms.size() > 0) {
 			User user = userService.getUserByEppn(authUserEppn);
-			if(preAuthorizeService.workflowManager(forms.get(0).getId(), authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+			if(preAuthorizeService.formManager(forms.get(0).getId(), authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
 				try {
 					response.setContentType("text/csv; charset=utf-8");
 					response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(forms.get(0).getName(), StandardCharsets.UTF_8.toString()) + ".csv");
@@ -316,9 +316,9 @@ public class FormAdminController {
 	}
 
 	@ResponseBody
-	@PostMapping("/fields/{id}/update")
-	@PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
-	public ResponseEntity<String> updateField(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+	@PostMapping("{formId}/fields/{id}/update")
+	@PreAuthorize("@preAuthorizeService.formManager(#formId, #authUserEppn) || hasRole('ROLE_ADMIN')")
+	public ResponseEntity<String> updateField(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("formId") Long formId, @PathVariable("id") Long id,
 											  @RequestParam(value = "description", required = false) String description,
 											  @RequestParam(value = "fieldType", required = false, defaultValue = "text") FieldType fieldType,
 											  @RequestParam(value = "required", required = false, defaultValue = "false") Boolean required,
@@ -352,11 +352,11 @@ public class FormAdminController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@DeleteMapping("{idForm}/fields/{id}/delete")
-	@PreAuthorize("@preAuthorizeService.formManager(#idForm, #authUserEppn) || hasRole('ROLE_ADMIN')")
-	public String updateField(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("idForm") Long idForm, @PathVariable("id") Long id) {
-		fieldService.deleteField(id, idForm);
-		return "redirect:/admin/forms/" + idForm + "/fields";
+	@DeleteMapping("{formId}/fields/{id}/delete")
+	@PreAuthorize("@preAuthorizeService.formManager(#formId, #authUserEppn) || hasRole('ROLE_ADMIN')")
+	public String updateField(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("formId") Long formId, @PathVariable("id") Long id) {
+		fieldService.deleteField(id, formId);
+		return "redirect:/admin/forms/" + formId + "/fields";
 	}
 
 	@GetMapping(value = "/get-file/{id}")

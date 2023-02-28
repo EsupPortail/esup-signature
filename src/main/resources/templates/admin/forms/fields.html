@@ -72,7 +72,7 @@
                     <tbody>
                     <th:block th:each="field : ${form.fields}">
                         <tr>
-                            <form th:name="field-update" th:id="${field.id}" th:action="'/admin/forms/fields/' + ${field.id} + '/update'" th:method="'put'">
+                            <form th:name="field-update" th:id="${field.id}" th:action="'/admin/forms/' + ${form.id} + '/fields/' + ${field.id} + '/update'" th:method="'put'">
                             <td><span th:text="${field.name}"></span></td>
                             <td><input type="text" class="form-control" name="description" th:value="${field.description}"/></td>
                             <td>
