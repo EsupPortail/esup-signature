@@ -24,8 +24,8 @@
 	</properties>
 	<repositories>
 		<repository>
-			<id>localrepository</id>
-			<url>file:///${pom.basedir}/src/libs</url>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
 		</repository>
 	</repositories>
 	<dependencies>
@@ -412,9 +412,15 @@
 			<version>2.0.3</version>
 		</dependency>
 		<dependency>
-			<groupId>fr.gouv.vitam.tools</groupId>
+			<groupId>com.github.ProgrammeVitam.sedatools</groupId>
 			<artifactId>sedalib</artifactId>
 			<version>2.6.0</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>woodstox-core</artifactId>
+					<groupId>com.fasterxml.woodstox</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>uk.gov.nationalarchives</groupId>
