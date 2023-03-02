@@ -10,6 +10,5 @@ import java.util.List;
 public interface PersonLdapRepository extends LdapRepository<PersonLdap> {
     List<PersonLdap> findByEduPersonPrincipalName(String eppn);
     List<PersonLdap> findByMail(String mail);
-    List<PersonLdap> findByDisplayNameStartingWithIgnoreCaseOrCnStartingWithIgnoreCaseOrUidStartingWithOrMailStartingWith(String displayName, String cn, String uid, String mail);
 }
 

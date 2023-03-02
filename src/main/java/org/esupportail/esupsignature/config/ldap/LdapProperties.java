@@ -14,6 +14,10 @@ public class LdapProperties {
      */
     private String searchBase;
     /**
+     * Filtre de recherche des utilisateurs
+     */
+    private String usersSearchFilter = "(&(|(displayName={0}*)(cn={0}*)(uid={0})(mail={0}*))(mail=*))";
+    /**
      * Base de recherche des groupes, ex : ou=groups
      */
     private String groupSearchBase;
@@ -57,6 +61,14 @@ public class LdapProperties {
 
     public void setSearchBase(String searchBase) {
         this.searchBase = searchBase;
+    }
+
+    public String getUsersSearchFilter() {
+        return usersSearchFilter;
+    }
+
+    public void setUsersSearchFilter(String usersSearchFilter) {
+        this.usersSearchFilter = usersSearchFilter;
     }
 
     public String getGroupSearchBase() {

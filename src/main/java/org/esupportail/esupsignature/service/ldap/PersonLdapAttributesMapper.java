@@ -1,36 +1,35 @@
 package org.esupportail.esupsignature.service.ldap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ldap.core.AttributesMapper;
 
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
+import java.lang.reflect.Field;
+import java.util.Enumeration;
 
 
 public class PersonLdapAttributesMapper implements AttributesMapper<PersonLdap> {
 
+    private static final Logger logger = LoggerFactory.getLogger(PersonLdapAttributesMapper.class);
+
     public PersonLdap mapFromAttributes(Attributes attrs) throws NamingException {
         PersonLdap person = new PersonLdap();
-        person.setCn(attrs.get("cn").get().toString());
-        Attribute uid = attrs.get("uid");
-        if (uid != null){
-            person.setUid(uid.get().toString());
-        }
-        Attribute sn = attrs.get("sn");
-        if (sn != null){
-            person.setSn(sn.get().toString());
-        }
-        Attribute givenName = attrs.get("givenName");
-        if (givenName != null){
-            person.setGivenName(givenName.get().toString());
-        }
-        Attribute mail = attrs.get("mail");
-        if (mail != null){
-            person.setMail(mail.get().toString());
-        }
-        Attribute eduPersonPrincipalName = attrs.get("eduPersonPrincipalName");
-        if (eduPersonPrincipalName != null){
-            person.setEduPersonPrincipalName(eduPersonPrincipalName.get().toString());
+        for (Enumeration<String> attrsIDs = attrs.getIDs(); attrsIDs.hasMoreElements() ; ) {
+            String attrID = attrsIDs.nextElement();
+            Attribute attribute = attrs.get(attrID);
+            if(attribute != null) {
+                try {
+                    Field field = PersonLdap.class.getDeclaredField(attrID);
+                    field.setAccessible(true);
+                    field.set(person, attribute.get().toString());
+                    field.setAccessible(false);
+                } catch (Exception e) {
+                    logger.debug(e.getMessage());
+                }
+            }
         }
         return person;
     }

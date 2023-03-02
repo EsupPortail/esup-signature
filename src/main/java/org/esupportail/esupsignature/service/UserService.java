@@ -256,7 +256,7 @@ public class UserService {
             authName = authentication.getName();
         }
         logger.info("user control for " + authName);
-        List<PersonLdap> personLdaps =  Objects.requireNonNull(ldapPersonService).getPersonLdap(authName);
+        List<PersonLdapLight> personLdaps =  Objects.requireNonNull(ldapPersonService).getPersonLdapLight(authName);
         String eppn = personLdaps.get(0).getEduPersonPrincipalName();
         if (eppn == null) {
             eppn = buildEppn(authName);
@@ -458,6 +458,24 @@ public class UserService {
             personLdap.setGivenName(user.getFirstname());
             personLdap.setDisplayName(user.getFirstname() + " " + user.getName());
             personLdap.setMail(user.getEmail());
+        }
+        return personLdap;
+    }
+
+    public PersonLdapLight findPersonLdapLightByUser(User user) {
+        PersonLdapLight personLdap = null;
+        if (ldapPersonService != null) {
+            List<PersonLdapLight> personLdaps =  ldapPersonService.getPersonLdapLightRepository().findByEduPersonPrincipalName(user.getEppn());
+            if (personLdaps.size() > 0) {
+                personLdap = personLdaps.get(0);
+            } else {
+                personLdaps =  ldapPersonService.getPersonLdapLightByEppn(user.getEppn());
+                if (personLdaps.size() > 0) {
+                    personLdap = personLdaps.get(0);
+                }
+            }
+        } else {
+            personLdap = getPersonLdapLightFromUser(user);
         }
         return personLdap;
     }
@@ -762,7 +780,7 @@ public class UserService {
     public String tryGetEppnFromLdap(Authentication auth) {
         String eppn = auth.getName();
         if(ldapPersonService != null) {
-            List<PersonLdap> personLdaps = ldapPersonService.getPersonLdap(auth.getName());
+            List<PersonLdapLight> personLdaps = ldapPersonService.getPersonLdapLight(auth.getName());
             if(personLdaps.size() > 0) {
                 eppn = personLdaps.get(0).getEduPersonPrincipalName();
                 if (eppn == null) {

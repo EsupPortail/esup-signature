@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.repository.ldap.PersonLdapRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.query.LdapQueryBuilder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -30,23 +31,35 @@ public class LdapPersonService {
     private PersonLdapLightRepository personLdapLightRepository;
 
     public List<PersonLdap> search(String searchString) {
-        return personLdapRepository.findByDisplayNameStartingWithIgnoreCaseOrCnStartingWithIgnoreCaseOrUidStartingWithOrMailStartingWith(searchString, searchString, searchString, searchString);
+        String formattedFilter = MessageFormat.format(ldapProperties.getUsersSearchFilter(), (Object[]) new String[] { searchString });
+        return ldapTemplate.search(LdapQueryBuilder.query().countLimit(10).base(ldapProperties.getSearchBase()).filter(formattedFilter), new PersonLdapAttributesMapper());
     }
 
     public List<PersonLdapLight> searchLight(String searchString) {
-        return personLdapLightRepository.fullTextSearch(searchString);
+        String formattedFilter = MessageFormat.format(ldapProperties.getUsersSearchFilter(), (Object[]) new String[] { searchString });
+        return ldapTemplate.search(LdapQueryBuilder.query().countLimit(10).base(ldapProperties.getSearchBase()).filter(formattedFilter), new PersonLdapLightAttributesMapper());
     }
     public PersonLdapRepository getPersonLdapRepository() {
 		return personLdapRepository;
 	}
 
-    public List<PersonLdap> getPersonLdap(String authName) {
+    public PersonLdapLightRepository getPersonLdapLightRepository() {
+        return personLdapLightRepository;
+    }
+
+    public List<PersonLdapLight> getPersonLdapLight(String authName) {
         String formattedFilter = MessageFormat.format(ldapProperties.getUserIdSearchFilter(), (Object[]) new String[] { authName });
-        return ldapTemplate.search(ldapProperties.getSearchBase(), formattedFilter, new PersonLdapAttributesMapper());
+        return ldapTemplate.search(ldapProperties.getSearchBase(), formattedFilter, new PersonLdapLightAttributesMapper());
+    }
+
+    public List<PersonLdapLight> getPersonLdapLightByEppn(String eppn) {
+        String formattedFilter = MessageFormat.format("(eduPersonPrincipalName={0})", (Object[]) new String[] { eppn });
+        return ldapTemplate.search(ldapProperties.getSearchBase(), formattedFilter, new PersonLdapLightAttributesMapper());
     }
 
     public List<PersonLdap> getPersonLdapByEppn(String eppn) {
         String formattedFilter = MessageFormat.format("(eduPersonPrincipalName={0})", (Object[]) new String[] { eppn });
         return ldapTemplate.search(ldapProperties.getSearchBase(), formattedFilter, new PersonLdapAttributesMapper());
     }
+
 }

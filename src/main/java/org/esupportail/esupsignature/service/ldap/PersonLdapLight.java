@@ -17,6 +17,7 @@ public final class PersonLdapLight {
 	private @Attribute(name = "givenName") String givenName;
 	private @Attribute(name = "displayName") String displayName;
 	private @Attribute(name = "mail") String mail;
+	private @Attribute(name = "eduPersonPrincipalName") String eduPersonPrincipalName;
 
 	public String getUid() {
 		return uid;
@@ -64,6 +65,14 @@ public final class PersonLdapLight {
 
 	public void setMail(String mail) {
 		this.mail = mail;
+	}
+
+	public String getEduPersonPrincipalName() {
+		return eduPersonPrincipalName;
+	}
+
+	public void setEduPersonPrincipalName(String eduPersonPrincipalName) {
+		this.eduPersonPrincipalName = eduPersonPrincipalName;
 	}
 }
 	

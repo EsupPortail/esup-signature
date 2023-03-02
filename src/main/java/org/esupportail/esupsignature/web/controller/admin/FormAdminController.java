@@ -91,7 +91,7 @@ public class FormAdminController {
 			model.addAttribute("roles", userService.getManagersRoles(authUserEppn));
 			model.addAttribute("workflowTypes", workflowService.getManagerWorkflows(authUserEppn));
 		}
-		model.addAttribute("forms", forms);
+		model.addAttribute("forms", forms.stream().sorted(Comparator.comparing(Form::getDescription)).collect(Collectors.toList()));
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("preFillTypes", preFillService.getPreFillValues());
 		return "admin/forms/list";
