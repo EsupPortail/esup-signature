@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.WorkflowService;
@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/ws/workflows")
@@ -35,7 +36,7 @@ public class WorkflowWsController {
     @CrossOrigin
     @PostMapping(value = "/{id}/new")
     @Operation(description = "Dépôt d'un document dans une nouvelle instance d'un circuit")
-    public Long start(@PathVariable Long id,
+    public String start(@PathVariable Long id,
                       @Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
                       @RequestParam @Parameter(description = "Eppn du propriétaire du futur document") String createByEppn,
                       @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title,
@@ -46,11 +47,11 @@ public class WorkflowWsController {
                       @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls
     ) {
         try {
-            SignRequest signRequest = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, recipientEmails, allSignToCompletes, targetEmails, targetUrls, signRequestParamsJsonString);
-            return signRequest.getId();
+            SignBook signBook = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, recipientEmails, allSignToCompletes, targetEmails, targetUrls, signRequestParamsJsonString);
+            return signBook.getSignRequests().stream().map(signRequest -> signRequest.getId().toString()).collect(Collectors.joining(","));
         } catch (EsupSignatureRuntimeException e) {
             logger.error(e.getMessage(), e);
-            return -1L;
+            return "-1";
         }
     }
 
