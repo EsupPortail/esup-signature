@@ -203,7 +203,7 @@ public class UserService {
             return user;
         }
         if (ldapPersonService != null) {
-            List<PersonLdap> personLdaps = ldapPersonService.getPersonLdapRepository().findByEduPersonPrincipalName(eppn);
+            List<PersonLdap> personLdaps = ldapPersonService.getPersonLdapByEppn(eppn);
             if (personLdaps.size() > 0) {
                 String name = personLdaps.get(0).getSn();
                 String firstName = personLdaps.get(0).getGivenName();
@@ -220,7 +220,7 @@ public class UserService {
     @Transactional
     public User createUserWithEmail(String mail) {
         if (ldapPersonService != null) {
-            List<PersonLdap> personLdaps = ldapPersonService.getPersonLdapRepository().findByMail(mail);
+            List<PersonLdap> personLdaps = ldapPersonService.getPersonLdapByMail(mail);
             if (personLdaps.size() > 0) {
                 String eppn = personLdaps.get(0).getEduPersonPrincipalName();
                 if (eppn == null) {
@@ -465,14 +465,9 @@ public class UserService {
     public PersonLdapLight findPersonLdapLightByUser(User user) {
         PersonLdapLight personLdap = null;
         if (ldapPersonService != null) {
-            List<PersonLdapLight> personLdaps =  ldapPersonService.getPersonLdapLightRepository().findByEduPersonPrincipalName(user.getEppn());
+            List<PersonLdapLight> personLdaps =  ldapPersonService.getPersonLdapLightByEppn(user.getEppn());
             if (personLdaps.size() > 0) {
                 personLdap = personLdaps.get(0);
-            } else {
-                personLdaps =  ldapPersonService.getPersonLdapLightByEppn(user.getEppn());
-                if (personLdaps.size() > 0) {
-                    personLdap = personLdaps.get(0);
-                }
             }
         } else {
             personLdap = getPersonLdapLightFromUser(user);
@@ -483,14 +478,9 @@ public class UserService {
     public PersonLdap findPersonLdapByUser(User user) {
         PersonLdap personLdap = null;
         if (ldapPersonService != null) {
-            List<PersonLdap> personLdaps =  ldapPersonService.getPersonLdapRepository().findByEduPersonPrincipalName(user.getEppn());
+            List<PersonLdap> personLdaps =  ldapPersonService.getPersonLdapByEppn(user.getEppn());
             if (personLdaps.size() > 0) {
                 personLdap = personLdaps.get(0);
-            } else {
-                personLdaps =  ldapPersonService.getPersonLdapByEppn(user.getEppn());
-                if (personLdaps.size() > 0) {
-                    personLdap = personLdaps.get(0);
-                }
             }
         } else {
             personLdap = getPersonLdapFromUser(user);
