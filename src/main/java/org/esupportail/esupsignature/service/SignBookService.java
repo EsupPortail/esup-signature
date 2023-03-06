@@ -901,6 +901,9 @@ public class SignBookService {
                     if (!emailSended) {
                         try {
                             mailService.sendEmailAlerts(signRequest, userEppn, data, forceSendEmail);
+                            if(globalProperties.getSendMailToViewers()) {
+                                mailService.sendSignRequestAlertCC(signRequest);
+                            }
                             emailSended = true;
                         } catch (EsupSignatureMailException e) {
                             throw new EsupSignatureRuntimeException(e.getMessage());

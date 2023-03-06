@@ -221,6 +221,11 @@ public class GlobalProperties {
     private Boolean sendPostitByEmail = false;
 
     /**
+     *  Envoyer un email aux observateurs à la création d’une demande
+     */
+    private Boolean sendMailToViewers = false;
+
+    /**
      *  Imposer la double authentification par SMS pour les externes
      */
     private Boolean smsRequired = true;
@@ -575,6 +580,14 @@ public class GlobalProperties {
 
     public void setSendPostitByEmail(Boolean sendPostitByEmail) {
         this.sendPostitByEmail = sendPostitByEmail;
+    }
+
+    public Boolean getSendMailToViewers() {
+        return sendMailToViewers;
+    }
+
+    public void setSendMailToViewers(Boolean sendMailToViewers) {
+        this.sendMailToViewers = sendMailToViewers;
     }
 
     public Boolean getSmsRequired() {
