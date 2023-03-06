@@ -3,12 +3,10 @@ package org.esupportail.esupsignature.web.controller.admin;
 import org.esupportail.esupsignature.dto.SlimSelectDto;
 import org.esupportail.esupsignature.dto.UserDto;
 import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.SignBookRepository;
-import org.esupportail.esupsignature.service.FormService;
-import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +62,9 @@ public class SignBookAdminController {
 
 	@Resource
 	private SignBookService signBookService;
+
+	@Resource
+	private SignRequestService signRequestService;
 
 	@Resource
 	private SignBookRepository signBookRepository;
@@ -150,19 +151,22 @@ public class SignBookAdminController {
 
 	@GetMapping(value = "/{id}")
 	public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-		SignBook signBook = signBookService.getById(id);
-		if(signBook.getSignRequests().size() > 0) {
-			Long signRequestId = signBook.getSignRequests().get(0).getId();
-			if (signBook.getSignRequests().size() > 1) {
-				if (signBook.getSignRequests().stream().anyMatch(s -> s.getStatus().equals(SignRequestStatus.pending))) {
-					signRequestId = signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending)).findFirst().get().getId();
-				}
-			}
-			return "redirect:/admin/signrequests/" + signRequestId;
-		} else {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Cette demande de signature n'est pas conforme car elle est vide, elle peut être supprimée"));
-			return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+		SignRequest signRequest = signBookService.search(id);
+		if(signRequest != null) {
+			return "redirect:/admin/signrequests/" + signRequest.getId();
 		}
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande non trouvée"));
+		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+	}
+
+	@GetMapping(value = "/search")
+	public String search(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+		SignRequest signRequest = signBookService.search(id);
+		if(signRequest != null) {
+			return "redirect:/admin/signrequests/" + signRequest.getId();
+		}
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande non trouvée"));
+		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
 
 	@PostMapping(value = "/delete-multiple", consumes = {"application/json"})

@@ -410,6 +410,29 @@ public class SignBookService {
         return signBookRepository.findById(id).orElse(null);
     }
 
+    @Transactional
+    public SignRequest search(Long id) {
+        SignRequest signRequest = signRequestService.getById(id);
+        if (signRequest != null) {
+            return signRequest;
+        } else {
+            SignBook signBook = getById(id);
+            if (signBook != null) {
+                if (signBook.getSignRequests().size() > 0) {
+                    if (signBook.getSignRequests().size() > 1) {
+                        if (signBook.getSignRequests().stream().anyMatch(s -> s.getStatus().equals(SignRequestStatus.pending))) {
+                            return signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending)).findFirst().get();
+                        }
+                        else {
+                            return signBook.getSignRequests().get(0);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     public List<SignBook> getByWorkflowId(Long id) {
         return signBookRepository.findByWorkflowId(id);
     }
@@ -1432,7 +1455,7 @@ public class SignBookService {
                                     for(Target target : workflow.getTargets()) {
                                         signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetUri() + "/" + metadataTarget));
                                     }
-                                    logger.info("target set to : " + signBook.getLiveWorkflow().getTargets().stream().toList().get(0).getTargetUri());
+                                    logger.info("target set to : " + new ArrayList<>(signBook.getLiveWorkflow().getTargets()).get(0).getTargetUri());
                                 }
                             }
                         } else {

@@ -58,7 +58,7 @@
                                     <div class="form-check form-switch form-switch-md">
                                         <input type="checkbox" class="form-check-input" id="changeable" name="changeable" th:checked="${workflowStep.changeable}"/>
                                         <label for="changeable" class="form-check-label">
-                                            Le createur peut modifier les participants
+                                            Le créateur du circuit pourra modifier les participants de cette étape
                                         </label>
                                     </div>
                                     <div class="form-check form-switch form-switch-md">
@@ -73,7 +73,7 @@
                                             Le signataire peut apposer plusieurs signatures
                                         </label>
                                         <input type="checkbox" class="form-check-input" name="multiSign"
-                                                   th:checked="${workflowStep.multiSign}"/>
+                                               th:id="'multiSign-' + ${workflowStep.id}" th:checked="${workflowStep.multiSign}"/>
                                     </div>
                                     <div class="form-check form-switch form-switch-md">
                                         <label class="form-check-label">
