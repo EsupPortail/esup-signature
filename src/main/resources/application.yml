@@ -135,6 +135,7 @@ spring:
 
 ldap:
     search-base: ou=people
+    users-search-filter: (&(|(displayName={0}*)(cn={0}*)(uid={0})(mail={0}*))(mail=*))
     group-search-base: ou=groups
     group-search-filter: member={0}
     all-groups-search-filter: cn=*{0}

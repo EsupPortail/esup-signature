@@ -16,9 +16,7 @@ import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.repository.DataRepository;
-import org.esupportail.esupsignature.repository.FormRepository;
-import org.esupportail.esupsignature.repository.WorkflowRepository;
+import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
@@ -75,11 +73,13 @@ public class FormService {
 	private WebUtilsService webUtilsService;
 
 	@Resource
+	private LiveWorkflowStepRepository liveWorkflowStepRepository;
+
+	@Resource
 	private ObjectMapper objectMapper;
 
 	public Form getById(Long formId) {
-		Form obj = formRepository.findById(formId).get();
-		return obj;
+		return formRepository.findById(formId).orElseThrow();
 	}
 
 	public List<Form> getFormsByUser(String userEppn, String authUserEppn){
@@ -124,7 +124,7 @@ public class FormService {
 
 	public List<Form> getAllForms(){
 		List<Form> list = new ArrayList<>();
-		formRepository.findAll().forEach(e -> list.add(e));
+		formRepository.findAll().forEach(list::add);
 		return list;
 	}
 
@@ -229,7 +229,7 @@ public class FormService {
 
 	@Transactional
 	public Form createForm(Document document, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String[] fieldNames, String[] fieldTypes) throws IOException, EsupSignatureRuntimeException {
-		Workflow workflow = workflowRepository.findById(workflowId).get();
+		Workflow workflow = workflowRepository.findById(workflowId).orElse(null);
 		Form form = new Form();
 		form.setName(name);
 		form.setTitle(title);
@@ -466,10 +466,6 @@ public class FormService {
 		return false;
 	}
 
-	public List<Form> getByRoles(String role) {
-		return formRepository.findByRolesIn(Collections.singletonList(role));
-	}
-
 	public Set<Form> getManagerForms(String userEppn) {
 		User manager = userService.getByEppn(userEppn);
 		Set<Form> formsManaged = new HashSet<>();
@@ -521,8 +517,9 @@ public class FormService {
 		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
 			workflowStep.getSignRequestParams().remove(signRequestParams);
 		}
-		signRequestParamsService.delete(id);
-
+		if(liveWorkflowStepRepository.countBySignRequestParamsContains(signRequestParams) == 0) {
+			signRequestParamsService.delete(id);
+		}
 	}
 
 	@Transactional
@@ -582,9 +579,4 @@ public class FormService {
 		return spots;
 	}
 
-//	@Transactional
-//	public void addSpot(Long id, String comment, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, String postit, Integer spotStepNumber, String authUserEppn) {
-//		Form form = getById(id);
-//
-//	}
 }

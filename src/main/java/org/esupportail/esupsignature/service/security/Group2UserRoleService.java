@@ -27,9 +27,9 @@ public class Group2UserRoleService {
 		this.groupPrefixRoleName = groupPrefixRoleName;
 	}
 
-	public Set<String> getRoles(String eppn) {
+	public Set<String> getRoles(String userName) {
 		Set<String> roles = new HashSet<>();
-		for(String groupName : groupService.getGroups(eppn)) {
+		for(String groupName : groupService.getGroups(userName)) {
 			if (mappingGroupesRoles.containsKey(groupName)) {
 				String role = mappingGroupesRoles.get(groupName);
 				roles.add(role);

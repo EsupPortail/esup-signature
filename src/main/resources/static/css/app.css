@@ -1107,7 +1107,6 @@ height: 100%;
 
 .bootstrap-datetimepicker-widget {
     background-color: #fff !important;
-    font-size: 10px;
 }
 
 input:placeholder-shown.required-field {
@@ -1121,12 +1120,7 @@ input[type="checkbox"] {
 input[type="checkbox"]:not(:checked).required-field {
     background-color: rgba(255, 0, 21, 0.13) !important;
     border: 1px solid black;
-    margin-left: 0.03rem;
 }
-
-/*.annotationLayer .textWidgetAnnotation input[disabled], .annotationLayer .textWidgetAnnotation textarea[disabled], .annotationLayer .choiceWidgetAnnotation select[disabled], .annotationLayer .buttonWidgetAnnotation.checkBox input[disabled], .annotationLayer .buttonWidgetAnnotation.radioButton input[disabled] {*/
-/*    border: 1px solid black !important;*/
-/*}*/
 
 input[type="radio"] {
     cursor: pointer !important;
@@ -1134,16 +1128,11 @@ input[type="radio"] {
 
 input[type="radio"]:not(:checked).required-field {
     background-color: rgba(255, 0, 21, 0.13) !important;
-    /*border: 1px solid black;*/
-    /*margin-left: 0.03rem;*/
+    border: 1px solid black;
 }
 
 textarea:placeholder-shown.required-field {
     background-color: rgba(255, 0, 21, 0.13) !important;
-}
-
-.radioButton.required-field {
-    border-color: red !important;
 }
 
 .disabled-field {
@@ -1155,13 +1144,9 @@ textarea:placeholder-shown.required-field {
     border-color: transparent !important;
 }
 
-.annotationLayer .textWidgetAnnotation input, .annotationLayer .textWidgetAnnotation textarea, .annotationLayer .choiceWidgetAnnotation select, .annotationLayer .buttonWidgetAnnotation.checkBox input, .annotationLayer .buttonWidgetAnnotation.radioButton input {
-    border: 1px solid rgba(0,0,0,1) !important;
+.field-type-checkbox {
+    border-color: transparent !important;
 }
-
-/*.field-type-checkbox {*/
-/*    border-color: transparent !important;*/
-/*}*/
 
 .field-type-textarea {
     border-color: transparent !important;
@@ -1578,31 +1563,11 @@ input:focus, textarea:focus, select:focus {
     outline: none;
 }
 
-/*.buttonWidgetAnnotation.radioButton {*/
-/*    border-radius: 50% !important;*/
-/*}*/
-
-.annotationLayer .buttonWidgetAnnotation.radioButton input:checked:before {
-    /*border-radius: 50%;*/
-    width: 50%;
-    height: 50%;
-    left: 25%;
-    top: 25%;
-}
-
 .sign-field {
     border: 1px solid transparent !important;
     background-color: rgba(189, 255, 189, 1) !important;
     mix-blend-mode: multiply;
     cursor: pointer;
-}
-
-
-.annotationLayer .linkAnnotation > a:hover, .annotationLayer .buttonWidgetAnnotation.pushButton > a:hover {
-    opacity: 0.3;
-    background: rgba(189, 255, 189, 1);
-    mix-blend-mode: multiply !important;
-    box-shadow: unset;
 }
 
 .sign-field:hover {

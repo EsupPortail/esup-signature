@@ -128,8 +128,10 @@ public class FileService {
 	            os.write(buffer, 0, length);
 	        }
 	    } finally {
-	        is.close();
-	        os.close();
+			if(is != null && os != null) {
+				is.close();
+				os.close();
+			}
 	    }
 	}
 	

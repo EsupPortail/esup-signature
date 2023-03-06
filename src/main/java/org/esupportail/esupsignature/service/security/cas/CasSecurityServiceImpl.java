@@ -122,20 +122,17 @@ public class CasSecurityServiceImpl implements SecurityService {
 		authenticationProvider.setKey("EsupSignatureCAS");
 		return authenticationProvider;
 	}
-	
-	
+
 	public Cas20ServiceTicketValidator cas20ServiceTicketValidator() {
 		return new Cas20ServiceTicketValidator(casProperties.getUrl());
 	}
-	
-	
+
 	public UserDetailsByNameServiceWrapper<CasAssertionAuthenticationToken> casAuthUserDetailsService() {
 		UserDetailsByNameServiceWrapper<CasAssertionAuthenticationToken> byNameServiceWrapper = new UserDetailsByNameServiceWrapper<>();
 		byNameServiceWrapper.setUserDetailsService(ldapUserDetailsService());
 		return byNameServiceWrapper;
 	}
-	
-	
+
 	public LdapUserDetailsService ldapUserDetailsService() {
 		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getUserIdSearchFilter(), ldapContextSource);
 		CasLdapAuthoritiesPopulator casLdapAuthoritiesPopulator = new CasLdapAuthoritiesPopulator(ldapContextSource, ldapProperties.getGroupSearchBase());

@@ -13,8 +13,10 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav th:replace="fragments/sides/side-manager :: side-manager"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
                 <li class="breadcrumb-item active" th:text="'Liste des champs du formulaire : ' + ${form.name}"></li>
             </ol>
@@ -70,7 +72,7 @@
                     <tbody>
                     <th:block th:each="field : ${form.fields}">
                         <tr>
-                            <form th:name="field-update" th:id="${field.id}" th:action="'/admin/forms/fields/' + ${field.id} + '/update'" th:method="'put'">
+                            <form th:name="field-update" th:id="${field.id}" th:action="'/admin/forms/' + ${form.id} + '/fields/' + ${field.id} + '/update'" th:method="'put'">
                             <td><span th:text="${field.name}"></span></td>
                             <td><input type="text" class="form-control" name="description" th:value="${field.description}"/></td>
                             <td>

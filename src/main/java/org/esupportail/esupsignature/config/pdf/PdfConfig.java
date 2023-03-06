@@ -40,15 +40,16 @@ public class PdfConfig {
     }
 
     @PostConstruct
-    public void setPdfColorProfileUrl() {
+    public void setPdfColorProfileUrl() throws IOException {
+        OutputStream pdfAoutStream = null;
+        OutputStream iccOutStream = null;
         try {
             String tmpDirectory = System.getProperty("java.io.tmpdir");
             File pdfAFile = new File(tmpDirectory, "PDFA_def.ps");
-            OutputStream pdfAoutStream = new FileOutputStream(pdfAFile);
+            pdfAoutStream = new FileOutputStream(pdfAFile);
             pdfAoutStream.write(new ClassPathResource("/PDFA_def.ps").getInputStream().readAllBytes());
-
             File iccFile = new File(tmpDirectory, "srgb.icc");
-            OutputStream iccOutStream = new FileOutputStream(iccFile);
+            iccOutStream = new FileOutputStream(iccFile);
             iccOutStream.write(new ClassPathResource("/srgb.icc").getInputStream().readAllBytes());
             logger.info("iccPath : " + iccFile.getAbsolutePath());
             logger.info("pdfADefPath : " + pdfAFile.getAbsolutePath());
@@ -59,6 +60,11 @@ public class PdfConfig {
         } catch (IOException e) {
             logger.error("PDFA_def.ps read error", e);
             throw new EsupSignatureRuntimeException("unable to modify PDFA_def.ps", e);
+        } finally {
+            if(pdfAoutStream != null && iccOutStream != null) {
+                pdfAoutStream.close();
+                iccOutStream.close();
+            }
         }
 
     }

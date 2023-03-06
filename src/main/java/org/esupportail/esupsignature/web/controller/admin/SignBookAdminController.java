@@ -20,6 +20,7 @@ import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.stereotype.Controller;
@@ -37,6 +38,7 @@ import java.util.Locale;
 
 @RequestMapping("/admin/signbooks")
 @Controller
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class SignBookAdminController {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignBookAdminController.class);

@@ -10,6 +10,7 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RequestMapping("/admin/roles-managers")
@@ -30,14 +31,22 @@ public class RolesManagersController {
     UserService userService;
 
     @GetMapping
-    public String getRoles(Model model) {
+    public String getRoles(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
         Map<String, List<User>> roleManagers = new HashMap<>();
-        List<User> users =  userService.getByManagersRolesUsers();
-        for (String role : users.stream().flatMap(user -> user.getManagersRoles().stream().map(String::new)).collect(Collectors.toList())) {
-            roleManagers.put(role, userService.getByManagersRoles(role));
+        User authUser = userService.getByEppn(authUserEppn);
+        if(authUser.getRoles().contains("ROLE_ADMIN")) {
+            List<User> users = userService.getByManagersRolesUsers();
+            for (String role : users.stream().flatMap(user -> user.getManagersRoles().stream().map(String::new)).collect(Collectors.toList())) {
+                roleManagers.put(role, userService.getByManagersRoles(role));
+            }
+            model.addAttribute("roles", userService.getAllRoles());
+        } else {
+            Set<String> allRoles =  authUser.getManagersRoles();
+            for (String role : allRoles) {
+                roleManagers.put(role, userService.getByManagersRoles(role));
+            }
         }
         model.addAttribute("roleManagers", roleManagers);
-        model.addAttribute("roles", userService.getAllRoles());
         return "admin/roles-managers";
     }
 

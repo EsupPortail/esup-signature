@@ -6,7 +6,7 @@ import {UserUi} from '../users/UserUi.js?version=@version@';
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
+    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
         console.info("Starting workspace UI");
         this.ready = false;
         this.formInitialized = false;
@@ -45,9 +45,9 @@ export class WorkspacePdf {
         }
         if (this.isPdf) {
             if(currentSignType === "form") {
-                this.pdfViewer = new PdfViewer('/admin/forms/get-file/' + id, signable, editable, currentStepNumber, currentStepId, this.forcePageNum, fields, false);
+                this.pdfViewer = new PdfViewer('/admin/forms/get-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, false);
             } else {
-                this.pdfViewer = new PdfViewer('/ws-secure/signrequests/get-last-file/' + id, signable, editable, currentStepNumber, currentStepId, this.forcePageNum, fields, false);
+                this.pdfViewer = new PdfViewer('/ws-secure/signrequests/get-last-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, false);
             }
         }
         this.signPosition = new SignPosition(
@@ -505,16 +505,19 @@ export class WorkspacePdf {
         this.postits.forEach((spot, iterator) => {
             if(spot.stepNumber != null) {
                 let spotDiv = $('#inDocSpot_' + spot.id);
-                // let signSpaceHtml = "<div id='signSpace_" + iterator + "' title='Emplacement de signature " + (iterator + 1) + "' class='sign-field sign-space'></div>";
-                // $("#pdf").append(signSpaceHtml);
+                let signDiv = $('#inDocSign_' + spot.id);
                 let signSpaceDiv = $("#signSpace_" + iterator);
                 if (this.mode === 'comment') {
                     spotDiv.show();
-                    // signSpaceDiv.hide();
                     let offset = $("#page_" + spot.pageNumber).offset().top - this.pdfViewer.initialOffset + (10 * (spot.pageNumber - 1));
-                    spotDiv.css('left', ((parseInt(spot.posX) * this.pdfViewer.scale) - 18) + "px");
-                    spotDiv.css('top', ((parseInt(spot.posY) * this.pdfViewer.scale + offset) - 48) + "px");
+                    spotDiv.css('left', (((parseInt(spot.posX) * this.pdfViewer.scale) - 18)) + "px");
+                    spotDiv.css('top', (((parseInt(spot.posY) * this.pdfViewer.scale + offset) - 48)) + "px");
                     spotDiv.width(spotDiv.width() * this.pdfViewer.scale);
+                    if(signDiv != null) {
+                        signDiv.css("width", Math.round(150 * self.pdfViewer.scale / .75) + "px");
+                        signDiv.css("height", Math.round(75 * self.pdfViewer.scale / .75) + "px");
+                        signDiv.css("font-size", 14 * self.pdfViewer.scale);
+                    }
                     spotDiv.unbind('mouseup');
                     spotDiv.on('mouseup', function (e) {
                         e.stopPropagation();
@@ -628,7 +631,9 @@ export class WorkspacePdf {
         if (this.mode === 'sign') {
             signRequestParams.show();
         } else {
-            signRequestParams.hide();
+            if(signRequestParams.signImages !== -999999) {
+                signRequestParams.hide();
+            }
         }
         if (this.first) this.first = false;
     }

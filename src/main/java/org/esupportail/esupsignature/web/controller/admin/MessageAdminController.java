@@ -20,6 +20,7 @@ package org.esupportail.esupsignature.web.controller.admin;
 import org.esupportail.esupsignature.service.MessageService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +31,7 @@ import java.text.ParseException;
 
 @RequestMapping("/admin/messages")
 @Controller
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class MessageAdminController {
 
 	@ModelAttribute("adminMenu")

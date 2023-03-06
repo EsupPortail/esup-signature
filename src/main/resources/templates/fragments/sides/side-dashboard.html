@@ -3,7 +3,7 @@
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <nav th:fragment="side-dashboard" id="sidebar" class="scrollbar-lite scrollbar-style">
     <div class="ms-1 mt-2">
-        <h5 class="text-center sidebar-label"><b>Filtres</b></h5>
+        <h5 class="text-center sidebar-label"><b>Dossiers</b></h5>
         <a th:classappend="${statusFilter == ''} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signbooks/?statusFilter=all">Tout voir</a>
         <div class="hr"><i class="fas fa-inbox me-1"></i><span class="sidebar-label"> Demandes reçues</span></div>
         <a th:classappend="${statusFilter == 'toSign'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signbooks/?statusFilter=toSign">

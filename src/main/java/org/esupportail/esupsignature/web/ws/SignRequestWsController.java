@@ -83,7 +83,7 @@ public class SignRequestWsController {
 
     @CrossOrigin
     @GetMapping(value = "/audit-trail/{id}")
-    @Operation(description = "Récupération du statut d'une demande de signature", responses = @ApiResponse(description = "AuditTrail", content = @Content(schema = @Schema(implementation = AuditTrail.class))))
+    @Operation(description = "Récupération du dossier de preuve de la demande", responses = @ApiResponse(description = "AuditTrail", content = @Content(schema = @Schema(implementation = AuditTrail.class))))
     @ResponseBody
     public String getAuditTail(@Parameter(description = "Dossier de preuve de la demande") @PathVariable Long id) throws JsonProcessingException {
         return signRequestService.getAuditTrailJson(id);
