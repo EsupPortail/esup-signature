@@ -72,8 +72,6 @@ public class Workflow {
 
     private Boolean fromCode;
 
-    private Boolean visibility = false;
-
     private String namingTemplate;
 
     private String targetNamingTemplate;
@@ -262,17 +260,6 @@ public class Workflow {
 
     public void setFromCode(Boolean fromCode) {
         this.fromCode = fromCode;
-    }
-
-    public Boolean getVisibility() {
-        if (this.visibility == null) {
-            return false;
-        }
-        return visibility;
-    }
-
-    public void setVisibility(Boolean hidden) {
-        this.visibility = hidden;
     }
 
     public String getNamingTemplate() {

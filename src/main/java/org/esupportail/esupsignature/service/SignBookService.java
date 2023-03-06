@@ -1309,7 +1309,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignRequest startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String title, List<String> recipientEmails, List<String> allSignToCompletes, List<String> targetEmails, List<String> targetUrls, String signRequestParamsJsonString) throws EsupSignatureFsException, EsupSignatureRuntimeException, EsupSignatureIOException {
+    public SignBook startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String title, List<String> recipientEmails, List<String> allSignToCompletes, List<String> targetEmails, List<String> targetUrls, String signRequestParamsJsonString) throws EsupSignatureFsException, EsupSignatureRuntimeException, EsupSignatureIOException {
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
         if (signRequestParamsJsonString != null) {
             signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
@@ -1319,18 +1319,20 @@ public class SignBookService {
         User user = userService.getByEppn(createByEppn);
         SignBook signBook = createSignBook(title, workflow, "", user.getEppn(), true);
         signBook.getLiveWorkflow().setWorkflow(workflow);
-        SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), signBook, createByEppn, createByEppn);
-        signRequest.getSignRequestParams().addAll(signRequestParamses);
-        signRequestService.addDocsToSignRequest(signRequest, false, 0, new ArrayList<>(), multipartFiles);
-        initWorkflowAndPendingSignBook(signRequest.getId(), recipientEmails, allSignToCompletes, null, targetEmails, createByEppn, createByEppn, null);
-        if(targetUrls != null) {
-            for(String targetUrl : targetUrls) {
-                if(signBook.getLiveWorkflow().getTargets().stream().noneMatch(target -> target != null && target.getTargetUri().equals(targetUrl))) {
-                    signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
+        for(MultipartFile multipartFile : multipartFiles) {
+            SignRequest signRequest = signRequestService.createSignRequest(multipartFile.getOriginalFilename(), signBook, createByEppn, createByEppn);
+            signRequest.getSignRequestParams().addAll(signRequestParamses);
+            signRequestService.addDocsToSignRequest(signRequest, false, 0, new ArrayList<>(), multipartFile);
+            initWorkflowAndPendingSignBook(signRequest.getId(), recipientEmails, allSignToCompletes, null, targetEmails, createByEppn, createByEppn, null);
+            if (targetUrls != null) {
+                for (String targetUrl : targetUrls) {
+                    if (signBook.getLiveWorkflow().getTargets().stream().noneMatch(target -> target != null && target.getTargetUri().equals(targetUrl))) {
+                        signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
+                    }
                 }
             }
         }
-        return signRequest;
+        return signBook;
     }
 
     @Transactional

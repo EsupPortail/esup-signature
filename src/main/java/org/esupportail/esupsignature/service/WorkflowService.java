@@ -163,18 +163,12 @@ public class WorkflowService {
                 logger.warn("already exist");
             }
         }
-        for(Workflow workflow : toRemoveWorkflows) {
-            workflowRepository.delete(workflow);
-        }
+        workflowRepository.deleteAll(toRemoveWorkflows);
     }
 
     public boolean isWorkflowExist(String name, String userEppn) {
         return workflowRepository.countByNameAndCreateByEppn(name, userEppn) > 0;
     }
-
-//    public boolean isWorkflowExist(String name) {
-//        return workflowRepository.countByName(name) > 0;
-//    }
 
     public Workflow createWorkflow(User user) {
         Workflow workflow;
@@ -295,10 +289,6 @@ public class WorkflowService {
     public Workflow getById(Long id) {
         return workflowRepository.findById(id).orElseThrow();
     }
-
-//    public Workflow getWorkflowByName(String name) {
-//        return workflowRepository.findByName(name);
-//    }
 
     @Transactional
     public Workflow initWorkflow(User user, Long id, String name) {
@@ -465,7 +455,6 @@ public class WorkflowService {
         workflowToUpdate.setTargetNamingTemplate(workflow.getTargetNamingTemplate());
         workflowToUpdate.setPublicUsage(workflow.getPublicUsage());
         workflowToUpdate.setSealAtEnd(workflow.getSealAtEnd());
-        workflowToUpdate.setVisibility(workflow.getVisibility());
         workflowToUpdate.setOwnerSystem(workflow.getOwnerSystem());
         workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
         workflowToUpdate.setSendAlertToAllRecipients(workflow.getSendAlertToAllRecipients());

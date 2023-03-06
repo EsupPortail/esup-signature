@@ -40,7 +40,7 @@
                         <xsl:if test="$nodeName = 'Signature'">
                             <dt>
                                 <xsl:attribute name="class">col-sm-5</xsl:attribute>
-                                Signature filename:
+                                Nom du fichier de signature:
                             </dt>
                         </xsl:if>
                         <xsl:if test="$nodeName = 'Timestamp'">
@@ -90,14 +90,12 @@
                     </dl>
                 </xsl:if>
 
-                <xsl:apply-templates select="dss:QualificationDetails" />
-
                 <xsl:if test="@SignatureFormat">
                     <dl>
                         <xsl:attribute name="class">row mb-0</xsl:attribute>
                         <dt>
                             <xsl:attribute name="class">col-sm-5</xsl:attribute>
-                            Format de la signature:
+                            Format de la signature :
                         </dt>
                         <dd>
                             <xsl:attribute name="class">col-sm-7</xsl:attribute>

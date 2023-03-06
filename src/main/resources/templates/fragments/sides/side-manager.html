@@ -2,20 +2,20 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
-<nav th:fragment="side-manager" id="sidebar">
+<nav th:fragment="side-manager" id="sidebar" th:unless="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
     <div class="ms-1 mt-2">
         <h5 class="text-center"><b>Management</b></h5>
 
         <a th:classappend="${activeMenu == 'workflows'} ? 'btn-secondary' : 'btn-light'"
-           title="Circuits de signature" href="/manager/workflows" class="btn col-12 mb-1 text-left">
-            <i class="fas fa-project-diagram"></i> <span class="sidebar-label">Circuits</span>
+           title="Circuits de signature" href="/admin/workflows" class="btn col-12 mb-1 text-left">
+            <i class="fas fa-project-diagram project-diagram-color"></i> <span class="sidebar-label">Circuits</span>
         </a>
         <a th:classappend="${activeMenu == 'forms'} ? 'btn-secondary' : 'btn-light'"
-           title="Formulaires" href="/manager/forms" class="btn col-12 mb-1 text-left">
-            <i class="fas fa-file-alt"></i> <span class="sidebar-label">Formulaires</span>
+           title="Formulaires" href="/admin/forms" class="btn col-12 mb-1 text-left">
+            <i class="fas fa-file-alt file-alt-color"></i> <span class="sidebar-label">Formulaires</span>
         </a>
         <a th:classappend="${activeMenu == 'rolesManagers'} ? 'btn-secondary' : 'btn-light'"
-           title="Gestionnaires de rôles" href="/manager/roles-managers" class="btn col-12 mb-1 text-left">
+           title="Gestionnaires de rôles" href="/admin/roles-managers" class="btn col-12 mb-1 text-left">
             <i class="fas fa-user-tie"></i> <span class="sidebar-label">Gestionnaires de rôles</span>
         </a>
 

@@ -5,7 +5,7 @@ import org.esupportail.esupsignature.repository.ldap.PersonLdapLightRepository;
 import org.esupportail.esupsignature.repository.ldap.PersonLdapRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.query.LdapQueryBuilder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -21,28 +21,35 @@ public class LdapPersonService {
     private LdapProperties ldapProperties;
 
     @Resource
-    private LdapTemplate ldapTemplate;
-
-    @Resource
     private PersonLdapRepository personLdapRepository;
 
     @Resource
     private PersonLdapLightRepository personLdapLightRepository;
 
     public List<PersonLdap> search(String searchString) {
-        return personLdapRepository.findByDisplayNameStartingWithIgnoreCaseOrCnStartingWithIgnoreCaseOrUidStartingWithOrMailStartingWith(searchString, searchString, searchString, searchString);
+        String formattedFilter = MessageFormat.format(ldapProperties.getUsersSearchFilter(), (Object[]) new String[] { searchString });
+        return (List<PersonLdap>) personLdapRepository.findAll(LdapQueryBuilder.query().countLimit(10).base(ldapProperties.getSearchBase()).filter(formattedFilter));
     }
 
     public List<PersonLdapLight> searchLight(String searchString) {
-        return personLdapLightRepository.fullTextSearch(searchString);
+        String formattedFilter = MessageFormat.format(ldapProperties.getUsersSearchFilter(), (Object[]) new String[] { searchString });
+        return (List<PersonLdapLight>) personLdapLightRepository.findAll(LdapQueryBuilder.query().countLimit(10).base(ldapProperties.getSearchBase()).filter(formattedFilter));
     }
-    public PersonLdapRepository getPersonLdapRepository() {
-		return personLdapRepository;
-	}
 
-    public List<PersonLdap> getPersonLdap(String authName) {
+    public List<PersonLdapLight> getPersonLdapLight(String authName) {
         String formattedFilter = MessageFormat.format(ldapProperties.getUserIdSearchFilter(), (Object[]) new String[] { authName });
-        return ldapTemplate.search(ldapProperties.getSearchBase(), formattedFilter, new PersonLdapAttributesMapper());
+        return (List<PersonLdapLight>) personLdapLightRepository.findAll(LdapQueryBuilder.query().countLimit(10).base(ldapProperties.getSearchBase()).filter(formattedFilter));
     }
 
+    public List<PersonLdapLight> getPersonLdapLightByEppn(String eppn) {
+        return personLdapLightRepository.findByEduPersonPrincipalName(eppn);
+    }
+
+    public List<PersonLdap> getPersonLdapByEppn(String eppn) {
+        return personLdapRepository.findByEduPersonPrincipalName(eppn);
+    }
+
+    public List<PersonLdap> getPersonLdapByMail(String mail) {
+        return personLdapRepository.findByMail(mail);
+    }
 }

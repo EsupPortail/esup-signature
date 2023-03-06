@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.config.ldap;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,6 +13,10 @@ public class LdapProperties {
      * Base de recherche des utilisateurs, ex : ou=people
      */
     private String searchBase;
+    /**
+     * Filtre de recherche des utilisateurs
+     */
+    private String usersSearchFilter = "(&(|(displayName={0}*)(cn={0}*)(uid={0})(mail={0}*))(mail=*))";
     /**
      * Base de recherche des groupes, ex : ou=groups
      */
@@ -33,9 +38,20 @@ public class LdapProperties {
      */
     private String memberSearchFilter;
     /**
-     * Le champ dans lequel on trouve le login des utilisateurs, ex : (uid={0})
+     * Le champ dans lequel on trouve le login des utilisateurs récupéré au moment de l’authentification, ex : (uid={0})
      */
     private String userIdSearchFilter;
+    /**
+     * Le champ dans lequel on trouve la partie gauche de l’EPPN (par défaut = userIdSearchFilter
+     */
+    private String eppnLeftPartSearchFilter;
+
+    @PostConstruct
+    private void initEppnLeftPartSearchFilter() {
+        if(eppnLeftPartSearchFilter == null) {
+            eppnLeftPartSearchFilter = userIdSearchFilter;
+        }
+    }
 
     private Map<String, String> mappingFiltersGroups = new HashMap<>();
 
@@ -45,6 +61,14 @@ public class LdapProperties {
 
     public void setSearchBase(String searchBase) {
         this.searchBase = searchBase;
+    }
+
+    public String getUsersSearchFilter() {
+        return usersSearchFilter;
+    }
+
+    public void setUsersSearchFilter(String usersSearchFilter) {
+        this.usersSearchFilter = usersSearchFilter;
     }
 
     public String getGroupSearchBase() {
@@ -101,5 +125,13 @@ public class LdapProperties {
 
     public void setMappingFiltersGroups(Map<String, String> mappingFiltersGroups) {
         this.mappingFiltersGroups = mappingFiltersGroups;
+    }
+
+    public String getEppnLeftPartSearchFilter() {
+        return eppnLeftPartSearchFilter;
+    }
+
+    public void setEppnLeftPartSearchFilter(String eppnLeftPartSearchFilter) {
+        this.eppnLeftPartSearchFilter = eppnLeftPartSearchFilter;
     }
 }

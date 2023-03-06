@@ -244,9 +244,9 @@ export class ListSignBooksUi {
 
     buildUrlFilter() {
         let currentParams = new URLSearchParams(window.location.search);
-        let filters = $('.sign-request-filter');
+        let filters = $('select.sign-request-filter');
         for (let i = 0 ; i < filters.length ; i++) {
-            currentParams.set(filters.eq(i).attr('name'), filters.eq(i).val());
+            currentParams.set(filters.eq(i).attr('id'), filters.eq(i).val());
         }
         document.location.href = "/" + this.mode + "/signbooks?" + currentParams.toString();
     }

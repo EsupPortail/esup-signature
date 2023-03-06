@@ -10,6 +10,7 @@
         <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
                 <li class="breadcrumb-item active">Certificats</li>
             </ol>
         </nav>
@@ -118,7 +119,7 @@
                             </div>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="roleNames" class="col-form-label">Nom du role autorisé à accéder au formulaire</label>
+                            <label for="roleNames" class="col-form-label">Nom du role autorisé utiliser ce certificat</label>
                             <select id="roleNames" class="form-select" type="text" name="roleNames" multiple>
                                 <th:block th:each="newRole : ${roles}">
                                     <option th:text="${newRole}" th:value="${newRole}"></option>

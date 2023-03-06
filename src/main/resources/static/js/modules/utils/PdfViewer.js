@@ -4,7 +4,7 @@ import {DataField} from "../../prototypes/DataField.js?version=@version@";
 
 export class PdfViewer extends EventFactory {
 
-    constructor(url, signable, editable, currentStepNumber, currentStepId, forcePageNum, fields, disableAllFields) {
+    constructor(url, signable, editable, currentStepNumber, forcePageNum, fields, disableAllFields) {
         super();
         console.info("Starting PDF Viewer, signable : " + signable);
         this.url= url;
@@ -12,7 +12,6 @@ export class PdfViewer extends EventFactory {
         this.signable = signable;
         this.editable = editable;
         this.currentStepNumber = currentStepNumber;
-        this.currentStepId = currentStepId;
         this.saveScrolling = 0;
         this.pageNum = 1;
         if(forcePageNum != null) {
@@ -220,25 +219,25 @@ export class PdfViewer extends EventFactory {
     renderTask(page, container, i) {
         console.info("launch render task scaled to : " + this.scale);
         this.page = page;
+        let self = this;
         let scale = this.scale;
-        localStorage.setItem('scale', scale.toPrecision(2) + "");
-        let rotation = this.rotation;
-        let viewport = page.getViewport({scale, rotation});
+        localStorage.setItem('scale', this.scale.toPrecision(2) + "");
+        let viewport = page.getViewport({scale : this.scale, rotation : this.rotation});
         let dispatchToDOM = false;
         let globalEventBus = new EventBus({ dispatchToDOM });
         let pdfPageView = new pdfjsViewer.PDFPageView({
             eventBus: globalEventBus,
             container: container,
             id: this.pageNum,
+            scale: this.scale,
+            rotation: this.rotation,
             defaultViewport: viewport,
-            annotationLayerFactory:
-                new pdfjsViewer.DefaultAnnotationLayerFactory(),
-            renderInteractiveForms: true
+            useOnlyCssZoom: false,
+            defaultZoomDelay: 0,
+            textLayerMode: 0,
+            renderer: "canvas",
         });
-        pdfPageView.scale = this.scale;
-        pdfPageView.rotation = this.rotation;
         pdfPageView.setPdfPage(page);
-        let self = this;
         pdfPageView.eventBus.on("annotationlayerrendered", function() {
             $(".annotationLayer").each(function() {
                 $(this).addClass("d-none");
@@ -527,6 +526,7 @@ export class PdfViewer extends EventFactory {
                         inputField.attr("checked", "checked");
                         inputField.prop("checked", true);
                     }
+                    inputField.on('click', e => this.fireEvent('change', ['checked']));
                 }
                 if (dataField.type === "date") {
                     datePickerIndex--;

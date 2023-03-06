@@ -203,7 +203,7 @@ public class UserService {
             return user;
         }
         if (ldapPersonService != null) {
-            List<PersonLdap> personLdaps = ldapPersonService.getPersonLdapRepository().findByEduPersonPrincipalName(eppn);
+            List<PersonLdap> personLdaps = ldapPersonService.getPersonLdapByEppn(eppn);
             if (personLdaps.size() > 0) {
                 String name = personLdaps.get(0).getSn();
                 String firstName = personLdaps.get(0).getGivenName();
@@ -220,7 +220,7 @@ public class UserService {
     @Transactional
     public User createUserWithEmail(String mail) {
         if (ldapPersonService != null) {
-            List<PersonLdap> personLdaps = ldapPersonService.getPersonLdapRepository().findByMail(mail);
+            List<PersonLdap> personLdaps = ldapPersonService.getPersonLdapByMail(mail);
             if (personLdaps.size() > 0) {
                 String eppn = personLdaps.get(0).getEduPersonPrincipalName();
                 if (eppn == null) {
@@ -248,7 +248,7 @@ public class UserService {
     }
 
     @Transactional
-    public void createUserWithAuthentication(Authentication authentication) {
+    public User createUserWithAuthentication(Authentication authentication) {
         String authName;
         if (authentication.getName().contains("@")) {
             authName = authentication.getName().substring(0, authentication.getName().indexOf("@"));
@@ -256,7 +256,7 @@ public class UserService {
             authName = authentication.getName();
         }
         logger.info("user control for " + authName);
-        List<PersonLdap> personLdaps =  Objects.requireNonNull(ldapPersonService).getPersonLdap(authName);
+        List<PersonLdapLight> personLdaps =  Objects.requireNonNull(ldapPersonService).getPersonLdapLight(authName);
         String eppn = personLdaps.get(0).getEduPersonPrincipalName();
         if (eppn == null) {
             eppn = buildEppn(authName);
@@ -264,7 +264,7 @@ public class UserService {
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
         String firstName = personLdaps.get(0).getGivenName();
-        createUser(eppn, name, firstName, mail, UserType.ldap, true);
+        return createUser(eppn, name, firstName, mail, UserType.ldap, true);
     }
 
     @Transactional
@@ -462,17 +462,25 @@ public class UserService {
         return personLdap;
     }
 
+    public PersonLdapLight findPersonLdapLightByUser(User user) {
+        PersonLdapLight personLdap = null;
+        if (ldapPersonService != null) {
+            List<PersonLdapLight> personLdaps =  ldapPersonService.getPersonLdapLightByEppn(user.getEppn());
+            if (personLdaps.size() > 0) {
+                personLdap = personLdaps.get(0);
+            }
+        } else {
+            personLdap = getPersonLdapLightFromUser(user);
+        }
+        return personLdap;
+    }
+
     public PersonLdap findPersonLdapByUser(User user) {
         PersonLdap personLdap = null;
         if (ldapPersonService != null) {
-            List<PersonLdap> personLdaps =  ldapPersonService.getPersonLdapRepository().findByEduPersonPrincipalName(user.getEppn());
+            List<PersonLdap> personLdaps =  ldapPersonService.getPersonLdapByEppn(user.getEppn());
             if (personLdaps.size() > 0) {
                 personLdap = personLdaps.get(0);
-            } else {
-                personLdaps =  ldapPersonService.getPersonLdap(user.getEppn().split("@")[0]);
-                if (personLdaps.size() > 0) {
-                    personLdap = personLdaps.get(0);
-                }
             }
         } else {
             personLdap = getPersonLdapFromUser(user);
@@ -762,7 +770,7 @@ public class UserService {
     public String tryGetEppnFromLdap(Authentication auth) {
         String eppn = auth.getName();
         if(ldapPersonService != null) {
-            List<PersonLdap> personLdaps = ldapPersonService.getPersonLdap(auth.getName());
+            List<PersonLdapLight> personLdaps = ldapPersonService.getPersonLdapLight(auth.getName());
             if(personLdaps.size() > 0) {
                 eppn = personLdaps.get(0).getEduPersonPrincipalName();
                 if (eppn == null) {

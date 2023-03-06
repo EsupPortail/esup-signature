@@ -30,22 +30,22 @@ public class SpelGroupService implements GroupService {
 	}
 
 	@Override
-	public List<String> getGroups(String eppn) {
-
-		if(!eppn.contains("@")) {
-			eppn = eppn + "@" + globalProperties.getDomain();
+	public List<String> getGroups(String userName) {
+		String eppn;
+		if(!userName.contains("@")) {
+			eppn = userName + "@" + globalProperties.getDomain();
+		} else {
+			eppn = userName;
 		}
 		List<String> groups = new ArrayList<>();
-
 		for(String groupName: groups4eppnSpel.keySet()) {
 			String expression = groups4eppnSpel.get(groupName);
 			ExpressionParser parser = new SpelExpressionParser();
 			Expression exp = parser.parseExpression(expression);
 			EvaluationContext context = new StandardEvaluationContext();
 			context.setVariable("eppn", eppn);
-			
 			Boolean value = (Boolean) exp.getValue(context);
-			if(value) {
+			if(Boolean.TRUE.equals(value)) {
 				groups.add(groupName);
 			}
 		}		

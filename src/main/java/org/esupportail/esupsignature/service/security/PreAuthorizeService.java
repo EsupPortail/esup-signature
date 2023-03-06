@@ -156,7 +156,7 @@ public class PreAuthorizeService {
         if(userEppn != null) {
             Form form = formService.getById(id);
             User manager = userService.getByEppn(userEppn);
-            return CollectionUtils.containsAny(manager.getManagersRoles(), form.getRoles());
+            return form.getManagerRole() != null && manager.getManagersRoles().contains(form.getManagerRole());
         }
         return false;
     }

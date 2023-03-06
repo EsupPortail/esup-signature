@@ -11,8 +11,10 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav th:replace="fragments/sides/side-manager :: side-manager"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
                 <li class="breadcrumb-item active" th:text="'Modifier le formulaire : ' + ${form.name}"></li>
             </ol>
@@ -39,37 +41,34 @@
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <h3>FORM ID : <input type="text" readonly disabled th:value="${form.id}"></h3>
-                    <form id="formUpdateModel" th:action="'/admin/forms/update-model/' + ${form.id} + '/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
-                        <div class="form-group mb-3" th:if="${form.document != null}">
-                            Modele actuel : <a th:href="'/admin/forms/get-file/' + ${form.id}" target="_blank">
-                            <span th:text="${form.document.fileName}"></span></a>
-                        </div>
-                        <div class="form-group mb-3">
-                            <div class="custom-file">
-                                <input id="multipartModel" type="file" accept="application/pdf"
-                                       class="form-control" name="multipartModel" value="Choose a file"
-                                       aria-describedby="multipartModel"/>
-                                <label for="multipartModel" class="custom-file-label"> Choisir un nouveau modèle au format PDF</label>
+                    <div class="alert alert-dark bg-white mb-2">
+                        <p><strong>Modification du modèle </strong>(<span th:if="${form.document != null}">Modele actuel : <a th:href="'/admin/forms/get-file/' + ${form.id}" target="_blank"><span th:text="${form.document.fileName}"></span></a></span>)</p>
+                        <form id="formUpdateModel" th:action="'/admin/forms/update-model/' + ${form.id} + '/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
+                            <div class="form-group mb-3">
+                                <div class="custom-file">
+                                    <label for="multipartModel" class="custom-file-label"> Choisir un nouveau modèle au format PDF</label>
+                                    <input id="multipartModel" type="file" accept="application/pdf" class="form-control" name="multipartModel" value="Choose a file" aria-describedby="multipartModel"/>
+                                </div>
                             </div>
-                        </div>
-                        <button id="submitModel" type="submit" class="btn btn-success d-none">Modifier le modèle</button>
-                    </form>
+                            <button id="submitModel" type="submit" class="btn btn-success">Modifier le modèle</button>
+                        </form>
+                    </div>
                     <form id="formUpdate" th:action="'/admin/forms'" th:object="${form}" th:method="'put'">
                         <input type="hidden" th:field="*{id}">
                         <div class="form-group mb-3">
-                            <label for="title">Titre (affiché aux utilisateurs)</label>
+                            <label for="title"><strong>Titre (affiché aux utilisateurs)</strong></label>
                             <input id="title" class="form-control" type="text" th:field="*{title}"/>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="name">Nom (nom technique sans espace ni accents)</label>
+                            <label for="name"><strong>Nom (nom technique sans espace ni accents)</strong></label>
                             <input id="name" class="form-control" type="text" th:field="*{name}"/>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="description">Description</label>
+                            <label for="description"><strong>Description</strong></label>
                             <input id="description" class="form-control" type="text" th:field="*{description}"/>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="message">Message d'accueil</label>
+                            <label for="message"><strong>Message d’accueil</strong></label>
                             <textarea id="message" class="summer-note"   th:field="*{message}"></textarea>
                         </div>
                         <div class="form-group mb-3">
@@ -83,21 +82,19 @@
                         </div>
                         <div class="form-group mb-3">
                             <label><strong>Autorisations</strong></label>
-                            <div class="form-check">
+                            <div class="form-check mb-2">
                                 <input id="publicUsage" type="checkbox" class="form-check-input" th:field="*{publicUsage}"/>
                                 <label for="publicUsage">Visibilité publique ?</label>
                             </div>
-                            <label for="roles">
-                                Rôle
-                            </label>
-                            <select id="roles" class="slim-select-simple" type="text" th:field="*{roles}" multiple>
+                            <label for="roles" class="form-check-label">Diffusion du workflow pour les rôles</label>
+                            <select id="roles" class="slim-select-filter" type="text" th:field="*{roles}" data-placeholder="Choisir des roles" multiple>
                                 <th:block th:each="newRole : ${roles}">
                                     <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(form.roles, newRole)}"></option>
                                 </th:block>
                             </select>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="workflowType">Circuit associé au formulaire</label>
+                            <label for="workflowType"><strong>Circuit associé au formulaire</strong></label>
                             <select class="slim-select-simple" id="workflowType" th:field="*{workflow}">
                                 <option value="">-- dissocier d'un circuit --</option>
                                 <th:block th:each="workflowType : ${workflowTypes}">
@@ -107,7 +104,7 @@
                             </select>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="workflowType" class="col-form-label">Type de pré-remplissage</label>
+                            <label for="workflowType" class="col-form-label"><strong>Type de pré-remplissage</strong></label>
                             <select class="slim-select-simple" id="prefillType" th:field="*{preFillType}">
                                 <option value="">Pas de pré-remplissage</option>
                                 <th:block th:each="preFillType : ${preFillTypes}">
@@ -169,8 +166,12 @@
                                 <label for="multipartFormSetup" class="custom-file-label"> Choisir un fichier de configuration au format JSON</label>
                             </div>
                         </div>
-                        <button id="submitFormSetup" type="submit" class="btn btn-primary">Charger la configuration</button>
+                        <button id="submitFormSetup" type="submit" class="btn btn-primary">Importer la configuration</button>
+                        <a class="btn btn-primary" title="Exporter" role="button"
+                           th:href="'/admin/forms/export/' + ${form.id}">Exporter la configuration
+                        </a>
                     </form>
+
                 </div>
             </div>
         </div>
