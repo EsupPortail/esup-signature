@@ -1265,7 +1265,6 @@ public class SignBookService {
     }
 
     public void refuseSignBook(SignBook signBook, String comment, String userEppn, String authUserEppn) throws EsupSignatureMailException {
-        mailService.sendRefusedMail(signBook, comment, userEppn);
         for(SignRequest signRequest : signBook.getSignRequests()) {
             commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, "#FF7EB9", userEppn);
         }
@@ -1287,6 +1286,7 @@ public class SignBookService {
             data.setStatus(SignRequestStatus.refused);
         }
         signBook.setEndDate(new Date());
+        mailService.sendRefusedMail(signBook, comment, userEppn);
     }
 
     @Transactional
