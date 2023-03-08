@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
 import org.esupportail.esupsignature.service.security.otp.Otp;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -197,40 +198,48 @@ public class MailService {
             addInLineImages(mimeMessage, htmlContent);
             mimeMessage.setSubject("Une demande signature que vous suivez est terminée");
             mimeMessage.setFrom(mailConfig.getMailFrom());
-            List<User> viewersArray = new ArrayList<>(signBook.getViewers());
-            if(signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().getSendAlertToAllRecipients() != null && signBook.getLiveWorkflow().getWorkflow().getSendAlertToAllRecipients()) {
-                List<LiveWorkflowStep> liveWorkflowSteps = signBook.getLiveWorkflow().getLiveWorkflowSteps();
-                for (LiveWorkflowStep liveWorkflowStep : liveWorkflowSteps) {
-                    List<Recipient> recipients = liveWorkflowStep.getRecipients();
-                    for (Recipient recipient : recipients) {
-                        User user1 = userService.getById(recipient.getUser().getId());
-                        if (!viewersArray.contains(user1)) {
-                            viewersArray.add(user1);
-                        }
-                    }
+            List<User> viewersArray = getViewers(signBook);
+            if (viewersArray.size() > 0) {
+                String[] to = new String[viewersArray.size()];
+                int i = 0;
+                for (User userTo : viewersArray) {
+                    to[i] = userTo.getEmail();
+                    i++;
                 }
-            }
-            if(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() > 0) {
-                viewersArray.remove(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() - 1).getRecipients().stream().filter(Recipient::getSigned).map(Recipient::getUser).findAny().get());
-                if (viewersArray.size() > 0) {
-                    String[] to = new String[viewersArray.size()];
-                    int i = 0;
-                    for (User userTo : viewersArray) {
-                        to[i] = userTo.getEmail();
-                        i++;
-                    }
-                    mimeMessage.setTo(to);
-                    logger.info("send email completes cc for " + user.getEppn());
-                    if (mailSender != null) {
-                        mailSender.send(mimeMessage.getMimeMessage());
-                    }
-                } else {
-                    logger.debug("no viewers to send mail");
+                mimeMessage.setTo(to);
+                logger.info("send email completes cc for " + user.getEppn());
+                if (mailSender != null) {
+                    mailSender.send(mimeMessage.getMimeMessage());
                 }
+            } else {
+                logger.debug("no viewers to send mail");
             }
         } catch (MailSendException | MessagingException e) {
             logger.error("unable to send email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
+        }
+    }
+
+    @NotNull
+    private List<User> getViewers(SignBook signBook) {
+        List<User> viewersArray = new ArrayList<>(signBook.getViewers());
+        if(signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().getSendAlertToAllRecipients() != null && signBook.getLiveWorkflow().getWorkflow().getSendAlertToAllRecipients()) {
+            List<LiveWorkflowStep> liveWorkflowSteps = signBook.getLiveWorkflow().getLiveWorkflowSteps();
+            for (LiveWorkflowStep liveWorkflowStep : liveWorkflowSteps) {
+                List<Recipient> recipients = liveWorkflowStep.getRecipients();
+                for (Recipient recipient : recipients) {
+                    User user1 = userService.getById(recipient.getUser().getId());
+                    if (!viewersArray.contains(user1)) {
+                        viewersArray.add(user1);
+                    }
+                }
+            }
+        }
+        if(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() > 0) {
+            viewersArray.remove(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() - 1).getRecipients().stream().filter(Recipient::getSigned).map(Recipient::getUser).findAny().get());
+            return viewersArray;
+        } else {
+            return new ArrayList<>();
         }
     }
 
@@ -264,7 +273,7 @@ public class MailService {
             mimeMessage.setTo(toEmails.toArray(String[]::new));
             String[] viewersArray = new String[signBook.getViewers().size()];
             for (int i = 0 ;  i < signBook.getViewers().size() ; i++) {
-                viewersArray[i] =  signBook.getViewers().stream().toList().get(i).getEmail();
+                viewersArray[i] = new ArrayList<>(signBook.getViewers()).get(i).getEmail();
             }
             mimeMessage.setCc(viewersArray);
             logger.info("send email refused to : " + StringUtils.join(toEmails.toArray(String[]::new), ";"));
@@ -301,6 +310,50 @@ public class MailService {
 //            mailSender.send(signMessage(mimeMessage.getMimeMessage()));
             mailSender.send(mimeMessage.getMimeMessage());
             signRequest.setLastNotifDate(new Date());
+        } catch (Exception e) {
+            logger.error("unable to send ALERT email", e);
+            throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
+        }
+
+    }
+
+    public void sendSignRequestAlertCC(SignRequest signRequest) throws EsupSignatureMailException {
+        if (!checkMailSender()) {
+            return;
+        }
+        final Context ctx = new Context(Locale.FRENCH);
+
+        PersonLdap personLdap = userService.findPersonLdapByUser(signRequest.getCreateBy());
+        if(personLdap != null) {
+            OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
+            ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
+        }
+        ctx.setVariable("signRequest", signRequest);
+        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("userService", userService);
+        setTemplate(ctx);
+        try {
+            MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
+            String htmlContent = templateEngine.process("mail/email-cc.html", ctx);
+            addInLineImages(mimeMessage, htmlContent);
+            mimeMessage.setSubject("Vous êtes en copie d'une demande de signature crée par " + signRequest.getCreateBy().getFirstname() + " " + signRequest.getCreateBy().getName());
+            mimeMessage.setFrom(mailConfig.getMailFrom());
+            List<User> viewersArray = new ArrayList<>(signRequest.getParentSignBook().getViewers());
+            if (viewersArray.size() > 0) {
+                String[] to = new String[viewersArray.size()];
+                int i = 0;
+                for (User userTo : viewersArray) {
+                    to[i] = userTo.getEmail();
+                    i++;
+                }
+                mimeMessage.setTo(to);
+                logger.info("send email completes cc for " + to);
+                if (mailSender != null) {
+                    mailSender.send(mimeMessage.getMimeMessage());
+                }
+            } else {
+                logger.debug("no viewers to send mail");
+            }
         } catch (Exception e) {
             logger.error("unable to send ALERT email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);

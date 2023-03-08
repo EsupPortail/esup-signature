@@ -299,7 +299,7 @@ public class UserService {
                 }
             }
         }
-        if(userType.equals(UserType.shib) && globalProperties.getShibUsersDomainWhiteList() != null && globalProperties.getShibUsersDomainWhiteList().size() > 0 && globalProperties.getShibUsersDomainWhiteList().contains(user.getEppn().split("@")[1])) {
+        if(userType.equals(UserType.shib) && globalProperties.getShibUsersDomainWhiteList() != null && globalProperties.getShibUsersDomainWhiteList().size() > 0 && !globalProperties.getShibUsersDomainWhiteList().contains(user.getEppn().split("@")[1])) {
             user.getRoles().remove("ROLE_USER");
             user.getRoles().add("ROLE_OTP");
         }
@@ -320,7 +320,6 @@ public class UserService {
                 signRequestParamsRepository.save(signRequestParams);
                 authUser.setFavoriteSignRequestParams(signRequestParams);
             } else {
-                //affectation
                 authUser.getFavoriteSignRequestParams().setAddExtra(signRequestParams.getAddExtra());
                 authUser.getFavoriteSignRequestParams().setAddWatermark(signRequestParams.getAddWatermark());
                 authUser.getFavoriteSignRequestParams().setExtraType(signRequestParams.getExtraType());
