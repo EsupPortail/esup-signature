@@ -25,6 +25,12 @@
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li>
+                        <a type="button" data-bs-toggle="modal" data-bs-target="#searchModal"
+                           class="btn-floating btn-lg bg-primary wave-effect">
+                            <i class="fas fa-search"></i>
+                        </a>
+                    </li>
+                    <li>
                         <a type="button" id="deleteMultipleButton"
                            class="btn-floating btn-lg bg-danger wave-effect d-none">
                             <i class="fas fa-trash-alt"></i>
@@ -177,6 +183,29 @@
                     Lancer la signature en masse <i class="fas fa-arrow-alt-circle-right"></i>
                 </button>
             </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rechercher une demande</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+            </div>
+            <form action="/admin/signbooks/search">
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="basic-addon1">Identifiant</span>
+                    <input type="text" class="form-control" name="id" aria-describedby="basic-addon1">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="submit" class="btn btn-primary" >Rechercher</button>
+            </div>
+            </form>
         </div>
     </div>
 </div>
