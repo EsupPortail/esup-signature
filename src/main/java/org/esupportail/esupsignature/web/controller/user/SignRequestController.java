@@ -97,7 +97,7 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
-    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureException {
+    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
         SignRequest signRequest = signBookService.getSignRequestsFullById(id, userEppn, authUserEppn);
         boolean displayNotif = false;
         if (signRequest.getLastNotifDate() == null && Duration.between(signRequest.getCreateDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()) {
@@ -200,7 +200,7 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
     @PostMapping(value = "/refuse/{id}")
-    public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, @RequestParam(value = "redirect") String redirect, RedirectAttributes redirectAttributes) throws EsupSignatureMailException, EsupSignatureException {
+    public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, @RequestParam(value = "redirect") String redirect, RedirectAttributes redirectAttributes) throws EsupSignatureMailException, EsupSignatureRuntimeException {
         signBookService.refuse(id, comment, userEppn, authUserEppn);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
         if(redirect.equals("end")) {
@@ -321,9 +321,10 @@ public class SignRequestController {
                           @RequestParam(value = "names", required = false) List<String> names,
                           @RequestParam(value = "firstnames", required = false) List<String> firstnames,
                           @RequestParam(value = "phones", required = false) List<String> phones,
+                          @RequestParam(value = "forcesmses", required = false) List<String> forcesmses,
                           @RequestParam(value = "draft", required = false) Boolean draft,
-                          RedirectAttributes redirectAttributes) throws MessagingException, EsupSignatureException, EsupSignatureFsException {
-        List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
+                          RedirectAttributes redirectAttributes) throws MessagingException, EsupSignatureRuntimeException {
+        List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones, forcesmses);
         if(signRequestService.checkTempUsers(id, recipientEmails, externalUsersInfos)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
             return "redirect:/user/signrequests/" + id;
@@ -334,7 +335,7 @@ public class SignRequestController {
                 signRequestService.addPostit(id, comment, userEppn, authUserEppn);
             }
             redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été transmise"));
-        } catch (EsupSignatureException e) {
+        } catch (EsupSignatureRuntimeException e) {
             logger.error(e.getMessage(), e);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
         }
@@ -346,11 +347,23 @@ public class SignRequestController {
     public String addRecipients(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                 @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
                                 @RequestParam(name = "signType") SignType signType,
-                                @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureException {
+                                @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureRuntimeException {
         signBookService.addStep(id, recipientsEmails, signType, allSignToComplete, authUserEppn);
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @PostMapping(value = "/transfert/{id}")
+    public String transfer(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+                                @RequestParam(value = "transfertRecipientsEmails") List<String> transfertRecipientsEmails, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
+        try {
+            signBookService.transfertSignRequest(id, authUserEppn, transfertRecipientsEmails.get(0));
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Demande transférée"));
+        } catch (EsupSignatureRuntimeException e) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande non transférée"));
+        }
+        return "redirect:/user/signrequests/" + id;
+    }
 
     @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #userEppn)")
     @PostMapping(value = "/comment/{id}")

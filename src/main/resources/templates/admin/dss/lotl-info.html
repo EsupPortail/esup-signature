@@ -8,12 +8,14 @@
         <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item active">DSS List Of Trusted Lists</li>
+                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
+                <li class="breadcrumb-item active"><a href="/admin/dss">Statut DSS</a></li>
+                <li class="breadcrumb-item active">Liste des listes d’approbation</li>
             </ol>
         </nav>
         <div id="content" class="content">
             <div class="p-2">
-                <p th:if="${lotlInfo == null}">No info found for this LOTL</p>
+                <p th:if="${lotlInfo == null}">Aucune info trouvée pour ce LOTL</p>
                 <div th:if="${lotlInfo != null}">
                     <div class="lotl"
                          th:with="downloadResult=${lotlInfo.downloadCacheInfo}, parsingResult=${lotlInfo.parsingCacheInfo}, validationResult=${lotlInfo.validationCacheInfo}">

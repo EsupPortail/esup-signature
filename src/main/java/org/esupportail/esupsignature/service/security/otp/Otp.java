@@ -11,6 +11,7 @@ public class Otp {
     private Data createDate;
     private boolean smsSended = false;
     private int tries = 0;
+    private boolean forceSms = false;
 
     public String getPhoneNumber() {
         return phoneNumber;
@@ -66,5 +67,13 @@ public class Otp {
 
     public void setTries(int tries) {
         this.tries = tries;
+    }
+
+    public boolean isForceSms() {
+        return forceSms;
+    }
+
+    public void setForceSms(boolean forceSms) {
+        this.forceSms = forceSms;
     }
 }

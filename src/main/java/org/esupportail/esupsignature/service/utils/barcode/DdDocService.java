@@ -13,7 +13,7 @@ import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.util.encoders.Hex;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
@@ -130,7 +130,7 @@ public class DdDocService {
         dsa.initVerify(pub);
         dsa.update(hash);
         if(!dsa.verify(signature)) {
-            throw new EsupSignatureException("2ddoc signature error, please check private key and certificate (/resources/2ddoc.key and /resources/2ddoc.cert)");
+            throw new EsupSignatureRuntimeException("2ddoc signature error, please check private key and certificate (/resources/2ddoc.key and /resources/2ddoc.cert)");
         }
 
         Base32 base32 = new Base32();

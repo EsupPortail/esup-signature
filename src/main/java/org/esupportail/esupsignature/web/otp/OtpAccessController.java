@@ -1,8 +1,9 @@
 package org.esupportail.esupsignature.web.otp;
 
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
@@ -43,6 +44,9 @@ public class OtpAccessController {
     private static final Logger logger = LoggerFactory.getLogger(OtpAccessController.class);
 
     @Resource
+    private GlobalProperties globalProperties;
+
+    @Resource
     private OtpService otpService;
 
     @Resource
@@ -63,28 +67,33 @@ public class OtpAccessController {
 //    }
 
     @GetMapping(value = "/{urlId}")
-    public String signin(@PathVariable String urlId, Model model) {
+    public String signin(@PathVariable String urlId, Model model, HttpServletRequest httpServletRequest) {
         model.addAttribute("urlId", urlId);
         Otp otp = otpService.getOtp(urlId);
         if(otp != null) {
             User user = userService.getUserByEmail(otp.getEmail());
-            if(!otp.isSmsSended() && smsService != null) {
-                if(user.getPhone() != null && !user.getPhone().isEmpty()) {
-                    Pattern pattern = Pattern.compile("^(\\d{2}[- .]?){5}$");
-                    Matcher matcher = pattern.matcher(user.getPhone());
-                    if(matcher.matches()) {
-                        String password = otpService.generateOtpPassword(urlId);
-                        logger.info("sending password by sms : " + password + " to " + otp.getPhoneNumber());
-                        try {
-                            smsService.sendSms(user.getPhone(), "Votre code de connexion esup-signature " + password);
-                        } catch(EsupSignatureException e) {
-                            logger.error(e.getMessage(), e);
+            if(globalProperties.getSmsRequired() || otp.isForceSms()) {
+                if (!otp.isSmsSended() && smsService != null) {
+                    if (user.getPhone() != null && !user.getPhone().isEmpty()) {
+                        Pattern pattern = Pattern.compile("^(\\d{2}[- .]?){5}$");
+                        Matcher matcher = pattern.matcher(user.getPhone());
+                        if (matcher.matches()) {
+                            String password = otpService.generateOtpPassword(urlId);
+                            logger.info("sending password by sms : " + password + " to " + otp.getPhoneNumber());
+                            try {
+                                smsService.sendSms(user.getPhone(), "Votre code de connexion esup-signature " + password);
+                            } catch (EsupSignatureRuntimeException e) {
+                                logger.error(e.getMessage(), e);
+                            }
+                            otp.setSmsSended(true);
+                            return "otp/signin";
                         }
-                        otp.setSmsSended(true);
-                        return "otp/signin";
                     }
+                    return "otp/enter-phonenumber";
                 }
-                return "otp/enter-phonenumber";
+            } else {
+                authOtp(model, httpServletRequest, user);
+                return "redirect:/otp/signrequests/" + otp.getSignRequestId();
             }
         } else {
             signRequestService.renewOtp(urlId);
@@ -113,7 +122,7 @@ public class OtpAccessController {
                         logger.info("sending password by sms : " + password + " to " + phone);
                         try {
                             smsService.sendSms(phone, "Votre code de connexion esup-signature " + password);
-                        } catch(EsupSignatureException e) {
+                        } catch(EsupSignatureRuntimeException e) {
                             logger.error(e.getMessage(), e);
                         }
                         otp.setPhoneNumber(phone);
@@ -146,15 +155,7 @@ public class OtpAccessController {
                 if(StringUtils.hasText(otp.getPhoneNumber())) {
                     userService.updatePhone(user.getEppn(), PhoneNumberUtil.normalizeDiallableCharsOnly(otp.getPhoneNumber()));
                 }
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(user.getEppn(), "");
-                Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
-                SecurityContext securityContext = SecurityContextHolder.getContext();
-                securityContext.setAuthentication(authentication);
-                userService.updateRoles(user.getEppn(), authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
-                HttpSession httpSession = httpServletRequest.getSession(true);
-                httpSession.setAttribute(SPRING_SECURITY_CONTEXT_KEY, securityContext);
-                model.addAttribute("user", user);
-                model.addAttribute("authUser", user);
+                authOtp(model, httpServletRequest, user);
                 return "redirect:/otp/signrequests/" + otp.getSignRequestId();
             } else {
                 model.addAttribute("result", "KO");
@@ -166,6 +167,17 @@ public class OtpAccessController {
         }
     }
 
+    private void authOtp(Model model, HttpServletRequest httpServletRequest, User user) {
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(user.getEppn(), "");
+        Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        securityContext.setAuthentication(authentication);
+        userService.updateRoles(user.getEppn(), authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
+        HttpSession httpSession = httpServletRequest.getSession(true);
+        httpSession.setAttribute(SPRING_SECURITY_CONTEXT_KEY, securityContext);
+        model.addAttribute("user", user);
+        model.addAttribute("authUser", user);
+    }
 
 
 }

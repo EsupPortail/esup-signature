@@ -11,8 +11,10 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav th:replace="fragments/sides/side-manager :: side-manager"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/workflows">Liste des circuits</a></li>
                 <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span></li>
             </ol>
@@ -29,7 +31,7 @@
                     <a class="nav-link active" href="#" onclick="return false;">Paramètres</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/admin/workflows/' + ${workflow.id}">Étapes</a>
+                    <a class="nav-link" th:href="'/admin/workflows/steps/' + ${workflow.id}">Étapes</a>
                 </li>
             </ul>
             <br>
@@ -41,11 +43,11 @@
                         <input type="hidden" th:field="*{id}">
                         <div class="form-group mb-3">
                             <label for="description"><strong>Titre</strong></label>
-                            <input class="form-control" type="text" th:field="*{description}" value="" autocomplete="on">
+                            <input id="description" class="form-control" type="text" th:field="*{description}" value="" autocomplete="on">
                         </div>
                         <div class="form-group mb-3">
                             <label for="title"><strong>Prefix</strong> (utilisé lors de l'import de documents dans le circuit)</label>
-                            <input class="form-control" type="text" th:field="*{title}" value="" autocomplete="on">
+                            <input id="title" class="form-control" type="text" th:field="*{title}" value="" autocomplete="on">
                         </div>
                         <div class="form-group mb-3">
                             <label>
@@ -89,19 +91,15 @@
                             <input id="ownerSystem" type="checkbox" class="form-check-input" th:field="*{ownerSystem}"/>
                             <label for="ownerSystem" class="form-check-label">Le compte système est propriétaire des demandes de ce circuit (les créateurs ne pourront pas supprimer les demandes)</label>
                         </div>
-                        <div class="form-check mb-2">
-                            <input id="publicUsage" type="checkbox" class="form-check-input" th:field="*{publicUsage}"/>
-                            <label for="publicUsage" class="form-check-label">Visibilité publique ?</label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <input id="visibility" type="checkbox" class="form-check-input" th:field="*{visibility}"/>
-                            <label for="visibility" class="form-check-label">Diffusion du workflow pour les rôles</label>
-                        </div>
-                        <div class="form-group mb-3">
-                              <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à
-                                ce formulaire</small></div>
-
-                            <select id="roles" class="slim-select-simple" type="text" th:field="*{roles}" multiple th:classappend="${!workflow.visibility} ? 'd-none' : ''">
+                        <div class="form-group mb-2">
+                            <label><strong>Autorisations</strong></label>
+                            <div class="form-check mb-2">
+                                <input id="publicUsage" type="checkbox" class="form-check-input" th:field="*{publicUsage}"/>
+                                <label for="publicUsage" class="form-check-label">Visibilité publique ?</label>
+                                <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à ce formulaire</small></div>
+                            </div>
+                            <label for="roles" class="form-check-label">Diffusion du workflow pour les rôles</label>
+                            <select id="roles" class="slim-select-filter" data-placeholder="Choisir des roles" type="text" th:field="*{roles}" multiple>
                                 <th:block th:each="newRole : ${roles}">
                                     <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(workflow.roles, newRole)}"></option>
                                 </th:block>
@@ -228,7 +226,11 @@
                                 <label for="multipartFormSetup" class="custom-file-label"> Choisir un fichier de configuration au format JSON</label>
                             </div>
                         </div>
-                        <button id="submitFormSetup" type="submit" class="btn btn-primary">Charger la configuration</button>
+                        <button id="submitFormSetup" type="submit" class="btn btn-primary">Importer le circuit</button>
+                        <a class="btn btn-primary" title="Exporter le circuit" role="button"
+                           th:href="'/admin/workflows/export/' + ${workflow.id}">
+                            Exporter le circuit
+                        </a>
                     </form>
                 </div>
             </div>
@@ -236,7 +238,7 @@
     </div>
 </main>
 
-<div class="modal fade" id="addTarget" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="addTarget" data-bs-focus="false" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form class="form-group mb-3" th:action="'/admin/workflows/add-target/' + ${workflow.id}" method="post">

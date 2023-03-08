@@ -6,9 +6,8 @@ import org.esupportail.esupsignature.entity.BigFile;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
@@ -100,13 +99,13 @@ public class DocumentService {
 	public String archiveDocument(Document signedFile, String path, String subPath, String name) throws EsupSignatureFsException {
 		try {
 			return exportDocument(fsAccessFactoryService.getPathIOType(path), path + subPath, signedFile, name);
-		} catch (EsupSignatureException e) {
+		} catch (EsupSignatureRuntimeException e) {
 			logger.error(e.getMessage());
 		}
 		return null;
 	}
 
-	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile, String name) throws EsupSignatureException, EsupSignatureFsException {
+	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile, String name) throws EsupSignatureRuntimeException, EsupSignatureFsException {
 		String documentUri;
 		FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(targetUrl);
 		if(fsAccessService != null) {
@@ -125,13 +124,13 @@ public class DocumentService {
 					documentUri = targetUrl + name;
 					return documentUri;
 				} else {
-					throw new EsupSignatureException("file is not exported");
+					throw new EsupSignatureRuntimeException("file is not exported");
 				}
 			} catch (EsupSignatureFsException e) {
-				throw new EsupSignatureException("write fsaccess error : ", e);
+				throw new EsupSignatureRuntimeException("write fsaccess error : ", e);
 			}
 		} else {
-			throw new EsupSignatureException("aucun fsService configuré");
+			throw new EsupSignatureRuntimeException("aucun fsService configuré");
 		}
 	}
 

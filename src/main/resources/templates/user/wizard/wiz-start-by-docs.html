@@ -45,13 +45,13 @@
             <label class="form-check-label">Forcer la signature de tous les documents</label>
         </div>
         <div>
-            <label class="form-label" for="commentWiz">Commentaire</label>
+            <label class="form-label" for="commentWiz">Commentaire (facultatif)</label>
             <textarea type="text" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."  onfocus="this.placeholder = ''" id="commentWiz" name="commentWiz" class="form-control"></textarea>
         </div>
     <div>
     <label class="form-label" th:for="'recipientsCCEmailsWiz' + ${workflow != null ? workflow.id : '0'}">Choisir les observateurs en copie</label>
     <div class="form-group mb-3">
-        <select class="select-users" data-es-check-cert="true" th:name="'recipientsCCEmailsWiz' + ${workflow != null ? workflow.id : '0'}" th:id="'recipientsCCEmailsWiz' + ${workflow != null ? workflow.id : '0'}" size="5" multiple="multiple">
+        <select class="select-users" data-es-check-cert="true" th:name="'recipientsCCEmailsWiz' + ${workflow != null ? workflow.id : '0'}" th:id="'recipientsCCEmailsWiz' + ${workflow != null ? workflow.id : '0'}" multiple="multiple">
             <option data-placeholder="true"></option>
             <th:block th:if="${workflow != null}">
             <th:block th:each="viewer : ${workflow.viewers}">

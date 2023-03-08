@@ -81,6 +81,7 @@ public class LiveWorkflowStepService {
                     recipientUser.setFirstname(jsonExternalUserInfo.getFirstname());
                     if(StringUtils.hasText(jsonExternalUserInfo.getPhone())) {
                         recipientUser.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(jsonExternalUserInfo.getPhone()));
+                        recipientUser.setForceSms(jsonExternalUserInfo.getForcesms() != null);
                     }
                 }
             }

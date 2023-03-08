@@ -8,7 +8,9 @@
         <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item active">DSS List Of Trusted Lists</li>
+                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
+                <li class="breadcrumb-item active"><a href="/admin/dss">Statut DSS</a></li>
+                <li class="breadcrumb-item active" th:text="#{${'label.country.code.'+ tlInfo.parsingCacheInfo.territory}}" ></li>
             </ol>
         </nav>
         <div id="content" class="content">
@@ -16,32 +18,27 @@
                 <p th:if="${tlInfo == null}">No data found for this country</p>
 
                 <div th:if="${tlInfo != null}" th:with="status=${tlInfo.validationCacheInfo == null or tlInfo.validationCacheInfo.invalid or not tlInfo.downloadCacheInfo.resultExist} ? 'danger' :
-					(${(tlInfo.parsingCacheInfo != null and tlInfo.parsingCacheInfo.nextUpdateDate != null and tlInfo.parsingCacheInfo.nextUpdateDate <= #dates.createNow())
+					(${(tlInfo.parsingCacheInfo != null and tlInfo.parsingCacheInfo.nextUpdateDate != null and tlInfo.parsingCacheInfo.nextUpdateDate <= #dates.createNow()) 
 					or (tlInfo.validationCacheInfo != null and tlInfo.validationCacheInfo.indeterminate)} ? 'warning' : 'success')"
                      th:class="${'card border-' + status}">
 
                     <div th:class="${'card-header clearfix bg-' + status}">
-					<span th:class="${'badge pull-right badge-' + status}"
-                          th:if="${tlInfo.parsingCacheInfo != null and tlInfo.parsingCacheInfo.trustServiceProviders != null}"
-                          th:text="${#lists.size(tlInfo.parsingCacheInfo.trustServiceProviders)}"
-                          title="Number of Trust Service Providers"></span>
-                        <th:block th:if="${tlInfo.parsingCacheInfo != null}"
-                                  th:with="country=${tlInfo.parsingCacheInfo.isResultExist()}?${tlInfo.parsingCacheInfo.territory}:'no_country'">
-                            <span th:class="'small_flag flag_' + ${country}"
-                                  th:title="${country != 'no_country'}?${tlInfo.parsingCacheInfo.territory}:'?'"></span>
-                            <span th:if="${country != 'no_country'}" th:text="#{${'label.country.code.'+country}}"
-                                  class="tl-card-country-name"></span>
+					<span th:class="${'badge pull-right badge-' + status}" th:if="${tlInfo.parsingCacheInfo != null and tlInfo.parsingCacheInfo.trustServiceProviders != null}"
+                          th:text="${#lists.size(tlInfo.parsingCacheInfo.trustServiceProviders)}" title="Number of Trust Service Providers"></span>
+                        <th:block th:if="${tlInfo.parsingCacheInfo != null}" th:with="country=${tlInfo.parsingCacheInfo.isResultExist()}?${tlInfo.parsingCacheInfo.territory}:'no_country'">
+                            <span th:class="'small_flag flag_' + ${country}" th:title="${country != 'no_country'}?${tlInfo.parsingCacheInfo.territory}:'?'"></span>
+                            <span th:if="${country != 'no_country'}" th:text="#{${'label.country.code.'+country}}" class="tl-card-country-name"></span>
+                            <a class="text-white" th:if="${tlInfo.parsingCacheInfo.TSLType != null}" th:text="'(' + (${tlInfo.parsingCacheInfo.TSLType.label != null ? tlInfo.parsingCacheInfo.TSLType.label : tlInfo.parsingCacheInfo.TSLType.uri}) + ')'" th:href="${tlInfo.parsingCacheInfo.TSLType.uri}" target="_blank"></a>
                         </th:block>
-                        <h3 th:if="${tlInfo.parsingCacheInfo == null}" class="card-title"
-                            th:text="Country Not Found"></h3>
+                        <h3 th:if="${tlInfo.parsingCacheInfo == null}" class="card-title" th:text="Country Not Found"></h3>
                     </div>
                     <div class="card-body">
                         <div class="dl-horizontal">
                             <!-- TL-Info body -->
-                            <div th:replace="fragments/tl-info :: tl-info-body-content(url=${tlInfo.url},
-								downloadResult=${tlInfo.downloadCacheInfo},
-								parsingResult=${tlInfo.parsingCacheInfo},
-								validationResult=${tlInfo.validationCacheInfo},
+                            <div th:replace="fragments/tl-info :: tl-info-body-content(url=${tlInfo.url}, 
+								downloadResult=${tlInfo.downloadCacheInfo}, 
+								parsingResult=${tlInfo.parsingCacheInfo}, 
+								validationResult=${tlInfo.validationCacheInfo}, 
 								potentialSigners=${tlInfo.validationCacheInfo.potentialSigners})"></div>
                         </div>
                         <div th:if="${tlInfo.parsingCacheInfo != null and not #lists.isEmpty(tlInfo.parsingCacheInfo.trustServiceProviders)}">
@@ -50,6 +47,7 @@
                                 <div th:replace="fragments/tl-info :: tl-tsp(serviceProvider=${serviceProvider}, sp=${sp})"></div>
                             </th:block>
                         </div>
+
                     </div>
                 </div>
             </div>

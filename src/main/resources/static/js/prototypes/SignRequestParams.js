@@ -3,7 +3,7 @@ import {Color} from "../modules/utils/Color.js?version=@version@";
 
 export class SignRequestParams extends EventFactory {
 
-    constructor(signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone, light, signImages, scrollTop) {
+    constructor(signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone, light, signImages, scrollTop, csrf, signType) {
         super();
         Object.assign(this, signRequestParamsModel);
         this.id = id;
@@ -46,10 +46,14 @@ export class SignRequestParams extends EventFactory {
         this.savedText = "";
         this.offset = 0;
         this.scrollTop = scrollTop;
+        this.csrf = csrf;
+        this.signType = signType;
         if(!light) {
             this.offset = ($("#page_" + this.signPageNumber).offset().top) + (10 * (parseInt(this.signPageNumber) - 1));
         }
-        if(light) {
+        if(signImages === -999999) {
+            this.initSpot();
+        } else if(light) {
             this.initLight();
         } else {
             this.signScale = 1;
@@ -59,7 +63,6 @@ export class SignRequestParams extends EventFactory {
             this.fontSize = 12;
             this.restoreExtra = false;
             this.addImage = true;
-
             if(restore) {
                 this.addExtra = false;
                 this.addWatermark = false;
@@ -113,6 +116,56 @@ export class SignRequestParams extends EventFactory {
         $("#extraText_" + this.id).on("click", e => this.toggleText());
     }
 
+    initSpot() {
+        console.log("init spot");
+        this.createCross();
+        this.madeCrossDraggable();
+        this.createBorder();
+        this.createTools();
+        this.updateSize();
+        this.toggleMinimalTools();
+        this.signWidth=200
+        this.signHeight=100;
+        this.cross.css('width', (this.signWidth * this.currentScale));
+        this.cross.css('height', (this.signHeight * this.currentScale));
+        this.cross.css('background-color', 'rgba(189, 255, 189, .5)');
+        this.cross.append("<p class='text-black'>Positionner le champ de signature et cliquer sur enregistrer</p>");
+        this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute bottom-0 end-0'><i class='fas fa-save'></i></button>");
+        $("#signDrop_999999").on("click", function (){
+            $("#addSpotButton").attr("disabled", false);
+            $("#addCommentButton").attr("disabled", false);
+        })
+        $("#submit-add-spot").on("click", function () {
+            $("#spot-modal").modal("show");
+        });
+        $('#saveSpotButton').on('click', e => this.saveSpot(e));
+    }
+
+    saveSpot() {
+        let spotStepNumber = $("#spotStepNumber").val();
+        if(spotStepNumber == null || spotStepNumber === "") {
+            alert("Merci de selectionner une étape");
+        } else {
+            let commentUrlParams = "comment=" + encodeURIComponent($("#spotComment").val()) +
+                "&commentPosX=" + Math.round(this.xPos) +
+                "&commentPosY=" + Math.round(this.yPos) +
+                "&commentPageNumber=" + this.signPageNumber +
+                "&spotStepNumber=" + spotStepNumber +
+                "&" + this.csrf.parameterName + "=" + this.csrf.token;
+            let url = "/user/signrequests/comment/" + $("#saveSpotButton").attr("data-es-signrequest-id") + "/?" + commentUrlParams;
+            if (this.signType === "form") {
+                url = "/admin/forms/add-spot/" + $("#saveSpotButton").attr("data-es-signrequest-id") + "/?" + commentUrlParams;
+            }
+            $.ajax({
+                method: 'POST',
+                url: url,
+                success: function () {
+                    document.location.reload();
+                }
+            });
+        }
+    }
+
     initLight() {
         this.cross = $("#cross");
         this.border = $("#borders");
@@ -145,28 +198,13 @@ export class SignRequestParams extends EventFactory {
     }
 
     init() {
-        let divName = "cross_" + this.id;
-        let div = "<div id='"+ divName +"' class='cross'></div>";
-        $("#pdf").prepend(div);
-        this.cross = $("#" + divName);
-        this.cross.css("position", "absolute");
-        this.cross.css("z-index", "5");
-        this.cross.attr("data-id", this.id);
+        this.createCross();
         let self = this;
         this.madeCrossDraggable();
         this.cross.resizable({
             aspectRatio: true,
             resize: function(event, ui) {
-                if(self.isVisa) {
-                    let newScale = self.getNewScale(self, ui);
-                    self.signWidth = self.signWidth / self.signScale * newScale;
-                    self.signHeight = self.signHeight / self.signScale * newScale;
-                    self.extraWidth = self.extraWidth / self.signScale * newScale;
-                    self.extraHeight = self.extraHeight / self.signScale * newScale;
-                    self.signScale = newScale
-                    self.refreshExtraDiv();
-                    self.updateSize();
-                } else if(self.textareaPart != null) {
+                if(self.textareaPart != null) {
                     self.signScale = self.getNewScale(self, ui);
                     self.resizeText();
                     self.signWidth = parseInt(self.textareaPart.css("width")) / self.currentScale;
@@ -216,17 +254,8 @@ export class SignRequestParams extends EventFactory {
                 }
             }
         });
-
-        let border = "<div id='border_" + this.id +"' class='static-border' style='width: 100%; height: 100%;'></div>"
-        this.cross.prepend(border);
-        this.border = $("#border_" + this.id);
-        this.border.css("pointer-events", "none");
-
-        let tools = this.getTools()
-        tools.removeClass("d-none");
-        this.cross.prepend(tools);
-        this.tools = tools;
-
+        this.createBorder();
+        this.createTools();
         this.extraWidth = 0;
         this.extraHeight = 0;
         this.moreTools = $("#moreTools_" + this.id);
@@ -286,15 +315,11 @@ export class SignRequestParams extends EventFactory {
             $("#signExtra_" + this.id).hide();
             this.toggleName();
             this.toggleType();
-            // $("#extraTools_" + this.id).addClass("d-none");
-            // $("#crossTools_" + this.id).css("top", "-45px");
             $("#extraType_" + this.id).addClass("d-none");
             $("#extraName_" + this.id).addClass("d-none");
-            // $("#extraText_" + this.id).addClass("d-none");
             this.savedText = this.userName + "\nP.O.\n" + this.authUserName;
             this.extraText = this.savedText;
             this.textareaExtra.val(this.savedText);
-            // this.toggleText();
             this.refreshExtraDiv();
             this.updateSize();
             this.textareaExtra.attr("readonly", true);
@@ -303,11 +328,40 @@ export class SignRequestParams extends EventFactory {
         if(this.isOtp){
             this.toggleExtra();
             this.toggleText()
-            $("#extraTypeDiv_" + this.id).html("<span>Signature OTP : " + this.phone + "<br></span>");
+            if(this.phone != null) {
+                $("#extraTypeDiv_" + this.id).html("<span>Signature OTP : " + this.phone + "<br></span>");
+            } else {
+                $("#extraTypeDiv_" + this.id).html("<span>Signature OTP<br></span>");
+            }
+
             $("#extraTools_" + this.id).remove();
             $("#crossTools_" + this.id).css("top", "-45px");
         }
         this.cross.attr("page", this.signPageNumber);
+    }
+
+    createCross() {
+        let divName = "cross_" + this.id;
+        let div = "<div id='" + divName + "' class='cross'></div>";
+        $("#pdf").prepend(div);
+        this.cross = $("#" + divName);
+        this.cross.css("position", "absolute");
+        this.cross.css("z-index", "5");
+        this.cross.attr("data-id", this.id);
+    }
+
+    createTools() {
+        let tools = this.getTools()
+        tools.removeClass("d-none");
+        this.cross.prepend(tools);
+        this.tools = tools;
+    }
+
+    createBorder() {
+        let border = "<div id='border_" + this.id + "' class='static-border' style='width: 100%; height: 100%;'></div>"
+        this.cross.prepend(border);
+        this.border = $("#border_" + this.id);
+        this.border.css("pointer-events", "none");
     }
 
     restoreUserParams() {

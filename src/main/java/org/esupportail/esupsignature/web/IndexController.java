@@ -23,7 +23,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
-import org.esupportail.esupsignature.service.ldap.PersonLdap;
+import org.esupportail.esupsignature.service.ldap.PersonLdapLight;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -112,7 +112,7 @@ public class IndexController {
 
 	@GetMapping("/login/**")
 	public String loginRedirection() {
-		return "redirect:/";
+		return "redirect:/user/";
 	}
 
 	@RequestMapping(value = "/denied/ws/**", method = {RequestMethod.GET, RequestMethod.POST})
@@ -155,7 +155,7 @@ public class IndexController {
 		User user = null;
 		if (auth != null && !auth.getName().equals("anonymousUser")) {
 			if(ldapPersonService != null) {
-				List<PersonLdap> personLdaps =  ldapPersonService.getPersonLdap(auth.getName());
+				List<PersonLdapLight> personLdaps =  ldapPersonService.getPersonLdapLight(auth.getName());
 				if(personLdaps.size() > 0) {
 					String eppn = personLdaps.get(0).getEduPersonPrincipalName();
 					if(eppn == null) {

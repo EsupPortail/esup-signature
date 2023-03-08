@@ -28,6 +28,7 @@ export class Nexu {
                     self.loadScript();
                 }
             }).catch(function(e){
+                console.info("nexu not detected on client");
                 if(currentSignType === 'nexuSign') {
                     $("#alertNexu").show();
                     $("#signLaunchButton").hide();
@@ -151,11 +152,10 @@ export class Nexu {
                     breakOut = true;
                     resolve("detected");
                 }).fail(function (jqXHR, textStatus, errorThrown) {
-                    i++;
-                    if(i === ports.length) {
-                        console.debug("nexu not detected on " + url);
+                    if(i >= ports.length - 1) {
                         reject(0);
                     }
+                    i++;
                 });
             });
         });

@@ -13,8 +13,10 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav th:replace="fragments/sides/side-manager :: side-manager"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
                 <li class="breadcrumb-item active" th:text="'Liste des champs du formulaire : ' + ${form.name}"></li>
             </ol>
@@ -45,7 +47,10 @@
             <br>
             <div class="card col-lg-11">
                 <div class="card-body">
-                    <div th:if="${form.fields.size() > 0}" id="listSignRequestTable" class="table-fix-head">
+                    <div th:if="${form.workflow == null}" class="alert alert-warning">
+                        Merci de configurer un circuit pour ce formulaire
+                    </div>
+                    <div th:if="${form.fields.size() > 0 && form.workflow != null}" id="listSignRequestTable" class="table-fix-head scrollbar-style">
                         <table class="table table-borderless table-hover">
                     <thead class="table-secondary">
                         <tr>
@@ -67,7 +72,7 @@
                     <tbody>
                     <th:block th:each="field : ${form.fields}">
                         <tr>
-                            <form th:name="field-update" th:id="${field.id}" th:action="'/admin/forms/fields/' + ${field.id} + '/update'" th:method="'put'">
+                            <form th:name="field-update" th:id="${field.id}" th:action="'/admin/forms/' + ${form.id} + '/fields/' + ${field.id} + '/update'" th:method="'put'">
                             <td><span th:text="${field.name}"></span></td>
                             <td><input type="text" class="form-control" name="description" th:value="${field.description}"/></td>
                             <td>
@@ -168,7 +173,7 @@
         </div>
     </div>
 </main>
-<div class="modal fade" id="newManualForm" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="newManualForm" data-bs-focus="false" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">

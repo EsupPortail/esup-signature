@@ -108,6 +108,8 @@ public class User {
 
     private Boolean returnToHomeAfterSign = true;
 
+    private Boolean forceSms = false;
+
 	public Long getId() {
         return this.id;
     }
@@ -356,5 +358,13 @@ public class User {
 
     public void setReturnToHomeAfterSign(Boolean returnToHomeAfterSign) {
         this.returnToHomeAfterSign = returnToHomeAfterSign;
+    }
+
+    public Boolean getForceSms() {
+        return forceSms;
+    }
+
+    public void setForceSms(Boolean forceSms) {
+        this.forceSms = forceSms;
     }
 }

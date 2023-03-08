@@ -4,6 +4,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.service.CertificatService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.util.Set;
 
 @RequestMapping("/admin/certificats")
 @Controller
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class CertificatController {
 
     @ModelAttribute("adminMenu")
@@ -38,6 +40,7 @@ public class CertificatController {
     public String list(Model model) {
         model.addAttribute("certificats", certificatService.getAllCertificats());
         model.addAttribute("roles", userService.getAllRoles());
+        model.addAttribute("sealCertificats", certificatService.getSealCertificats());
         return "admin/certificats/list";
     }
 

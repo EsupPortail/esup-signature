@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
+import org.esupportail.esupsignature.dto.UserDto;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.springframework.data.domain.Page;
@@ -11,6 +12,8 @@ import java.util.List;
 
 public interface UserRepository extends CrudRepository<User, Long>  {
     Page<User> findAll(Pageable pageable);
+    @Query("select distinct u.name as name, u.firstname as firstname, u.eppn as eppn, u.email as email from User u")
+    List<UserDto> findAllUsersDto();
     List<User> findByEmail(String email);
     List<User> findByReplaceByUser(User user);
     List<User> findByEmailAndUserType(String email, UserType userType);
@@ -22,7 +25,7 @@ public interface UserRepository extends CrudRepository<User, Long>  {
     List<User> findByEppn(String eppn);
     @Query("select u from User u where u.eppn like :eppn%")
     List<User> findByEppnStartingWith(String eppn);
-    @Query("select u from User u where u.name like :name%")
+    @Query("select u from User u where upper(u.name) like :name%")
     List<User> findByNameStartingWithIgnoreCase(String name);
     @Query("select u from User u where u.email like :email%")
     List<User> findByEmailStartingWith(String email);
@@ -32,8 +35,8 @@ public interface UserRepository extends CrudRepository<User, Long>  {
     List<User> findByManagersRolesNotNull();
     @Query(value = "select count(*) from user_account as u where u.eppn = :eppn", nativeQuery = true)
     Long countByEppn(String eppn);
-    @Query(value = "select count(*) from user_account as u where u.email = :email", nativeQuery = true)
+    @Query(value = "select count(*) from user_account as u where upper(u.email) = :email", nativeQuery = true)
     Long countByEmail(String email);
-    Long countByEmailAndUserType(String email, UserType userType);
+    Long countByEmailIgnoreCaseAndUserType(String email, UserType userType);
     User findByPhone(String phone);
 }

@@ -8,7 +8,7 @@
 <head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
     import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=[[${versionApp}]]';
-    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user");
+    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[creatorFilter]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user");
 </script>
 <body>
 <header th:replace="fragments/nav :: nav"></header>
@@ -57,29 +57,37 @@
             </div>
             <div class="card col-sm-9 col-md-10 col-xl-11">
                 <div class="card-body">
-                    <div id="listSignRequestTable" class="table-fix-head">
+                    <div id="listSignRequestTable" class="table-fix-head scrollbar-style">
                         <div id="loader" class="loader" style="position: fixed; left: 50%; top: 40%; z-index:100000000; display: none;"></div>
                         <table class="table table-borderless table-hover">
                         <thead class="table-secondary">
                         <tr style="z-index: 2;">
                             <th class="w-20 d-none d-lg-table-cell">
-                                <div class="position-relative">
-                                    <button type="button" id="menu-toggle_multiple" class="btn toggle-mini-menu" title="Menu global" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="collapse">
+                                <div class="dropdown position-relative">
+                                    <button type="button" id="menu-toggle_multiple" class="btn" title="Menu global" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="dropdown">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
-                                    <div class="card position-absolute collapse mini-menu-thead" id="menu-multiple">
-                                        <div class="card-body">
+                                    <ul class="dropdown-menu position-absolute ps-2 pe-2 mt-2" id="menu-multiple">
+                                        <li>
                                             <button id="selectAllButton" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button">
                                                 <i class="far fa-check-square"></i> Tout sélectionner
                                             </button>
+                                        </li>
+                                        <li>
                                             <button id="unSelectAllButton" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button">
                                                 <i class="far fa-minus-square"></i> Tout dé-sélectionner
                                             </button>
+                                        </li>
+                                        <li>
                                             <button id="menuDeleteMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fas fa-trash-alt pr-2"></i> Supprimer la sélection</button>
+                                        </li>
+                                        <li>
                                             <button id="menuDownloadMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fas fa-download pr-2"></i> Télécharger la sélection</button>
+                                        </li>
+                                        <li>
                                             <button id="menuDownloadMultipleButtonWithReport" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fas fa-download pr-2"></i> Télécharger la sélection avec rapports</button>
-                                        </div>
-                                    </div>
+                                        </li>
+                                    </ul>
                                 </div>
                             </th>
                             <th class="w-20 d-none d-lg-table-cell"></th>
@@ -139,7 +147,7 @@
                         <tfoot>
                         <tr>
                             <td colspan="100%">
-                                <a id="more-sign-request" href="javascript:void(0);" th:if="${infiniteScrolling}">Afficher plus d'éléments</a>
+                                <a id="more-sign-request" href="javascript:void(0);" th:if="${infiniteScrolling}">Afficher plus d’éléments</a>
                             </td>
                         </tr>
                         </tfoot>
@@ -152,7 +160,7 @@
     </div>
 </main>
 <div class="modal fade" id="checkCertSignModal"
-     tabindex="-1" role="dialog" aria-labelledby="checkCertSignModalLabel" aria-hidden="true">
+     data-bs-focus="false" role="dialog" aria-labelledby="checkCertSignModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -180,7 +188,7 @@
         </div>
     </div>
 </div>
-<div class="modal fade" id="newFomModal" tabindex="-1" role="dialog"
+<div class="modal fade" id="newFomModal" data-bs-focus="false" role="dialog"
      aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
@@ -198,7 +206,7 @@
         </div>
     </div>
 </div>
-<div id="wait" class="modal fade" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
+<div id="wait" class="modal fade" data-bs-focus="false" role="dialog" data-keyboard="false" data-backdrop="static">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-body text-center">

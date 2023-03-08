@@ -11,10 +11,10 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.UserType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
@@ -54,8 +54,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -255,7 +253,7 @@ public class SignRequestService {
 		} else {
 			signRequest.setTitle(name);
 		}
-		signRequest.setToken(String.valueOf(generateUniqueId()));
+		signRequest.setToken(UUID.randomUUID().toString());
 		signRequest.setCreateBy(user);
 		signRequest.setCreateDate(new Date());
 		signRequest.setParentSignBook(signBook);
@@ -304,7 +302,7 @@ public class SignRequestService {
 			} catch (IOException e) {
 				logger.warn("error on adding files", e);
 				throw new EsupSignatureIOException("Erreur lors de l'ajout des fichiers", e);
-			} catch (EsupSignatureException e) {
+			} catch (EsupSignatureRuntimeException e) {
 				logger.warn("error on converting files", e);
 				throw new EsupSignatureIOException("Erreur lors de la conversion du document", e);
 			}
@@ -513,21 +511,6 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public String generateUniqueId() {
-		while (true) {
-			final UUID uid = UUID.randomUUID();
-			final ByteBuffer buffer = ByteBuffer.wrap(new byte[16]);
-			buffer.putLong(uid.getLeastSignificantBits());
-			buffer.putLong(uid.getMostSignificantBits());
-			final BigInteger bi = new BigInteger(buffer.array());
-			String token = String.valueOf(Math.abs(bi.longValue()));
-			if(signRequestRepository.findByToken(token) == null) {
-				return token;
-			}
-		}
-	}
-
-	@Transactional
 	public void restore(Long signRequestId, String userEppn) {
 		SignRequest signRequest = getById(signRequestId);
 		if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
@@ -607,7 +590,7 @@ public class SignRequestService {
 		return userService.getTempUsers(signRequest).size() > 0;
 	}
 
-	public boolean checkTempUsers(Long id, List<String> recipientEmails, List<JsonExternalUserInfo> externalUsersInfos) throws MessagingException, EsupSignatureException {
+	public boolean checkTempUsers(Long id, List<String> recipientEmails, List<JsonExternalUserInfo> externalUsersInfos) throws MessagingException, EsupSignatureRuntimeException {
 		SignRequest signRequest = getById(id);
 		List<User> tempUsers = userService.getTempUsers(signRequest, recipientEmails);
 		if(tempUsers.size() > 0) {
@@ -791,7 +774,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void getToSignFileResponse(Long signRequestId, String disposition, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureException {
+	public void getToSignFileResponse(Long signRequestId, String disposition, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureRuntimeException {
 		SignRequest signRequest = getById(signRequestId);
 		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			List<Document> documents = signService.getToSignDocuments(signRequest.getId());
@@ -809,7 +792,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void getToSignFileResponseWithCode(Long signRequestId, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureException, WriterException {
+	public void getToSignFileResponseWithCode(Long signRequestId, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureRuntimeException, WriterException {
 		SignRequest signRequest = getById(signRequestId);
 		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			List<Document> documents = signService.getToSignDocuments(signRequest.getId());
@@ -872,7 +855,7 @@ public class SignRequestService {
 			List<Recipient> recipients = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients();
 			for(Recipient recipient : recipients) {
 				User user = recipient.getUser();
-				if(userService.findPersonLdapByUser(user) != null || user.getUserType().equals(UserType.external) || user.getUserType().equals(UserType.shib)) {
+				if(userService.findPersonLdapLightByUser(user) != null || user.getUserType().equals(UserType.external) || user.getUserType().equals(UserType.shib)) {
 					recipientNotPresentsignRequests.remove(signRequest);
 				}
 			}

@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSString;
@@ -9,14 +10,13 @@ import org.apache.pdfbox.pdmodel.interactive.action.PDAnnotationAdditionalAction
 import org.apache.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
+import org.esupportail.esupsignature.dto.Spot;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.repository.DataRepository;
-import org.esupportail.esupsignature.repository.FormRepository;
-import org.esupportail.esupsignature.repository.WorkflowRepository;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
+import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
@@ -73,11 +73,13 @@ public class FormService {
 	private WebUtilsService webUtilsService;
 
 	@Resource
+	private LiveWorkflowStepRepository liveWorkflowStepRepository;
+
+	@Resource
 	private ObjectMapper objectMapper;
 
 	public Form getById(Long formId) {
-		Form obj = formRepository.findById(formId).get();
-		return obj;
+		return formRepository.findById(formId).orElseThrow();
 	}
 
 	public List<Form> getFormsByUser(String userEppn, String authUserEppn){
@@ -102,7 +104,7 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage) throws IOException, EsupSignatureException {
+	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage) throws IOException, EsupSignatureRuntimeException {
 		byte[] bytes = multipartFile.getInputStream().readAllBytes();
 		Document document = documentService.createDocument(new ByteArrayInputStream(bytes), multipartFile.getOriginalFilename(), multipartFile.getContentType());
 		Form form = createForm(document, name, title, workflowId, prefillType, roleNames, publicUsage, null, null);
@@ -122,7 +124,7 @@ public class FormService {
 
 	public List<Form> getAllForms(){
 		List<Form> list = new ArrayList<>();
-		formRepository.findAll().forEach(e -> list.add(e));
+		formRepository.findAll().forEach(list::add);
 		return list;
 	}
 
@@ -172,7 +174,7 @@ public class FormService {
 	}
 
 	@Transactional
-	public void updateFormModel(Long id, MultipartFile multipartModel) throws EsupSignatureException {
+	public void updateFormModel(Long id, MultipartFile multipartModel) throws EsupSignatureRuntimeException {
 		Form form = getById(id);
 		if(multipartModel != null) {
 			Document oldModel = form.getDocument();
@@ -226,8 +228,8 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form createForm(Document document, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String[] fieldNames, String[] fieldTypes) throws IOException, EsupSignatureException {
-		Workflow workflow = workflowRepository.findById(workflowId).get();
+	public Form createForm(Document document, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String[] fieldNames, String[] fieldTypes) throws IOException, EsupSignatureRuntimeException {
+		Workflow workflow = workflowRepository.findById(workflowId).orElse(null);
 		Form form = new Form();
 		form.setName(name);
 		form.setTitle(title);
@@ -282,7 +284,7 @@ public class FormService {
 		}
 	}
 
-	private List<Field> getFields(InputStream inputStream, Workflow workflow) throws IOException, EsupSignatureException {
+	private List<Field> getFields(InputStream inputStream, Workflow workflow) throws IOException, EsupSignatureRuntimeException {
 		List<Field> fields = new ArrayList<>();
 		List<Field> fieldsOrdered = new LinkedList<>();
 		PDDocument pdDocument = PDDocument.load(inputStream);
@@ -464,10 +466,6 @@ public class FormService {
 		return false;
 	}
 
-	public List<Form> getByRoles(String role) {
-		return formRepository.findByRolesIn(Collections.singletonList(role));
-	}
-
 	public Set<Form> getManagerForms(String userEppn) {
 		User manager = userService.getByEppn(userEppn);
 		Set<Form> formsManaged = new HashSet<>();
@@ -519,8 +517,9 @@ public class FormService {
 		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
 			workflowStep.getSignRequestParams().remove(signRequestParams);
 		}
-		signRequestParamsService.delete(id);
-
+		if(liveWorkflowStepRepository.countBySignRequestParamsContains(signRequestParams) == 0) {
+			signRequestParamsService.delete(id);
+		}
 	}
 
 	@Transactional
@@ -560,4 +559,24 @@ public class FormService {
 		Form form = getById(id);
 		return pdfService.getPdfParameters(form.getDocument().getInputStream(), 1).getTotalNumberOfPages();
 	}
+
+	@Transactional
+	public String getByIdJson(Long id) throws JsonProcessingException {
+		return objectMapper.writeValueAsString(formRepository.getByIdJson(id));
+	}
+
+	public List<Spot> getSpots(Long id) {
+		List<Spot> spots = new ArrayList<>();
+		Form form = getById(id);
+		int step = 1;
+		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
+			if(workflowStep.getSignRequestParams().size() > 0) {
+				SignRequestParams signRequestParams = workflowStep.getSignRequestParams().get(0);
+				spots.add(new Spot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
+			}
+			step++;
+		}
+		return spots;
+	}
+
 }

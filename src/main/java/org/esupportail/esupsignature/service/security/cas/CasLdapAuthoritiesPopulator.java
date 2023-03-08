@@ -52,16 +52,8 @@ public class CasLdapAuthoritiesPopulator extends DefaultLdapAuthoritiesPopulator
 		super(contextSource, groupSearchBase);
 	}
 
-	public MappingFiltersGroupsRepository getMappingFiltersGroupsRepository() {
-		return mappingFiltersGroupsRepository;
-	}
-
 	public void setMappingFiltersGroupsRepository(MappingFiltersGroupsRepository mappingFiltersGroupsRepository) {
 		this.mappingFiltersGroupsRepository = mappingFiltersGroupsRepository;
-	}
-
-	public MappingGroupsRolesRepository getMappingGroupsRolesRepository() {
-		return mappingGroupsRolesRepository;
 	}
 
 	public void setMappingGroupsRolesRepository(MappingGroupsRolesRepository mappingGroupsRolesRepository) {

@@ -253,7 +253,7 @@ public class WebSecurityConfig {
 		}
 		http.authorizeRequests()
 				.antMatchers("/").permitAll()
-				.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
+				.antMatchers("/admin/", "/admin/**").access("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
 				.antMatchers("/user/", "/user/**").access("hasAnyRole('ROLE_USER')")
 				.antMatchers("/otp-access/**").permitAll()
 				.antMatchers("/otp/", "/otp/**").access("hasAnyRole('ROLE_OTP', 'ROLE_FRANCECONNECT')")

@@ -76,7 +76,6 @@ public class LdapExtValue implements ExtValue {
 			if (returnTypes[0].equals("person")) {
 				List<PersonLdap> personLdaps = ldapPersonService.search(searchString);
 				for (PersonLdap personLdap : personLdaps) {
-					Map<String, Object> stringObjectMap = new HashMap<>();
 					try {
 						StringBuilder result = new StringBuilder(PersonLdap.class.getMethod(methodName).invoke(personLdap).toString());
 						if (returnTypes.length > 1) {
@@ -95,9 +94,12 @@ public class LdapExtValue implements ExtValue {
 								}
 							}
 						}
-						stringObjectMap.put("value", result.toString());
-						stringObjectMap.put("text", result.toString());
-						mapList.add(stringObjectMap);
+						if(result.toString().toLowerCase().contains(searchString.toLowerCase(Locale.ROOT)) && mapList.stream().noneMatch(stringObjectMap1 -> stringObjectMap1.containsKey(result.toString()) || stringObjectMap1.containsValue(result.toString()))) {
+							Map<String, Object> stringObjectMap = new HashMap<>();
+							stringObjectMap.put("value", result.toString());
+							stringObjectMap.put("text", result.toString());
+							mapList.add(stringObjectMap);
+						}
 					} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
 						logger.error("error on get ldap search return attribut : " + returnValues[0], e);
 					}

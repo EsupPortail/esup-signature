@@ -14,7 +14,7 @@ import eu.europa.esig.dss.validation.reports.Reports;
 import eu.europa.esig.validationreport.jaxb.ValidationReportType;
 import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.dss.service.XSLTService;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
@@ -100,7 +100,7 @@ public class ValidationController {
 		}
 		try {
 			model.addAttribute("pdfaReport", pdfService.checkPDFA(docBytes, true));
-		} catch (EsupSignatureException e) {
+		} catch (EsupSignatureRuntimeException e) {
 			model.addAttribute("pdfaReport", Arrays.asList("danger", "Impossible de valider ce document"));
 			logger.error(e.getMessage());
 		}

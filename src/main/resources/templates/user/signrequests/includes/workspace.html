@@ -37,21 +37,11 @@
     <form th:id="'signForm'" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div id="pdf" class="mx-auto" style="position: relative !important;">
-<!--            <th:block th:if="${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}">-->
-<!--                <div id="cross_0" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"-->
-<!--                     onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"-->
-<!--                     onmouseout="this.style.backgroundColor= 'rgba(0, 0, 0, .0)';"-->
-<!--                     style="display: none;z-index:1027;pointer-events: auto;cursor: move;background-repeat: no-repeat; background-position: left bottom;">-->
-
-<!--                    <div id="borders_0" class="static-border"-->
-<!--                         th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>-->
-<!--                </div>-->
-<!--            </th:block>-->
             <th:block th:each="comment : ${comments}">
                 <div th:if="${signRequest.createBy.eppn == user.eppn && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
                      class="circle" th:id="'inDocComment_' + ${comment.id}"
                      th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
-                     th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'" title="Supprimer l'annotation">
+                     th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'" title="Cliquer pour supprimer l'annotation">
                     <i class="fas fa-comment fa-3x"></i>
                 </div>
                 <div th:unless="${signRequest.createBy.eppn == user.eppn && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
@@ -62,39 +52,30 @@
                 </div>
             </th:block>
             <th:block th:each="spot, iterator : ${spots}">
-                <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}"
-                     th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').toggleClass(\'bg-white bg-success\');'"
-                     th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').toggleClass(\'bg-white bg-success\');'">
-                    <i class="fas fa-map-marker-alt fa-3x"></i>
+                <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}" title="Cliquer pour supprimer l'emplacement de signature"
+                     th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').addClass(\'circle-border\');'"
+                     th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').removeClass(\'circle-border\');'">
+                    <i class="fas fa-map-marker-alt fa-3x" title="Cliquer pour supprimer l'emplacement de signature"></i>
                 </div>
-<!--                <div th:id="'signSpace_' + ${iterator.index}" th:title="'Emplacement de signature ' + ${iterator.index + 1}" class="sign-space sign-field"></div>-->
             </th:block>
-            <div id="postit" class="postit alert alert-warning border-dark d-none">
+
+            <div id="comment-div" class="postit alert alert-warning border-dark">
                 <form>
-                <input id="submitPostit" name="submitPostit" type="submit" class="d-none"/>
-                <input id="commentPosX" name="commentPosX" type="hidden"/>
-                <input id="commentPosY" name="commentPosY" type="hidden"/>
-                <input id="commentPageNumber" name="commentPageNumber" type="hidden"/>
-                <input id="addSignParams" name="addSignParams" type="hidden"/>
-                <div id="divSpotStepNumber" class="form-group mb-3" style="display: none">
-                    <label for="spotStepNumber">Choisir l'étape concernée</label>
-                    <br/>
-                    <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
-                        <option></option>
-                        <th:block th:each="step, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
-                            <option th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}" th:selected="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 1}"></option>
-                        </th:block>
-                    </select>
-                </div>
-                <textarea id="postitComment" name="comment" class="postitarea float-start" placeholder="Saisir un commentaire" required></textarea>
-                <button id="hideCommentButton" type="button" class="btn btn-sm btn-dark float-start">
-                    <i class="fas fa-times"></i>
-                </button>
-                <button id="saveCommentButton" type="button" class="btn btn-sm btn-dark float-end">
-                    <i class="fas fa-save"></i>
-                </button>
+                    <input id="submitPostit" name="submitPostit" type="submit" class="d-none"/>
+                    <input id="commentPosX" name="commentPosX" type="hidden"/>
+                    <input id="commentPosY" name="commentPosY" type="hidden"/>
+                    <input id="commentPageNumber" name="commentPageNumber" type="hidden"/>
+                    <input id="addSignParams" name="addSignParams" type="hidden"/>
+                    <textarea id="postitComment" name="comment" class="form-control postitarea float-start mb-2" placeholder="Saisir un commentaire" required></textarea>
+                    <button id="hideCommentButton" type="button" class="btn btn-sm btn-dark float-start">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <button id="saveCommentButton" type="button" class="btn btn-sm btn-dark float-end">
+                        <i class="fas fa-save"></i>
+                    </button>
                 </form>
             </div>
+
         </div>
     </form>
 
@@ -123,7 +104,7 @@
                     style="z-index: 3;">
                 <i class="fas fa-sync"></i>
             </button>
-            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')') && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}" type="button" id="signImage_x"
+            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signImage_x"
                     title="Ajouter une image de votre signature"
                     class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
@@ -222,4 +203,37 @@
             </ul>
         </div>
     </div>
+
+    <div id="spot-modal" class="modal text-black">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <form id="spot-form">
+                        <input id="submit-spot" name="submitPostit" type="submit" class="d-none"/>
+                        <input id="spotPosX" name="commentPosX" type="hidden"/>
+                        <input id="spotPosY" name="commentPosY" type="hidden"/>
+                        <input id="spotPageNumber" name="commentPageNumber" type="hidden"/>
+                        <div id="divSpotStepNumber" class="form-group mb-3">
+                            <label for="spotStepNumber">Choisir l’étape concernée</label>
+                            <br/>
+                            <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
+                                <option></option>
+                                <th:block th:each="step, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
+                                    <option th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}" th:selected="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 1}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <textarea id="spotComment" name="comment" class="form-control postitarea float-start mb-2" placeholder="Saisir un commentaire" required></textarea>
+                        <button id="hideSpotButton" type="button" class="btn btn-sm btn-dark float-start" data-bs-dismiss="modal">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <button id="saveSpotButton" th:data-es-signrequest-id="${signRequest.id}" type="button" class="btn btn-sm btn-dark float-end">
+                            <i class="fas fa-save"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>

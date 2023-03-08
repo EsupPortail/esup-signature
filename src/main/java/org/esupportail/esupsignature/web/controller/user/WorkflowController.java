@@ -4,7 +4,7 @@ import org.esupportail.esupsignature.entity.Certificat;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.CertificatService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
@@ -52,7 +52,7 @@ public class WorkflowController {
                           @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
                           @RequestParam(name="changeable", required = false) Boolean changeable,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
-                          @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) throws EsupSignatureException {
+                          @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) throws EsupSignatureRuntimeException {
         workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, maxRecipients, userEppn, true, attachmentRequire, false, null);
         return "redirect:/user/workflows/" + id;
     }
@@ -75,7 +75,7 @@ public class WorkflowController {
         Workflow workflow = workflowService.getById(id);
         try {
             workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, false, null);
-        } catch (EsupSignatureException e) {
+        } catch (EsupSignatureRuntimeException e) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Type de signature impossible pour une étape infinie"));
         }
         return "redirect:/user/workflows/" + id;
@@ -102,7 +102,7 @@ public class WorkflowController {
         try {
             workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientsEmails);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant ajouté"));
-        } catch (EsupSignatureException e) {
+        } catch (EsupSignatureRuntimeException e) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Participant non ajouté"));
         }
         return "redirect:/user/workflows/" + workflow.getId() + "#" + workflowStep.getId();
@@ -125,7 +125,7 @@ public class WorkflowController {
         try {
             workflowService.delete(workflow);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le circuit à bien été supprimé"));
-        } catch (EsupSignatureException e) {
+        } catch (EsupSignatureRuntimeException e) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
         }
         return "redirect:/";
@@ -134,7 +134,7 @@ public class WorkflowController {
     @DeleteMapping(value = "/silent-delete/{id}", produces = "text/html")
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @ResponseBody
-    public void silentDelete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id) throws EsupSignatureException {
+    public void silentDelete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id) throws EsupSignatureRuntimeException {
         Workflow workflow = workflowService.getById(id);
         workflowService.delete(workflow);
     }

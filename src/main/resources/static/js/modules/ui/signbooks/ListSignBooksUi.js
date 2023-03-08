@@ -2,7 +2,7 @@ import {CsrfToken} from "../../../prototypes/CsrfToken.js?version=@version@";
 
 export class ListSignBooksUi {
 
-    constructor(signRequests, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, infiniteScrolling, csrf, mode) {
+    constructor(signRequests, statusFilter, recipientsFilter, workflowFilter, creatorFilter, docTitleFilter, infiniteScrolling, csrf, mode) {
         console.info("Starting list sign UI");
         this.signRequests = signRequests;
         this.mode = mode;
@@ -21,6 +21,9 @@ export class ListSignBooksUi {
         }
         if(workflowFilter != null) {
             this.workflowFilter = workflowFilter;
+        }
+        if(creatorFilter != null) {
+            this.creatorFilter = creatorFilter;
         }
         if(docTitleFilter != null) {
             this.docTitleFilter = docTitleFilter;
@@ -87,7 +90,6 @@ export class ListSignBooksUi {
         $('#new-scroll').toggleClass('text-nowrap').toggleClass('new-min-h');
         // $('#to-sign-list').toggleClass('d-flex d-none');
         // $('#new-fragment').toggleClass('position-fixed');
-        $('#to-sign-list').toggleClass('margin-274');
         $('#toggle-new-grid').children().toggleClass('fa-th fa-chevron-up');
         $('.newHr').toggleClass('d-none');
         $('#newContainer').toggleClass('d-inline').toggleClass("text-left");
@@ -242,11 +244,9 @@ export class ListSignBooksUi {
 
     buildUrlFilter() {
         let currentParams = new URLSearchParams(window.location.search);
-        let filters = $('.sign-request-filter');
+        let filters = $('select.sign-request-filter');
         for (let i = 0 ; i < filters.length ; i++) {
-            // if (filters.eq(i).val() !== "") {
-                currentParams.set(filters.eq(i).attr('id'), filters.eq(i).val());
-            // }
+            currentParams.set(filters.eq(i).attr('id'), filters.eq(i).val());
         }
         document.location.href = "/" + this.mode + "/signbooks?" + currentParams.toString();
     }
