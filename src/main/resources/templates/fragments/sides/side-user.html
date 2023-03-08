@@ -9,6 +9,10 @@
            href="/user/users/?form" title="Paramètres de signature">
             <i class="fas fa-user-cog"></i> <span class="sidebar-label">Paramètres de signature</span>
         </a>
+        <a th:if="${globalProperties.shareMode > 0}" class="btn col-12 mb-1 text-left" href="/user/users/replace"
+           th:classappend="${activeMenu == 'replace'} ? 'btn-secondary' : 'btn-light'" title="Délégations">
+            <i class="fas fa-people-arrows"></i> <span class="sidebar-label">Remplacement</span>
+        </a>
         <a th:if="${globalProperties.shareMode > 0}" class="btn col-12 mb-1 text-left" href="/user/users/shares"
            th:classappend="${activeMenu == 'shares'} ? 'btn-secondary' : 'btn-light'" title="Délégations">
             <i class="fas fa-share-alt"></i> <span class="sidebar-label">Délégations</span>

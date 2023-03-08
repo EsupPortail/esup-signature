@@ -185,7 +185,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "and sb.hidedBy is empty")
     List<String> findWorkflowNames(User user);
 
-    @Query("select distinct sb.workflowName from SignBook sb where sb.hidedBy is empty ")
+    @Query("select distinct sb.workflowName from SignBook sb where sb.hidedBy is empty and sb.workflowName != ''")
     List<String> findWorkflowNames();
 
     @Query("select distinct sb.subject from SignBook sb " +

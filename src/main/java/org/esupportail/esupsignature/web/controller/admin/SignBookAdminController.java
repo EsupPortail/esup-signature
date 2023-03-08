@@ -1,12 +1,12 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
+import org.esupportail.esupsignature.dto.SlimSelectDto;
+import org.esupportail.esupsignature.dto.UserDto;
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.SignBookRepository;
-import org.esupportail.esupsignature.service.FormService;
-import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +18,7 @@ import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.stereotype.Controller;
@@ -29,11 +30,13 @@ import org.thymeleaf.context.Context;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 @RequestMapping("/admin/signbooks")
 @Controller
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class SignBookAdminController {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignBookAdminController.class);
@@ -52,10 +55,16 @@ public class SignBookAdminController {
 	private FormService formService;
 
 	@Resource
+	private UserService userService;
+
+	@Resource
 	private WorkflowService workflowService;
 
 	@Resource
 	private SignBookService signBookService;
+
+	@Resource
+	private SignRequestService signRequestService;
 
 	@Resource
 	private SignBookRepository signBookRepository;
@@ -86,17 +95,28 @@ public class SignBookAdminController {
 		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
 		model.addAttribute("statusFilter", statusFilter);
 		model.addAttribute("signBooks", signBooks);
-		List<User> creators = signBookService.getCreators(null, workflowFilter, docTitleFilter, creatorFilter);
-		model.addAttribute("creators", creators);
+		model.addAttribute("creators", userService.getAllUsersDto());
 		model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
 		model.addAttribute("statuses", SignRequestStatus.values());
 		model.addAttribute("forms", formService.getAllForms());
 		model.addAttribute("workflows", workflowService.getAllWorkflows());
 		model.addAttribute("workflowFilter", workflowFilter);
+		model.addAttribute("creatorFilter", creatorFilter);
 		if(docTitleFilter != "%") model.addAttribute("docTitleFilter", docTitleFilter);
 		model.addAttribute("dateFilter", dateFilter);
 		model.addAttribute("workflowNames", signBookRepository.findWorkflowNames());
 		return "admin/signbooks/list";
+	}
+
+	@GetMapping("/creators")
+	@ResponseBody
+	public Object[] creators() {
+		List<SlimSelectDto> slimSelectDtos = new ArrayList<>();
+		slimSelectDtos.add(new SlimSelectDto("Tout", ""));
+		for(UserDto userDto : userService.getAllUsersDto()) {
+			slimSelectDtos.add(new SlimSelectDto(userDto.getFirstname() + " " + userDto.getName(), userDto.getEmail()));
+		}
+		return slimSelectDtos.toArray();
 	}
 
 	@GetMapping(value = "/list-ws")
@@ -131,19 +151,22 @@ public class SignBookAdminController {
 
 	@GetMapping(value = "/{id}")
 	public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-		SignBook signBook = signBookService.getById(id);
-		if(signBook.getSignRequests().size() > 0) {
-			Long signRequestId = signBook.getSignRequests().get(0).getId();
-			if (signBook.getSignRequests().size() > 1) {
-				if (signBook.getSignRequests().stream().anyMatch(s -> s.getStatus().equals(SignRequestStatus.pending))) {
-					signRequestId = signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending)).findFirst().get().getId();
-				}
-			}
-			return "redirect:/admin/signrequests/" + signRequestId;
-		} else {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Cette demande de signature n'est pas conforme car elle est vide, elle peut être supprimée"));
-			return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+		SignRequest signRequest = signBookService.search(id);
+		if(signRequest != null) {
+			return "redirect:/admin/signrequests/" + signRequest.getId();
 		}
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande non trouvée"));
+		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+	}
+
+	@GetMapping(value = "/search")
+	public String search(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+		SignRequest signRequest = signBookService.search(id);
+		if(signRequest != null) {
+			return "redirect:/admin/signrequests/" + signRequest.getId();
+		}
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande non trouvée"));
+		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
 
 	@PostMapping(value = "/delete-multiple", consumes = {"application/json"})

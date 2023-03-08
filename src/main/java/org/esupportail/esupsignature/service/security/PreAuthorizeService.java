@@ -70,8 +70,7 @@ public class PreAuthorizeService {
 
     public boolean signBookCreator(Long id, String userEppn) {
         SignBook signBook = signBookService.getById(id);
-        User user = userService.getUserByEppn(userEppn);
-        return signBook.getCreateBy().equals(user);
+        return signBook != null && signBook.getCreateBy().getEppn().equals(userEppn);
     }
 
     public boolean signBookManage(Long id, String userEppn) {
@@ -157,7 +156,7 @@ public class PreAuthorizeService {
         if(userEppn != null) {
             Form form = formService.getById(id);
             User manager = userService.getByEppn(userEppn);
-            return CollectionUtils.containsAny(manager.getManagersRoles(), form.getRoles());
+            return form.getManagerRole() != null && manager.getManagersRoles().contains(form.getManagerRole());
         }
         return false;
     }

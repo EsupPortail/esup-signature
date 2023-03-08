@@ -12,8 +12,10 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav th:replace="fragments/sides/side-manager :: side-manager"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb col-12">
+                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/workflows">Liste des circuits</a></li>
                 <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span>
                 </li>
@@ -58,7 +60,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal fade" id="addStep" tabindex="-1" role="dialog" aria-labelledby="addStepLabel" aria-hidden="true">
+            <div class="modal fade" id="addStep" data-bs-focus="false" role="dialog" aria-labelledby="addStepLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
                         <form th:action="'/admin/workflows/add-step/' + ${workflow.id}" method="post">
@@ -80,7 +82,7 @@
                                     <label>
                                         <strong>Choix des participants</strong>
                                     </label>
-                                    <select data-es-check-list="false" class="select-users" name="recipientsEmails" id="stepRecipientsEmails" size="5" multiple="multiple"></select>
+                                    <select data-es-check-list="false" class="select-users" name="recipientsEmails" id="stepRecipientsEmails" multiple="multiple"></select>
                                 </div>
                                 <div class="form-group mb-3" id="allSignToComplete-div">
                                     <label for="allSignToComplete">
@@ -154,7 +156,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal fade" id="addAutoStep" tabindex="-1" role="dialog" aria-labelledby="addAutoStepLabel" aria-hidden="true">
+            <div class="modal fade" id="addAutoStep" data-bs-focus="false" role="dialog" aria-labelledby="addAutoStepLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
                         <form th:action="'/admin/workflows/add-auto-step/' + ${workflow.id}" method="post">

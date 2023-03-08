@@ -61,8 +61,9 @@ export class HomeUi {
         $('#new-scroll').toggleClass('text-nowrap').toggleClass('new-min-h');
         // $('#to-sign-list').toggleClass('d-flex d-none');
         $('#new-div').toggleClass('position-fixed');
-        $('#to-sign-list').toggleClass('margin-274');
+        $('#new-div').toggleClass('new-width');
         $('#toggle-new-grid').children().toggleClass('fa-th fa-chevron-up');
+        $('#listSignRequestTable').toggleClass('d-none');
         $('.newHr').toggleClass('d-none');
         $('#newContainer').toggleClass('d-inline').toggleClass("text-left");
         $('.newToggled').toggleClass('d-none');

@@ -1,7 +1,5 @@
 package org.esupportail.esupsignature.service.export;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -9,13 +7,15 @@ import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,8 +36,11 @@ public class DataExportService {
     @Resource
     private FormRepository formRepository;
 
+    @Resource
+    private WebUtilsService webUtilsService;
+
     public InputStream getCsvDatasFromForms(List<Workflow> workflows) throws IOException {
-        return mapListToCSV(getDatasToExport(workflows));
+        return webUtilsService.mapListToCSV(getDatasToExport(workflows));
     }
 
     public List<Map<String, String>> getDatasToExport(List<Workflow> workflows) {
@@ -145,19 +148,6 @@ public class DataExportService {
             }
         }
         return toExportDatas;
-    }
-
-    public InputStream mapListToCSV(List<Map<String, String>> list) throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        OutputStreamWriter out = new OutputStreamWriter(outputStream);
-        String[] headers = list.stream().flatMap(map -> map.keySet().stream()).distinct().toArray(String[]::new);
-        CSVPrinter printer = new CSVPrinter(out, CSVFormat.EXCEL.withHeader(headers));
-        for (Map<String, String> map : list) {
-            printer.printRecord(map.values());
-        }
-        out.flush();
-        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-        return inputStream;
     }
 
 }

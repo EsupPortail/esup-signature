@@ -35,7 +35,7 @@
                        role="tab" aria-controls="etsi-validation-report" aria-selected="false"></a>
                 </li>
                 <li class="nav-item" th:if="${pdfaReport != null}">
-                    <a class="nav-link" id="pdfa-tab" data-bs-toggle="tab" href="#pdfa" role="tab" aria-controls="pdfa" aria-selected="false">PDF/A report</a>
+                    <a class="nav-link" id="pdfa-tab" data-bs-toggle="tab" href="#pdfa" role="tab" aria-controls="pdfa" aria-selected="false">Validation PDF/A</a>
                 </li>
             </ul>
 
@@ -170,7 +170,7 @@
 
                 <div th:if="${pdfaReport != null}" class="tab-pane fade" id="pdfa" role="tabpanel" aria-labelledby="profile-tab">
                     <div th:class="'alert alert-' + ${pdfaReport[0]}">
-                        <h2>PDF/A report</h2>
+                        <h2>Validation PDF/A</h2>
                         <ul>
                             <th:block th:each="line : ${pdfaReport}">
                                 <li th:if="${lineStat.index > 0}">

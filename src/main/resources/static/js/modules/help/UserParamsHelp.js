@@ -32,12 +32,12 @@ export class UserParamsHelp {
             element: '#mySigns',
             intro: "La liste des signatures déjà enregistrées." +
                 "<br>" +
-                "Vous avez aussi la possibilité d'en supprimer.",
+                "Vous avez aussi la possibilité d’en supprimer.",
             position: 'auto'
         });
         this.intro.addStep({
             element: '#vanilla-upload',
-            intro: "Pour ajouter une signature, vous pouvez parcours votre ordinateur pour choisir une image/scan de votre signature.",
+            intro: "Pour ajouter une signature, vous pouvez parcourir votre ordinateur pour choisir une image/scan de votre signature.",
             position: 'bottom'
         });
         this.intro.addStep({
@@ -51,12 +51,12 @@ export class UserParamsHelp {
                 "<br>" +
                 "Cela ne sera utile que si une signature électronique avec certificat est exigée." +
                 "<br>" +
-                "Dans la plupart cette étape peut être ignorée.",
+                "Dans la plupart des cas cette étape peut être ignorée.",
             position: 'bottom'
         });
         this.intro.addStep({
             element: '#emailAlertFrequency',
-            intro: "Enfin, vous pouvez ajouter la fréquence d'envoi de alerte mail.",
+            intro: "Enfin, vous pouvez ajuster la fréquence d’envoi de alerte mail.",
             position: 'top'
         });
         this.intro.addStep({

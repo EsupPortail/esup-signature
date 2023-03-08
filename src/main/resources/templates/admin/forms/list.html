@@ -9,8 +9,10 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav th:replace="fragments/sides/side-manager :: side-manager"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
                 <li class="breadcrumb-item active">Liste des formulaires</li>
             </ol>
         </nav>
@@ -26,13 +28,14 @@
             </div>
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
+                    <h5 class="text-center"><b>Formulaires</b></h5>
                     <div class="">
                         <table class="table table-sm table-striped table-hover table-borderless">
                             <thead class="table-secondary">
                             <tr>
                                 <th class="w-50">Titre</th>
                                 <th>Nom</th>
-                                <th>Circuit</th>
+                                <th>Circuit associé</th>
                                 <th>Version</th>
                                 <th>Actif</th>
                                 <th>Supprimé</th>
@@ -44,7 +47,9 @@
                             <tr th:each="form : ${forms}">
                                 <td th:text="${form.title}"></td>
                                 <td th:text="${form.name}"></td>
-                                <td><span th:if="${form.workflow != null}" th:text="${form.workflow.description}"></span></td>
+                                <td>
+                                    <a th:if="${form.workflow != null}" th:href="'/admin/workflows/update/' + ${form.workflow.id}" th:text="${form.workflow.description}"></a>
+                                </td>
                                 <td th:text="${form.version}"></td>
                                 <td>
                                     <i th:if="${form.activeVersion}" class="fas fa-check text-success"></i>
@@ -54,41 +59,50 @@
                                     <i th:if="${form.deleted}" class="fas fa-times text-danger"></i>
                                 </td>
                                 <td th:text="${form.roles}"></td>
-
                                 <td class="text-center">
-                                    <div class="position-relative">
-                                        <button type="button" th:id="'menu-toggle_' + ${form.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${form.title}"
-                                                th:data-bs-target="'#menu-' + ${form.id}" th:aria-controls="'menu-' + ${form.id}" data-bs-toggle="collapse">
+                                    <div class="dropdown position-relative">
+                                        <button type="button" th:id="'menu-toggle_' + ${form.id}" class="btn text-dark" th:title="'Actions ' + ${form.title}"
+                                                th:data-bs-target="'#menu-' + ${form.id}" th:aria-controls="'menu-' + ${form.id}" data-bs-toggle="dropdown">
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
-                                        <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${form.id}">
-                                            <div class=" card-body">
+                                        <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${form.id}">
+                                            <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
                                                    th:href="'/admin/forms/update/' + ${form.id}">
                                                     <i class="fas fa-pencil-alt pr-2"></i> Modifier les paramètres
                                                 </a>
+                                            </li>
+                                            <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
                                                    th:href="'/admin/forms/' + ${form.id} + '/fields'">
                                                     <i class="fas fa-align-justify pr-2"></i> Modifier les champs
                                                 </a>
+                                            </li>
+                                            <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
                                                    th:href="'/admin/forms/' + ${form.id} + '/signs'">
                                                     <i class="fas fa-signature pr-2"></i> Configurer les champs signatures
                                                 </a>
+                                            <li>
+                                            </li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Exporter   " role="button"
                                                    th:href="'/admin/forms/export/' + ${form.id}">
                                                     <i class="fas fa-cloud-download-alt pr-2"></i> Exporter la configuration
                                                 </a>
+                                            </li>
+                                            <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
                                                    th:href="'/admin/forms/' + ${form.name} + '/datas/csv'">
                                                     <i class="fas fa-file-export pr-2"></i> Exporter les données saisies
                                                 </a>
+                                            </li>
+                                            <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${form.id}" role="button" title="Supprimer"
                                                    data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${form.id}">
                                                     <i class="fas fa-trash-alt pr-2"></i> Supprimer
                                                 </a>
-                                            </div>
-                                        </div>
+                                            </li>
+                                        </ul>
                                     </div>
 
                                     <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${form.id}">
@@ -133,7 +147,11 @@
         </div>
     </div>
 </main>
-<div class="modal fade" id="newManualForm" tabindex="-1" role="dialog" aria-hidden="true">
+<script th:inline="javascript" type="module">
+    import {FormManualAdd } from '/js/modules/ui/forms/FormManualAdd.js?version=[[${versionApp}]]';
+    new FormManualAdd();
+</script>
+<div class="modal fade" id="newManualForm" data-bs-focus="false" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -141,10 +159,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <script th:inline="javascript" type="module">
-                    import {FormManualAdd } from '/js/modules/ui/forms/FormManualAdd.js?version=[[${versionApp}]]';
-                    new FormManualAdd();
-                </script>
                 <form th:action="'/admin/forms'" method="post">
                     <div class="form-group mb-3">
                         <label for="titleManual" class="col-form-label">Titre (affiché aux utilisateurs)</label>
@@ -154,8 +168,20 @@
                         <label for="nameManual" class="col-form-label">Nom (nom technique sans espace ni accents)</label>
                         <input type="text" id="nameManual" name="name" class="form-control" required>
                     </div>
+                    <div class="form-check mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+                        <label for="publicUsage" class="form-check-label">Visibilité publique (diffusion immédiate)</label>
+                        <input type="checkbox" class="form-check-input" id="publicUsage" name="publicUsage">
+                    </div>
+                    <div class="form-group mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" >
+                        <label for="roleNames" class="col-form-label">Nom du role autorisé à accéder au formulaire</label>
+                        <select id="roleNames" class="slim-select" type="text" name="roleNames" multiple>
+                            <th:block th:each="newRole : ${roles}">
+                                <option th:text="${newRole}" th:value="${newRole}"></option>
+                            </th:block>
+                        </select>
+                    </div>
                     <div class="form-group mb-3">
-                        <label for="workflowIdManual" class="col-form-label">Type de workflow</label>
+                        <label for="workflowIdManual" class="col-form-label">Circuit associé</label>
                         <select class="slim-select-simple" id="workflowIdManual" name="workflowId">
                             <th:block th:each="workflowType : ${workflowTypes}">
                                 <option th:value="${workflowType.id}" th:text="${workflowType.description}"></option>
@@ -183,7 +209,7 @@
         </div>
     </div>
 </div>
-<div class="modal fade" id="newForm" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="newForm" data-bs-focus="false" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -193,8 +219,8 @@
             <form id="addModel" th:action="'/admin/forms/generate?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="form-group mb-3">
-                        <label for="name" class="col-form-label">Titre (affiché aux utilisateurs)</label>
-                        <input type="text" id="title" name="title" class="form-control" required>
+                        <label for="title" class="col-form-label">Titre (affiché aux utilisateurs)</label>
+                        <input type="text" id="title" name="title" class="form-control" onchange="" required>
                     </div>
                     <div class="form-group mb-3">
                         <label for="name" class="col-form-label">Nom (nom technique sans espace ni accents)</label>
@@ -203,25 +229,31 @@
                     <div class="form-group mb-3">
                         <label class="col-form-label">Modèle PDF Form</label>
                         <div class="custom-file">
-                            <input aria-describedby="inputGroupFileAddon01" class="form-control"
-                                   data-buttonText="Choisir fichier" id="modelFile" name="multipartFile"
-                                   type="file" required/>
+                            <input aria-describedby="inputGroupFileAddon01" class="form-control" data-buttonText="Choisir fichier" id="modelFile" name="multipartFile" type="file" required/>
                         </div>
                     </div>
-                    <div class="form-check mb-3">
+                    <div class="form-group mb-3" th:unless="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+                        <label for="managerRole">Pour quel rôle ce formulaire pourra être diffusé</label>
+                        <select id="managerRole" name="managerRole" class="form-select" required>
+                            <th:block th:each="role : ${roles}">
+                                <option th:value="${role}" th:text="${role}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                    <div class="form-check mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
                         <label for="publicUsage" class="form-check-label">Visibilité publique (diffusion immédiate)</label>
                         <input type="checkbox" class="form-check-input" id="publicUsage" name="publicUsage">
                     </div>
-                    <div class="form-group mb-3">
-                        <label for="roleNames" class="col-form-label">Nom du role autorisé à acceder au formulaire</label>
-                        <select id="roleNames" class="form-control" type="text" name="roleNames" multiple>
+                    <div class="form-group mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" >
+                        <label for="roleNames2" class="col-form-label">Nom du role autorisé à accéder au formulaire</label>
+                        <select id="roleNames2" class="slim-select" type="text" name="roleNames" multiple>
                             <th:block th:each="newRole : ${roles}">
                                 <option th:text="${newRole}" th:value="${newRole}"></option>
                             </th:block>
                         </select>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="workflowId" class="col-form-label">Type de workflow</label>
+                        <label for="workflowId" class="col-form-label">Circuit associé</label>
                         <select class="slim-select-simple" id="workflowId" name="workflowId">
                             <th:block th:each="workflowType : ${workflowTypes}">
                                 <option th:value="${workflowType.id}" th:text="${workflowType.description}"></option>

@@ -2,9 +2,9 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
-<nav th:fragment="side-admin" id="sidebar">
+<nav th:fragment="side-admin" id="sidebar" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
     <div class="ms-1 mt-2">
-        <a href="/admin/"><h5 class="text-center sidebar-label"><b>Administration</b></h5></a>
+        <h5 class="text-center sidebar-label"><b>Administration</b></h5>
         <div class="hr"><i class="fas fa-eye me-1"></i><span class="sidebar-label"> Supervision</span></div>
         <a th:classappend="${activeMenu == 'adminsignrequests'} ? 'btn-secondary' : 'btn-light'"
            title="Toutes les demandes" type="button" href="/admin/signbooks" class="mb-1 col-12 btn text-left">
@@ -17,6 +17,10 @@
         <a th:classappend="${activeMenu == 'users'} ? 'btn-secondary' : 'btn-light'"
            title="Tous les logs" type="button" href="/admin/users" class="mb-1 col-12 btn text-left">
             <i class="fas fa-users"></i> <span class="sidebar-label">Utilisateurs</span>
+        </a>
+        <a th:classappend="${activeMenu == 'export'} ? 'btn-secondary' : 'btn-light'"
+           title="Tous les logs" type="button" href="/admin/export" class="mb-1 col-12 btn text-left">
+            <i class="fas fa-file-export"></i> <span class="sidebar-label">Exports</span>
         </a>
         <div class="hr"><i class="fas fa-cog me-1"></i><span class="sidebar-label"> Configuration</span></div>
         <a th:classappend="${activeMenu == 'workflows'} ? 'btn-secondary' : 'btn-light'"
@@ -50,7 +54,7 @@
         </a>
         <a th:classappend="${activeMenu == 'tasks'} ? 'btn-secondary' : 'btn-light'"
            title="Sessions courantes" href="/admin/tasks" class="btn col-12 mb-1 text-left">
-            <i class="fas fa-tasks"></i> <span class="sidebar-label">Taches planifiées</span>
+            <i class="fas fa-tasks"></i> <span class="sidebar-label">Tâches planifiées</span>
         </a>
         <a th:classappend="${activeMenu == 'dss'} ? 'btn-secondary' : 'btn-light'" th:if="${validationToolsEnabled}"
            title="Statut DSS" type="button" href="/admin/dss" class="mb-1 col-12 btn text-left">

@@ -23,10 +23,11 @@
         </nav>
         <div id="content" class="content flex align-content-center">
             <div class="row">
-                <div id="new-div" class="position-fixed new-width" style="z-index: 1000;">
+                <div id="new-div" style="z-index: 1000;">
                     <div th:replace="fragments/new :: new"></div>
                 </div>
-                <div id="to-sign-list" class="d-flex col-12 margin-274">
+                <div id="listSignRequestTable" class="div-scrollable scrollbar-style">
+                <div id="to-sign-list" class="d-flex col-12">
                     <div class="col-12 col-lg-10 card mb-2 mx-auto">
                         <div class="card-body">
                             <h5 class="text-center"><b>Demandes à signer</b></h5>
@@ -35,7 +36,9 @@
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksToSign}">
                                     <tr th:if="${signBook.signRequests.size() > 0}" th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}">
-                                        <td class="text-break d-none d-md-table-cell"><a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fas fa-plus"></i></a></td>
+                                        <td class="text-break d-none d-md-table-cell">
+                                            <a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fas fa-plus"></i></a>
+                                        </td>
                                         <td class="text-break w-5 d-none d-md-table-cell">
                                             <i th:if="${signBook.signRequests.size() > 1}" class="fas fa-folder-open p-2"></i>
                                             <i th:unless="${signBook.signRequests.size() > 1}" class="fas fa-file-alt p-2"></i>
@@ -53,11 +56,6 @@
                                         </td>
                                         <td class="text-break w-20"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                         </td>
-                                        <td class="text-center w-5">
-                                             <a aria-label="Accéder à la demande"
-                                               class="btn btn-sm text-dark"
-                                               title="Voir" th:href="'/user/signbooks/' + ${signBook.id}"><i class="fas fa-eye"></i> </a>
-                                        </td>
                                     </tr>
                                     <tr th:title="${signBook.description}" th:if="${signBook.signRequests.size() > 1}">
                                         <td></td>
@@ -66,13 +64,15 @@
                                             <div class="collapse" th:id="'row_' + ${signBook.id}">
                                                 <table class="table table-hover">
                                                     <th:block th:each="signRequest : ${signBook.signRequests}">
-                                                        <tr class='clickable-row' th:data-href="'/user/signbooks/' + ${signBook.id}">
-                                                            <td><i class="fas fa-file-alt"></i></td>
+                                                        <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
+                                                            <td>
+                                                                <i class="fas fa-file-alt"></i>
+                                                            </td>
                                                             <td th:text="${signRequest.title}"></td>
-                                                            <td class="text-center w-5">
-                                                                <a aria-label="Accéder à la demande"
-                                                                   class="btn btn-sm text-dark"
-                                                                   title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i class="fas fa-eye"></i> </a>
+                                                            <td>
+                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge bg-warning"><i class="fas fa-clock"></i> À signer</span>
+                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-danger"><i class="fas fa-clock"></i> Refusé</span></span>
+                                                                <span th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-success"><i class="fas fa-check-circle"></i> Terminé</span></span>
                                                             </td>
                                                         </tr>
                                                     </th:block>
@@ -89,27 +89,6 @@
                             </div>
                         </div>
                     </div>
-<!--                    <div class="card mb-2" th:if="${datas.size() > 0}">-->
-<!--                        <div class="card-body">-->
-<!--                            <h5 class="text-center"><b>Bouillons</b></h5>-->
-<!--                            <table class="table table-sm table-borderless">-->
-<!--                                <tbody>-->
-<!--                                <th:block th:each="data : ${datas}">-->
-<!--                                    <tr>-->
-<!--                                        <td class="text-break w-50" th:text="${data.name}"></td>-->
-<!--                                        <td class="text-break w-40"-->
-<!--                                            th:text="${#dates.format(data.createDate, 'dd/MM/yyyy HH:mm')}"></td>-->
-<!--                                        <td class="text-center w-10">-->
-<!--                                            <a title="Voir" th:href="'/user/datas/' + ${data.id} + '/update'"-->
-<!--                                               class="btn btn-warning">-->
-<!--                                                <i class="fas fa-pencil-alt"></i>-->
-<!--                                            </a>-->
-<!--                                        </td>-->
-<!--                                    </tr>-->
-<!--                                </th:block>-->
-<!--                                </tbody>-->
-<!--                            </table>-->
-<!--                        </div>-->
                 </div>
                 <div id="pendingList" class="d-flex col-12" th:if="${userEppn == authUserEppn}">
                     <div class="col-12 col-lg-10 card mb-2 mx-auto">
@@ -138,11 +117,6 @@
                                         </td>
                                         <td class="text-break w-20"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                         </td>
-                                        <td class="text-center w-5">
-                                            <a aria-label="Accéder à la demande"
-                                               class="btn btn-sm text-dark"
-                                               title="Voir" th:href="'/user/signbooks/' + ${signBook.id}"><i class="fas fa-eye"></i> </a>
-                                        </td>
                                     </tr>
                                     <tr th:title="${signBook.description}" th:if="${signBook.signRequests.size() > 1}">
                                         <td></td>
@@ -151,13 +125,15 @@
                                             <div class="collapse" th:id="'row_' + ${signBook.id}">
                                                 <table class="table table-hover">
                                                     <th:block th:each="signRequest : ${signBook.signRequests}">
-                                                        <tr class='clickable-row' th:data-href="'/user/signbooks/' + ${signRequest.parentSignBook.id}">
-                                                            <td><i class="fas fa-file-alt"></i></td>
+                                                        <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
+                                                            <td>
+                                                                <i class="fas fa-file-alt"></i>
+                                                            </td>
                                                             <td th:text="${signRequest.title}"></td>
-                                                            <td class="text-center w-5">
-                                                                <a aria-label="Accéder à la demande"
-                                                                   class="btn btn-sm text-dark"
-                                                                   title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i class="fas fa-eye"></i> </a>
+                                                            <td>
+                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge bg-warning"><i class="fas fa-clock"></i> À signer</span>
+                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-danger"><i class="fas fa-clock"></i> Refusé</span></span>
+                                                                <span th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-success"><i class="fas fa-check-circle"></i> Terminé</span></span>
                                                             </td>
                                                         </tr>
                                                     </th:block>
@@ -195,6 +171,7 @@
                     <!--                                </tbody>-->
                     <!--                            </table>-->
                     <!--                        </div>-->
+                </div>
                 </div>
             </div>
         </div>

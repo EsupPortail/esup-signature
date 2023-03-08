@@ -46,8 +46,8 @@ public class Workflow {
 
     private String managerRole;
 
-    @ElementCollection(targetClass =  ShareType.class)
-    private List<ShareType> authorizedShareTypes = new ArrayList<>();
+    @ElementCollection(targetClass =  ShareType.class, fetch = FetchType.EAGER)
+    private Set<ShareType> authorizedShareTypes = new HashSet<>();
 
     private Boolean publicUsage = false;
 
@@ -71,8 +71,6 @@ public class Workflow {
     private List<User> viewers = new ArrayList<>();
 
     private Boolean fromCode;
-
-    private Boolean visibility = false;
 
     private String namingTemplate;
 
@@ -232,11 +230,11 @@ public class Workflow {
         this.managerRole = managerRole;
     }
 
-    public List<ShareType> getAuthorizedShareTypes() {
+    public Set<ShareType> getAuthorizedShareTypes() {
         return authorizedShareTypes;
     }
 
-    public void setAuthorizedShareTypes(List<ShareType> authorizedShareTypes) {
+    public void setAuthorizedShareTypes(Set<ShareType> authorizedShareTypes) {
         this.authorizedShareTypes = authorizedShareTypes;
     }
 
@@ -262,17 +260,6 @@ public class Workflow {
 
     public void setFromCode(Boolean fromCode) {
         this.fromCode = fromCode;
-    }
-
-    public Boolean getVisibility() {
-        if (this.visibility == null) {
-            return false;
-        }
-        return visibility;
-    }
-
-    public void setVisibility(Boolean hidden) {
-        this.visibility = hidden;
     }
 
     public String getNamingTemplate() {

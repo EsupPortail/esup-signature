@@ -21,7 +21,7 @@
                                 <div class="form-group mb-3">
                                     <label th:for="'signType-' + ${workflowStep.id}">Type de signature :</label>
                                     <br>
-                                    <select class="slim-select-simple" name="signType" th:id="'signType-' + ${workflowStep.id}" th:disabled="${workflowStep.autoSign}">
+                                    <select class="form-select" name="signType" th:id="'signType-' + ${workflowStep.id}" th:disabled="${workflowStep.autoSign}">
                                         <th:block th:each="signType : ${signTypes}">
                                             <option th:value="${signType}"
                                                     th:text="#{'signbook.signtype.' + ${signType}}"
@@ -58,7 +58,7 @@
                                     <div class="form-check form-switch form-switch-md">
                                         <input type="checkbox" class="form-check-input" id="changeable" name="changeable" th:checked="${workflowStep.changeable}"/>
                                         <label for="changeable" class="form-check-label">
-                                            Le createur peut modifier les participants
+                                            Le créateur du circuit pourra modifier les participants de cette étape
                                         </label>
                                     </div>
                                     <div class="form-check form-switch form-switch-md">
@@ -73,7 +73,7 @@
                                             Le signataire peut apposer plusieurs signatures
                                         </label>
                                         <input type="checkbox" class="form-check-input" name="multiSign"
-                                                   th:checked="${workflowStep.multiSign}"/>
+                                               th:id="'multiSign-' + ${workflowStep.id}" th:checked="${workflowStep.multiSign}"/>
                                     </div>
                                     <div class="form-check form-switch form-switch-md">
                                         <label class="form-check-label">
@@ -146,7 +146,7 @@
                     </div>
                 </div>
                 <div th:if="${workflow.workflowSteps.size() > iterator.index + 1}" class="line"></div>
-                <div class="modal fade" th:id="'reSendModal' + ${workflowStep.id}" tabindex="-1"
+                <div class="modal fade" th:id="'reSendModal' + ${workflowStep.id}" data-bs-focus="false"
                      role="dialog" th:aria-labelledby="'reSendModal' + ${workflowStep.id}"
                      aria-hidden="true">
                     <div class="modal-dialog modal-lg" role="document">
@@ -160,8 +160,8 @@
                                 <div class="modal-body">
                                     <div class="form-group mb-3">
                                         <select class="select-users" name="recipientsEmails" th:id="'recipientsEmails' + ${workflowStep.id}"
-                                                size="5" multiple="multiple"
-                                                required="required" data-es-check-list="false">
+                                                multiple="multiple"
+                                                required="required" data-es-check-list="false" data-es-relative="true">
                                             <option data-placeholder="true"></option>
                                         </select>
                                     </div>

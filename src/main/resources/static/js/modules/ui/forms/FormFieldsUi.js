@@ -35,10 +35,10 @@ export class FormFieldsUi {
         let id = $(e.target).attr("id").split("_")[1];
         let valueServiceSlim = $("#valueServiceName_" + id)[0].slim;
         let valueTypeSlim = $("#valueType_" + id)[0].slim;
-        if(!$("#prefillCheckbox_" + id).is(':checked') && !$("#searchCheckbox_" + id).is(':checked') && valueServiceSlim.config.isEnabled) {
-            valueServiceSlim.set();
+        if(!$("#prefillCheckbox_" + id).is(':checked') && !$("#searchCheckbox_" + id).is(':checked')) {
+            valueServiceSlim.setSelected();
             valueServiceSlim.disable();
-            valueTypeSlim.set();
+            valueTypeSlim.setSelected();
             valueTypeSlim.disable();
         } else {
             valueServiceSlim.enable();
@@ -60,10 +60,10 @@ export class FormFieldsUi {
                     typeValues[j] = {text : value};
                 }
                 console.log(slim);
-                slim.set();
+                slim.setSelected();
                 slim.setData([]);
                 slim.setData(typeValues);
-                slim.set();
+                slim.setSelected();
                 slim.enable();
             }
         }
@@ -82,7 +82,7 @@ export class FormFieldsUi {
             console.log(fd.get("_csrf"));
             $.ajax({
                 type: "POST",
-                url: "/" + self.domain + "/forms/fields/" + $(this).attr('id') + "/update?_csrf=" + fd.get("_csrf"),
+                url: "/" + self.domain + "/forms/" + self.formId + "/fields/" + $(this).attr('id') + "/update?_csrf=" + fd.get("_csrf"),
                 data: fd,
                 processData: false,
                 contentType: false,

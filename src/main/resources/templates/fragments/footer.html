@@ -11,6 +11,7 @@
 			<span th:text="#{application.footer}"></span> - <span th:text="${#dates.year(#dates.createNow())}"></span> - <span th:text="${versionApp}"></span><span th:if="${profile != null}" th:text="' - ' + ${profile}"></span>
 		</footer>
 	</div>
+	<div id="snackbar"></div>
 	<div id="helpModal" class="modal fade" th:if="${globalProperties != null}">
 		<div class="modal-dialog modal-xl" role="document">
 			<div class="modal-content">

@@ -4,7 +4,7 @@ import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -84,7 +84,7 @@ public class WizardController {
                        @RequestParam(name="close", required = false) Boolean close,
                        @RequestParam(name="start", required = false) Boolean start,
                        @RequestBody JsonWorkflowStep step,
-                       Model model) throws EsupSignatureException {
+                       Model model) throws EsupSignatureRuntimeException {
         SignBook signBook = signBookService.getById(signBookId);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             if(step.getRecipientsEmails() != null && step.getRecipientsEmails().size() > 0) {
@@ -120,7 +120,7 @@ public class WizardController {
         try {
             signBookService.saveWorkflow(id, name, name, user);
             signBookService.addViewers(id, viewers);
-        } catch (EsupSignatureException e) {
+        } catch (EsupSignatureRuntimeException e) {
             return "user/wizard/wiz-save";
         }
         return "user/wizard/wizend";
@@ -151,7 +151,7 @@ public class WizardController {
                     return "user/wizard/wizend";
                 }
             }
-        } catch (EsupSignatureException e) {
+        } catch (EsupSignatureRuntimeException e) {
             logger.warn(e.getMessage());
         }
         return "user/wizard/wiz-init-steps-workflow";
@@ -185,18 +185,18 @@ public class WizardController {
     }
 
     @GetMapping(value = "/wizend-workflow/{id}")
-    public String wizEndWorkflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
+    public String wizEndWorkflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model) throws EsupSignatureRuntimeException {
         Workflow workflow = workflowService.getById(id);
         if(workflow.getCreateBy().getEppn().equals(userEppn)) {
             model.addAttribute("workflow", workflow);
             return "user/wizard/wizend";
         } else {
-            throw new EsupSignatureException("not authorized");
+            throw new EsupSignatureRuntimeException("not authorized");
         }
     }
 
     @PostMapping(value = "/wizend")
-    public String wizEnd(@ModelAttribute("userEppn") String userEppn, @SessionAttribute("signBookId") Long signBookId, @RequestParam(name="close") String close, Model model) throws EsupSignatureException, EsupSignatureMailException {
+    public String wizEnd(@ModelAttribute("userEppn") String userEppn, @SessionAttribute("signBookId") Long signBookId, @RequestParam(name="close") String close, Model model) throws EsupSignatureRuntimeException, EsupSignatureMailException {
         SignBook signBook = signBookService.getById(signBookId);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             signBookService.sendCCEmail(signBookId, null);
@@ -204,12 +204,12 @@ public class WizardController {
             model.addAttribute("close", close);
             return "user/wizard/wizend";
         } else {
-            throw new EsupSignatureException("not authorized");
+            throw new EsupSignatureRuntimeException("not authorized");
         }
     }
 
     @GetMapping(value = "/wizredirect")
-    public String wizRedirect(@ModelAttribute("userEppn") String userEppn, @SessionAttribute("signBookId") Long signBookId, HttpSession session, RedirectAttributes redirectAttributes) throws EsupSignatureException {
+    public String wizRedirect(@ModelAttribute("userEppn") String userEppn, @SessionAttribute("signBookId") Long signBookId, HttpSession session, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
         SignBook signBook = signBookService.getById(signBookId);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             if(signBook.getLiveWorkflow().getCurrentStep() == null) {
@@ -218,7 +218,7 @@ public class WizardController {
             session.removeAttribute("signBookId");
             return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
         } else {
-            throw new EsupSignatureException("not authorized");
+            throw new EsupSignatureRuntimeException("not authorized");
         }
     }
 
@@ -230,7 +230,7 @@ public class WizardController {
 		} else {
             try {
                 workflowService.delete(workflow);
-            } catch (EsupSignatureException e) {
+            } catch (EsupSignatureRuntimeException e) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
             }
         }

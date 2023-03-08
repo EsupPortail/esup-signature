@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="certificats" type="java.util.List<org.esupportail.esupsignature.entity.Certificat>"*/-->
+<!--/*@thymesVar id="sealCertificats" type="java.util.List<eu.europa.esig.dss.token.DSSPrivateKeyEntry>"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
 <header th:replace="fragments/nav :: nav"></header>
@@ -9,21 +10,46 @@
         <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item active">Logs</li>
+                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
+                <li class="breadcrumb-item active">Certificats</li>
             </ol>
         </nav>
         <div id="content" class="content">
+            <div class="card mb-1 col-lg-10 mx-auto" th:if="${sealCertificats != null && sealCertificats.size() > 0}">
+                <div class="card-body">
+                    <h5 class="text-center"><b>Certificat cachet</b></h5>
+                    <table class="table table-sm table-hover">
+                        <thead class="table-secondary">
+                        <tr>
+                            <th>Titre</th>
+                            <th>Date de création</th>
+                            <th>Date de fin</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="certificat : ${sealCertificats}">
+                            <tr>
+                                <td th:text="${certificat.certificate.subject.principal}"></td>
+                                <td th:text="${#dates.format(certificat.certificate.creationDate, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td th:text="${#dates.format(certificat.certificate.notAfter, 'dd/MM/yyyy HH:mm')}"></td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div id="addButton" class="fixed-action-btn-simple" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <a title="Ajouter un certificat" data-bs-toggle="modal" data-bs-target="#newCertificat" class="btn-floating btn-lg bg-primary waves-effect"><i class="fas fa-plus"></i></a>
             </div>
             <div class="card mb-1 col-lg-10 mx-auto">
                 <div class="card-body">
-                    <h5 class="text-center"><b>Certificats</b></h5>
+                    <h5 class="text-center"><b>Certificats pour les rôles</b></h5>
                     <table class="table table-sm table-hover">
                         <thead class="table-secondary">
                         <tr>
                             <th>Nom</th>
-                            <th>Date d'expiration</th>
+                            <th>Date d’expiration</th>
                             <th>Roles</th>
                             <th>Actions</th>
                         </tr>
@@ -70,7 +96,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="newCertificat" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal fade" id="newCertificat" data-bs-focus="false" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -93,7 +119,7 @@
                             </div>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="roleNames" class="col-form-label">Nom du role autorisé à acceder au formulaire</label>
+                            <label for="roleNames" class="col-form-label">Nom du role autorisé utiliser ce certificat</label>
                             <select id="roleNames" class="form-select" type="text" name="roleNames" multiple>
                                 <th:block th:each="newRole : ${roles}">
                                     <option th:text="${newRole}" th:value="${newRole}"></option>

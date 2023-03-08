@@ -32,7 +32,7 @@
                 <input type="hidden" id="sign-request-params" name="signRequestParamsJsonString" />
                 <div class="card mb-1 col-lg-10 mx-auto">
                     <div class="card-body">
-                        <h5 class="text-center mb-3">Paramètres généraux</h5>
+                        <h5 class="text-center mb-3"><b>Paramètres généraux</b></h5>
                         <div class="form-check form-switch form-switch-md">
                             <input id="returnToHomeAfterSign" class="form-check-input" type="checkbox" name="returnToHomeAfterSign" th:checked="${(user.returnToHomeAfterSign != null && user.returnToHomeAfterSign) || (user.returnToHomeAfterSign == null && globalProperties.returnToHomeAfterSign)}">
                             <label class="form-check-label" for="returnToHomeAfterSign">Retourner à l’accueil après chaque signature</label>
@@ -41,7 +41,7 @@
                 </div>
                 <div class="card mb-1 col-lg-10 mx-auto">
                     <div class="card-body">
-                        <h5 class="text-center mb-3">Paramètres de signature calligraphique</h5>
+                        <h5 class="text-center mb-3"><b>Paramètres de signature calligraphique</b></h5>
                         <div id="signImageForm">
                             <div class="row">
                                 <div id="mySigns" class="col-12 col-xxl-4 mb-2 text-center">
@@ -151,7 +151,7 @@
 
                 <div class="card  mb-1 col-lg-10 mx-auto">
                     <div class="card-header bg-white mx-auto">
-                        <h5 class="text-center">Configuration de la signature par défaut</h5>
+                        <h5 class="text-center"><b>Configuration de la signature par défaut</b></h5>
                         <div class="form-check form-switch form-switch-md">
                             <input id="saveSignRequestParams" class="form-check-input" type="checkbox" name="saveSignRequestParams" th:checked="${user.favoriteSignRequestParams == null}">
                             <label class="form-check-label" for="saveSignRequestParams">Enregistrer automatiquement mes paramètres après chaque signature</label>
@@ -167,7 +167,7 @@
 
                 <div th:unless="${user.userType.name() == 'external'}" class="card mb-1 col-lg-10 mx-auto" th:if="${validationToolsEnabled && !globalProperties.disableCertStorage}">
                     <div class="card-body">
-                        <h5 class="text-center">Paramètres de signature électronique (Facultatif)</h5>
+                        <h5 class="text-center"><b>Paramètres de signature électronique (Facultatif)</b></h5>
                         <div id="keyForm" class="form-group col-10 mx-auto">
                             <label class="col-form-label"><strong>Magasin de certificats</strong>
                                 <button data-bs-target="#collapseHelpKeyStore" data-bs-toggle="collapse" type="button"
@@ -216,7 +216,7 @@
 
                 <div th:unless="${user.userType.name() == 'external'}" class="card col-lg-10 mx-auto mb-5">
                     <div class="card-body">
-                        <h5 class="text-center">Fréquence des alertes</h5>
+                        <h5 class="text-center"><b>Fréquence des alertes</b></h5>
                         <div class="form-group col-10 mx-auto" id="emailAlertFrequency">
                             <label class="col-form-label" for="emailAlertFrequency_id"> <strong>Fréquence
                                 d'alerte</strong>
@@ -273,7 +273,7 @@
         </div>
     </div>
 </main>
-<div class="modal fade" id="testKeystore" tabindex="-1" role="dialog" aria-labelledby="testKeystore" aria-hidden="true">
+<div class="modal fade" id="testKeystore" data-bs-focus="false" role="dialog" aria-labelledby="testKeystore" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form th:action="'/user/users/view-cert'" method="post">
@@ -300,7 +300,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="removeKeystore" tabindex="-1" role="dialog" aria-labelledby="testKeystore" aria-hidden="true">
+<div class="modal fade" id="removeKeystore" data-bs-focus="false" role="dialog" aria-labelledby="testKeystore" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form action="/user/users/remove-keystore" method="get">

@@ -128,8 +128,10 @@ public class FileService {
 	            os.write(buffer, 0, length);
 	        }
 	    } finally {
-	        is.close();
-	        os.close();
+			if(is != null && os != null) {
+				is.close();
+				os.close();
+			}
 	    }
 	}
 	
@@ -244,7 +246,13 @@ public class FileService {
 				String typeSign = "Signature calligraphique";
 				if(signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) typeSign = "Visa";
 				if(signType.equals(SignType.certSign) || signType.equals(SignType.nexuSign)) typeSign = "Signature électronique";
-				if(user.getRoles().contains("ROLE_OTP")) typeSign = "Signature OTP : " + user.getPhone();
+				if(user.getRoles().contains("ROLE_OTP")) {
+					if(user.getPhone() != null) {
+						typeSign = "Signature OTP : " + user.getPhone();
+					} else {
+						typeSign = "Signature OTP";
+					}
+				}
 				graphics2D.drawString(typeSign, widthOffset, fm.getHeight());
 				lineCount++;
 			}

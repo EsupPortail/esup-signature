@@ -35,14 +35,7 @@ export default class FormSignsUi {
             url: "/" + self.domain + "/forms/update-signs-order/" + self.formId + "?"+ this.csrf.parameterName +"=" + this.csrf.token,
             data: {"srpMap" : JSON.stringify(srpMap)},
             success: function(data,status) {
-                if(i === fieldsUpdates.length) {
-                    let message = new Message();
-                    message.type = "success";
-                    message.text = "Modifications enregistrées";
-                    message.object = null;
-                    self.toast.launch(message);
-                }
-                i++;
+                document.location.reload();
             },
             error: function(data, status) {
                 let message = new Message();
