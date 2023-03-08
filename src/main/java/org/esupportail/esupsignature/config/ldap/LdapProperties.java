@@ -42,7 +42,7 @@ public class LdapProperties {
      */
     private String userIdSearchFilter;
     /**
-     * Le champ dans lequel on trouve la partie gauche de l’EPPN (par défaut = userIdSearchFilter
+     * Le champ dans lequel on trouve la partie gauche de l’EPPN (par défaut = userIdSearchFilter)
      */
     private String eppnLeftPartSearchFilter;
 

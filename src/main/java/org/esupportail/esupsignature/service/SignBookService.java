@@ -901,7 +901,7 @@ public class SignBookService {
                     if (!emailSended) {
                         try {
                             mailService.sendEmailAlerts(signRequest, userEppn, data, forceSendEmail);
-                            if(globalProperties.getSendMailToViewers()) {
+                            if(globalProperties.getSendCreationMailToViewers()) {
                                 mailService.sendSignRequestAlertCC(signRequest);
                             }
                             emailSended = true;
