@@ -65,10 +65,6 @@ public class SignBook {
 
     @JsonIgnore
     @Transient
-    transient List<Log> logs;
-
-    @JsonIgnore
-    @Transient
     transient String comment;
 
     @ManyToMany
@@ -190,14 +186,6 @@ public class SignBook {
 
     public void setSignRequests(List<SignRequest> signRequests) {
         this.signRequests = signRequests;
-    }
-
-    public List<Log> getLogs() {
-        return logs;
-    }
-
-    public void setLogs(List<Log> logs) {
-        this.logs = logs;
     }
 
     public String getComment() {

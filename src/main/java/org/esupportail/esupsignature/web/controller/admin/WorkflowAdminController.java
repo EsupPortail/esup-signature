@@ -32,7 +32,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
 
-@RequestMapping({"/namager/workflows", "/admin/workflows"})
+@RequestMapping({"/manager/workflows", "/admin/workflows"})
 @Controller
 public class WorkflowAdminController {
 
@@ -118,7 +118,7 @@ public class WorkflowAdminController {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit possède déjà ce préfixe"));
 			return "redirect:/admin/workflows/";
 		}
-		return "redirect:/admin/workflows/" + workflow.getId();
+		return "redirect:/admin/workflows/update/" + workflow.getId();
 	}
 
     @GetMapping(value = "/update/{id}")

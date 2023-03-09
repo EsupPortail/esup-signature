@@ -223,7 +223,7 @@ public class SignBookService {
             startDateFilter = Timestamp.valueOf(startLocalDateTime);
             endDateFilter = Timestamp.valueOf(endLocalDateTime);
         }
-        Page<SignBook> signBooks = new PageImpl<>(new ArrayList<>());
+        Page<SignBook> signBooks;
         User creatorFilterUser = null;
         if(creatorFilter != null) {
             creatorFilterUser = userService.getUserByEppn(creatorFilter);
@@ -247,8 +247,7 @@ public class SignBookService {
         } else if(statusFilter.equals("followByMe")) {
             signBooks = signBookRepository.findByViewersContaining(user, pageable);
         } else if(statusFilter.equals("sharedSign")) {
-//            signBooks = signBookRepository.findByViewersContaining(userService.getUserByEppn(userEppn), pageable);
-            //TODO
+            signBooks = signBookRepository.findOnShareByEppn(user.getEppn(), userFilter, workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
         } else if(statusFilter.equals("hided")) {
             signBooks = signBookRepository.findByHidedById(user, pageable);
         } else if(statusFilter.equals("empty")) {
@@ -271,17 +270,16 @@ public class SignBookService {
         Date endDateFilter = calendar.getTime();
         if(dateFilter != null && !dateFilter.isEmpty()) {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-            Date formattedDate = null;
             try {
-                formattedDate = formatter.parse(dateFilter);
+                Date formattedDate = formatter.parse(dateFilter);
+                LocalDateTime nowLocalDateTime = formattedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                LocalDateTime startLocalDateTime = nowLocalDateTime.with(LocalTime.of(0, 0, 0));
+                LocalDateTime endLocalDateTime = nowLocalDateTime.with(LocalTime.of(23, 59, 59));
+                startDateFilter = Timestamp.valueOf(startLocalDateTime);
+                endDateFilter = Timestamp.valueOf(endLocalDateTime);
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            LocalDateTime nowLocalDateTime = formattedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            LocalDateTime startLocalDateTime = nowLocalDateTime.with(LocalTime.of(0, 0, 0));
-            LocalDateTime endLocalDateTime = nowLocalDateTime.with(LocalTime.of(23, 59, 59));
-            startDateFilter = Timestamp.valueOf(startLocalDateTime);
-            endDateFilter = Timestamp.valueOf(endLocalDateTime);
         }
         User creatorFilterUser = null;
         if(creatorFilter != null) {
@@ -291,8 +289,7 @@ public class SignBookService {
         if(statusFilter != null && !statusFilter.isEmpty()) {
             status = SignRequestStatus.valueOf(statusFilter);
         }
-        Page<SignBook> signBooks = signBookRepository.findSignBooksAllPaged(status, workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
-        return signBooks;
+        return signBookRepository.findSignBooksAllPaged(status, workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
     }
 
     public List<SignBook> filterByUserShares(String userEppn, String authUserEppn, List<SignBook> signBooksToSignToCheck) {
