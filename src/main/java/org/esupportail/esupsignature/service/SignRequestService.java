@@ -575,8 +575,7 @@ public class SignRequestService {
 
 	@Transactional
 	public void deleteSignRequest(Long signRequestId, String userEppn) {
-		//TODO critères de suppression ou en conf (if deleteDefinitive)
-		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
+		SignRequest signRequest = signRequestRepository.findById(signRequestId).orElseThrow();
 		if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
 			deleteDefinitive(signRequestId);
 		} else {
