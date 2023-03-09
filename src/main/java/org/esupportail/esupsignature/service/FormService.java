@@ -538,7 +538,11 @@ public class FormService {
 			Optional<Field> optFieldSetup = formSetup.getFields().stream().filter(field1 -> field1.getName().equals(field.getName())).findFirst();
 			if(optFieldSetup.isPresent()) {
 				Field fieldSetup = optFieldSetup.get();
-				fieldService.updateField(field.getId(), fieldSetup.getDescription(), fieldSetup.getType(), fieldSetup.getFavorisable(), fieldSetup.getRequired(), fieldSetup.getReadOnly(), fieldSetup.getExtValueServiceName(), fieldSetup.getExtValueType(), fieldSetup.getExtValueReturn(), fieldSetup.getSearchServiceName(), fieldSetup.getSearchType(), fieldSetup.getSearchReturn(), fieldSetup.getStepZero(), null);
+				List<Long> workflowStepsIds = new ArrayList<>();
+				for(WorkflowStep workflowStep : fieldSetup.getWorkflowSteps()) {
+					workflowStepsIds.add(form.getWorkflow().getWorkflowSteps().get(formSetup.getWorkflow().getWorkflowSteps().stream().map(WorkflowStep::getId).collect(Collectors.toList()).indexOf(workflowStep.getId())).getId());
+				}
+				fieldService.updateField(field.getId(), fieldSetup.getDescription(), fieldSetup.getType(), fieldSetup.getFavorisable(), fieldSetup.getRequired(), fieldSetup.getReadOnly(), fieldSetup.getExtValueServiceName(), fieldSetup.getExtValueType(), fieldSetup.getExtValueReturn(), fieldSetup.getSearchServiceName(), fieldSetup.getSearchType(), fieldSetup.getSearchReturn(), fieldSetup.getStepZero(), workflowStepsIds);
 			}
 		}
 		formSetup.setName(form.getName());
