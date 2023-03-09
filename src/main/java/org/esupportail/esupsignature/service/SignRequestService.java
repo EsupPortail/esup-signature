@@ -332,7 +332,7 @@ public class SignRequestService {
 		}
 		updateStatus(signRequest.getId(), SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS", null, null, null, authUserEppn, authUserEppn);
 		customMetricsService.incValue("esup-signature.signrequests", "new");
-		for (Target target : signRequest.getParentSignBook().getLiveWorkflow().getTargets().stream().filter(t -> fsAccessFactoryService.getPathIOType(t.getTargetUri()).equals(DocumentIOType.rest)).collect(Collectors.toList())) {
+		for (Target target : signRequest.getParentSignBook().getLiveWorkflow().getTargets().stream().filter(t -> t != null && fsAccessFactoryService.getPathIOType(t.getTargetUri()).equals(DocumentIOType.rest)).collect(Collectors.toList())) {
 			RestTemplate restTemplate = new RestTemplate();
 			restTemplate.getForEntity(target.getTargetUri() + "?signRequestId=" + signRequest.getId() + "&status=pending&step=" + signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), String.class);
 		}
