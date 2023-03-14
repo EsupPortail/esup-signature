@@ -28,6 +28,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -256,15 +257,19 @@ public class UserService {
             authName = authentication.getName();
         }
         logger.info("user control for " + authName);
-        List<PersonLdapLight> personLdaps =  Objects.requireNonNull(ldapPersonService).getPersonLdapLight(authName);
-        if(personLdaps.size() > 0) {
-            eppn = personLdaps.get(0).getEduPersonPrincipalName();
-            if (eppn == null) {
-                eppn = buildEppn(authName);
+        if(ldapGroupService != null && StringUtils.hasText(authName)) {
+            List<PersonLdapLight> personLdaps = ldapPersonService.getPersonLdapLight(authName);
+            if (personLdaps.size() > 0) {
+                eppn = personLdaps.get(0).getEduPersonPrincipalName();
+                if (eppn == null) {
+                    eppn = buildEppn(authName);
+                }
+                mail = personLdaps.get(0).getMail();
+                name = personLdaps.get(0).getSn();
+                firstName = personLdaps.get(0).getGivenName();
+            } else if(eppn == null) {
+                throw new EsupSignatureUserException("user " + authName + " not found");
             }
-            mail = personLdaps.get(0).getMail();
-            name = personLdaps.get(0).getSn();
-            firstName = personLdaps.get(0).getGivenName();
         }
         return createUser(eppn, name, firstName, mail, userType, true);
     }
