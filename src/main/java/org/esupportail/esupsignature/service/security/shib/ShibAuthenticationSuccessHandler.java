@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service.security.shib;
 
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.UserService;
@@ -35,12 +34,7 @@ public class ShibAuthenticationSuccessHandler extends SavedRequestAwareAuthentic
 		} else {
 			name = new String(name.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
 			firstname = new String(firstname.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
-			User user = userService.getUserByEmail(email);
-			if(user != null) {
-				userService.updateUserInfos(user.getId(), eppn, name, firstname, UserType.shib);
-			} else {
-				userService.createUser(eppn, name, firstname, email, UserType.shib, true);
-			}
+			userService.createUserWithAuthentication(eppn, name, firstname, email, authentication, UserType.shib);
 		}
 		httpServletRequest.getSession().setAttribute("securityServiceName", "ShibSecurityServiceImpl");
 	}

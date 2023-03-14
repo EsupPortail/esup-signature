@@ -2,6 +2,8 @@ package org.esupportail.esupsignature.service.security.shib;
 
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
+import org.esupportail.esupsignature.repository.MappingFiltersGroupsRepository;
+import org.esupportail.esupsignature.repository.MappingGroupsRolesRepository;
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.SecurityService;
@@ -40,6 +42,12 @@ public class ShibSecurityServiceImpl implements SecurityService {
 	public void setSpelGroupService(SpelGroupService spelGroupService) {
 		this.spelGroupService = spelGroupService;
 	}
+
+	@Resource
+	private MappingFiltersGroupsRepository mappingFiltersGroupsRepository;
+
+	@Resource
+	private MappingGroupsRolesRepository mappingGroupsRolesRepository;
 
 	@Resource
 	private ShibProperties shibProperties;
@@ -111,6 +119,8 @@ public class ShibSecurityServiceImpl implements SecurityService {
 		shibAuthenticatedUserDetailsService.setGroup2UserRoleService(group2UserRoleService);
 		shibAuthenticatedUserDetailsService.setMappingGroupesRoles(webSecurityProperties.getMappingGroupsRoles());
 		shibAuthenticatedUserDetailsService.setLdapGroupService(ldapGroupService);
+		shibAuthenticatedUserDetailsService.setMappingFiltersGroupsRepository(mappingFiltersGroupsRepository);
+		shibAuthenticatedUserDetailsService.setMappingGroupsRolesRepository(mappingGroupsRolesRepository);
 		return shibAuthenticatedUserDetailsService;
 	}
 

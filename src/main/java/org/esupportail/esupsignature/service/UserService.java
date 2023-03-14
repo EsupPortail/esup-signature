@@ -248,7 +248,7 @@ public class UserService {
     }
 
     @Transactional
-    public User createUserWithAuthentication(Authentication authentication) {
+    public User createUserWithAuthentication(String eppn, String name, String firstName, String mail, Authentication authentication, UserType userType) {
         String authName;
         if (authentication.getName().contains("@")) {
             authName = authentication.getName().substring(0, authentication.getName().indexOf("@"));
@@ -257,14 +257,16 @@ public class UserService {
         }
         logger.info("user control for " + authName);
         List<PersonLdapLight> personLdaps =  Objects.requireNonNull(ldapPersonService).getPersonLdapLight(authName);
-        String eppn = personLdaps.get(0).getEduPersonPrincipalName();
-        if (eppn == null) {
-            eppn = buildEppn(authName);
+        if(personLdaps.size() > 0) {
+            eppn = personLdaps.get(0).getEduPersonPrincipalName();
+            if (eppn == null) {
+                eppn = buildEppn(authName);
+            }
+            mail = personLdaps.get(0).getMail();
+            name = personLdaps.get(0).getSn();
+            firstName = personLdaps.get(0).getGivenName();
         }
-        String mail = personLdaps.get(0).getMail();
-        String name = personLdaps.get(0).getSn();
-        String firstName = personLdaps.get(0).getGivenName();
-        return createUser(eppn, name, firstName, mail, UserType.ldap, true);
+        return createUser(eppn, name, firstName, mail, userType, true);
     }
 
     @Transactional
@@ -783,15 +785,6 @@ public class UserService {
     public String getFavoriteSignRequestParamsJson(String userEppn) throws JsonProcessingException {
         User user = getUserByEppn(userEppn);
         return objectMapper.writer().writeValueAsString(user.getFavoriteSignRequestParams());
-    }
-
-    @Transactional
-    public void updateUserInfos(Long id, String eppn, String name, String firstname, UserType userType) {
-        User user = getById(id);
-        user.setEppn(eppn);
-        user.setName(name);
-        user.setFirstname(firstname);
-        user.setUserType(userType);
     }
 
     @Transactional
