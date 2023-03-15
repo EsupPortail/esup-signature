@@ -28,6 +28,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -96,11 +97,7 @@ public class UserService {
     }
 
     public User getByEppn(String eppn) {
-        List<User> users = userRepository.findByEppn(eppn);
-        if(users.size() > 0) {
-            return users.get(0);
-        }
-        return null;
+        return userRepository.findByEppn(eppn).orElse(null);
     }
 
     public User getSystemUser() {
@@ -134,26 +131,12 @@ public class UserService {
     }
 
     public User getUserByEmail(String email) {
-        if (userRepository.countByEmail(email.toUpperCase()) > 0) {
-            return userRepository.findByEmail(email).get(0);
-        } else {
-            return createUserWithEmail(email);
-        }
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        return optionalUser.orElseGet(() -> createUserWithEmail(email));
     }
 
     public User isUserByEmailExist(String email) {
-        if (userRepository.countByEmail(email.toUpperCase()) > 0) {
-            return userRepository.findByEmail(email).get(0);
-        }
-        return null;
-    }
-
-    public User getGroupUserByEmail(String email) {
-        if (userRepository.countByEmailIgnoreCaseAndUserType(email, UserType.group) > 0) {
-            return userRepository.findByEmailAndUserType(email, UserType.group).get(0);
-        } else {
-            return createGroupUserWithEmail(email);
-        }
+        return userRepository.findByEmail(email).orElse(null);
     }
 
     @Transactional
@@ -248,7 +231,7 @@ public class UserService {
     }
 
     @Transactional
-    public User createUserWithAuthentication(Authentication authentication) {
+    public User createUserWithAuthentication(String eppn, String name, String firstName, String mail, Authentication authentication, UserType userType) {
         String authName;
         if (authentication.getName().contains("@")) {
             authName = authentication.getName().substring(0, authentication.getName().indexOf("@"));
@@ -256,28 +239,38 @@ public class UserService {
             authName = authentication.getName();
         }
         logger.info("user control for " + authName);
-        List<PersonLdapLight> personLdaps =  Objects.requireNonNull(ldapPersonService).getPersonLdapLight(authName);
-        String eppn = personLdaps.get(0).getEduPersonPrincipalName();
-        if (eppn == null) {
-            eppn = buildEppn(authName);
+        if(ldapGroupService != null && StringUtils.hasText(authName)) {
+            List<PersonLdapLight> personLdaps = ldapPersonService.getPersonLdapLight(authName);
+            if (personLdaps.size() > 0) {
+                eppn = personLdaps.get(0).getEduPersonPrincipalName();
+                if (eppn == null) {
+                    eppn = buildEppn(authName);
+                }
+                mail = personLdaps.get(0).getMail();
+                name = personLdaps.get(0).getSn();
+                firstName = personLdaps.get(0).getGivenName();
+            } else if(eppn == null) {
+                throw new EsupSignatureUserException("user " + authName + " not found");
+            }
         }
-        String mail = personLdaps.get(0).getMail();
-        String name = personLdaps.get(0).getSn();
-        String firstName = personLdaps.get(0).getGivenName();
-        return createUser(eppn, name, firstName, mail, UserType.ldap, true);
+        return createUser(eppn, name, firstName, mail, userType, true);
     }
 
     @Transactional
     public User createUser(String eppn, String name, String firstName, String email, UserType userType, boolean updateCurrentUserRoles) {
         User user;
-        if (userRepository.countByEppn(eppn) > 0) {
-            user = getByEppn(eppn);
-        } else if(userRepository.countByEmail(email.toUpperCase()) > 0) {
-            user = userRepository.findByEmail(email).get(0);
+        Optional<User> optionalUser = userRepository.findByEppn(eppn);
+        if (optionalUser.isPresent()) {
+            user = optionalUser.get();
         } else {
-            logger.info("creation de l'utilisateur " + eppn);
-            user = new User();
-            user.setKeystore(null);
+            optionalUser = userRepository.findByEmail(email);
+            if (optionalUser.isPresent()) {
+                user = optionalUser.get();
+            } else {
+                logger.info("creation de l'utilisateur " + eppn);
+                user = new User();
+                user.setKeystore(null);
+            }
         }
         user.setName(name);
         user.setFirstname(firstName);
@@ -535,8 +528,8 @@ public class UserService {
                 if (recipientEmail.contains("*")) {
                     recipientEmail = recipientEmail.split("\\*")[1];
                 }
-                List<User> users = userRepository.findByEmail(recipientEmail);
-                if (users.size() == 0 || users.get(0).getUserType().equals(UserType.external)) {
+                Optional<User> optionalUser = userRepository.findByEmail(recipientEmail);
+                if (optionalUser.isEmpty() || optionalUser.get().getUserType().equals(UserType.external)) {
                     List<String> groupUsers = new ArrayList<>();
                     try {
                         groupUsers.addAll(userListService.getUsersEmailFromList(recipientEmail));
@@ -663,8 +656,7 @@ public class UserService {
     @Transactional
     public Map<UiParams, String> getUiParams(String authUserEppn) {
         User user = getUserByEppn(authUserEppn);
-        Map<UiParams, String> uiParamsStringMap = new HashMap<>(user.getUiParams());
-        return uiParamsStringMap;
+        return user.getUiParams();
     }
 
     @Transactional
@@ -786,15 +778,6 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUserInfos(Long id, String eppn, String name, String firstname, UserType userType) {
-        User user = getById(id);
-        user.setEppn(eppn);
-        user.setName(name);
-        user.setFirstname(firstname);
-        user.setUserType(userType);
-    }
-
-    @Transactional
     public String getDefaultImage(String eppn) throws IOException {
         User user = getUserByEppn(eppn);
         return fileService.getBase64Image(fileService.getDefaultImage(user.getName(), user.getFirstname()), "default");
@@ -812,7 +795,7 @@ public class UserService {
 
     @Transactional
     public void anonymize(Long id) {
-        User user = userRepository.findById(id).get();
+        User user = userRepository.findById(id).orElseThrow();
         List<User> users = userRepository.findByReplaceByUser(user);
         for(User user1 : users) {
             user1.setReplaceByUser(user.getReplaceByUser());
@@ -864,7 +847,7 @@ public class UserService {
 
     @Transactional
     public void delete(Long id) {
-        User user = userRepository.findById(id).get();
+        User user = userRepository.findById(id).orElseThrow();
         userRepository.delete(user);
     }
 }
