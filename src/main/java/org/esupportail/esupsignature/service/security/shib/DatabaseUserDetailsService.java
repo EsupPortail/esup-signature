@@ -32,7 +32,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
         User user = userService.getByEppn(eppn);
         if(user == null) {
             try {
-                userService.createUserWithEppn(eppn);
+                user = userService.createUserWithEppn(eppn);
             } catch (EsupSignatureUserException e) {
                 logger.warn("unable to create user " + eppn);
             }
