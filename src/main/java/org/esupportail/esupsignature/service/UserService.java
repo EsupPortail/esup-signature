@@ -97,11 +97,7 @@ public class UserService {
     }
 
     public User getByEppn(String eppn) {
-        List<User> users = userRepository.findByEppn(eppn);
-        if(users.size() > 0) {
-            return users.get(0);
-        }
-        return null;
+        return userRepository.findByEppn(eppn).orElse(null);
     }
 
     public User getSystemUser() {
@@ -135,26 +131,12 @@ public class UserService {
     }
 
     public User getUserByEmail(String email) {
-        if (userRepository.countByEmail(email.toUpperCase()) > 0) {
-            return userRepository.findByEmail(email).get(0);
-        } else {
-            return createUserWithEmail(email);
-        }
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        return optionalUser.orElseGet(() -> createUserWithEmail(email));
     }
 
     public User isUserByEmailExist(String email) {
-        if (userRepository.countByEmail(email.toUpperCase()) > 0) {
-            return userRepository.findByEmail(email).get(0);
-        }
-        return null;
-    }
-
-    public User getGroupUserByEmail(String email) {
-        if (userRepository.countByEmailIgnoreCaseAndUserType(email, UserType.group) > 0) {
-            return userRepository.findByEmailAndUserType(email, UserType.group).get(0);
-        } else {
-            return createGroupUserWithEmail(email);
-        }
+        return userRepository.findByEmail(email).orElse(null);
     }
 
     @Transactional
@@ -277,14 +259,18 @@ public class UserService {
     @Transactional
     public User createUser(String eppn, String name, String firstName, String email, UserType userType, boolean updateCurrentUserRoles) {
         User user;
-        if (userRepository.countByEppn(eppn) > 0) {
-            user = getByEppn(eppn);
-        } else if(userRepository.countByEmail(email.toUpperCase()) > 0) {
-            user = userRepository.findByEmail(email).get(0);
+        Optional<User> optionalUser = userRepository.findByEppn(eppn);
+        if (optionalUser.isPresent()) {
+            user = optionalUser.get();
         } else {
-            logger.info("creation de l'utilisateur " + eppn);
-            user = new User();
-            user.setKeystore(null);
+            optionalUser = userRepository.findByEmail(email);
+            if (optionalUser.isPresent()) {
+                user = optionalUser.get();
+            } else {
+                logger.info("creation de l'utilisateur " + eppn);
+                user = new User();
+                user.setKeystore(null);
+            }
         }
         user.setName(name);
         user.setFirstname(firstName);
@@ -542,8 +528,8 @@ public class UserService {
                 if (recipientEmail.contains("*")) {
                     recipientEmail = recipientEmail.split("\\*")[1];
                 }
-                List<User> users = userRepository.findByEmail(recipientEmail);
-                if (users.size() == 0 || users.get(0).getUserType().equals(UserType.external)) {
+                Optional<User> optionalUser = userRepository.findByEmail(recipientEmail);
+                if (optionalUser.isEmpty() || optionalUser.get().getUserType().equals(UserType.external)) {
                     List<String> groupUsers = new ArrayList<>();
                     try {
                         groupUsers.addAll(userListService.getUsersEmailFromList(recipientEmail));
@@ -670,8 +656,7 @@ public class UserService {
     @Transactional
     public Map<UiParams, String> getUiParams(String authUserEppn) {
         User user = getUserByEppn(authUserEppn);
-        Map<UiParams, String> uiParamsStringMap = new HashMap<>(user.getUiParams());
-        return uiParamsStringMap;
+        return user.getUiParams();
     }
 
     @Transactional
@@ -810,7 +795,7 @@ public class UserService {
 
     @Transactional
     public void anonymize(Long id) {
-        User user = userRepository.findById(id).get();
+        User user = userRepository.findById(id).orElseThrow();
         List<User> users = userRepository.findByReplaceByUser(user);
         for(User user1 : users) {
             user1.setReplaceByUser(user.getReplaceByUser());
@@ -862,7 +847,7 @@ public class UserService {
 
     @Transactional
     public void delete(Long id) {
-        User user = userRepository.findById(id).get();
+        User user = userRepository.findById(id).orElseThrow();
         userRepository.delete(user);
     }
 }
