@@ -79,7 +79,7 @@ public class SignRequest {
 
     private Date lastNotifDate;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
     @OneToOne(cascade = CascadeType.DETACH)

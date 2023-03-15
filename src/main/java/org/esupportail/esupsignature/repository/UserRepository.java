@@ -9,12 +9,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserRepository extends CrudRepository<User, Long>  {
     Page<User> findAll(Pageable pageable);
     @Query("select distinct u.name as name, u.firstname as firstname, u.eppn as eppn, u.email as email from User u")
     List<UserDto> findAllUsersDto();
-    List<User> findByEmail(String email);
+    Optional<User> findByEmail(String email);
     List<User> findByReplaceByUser(User user);
     List<User> findByEmailAndUserType(String email, UserType userType);
     List<User> findByUserType(UserType userType);
@@ -22,7 +23,7 @@ public interface UserRepository extends CrudRepository<User, Long>  {
     Page<User> findByUserTypeNot(UserType userType, Pageable pageable);
     @Query("select u from User u where (u.eppn = :eppn or u.phone = :phone or u.email = :email) and u.userType != 'system'")
     Page<User> findByEppnOrPhoneOrEmailAndUserTypeNot(String eppn, String phone, String email, Pageable pageable);
-    List<User> findByEppn(String eppn);
+    Optional<User> findByEppn(String eppn);
     @Query("select u from User u where u.eppn like :eppn%")
     List<User> findByEppnStartingWith(String eppn);
     @Query("select u from User u where upper(u.name) like :name%")
@@ -33,10 +34,6 @@ public interface UserRepository extends CrudRepository<User, Long>  {
     List<String> getAllRoles();
     List<User> findByManagersRolesIn(List<String> role);
     List<User> findByManagersRolesNotNull();
-    @Query(value = "select count(*) from user_account as u where u.eppn = :eppn", nativeQuery = true)
-    Long countByEppn(String eppn);
-    @Query(value = "select count(*) from user_account as u where u.email = :email", nativeQuery = true)
-    Long countByEmail(String email);
     Long countByEmailIgnoreCaseAndUserType(String email, UserType userType);
     User findByPhone(String phone);
 }
