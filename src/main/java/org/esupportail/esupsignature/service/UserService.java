@@ -135,7 +135,7 @@ public class UserService {
     }
 
     public User getUserByEmail(String email) {
-        if (userRepository.countByEmail(email.toUpperCase()) > 0) {
+        if (userRepository.countByEmail(email) > 0) {
             return userRepository.findByEmail(email).get(0);
         } else {
             return createUserWithEmail(email);
@@ -143,7 +143,7 @@ public class UserService {
     }
 
     public User isUserByEmailExist(String email) {
-        if (userRepository.countByEmail(email.toUpperCase()) > 0) {
+        if (userRepository.countByEmail(email) > 0) {
             return userRepository.findByEmail(email).get(0);
         }
         return null;
@@ -279,7 +279,7 @@ public class UserService {
         User user;
         if (userRepository.countByEppn(eppn) > 0) {
             user = getByEppn(eppn);
-        } else if(userRepository.countByEmail(email.toUpperCase()) > 0) {
+        } else if(userRepository.countByEmail(email) > 0) {
             user = userRepository.findByEmail(email).get(0);
         } else {
             logger.info("creation de l'utilisateur " + eppn);

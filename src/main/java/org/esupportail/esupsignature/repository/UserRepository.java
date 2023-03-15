@@ -35,7 +35,7 @@ public interface UserRepository extends CrudRepository<User, Long>  {
     List<User> findByManagersRolesNotNull();
     @Query(value = "select count(*) from user_account as u where u.eppn = :eppn", nativeQuery = true)
     Long countByEppn(String eppn);
-    @Query(value = "select count(*) from user_account as u where upper(u.email) = :email", nativeQuery = true)
+    @Query(value = "select count(*) from user_account as u where u.email = :email", nativeQuery = true)
     Long countByEmail(String email);
     Long countByEmailIgnoreCaseAndUserType(String email, UserType userType);
     User findByPhone(String phone);
