@@ -8,10 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class UserListService {
@@ -30,8 +27,8 @@ public class UserListService {
             if(listName.contains("*")) {
                 listName = listName.split("\\*")[1];
             }
-            List<User> testUserIsGroup = userRepository.findByEmail(listName);
-            if(testUserIsGroup.size() == 0 || testUserIsGroup.get(0).getUserType().equals(UserType.group)) {
+            Optional<User> optionalUser = userRepository.findByEmail(listName);
+            if(optionalUser.isEmpty() || optionalUser.get().getUserType().equals(UserType.group)) {
                 List<String> emails = new ArrayList<>();
                 for (UserList userList : userLists) {
                     emails.addAll(userList.getUsersEmailFromList(listName));
