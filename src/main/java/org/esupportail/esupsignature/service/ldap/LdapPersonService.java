@@ -38,8 +38,7 @@ public class LdapPersonService {
 
     public List<PersonLdapLight> searchLight(String searchString) {
         String formattedFilter = MessageFormat.format(ldapProperties.getUsersSearchFilter(), (Object[]) new String[] { searchString });
-        logger.debug("search on ldap with : " + formattedFilter);
-
+        logger.debug("search person light on ldap with : " + formattedFilter);
         return (List<PersonLdapLight>) personLdapLightRepository.findAll(LdapQueryBuilder.query().countLimit(10).base(ldapProperties.getSearchBase()).filter(formattedFilter));
     }
 
