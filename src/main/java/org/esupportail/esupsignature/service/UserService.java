@@ -245,7 +245,7 @@ public class UserService {
         }
         logger.info("user control for " + authName);
         logger.debug("authentication attributs found : " + eppn + ", " + name + ", " + firstName + ", " + mail);
-        if(ldapGroupService != null && StringUtils.hasText(authName)) {
+        if(ldapPersonService != null && StringUtils.hasText(authName)) {
             List<PersonLdapLight> personLdaps = new ArrayList<>();
             if (userType.equals(UserType.ldap)) {
                 personLdaps = ldapPersonService.getPersonLdapLight(authName);
