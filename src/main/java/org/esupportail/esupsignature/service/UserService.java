@@ -97,7 +97,12 @@ public class UserService {
     }
 
     public User getByEppn(String eppn) {
-        return userRepository.findByEppn(eppn).orElse(null);
+        User user = userRepository.findByEppn(eppn).orElse(null);
+        if(user != null) {
+            return user;
+        } else {
+            throw new EsupSignatureRuntimeException("eppn " + eppn + " not found");
+        }
     }
 
     public User getSystemUser() {
@@ -239,9 +244,14 @@ public class UserService {
             authName = authentication.getName();
         }
         logger.info("user control for " + authName);
-        logger.debug("shib attributs found : " + eppn + ", " + name + ", " + firstName + ", " + mail);
+        logger.debug("authentication attributs found : " + eppn + ", " + name + ", " + firstName + ", " + mail);
         if(ldapGroupService != null && StringUtils.hasText(authName)) {
-            List<PersonLdapLight> personLdaps = ldapPersonService.getPersonLdapLight(authName);
+            List<PersonLdapLight> personLdaps = new ArrayList<>();
+            if (userType.equals(UserType.ldap)) {
+                personLdaps = ldapPersonService.getPersonLdapLight(authName);
+            } else if(userType.equals(UserType.shib)) {
+                personLdaps = ldapPersonService.getPersonLdapLightByEppn(eppn);
+            }
             if (personLdaps.size() > 0) {
                 eppn = personLdaps.get(0).getEduPersonPrincipalName();
                 if (eppn == null) {
