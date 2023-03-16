@@ -177,9 +177,9 @@ public class UserService {
     }
 
     public String buildEppn(String uid) {
-        uid = uid.trim().toLowerCase();
+        uid = uid.trim();
         if (uid.split("@").length == 1
-                && !(uid.equals("creator") || uid.equals("system") || uid.equals("scheduler") || uid.equals("generic") )) {
+                && !(uid.equalsIgnoreCase("creator") || uid.equalsIgnoreCase("system") || uid.equalsIgnoreCase("scheduler") || uid.equalsIgnoreCase("generic") )) {
             uid = uid + "@" + globalProperties.getDomain();
         }
         return uid;
@@ -209,16 +209,16 @@ public class UserService {
     public User createUserWithEmail(String mail) {
         if (ldapPersonService != null) {
             List<PersonLdap> personLdaps = ldapPersonService.getPersonLdapByMail(mail);
-            if (personLdaps.size() > 0) {
+            if (personLdaps.size() == 1) {
                 String eppn = personLdaps.get(0).getEduPersonPrincipalName();
-                if (eppn == null) {
+                if (!StringUtils.hasText(eppn)) {
                     eppn = buildEppn(personLdaps.get(0).getUid());
                 }
                 String name = personLdaps.get(0).getSn();
                 String firstName = personLdaps.get(0).getGivenName();
                 return createUser(eppn, name, firstName, mail, UserType.ldap, false);
             } else {
-                logger.warn(mail + " not found in ldap when search by email");
+                logger.warn(mail + " not found or more than one result in ldap when search by email");
             }
         } else {
             logger.warn("no ldap service available");
@@ -252,9 +252,9 @@ public class UserService {
             } else if(userType.equals(UserType.shib)) {
                 personLdaps = ldapPersonService.getPersonLdapLightByEppn(eppn);
             }
-            if (personLdaps.size() > 0) {
+            if (personLdaps.size() == 1) {
                 eppn = personLdaps.get(0).getEduPersonPrincipalName();
-                if (eppn == null) {
+                if (!StringUtils.hasText(eppn)) {
                     eppn = buildEppn(authName);
                 }
                 if(StringUtils.hasText(personLdaps.get(0).getMail())) {
@@ -276,7 +276,6 @@ public class UserService {
 
     @Transactional
     public User createUser(String eppn, String name, String firstName, String email, UserType userType, boolean updateCurrentUserRoles) {
-        logger.debug("create user with : " + eppn + ", " + name + ", " + firstName + ", " + email);
         User user;
         Optional<User> optionalUser = userRepository.findByEppn(eppn);
         if (optionalUser.isPresent()) {
@@ -286,7 +285,7 @@ public class UserService {
             if (optionalUser.isPresent()) {
                 user = optionalUser.get();
             } else {
-                logger.info("creation de l'utilisateur " + eppn);
+                logger.info("create user with : " + eppn + ", " + name + ", " + firstName + ", " + email);
                 user = new User();
                 user.setKeystore(null);
             }
@@ -778,15 +777,17 @@ public class UserService {
     }
 
     public String tryGetEppnFromLdap(Authentication auth) {
-        String eppn = auth.getName();
+        String eppn = null;
         if(ldapPersonService != null) {
             List<PersonLdapLight> personLdaps = ldapPersonService.getPersonLdapLight(auth.getName());
-            if(personLdaps.size() > 0) {
+            if(personLdaps.size() == 1) {
                 eppn = personLdaps.get(0).getEduPersonPrincipalName();
-                if (eppn == null) {
-                    eppn = buildEppn(auth.getName());
-                }
+            } else {
+                logger.warn("no or more than one result on ldap search for " + auth.getName());
             }
+        }
+        if (!StringUtils.hasText(eppn)) {
+            eppn = buildEppn(auth.getName());
         }
         return eppn;
     }
