@@ -177,9 +177,9 @@ public class UserService {
     }
 
     public String buildEppn(String uid) {
-        uid = uid.trim().toLowerCase();
+        uid = uid.trim();
         if (uid.split("@").length == 1
-                && !(uid.equals("creator") || uid.equals("system") || uid.equals("scheduler") || uid.equals("generic") )) {
+                && !(uid.equalsIgnoreCase("creator") || uid.equalsIgnoreCase("system") || uid.equalsIgnoreCase("scheduler") || uid.equalsIgnoreCase("generic") )) {
             uid = uid + "@" + globalProperties.getDomain();
         }
         return uid;
@@ -778,15 +778,17 @@ public class UserService {
     }
 
     public String tryGetEppnFromLdap(Authentication auth) {
-        String eppn = auth.getName();
+        String eppn = null;
         if(ldapPersonService != null) {
             List<PersonLdapLight> personLdaps = ldapPersonService.getPersonLdapLight(auth.getName());
-            if(personLdaps.size() > 0) {
+            if(personLdaps.size() == 1) {
                 eppn = personLdaps.get(0).getEduPersonPrincipalName();
-                if (eppn == null) {
-                    eppn = buildEppn(auth.getName());
-                }
+            } else {
+                logger.warn("no or more than one result on ldap search for " + auth.getName());
             }
+        }
+        if (eppn == null) {
+            eppn = buildEppn(auth.getName());
         }
         return eppn;
     }
