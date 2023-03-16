@@ -212,7 +212,10 @@ public class UserService {
             if (personLdaps.size() == 1) {
                 String eppn = personLdaps.get(0).getEduPersonPrincipalName();
                 if (!StringUtils.hasText(eppn)) {
+                    logger.debug("eppn not found for " + mail);
                     eppn = buildEppn(personLdaps.get(0).getUid());
+                } else {
+                    logger.debug("eppn found " + eppn);
                 }
                 String name = personLdaps.get(0).getSn();
                 String firstName = personLdaps.get(0).getGivenName();
@@ -255,7 +258,10 @@ public class UserService {
             if (personLdaps.size() == 1) {
                 eppn = personLdaps.get(0).getEduPersonPrincipalName();
                 if (!StringUtils.hasText(eppn)) {
+                    logger.debug("eppn not found for " + authName);
                     eppn = buildEppn(authName);
+                } else {
+                    logger.debug("eppn found " + eppn);
                 }
                 if(StringUtils.hasText(personLdaps.get(0).getMail())) {
                     mail = personLdaps.get(0).getMail();
@@ -787,7 +793,10 @@ public class UserService {
             }
         }
         if (!StringUtils.hasText(eppn)) {
+            logger.debug("eppn not found for " + auth.getName());
             eppn = buildEppn(auth.getName());
+        } else {
+            logger.debug("eppn found " + auth.getName());
         }
         return eppn;
     }
