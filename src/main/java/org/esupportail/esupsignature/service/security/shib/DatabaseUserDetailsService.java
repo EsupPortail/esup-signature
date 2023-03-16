@@ -37,7 +37,15 @@ public class DatabaseUserDetailsService implements UserDetailsService {
                 logger.warn("unable to create user " + eppn);
             }
         }
-        return loadUserByUser(user);
+        if(user != null) {
+            return loadUserByUser(user);
+        }
+        return new org.springframework.security.core.userdetails.User("anonymous", "dummy",
+                true, // enabled
+                true, // account not expired
+                true, // credentials not expired
+                true, // account not locked
+                new ArrayList<>());
     }
 
     public UserDetails loadUserByUser(User targetUser) throws UsernameNotFoundException {
