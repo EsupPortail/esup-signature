@@ -7,7 +7,7 @@ import org.springframework.ldap.odm.annotations.Id;
 import javax.naming.Name;
 import java.util.List;
 
-@Entry(objectClasses = {"inetOrgPerson"})
+@Entry(objectClasses = {"person", "inetOrgPerson", "supannPerson"})
 public final class PersonLdap {
 
 	@Id

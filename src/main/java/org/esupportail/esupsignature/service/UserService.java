@@ -805,7 +805,7 @@ public class UserService {
             logger.debug("eppn not found for " + auth.getName());
             eppn = buildEppn(auth.getName());
         } else {
-            logger.debug("eppn found " + auth.getName());
+            logger.debug("eppn found " + eppn);
         }
         return eppn;
     }

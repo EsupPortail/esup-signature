@@ -856,6 +856,9 @@ public class SignBookService {
                 if(draft) {
                     initWorkflow(recipientsEmails, allSignToCompletes, externalUsersInfos, targetEmails, userEppn, authUserEppn, signBook);
                 } else {
+                    if(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() == 0) {
+                        initWorkflow(recipientsEmails, allSignToCompletes, externalUsersInfos, targetEmails, userEppn, authUserEppn, signBook);
+                    }
                     pendingSignBook(signBook.getId(), null, userEppn, authUserEppn, false);
                 }
             } else {
