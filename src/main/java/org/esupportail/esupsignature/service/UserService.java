@@ -239,6 +239,7 @@ public class UserService {
             authName = authentication.getName();
         }
         logger.info("user control for " + authName);
+        logger.debug("shib attributs found : " + eppn + ", " + name + ", " + firstName + ", " + mail);
         if(ldapGroupService != null && StringUtils.hasText(authName)) {
             List<PersonLdapLight> personLdaps = ldapPersonService.getPersonLdapLight(authName);
             if (personLdaps.size() > 0) {
@@ -246,9 +247,16 @@ public class UserService {
                 if (eppn == null) {
                     eppn = buildEppn(authName);
                 }
-                mail = personLdaps.get(0).getMail();
-                name = personLdaps.get(0).getSn();
-                firstName = personLdaps.get(0).getGivenName();
+                if(StringUtils.hasText(personLdaps.get(0).getMail())) {
+                    mail = personLdaps.get(0).getMail();
+                }
+                if(StringUtils.hasText(personLdaps.get(0).getSn())) {
+                    name = personLdaps.get(0).getSn();
+                }
+                if(StringUtils.hasText(personLdaps.get(0).getGivenName())) {
+                    firstName = personLdaps.get(0).getGivenName();
+                }
+                logger.debug("ldap attributs found : " + eppn + ", " + name + ", " + firstName + ", " + mail);
             } else if(eppn == null) {
                 throw new EsupSignatureUserException("user " + authName + " not found");
             }
@@ -258,6 +266,7 @@ public class UserService {
 
     @Transactional
     public User createUser(String eppn, String name, String firstName, String email, UserType userType, boolean updateCurrentUserRoles) {
+        logger.debug("create user with : " + eppn + ", " + name + ", " + firstName + ", " + email);
         User user;
         Optional<User> optionalUser = userRepository.findByEppn(eppn);
         if (optionalUser.isPresent()) {
