@@ -38,6 +38,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -156,12 +157,18 @@ public class IndexController {
 		if (auth != null && !auth.getName().equals("anonymousUser")) {
 			if(ldapPersonService != null) {
 				List<PersonLdapLight> personLdaps =  ldapPersonService.getPersonLdapLight(auth.getName());
-				if(personLdaps.size() > 0) {
+				if(personLdaps.size() == 1) {
 					String eppn = personLdaps.get(0).getEduPersonPrincipalName();
-					if(eppn == null) {
+					if (!StringUtils.hasText(eppn)) {
 						eppn = userService.buildEppn(auth.getName());
 					}
 					user = userService.getUserByEppn(eppn);
+				} else {
+					if (personLdaps.size() == 0) {
+						logger.debug("no result on ldap search for " + auth.getName());
+					} else {
+						logger.debug("more than one result on ldap search for " + auth.getName());
+					}
 				}
 			} else {
 				logger.debug("Try to retrieve "+ auth.getName() + " without ldap");

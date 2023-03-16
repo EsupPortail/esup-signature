@@ -273,7 +273,12 @@ public class UserService {
                     firstName = personLdaps.get(0).getGivenName();
                 }
                 logger.debug("ldap attributs found : " + eppn + ", " + name + ", " + firstName + ", " + mail);
-            } else if(eppn == null) {
+            } else if (!StringUtils.hasText(eppn)) {
+                if (personLdaps.size() == 0) {
+                    logger.debug("no result on ldap search for " + authName);
+                } else {
+                    logger.debug("more than one result on ldap search for " + authName);
+                }
                 throw new EsupSignatureUserException("user " + authName + " not found");
             }
         }
@@ -789,7 +794,11 @@ public class UserService {
             if(personLdaps.size() == 1) {
                 eppn = personLdaps.get(0).getEduPersonPrincipalName();
             } else {
-                logger.warn("no or more than one result on ldap search for " + auth.getName());
+                if (personLdaps.size() == 0) {
+                    logger.debug("no result on ldap search for " + auth.getName());
+                } else {
+                    logger.debug("more than one result on ldap search for " + auth.getName());
+                }
             }
         }
         if (!StringUtils.hasText(eppn)) {
