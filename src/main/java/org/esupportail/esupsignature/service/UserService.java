@@ -16,6 +16,10 @@ import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.ldap.*;
+import org.esupportail.esupsignature.service.ldap.entry.AliasLdap;
+import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
+import org.esupportail.esupsignature.service.ldap.entry.PersonLdap;
+import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.hibernate.LazyInitializationException;
@@ -255,7 +259,7 @@ public class UserService {
         logger.info("user control for " + authName);
         logger.debug("authentication attributs found : " + eppn + ", " + name + ", " + firstName + ", " + mail);
         if(ldapPersonLightService != null && StringUtils.hasText(authName)) {
-            List<PersonLdapLight> personLdaps = new ArrayList<>();
+            List<PersonLightLdap> personLdaps = new ArrayList<>();
             if (userType.equals(UserType.ldap)) {
                 personLdaps = ldapPersonLightService.getPersonLdapLight(authName);
             } else if(userType.equals(UserType.shib)) {
@@ -401,65 +405,65 @@ public class UserService {
     }
 
     @Transactional
-    public List<PersonLdapLight> getPersonLdapsLight(String searchString, String authUserEppn) {
-        List<PersonLdapLight> personLdapLights = new ArrayList<>();
+    public List<PersonLightLdap> getPersonLdapsLight(String searchString, String authUserEppn) {
+        List<PersonLightLdap> personLightLdaps = new ArrayList<>();
         Set<User> users = new HashSet<>();
         users.addAll(userRepository.findByEppnStartingWith(searchString));
         users.addAll(userRepository.findByNameStartingWithIgnoreCase(searchString.toUpperCase()));
         users.addAll(userRepository.findByEmailStartingWith(searchString));
         if (ldapPersonLightService != null && !searchString.trim().isEmpty() && searchString.length() > 2) {
-            List<PersonLdapLight> ldapSearchList = ldapPersonLightService.searchLight(searchString);
+            List<PersonLightLdap> ldapSearchList = ldapPersonLightService.searchLight(searchString);
             if (ldapSearchList.size() > 0) {
-                List<PersonLdapLight> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdapLight::getCn)).collect(Collectors.toList());
-                for (PersonLdapLight personLdapList : ldapList) {
+                List<PersonLightLdap> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLightLdap::getCn)).collect(Collectors.toList());
+                for (PersonLightLdap personLdapList : ldapList) {
                     if (personLdapList.getMail() != null) {
-                        if (personLdapLights.stream().noneMatch(personLdap -> personLdap != null &&  personLdap.getMail() != null && personLdap.getMail().equals(personLdapList.getMail()))) {
-                            personLdapLights.add(personLdapList);
+                        if (personLightLdaps.stream().noneMatch(personLdap -> personLdap != null &&  personLdap.getMail() != null && personLdap.getMail().equals(personLdapList.getMail()))) {
+                            personLightLdaps.add(personLdapList);
                         }
                     }
                 }
             }
         }
-        List<PersonLdapLight> personLdapLightsToRemove = new ArrayList<>();
-        for(PersonLdapLight personLdapLight : personLdapLights) {
-            User user = isUserByEmailExist(personLdapLight.getMail());
+        List<PersonLightLdap> personLightLdapsToRemove = new ArrayList<>();
+        for(PersonLightLdap personLightLdap : personLightLdaps) {
+            User user = isUserByEmailExist(personLightLdap.getMail());
             if(user != null && user.getReplaceByUser() != null) {
-                personLdapLightsToRemove.add(personLdapLight);
+                personLightLdapsToRemove.add(personLightLdap);
             }
         }
-        personLdapLights.removeAll(personLdapLightsToRemove);
+        personLightLdaps.removeAll(personLightLdapsToRemove);
         for (User user : users) {
             if(user.getEppn().equals("creator")) {
-                personLdapLights.add(getPersonLdapLightFromUser(user));
+                personLightLdaps.add(getPersonLdapLightFromUser(user));
             }
-            if(personLdapLights.size() > 0 && personLdapLights.stream().noneMatch(personLdapLight -> personLdapLight != null && personLdapLight.getMail() != null && user.getEmail().equals(personLdapLight.getMail()))) {
-                PersonLdapLight personLdapLight = getPersonLdapLightFromUser(user);
+            if(personLightLdaps.size() > 0 && personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && user.getEmail().equals(personLightLdap.getMail()))) {
+                PersonLightLdap personLightLdap = getPersonLdapLightFromUser(user);
                 if(user.getUserType().equals(UserType.group)) {
-                    personLdapLight.setDisplayName(personLdapLight.getDisplayName());
+                    personLightLdap.setDisplayName(personLightLdap.getDisplayName());
                 }
-                personLdapLights.add(personLdapLight);
+                personLightLdaps.add(personLightLdap);
             }
         }
         for(Map.Entry<String,String> string : userListService.getListsNames(searchString).entrySet()) {
-            if(personLdapLights.size() > 0 && personLdapLights.stream().noneMatch(personLdapLight -> personLdapLight != null && personLdapLight.getMail() != null && personLdapLight.getMail().equals(string.getKey()))) {
-                PersonLdapLight personLdapLight = new PersonLdapLight();
-                personLdapLight.setMail(string.getKey());
+            if(personLightLdaps.size() > 0 && personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && personLightLdap.getMail().equals(string.getKey()))) {
+                PersonLightLdap personLightLdap = new PersonLightLdap();
+                personLightLdap.setMail(string.getKey());
                 if(string.getValue() != null) {
-                    personLdapLight.setDisplayName(string.getValue());
+                    personLightLdap.setDisplayName(string.getValue());
                 } else {
-                    personLdapLight.setDisplayName(string.getKey());
+                    personLightLdap.setDisplayName(string.getKey());
                 }
-                personLdapLights.add(personLdapLight);
+                personLightLdaps.add(personLightLdap);
             }
         }
         for(AliasLdap aliasLdap : ldapAliasService.searchByMail(searchString)) {
-            personLdapLights.add(new PersonLdapLight(aliasLdap.getMail()));
+            personLightLdaps.add(new PersonLightLdap(aliasLdap.getMail()));
         }
         User user = getUserByEppn(authUserEppn);
         if(user.getRoles().contains("ROLE_ADMIN")) {
-            return personLdapLights;
+            return personLightLdaps;
         } else {
-            return personLdapLights.stream().filter(personLdapLight -> !webSecurityProperties.getExcludedEmails().contains(personLdapLight.getMail())).collect(Collectors.toList());
+            return personLightLdaps.stream().filter(personLightLdap -> !webSecurityProperties.getExcludedEmails().contains(personLightLdap.getMail())).collect(Collectors.toList());
         }
     }
 
@@ -474,8 +478,8 @@ public class UserService {
         return personLdap;
     }
 
-    public PersonLdapLight getPersonLdapLightFromUser(User user) {
-        PersonLdapLight personLdap = new PersonLdapLight();
+    public PersonLightLdap getPersonLdapLightFromUser(User user) {
+        PersonLightLdap personLdap = new PersonLightLdap();
         if(user.getReplaceByUser() != null) {
             personLdap.setUid(user.getReplaceByUser().getEppn());
             personLdap.setSn(user.getReplaceByUser().getName());
@@ -492,10 +496,10 @@ public class UserService {
         return personLdap;
     }
 
-    public PersonLdapLight findPersonLdapLightByUser(User user) {
-        PersonLdapLight personLdap = null;
+    public PersonLightLdap findPersonLdapLightByUser(User user) {
+        PersonLightLdap personLdap = null;
         if (ldapPersonLightService != null) {
-            List<PersonLdapLight> personLdaps =  ldapPersonLightService.getPersonLdapLightByEppn(user.getEppn());
+            List<PersonLightLdap> personLdaps =  ldapPersonLightService.getPersonLdapLightByEppn(user.getEppn());
             if (personLdaps.size() > 0) {
                 personLdap = personLdaps.get(0);
             }
@@ -799,7 +803,7 @@ public class UserService {
     public String tryGetEppnFromLdap(Authentication auth) {
         String eppn = null;
         if(ldapPersonLightService != null) {
-            List<PersonLdapLight> personLdaps = ldapPersonLightService.getPersonLdapLight(auth.getName());
+            List<PersonLightLdap> personLdaps = ldapPersonLightService.getPersonLdapLight(auth.getName());
             if(personLdaps.size() == 1) {
                 eppn = personLdaps.get(0).getEduPersonPrincipalName();
             } else {

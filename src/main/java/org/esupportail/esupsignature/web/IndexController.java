@@ -23,7 +23,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonLightService;
-import org.esupportail.esupsignature.service.ldap.PersonLdapLight;
+import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -155,7 +155,7 @@ public class IndexController {
 		User user = null;
 		if (auth != null && !auth.getName().equals("anonymousUser")) {
 			if(ldapPersonLightService != null) {
-				List<PersonLdapLight> personLdaps =  ldapPersonLightService.getPersonLdapLight(auth.getName());
+				List<PersonLightLdap> personLdaps =  ldapPersonLightService.getPersonLdapLight(auth.getName());
 				if(personLdaps.size() == 1) {
 					String eppn = personLdaps.get(0).getEduPersonPrincipalName();
 					if (!StringUtils.hasText(eppn)) {

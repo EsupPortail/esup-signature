@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service.ldap;
 
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.repository.ldap.PersonLdapRepository;
+import org.esupportail.esupsignature.service.ldap.entry.PersonLdap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
