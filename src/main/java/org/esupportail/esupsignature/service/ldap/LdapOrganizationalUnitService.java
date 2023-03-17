@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service.ldap;
 
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.repository.ldap.OrganizationalUnitLdapRepository;
+import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;

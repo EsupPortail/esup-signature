@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.service.ldap;
+package org.esupportail.esupsignature.service.ldap.entry;
 
 import org.springframework.ldap.odm.annotations.Entry;
 import org.springframework.ldap.odm.annotations.Id;

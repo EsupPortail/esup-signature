@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.repository.ldap;
 
-import org.esupportail.esupsignature.service.ldap.PersonLdap;
+import org.esupportail.esupsignature.service.ldap.entry.PersonLdap;
 import org.springframework.data.ldap.repository.LdapRepository;
 import org.springframework.stereotype.Repository;
 

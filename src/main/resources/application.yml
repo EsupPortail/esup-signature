@@ -49,7 +49,7 @@ management:
                 include: '*'
     endpoint:
         health:
-            show-details: always
+            show-details: ALWAYS
 
 spring:
     session:

@@ -37,11 +37,10 @@ public class CasAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
 		logger.info("authentication success for " + authentication.getName());
-		String eppn = httpServletRequest.getHeader("eduPersonPrincipalName");
 		String name = httpServletRequest.getHeader("sn");
 		String firstname = httpServletRequest.getHeader("givenName");
 		String email = httpServletRequest.getHeader("mail");
-        User user = userService.createUserWithAuthentication(eppn, name, firstname, email, authentication, UserType.ldap);
+        User user = userService.createUserWithAuthentication(null, name, firstname, email, authentication, UserType.ldap);
 		if(user.getManagersRoles().size() > 0) {
 			CasAuthenticationToken auth = (CasAuthenticationToken) authentication;
 			List<GrantedAuthority> updatedAuthorities = new ArrayList<>(auth.getAuthorities());

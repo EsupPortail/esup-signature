@@ -22,14 +22,13 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.ldap.LdapPersonService;
-import org.esupportail.esupsignature.service.ldap.PersonLdapLight;
+import org.esupportail.esupsignature.service.ldap.LdapPersonLightService;
+import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +37,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -53,12 +53,10 @@ public class IndexController {
 
 	private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
 
+	private final GlobalProperties globalProperties;
+
 	@Resource
 	private PreAuthorizeService preAuthorizeService;
-
-	public IndexController(GlobalProperties globalProperties) {
-		this.globalProperties = globalProperties;
-	}
 
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
@@ -74,10 +72,12 @@ public class IndexController {
 	@Resource
 	private SignRequestService signRequestService;
 
-	@Autowired(required = false)
-	private LdapPersonService ldapPersonService;
+	private final LdapPersonLightService ldapPersonLightService;
 
-	private final GlobalProperties globalProperties;
+	public IndexController(GlobalProperties globalProperties, LdapPersonLightService ldapPersonLightService) {
+		this.globalProperties = globalProperties;
+		this.ldapPersonLightService = ldapPersonLightService;
+	}
 
 	@GetMapping
 	public String index(Model model, HttpServletRequest httpServletRequest) {
@@ -154,14 +154,20 @@ public class IndexController {
 	public User getAuthUser(Authentication auth) {
 		User user = null;
 		if (auth != null && !auth.getName().equals("anonymousUser")) {
-			if(ldapPersonService != null) {
-				List<PersonLdapLight> personLdaps =  ldapPersonService.getPersonLdapLight(auth.getName());
-				if(personLdaps.size() > 0) {
+			if(ldapPersonLightService != null) {
+				List<PersonLightLdap> personLdaps =  ldapPersonLightService.getPersonLdapLight(auth.getName());
+				if(personLdaps.size() == 1) {
 					String eppn = personLdaps.get(0).getEduPersonPrincipalName();
-					if(eppn == null) {
+					if (!StringUtils.hasText(eppn)) {
 						eppn = userService.buildEppn(auth.getName());
 					}
 					user = userService.getUserByEppn(eppn);
+				} else {
+					if (personLdaps.size() == 0) {
+						logger.debug("no result on ldap search for " + auth.getName());
+					} else {
+						logger.debug("more than one result on ldap search for " + auth.getName());
+					}
 				}
 			} else {
 				logger.debug("Try to retrieve "+ auth.getName() + " without ldap");

@@ -29,12 +29,12 @@ public class ShibAuthenticationSuccessHandler extends SavedRequestAwareAuthentic
         String email = httpServletRequest.getHeader("mail");
         String name = httpServletRequest.getHeader("sn");
 		String firstname = httpServletRequest.getHeader("givenName");
+		logger.info("shib auth with - eppn : " + eppn + ", mail : " + email + ", name : " + name + ", givenName : " + firstname);
 		if(StringUtils.hasText(eppn) && StringUtils.hasText(email) && StringUtils.hasText(name) && StringUtils.hasText(firstname)) {
 			name = new String(name.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
 			firstname = new String(firstname.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
 			userService.createUserWithAuthentication(eppn, name, firstname, email, authentication, UserType.shib);
 		} else {
-			logger.warn("eppn : " + eppn + ", mail : " + email + ", name : " + name + ", givenName : " + firstname);
 			throw new EsupSignatureRuntimeException("At least one shib attribut is missing. Needed attributs are eppn, mail, sn and givenName");
 		}
 		httpServletRequest.getSession().setAttribute("securityServiceName", "ShibSecurityServiceImpl");
