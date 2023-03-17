@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -66,7 +67,10 @@ public class DataService {
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user, data.getSignBook().getSignRequests().get(0));
         for(Field field : fields) {
             if(field.getWorkflowSteps().stream().noneMatch(workflowStep -> workflowStep.getId().equals(signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getId()))) {
-                formDatas.put(field.getName(), data.getDatas().get(field.getName()));
+                String newData = data.getDatas().get(field.getName());
+                if(StringUtils.hasText(newData) && !StringUtils.hasText(formDatas.get(field.getName()))) {
+                    formDatas.put(field.getName(), data.getDatas().get(field.getName()));
+                }
             }
             if(!field.getStepZero()) {
                 field.setDefaultValue("");
