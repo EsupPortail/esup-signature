@@ -9,7 +9,7 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
-import org.esupportail.esupsignature.service.ldap.PersonLdapLight;
+import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,9 +123,9 @@ public class UserController {
 
 	@GetMapping(value="/search-user")
 	@ResponseBody
-	public List<PersonLdapLight> searchLdap(@RequestParam(value="searchString") String searchString, @ModelAttribute("authUserEppn") String authUserEppn) {
+	public List<PersonLightLdap> searchLdap(@RequestParam(value="searchString") String searchString, @ModelAttribute("authUserEppn") String authUserEppn) {
 		logger.debug("ldap search for : " + searchString);
-		return userService.getPersonLdapsLight(searchString, authUserEppn).stream().sorted(Comparator.comparing(PersonLdapLight::getDisplayName, Comparator.nullsLast(String::compareTo))).collect(Collectors.toList());
+		return userService.getPersonLdapsLight(searchString, authUserEppn).stream().sorted(Comparator.comparing(PersonLightLdap::getDisplayName, Comparator.nullsLast(String::compareTo))).collect(Collectors.toList());
    }
 
 	@GetMapping(value = "/search-user-list")
