@@ -299,6 +299,7 @@ export class PdfViewer extends EventFactory {
     }
 
     promiseSaveValues() {
+        console.log("save");
         return new Promise((resolve, reject) => {
             console.info("launch save values");
             for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
@@ -454,6 +455,7 @@ export class PdfViewer extends EventFactory {
             }
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length && dataField != null) {
+                inputField.on('input', e => this.fireEvent('change', ['checked']));
                 inputField.addClass("field-type-text");
                 let section = $('section[data-annotation-id=' + items[i].id + ']');
                 inputField.attr('name', inputName);
@@ -530,6 +532,7 @@ export class PdfViewer extends EventFactory {
                         inputField.attr("checked", "checked");
                         inputField.prop("checked", true);
                     }
+                    inputField.unbind('input');
                     inputField.on('click', e => this.fireEvent('change', ['checked']));
                 }
                 if (dataField.type === "date") {
@@ -597,6 +600,7 @@ export class PdfViewer extends EventFactory {
 
             inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
             if(inputField.length && dataField) {
+                inputField.on('input', e => this.fireEvent('change', ['checked']));
                 inputField.addClass("field-type-textarea");
                 let sendField = inputField;
                 if(dataField.favorisable) {
@@ -638,6 +642,7 @@ export class PdfViewer extends EventFactory {
 
             inputField = $('section[data-annotation-id=' + items[i].id + '] > select');
             if(inputField.length) {
+                inputField.on('change', e => this.fireEvent('change', ['time']));
                 inputField.removeAttr('size');
                 if (dataField) {
                     inputField.attr('name', inputName);

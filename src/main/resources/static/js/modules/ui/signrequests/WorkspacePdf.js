@@ -262,16 +262,16 @@ export class WorkspacePdf {
         if(!this.formInitialized) {
             this.formInitialized = true;
             let inputs = $("#signForm .annotationLayer :input");
-            $.each(inputs, (index, e) => this.listenForChange(e));
+            // $.each(inputs, (index, e) => this.listenForChange(e));
             if (this.mode === 'read' || this.mode === 'comment') {
                 this.disableForm();
             }
         }
     }
 
-    listenForChange(input) {
-        $(input).change(e => this.saveData());
-    }
+    // listenForChange(input) {
+    //     $(input).change(e => this.saveData());
+    // }
 
     saveData() {
         let self = this;
