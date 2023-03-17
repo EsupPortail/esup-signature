@@ -21,7 +21,6 @@ import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.hibernate.LazyInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -55,6 +54,10 @@ public class UserService {
 
     private final LdapPersonService ldapPersonService;
 
+    private final LdapPersonLightService ldapPersonLightService;
+
+    private final LdapAliasService ldapAliasService;
+
     private final LdapGroupService ldapGroupService;
 
     private final LdapOrganizationalUnitService ldapOrganizationalUnitService;
@@ -64,12 +67,15 @@ public class UserService {
 
     public UserService(GlobalProperties globalProperties,
                        WebSecurityProperties webSecurityProperties,
-                       @Autowired(required = false) LdapPersonService ldapPersonService,
-                       @Autowired(required = false) LdapGroupService ldapGroupService,
-                       @Autowired(required = false) LdapOrganizationalUnitService ldapOrganizationalUnitService) {
+                       LdapPersonService ldapPersonService,
+                       LdapPersonLightService ldapPersonLightService,
+                       LdapAliasService ldapAliasService, LdapGroupService ldapGroupService,
+                       LdapOrganizationalUnitService ldapOrganizationalUnitService) {
         this.globalProperties = globalProperties;
         this.webSecurityProperties = webSecurityProperties;
         this.ldapPersonService = ldapPersonService;
+        this.ldapPersonLightService = ldapPersonLightService;
+        this.ldapAliasService = ldapAliasService;
         this.ldapGroupService = ldapGroupService;
         this.ldapOrganizationalUnitService = ldapOrganizationalUnitService;
     }
@@ -248,12 +254,12 @@ public class UserService {
         }
         logger.info("user control for " + authName);
         logger.debug("authentication attributs found : " + eppn + ", " + name + ", " + firstName + ", " + mail);
-        if(ldapPersonService != null && StringUtils.hasText(authName)) {
+        if(ldapPersonLightService != null && StringUtils.hasText(authName)) {
             List<PersonLdapLight> personLdaps = new ArrayList<>();
             if (userType.equals(UserType.ldap)) {
-                personLdaps = ldapPersonService.getPersonLdapLight(authName);
+                personLdaps = ldapPersonLightService.getPersonLdapLight(authName);
             } else if(userType.equals(UserType.shib)) {
-                personLdaps = ldapPersonService.getPersonLdapLightByEppn(eppn);
+                personLdaps = ldapPersonLightService.getPersonLdapLightByEppn(eppn);
             }
             if (personLdaps.size() == 1) {
                 eppn = personLdaps.get(0).getEduPersonPrincipalName();
@@ -401,8 +407,8 @@ public class UserService {
         users.addAll(userRepository.findByEppnStartingWith(searchString));
         users.addAll(userRepository.findByNameStartingWithIgnoreCase(searchString.toUpperCase()));
         users.addAll(userRepository.findByEmailStartingWith(searchString));
-        if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 2) {
-            List<PersonLdapLight> ldapSearchList = ldapPersonService.searchLight(searchString);
+        if (ldapPersonLightService != null && !searchString.trim().isEmpty() && searchString.length() > 2) {
+            List<PersonLdapLight> ldapSearchList = ldapPersonLightService.searchLight(searchString);
             if (ldapSearchList.size() > 0) {
                 List<PersonLdapLight> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdapLight::getCn)).collect(Collectors.toList());
                 for (PersonLdapLight personLdapList : ldapList) {
@@ -446,6 +452,9 @@ public class UserService {
                 personLdapLights.add(personLdapLight);
             }
         }
+        for(AliasLdap aliasLdap : ldapAliasService.searchByMail(searchString)) {
+            personLdapLights.add(new PersonLdapLight(aliasLdap.getMail()));
+        }
         User user = getUserByEppn(authUserEppn);
         if(user.getRoles().contains("ROLE_ADMIN")) {
             return personLdapLights;
@@ -485,8 +494,8 @@ public class UserService {
 
     public PersonLdapLight findPersonLdapLightByUser(User user) {
         PersonLdapLight personLdap = null;
-        if (ldapPersonService != null) {
-            List<PersonLdapLight> personLdaps =  ldapPersonService.getPersonLdapLightByEppn(user.getEppn());
+        if (ldapPersonLightService != null) {
+            List<PersonLdapLight> personLdaps =  ldapPersonLightService.getPersonLdapLightByEppn(user.getEppn());
             if (personLdaps.size() > 0) {
                 personLdap = personLdaps.get(0);
             }
@@ -789,8 +798,8 @@ public class UserService {
 
     public String tryGetEppnFromLdap(Authentication auth) {
         String eppn = null;
-        if(ldapPersonService != null) {
-            List<PersonLdapLight> personLdaps = ldapPersonService.getPersonLdapLight(auth.getName());
+        if(ldapPersonLightService != null) {
+            List<PersonLdapLight> personLdaps = ldapPersonLightService.getPersonLdapLight(auth.getName());
             if(personLdaps.size() == 1) {
                 eppn = personLdaps.get(0).getEduPersonPrincipalName();
             } else {

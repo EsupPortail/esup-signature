@@ -7,8 +7,8 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignBookService;
@@ -16,7 +16,6 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -57,14 +56,10 @@ public class ScheduledTaskService {
 	@Resource
 	private SignRequestRepository signRequestRepository;
 
-	private OJService oJService;
+	private final OJService oJService;
 
-	public ScheduledTaskService(GlobalProperties globalProperties) {
+	public ScheduledTaskService(GlobalProperties globalProperties, OJService oJService) {
 		this.globalProperties = globalProperties;
-	}
-
-	@Autowired(required = false)
-	public void setoJService(OJService oJService) {
 		this.oJService = oJService;
 	}
 

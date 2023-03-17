@@ -19,6 +19,13 @@ public final class PersonLdapLight {
 	private @Attribute(name = "mail") String mail;
 	private @Attribute(name = "eduPersonPrincipalName") String eduPersonPrincipalName;
 
+	public PersonLdapLight() {
+	}
+
+	public PersonLdapLight(String mail) {
+		this.mail = mail;
+	}
+
 	public String getUid() {
 		return uid;
 	}
