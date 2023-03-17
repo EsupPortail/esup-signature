@@ -244,14 +244,14 @@ export class PdfViewer extends EventFactory {
             });
             container.style.width = Math.round(pdfPageView.viewport.width) +"px";
             container.style.height = Math.round(pdfPageView.viewport.height) + "px";
-            self.postRender(i);
+            self.postRender(i, page);
         });
         pdfPageView.draw();
     }
 
-    postRender(i) {
+    postRender(i, page) {
         let self = this;
-        this.promiseRenderForm(false).then(e => this.promiseRenderForm(true)).then(e => this.promiseRestoreValue()).then(function(){
+        this.promiseRenderForm(false, page).then(e => this.promiseRestoreValue()).then(function(){
             if(i === self.pdfDoc.numPages) {
                 self.fireEvent('renderFinished', ['ok']);
             }
@@ -260,19 +260,20 @@ export class PdfViewer extends EventFactory {
         this.restoreScrolling();
     }
 
-    promiseRenderForm(isField) {
+    promiseRenderForm(isField, page) {
         let pdfDoc = this.pdfDoc;
         return new Promise((resolve, reject) => {
-            for (let i = 1; i < pdfDoc.numPages + 1; i++) {
-                if (isField) {
-                    if (this.dataFields != null && !this.disableAllFields) {
-                        console.info("render fields of page " + i);
-                        pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.renderPdfFormWithFields(items)).then(e => this.annotationLinkTargetBlank()));
-                    }
-                } else {
-                    pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.renderPdfForm(items)).then(e => this.annotationLinkTargetBlank()));
-                }
-            }
+            page.getAnnotations().then(items => this.renderPdfFormWithFields(items));
+            // for (let i = 1; i < pdfDoc.numPages + 1; i++) {
+            //     if (isField) {
+            //         if (this.dataFields != null && !this.disableAllFields) {
+            //             console.info("render fields of page " + i);
+            //             pdfDoc.getPage(i).then(page => ).then(e => this.annotationLinkTargetBlank()));
+            //         }
+            //     } else {
+            //         pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.renderPdfForm(items)).then(e => this.annotationLinkTargetBlank()));
+            //     }
+            // }
             resolve("Réussite");
         });
     }
@@ -298,6 +299,7 @@ export class PdfViewer extends EventFactory {
     }
 
     promiseSaveValues() {
+        console.log("save");
         return new Promise((resolve, reject) => {
             console.info("launch save values");
             for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
@@ -308,7 +310,7 @@ export class PdfViewer extends EventFactory {
     }
 
     saveValues(items) {
-        console.log("save fields " + items.length);
+        console.log("saving " + items.length + " fields");
         if(this.dataFields.length > 0) {
             for (let i = 0; i < this.dataFields.length; i++) {
                 let dataField = this.dataFields[i];
@@ -333,7 +335,7 @@ export class PdfViewer extends EventFactory {
     saveValue(item) {
         if(item != null && item.fieldName != null) {
             let inputName = item.fieldName;
-            let inputField = $('#' + $.escapeSelector(inputName));
+            let inputField = $("[name='" + $.escapeSelector(inputName) + "']");
             if (inputField.length > 0) {
                 if (inputField.val() != null) {
                     if (inputField.is(':checkbox')) {
@@ -453,6 +455,7 @@ export class PdfViewer extends EventFactory {
             }
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length && dataField != null) {
+                inputField.on('input', e => this.fireEvent('change', ['checked']));
                 inputField.addClass("field-type-text");
                 let section = $('section[data-annotation-id=' + items[i].id + ']');
                 inputField.attr('name', inputName);
@@ -515,9 +518,12 @@ export class PdfViewer extends EventFactory {
                         }
                     }
                     inputField.val(items[i].buttonValue);
+                    inputField.attr("id", dataField.name + items[i].buttonValue);
                     if (dataField.defaultValue === items[i].buttonValue) {
+                        inputField.attr("checked", "checked");
                         inputField.prop("checked", true);
                     }
+                    inputField.on('click', e => this.fireEvent('change', ['checked']));
                 }
                 if (dataField.type === 'checkbox') {
                     inputField.addClass("field-type-checkbox");
@@ -526,6 +532,7 @@ export class PdfViewer extends EventFactory {
                         inputField.attr("checked", "checked");
                         inputField.prop("checked", true);
                     }
+                    inputField.unbind('input');
                     inputField.on('click', e => this.fireEvent('change', ['checked']));
                 }
                 if (dataField.type === "date") {
@@ -593,6 +600,7 @@ export class PdfViewer extends EventFactory {
 
             inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
             if(inputField.length && dataField) {
+                inputField.on('input', e => this.fireEvent('change', ['checked']));
                 inputField.addClass("field-type-textarea");
                 let sendField = inputField;
                 if(dataField.favorisable) {
@@ -634,6 +642,7 @@ export class PdfViewer extends EventFactory {
 
             inputField = $('section[data-annotation-id=' + items[i].id + '] > select');
             if(inputField.length) {
+                inputField.on('change', e => this.fireEvent('change', ['time']));
                 inputField.removeAttr('size');
                 if (dataField) {
                     inputField.attr('name', inputName);
