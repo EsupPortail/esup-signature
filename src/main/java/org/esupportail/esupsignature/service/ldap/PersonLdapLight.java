@@ -6,7 +6,7 @@ import org.springframework.ldap.odm.annotations.Id;
 
 import javax.naming.Name;
 
-@Entry(objectClasses = {"top"})
+@Entry(objectClasses = {"inetOrgPerson"})
 public final class PersonLdapLight {
 
 	@Id
@@ -18,6 +18,13 @@ public final class PersonLdapLight {
 	private @Attribute(name = "displayName") String displayName;
 	private @Attribute(name = "mail") String mail;
 	private @Attribute(name = "eduPersonPrincipalName") String eduPersonPrincipalName;
+
+	public PersonLdapLight() {
+	}
+
+	public PersonLdapLight(String mail) {
+		this.mail = mail;
+	}
 
 	public String getUid() {
 		return uid;
