@@ -740,7 +740,7 @@ public class PdfService {
                 pdAcroForm.setDefaultResources(resources);
                 List<PDField> fields = pdAcroForm.getFields();
                 for(PDField pdField : fields) {
-                    if(pdField instanceof PDSignatureField) {
+                    if(pdField instanceof PDSignatureField || (pdField instanceof PDPushButton && pdField.getPartialName().toLowerCase(Locale.ROOT).startsWith("signature"))) {
                         List<PDAnnotationWidget> widgets = pdField.getWidgets();
                         for (PDAnnotationWidget widget : widgets) {
                             for(PDPage page : pdDocument.getPages()) {
@@ -756,8 +756,7 @@ public class PdfService {
                                     System.out.println("Inconsistent annotation definition: Page annotations do not include the target widget.");
                             }
                         }
-                        PDSignatureField pdSignatureField = (PDSignatureField) pdField;
-                        pdAcroForm.getFields().remove(pdSignatureField);
+                        pdAcroForm.getFields().remove(pdField);
                     }
                 }
             }
