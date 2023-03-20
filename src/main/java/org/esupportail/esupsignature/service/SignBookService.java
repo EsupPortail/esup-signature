@@ -1926,6 +1926,12 @@ public class SignBookService {
                 if(signBook.getSignRequests().size() > 1) {
                     signBook.setSubject(fileService.getNameOnly(signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName()) + ", ...");
                 }
+            } else {
+                if(workflow != null) {
+                    signBook.setSubject(workflow.getName());
+                } else {
+                    signBook.setSubject("Sans titre");
+                }
             }
         }
         int order = 0;
@@ -1945,14 +1951,16 @@ public class SignBookService {
             if(signBook.getSignRequests().size() > 0 && signBook.getSignRequests().get(0).getOriginalDocuments().size() > 0) {
                 template = template.replace("[originalFileName]", signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName());
             } else {
-                template = template.replace("[originalFileName]", "no original file name");
+                logger.warn("no original file name");
+                template = template.replace("[originalFileName]", "");
             }
         }
         if(template.contains("[signedFileName]")) {
             if(signBook.getSignRequests().size() > 0 && signBook.getSignRequests().get(0).getSignedDocuments().size() > 0) {
                 template = template.replace("[signedFileName]", signBook.getSignRequests().get(0).getSignedDocuments().get(0).getFileName());
             } else {
-                template = template.replace("[signedFileName]", "no signed file name");
+                logger.warn("no signed file name");
+                template = template.replace("[signedFileName]", "");
             }
         }
         if(template.contains("[fileNameOnly]")) {
@@ -1961,7 +1969,8 @@ public class SignBookService {
             } if(signBook.getSignRequests().size() > 0 && signBook.getSignRequests().get(0).getOriginalDocuments().size() > 0) {
                 template = template.replace("[fileNameOnly]", fileService.getNameOnly(signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName()));
             } else {
-                template = template.replace("[fileNameOnly]", "no file name");
+                logger.warn("no file name");
+                template = template.replace("[fileNameOnly]", "");
             }
         }
         if(template.contains("[fileExtension]")) {
