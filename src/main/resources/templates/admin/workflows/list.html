@@ -44,9 +44,9 @@
                         </thead>
                         <tbody>
                         <th:block th:each="workflow : ${workflows}">
-                            <tr>
-                                <td th:text="${workflow.description}"></td>
-                                <td th:text="${workflow.createBy.eppn}"></td>
+                            <tr th:data-href="'/admin/workflows/update/' + ${workflow.id}">
+                                <td class="clickable-td" th:text="${workflow.description}"></td>
+                                <td class="clickable-td" th:text="${workflow.createBy.eppn}"></td>
                                 <td th:if="${workflow.workflowSteps.size() > 0}">
                                     <ul class="list-group">
                                     <th:block th:each="workflowStep,iterator : ${workflow.workflowSteps}">
