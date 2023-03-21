@@ -17,6 +17,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.DataRepository;
+import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
@@ -74,8 +75,10 @@ public class SignRequestService {
 
 	private final GlobalProperties globalProperties;
 
-	public SignRequestService(GlobalProperties globalProperties) {
+	public SignRequestService(GlobalProperties globalProperties,
+							  SignBookRepository signBookRepository) {
 		this.globalProperties = globalProperties;
+		this.signBookRepository = signBookRepository;
 	}
 
 	@Resource
@@ -134,6 +137,7 @@ public class SignRequestService {
 
 	@Resource
 	private ObjectMapper objectMapper;
+	private final SignBookRepository signBookRepository;
 
 	@PostConstruct
 	public void initSignrequestMetrics() {
@@ -213,6 +217,10 @@ public class SignRequestService {
 
 	public Long nbToSignSignRequests(String userEppn) {
 		return signRequestRepository.countByRecipientUserToSign(userEppn);
+	}
+
+	public Long nbFollowedByMe(String userEppn) {
+		return signBookRepository.countByViewersContaining(userEppn);
 	}
 
 	public List<SignRequest> getToSignRequests(String userEppn) {
