@@ -30,6 +30,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -95,7 +96,7 @@ public class DataController {
 						  RedirectAttributes redirectAttributes) throws JsonProcessingException {
 		User user = (User) model.getAttribute("user");
 		User authUser = userService.getUserByEppn(authUserEppn);
-		TypeReference<Map<String, String>> type = new TypeReference<>(){};
+		TypeReference<HashMap<String, String>> type = new TypeReference<>(){};
 		Map<String, String> datas = objectMapper.readValue(formData.getFirst("formData"), type);
 		Long dataLongId = null;
 		try {
