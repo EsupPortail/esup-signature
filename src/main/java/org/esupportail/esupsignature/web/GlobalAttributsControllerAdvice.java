@@ -111,6 +111,7 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
             model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
             model.addAttribute("nbToSign", signRequestService.nbToSignSignRequests(userEppn));
+            model.addAttribute("nbFollowByMe", signRequestService.nbFollowedByMe(userEppn));
             try {
                 model.addAttribute("dssStatus", ojService.checkOjFreshness());
             } catch (IOException e) {

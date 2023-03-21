@@ -145,6 +145,9 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("select sb from SignBook sb join sb.viewers u where u = :user")
     Page<SignBook> findByViewersContaining(User user, Pageable pageable);
 
+    @Query("select count(distinct sb) from SignBook sb join sb.viewers u where u.eppn = :userEppn and sb.status = 'pending'")
+    Long countByViewersContaining(String userEppn);
+
     @Query("select distinct sb.workflowName from SignBook sb " +
             "left join sb.signRequests sr " +
             "left join sr.recipientHasSigned rhs " +
