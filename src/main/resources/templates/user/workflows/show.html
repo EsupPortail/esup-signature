@@ -56,7 +56,7 @@
                         </div>
                         <div class="form-group">
                             <label for="viewersSelect">Observateurs</label>
-                            <select id="viewersSelect" class="select-users" multiple="multiple" name="viewers" style="display: none;">
+                            <select id="viewersSelect" class="select-users" multiple="multiple" name="viewers">
                                 <option data-placeholder="true"></option>
                                 <th:block th:each="viewer : ${workflow.viewers}">
                                     <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>

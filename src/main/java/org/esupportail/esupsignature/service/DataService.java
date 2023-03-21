@@ -44,7 +44,7 @@ public class DataService {
     private FieldPropertieService fieldPropertieService;
 
     public Data getById(Long dataId) {
-        return dataRepository.findById(dataId).get();
+        return dataRepository.findWithLockingById(dataId).orElseThrow();
     }
 
     public Data getBySignRequest(SignRequest signRequest) {
