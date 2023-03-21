@@ -96,8 +96,8 @@ public class SignBookController {
         if(recipientsFilter != null && (recipientsFilter.isEmpty() || recipientsFilter.equals("all"))) {
             recipientsFilter = null;
         }
-        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("statusFilter", statusFilter);
+        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("signBooks", signBooks);
         List<User> creators = signBookService.getCreators(userEppn, workflowFilter, docTitleFilter, creatorFilter);
         model.addAttribute("creators", creators);
