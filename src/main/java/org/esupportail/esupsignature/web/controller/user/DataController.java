@@ -104,9 +104,7 @@ public class DataController {
 		} catch (NumberFormatException e) {
 			logger.debug("dataId is null");
 		}
-		logger.info("update");
 		Data data = dataService.addData(id, dataLongId , datas, user, authUser);
-		logger.info("end");
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Données enregistrées"));
 		return data.getId().toString();
 	}
