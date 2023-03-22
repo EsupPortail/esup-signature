@@ -25,6 +25,7 @@ import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.hibernate.LazyInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -71,10 +72,11 @@ public class UserService {
 
     public UserService(GlobalProperties globalProperties,
                        WebSecurityProperties webSecurityProperties,
-                       LdapPersonService ldapPersonService,
-                       LdapPersonLightService ldapPersonLightService,
-                       LdapAliasService ldapAliasService, LdapGroupService ldapGroupService,
-                       LdapOrganizationalUnitService ldapOrganizationalUnitService) {
+                       @Autowired(required = false) LdapPersonService ldapPersonService,
+                       @Autowired(required = false) LdapPersonLightService ldapPersonLightService,
+                       @Autowired(required = false) LdapAliasService ldapAliasService,
+                       @Autowired(required = false) LdapGroupService ldapGroupService,
+                       @Autowired(required = false) LdapOrganizationalUnitService ldapOrganizationalUnitService) {
         this.globalProperties = globalProperties;
         this.webSecurityProperties = webSecurityProperties;
         this.ldapPersonService = ldapPersonService;
@@ -453,8 +455,10 @@ public class UserService {
                 personLightLdaps.add(personLightLdap);
             }
         }
-        for(AliasLdap aliasLdap : ldapAliasService.searchByMail(searchString)) {
-            personLightLdaps.add(new PersonLightLdap(aliasLdap.getMail()));
+        if(ldapAliasService != null) {
+            for (AliasLdap aliasLdap : ldapAliasService.searchByMail(searchString)) {
+                personLightLdaps.add(new PersonLightLdap(aliasLdap.getMail()));
+            }
         }
         User user = getByEppn(authUserEppn);
         if(user.getRoles().contains("ROLE_ADMIN")) {
@@ -520,7 +524,7 @@ public class UserService {
     }
 
     public OrganizationalUnitLdap findOrganizationalUnitLdapByPersonLdap(PersonLdap personLdap) {
-        if (ldapPersonService != null) {
+        if (ldapOrganizationalUnitService != null) {
             return ldapOrganizationalUnitService.getOrganizationalUnitLdap(personLdap.getSupannEntiteAffectationPrincipale());
         }
         return null;
