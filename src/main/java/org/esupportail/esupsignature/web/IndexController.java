@@ -80,14 +80,13 @@ public class IndexController {
 	}
 
 	@GetMapping
-	public String index(Model model, HttpServletRequest httpServletRequest) {
+	public String index(@ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) {
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpServletRequest.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 		if(defaultSavedRequest != null && defaultSavedRequest.getServletPath().startsWith("/ws")) {
 			return "redirect:/denied/ws";
 		}
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		User authUser = getAuthUser(auth);
-		if(authUser != null && !authUser.getEppn().equals("system")) {
+		if(StringUtils.hasText(authUserEppn) && !authUserEppn.equals("system")) {
 			model.asMap().clear();
 			return "redirect:/user/";
 		} else {
