@@ -29,6 +29,7 @@ import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -74,7 +75,7 @@ public class IndexController {
 
 	private final LdapPersonLightService ldapPersonLightService;
 
-	public IndexController(GlobalProperties globalProperties, LdapPersonLightService ldapPersonLightService) {
+	public IndexController(GlobalProperties globalProperties, @Autowired(required = false) LdapPersonLightService ldapPersonLightService) {
 		this.globalProperties = globalProperties;
 		this.ldapPersonLightService = ldapPersonLightService;
 	}
