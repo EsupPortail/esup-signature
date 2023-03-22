@@ -46,7 +46,7 @@ public class PreAuthorizeService {
 
     public boolean isManager(String userEppn) {
         if(userEppn != null) {
-            User user = userService.getUserByEppn(userEppn);
+            User user = userService.getByEppn(userEppn);
             return user.getManagersRoles().size() > 0;
         }
         return false;
@@ -88,7 +88,7 @@ public class PreAuthorizeService {
     public boolean signRequestOwner(Long id, String userEppn) {
         if(userEppn != null) {
             SignRequest signRequest = signRequestRepository.findById(id).get();
-            User user = userService.getUserByEppn(userEppn);
+            User user = userService.getByEppn(userEppn);
             boolean isManager = false;
             if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
                 Workflow workflow = workflowService.getById(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId());
@@ -193,14 +193,14 @@ public class PreAuthorizeService {
 
     public boolean checkUserViewRights(SignRequest signRequest, String userEppn, String authUserEppn) {
         if(userEppn != null && authUserEppn != null) {
-            User user = userService.getUserByEppn(userEppn);
+            User user = userService.getByEppn(userEppn);
             if (userEppn.equals(authUserEppn) || signBookService.checkAllShareTypesForSignRequest(userEppn, authUserEppn, signRequest.getParentSignBook().getId())) {
                 List<SignRequest> signRequests = signRequestRepository.findByIdAndRecipient(signRequest.getId(), userEppn);
                 Data data = signBookService.getBySignBook(signRequest.getParentSignBook());
-                User authUser = userService.getUserByEppn(authUserEppn);
+                User authUser = userService.getByEppn(authUserEppn);
                 if ((data != null && (data.getForm() != null && data.getForm().getWorkflow() != null && data.getForm().getWorkflow().getManagers().contains(authUser.getEmail())))
                         || signRequest.getCreateBy().getEppn().equals(userEppn)
-                        || signRequest.getParentSignBook().getViewers().contains(userService.getUserByEppn(authUserEppn))
+                        || signRequest.getParentSignBook().getViewers().contains(userService.getByEppn(authUserEppn))
                         || signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getUsers).anyMatch(users -> users.contains(user))
                         || signRequests.size() > 0) {
                     return true;

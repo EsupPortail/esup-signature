@@ -38,7 +38,7 @@ public class SignWithService {
 
     @Transactional
     public List<SignWith> getAuthorizedSignWiths(String userEppn, SignRequest signRequest) {
-        User user = userService.getUserByEppn(userEppn);
+        User user = userService.getByEppn(userEppn);
         List<SignWith> signWiths = new ArrayList<>(List.of(SignWith.values()));
         if(globalProperties.getDisableCertStorage() || user.getKeystore() == null) {
             signWiths.remove(SignWith.userCert);
@@ -63,7 +63,7 @@ public class SignWithService {
     }
 
     public boolean checkSealCertificat(String userEppn) {
-        User user = userService.getUserByEppn(userEppn);
+        User user = userService.getByEppn(userEppn);
         if(globalProperties.getSealCertificatDriver() != null && user.getRoles().contains("ROLE_SEAL")) {
             if(certificatService.getSealCertificats().size() > 0) {
                 return true;

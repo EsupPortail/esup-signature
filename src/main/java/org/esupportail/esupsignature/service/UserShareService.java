@@ -134,7 +134,7 @@ public class UserShareService {
 
     @Transactional
     public void updateUserShare(String authUserEppn, String[] types, String[] userEmails, String beginDate, String endDate, Long userShareId, Boolean signWithOwnSign) {
-        User authUser = userService.getUserByEppn(authUserEppn);
+        User authUser = userService.getByEppn(authUserEppn);
         UserShare userShare = getById(userShareId);
         if(globalProperties.getShareMode() > 2) {
             userShare.setSignWithOwnSign(signWithOwnSign);
@@ -262,7 +262,7 @@ public class UserShareService {
     }
 
     public void delete(Long userShareId, String authUserEppn) {
-        User authUser = userService.getUserByEppn(authUserEppn);
+        User authUser = userService.getByEppn(authUserEppn);
         UserShare userShare = getById(userShareId);
         if (userShare.getUser().equals(authUser)) {
             delete(userShare);

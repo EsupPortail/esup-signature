@@ -68,7 +68,7 @@ public class WorkflowAdminController {
 
 	@GetMapping
 	public String list(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(name = "displayWorkflowType", required = false) DisplayWorkflowType displayWorkflowType, Model model) {
-		User user = userService.getUserByEppn(authUserEppn);
+		User user = userService.getByEppn(authUserEppn);
 		if(user.getRoles().contains("ROLE_ADMIN")) {
 			if (displayWorkflowType == null) {
 				displayWorkflowType = DisplayWorkflowType.system;
@@ -84,7 +84,7 @@ public class WorkflowAdminController {
 
 	@GetMapping(value = "/steps/{id}")
 	public String show(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-		User user = userService.getUserByEppn(authUserEppn);
+		User user = userService.getByEppn(authUserEppn);
 		if(preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
 			model.addAttribute("fromAdmin", true);
 			Workflow workflow = workflowService.getById(id);
@@ -102,7 +102,7 @@ public class WorkflowAdminController {
 						 @RequestParam(name = "title") String title,
 						 @RequestParam(name = "description") String description,
 						 @RequestParam(name = "managerRole", required = false) String managerRole, RedirectAttributes redirectAttributes) {
-		User user = userService.getUserByEppn(authUserEppn);
+		User user = userService.getByEppn(authUserEppn);
 		if(title == null) {
 			title = description;
 		}
@@ -111,7 +111,7 @@ public class WorkflowAdminController {
 			if(user.getRoles().contains("ROLE_ADMIN")) {
 				workflow = workflowService.createWorkflow(title, description, userService.getSystemUser());
 			} else {
-				workflow = workflowService.createWorkflow(title, description, userService.getUserByEppn(authUserEppn));
+				workflow = workflowService.createWorkflow(title, description, userService.getByEppn(authUserEppn));
 				workflow.setManagerRole(managerRole);
 			}
 		} catch (EsupSignatureRuntimeException e) {
@@ -123,7 +123,7 @@ public class WorkflowAdminController {
 
     @GetMapping(value = "/update/{id}")
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-		User user = userService.getUserByEppn(authUserEppn);
+		User user = userService.getByEppn(authUserEppn);
 		if(preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
 			Workflow workflow = workflowService.getById(id);
 			model.addAttribute("workflow", workflow);
@@ -144,7 +144,7 @@ public class WorkflowAdminController {
 						 @RequestParam(value = "types", required = false) String[] types,
 						 @RequestParam(required = false) List<String> viewersEmails,
 						 @RequestParam(required = false) Set<String> managers, RedirectAttributes redirectAttributes) {
-		User user = userService.getUserByEppn(authUserEppn);
+		User user = userService.getByEppn(authUserEppn);
 		if(preAuthorizeService.workflowManager(workflow.getId(), authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
 			Workflow updateWorkflow = workflowService.update(workflow, user, types, managers);
 			workflowService.addViewers(updateWorkflow.getId(), viewersEmails);
@@ -249,7 +249,7 @@ public class WorkflowAdminController {
 	@GetMapping(value = "/get-files-from-source/{id}")
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
-		User user = userService.getUserByEppn(authUserEppn);
+		User user = userService.getByEppn(authUserEppn);
 		int nbImportedFiles = signBookService.importFilesFromSource(id, user, user);
 		if (nbImportedFiles == 0) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucun fichier à importer"));

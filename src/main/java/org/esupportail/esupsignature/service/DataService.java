@@ -102,7 +102,7 @@ public class DataService {
     }
 
     public Data cloneData(Data data, String authUserEppn) {
-        User authUser = userService.getUserByEppn(authUserEppn);
+        User authUser = userService.getByEppn(authUserEppn);
         Form form = formService.getFormByNameAndActiveVersion(data.getForm().getName(), true).get(0);
         Data cloneData = new Data();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
@@ -166,7 +166,7 @@ public class DataService {
 
     @Transactional
     public Data addData(Long formId, String authUserEppn) {
-        User authUser = userService.getUserByEppn(authUserEppn);
+        User authUser = userService.getByEppn(authUserEppn);
         Form form = formService.getById(formId);
         Data data = new Data();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -189,7 +189,7 @@ public class DataService {
 
     @Transactional
     public void anonymize(String userEppn, User anonymous) {
-        User user = userService.getUserByEppn(userEppn);
+        User user = userService.getByEppn(userEppn);
         for (Data data : dataRepository.findByCreateBy(user)) {
             data.setCreateBy(anonymous);
         }

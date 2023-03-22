@@ -45,7 +45,7 @@ public class User {
     @JsonIgnore
     private Set<String> managersRoles = new HashSet<>();
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
     @JsonIgnore
     private Map<UiParams, String> uiParams = new LinkedHashMap<>();
 

@@ -426,7 +426,7 @@ public class FormService {
 
 	@Transactional
 	public List<Form> getFormByManagersContains(String eppn) {
-		User user = userService.getUserByEppn(eppn);
+		User user = userService.getByEppn(eppn);
 		List<Workflow> workflows = workflowRepository.findWorkflowByManagersIn(Collections.singletonList(user.getEmail()));
 		List<Form> managerForms = new ArrayList<>();
 		for(Workflow workflow : workflows) {
@@ -440,7 +440,7 @@ public class FormService {
 
 	@Transactional
 	public String getHelpMessage(String userEppn, Form form) {
-		User user = userService.getUserByEppn(userEppn);
+		User user = userService.getByEppn(userEppn);
 		String messsage = null;
 		boolean sendMessage = true;
 		if(user.getFormMessages() != null) {
