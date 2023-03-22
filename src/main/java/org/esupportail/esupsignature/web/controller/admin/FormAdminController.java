@@ -81,7 +81,7 @@ public class FormAdminController {
 	@GetMapping()
 	public String list(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
 		Set<Form> forms = new HashSet<>();
-		User user = userService.getUserByEppn(authUserEppn);
+		User user = userService.getByEppn(authUserEppn);
 		if(user.getRoles().contains("ROLE_ADMIN")) {
 			forms.addAll(formService.getAllForms());
 			model.addAttribute("roles", userService.getAllRoles());
@@ -109,7 +109,7 @@ public class FormAdminController {
 						 @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
 		try {
 			Form form = formService.createForm(null, name, title, workflowId, prefillType, roleNames, publicUsage, fieldNames, fieldTypes);
-			User user = userService.getUserByEppn(authUserEppn);
+			User user = userService.getByEppn(authUserEppn);
 			if(!user.getRoles().contains("ROLE_ADMIN")) {
 				form.setManagerRole(managerRole);
 			}
@@ -132,7 +132,7 @@ public class FormAdminController {
 						   @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
 		try {
 			Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, publicUsage);
-			User user = userService.getUserByEppn(authUserEppn);
+			User user = userService.getByEppn(authUserEppn);
 			if(!user.getRoles().contains("ROLE_ADMIN")) {
 				form.setManagerRole(managerRole);
 			}
@@ -147,7 +147,7 @@ public class FormAdminController {
 	@GetMapping("{id}/fields")
 	@PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String fields(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-		User user = userService.getUserByEppn(authUserEppn);
+		User user = userService.getByEppn(authUserEppn);
 		if(preAuthorizeService.formManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
 			Form form = formService.getById(id);
 			model.addAttribute("form", form);
@@ -255,7 +255,7 @@ public class FormAdminController {
 	public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @ModelAttribute Form updateForm,
 							 @RequestParam(value = "types", required = false) String[] types,
 							 RedirectAttributes redirectAttributes) {
-		User user = userService.getUserByEppn(authUserEppn);
+		User user = userService.getByEppn(authUserEppn);
 		if(preAuthorizeService.formManager(updateForm.getId(), authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
 			formService.updateForm(updateForm.getId(), updateForm, types, true);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
@@ -294,7 +294,7 @@ public class FormAdminController {
 	public ResponseEntity<Void> getFormDatasCsv(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String name, HttpServletResponse response) {
 		List<Form> forms = formService.getFormByName(name);
 		if (forms.size() > 0) {
-			User user = userService.getUserByEppn(authUserEppn);
+			User user = userService.getByEppn(authUserEppn);
 			if(preAuthorizeService.formManager(forms.get(0).getId(), authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
 				try {
 					response.setContentType("text/csv; charset=utf-8");

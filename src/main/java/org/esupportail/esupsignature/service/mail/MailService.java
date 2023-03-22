@@ -120,7 +120,7 @@ public class MailService {
     }
 
     public void sendCompletedMail(SignBook signBook, String userEppn) throws EsupSignatureMailException {
-        User user = userService.getUserByEppn(userEppn);
+        User user = userService.getByEppn(userEppn);
         if (!checkMailSender()) {
             return;
         }
@@ -244,7 +244,7 @@ public class MailService {
     }
 
     public void sendRefusedMail(SignBook signBook, String comment, String userEppn) throws EsupSignatureMailException {
-        User user = userService.getUserByEppn(userEppn);
+        User user = userService.getByEppn(userEppn);
         if (!checkMailSender()) {
             return;
         }

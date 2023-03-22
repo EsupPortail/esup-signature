@@ -25,6 +25,7 @@ import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.hibernate.LazyInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -71,10 +72,11 @@ public class UserService {
 
     public UserService(GlobalProperties globalProperties,
                        WebSecurityProperties webSecurityProperties,
-                       LdapPersonService ldapPersonService,
-                       LdapPersonLightService ldapPersonLightService,
-                       LdapAliasService ldapAliasService, LdapGroupService ldapGroupService,
-                       LdapOrganizationalUnitService ldapOrganizationalUnitService) {
+                       @Autowired(required = false) LdapPersonService ldapPersonService,
+                       @Autowired(required = false) LdapPersonLightService ldapPersonLightService,
+                       @Autowired(required = false) LdapAliasService ldapAliasService,
+                       @Autowired(required = false) LdapGroupService ldapGroupService,
+                       @Autowired(required = false) LdapOrganizationalUnitService ldapOrganizationalUnitService) {
         this.globalProperties = globalProperties;
         this.webSecurityProperties = webSecurityProperties;
         this.ldapPersonService = ldapPersonService;
@@ -107,12 +109,7 @@ public class UserService {
     }
 
     public User getByEppn(String eppn) {
-        User user = userRepository.findByEppn(eppn).orElse(null);
-        if(user != null) {
-            return user;
-        } else {
-            throw new EsupSignatureRuntimeException("eppn " + eppn + " not found");
-        }
+        return  userRepository.findByEppn(eppn).orElseThrow(() -> new EsupSignatureRuntimeException("eppn " + eppn + " not found"));
     }
 
     public User getSystemUser() {
@@ -164,7 +161,7 @@ public class UserService {
     }
 
     @Transactional
-    public User getUserByEppn(String eppn) {
+    public User getFullUserByEppn(String eppn) {
         if (eppn.equals("scheduler")) {
             return getSchedulerUser();
         }
@@ -173,8 +170,10 @@ public class UserService {
         }
         User user = getByEppn(eppn);
         if (user != null) {
-            user.setKeystoreFileName(this.getKeystoreFileName(user));
-            user.setSignImagesIds(this.getSignImagesIds(user));
+            if(user.getKeystore() != null) {
+                user.setKeystoreFileName(user.getKeystore().getFileName());
+            }
+            user.setSignImagesIds(user.getSignImages().stream().map(Document::getId).collect(Collectors.toList()));
             if (user.getDefaultSignImageNumber() == null || user.getDefaultSignImageNumber() < 0 || user.getDefaultSignImageNumber() >= user.getSignImages().size()) {
                 user.setDefaultSignImageNumber(0);
             }
@@ -196,7 +195,7 @@ public class UserService {
     }
 
     public User createUserWithEppn(String eppn) throws EsupSignatureUserException {
-        User user = getUserByEppn(eppn);
+        User user = getByEppn(eppn);
         if (user != null && !user.getEppn().equals(getSystemUser().getEppn())) {
             return user;
         }
@@ -456,10 +455,12 @@ public class UserService {
                 personLightLdaps.add(personLightLdap);
             }
         }
-        for(AliasLdap aliasLdap : ldapAliasService.searchByMail(searchString)) {
-            personLightLdaps.add(new PersonLightLdap(aliasLdap.getMail()));
+        if(ldapAliasService != null) {
+            for (AliasLdap aliasLdap : ldapAliasService.searchByMail(searchString)) {
+                personLightLdaps.add(new PersonLightLdap(aliasLdap.getMail()));
+            }
         }
-        User user = getUserByEppn(authUserEppn);
+        User user = getByEppn(authUserEppn);
         if(user.getRoles().contains("ROLE_ADMIN")) {
             return personLightLdaps;
         } else {
@@ -523,7 +524,7 @@ public class UserService {
     }
 
     public OrganizationalUnitLdap findOrganizationalUnitLdapByPersonLdap(PersonLdap personLdap) {
-        if (ldapPersonService != null) {
+        if (ldapOrganizationalUnitService != null) {
             return ldapOrganizationalUnitService.getOrganizationalUnitLdap(personLdap.getSupannEntiteAffectationPrincipale());
         }
         return null;
@@ -647,17 +648,6 @@ public class UserService {
         return signature;
     }
 
-    private List<Long> getSignImagesIds(User user) {
-        return user.getSignImages().stream().map(Document::getId).collect(Collectors.toList());
-    }
-
-    private String getKeystoreFileName(User user) {
-        if(user.getKeystore() != null) {
-            return user.getKeystore().getFileName();
-        }
-        return null;
-    }
-
     @Transactional
     public void deleteSign(String authUserEppn, long id) {
         User authUser = getByEppn(authUserEppn);
@@ -697,19 +687,19 @@ public class UserService {
 
     @Transactional
     public Map<UiParams, String> getUiParams(String authUserEppn) {
-        User user = getUserByEppn(authUserEppn);
+        User user = getByEppn(authUserEppn);
         return user.getUiParams();
     }
 
     @Transactional
     public void setUiParams(String authUserEppn, UiParams key, String value) {
-        User user = getUserByEppn(authUserEppn);
+        User user = getByEppn(authUserEppn);
         user.getUiParams().put(key, value);
     }
 
     @Transactional
     public void setDefaultSignImage(String authUserEppn, int signImageNumber) {
-        User user = getUserByEppn(authUserEppn);
+        User user = getByEppn(authUserEppn);
         user.setDefaultSignImageNumber(signImageNumber);
     }
 
@@ -735,14 +725,14 @@ public class UserService {
 
     @Transactional
     public void updateRoles(String userEppn, List<String> roles) {
-        User user = getUserByEppn(userEppn);
+        User user = getByEppn(userEppn);
         user.getRoles().clear();
         user.getRoles().addAll(roles);
     }
 
     @Transactional
     public void updatePhone(String userEppn, String phone) {
-        User user = getUserByEppn(userEppn);
+        User user = getByEppn(userEppn);
         user.setPhone(phone);
     }
 
@@ -775,7 +765,7 @@ public class UserService {
 
     @Transactional
     public void updateReplaceUserBy(String eppn, String[] byEmail, String beginDate, String endDate) {
-        User user = getUserByEppn(eppn);
+        User user = getByEppn(eppn);
         if(user != null ) {
             if(byEmail != null) {
                 User byUser = getUserByEmail(byEmail[0]);
@@ -824,13 +814,13 @@ public class UserService {
     }
 
     public String getFavoriteSignRequestParamsJson(String userEppn) throws JsonProcessingException {
-        User user = getUserByEppn(userEppn);
+        User user = getByEppn(userEppn);
         return objectMapper.writer().writeValueAsString(user.getFavoriteSignRequestParams());
     }
 
     @Transactional
     public String getDefaultImage(String eppn) throws IOException {
-        User user = getUserByEppn(eppn);
+        User user = getByEppn(eppn);
         return fileService.getBase64Image(fileService.getDefaultImage(user.getName(), user.getFirstname()), "default");
     }
 
@@ -839,8 +829,9 @@ public class UserService {
         return userRepository.findByUserType(UserType.group);
     }
 
+    @Transactional
     public List<String> getManagersRoles(String authUserEppn) {
-        User user = getUserByEppn(authUserEppn);
+        User user = getByEppn(authUserEppn);
         return user.getManagersRoles().stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 

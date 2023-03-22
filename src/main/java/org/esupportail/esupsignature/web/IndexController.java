@@ -29,6 +29,7 @@ import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -74,20 +75,19 @@ public class IndexController {
 
 	private final LdapPersonLightService ldapPersonLightService;
 
-	public IndexController(GlobalProperties globalProperties, LdapPersonLightService ldapPersonLightService) {
+	public IndexController(GlobalProperties globalProperties, @Autowired(required = false) LdapPersonLightService ldapPersonLightService) {
 		this.globalProperties = globalProperties;
 		this.ldapPersonLightService = ldapPersonLightService;
 	}
 
 	@GetMapping
-	public String index(Model model, HttpServletRequest httpServletRequest) {
+	public String index(@ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) {
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpServletRequest.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 		if(defaultSavedRequest != null && defaultSavedRequest.getServletPath().startsWith("/ws")) {
 			return "redirect:/denied/ws";
 		}
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		User authUser = getAuthUser(auth);
-		if(authUser != null && !authUser.getEppn().equals("system")) {
+		if(StringUtils.hasText(authUserEppn) && !authUserEppn.equals("system")) {
 			model.asMap().clear();
 			return "redirect:/user/";
 		} else {
@@ -161,7 +161,7 @@ public class IndexController {
 					if (!StringUtils.hasText(eppn)) {
 						eppn = userService.buildEppn(auth.getName());
 					}
-					user = userService.getUserByEppn(eppn);
+					user = userService.getByEppn(eppn);
 				} else {
 					if (personLdaps.size() == 0) {
 						logger.debug("no result on ldap search for " + auth.getName());
@@ -171,7 +171,7 @@ public class IndexController {
 				}
 			} else {
 				logger.debug("Try to retrieve "+ auth.getName() + " without ldap");
-				user = userService.getUserByEppn(auth.getName());
+				user = userService.getByEppn(auth.getName());
 			}
 		}
 		return user;

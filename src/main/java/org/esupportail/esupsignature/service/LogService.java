@@ -70,7 +70,7 @@ public class LogService {
 
     private List<Log> setUsers(List<Log> logs) {
         for (Log log :logs) {
-            log.setUser(userService.getUserByEppn(log.getEppn()));
+            log.setUser(userService.getByEppn(log.getEppn()));
         }
         return logs;
     }
@@ -84,7 +84,7 @@ public class LogService {
         List<Log> logs = logRepository.findBySignRequestId(id);
         for (Log log : logs) {
             if(log.getEppn() != null) {
-                User user = userService.getUserByEppn(log.getEppn());
+                User user = userService.getByEppn(log.getEppn());
                 log.setUser(user);
             }
         }
@@ -95,7 +95,7 @@ public class LogService {
         Log log = new Log();
         log.setSignRequestId(id);
         log.setEppn(authUserEppn);
-        User user = userService.getUserByEppn(authUserEppn);
+        User user = userService.getByEppn(authUserEppn);
         log.setUser(user);
         log.setEppnFor(userEppn);
         setClientIp(log);
@@ -126,7 +126,7 @@ public class LogService {
         log.setSignRequestToken(signRequest.getToken());
         log.setEppn(authUserEppn);
         log.setEppnFor(userEppn);
-        User user = userService.getUserByEppn(authUserEppn);
+        User user = userService.getByEppn(authUserEppn);
         log.setUser(user);
         log.setEppnFor(userEppn);
         setClientIp(log);

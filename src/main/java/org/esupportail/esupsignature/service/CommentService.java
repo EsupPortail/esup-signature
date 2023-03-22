@@ -26,7 +26,7 @@ public class CommentService {
 
     @Transactional
     public Comment create(Long signRequestId, String text, Integer posX, Integer posY, Integer pageNumer, Integer stepNumber, Boolean postit, String postitColor, String userEppn) {
-        User user = userService.getUserByEppn(userEppn);
+        User user = userService.getByEppn(userEppn);
         SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
         Comment comment = new Comment();
         comment.setText(text);

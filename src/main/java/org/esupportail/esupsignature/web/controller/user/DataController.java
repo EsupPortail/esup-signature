@@ -95,7 +95,7 @@ public class DataController {
 						  @RequestParam MultiValueMap<String, String> formData, Model model,
 						  RedirectAttributes redirectAttributes) throws JsonProcessingException {
 		User user = (User) model.getAttribute("user");
-		User authUser = userService.getUserByEppn(authUserEppn);
+		User authUser = userService.getByEppn(authUserEppn);
 		TypeReference<HashMap<String, String>> type = new TypeReference<>(){};
 		Map<String, String> datas = objectMapper.readValue(formData.getFirst("formData"), type);
 		Long dataLongId = null;

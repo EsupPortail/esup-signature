@@ -506,7 +506,7 @@ public class WorkflowService {
 
     @Transactional
     public List<Workflow> getWorkflowByManagersContains(String eppn) {
-        User user = userService.getUserByEppn(eppn);
+        User user = userService.getByEppn(eppn);
         return workflowRepository.findWorkflowByManagersIn(Collections.singletonList(user.getEmail()));
     }
 
@@ -629,7 +629,7 @@ public class WorkflowService {
 
     @Transactional
     public void anonymize(String userEppn, User anonymous) {
-        User user = userService.getUserByEppn(userEppn);
+        User user = userService.getByEppn(userEppn);
         List<Workflow> workflows = workflowRepository.findAll();
         for(Workflow workflow : workflows) {
             if(workflow.getCreateBy().equals(user)) {
