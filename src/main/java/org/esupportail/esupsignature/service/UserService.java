@@ -839,6 +839,7 @@ public class UserService {
         return userRepository.findByUserType(UserType.group);
     }
 
+    @Transactional
     public List<String> getManagersRoles(String authUserEppn) {
         User user = getUserByEppn(authUserEppn);
         return user.getManagersRoles().stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());

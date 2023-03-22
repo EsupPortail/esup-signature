@@ -15,6 +15,7 @@ import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletException;
@@ -35,6 +36,7 @@ public class CasAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
 	private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
 	@Override
+	@Transactional
 	public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
 		logger.info("authentication success for " + authentication.getName());
 		String name = httpServletRequest.getHeader("sn");
