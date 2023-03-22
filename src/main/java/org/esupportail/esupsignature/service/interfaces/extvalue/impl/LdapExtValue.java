@@ -22,7 +22,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base"})
+@ConditionalOnProperty({"spring.ldap.base"})
 @Component
 public class LdapExtValue implements ExtValue {
 
