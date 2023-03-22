@@ -139,7 +139,7 @@ public class SignService {
 	}
 
 	public Document certSign(SignRequest signRequest, String userEppn, String password, SignWith signWith) throws EsupSignatureRuntimeException {
-		User user = userService.getUserByEppn(userEppn);
+		User user = userService.getByEppn(userEppn);
 		logger.info("start certSign for signRequest : " + signRequest.getId());
 		SignatureForm signatureForm;
 		List<Document> toSignDocuments = new ArrayList<>(getToSignDocuments(signRequest.getId()));
@@ -675,7 +675,7 @@ public class SignService {
 
 	@Transactional
 	public AbstractSignatureForm getAbstractSignatureForm(Long signRequestId, String userEppn) throws IOException, EsupSignatureRuntimeException {
-		User user = userService.getUserByEppn(userEppn);
+		User user = userService.getByEppn(userEppn);
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		List<SignRequestParams> liveWfSignRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
 		return getSignatureDocumentForm(getToSignDocuments(signRequest.getId()), signRequest, user, new Date(), false);

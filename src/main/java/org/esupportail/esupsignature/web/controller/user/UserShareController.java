@@ -73,7 +73,7 @@ public class UserShareController {
                            @RequestParam("beginDate") String beginDate,
                            @RequestParam("endDate") String endDate, Model model,
                            RedirectAttributes redirectAttributes) {
-        User authUser = userService.getUserByEppn(authUserEppn);
+        User authUser = userService.getByEppn(authUserEppn);
         if(form == null) form = new Long[] {};
         if(workflow == null) workflow = new Long[] {};
         if(signWithOwnSign == null) signWithOwnSign = false;

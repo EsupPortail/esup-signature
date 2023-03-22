@@ -82,10 +82,10 @@ public class GlobalAttributsControllerAdvice {
         if(userEppn != null) {
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
-            User user = userService.getUserByEppn(userEppn);
+            User user = userService.getFullUserByEppn(userEppn);
             userService.parseRoles(userEppn, myGlobalProperties);
             model.addAttribute("user", user);
-            model.addAttribute("authUser", userService.getUserByEppn(authUserEppn));
+            model.addAttribute("authUser", userService.getByEppn(authUserEppn));
             model.addAttribute("keystoreFileName", user.getKeystoreFileName());
             model.addAttribute("userImagesIds", user.getSignImagesIds());
             model.addAttribute("suUsers", userShareService.getSuUsers(authUserEppn));
