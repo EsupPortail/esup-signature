@@ -252,7 +252,7 @@ public class SignRequestService {
 	}
 
 	public SignRequest createSignRequest(String name, SignBook signBook, String userEppn, String authUserEppn) {
-		User user = userService.getUserByEppn(userEppn);
+		User user = userService.getByEppn(userEppn);
 		SignRequest signRequest = new SignRequest();
 		if(name == null || name.isEmpty()) {
 			if (signBook.getSignRequests().size() == 0) {
@@ -878,7 +878,7 @@ public class SignRequestService {
 
 	@Transactional
 	public List<SignRequestParams> getToUseSignRequestParams(Long id, String userEppn) {
-		User user = userService.getUserByEppn(userEppn);
+		User user = userService.getByEppn(userEppn);
 		List<SignRequestParams> toUserSignRequestParams = new ArrayList<>();
 		SignRequest signRequest = getById(id);
 		int signOrderNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
@@ -948,7 +948,7 @@ public class SignRequestService {
 
 	@Transactional
 	public void warningReaded(String authUserEppn) {
-		User authUser = userService.getUserByEppn(authUserEppn);
+		User authUser = userService.getByEppn(authUserEppn);
 		List<SignRequest> oldSignRequests = signRequestRepository.findByCreateByEppnAndOlderPending(authUser.getId(), globalProperties.getNbDaysBeforeWarning());
 		for (SignRequest signRequest : oldSignRequests) {
 			signRequest.setWarningReaded(true);

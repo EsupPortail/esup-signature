@@ -82,7 +82,7 @@ public class AuditTrailService {
     }
 
     public AuditStep createAuditStep(String userEppn, String certificat, String timeStampCertificat, Date timeStampDate, Boolean allScrolled, Integer page, Integer posX, Integer posY) {
-        User user = userService.getUserByEppn(userEppn);
+        User user = userService.getByEppn(userEppn);
         AuditStep auditStep = new AuditStep();
         auditStep.setName(user.getName());
         auditStep.setFirstname(user.getFirstname());

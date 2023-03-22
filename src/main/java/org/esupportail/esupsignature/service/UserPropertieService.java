@@ -88,7 +88,7 @@ public class UserPropertieService {
 
     @Transactional
     public void deleteAll(String authUserEppn) {
-        User user = userService.getUserByEppn(authUserEppn);
+        User user = userService.getByEppn(authUserEppn);
         List<UserPropertie> userProperties2 = userPropertieRepository.findByFavoritesContains(user);
         for(UserPropertie userPropertie : userProperties2) {
             userPropertie.getFavorites().clear();

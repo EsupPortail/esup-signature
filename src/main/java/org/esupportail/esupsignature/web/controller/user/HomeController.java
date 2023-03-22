@@ -77,7 +77,7 @@ public class HomeController {
                        @ModelAttribute("authUserEppn") String authUserEppn,
                        @RequestParam(required = false, name = "formId") Long formId,
                        Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) throws EsupSignatureUserException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
-        User authUser = userService.getUserByEppn(authUserEppn);
+        User authUser = userService.getByEppn(authUserEppn);
         if(authUser != null) {
             List<SignRequest> oldSignRequests = new ArrayList<>();
             if(globalProperties.getNbDaysBeforeWarning() > - 1) {

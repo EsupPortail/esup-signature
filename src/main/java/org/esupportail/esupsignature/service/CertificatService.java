@@ -73,7 +73,7 @@ public class CertificatService {
 
     @Transactional
     public List<Certificat> getCertificatByUser(String userEppn) {
-        User user = userService.getUserByEppn(userEppn);
+        User user = userService.getByEppn(userEppn);
         Set<String> roles = user.getRoles();
         Set<Certificat> certificats = new HashSet<>(certificatRepository.findByRolesIn(roles));
         return new ArrayList<>(certificats);

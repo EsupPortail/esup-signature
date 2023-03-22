@@ -161,7 +161,7 @@ public class IndexController {
 					if (!StringUtils.hasText(eppn)) {
 						eppn = userService.buildEppn(auth.getName());
 					}
-					user = userService.getUserByEppn(eppn);
+					user = userService.getByEppn(eppn);
 				} else {
 					if (personLdaps.size() == 0) {
 						logger.debug("no result on ldap search for " + auth.getName());
@@ -171,7 +171,7 @@ public class IndexController {
 				}
 			} else {
 				logger.debug("Try to retrieve "+ auth.getName() + " without ldap");
-				user = userService.getUserByEppn(auth.getName());
+				user = userService.getByEppn(auth.getName());
 			}
 		}
 		return user;

@@ -41,11 +41,11 @@ public class User {
     @Column(unique=true)
     private String phone;
 
-    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = String.class)
     @JsonIgnore
     private Set<String> managersRoles = new HashSet<>();
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
     @JsonIgnore
     private Map<UiParams, String> uiParams = new LinkedHashMap<>();
 
@@ -91,7 +91,7 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastSendAlertDate = new Date(0);
 
-    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = String.class)
     @JsonIgnore
     private Set<String> roles = new HashSet<>();
 
