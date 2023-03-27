@@ -133,7 +133,6 @@ public class SignRequestController {
         model.addAttribute("nextSignRequest", signBookService.getNextSignRequest(signRequest.getId(), userEppn));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
-        model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
         model.addAttribute("favoriteSignRequestParamsJson", userService.getFavoriteSignRequestParamsJson(userEppn));
         try {
             Object userShareString = httpSession.getAttribute("userShareId");

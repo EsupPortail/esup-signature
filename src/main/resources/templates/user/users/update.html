@@ -6,7 +6,7 @@
     import {UserUi} from '/js/modules/ui/users/UserUi.js?version=[[${versionApp}]]';
     import {UserParamsHelp} from '/js/modules/help/UserParamsHelp.js?version=[[${versionApp}]]';
     new UserUi([[${user.firstname + ' ' + user.name}]], [[${user.favoriteSignRequestParams}]]);
-    let help = new UserParamsHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).userParamsHelp)}]]);
+    let help = new UserParamsHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).userParamsHelp)}]]);
     help.autoStart();
 </script>
 <body>
