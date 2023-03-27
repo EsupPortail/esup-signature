@@ -688,7 +688,7 @@ public class UserService {
     @Transactional
     public Map<UiParams, String> getUiParams(String authUserEppn) {
         User user = getByEppn(authUserEppn);
-        return user.getUiParams();
+        return new HashMap<>(user.getUiParams());
     }
 
     @Transactional
