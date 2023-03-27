@@ -8,7 +8,7 @@
     import {HomeUi} from '/js/modules/ui/HomeUi.js?version=[[${versionApp}]]';
     import {HomeHelp} from '/js/modules/help/HomeHelp.js?version=[[${versionApp}]]';
     new HomeUi([[${startFormId}]]);
-    let help = new HomeHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).homeHelp)}]]);
+    let help = new HomeHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).homeHelp)}]]);
     help.autoStart();
 </script>
 <body>
