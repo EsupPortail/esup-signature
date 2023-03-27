@@ -99,6 +99,7 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("globalPropertiesJson", objectMapper.writer().writeValueAsString(myGlobalProperties));
             model.addAttribute("reportNumber", reportService.countByUser(authUserEppn));
             model.addAttribute("hoursBeforeRefreshNotif", myGlobalProperties.getHoursBeforeRefreshNotif());
+            model.addAttribute("myUiParams", userService.getUiParams(authUserEppn));
             if (environment.getActiveProfiles().length > 0 && environment.getActiveProfiles()[0].equals("dev")) {
                 model.addAttribute("profile", environment.getActiveProfiles()[0]);
             }

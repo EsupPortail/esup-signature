@@ -110,8 +110,7 @@ public class HomeController {
             model.addAttribute("datas", datas);
             model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
             model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
-            model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
-            model.addAttribute("startFormId", formId);
+                model.addAttribute("startFormId", formId);
             return "user/home/index";
         } else {
             throw new EsupSignatureUserException("not reconized user");

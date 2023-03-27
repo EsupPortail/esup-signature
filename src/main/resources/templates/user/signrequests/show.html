@@ -811,7 +811,7 @@
     import {Nexu} from '/js/modules/ui/signrequests/Nexu.js?version=[[${versionApp}]]';
     import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=[[${versionApp}]]';
     import {SignRequestHelp} from '/js/modules/help/SignRequestHelp.js?version=[[${versionApp}]]';
-    let help = new SignRequestHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]], [[${user.userType.name() == 'external' ? 'otp' : 'user'}]]);
+    let help = new SignRequestHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]], [[${user.userType.name() == 'external' ? 'otp' : 'user'}]]);
     help.autoStart();
     let signable = [[${signable}]];
     let editable = [[${editable}]];
