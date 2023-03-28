@@ -955,25 +955,6 @@ public class SignRequestService {
 		}
 	}
 
-    public SignRequest getByLastOtp(String urlId) {
-		return signRequestRepository.findByLastOtp(urlId);
-    }
-
-	@Transactional
-	public void renewOtp(String urlId) {
-		SignRequest signRequest = getByLastOtp(urlId);
-		if(signRequest != null) {
-			List<Recipient> recipients = signRequest.getRecipientHasSigned().keySet().stream().filter(r -> r.getUser().getUserType().equals(UserType.external)).collect(Collectors.toList());
-			for(Recipient recipient : recipients) {
-				try {
-					otpService.generateOtpForSignRequest(signRequest.getId(), recipient.getUser().getId(), recipient.getUser().getPhone());
-				} catch (EsupSignatureMailException e) {
-					logger.error(e.getMessage());
-				}
-			}
-		}
-	}
-
 	@Transactional
 	public void anonymize(String userEppn, User anonymous) {
 		for(SignRequest signRequest : signRequestRepository.findByCreateByEppn(userEppn)) {

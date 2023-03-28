@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.ActionType;
@@ -194,6 +195,8 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     Page<SignBook> findOnShareByEppn(String eppn, User recipientUser, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     List<SignBook> findByCreateByEppn(String userEppn);
+
+    SignBook findByLastOtp(String urlId);
 
 }
 

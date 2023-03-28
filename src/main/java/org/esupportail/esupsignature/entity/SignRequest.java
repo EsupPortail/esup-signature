@@ -85,8 +85,6 @@ public class SignRequest {
     @OneToOne(cascade = CascadeType.DETACH)
     private AuditTrail auditTrail;
 
-    private String lastOtp;
-
     @JsonIgnore
     @Transient
     transient Boolean signable = false;
@@ -261,14 +259,6 @@ public class SignRequest {
 
     public void setLastNotifDate(Date lastNotifDate) {
         this.lastNotifDate = lastNotifDate;
-    }
-
-    public String getLastOtp() {
-        return lastOtp;
-    }
-
-    public void setLastOtp(String lastOtp) {
-        this.lastOtp = lastOtp;
     }
 
     @JsonIgnore
