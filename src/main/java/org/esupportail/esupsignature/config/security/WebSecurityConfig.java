@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.service.security.oauth.CustomAuthorizationR
 import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.ValidatingOAuth2UserService;
 import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
+import org.esupportail.esupsignature.service.security.su.SuAuthenticationSuccessHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -290,7 +291,7 @@ public class WebSecurityConfig {
 		switchUserFilter.setUserDetailsService(userDetailsService());
 		switchUserFilter.setSwitchUserUrl("/admin/su-login");
 		switchUserFilter.setExitUserUrl("/su-logout");
-		switchUserFilter.setTargetUrl("/");
+		switchUserFilter.setSuccessHandler(new SuAuthenticationSuccessHandler());
 		switchUserFilter.setFailureHandler(new ExceptionMappingAuthenticationFailureHandler());
 		return switchUserFilter;
 	}
