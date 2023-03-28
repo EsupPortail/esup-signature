@@ -72,10 +72,17 @@ public class OtpSignRequestController {
     @Resource
     private LogService logService;
 
+    @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/signbook-redirect/{id}")
+    public String redirect(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
+        SignBook signBook = signBookService.getById(id);
+        return "redirect:/otp/signrequests/" + signBook.getSignRequests().get(0).getId();
+    }
+
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
-        SignRequest signRequest = signBookService.getSignRequestsFullById(id, userEppn, authUserEppn);
+        SignRequest signRequest = signBookService.getSignRequestFullById(id, userEppn, authUserEppn);
         model.addAttribute("displayNotif", false);
         model.addAttribute("notifTime", 0);
         model.addAttribute("signRequest", signRequest);
@@ -108,6 +115,7 @@ public class OtpSignRequestController {
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
         model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest));
         model.addAttribute("sealCertOK", false);
+        model.addAttribute("otp", true);
         if(!signRequest.getStatus().equals(SignRequestStatus.draft)) {
             try {
                 Object userShareString = httpSession.getAttribute("userShareId");
