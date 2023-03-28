@@ -79,6 +79,7 @@ public class OtpSignRequestController {
         model.addAttribute("displayNotif", false);
         model.addAttribute("notifTime", 0);
         model.addAttribute("signRequest", signRequest);
+        model.addAttribute("signBook", signRequest.getParentSignBook());
         Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
         model.addAttribute("workflow", workflow);
         model.addAttribute("postits", signRequest.getComments().stream().filter(Comment::getPostit).collect(Collectors.toList()));
