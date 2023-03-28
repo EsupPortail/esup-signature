@@ -129,7 +129,7 @@
 		<th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
 			<li class="nav-item overflow-hidden ws-tab" th:classappend="${(signRequest.id == signRequestTab.id ? 'active' : '') + ' ' + (nbSignRequestInSignBookParent > 1 ? 'file-tab' : '')}">
 				<a class="nav-link" th:classappend="${(signRequest.id == signRequestTab.id ? 'current alert-secondary text-black' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'alert-success' : '')}"
-				   th:href="'/user/signrequests/' + ${signRequestTab.id}"
+				   th:href="${otp} ? '/otp/signrequests/' + ${signRequestTab.id} : '/user/signrequests/' + ${signRequestTab.id}"
 				   th:title="${signRequestTab.title}">
 					<div class="truncate">
 						<span title="À signer" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">

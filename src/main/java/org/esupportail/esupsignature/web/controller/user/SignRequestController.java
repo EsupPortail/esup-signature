@@ -98,7 +98,7 @@ public class SignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
-        SignRequest signRequest = signBookService.getSignRequestsFullById(id, userEppn, authUserEppn);
+        SignRequest signRequest = signBookService.getSignRequestFullById(id, userEppn, authUserEppn);
         boolean displayNotif = false;
         if (signRequest.getLastNotifDate() == null && Duration.between(signRequest.getCreateDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()) {
             displayNotif = true;
