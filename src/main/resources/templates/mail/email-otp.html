@@ -16,7 +16,7 @@
 			<td style="width:100%; padding:10px;background-color:#f8f9fa;">
 				<p style="margin-bottom:1rem; margin-top:0">Bonjour,</p>
 				<p style="margin-bottom:1rem; margin-top:0">Vous avez un document à signer : </p>
-				<p style="margin-bottom:1rem; margin-top:0" th:text="'Nom : ' + ${signBook.title}"></p>
+				<p style="margin-bottom:1rem; margin-top:0" th:text="'Nom : ' + ${signBook.subject}"></p>
 				<p style="margin-bottom:1rem; margin-top:0" th:text="'Date de création : ' + ${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></p>
 				<p style="margin-bottom:1rem; margin-top:0">
 					<span th:text="'Créé par : ' + ${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></span>
