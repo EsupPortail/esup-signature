@@ -307,7 +307,7 @@
                     <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer</span>
                     <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>
                 </button>
-                <button id="checkValidateSignButtonNext" th:if="${nextSignBook != null}"
+                <button id="checkValidateSignButtonNext" th:if="${nextSignBook != null && otp == null}"
                         class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
                     <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer et aller à la suivante </span>
                     <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser et aller à la suivante </span>
@@ -636,7 +636,7 @@
                                 class="btn btn-danger me-1" title="Refuser" autofocus>
                             <span>Refuser</span>
                         </button>
-                        <button type="submit" id="refuseNext" th:if="${nextSignBook != null}" name="redirect" th:value="${nextSignRequest.id}"
+                        <button type="submit" id="refuseNext" th:if="${nextSignBook != null && otp == null}" name="redirect" th:value="${nextSignRequest.id}"
                                 class="btn btn-danger" title="Refuser et aller à la suivante" autofocus>
                             <span>Refuser et aller à la suivante </span>
                             <i class="fas fa-arrow-alt-circle-right"></i>

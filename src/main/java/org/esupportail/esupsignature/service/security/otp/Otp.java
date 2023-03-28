@@ -7,7 +7,7 @@ public class Otp {
     private String phoneNumber;
     private String email;
     private String password;
-    private Long signRequestId;
+    private Long signBookId;
     private Data createDate;
     private boolean smsSended = false;
     private int tries = 0;
@@ -37,12 +37,12 @@ public class Otp {
         this.password = password;
     }
 
-    public Long getSignRequestId() {
-        return signRequestId;
+    public Long getSignBookId() {
+        return signBookId;
     }
 
-    public void setSignRequestId(Long signRequestId) {
-        this.signRequestId = signRequestId;
+    public void setSignBookId(Long signBookId) {
+        this.signBookId = signBookId;
     }
 
     public Data getCreateDate() {

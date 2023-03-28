@@ -909,15 +909,6 @@ public class SignBookService {
                             throw new EsupSignatureRuntimeException(e.getMessage());
                         }
                     }
-                    for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
-                        if (recipient.getUser().getUserType().equals(UserType.external)) {
-                            try {
-                                otpService.generateOtpForSignRequest(signRequest.getId(), recipient.getUser().getId(), null);
-                            } catch (EsupSignatureMailException e) {
-                                throw new EsupSignatureRuntimeException(e.getMessage());
-                            }
-                        }
-                    }
                     if(signBook.getLiveWorkflow().getCurrentStep().getAutoSign()) {
                         for(SignRequest signRequest1 : signBook.getSignRequests()) {
                             List<SignRequestParams> signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
@@ -954,6 +945,15 @@ public class SignBookService {
                     completeSignBook(signBook.getId(), userEppn, "Tous les documents sont signés");
                     logger.info("Circuit " + signBook.getId() + " terminé car ne contient pas d'étape");
                     break;
+                }
+            }
+        }
+        for (Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
+            if (recipient.getUser().getUserType().equals(UserType.external)) {
+                try {
+                    otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), null);
+                } catch (EsupSignatureMailException e) {
+                    throw new EsupSignatureRuntimeException(e.getMessage());
                 }
             }
         }
@@ -1023,7 +1023,7 @@ public class SignBookService {
 
     @Transactional
     public boolean initSign(Long signRequestId, String signRequestParamsJsonString, String comment, String formData, String password, String signWith, Long userShareId, String userEppn, String authUserEppn) throws IOException, EsupSignatureRuntimeException {
-        SignRequest signRequest = getSignRequestsFullById(signRequestId, userEppn, authUserEppn);
+        SignRequest signRequest = getSignRequestFullById(signRequestId, userEppn, authUserEppn);
         Map<String, String> formDataMap = null;
         List<String> toRemoveKeys = new ArrayList<>();
         if(formData != null) {
@@ -1646,7 +1646,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignRequest getSignRequestsFullById(long id, String userEppn, String authUserEppn) {
+    public SignRequest getSignRequestFullById(long id, String userEppn, String authUserEppn) {
         SignRequest signRequest = signRequestService.getById(id);
         checkSignRequestSignable(signRequest, userEppn, authUserEppn);
         User user = userService.getByEppn(userEppn);
@@ -2176,6 +2176,29 @@ public class SignBookService {
             }
         }
         return false;
+    }
+
+    public SignBook getByLastOtp(String urlId) {
+        return signBookRepository.findByLastOtp(urlId);
+    }
+
+
+    @Transactional
+    public void renewOtp(String urlId) {
+        SignBook signBook = getByLastOtp(urlId);
+        if(signBook != null) {
+            SignRequest signRequest = signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending)).findFirst().orElse(null);
+            if(signRequest != null) {
+                List<Recipient> recipients = signRequest.getRecipientHasSigned().keySet().stream().filter(r -> r.getUser().getUserType().equals(UserType.external)).collect(Collectors.toList());
+                for (Recipient recipient : recipients) {
+                    try {
+                        otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), recipient.getUser().getPhone());
+                    } catch (EsupSignatureMailException e) {
+                        logger.error(e.getMessage());
+                    }
+                }
+            }
+        }
     }
 
 }
