@@ -688,7 +688,7 @@ public class UserService {
     @Transactional
     public Map<UiParams, String> getUiParams(String authUserEppn) {
         User user = getByEppn(authUserEppn);
-        return new HashMap<>(user.getUiParams());
+        return new HashMap<>(user.getUiParams()); //new HashMap to force lazy loading
     }
 
     @Transactional
@@ -711,7 +711,7 @@ public class UserService {
                 jsonExternalUserInfo.setEmail(emails.get(i));
                 jsonExternalUserInfo.setName(names.get(i));
                 jsonExternalUserInfo.setFirstname(firstnames.get(i));
-                if(forcesmses != null && forcesmses.size() > i + 1) {
+                if(forcesmses != null && forcesmses.size() >= i + 1) {
                     jsonExternalUserInfo.setForcesms(forcesmses.get(i));
                 }
                 if(phones.size() >= i + 1) {
@@ -790,6 +790,7 @@ public class UserService {
         }
     }
 
+    @Transactional
     public String tryGetEppnFromLdap(Authentication auth) {
         String eppn = null;
         if(ldapPersonLightService != null) {
@@ -805,8 +806,13 @@ public class UserService {
             }
         }
         if (!StringUtils.hasText(eppn)) {
-            logger.debug("eppn not found for " + auth.getName());
-            eppn = buildEppn(auth.getName());
+            User user = getByEppn(auth.getName());
+            if(user != null) {
+                eppn = user.getEppn();
+            } else {
+                logger.debug("eppn not found for " + auth.getName());
+                eppn = buildEppn(auth.getName());
+            }
         } else {
             logger.debug("eppn found " + eppn);
         }
