@@ -1201,7 +1201,7 @@ public class SignBookService {
             }
             if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
                 signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
-                toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(pdfService.addOutLine(signRequest, filledInputStream, signerUser, new Date(), new SimpleDateFormat())));
+                toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(filledInputStream));
             }
             Document signedDocument = signService.certSign(signRequest, signerUser.getEppn(), password, SignWith.valueOf(signWith));
             reports = validationService.validate(signedDocument.getInputStream(), null);
