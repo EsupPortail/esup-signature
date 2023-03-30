@@ -728,7 +728,7 @@ export class SignRequestParams extends EventFactory {
                 this.divExtra = $("#divExtra_" + this.id);
                 this.divExtra.append("<span id='extraTypeDiv_"+ this.id +"' >" + this.typeSign + "<br/></span>");
                 this.divExtra.append("<span id='extraNameDiv_"+ this.id +"' >" + this.userName + "<br/></span>");
-                this.divExtra.append("<span id='extraDateDiv_"+ this.id +"'>le " + moment().format('DD/MM/YYYY HH:mm:ss [GMT]Z') + "<br/></span>");
+                this.divExtra.append("<span id='extraDateDiv_"+ this.id +"'>le " + moment().format('DD/MM/YYYY HH:mm:ssZZ') + "<br/></span>");
                 setInterval(function() {
                     self.refreshDate();
                 }, 1000);
@@ -816,7 +816,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     refreshDate() {
-        $("#extraDateDiv_" + this.id).html("le " + moment().format('DD/MM/YYYY HH:mm:ss [GMT]Z') + "<br/>");
+        $("#extraDateDiv_" + this.id).html("le " + moment().format('DD/MM/YYYY HH:mm:ssZZ') + "<br/>");
     }
 
     toggleType() {
@@ -982,8 +982,8 @@ export class SignRequestParams extends EventFactory {
         $("#signNextImage_" + this.id).hide();
         $("#hideMoreTools_" + this.id).hide();
         $("#signExtra_" + this.id).hide();
-        $("#signExtraOnTop_" + this.id).hide();
-        $("#watermark_" + this.id).hide();
+        // $("#signExtraOnTop_" + this.id).hide();
+        // $("#watermark_" + this.id).hide();
         $("#allPages_" + this.id).hide();
         $("#signColorPicker_" + this.id).hide();
         this.addWatermark = true;

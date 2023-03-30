@@ -2,9 +2,6 @@ package org.esupportail.esupsignature.service.utils.file;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.mime.MimeTypes;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
@@ -116,32 +113,12 @@ public class FileService {
 		return new ByteArrayInputStream(os.toByteArray());
 	}
 
-	public void copyFile(File source, File dest) throws IOException {
-	    InputStream is = null;
-	    OutputStream os = null;
-	    try {
-	        is = new FileInputStream(source);
-	        os = new FileOutputStream(dest);
-	        byte[] buffer = new byte[1024];
-	        int length;
-	        while ((length = is.read(buffer)) > 0) {
-	            os.write(buffer, 0, length);
-	        }
-	    } finally {
-			if(is != null && os != null) {
-				is.close();
-				os.close();
-			}
-	    }
-	}
-	
 	public InputStream base64Transparence(String base64Image) {
 		BufferedImage image = makeColorTransparent(base64StringToImg(base64Image));
 		String base64ImageTransparent = imgToBase64String(image, "png");
 		return fromBase64Image(base64ImageTransparent);
 	}
-	
-	
+
 	public static boolean colorsAreSimilar(final Color c1, final Color c2, final int tolerance) {
 		int r1 = c1.getRed();
 		int g1 = c1.getGreen();
@@ -173,26 +150,22 @@ public class FileService {
 		return toBufferedImage(Toolkit.getDefaultToolkit().createImage(ip));
 	}
 	
-	public static BufferedImage toBufferedImage(Image image) 
-	  { 
-	  if (image instanceof BufferedImage) return (BufferedImage) image; 
-	 
-	  // This code ensures that all the pixels in the image are loaded 
-	  image = new ImageIcon(image).getImage(); 
-	 
-	  BufferedImage bimage = new BufferedImage(image.getWidth(null),image.getHeight(null), 
-	    BufferedImage.TYPE_INT_ARGB); 
-	  Graphics g = bimage.createGraphics(); 
-	  g.drawImage(image,0,0,null); 
-	  g.dispose(); 
-	  return bimage; 
-	  } 
+	public static BufferedImage toBufferedImage(Image image)  {
+		if (image instanceof BufferedImage) return (BufferedImage) image;
+		image = new ImageIcon(image).getImage();
+		BufferedImage bimage = new BufferedImage(image.getWidth(null),image.getHeight(null),
+		BufferedImage.TYPE_INT_ARGB);
+		Graphics g = bimage.createGraphics();
+		g.drawImage(image,0,0,null);
+		g.dispose();
+		return bimage;
+	}
 	
 	public static String imgToBase64String(RenderedImage img, String formatName) {
 	    final ByteArrayOutputStream os = new ByteArrayOutputStream();
 	    try {
 	        ImageIO.write(img, formatName, Base64.getEncoder().wrap(os));
-	        return os.toString(StandardCharsets.ISO_8859_1.name());
+	        return os.toString(StandardCharsets.ISO_8859_1);
 	    } catch (final IOException ioe) {
 	        throw new UncheckedIOException(ioe);
 	    }
@@ -266,7 +239,7 @@ public class FileService {
 				lineCount++;
 			}
 			if(signRequestParams.getExtraDate()) {
-				DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss 'GMT'XXX", Locale.FRENCH);
+				DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss XXX", Locale.FRENCH);
 				if(lineCount == 0) {
 					graphics2D.drawString("le " + dateFormat.format(date), widthOffset, fm.getHeight());
 				} else {
@@ -309,31 +282,23 @@ public class FileService {
 //			changeColor(watermarkImage, 255, 255, 255, 0, 0, 0);
 //			changeColor(watermarkImage, 0, 0, 0, color.getRed(), color.getGreen(), color.getBlue());
 			Graphics2D g2d = (Graphics2D) sourceImage.getGraphics();
-			AlphaComposite alphaChannel = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f);
+			AlphaComposite alphaChannel = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.2f);
 			g2d.setComposite(alphaChannel);
-			double factor = sourceImage.getWidth() * .8 / watermarkImage.getWidth();
-			int width = (int) (sourceImage.getWidth() * .8);
+			double factor = (double) sourceImage.getWidth() / watermarkImage.getWidth();
+			int width = sourceImage.getWidth();
 			int height = (int) (watermarkImage.getHeight() * factor);
 			if(!extraOnTop) {
-				factor = sourceImage.getHeight() * .6 / watermarkImage.getHeight();
+				factor = (double) sourceImage.getHeight() / watermarkImage.getHeight();
 				width = (int) (watermarkImage.getWidth() * factor);
-				height = (int) (sourceImage.getHeight() * .6);
+				height = sourceImage.getHeight();
 			}
-			int topLeftX = (sourceImage.getWidth() - width) / 2;
-			int topLeftY = (sourceImage.getHeight() - height) / 2;
-			g2d.drawImage(watermarkImage, topLeftX, topLeftY, width, height, null);
+			g2d.drawImage(watermarkImage, 0, sourceImage.getHeight() - height, width, height, null);
 			ImageIO.write(sourceImage, "png", destImageFile);
 			g2d.dispose();
 		} catch (IOException ex) {
 			logger.error(ex.getMessage());
 		}
 	}
-
-//	public InputStream svgToPng(InputStream svgInputStream) throws IOException {
-//		File file = getTempFile("sceau.png");
-//		ImageIO.write(ImageIO.read(svgInputStream), "PNG", file);
-//		return new FileInputStream(file);
-//	}
 
 	public InputStream getFileFromUrl(String url) throws IOException {
 		return new URL(url).openStream();
@@ -370,17 +335,6 @@ public class FileService {
 		imgBuf.setRGB(0, 0, w, h, rgb, 0, w);
 	}
 
-	public InputStream getEmptyImage() throws IOException {
-		BufferedImage bufferedImage = new BufferedImage(600, 300, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g2d = bufferedImage.createGraphics();
-		g2d.setColor(Color.white);
-		g2d.fillRect(0, 0, 600, 300);
-		g2d.dispose();
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		ImageIO.write(bufferedImage, "png", outputStream);
-		return new ByteArrayInputStream(outputStream.toByteArray());
-	}
-
 	public InputStream getDefaultImage(String name, String firstname) throws IOException {
 		BufferedImage bufferedImage = new BufferedImage(600, 300, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics2D = bufferedImage.createGraphics();
@@ -389,7 +343,7 @@ public class FileService {
 		rect.setRect(0, 0, 600, 300);
 		graphics2D.fillRect(0, 0, 600, 300);
 		setQualityParams(graphics2D);
-		float fontSize = 45f;
+		float fontSize = (float) 600 / Math.max(firstname.length(), name.length()) / 2;
 		Font font = null;
 		try {
 			font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(fontSize);
@@ -400,47 +354,21 @@ public class FileService {
 		graphics2D.setColor(Color.BLACK);
 		FontMetrics fm = graphics2D.getFontMetrics();
 		int y = rect.y + ((rect.height - fm.getHeight()) / 2) + fm.getAscent();
-		int lineHeight = Math.round(fontSize + fontSize * .5f);
-		graphics2D.drawString(firstname.toUpperCase(), rect.x + (rect.width - fm.stringWidth(firstname.toUpperCase())) / 2, y - lineHeight);
-		graphics2D.drawString(name.toUpperCase(), rect.x + (rect.width - fm.stringWidth(name.toUpperCase())) / 2, y + lineHeight);
+		int lineHeight = Math.round(fontSize);
+		graphics2D.drawString(firstname.toUpperCase(), 300, y - lineHeight);
+		graphics2D.drawString(name.toUpperCase(), 300, y + lineHeight);
 		graphics2D.dispose();
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		ImageIO.write(bufferedImage, "png", outputStream);
 		return new ByteArrayInputStream(outputStream.toByteArray());
 	}
 
-	private InputStream getFaImage(String faName) throws IOException {
-		return new ClassPathResource("/static/images/"+ faName + ".png").getInputStream();
-	}
-
 	public InputStream getFaImageByIndex(int index) throws IOException {
 		return new ClassPathResource("/static/images/"+ faImages[Math.abs(index) - 1] + ".png").getInputStream();
-	}
-
-	public String getContentTypeDescription(String contentType) {
-		String type = contentType;
-		MimeTypes mimeTypes = MimeTypes.getDefaultMimeTypes();
-		try {
-			String mimeDesc = mimeTypes.forName(contentType).getDescription();
-			if(!mimeDesc.equals("")) {
-				type = mimeDesc;
-			}
-		} catch(TikaException e) {
-			logger.debug(e.getMessage());
-		}
-		return type;
 	}
 
 	public String getFileChecksum(InputStream inputStream) throws IOException {
 		return DigestUtils.sha3_256Hex(inputStream);
 	}
 
-	public File inputStreamToTempFile(InputStream inputStream, String name) throws IOException {
-		File file = getTempFile("tmp_" + name);
-		OutputStream outputStream = new FileOutputStream(file);
-		IOUtils.copy(inputStream, outputStream);
-		outputStream.close();
-		inputStream.close();
-		return file;
-	}
 }

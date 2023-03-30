@@ -5,6 +5,7 @@
 src/main/resources/application-dev.yml
 src/main/resources/application-docker.yml
 src/main/resources/static/downloads/nexu-bundle.zip
+src/main/resources/static/images/watermark.png
 !LICENCE
 !README.md
 !NOTICE
