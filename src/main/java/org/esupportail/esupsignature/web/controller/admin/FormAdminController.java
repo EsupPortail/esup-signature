@@ -202,12 +202,12 @@ public class FormAdminController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@DeleteMapping("/remove-signRequestParams/{formId}/{id}")
+	@DeleteMapping("/remove-signRequestParams/{formId}/{signRequestParamsId}")
 	@PreAuthorize("@preAuthorizeService.formManager(#formId, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String removeSignRequestParams(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("formId") Long formId,
-									   @PathVariable("id") Long id,
+									   @PathVariable("signRequestParamsId") Long signRequestParamsId,
 									   RedirectAttributes redirectAttributes) {
-		formService.removeSignRequestParamsSteps(formId, id);
+		formService.removeSignRequestParamsSteps(formId, signRequestParamsId);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Champ signature supprimé"));
 		return "redirect:/admin/forms/" + formId + "/signs";
 	}

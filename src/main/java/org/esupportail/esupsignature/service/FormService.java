@@ -510,15 +510,15 @@ public class FormService {
 	}
 
 	@Transactional
-	public void removeSignRequestParamsSteps(Long formId, Long id) {
+	public void removeSignRequestParamsSteps(Long formId, Long signRequestParamsId) {
 		Form form = getById(formId);
-		SignRequestParams signRequestParams = signRequestParamsService.getById(id);
-		form.getSignRequestParams().removeIf(signRequestParams1 -> signRequestParams1.equals(signRequestParams));
+		SignRequestParams signRequestParams = signRequestParamsService.getById(signRequestParamsId);
+		form.getSignRequestParams().remove(signRequestParams);
 		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
 			workflowStep.getSignRequestParams().remove(signRequestParams);
 		}
 		if(liveWorkflowStepRepository.countBySignRequestParamsContains(signRequestParams) == 0) {
-			signRequestParamsService.delete(id);
+			signRequestParamsService.delete(signRequestParamsId);
 		}
 	}
 

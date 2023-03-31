@@ -41,7 +41,7 @@ public class SignRequestParamsService {
     private ObjectMapper objectMapper;
 
     public SignRequestParams getById(Long id) {
-        return signRequestParamsRepository.findById(id).get();
+        return signRequestParamsRepository.findById(id).orElseThrow();
     }
 
     public SignRequestParams createFromPdf(PDTerminalField pdSignatureField, int signPageNumber, PDPage pdPage) {

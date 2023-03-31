@@ -45,7 +45,7 @@ export class WorkspacePdf {
         }
         if (this.isPdf) {
             if(currentSignType === "form") {
-                this.pdfViewer = new PdfViewer('/admin/forms/get-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, false);
+                this.pdfViewer = new PdfViewer('/admin/forms/get-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, true);
             } else {
                 this.pdfViewer = new PdfViewer('/ws-secure/signrequests/get-last-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, false);
             }
