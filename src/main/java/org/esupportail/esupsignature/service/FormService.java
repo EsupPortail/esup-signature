@@ -588,4 +588,22 @@ public class FormService {
 		return spots;
 	}
 
+
+	public Map<Integer, Long> getSrpMap(Form form) {
+		Map<Integer, Long> srpMap = new HashMap<>();
+		for (WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
+			for (SignRequestParams signRequestParams : workflowStep.getSignRequestParams()) {
+				srpMap.put(form.getWorkflow().getWorkflowSteps().indexOf(workflowStep) + 1, signRequestParams.getId());
+			}
+		}
+		if(srpMap.size() == 0) {
+			int i = 1;
+			for(SignRequestParams signRequestParams : form.getSignRequestParams()) {
+				srpMap.put(i, signRequestParams.getId());
+				i++;
+			}
+		}
+		return srpMap;
+	}
+
 }

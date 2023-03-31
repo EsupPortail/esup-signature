@@ -3,7 +3,9 @@ package org.esupportail.esupsignature.web.controller.admin;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.Form;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -41,7 +43,7 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/admin/forms")
 public class FormAdminController {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(FormAdminController.class);
 
 	@ModelAttribute("adminMenu")
@@ -170,19 +172,8 @@ public class FormAdminController {
 	public String addSigns(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) throws EsupSignatureIOException {
 		Form form = formService.getById(id);
 		if (form.getWorkflow() != null) {
-			Map<Integer, Long> srpMap = new HashMap<>();
-			int i = 1;
-			for(SignRequestParams signRequestParams : form.getSignRequestParams()) {
-				srpMap.put(i, signRequestParams.getId());
-				i++;
-			}
-			for (WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
-				for (SignRequestParams signRequestParams : workflowStep.getSignRequestParams()) {
-					srpMap.put(form.getWorkflow().getWorkflowSteps().indexOf(workflowStep) + 1, signRequestParams.getId());
-				}
-			}
 			model.addAttribute("spots", formService.getSpots(id));
-			model.addAttribute("srpMap", srpMap);
+			model.addAttribute("srpMap", formService.getSrpMap(form));
 		}
 		if (form.getDocument() != null) {
 			form.setTotalPageCount(formService.getTotalPagesCount(id));
