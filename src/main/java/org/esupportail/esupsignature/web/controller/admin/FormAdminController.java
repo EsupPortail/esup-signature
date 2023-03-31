@@ -169,8 +169,13 @@ public class FormAdminController {
 	@PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String addSigns(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) throws EsupSignatureIOException {
 		Form form = formService.getById(id);
-		Map<Integer, Long> srpMap = new HashMap<>();
 		if (form.getWorkflow() != null) {
+			Map<Integer, Long> srpMap = new HashMap<>();
+			int i = 1;
+			for(SignRequestParams signRequestParams : form.getSignRequestParams()) {
+				srpMap.put(i, signRequestParams.getId());
+				i++;
+			}
 			for (WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
 				for (SignRequestParams signRequestParams : workflowStep.getSignRequestParams()) {
 					srpMap.put(form.getWorkflow().getWorkflowSteps().indexOf(workflowStep) + 1, signRequestParams.getId());
@@ -183,7 +188,6 @@ public class FormAdminController {
 			form.setTotalPageCount(formService.getTotalPagesCount(id));
 		}
 		model.addAttribute("form", form);
-		model.addAttribute("srpMap", srpMap);
 		model.addAttribute("workflow", form.getWorkflow());
 		model.addAttribute("document", form.getDocument());
 		return "admin/forms/signs";

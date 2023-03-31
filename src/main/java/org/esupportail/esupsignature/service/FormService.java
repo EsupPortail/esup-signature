@@ -580,6 +580,11 @@ public class FormService {
 			}
 			step++;
 		}
+		if(spots.size() == 0) {
+			for(SignRequestParams signRequestParams : form.getSignRequestParams()) {
+				spots.add(new Spot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
+			}
+		}
 		return spots;
 	}
 
