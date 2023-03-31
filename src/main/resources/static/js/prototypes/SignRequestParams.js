@@ -125,12 +125,13 @@ export class SignRequestParams extends EventFactory {
         this.createTools();
         this.updateSize();
         this.toggleMinimalTools();
-        this.signWidth=200
-        this.signHeight=100;
+        this.signWidth=150
+        this.signHeight=75;
         this.cross.css('width', (this.signWidth * this.currentScale));
         this.cross.css('height', (this.signHeight * this.currentScale));
         this.cross.css('background-color', 'rgba(189, 255, 189, .5)');
         this.cross.append("<p class='text-black'>Positionner le champ de signature et cliquer sur enregistrer</p>");
+        this.cross.css("font-size", 12 + "px");
         this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute bottom-0 end-0'><i class='fas fa-save'></i></button>");
         $("#signDrop_999999").on("click", function (){
             $("#addSpotButton").attr("disabled", false);
@@ -524,6 +525,7 @@ export class SignRequestParams extends EventFactory {
         if(this.textareaPart != null) {
             this.resizeText();
         }
+        this.cross.css("font-size", Math.round(12 * this.currentScale) + "px");
     }
 
     lock() {

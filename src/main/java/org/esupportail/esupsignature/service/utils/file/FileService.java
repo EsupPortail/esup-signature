@@ -343,7 +343,7 @@ public class FileService {
 		rect.setRect(0, 0, 600, 300);
 		graphics2D.fillRect(0, 0, 600, 300);
 		setQualityParams(graphics2D);
-		float fontSize = (float) 600 / Math.max(firstname.length(), name.length()) / 2;
+		float fontSize = (float) 600 / Math.max(firstname.length(), name.length()) / 1.4f;
 		Font font = null;
 		try {
 			font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(fontSize);

@@ -509,8 +509,11 @@ export class WorkspacePdf {
                 if (this.mode === 'comment') {
                     spotDiv.show();
                     let offset = $("#page_" + spot.pageNumber).offset().top - this.pdfViewer.initialOffset;
-                    spotDiv.css('left', ((((parseInt(spot.posX) - 18) * this.pdfViewer.scale))) + "px");
-                    spotDiv.css('top', ((((parseInt(spot.posY) - 38 * this.pdfViewer.scale) + offset))) + "px");
+                    let posX = Math.round((parseInt(spot.posX) * this.pdfViewer.scale) - 18);
+                    let posY = Math.round((parseInt(spot.posY) * this.pdfViewer.scale) + offset - 38);
+                    console.log("spot pos : " + posX + ", " + posY);
+                    spotDiv.css('left',  posX + "px");
+                    spotDiv.css('top',  posY + "px");
                     spotDiv.width(spotDiv.width() * this.pdfViewer.scale);
                     if(signDiv != null) {
                         signDiv.css("width", Math.round(150 * self.pdfViewer.scale) + "px");
