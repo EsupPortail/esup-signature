@@ -82,6 +82,8 @@ import java.util.*;
 @EnableConfigurationProperties(GlobalProperties.class)
 public class PdfService {
 
+    Float fixFactor = .75f;
+
     private static final Logger logger = LoggerFactory.getLogger(PdfService.class);
 
     @Resource
@@ -103,7 +105,6 @@ public class PdfService {
     }
 
     public byte[] stampImage(byte[] inputStream, SignRequest signRequest, SignRequestParams signRequestParams, int j, User user, Date date) {
-        double fixFactor = .75;
         SignType signType = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
         PdfParameters pdfParameters;
         try {
@@ -136,7 +137,7 @@ public class PdfService {
         return null;
     }
 
-    private void stampImageToPage(SignRequest signRequest, SignRequestParams signRequestParams, User user, double fixFactor, SignType signType, PdfParameters pdfParameters, PDDocument pdDocument, PDPage pdPage, int pageNumber, Date newDate) throws IOException {
+    private void stampImageToPage(SignRequest signRequest, SignRequestParams signRequestParams, User user, float fixFactor, SignType signType, PdfParameters pdfParameters, PDDocument pdDocument, PDPage pdPage, int pageNumber, Date newDate) throws IOException {
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
         InputStream signImage = null;
         if (signRequestParams.getSignImageNumber() < 0) {
@@ -199,15 +200,15 @@ public class PdfService {
                 addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted);
             }
         } else if (StringUtils.hasText(signRequestParams.getTextPart())) {
-            int fontSize = (int) (signRequestParams.getFontSize() * signRequestParams.getSignScale() * .75);
+            int fontSize = (int) (signRequestParams.getFontSize() * signRequestParams.getSignScale() * fixFactor);
             PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), WinAnsiEncoding.INSTANCE);
             contentStream.beginText();
             contentStream.setFont(pdFont, fontSize);
-            contentStream.newLineAtOffset(xAdjusted, (float) (yAdjusted + signRequestParams.getSignHeight() * .75 - fontSize));
+            contentStream.newLineAtOffset(xAdjusted, (float) (yAdjusted + signRequestParams.getSignHeight() * fixFactor - fontSize));
             String[] lines = signRequestParams.getTextPart().split("\n");
             for (String line : lines) {
                 contentStream.showText(line);
-                contentStream.newLineAtOffset(0, -fontSize / .75f);
+                contentStream.newLineAtOffset(0, -fontSize / fixFactor);
             }
             contentStream.endText();
         }

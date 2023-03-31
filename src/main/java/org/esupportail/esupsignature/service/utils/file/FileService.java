@@ -202,7 +202,7 @@ public class FileService {
 			graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 			int lineCount = 0;
 			Map<TextAttribute, Object> attributes = new Hashtable<>();
-			int fontSize = (int) (12 * qualityFactor * signRequestParams.getSignScale() * .75);
+			int fontSize = (int) (12 * qualityFactor * signRequestParams.getSignScale() * fixFactor);
 			setQualityParams(graphics2D);
 			Font font = null;
 			try {

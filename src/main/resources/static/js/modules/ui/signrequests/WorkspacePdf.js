@@ -539,22 +539,6 @@ export class WorkspacePdf {
                             }
                         });
                     });
-                } else {
-                    spotDiv.hide();
-                    spotDiv.unbind('mouseup');
-                    if (this.signable) {
-                        signSpaceDiv.show();
-                        let offset = $("#page_" + spot.pageNumber).offset().top - this.pdfViewer.initialOffset;
-                        signSpaceDiv.css("top", Math.round(spot.posY * self.pdfViewer.scale / .75));
-                        signSpaceDiv.css("left", Math.round((spot.posX * self.pdfViewer.scale + offset) / .75));
-                        signSpaceDiv.css("width", Math.round(150 * self.pdfViewer.scale / .75) + "px");
-                        signSpaceDiv.css("height", Math.round(75 * self.pdfViewer.scale / .75) + "px");
-                        signSpaceDiv.css("font-size", 14 * self.pdfViewer.scale);
-                        if (!self.isThereSign(signSpaceDiv)) {
-                            signSpaceDiv.text("Vous devez placer une signature ici");
-                        }
-                        this.makeItDroppable(signSpaceDiv);
-                    }
                 }
                 index++;
             }
