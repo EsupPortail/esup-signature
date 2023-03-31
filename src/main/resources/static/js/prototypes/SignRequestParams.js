@@ -45,6 +45,7 @@ export class SignRequestParams extends EventFactory {
         this.extraHeight = 0;
         this.savedText = "";
         this.offset = 0;
+        this.dropped = false;
         this.scrollTop = scrollTop;
         this.csrf = csrf;
         this.signType = signType;
@@ -445,16 +446,20 @@ export class SignRequestParams extends EventFactory {
                 }
             },
             stop: function(event, ui) {
-                self.signPageNumber = self.cross.attr("page");
-                self.xPos = Math.round(ui.position.left / self.currentScale);
-                self.yPos = Math.round((ui.position.top - (($("#page_" + self.signPageNumber).offset().top) - $("#page_1").offset().top)) / self.currentScale);
+                if(!self.dropped) {
+                    self.signPageNumber = self.cross.attr("page");
+                    self.xPos = Math.round(ui.position.left / self.currentScale);
+                    self.yPos = Math.round((ui.position.top - (($("#page_" + self.signPageNumber).offset().top) - $("#page_1").offset().top)) / self.currentScale);
+                    if (self.yPos < 0) self.yPos = 0;
+                    console.log("x : " + self.xPos + ", y : " + self.yPos);
+                } else {
+                    self.dropped = false;
+                }
             }
         });
     }
 
-    applyCurrentSignRequestParams(initialOffset) {
-        let pageOffset = $("#page_" + this.signPageNumber).offset().top;
-        let offset = pageOffset - initialOffset + (10 * (parseInt(this.signPageNumber)));
+    applyCurrentSignRequestParams(offset) {
         this.cross.css('top', Math.round(this.yPos * this.currentScale + offset) + 'px');
         this.cross.css('left', Math.round(this.xPos * this.currentScale) + 'px');
     }
