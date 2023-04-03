@@ -3,7 +3,9 @@ package org.esupportail.esupsignature.web.controller.admin;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.Form;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -41,7 +43,7 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/admin/forms")
 public class FormAdminController {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(FormAdminController.class);
 
 	@ModelAttribute("adminMenu")
@@ -169,21 +171,14 @@ public class FormAdminController {
 	@PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String addSigns(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) throws EsupSignatureIOException {
 		Form form = formService.getById(id);
-		Map<Integer, Long> srpMap = new HashMap<>();
 		if (form.getWorkflow() != null) {
-			for (WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
-				for (SignRequestParams signRequestParams : workflowStep.getSignRequestParams()) {
-					srpMap.put(form.getWorkflow().getWorkflowSteps().indexOf(workflowStep) + 1, signRequestParams.getId());
-				}
-			}
 			model.addAttribute("spots", formService.getSpots(id));
-			model.addAttribute("srpMap", srpMap);
+			model.addAttribute("srpMap", formService.getSrpMap(form));
 		}
 		if (form.getDocument() != null) {
 			form.setTotalPageCount(formService.getTotalPagesCount(id));
 		}
 		model.addAttribute("form", form);
-		model.addAttribute("srpMap", srpMap);
 		model.addAttribute("workflow", form.getWorkflow());
 		model.addAttribute("document", form.getDocument());
 		return "admin/forms/signs";
@@ -202,12 +197,12 @@ public class FormAdminController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@DeleteMapping("/remove-signRequestParams/{formId}/{id}")
+	@DeleteMapping("/remove-signRequestParams/{formId}/{signRequestParamsId}")
 	@PreAuthorize("@preAuthorizeService.formManager(#formId, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String removeSignRequestParams(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("formId") Long formId,
-									   @PathVariable("id") Long id,
+									   @PathVariable("signRequestParamsId") Long signRequestParamsId,
 									   RedirectAttributes redirectAttributes) {
-		formService.removeSignRequestParamsSteps(formId, id);
+		formService.removeSignRequestParamsSteps(formId, signRequestParamsId);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Champ signature supprimé"));
 		return "redirect:/admin/forms/" + formId + "/signs";
 	}

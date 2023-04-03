@@ -1107,6 +1107,8 @@ height: 100%;
 
 .bootstrap-datetimepicker-widget {
     background-color: #fff !important;
+    opacity: 1 !important;
+    z-index: 99999999 !important;
 }
 
 input:placeholder-shown.required-field {
@@ -1546,7 +1548,7 @@ textarea:placeholder-shown.required-field {
 
 .choiceWidgetAnnotation select {
     margin-top: -1px !important;
-    font-size: 9px !important;
+    font-size: 14px !important;
     border: 1px solid black !important;
     height: 140% !important;
 }
@@ -1594,7 +1596,7 @@ input:focus, textarea:focus, select:focus {
     user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
-    z-index: 4 !important;
+    /*z-index: 4 !important;*/
 }
 
 .disable-selection {
@@ -1897,10 +1899,10 @@ progress:before {
     background-image: url('/images/watermark.png');
     background-size: contain;
     background-repeat: no-repeat;
-    background-position: center;
-    opacity: 0.3;
-    height: 60%;
-    top: 20%;
+    background-position: bottom left;
+    opacity: 0.2;
+    height: 100%;
+    top: 0;
     left: 0;
     bottom: 0;
     right: 0;
@@ -1914,11 +1916,11 @@ progress:before {
     background-image: url('/images/watermark.png');
     background-size: contain;
     background-repeat: no-repeat;
-    background-position: center;
-    opacity: 0.3;
-    width: 80%;
-    top: -6%;
-    left: 10%;
+    background-position: bottom;
+    opacity: 0.2;
+    width: 100%;
+    top: 0;
+    left: 0;
     bottom: 0;
     right: 0;
     position: absolute;

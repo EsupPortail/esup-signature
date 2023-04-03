@@ -137,8 +137,8 @@ public class LogService {
         log.setComment(comment);
         if(pageNumber != null) {
             log.setPageNumber(pageNumber);
-            log.setPosX(Math.round(posX * .75f));
-            log.setPosY(Math.round(posY * .75f));
+            log.setPosX(posX);
+            log.setPosY(posY);
         }
         if(stepNumber != null) {
             log.setStepNumber(stepNumber);

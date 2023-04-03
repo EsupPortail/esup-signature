@@ -510,15 +510,15 @@ public class FormService {
 	}
 
 	@Transactional
-	public void removeSignRequestParamsSteps(Long formId, Long id) {
+	public void removeSignRequestParamsSteps(Long formId, Long signRequestParamsId) {
 		Form form = getById(formId);
-		SignRequestParams signRequestParams = signRequestParamsService.getById(id);
-		form.getSignRequestParams().removeIf(signRequestParams1 -> signRequestParams1.equals(signRequestParams));
+		SignRequestParams signRequestParams = signRequestParamsService.getById(signRequestParamsId);
+		form.getSignRequestParams().remove(signRequestParams);
 		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
 			workflowStep.getSignRequestParams().remove(signRequestParams);
 		}
 		if(liveWorkflowStepRepository.countBySignRequestParamsContains(signRequestParams) == 0) {
-			signRequestParamsService.delete(id);
+			signRequestParamsService.delete(signRequestParamsId);
 		}
 	}
 
@@ -580,7 +580,30 @@ public class FormService {
 			}
 			step++;
 		}
+		if(spots.size() == 0) {
+			for(SignRequestParams signRequestParams : form.getSignRequestParams()) {
+				spots.add(new Spot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
+			}
+		}
 		return spots;
+	}
+
+
+	public Map<Integer, Long> getSrpMap(Form form) {
+		Map<Integer, Long> srpMap = new HashMap<>();
+		for (WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
+			for (SignRequestParams signRequestParams : workflowStep.getSignRequestParams()) {
+				srpMap.put(form.getWorkflow().getWorkflowSteps().indexOf(workflowStep) + 1, signRequestParams.getId());
+			}
+		}
+		if(srpMap.size() == 0) {
+			int i = 1;
+			for(SignRequestParams signRequestParams : form.getSignRequestParams()) {
+				srpMap.put(i, signRequestParams.getId());
+				i++;
+			}
+		}
+		return srpMap;
 	}
 
 }
