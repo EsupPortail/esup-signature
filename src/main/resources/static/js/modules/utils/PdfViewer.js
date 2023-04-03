@@ -644,9 +644,7 @@ export class PdfViewer extends EventFactory {
         if (!this.isFirstPage()) {
             this.pageNum--;
         }
-        $([document.documentElement, document.body]).animate({
-            scrollTop: $("#page_" + this.pageNum).offset().top - this.initialOffset
-        }, 500);
+        this.scroll();
         return true;
     }
 
@@ -655,10 +653,16 @@ export class PdfViewer extends EventFactory {
             return false;
         }
         this.pageNum++;
-        $([document.documentElement, document.body]).animate({
-            scrollTop: $("#page_" + this.pageNum).offset().top - this.initialOffset
-        }, 500);
+        this.scroll();
         return true;
+    }
+
+    scroll() {
+        let page = $("#page_" + this.pageNum);
+        if(page != null && page.offset() != null)
+            $([document.documentElement, document.body]).animate({
+                scrollTop: page.offset().top - this.initialOffset
+            }, 500);
     }
 
     isFirstPage() {
