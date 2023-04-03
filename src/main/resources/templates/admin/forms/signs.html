@@ -103,6 +103,7 @@
                                 <td><span th:if="${signRequestParams.pdSignatureFieldName != null}" th:text="${signRequestParams.pdSignatureFieldName} + ' :'" ></span> page <span th:text="${signRequestParams.signPageNumber + ' (' + signRequestParams.xPos + ', ' + signRequestParams.yPos + ')'}"></span></td>
                                 <td>
                                     <select th:id="'srp_' + ${signRequestParams.id}"  name="test[]" class="form-select" data-placeholder="Choisir des étapes">
+                                        <option data-placeholder="true"></option>
                                         <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
                                             <option th:value="${iterator.index + 1}" th:text="${iterator.index + 1}" th:selected="${srpMap.get(iterator.index + 1) == signRequestParams.id}"></option>
                                         </th:block>

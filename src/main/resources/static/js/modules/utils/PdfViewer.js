@@ -261,19 +261,8 @@ export class PdfViewer extends EventFactory {
     }
 
     promiseRenderForm(isField, page) {
-        let pdfDoc = this.pdfDoc;
         return new Promise((resolve, reject) => {
             page.getAnnotations().then(items => this.renderPdfFormWithFields(items));
-            // for (let i = 1; i < pdfDoc.numPages + 1; i++) {
-            //     if (isField) {
-            //         if (this.dataFields != null && !this.disableAllFields) {
-            //             console.info("render fields of page " + i);
-            //             pdfDoc.getPage(i).then(page => ).then(e => this.annotationLinkTargetBlank()));
-            //         }
-            //     } else {
-            //         pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.renderPdfForm(items)).then(e => this.annotationLinkTargetBlank()));
-            //     }
-            // }
             resolve("Réussite");
         });
     }
@@ -433,6 +422,15 @@ export class PdfViewer extends EventFactory {
         }
     }
 
+    disableInput(inputField, dataField, readOnly) {
+        if (readOnly || dataField == null || dataField.readOnly || this.disableAllFields || !this.isFieldEnable(dataField)) {
+            inputField.addClass('disabled-field disable-selection');
+            inputField.prop('disabled', true);
+            inputField.prop('required', false);
+            inputField.parent().addClass('disable-div-selection');
+        }
+    }
+
     renderPdfFormWithFields(items) {
         this.pdfFields = items;
         let datePickerIndex = 40;
@@ -454,7 +452,9 @@ export class PdfViewer extends EventFactory {
                 })[0];
             }
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
-            if(inputField.length && dataField != null) {
+            if (inputField.length) {
+                this.disableInput(inputField, dataField, items[i].readOnly);
+                if(this.disableAllFields) continue;
                 inputField.on('input', e => this.fireEvent('change', ['checked']));
                 inputField.addClass("field-type-text");
                 let section = $('section[data-annotation-id=' + items[i].id + ']');
@@ -463,44 +463,25 @@ export class PdfViewer extends EventFactory {
                 inputField.attr('placeholder', " ");
                 inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
-                if(dataField.favorisable && !$("#div_" + inputField.attr('id')).length) {
+                if (dataField.favorisable && !$("#div_" + inputField.attr('id')).length) {
                     let sendField = inputField;
                     $.ajax({
                         type: "GET",
                         url: '/ws-secure/users/get-favorites/' + dataField.id,
-                        success : response => this.autocomplete(response, sendField)
+                        success: response => this.autocomplete(response, sendField)
                     });
                 }
-                if(items[i].readOnly || dataField.readOnly) {
-                    inputField.addClass('disabled-field disable-selection');
-                    inputField.prop('disabled', true);
-                }
-                console.debug("debug - " + dataField);
-                if(this.isFieldEnable(dataField)) {
-                    if(dataField.readOnly) {
-                        inputField.addClass('disabled-field disable-selection');
-                        inputField.prop('disabled', true);
-                    } else {
-                        inputField.prop('disabled', false);
-                        inputField.removeClass('disabled-field disable-selection');
-                    }
+                if (this.isFieldEnable(dataField)) {
                     inputField.val(items[i].fieldValue);
-                    if(dataField.defaultValue != null) {
+                    if (dataField.defaultValue != null) {
                         inputField.val(dataField.defaultValue);
                     }
-                    if (dataField.required) {
-                        inputField.prop('required', true);
-                        inputField.addClass('required-field');
-                    }
-                    inputField.attr('title', dataField.description);
+                    this.enableInputField(inputField, dataField)
                 } else {
                     inputField.val(items[i].fieldValue);
-                    inputField.prop('required', false);
-                    inputField.prop('disabled', true);
-                    inputField.addClass('disabled-field disable-selection');
-                    inputField.parent().addClass('disable-div-selection');
                 }
-                if(dataField.searchServiceName) {
+
+                if (dataField.searchServiceName) {
                     inputField.addClass("search-completion");
                     inputField.attr("search-completion-service-name", dataField.searchServiceName);
                     inputField.attr("search-completion-return", dataField.searchReturn);
@@ -510,9 +491,10 @@ export class PdfViewer extends EventFactory {
                 if (dataField.type === "number") {
                     inputField.get(0).type = "number";
                 }
+
                 if (dataField.type === "radio") {
                     inputField.addClass("field-type-radio");
-                    if(this.isFieldEnable(dataField)) {
+                    if (this.isFieldEnable(dataField)) {
                         if (dataField.required) {
                             inputField.parent().addClass('required-field');
                         }
@@ -556,10 +538,10 @@ export class PdfViewer extends EventFactory {
                         showClose: true,
                         keepOpen: true
                     });
-                    inputField.on("focus", function() {
+                    inputField.on("focus", function () {
                         section.css("z-index", datePickerIndex + 2000);
                     });
-                    inputField.on("focusout", function() {
+                    inputField.on("focusout", function () {
                         section.css("z-index", 4);
                     });
                     inputField.off('dp.change');
@@ -587,10 +569,10 @@ export class PdfViewer extends EventFactory {
                         showClose: true,
                         keepOpen: true,
                     });
-                    inputField.on("focus", function() {
+                    inputField.on("focus", function () {
                         section.css("z-index", datePickerIndex + 2000);
                     });
-                    inputField.on("focusout", function() {
+                    inputField.on("focusout", function () {
                         section.css("z-index", datePickerIndex);
                     });
                     inputField.off('dp.change');
@@ -599,77 +581,40 @@ export class PdfViewer extends EventFactory {
             }
 
             inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
-            if(inputField.length && dataField) {
+            if (inputField.length) {
+                this.disableInput(inputField, dataField, items[i].readOnly);
+                if(this.disableAllFields) continue;
                 inputField.on('input', e => this.fireEvent('change', ['checked']));
                 inputField.addClass("field-type-textarea");
                 let sendField = inputField;
-                if(dataField.favorisable) {
+                if (dataField.favorisable) {
                     $.ajax({
                         type: "GET",
                         url: '/ws-secure/users/get-favorites/' + dataField.id,
-                        success : response => this.autocomplete(response, sendField)
+                        success: response => this.autocomplete(response, sendField)
                     });
                 }
                 inputField.attr('name', inputName);
                 inputField.attr('placeholder', " ");
                 inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
-                if(items[i].readOnly || dataField.readOnly) {
-                    inputField.addClass('disabled-field disable-selection');
-                    inputField.prop('disabled', true);
-                }
-                if(this.isFieldEnable(dataField)) {
-                    if(dataField.readOnly) {
-                        inputField.addClass('disabled-field disable-selection');
-                        inputField.prop('disabled', true);
-                    } else {
-                        inputField.prop('disabled', false);
-                        inputField.removeClass('disabled-field disable-selection');
-                    }
+                if (this.isFieldEnable(dataField)) {
                     inputField.val(dataField.defaultValue);
-                    if (dataField.required) {
-                        inputField.prop('required', true);
-                        inputField.addClass('required-field');
-                    }
-                    inputField.attr('title', dataField.description);
-                } else {
-                    inputField.prop('required', false);
-                    inputField.addClass('disabled-field disable-selection');
-                    inputField.parent().addClass('disable-div-selection');
-                    inputField.prop('disabled', true);
+                    this.enableInputField(inputField, dataField)
                 }
             }
 
             inputField = $('section[data-annotation-id=' + items[i].id + '] > select');
-            if(inputField.length) {
+            if (inputField.length) {
+                this.disableInput(inputField, dataField, items[i].readOnly);
+                if(this.disableAllFields) continue;
                 inputField.on('change', e => this.fireEvent('change', ['time']));
                 inputField.removeAttr('size');
-                if (dataField) {
-                    inputField.attr('name', inputName);
-                    inputField.attr('id', inputName);
-                    if (items[i].readOnly || dataField.readOnly) {
-                        inputField.addClass('disabled-field disable-selection');
-                        // inputField.prop('disabled', true);
-                    }
-                    if (this.isFieldEnable(dataField)) {
-                        inputField.val(dataField.defaultValue);
-                        if (dataField.readOnly) {
-                            inputField.prop('disabled', true);
-                        } else {
-                            inputField.prop('disabled', false);
-                        }
-                        inputField.removeClass('disabled-field disable-selection');
-                        if (dataField.required) {
-                            inputField.prop('required', true);
-                            inputField.addClass('required-field');
-                        }
-                        inputField.attr('title', dataField.description);
-                    } else {
-                        inputField.prop('required', false);
-                        inputField.addClass('disabled-field disable-selection');
-                        inputField.prop('disabled', true);
-                        inputField.parent().addClass('disable-div-selection');
-                    }
+                inputField.attr('name', inputName);
+                inputField.attr('id', inputName);
+                if (this.isFieldEnable(dataField)) {
+                    inputField.val(dataField.defaultValue);
+                    this.enableInputField(inputField, dataField)
                 }
             }
         }
@@ -684,95 +629,14 @@ export class PdfViewer extends EventFactory {
         return dataField.editable;
     }
 
-    renderPdfForm(items) {
-        console.debug("debug - " + "rending pdfForm items");
-        $('[id^="signField_"]').each(function () {
-            $(this).unbind();
-            $(this).remove();
-        });
-        let signFieldNumber = 1;
-        for (let i = 0; i < items.length; i++) {
-            let item = items[i];
-            console.debug("debug - " +  ">> Start compute item of type : " + item.fieldType);
-            if(item.fieldType === "Sig") {
-                console.log(item);
-                // $('.popupWrapper').remove();
-                // let section = $('section[data-annotation-id=' + item.id +']');
-                // let signField = $('section[data-annotation-id=' + item.id + '] > div');
-                if(!$("#signSpace_" + signFieldNumber).length) {
-                    let pdf = $("#pdf");
-                    let left = Math.round(item.rect[0] / .75 * this.scale);
-                    let top = Math.round(pdf.height() - ((item.rect[1] + (item.rect[3] - item.rect[1])) / .75 * this.scale));
-                    let width = Math.round((item.rect[2] - item.rect[0]) / .75 * this.scale);
-                    let height = Math.round((item.rect[3] - item.rect[1]) / .75 * this.scale);
-                    let signDiv = "<div data-id='" + signFieldNumber + "' title='Cliquez pour voir le detail de la signature' id='signField_" + signFieldNumber + "' class='sign-field' style='position: absolute; left: " + left + "px; top: " + top + "px;width: " + width + "px; height: " + height + "px;'></div>";
-                    pdf.append(signDiv);
-                    let signField = $('#signField_' + signFieldNumber);
-                    signField.css("font-size", 8);
-                    signField.attr("data-id", signFieldNumber);
-                    signField.on('click', function () {
-                        console.info("click on " + signFieldNumber);
-                        let id = $(this).attr("data-id");
-                        let report = $("#report_" + id);
-                        console.log(report.length);
-                        if (report.length) {
-                            $("#reportModal").modal("show");
-                            $("div[id^='report_']").each(function () {
-                                if($(this).attr("id") !== "report_" + id) {
-                                    $(this).hide();
-                                }
-                            });
-                            report.css("display", "block");
-                        }
-                    })
-                    // signField.attr("data-bs-toggle", "modal");
-                    // signField.attr("data-bs-target", "#sign_" + self.signRequestId);
-                    // signField.addClass("d-none");
-                    // signField.parent().remove();
-                }
-                signFieldNumber = signFieldNumber + 1;
-                continue;
-            }
-            if(!item.fieldName) {
-                continue;
-            }
-            let inputName = item.fieldName.split(/\$|#|!/)[0];
-            let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
-            if (inputField.length) {
-                inputField.attr('name', inputName);
-                inputField.removeAttr("maxlength");
-                inputField.attr('id', inputName);
-                if (inputField.is(':radio')) {
-                    inputField.val(item.buttonValue);
-                }
-            } else {
-                inputField = $('section[data-annotation-id=' + item.id + '] > textarea');
-                if (inputField.length > 0) {
-                    inputField.attr('name', inputName);
-                    inputField.removeAttr("maxlength");
-                    inputField.attr('id', inputName);
-                    inputField.val(item.fieldValue);
-                    inputField.attr('wrap', "hard");
-                    inputField.on("keypress", e => this.limitLines(e, inputField));
-                }
-            }
+    enableInputField(inputField, dataField) {
+        inputField.prop('disabled', false);
+        inputField.removeClass('disabled-field disable-selection');
+        if (dataField.required) {
+            inputField.prop('required', true);
+            inputField.addClass('required-field');
         }
-    }
-
-    limitLines(e, input) {
-        let keynum;
-        if(window.event) { // IE
-            keynum = e.keyCode;
-        } else if(e.which){ // Netscape/Firefox/Opera
-            keynum = e.which;
-        }
-        let limit = Math.round(parseInt(input.css("height")) / 11 * .75) + 1;
-        console.info(limit);
-        let text = $(e.currentTarget).val();
-        let lines = text.split(/\r|\r\n|\n/);
-        if(lines.length > limit || (lines.length === limit && keynum === 13)) {
-            e.preventDefault();
-        }
+        inputField.attr('title', dataField.description);
     }
 
     prevPage() {
@@ -780,9 +644,7 @@ export class PdfViewer extends EventFactory {
         if (!this.isFirstPage()) {
             this.pageNum--;
         }
-        $([document.documentElement, document.body]).animate({
-            scrollTop: $("#page_" + this.pageNum).offset().top - this.initialOffset
-        }, 500);
+        this.scroll();
         return true;
     }
 
@@ -791,10 +653,16 @@ export class PdfViewer extends EventFactory {
             return false;
         }
         this.pageNum++;
-        $([document.documentElement, document.body]).animate({
-            scrollTop: $("#page_" + this.pageNum).offset().top - this.initialOffset
-        }, 500);
+        this.scroll();
         return true;
+    }
+
+    scroll() {
+        let page = $("#page_" + this.pageNum);
+        if(page != null && page.offset() != null)
+            $([document.documentElement, document.body]).animate({
+                scrollTop: page.offset().top - this.initialOffset
+            }, 500);
     }
 
     isFirstPage() {
