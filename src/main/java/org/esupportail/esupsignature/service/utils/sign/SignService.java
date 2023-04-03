@@ -74,6 +74,8 @@ import java.util.stream.Collectors;
 @EnableConfigurationProperties(SignProperties.class)
 public class SignService {
 
+	Float fixFactor = .75f;
+
 	private static final Logger logger = LoggerFactory.getLogger(SignService.class);
 
 	final private SignProperties signProperties;
@@ -330,7 +332,6 @@ public class SignService {
 	}
 
 	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, InputStream toSignFile, Color color, User user, Date date) throws IOException {
-		float fixFactor = .75f;
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;

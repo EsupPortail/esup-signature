@@ -25,7 +25,6 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
-import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDNamedDestination;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
@@ -83,6 +82,8 @@ import java.util.*;
 @EnableConfigurationProperties(GlobalProperties.class)
 public class PdfService {
 
+    Float fixFactor = .75f;
+
     private static final Logger logger = LoggerFactory.getLogger(PdfService.class);
 
     @Resource
@@ -104,7 +105,6 @@ public class PdfService {
     }
 
     public byte[] stampImage(byte[] inputStream, SignRequest signRequest, SignRequestParams signRequestParams, int j, User user, Date date) {
-        double fixFactor = .75;
         SignType signType = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
         PdfParameters pdfParameters;
         try {
@@ -137,7 +137,7 @@ public class PdfService {
         return null;
     }
 
-    private void stampImageToPage(SignRequest signRequest, SignRequestParams signRequestParams, User user, double fixFactor, SignType signType, PdfParameters pdfParameters, PDDocument pdDocument, PDPage pdPage, int pageNumber, Date newDate) throws IOException {
+    private void stampImageToPage(SignRequest signRequest, SignRequestParams signRequestParams, User user, float fixFactor, SignType signType, PdfParameters pdfParameters, PDDocument pdDocument, PDPage pdPage, int pageNumber, Date newDate) throws IOException {
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
         InputStream signImage = null;
         if (signRequestParams.getSignImageNumber() < 0) {
@@ -200,15 +200,15 @@ public class PdfService {
                 addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted);
             }
         } else if (StringUtils.hasText(signRequestParams.getTextPart())) {
-            int fontSize = (int) (signRequestParams.getFontSize() * signRequestParams.getSignScale() * .75);
+            int fontSize = (int) (signRequestParams.getFontSize() * signRequestParams.getSignScale() * fixFactor);
             PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), WinAnsiEncoding.INSTANCE);
             contentStream.beginText();
             contentStream.setFont(pdFont, fontSize);
-            contentStream.newLineAtOffset(xAdjusted, (float) (yAdjusted + signRequestParams.getSignHeight() * .75 - fontSize));
+            contentStream.newLineAtOffset(xAdjusted, (float) (yAdjusted + signRequestParams.getSignHeight() * fixFactor - fontSize));
             String[] lines = signRequestParams.getTextPart().split("\n");
             for (String line : lines) {
                 contentStream.showText(line);
-                contentStream.newLineAtOffset(0, -fontSize / .75f);
+                contentStream.newLineAtOffset(0, -fontSize / fixFactor);
             }
             contentStream.endText();
         }
@@ -311,34 +311,6 @@ public class PdfService {
         pdDocument.close();
         return in;
     }
-
-    public byte[] addOutLine(SignRequest signRequest, byte[] inputStream, User user, Date newDate, DateFormat dateFormat) throws IOException {
-        PDDocument pdDocument = PDDocument.load(inputStream);
-        if(pdDocument.getDocumentCatalog().getDocumentOutline() == null) {
-            PDDocumentOutline outline = new PDDocumentOutline();
-            pdDocument.getDocumentCatalog().setDocumentOutline(outline);
-        }
-        PDFTextStripper pdfTextStripper = new PDFTextStripper();
-        String signatureInfos =
-                "Signature calligraphique" + pdfTextStripper.getLineSeparator() +
-                        "De : " + user.getFirstname() + " " + user.getName() + pdfTextStripper.getLineSeparator() +
-                        "Le : " +  dateFormat.format(newDate) + pdfTextStripper.getLineSeparator() +
-                        "Depuis : " + logService.getIp() + pdfTextStripper.getLineSeparator() +
-                        "Liens de contrôle : " + pdfTextStripper.getLineSeparator() +
-                        globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
-        PDOutlineItem pdOutlineItem = new PDOutlineItem();
-        pdOutlineItem.setTitle(signatureInfos);
-        PDNamedDestination dest = new PDNamedDestination();
-        dest.setNamedDestination(globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken());
-        pdOutlineItem.setDestination(dest);
-        pdDocument.getDocumentCatalog().getDocumentOutline().addLast(pdOutlineItem);
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        pdDocument.save(out);
-        byte[] in = out.toByteArray();
-        pdDocument.close();
-        return in;
-    }
-
 
     public Map<String, String> readMetadatas(InputStream inputStream) {
         Map<String, String> metadatas = new HashMap<>();

@@ -45,6 +45,7 @@ export class SignRequestParams extends EventFactory {
         this.extraHeight = 0;
         this.savedText = "";
         this.offset = 0;
+        this.dropped = false;
         this.scrollTop = scrollTop;
         this.csrf = csrf;
         this.signType = signType;
@@ -124,12 +125,13 @@ export class SignRequestParams extends EventFactory {
         this.createTools();
         this.updateSize();
         this.toggleMinimalTools();
-        this.signWidth=200
-        this.signHeight=100;
+        this.signWidth=150
+        this.signHeight=75;
         this.cross.css('width', (this.signWidth * this.currentScale));
         this.cross.css('height', (this.signHeight * this.currentScale));
         this.cross.css('background-color', 'rgba(189, 255, 189, .5)');
         this.cross.append("<p class='text-black'>Positionner le champ de signature et cliquer sur enregistrer</p>");
+        this.cross.css("font-size", 12 + "px");
         this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute bottom-0 end-0'><i class='fas fa-save'></i></button>");
         $("#signDrop_999999").on("click", function (){
             $("#addSpotButton").attr("disabled", false);
@@ -445,16 +447,20 @@ export class SignRequestParams extends EventFactory {
                 }
             },
             stop: function(event, ui) {
-                self.signPageNumber = self.cross.attr("page");
-                self.xPos = Math.round(ui.position.left / self.currentScale);
-                self.yPos = Math.round((ui.position.top - (($("#page_" + self.signPageNumber).offset().top) - $("#page_1").offset().top)) / self.currentScale);
+                if(!self.dropped) {
+                    self.signPageNumber = self.cross.attr("page");
+                    self.xPos = Math.round(ui.position.left / self.currentScale);
+                    self.yPos = Math.round((ui.position.top - (($("#page_" + self.signPageNumber).offset().top) - $("#page_1").offset().top)) / self.currentScale);
+                    if (self.yPos < 0) self.yPos = 0;
+                    console.log("x : " + self.xPos + ", y : " + self.yPos);
+                } else {
+                    self.dropped = false;
+                }
             }
         });
     }
 
-    applyCurrentSignRequestParams(initialOffset) {
-        let pageOffset = $("#page_" + this.signPageNumber).offset().top;
-        let offset = pageOffset - initialOffset + (10 * (parseInt(this.signPageNumber)));
+    applyCurrentSignRequestParams(offset) {
         this.cross.css('top', Math.round(this.yPos * this.currentScale + offset) + 'px');
         this.cross.css('left', Math.round(this.xPos * this.currentScale) + 'px');
     }
@@ -519,6 +525,7 @@ export class SignRequestParams extends EventFactory {
         if(this.textareaPart != null) {
             this.resizeText();
         }
+        this.cross.css("font-size", Math.round(12 * this.currentScale) + "px");
     }
 
     lock() {
@@ -728,7 +735,7 @@ export class SignRequestParams extends EventFactory {
                 this.divExtra = $("#divExtra_" + this.id);
                 this.divExtra.append("<span id='extraTypeDiv_"+ this.id +"' >" + this.typeSign + "<br/></span>");
                 this.divExtra.append("<span id='extraNameDiv_"+ this.id +"' >" + this.userName + "<br/></span>");
-                this.divExtra.append("<span id='extraDateDiv_"+ this.id +"'>le " + moment().format('DD/MM/YYYY HH:mm:ss [GMT]Z') + "<br/></span>");
+                this.divExtra.append("<span id='extraDateDiv_"+ this.id +"'>le " + moment().format('DD/MM/YYYY HH:mm:ssZZ') + "<br/></span>");
                 setInterval(function() {
                     self.refreshDate();
                 }, 1000);
@@ -816,7 +823,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     refreshDate() {
-        $("#extraDateDiv_" + this.id).html("le " + moment().format('DD/MM/YYYY HH:mm:ss [GMT]Z') + "<br/>");
+        $("#extraDateDiv_" + this.id).html("le " + moment().format('DD/MM/YYYY HH:mm:ssZZ') + "<br/>");
     }
 
     toggleType() {
@@ -982,8 +989,8 @@ export class SignRequestParams extends EventFactory {
         $("#signNextImage_" + this.id).hide();
         $("#hideMoreTools_" + this.id).hide();
         $("#signExtra_" + this.id).hide();
-        $("#signExtraOnTop_" + this.id).hide();
-        $("#watermark_" + this.id).hide();
+        // $("#signExtraOnTop_" + this.id).hide();
+        // $("#watermark_" + this.id).hide();
         $("#allPages_" + this.id).hide();
         $("#signColorPicker_" + this.id).hide();
         this.addWatermark = true;
