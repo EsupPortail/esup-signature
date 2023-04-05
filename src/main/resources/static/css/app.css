@@ -1561,6 +1561,10 @@ textarea:placeholder-shown.required-field {
     font-size: 14px !important;
 }
 
+.buttonWidgetAnnotation {
+    display: none;
+}
+
 input:focus, textarea:focus, select:focus {
     outline: none;
 }
