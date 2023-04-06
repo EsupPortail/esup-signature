@@ -420,9 +420,8 @@ public class SignBookService {
                         if (signBook.getSignRequests().stream().anyMatch(s -> s.getStatus().equals(SignRequestStatus.pending))) {
                             return signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending)).findFirst().get();
                         }
-                        else {
-                            return signBook.getSignRequests().get(0);
-                        }
+                    } else {
+                        return signBook.getSignRequests().get(0);
                     }
                 }
             }
