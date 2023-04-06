@@ -330,9 +330,11 @@ export class SignUi {
                     formData[this.name] = this.value;
                 }
             });
-            this.workspace.pdfViewer.savedFields.forEach((value, key) => {
-                formData[key] = value;
-            });
+            if(this.formId != null) {
+                this.workspace.pdfViewer.savedFields.forEach((value, key) => {
+                    formData[key] = value;
+                });
+            }
         }
         if(this.workspace != null) {
             let signRequestParamses = Array.from(this.workspace.signPosition.signRequestParamses.values());
