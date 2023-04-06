@@ -239,9 +239,9 @@ export class PdfViewer extends EventFactory {
         });
         pdfPageView.setPdfPage(page);
         pdfPageView.eventBus.on("annotationlayerrendered", function() {
-            $(".annotationLayer").each(function() {
-                $(this).addClass("d-none");
-            });
+            // $(".annotationLayer").each(function() {
+            //     $(this).addClass("d-none");
+            // });
             container.style.width = Math.round(pdfPageView.viewport.width) +"px";
             container.style.height = Math.round(pdfPageView.viewport.height) + "px";
             self.postRender(i, page);
@@ -452,17 +452,19 @@ export class PdfViewer extends EventFactory {
                 })[0];
             }
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
+
             if (inputField.length) {
+                inputField.on('input', e => this.fireEvent('change', ['checked']));
+                if(dataField == null) continue;
                 this.disableInput(inputField, dataField, items[i].readOnly);
                 if(this.disableAllFields) continue;
-                inputField.on('input', e => this.fireEvent('change', ['checked']));
                 inputField.addClass("field-type-text");
                 let section = $('section[data-annotation-id=' + items[i].id + ']');
                 inputField.attr('name', inputName);
-                inputField.attr('title', dataField.description);
                 inputField.attr('placeholder', " ");
                 inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
+                inputField.attr('title', dataField.description);
                 if (dataField.favorisable && !$("#div_" + inputField.attr('id')).length) {
                     let sendField = inputField;
                     $.ajax({
@@ -582,9 +584,10 @@ export class PdfViewer extends EventFactory {
 
             inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
             if (inputField.length) {
+                inputField.on('input', e => this.fireEvent('change', ['checked']));
+                if(dataField == null) continue;
                 this.disableInput(inputField, dataField, items[i].readOnly);
                 if(this.disableAllFields) continue;
-                inputField.on('input', e => this.fireEvent('change', ['checked']));
                 inputField.addClass("field-type-textarea");
                 let sendField = inputField;
                 if (dataField.favorisable) {
@@ -606,9 +609,10 @@ export class PdfViewer extends EventFactory {
 
             inputField = $('section[data-annotation-id=' + items[i].id + '] > select');
             if (inputField.length) {
+                inputField.on('change', e => this.fireEvent('change', ['checked']));
+                if(dataField == null) continue;
                 this.disableInput(inputField, dataField, items[i].readOnly);
                 if(this.disableAllFields) continue;
-                inputField.on('change', e => this.fireEvent('change', ['time']));
                 inputField.removeAttr('size');
                 inputField.attr('name', inputName);
                 inputField.attr('id', inputName);

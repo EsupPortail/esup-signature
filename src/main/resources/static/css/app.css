@@ -1561,7 +1561,7 @@ textarea:placeholder-shown.required-field {
     font-size: 14px !important;
 }
 
-.buttonWidgetAnnotation {
+.pushButton {
     display: none;
 }
 
