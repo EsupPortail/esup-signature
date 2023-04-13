@@ -64,7 +64,7 @@ export class SignRequestParams extends EventFactory {
             this.fontSize = 12;
             this.restoreExtra = false;
             this.addImage = true;
-            if(restore) {
+            if(restore && !isVisa) {
                 this.addExtra = false;
                 this.addWatermark = false;
                 this.extraText = "";
@@ -277,10 +277,27 @@ export class SignRequestParams extends EventFactory {
             this.cross.css('width', (this.signWidth * this.currentScale * this.signScale));
             this.cross.css('height', (this.signHeight * this.currentScale * this.signScale));
             if(this.isVisa) {
+                this.addWatermark = false;
+                this.extraText = "";
+                this.extraType = true;
+                this.extraName = true;
+                this.extraDate = true;
+                this.isExtraText = true;
+                this.addExtra = false;
                 this.toggleMinimalTools();
                 this.toggleExtra();
+                this.toggleName();
+                this.toggleType();
+                this.toggleText();
                 this.refreshExtraDiv();
                 this.updateSize();
+                this.addWatermark = false;
+                this.toggleWatermark();
+                this.addImage = false;
+                this.toggleImage();
+                this.extraOnTop = false;
+                this.toggleExtraOnTop();
+
             }
         }
         if(this.restore && this.isSign) {
@@ -294,14 +311,9 @@ export class SignRequestParams extends EventFactory {
                     this.restoreExtra = true;
                 }
             }
-            this.restoreUserParams();
-        }
-        if(this.isVisa) {
-            if(!this.restore) {
-                this.toggleText();
+            if (!this.isVisa) {
+                this.restoreUserParams();
             }
-            this.refreshExtraDiv();
-            this.updateSize();
         }
         if(this.isShare) {
             if(this.signColorPicker != null) {
@@ -743,12 +755,14 @@ export class SignRequestParams extends EventFactory {
             } else {
                 this.divExtra.removeClass("d-none");
             }
-            $("#extraTools_" + this.id).removeClass("d-none");
-            $("#crossTools_" + this.id).css("top", "-75px");
+            if(!this.isVisa) {
+                $("#extraTools_" + this.id).removeClass("d-none");
+                $("#crossTools_" + this.id).css("top", "-75px");
+            }
             this.refreshExtraDiv();
             this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
             this.signHeight += this.extraHeight;
-            if(!this.restoreExtra && this.restore) {
+            if(!this.restoreExtra && this.restore && !this.isVisa) {
                 this.restoreUserParams();
                 this.restoreExtra = true;
             }
@@ -988,13 +1002,14 @@ export class SignRequestParams extends EventFactory {
         $("#signPrevImage_" + this.id).hide();
         $("#signNextImage_" + this.id).hide();
         $("#hideMoreTools_" + this.id).hide();
-        $("#signExtra_" + this.id).hide();
-        // $("#signExtraOnTop_" + this.id).hide();
-        // $("#watermark_" + this.id).hide();
+        // $("#signExtra_" + this.id).hide();
+        $("#signImage_" + this.id).hide();
+        $("#signExtraOnTop_" + this.id).hide();
+        $("#watermark_" + this.id).hide();
         $("#allPages_" + this.id).hide();
+        this.signColorPicker.spectrum("destroy");
+        this.signColorPicker.hide();
         $("#signColorPicker_" + this.id).hide();
-        this.addWatermark = true;
-        this.toggleWatermark();
     }
 
     turnToText() {
