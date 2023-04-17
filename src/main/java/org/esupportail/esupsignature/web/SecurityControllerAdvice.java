@@ -34,9 +34,12 @@ public class SecurityControllerAdvice {
         if(eppn == null) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null && !auth.getName().equals("anonymousUser")) {
+                logger.debug("auth name founded : " + auth.getName());
                 eppn = userService.tryGetEppnFromLdap(auth);
                 assert httpSession != null;
                 httpSession.setAttribute("userEppn", eppn);
+            } else {
+                logger.debug("no auth name founded");
             }
         }
         logger.debug("userEppn used is : " + eppn);
@@ -52,9 +55,82 @@ public class SecurityControllerAdvice {
         if(eppn == null) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null && !auth.getName().equals("anonymousUser")) {
+                logger.debug("auth name founded : " + auth.getName());
                 eppn = userService.tryGetEppnFromLdap(auth);
                 assert httpSession != null;
                 httpSession.setAttribute("authUserEppn", eppn);
+            } else {
+                logger.debug("no auth name founded");
+            }
+        }if(eppn == null) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && !auth.getName().equals("anonymousUser")) {
+                logger.debug("auth name founded : " + auth.getName());
+                eppn = userService.tryGetEppnFromLdap(auth);
+                assert httpSession != null;
+                httpSession.setAttribute("authUserEppn", eppn);
+            } else {
+                logger.debug("no auth name founded");
+            }
+        }if(eppn == null) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && !auth.getName().equals("anonymousUser")) {
+                logger.debug("auth name founded : " + auth.getName());
+                eppn = userService.tryGetEppnFromLdap(auth);
+                assert httpSession != null;
+                httpSession.setAttribute("authUserEppn", eppn);
+            } else {
+                logger.debug("no auth name founded");
+            }
+        }if(eppn == null) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && !auth.getName().equals("anonymousUser")) {
+                logger.debug("auth name founded : " + auth.getName());
+                eppn = userService.tryGetEppnFromLdap(auth);
+                assert httpSession != null;
+                httpSession.setAttribute("authUserEppn", eppn);
+            } else {
+                logger.debug("no auth name founded");
+            }
+        }if(eppn == null) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && !auth.getName().equals("anonymousUser")) {
+                logger.debug("auth name founded : " + auth.getName());
+                eppn = userService.tryGetEppnFromLdap(auth);
+                assert httpSession != null;
+                httpSession.setAttribute("authUserEppn", eppn);
+            } else {
+                logger.debug("no auth name founded");
+            }
+        }if(eppn == null) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && !auth.getName().equals("anonymousUser")) {
+                logger.debug("auth name founded : " + auth.getName());
+                eppn = userService.tryGetEppnFromLdap(auth);
+                assert httpSession != null;
+                httpSession.setAttribute("authUserEppn", eppn);
+            } else {
+                logger.debug("no auth name founded");
+            }
+        }if(eppn == null) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && !auth.getName().equals("anonymousUser")) {
+                logger.debug("auth name founded : " + auth.getName());
+                eppn = userService.tryGetEppnFromLdap(auth);
+                assert httpSession != null;
+                httpSession.setAttribute("authUserEppn", eppn);
+            } else {
+                logger.debug("no auth name founded");
+            }
+        }if(eppn == null) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && !auth.getName().equals("anonymousUser")) {
+                logger.debug("auth name founded : " + auth.getName());
+                eppn = userService.tryGetEppnFromLdap(auth);
+                assert httpSession != null;
+                httpSession.setAttribute("authUserEppn", eppn);
+            } else {
+                logger.debug("no auth name founded");
             }
         }
         logger.debug("authUserEppn used is : " + eppn);
