@@ -86,11 +86,8 @@ public class WorkflowService {
 
     @PostConstruct
     public void initCreatorWorkflow() {
-        User creator;
-        try {
-            creator = userService.getByEppn("creator");
-        } catch (EsupSignatureRuntimeException e) {
-            logger.info(e.getMessage() + " : create 'creator' system user");
+        User creator= userService.getByEppn("creator");
+        if (creator == null) {
             creator = userService.createUser("creator", "Createur de la demande", "", "creator", UserType.system, false);
         }
         if (workflowRepository.countByName("Ma signature") == 0) {
