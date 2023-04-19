@@ -1007,8 +1007,10 @@ export class SignRequestParams extends EventFactory {
         $("#signExtraOnTop_" + this.id).hide();
         $("#watermark_" + this.id).hide();
         $("#allPages_" + this.id).hide();
-        this.signColorPicker.spectrum("destroy");
-        this.signColorPicker.hide();
+        if(this.signColorPicker != null) {
+            this.signColorPicker.spectrum("destroy");
+            this.signColorPicker.hide();
+        }
         $("#signColorPicker_" + this.id).hide();
     }
 
