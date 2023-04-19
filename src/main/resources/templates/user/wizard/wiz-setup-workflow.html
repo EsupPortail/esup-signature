@@ -74,16 +74,16 @@
                             <b>Destinataire : <span th:text="${user.email}"></span></b>
                             <input id="emails" type="hidden" name="emails" th:value="${user.email}">
                             <div class="d-flex col-10">
-                            <label class="col-2" for="names">Nom</label>
-                            <input id="names" class="form-control col-10" type="text" name="names" th:value="${user.firstname != 'Nouvel utilisateur'} ? ${user.name} : ''" required>
+                                <label class="col-2" for="names">Nom</label>
+                                <input id="names" class="form-control col-10" type="text" name="names" th:value="${user.firstname != 'Nouvel utilisateur'} ? ${user.name} : ''" required>
                             </div>
                             <div class="d-flex col-10">
-                            <label class="col-2" for="firstnames">Prénom</label>
-                            <input id="firstnames" class="form-control col-10" type="text" name="firstnames" th:value="${user.firstname != 'Nouvel utilisateur'} ? ${user.firstname} : ''" required>
+                                <label class="col-2" for="firstnames">Prénom</label>
+                                <input id="firstnames" class="form-control col-10" type="text" name="firstnames" th:value="${user.firstname != 'Nouvel utilisateur'} ? ${user.firstname} : ''" required>
                             </div>
                             <div class="d-flex col-10">
-                            <label class="col-2" for="phones">Mobile</label>
-                            <input id="phones" class="form-control col-10" type="text" name="phones" value="" required>
+                                <label class="col-2" for="phones">Mobile</label>
+                                <input id="phones" class="form-control col-10" type="text" name="phones" value="" th:required="${globalProperties.smsRequired}">
                             </div>
                         </div>
                     </th:block>
