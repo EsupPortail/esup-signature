@@ -60,10 +60,13 @@ public class OtpService {
     public boolean generateOtpForSignRequest(Long id, Long extUserId, String phone) throws EsupSignatureMailException {
         User extUser = userService.getById(extUserId);
         if(extUser.getUserType().equals(UserType.external)) {
+
             SignBook signBook = signBookRepository.findById(id).get();
             Otp otp = new Otp();
             otp.setCreateDate(new Data());
-            otp.setPhoneNumber(phone);
+            if(StringUtils.hasText(phone)) {
+                otp.setPhoneNumber(phone);
+            }
             otp.setEmail(extUser.getEmail());
             otp.setSignBookId(signBook.getId());
             otp.setForceSms(extUser.getForceSms());
