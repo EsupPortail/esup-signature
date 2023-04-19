@@ -545,6 +545,7 @@
                                     <div th:if="${recipient.user.userType.name() == 'external'}">
                                         <b>Destinataire : <span th:text="${recipient.user.email}"></span></b>
                                         <div class="form-inline">
+                                            <input id="emails" type="hidden" name="emails" th:value="${user.email}">
                                             <label for="names">Nom</label>
                                             <input id="names" class="form-control me-2" type="text" name="names" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.name} : ''" required>
                                             <label for="firstnames">Prénom</label>
@@ -560,6 +561,7 @@
                                     <div th:if="${user.userType.name() == 'external'}">
                                         <b>Destinataire : <span th:text="${user.email}"></span></b>
                                         <div class="form-inline">
+                                            <input id="emails" type="hidden" name="emails" th:value="${user.email}">
                                             <label for="names">Nom</label>
                                             <input id="names" class="form-control me-2" type="text" name="names" th:value="${user.name}" required>
                                             <label for="firstnames">Prénom</label>

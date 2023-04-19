@@ -383,19 +383,19 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signBookCreator(#id, #authUserEppn)")
     @PostMapping(value = "/send-otp/{id}/{recipientId}")
     public String sendOtp(@ModelAttribute("authUserEppn") String authUserEppn,
                           @PathVariable("id") Long id,
                           @PathVariable("recipientId") Long recipientId,
-                          @RequestParam("phone") String phone,
+                          @RequestParam(value = "phone", required = false) String phone,
                           RedirectAttributes redirectAttributes) throws Exception {
         if(otpService.generateOtpForSignRequest(id, recipientId, phone)){
             redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Demande OTP envoyée"));
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Problème d'envoi OTP"));
         }
-        return "redirect:/user/signrequests/" + id;
+        return "redirect:/user/signbooks/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
