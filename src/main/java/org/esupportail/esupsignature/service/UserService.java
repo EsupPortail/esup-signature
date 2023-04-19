@@ -109,7 +109,7 @@ public class UserService {
     }
 
     public User getByEppn(String eppn) {
-        return  userRepository.findByEppn(eppn).orElseThrow(() -> new EsupSignatureRuntimeException("eppn " + eppn + " not found"));
+        return  userRepository.findByEppn(eppn).orElse(null);
     }
 
     public User getSystemUser() {
