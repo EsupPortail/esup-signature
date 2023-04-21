@@ -368,12 +368,12 @@ export class PdfViewer extends EventFactory {
     }
 
     restoreValues(items) {
-       console.log("set fields " + items.length);
+        console.log("set fields " + items.length);
         for (let i = 0; i < items.length; i++) {
             if(items[i].fieldName != null) {
                 let inputName = items[i].fieldName.split(/\$|#|!/)[0];
                 let savedValue = this.savedFields.get(items[i].fieldName);
-                let inputField = $('#' + $.escapeSelector(inputName));
+                let inputField = $('[name="' + inputName + '"]');
                 if (inputField.val() != null) {
                     if(savedValue != null) {
                         if (inputField.is(':checkbox')) {
