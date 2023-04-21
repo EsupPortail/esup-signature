@@ -422,15 +422,6 @@ export class PdfViewer extends EventFactory {
         }
     }
 
-    disableInput(inputField, dataField, readOnly) {
-        if (readOnly || dataField == null || dataField.readOnly || this.disableAllFields || !this.isFieldEnable(dataField)) {
-            inputField.addClass('disabled-field disable-selection');
-            inputField.prop('disabled', true);
-            inputField.prop('required', false);
-            inputField.parent().addClass('disable-div-selection');
-        }
-    }
-
     renderPdfFormWithFields(items) {
         this.pdfFields = items;
         let datePickerIndex = 40;
@@ -630,7 +621,7 @@ export class PdfViewer extends EventFactory {
     }
 
     isFieldEnable(dataField) {
-        return dataField.editable;
+        return dataField.editable && !dataField.readOnly;
     }
 
     enableInputField(inputField, dataField) {
@@ -641,6 +632,15 @@ export class PdfViewer extends EventFactory {
             inputField.addClass('required-field');
         }
         inputField.attr('title', dataField.description);
+    }
+
+    disableInput(inputField, dataField, readOnly) {
+        if (readOnly || dataField == null || dataField.readOnly || this.disableAllFields || !this.isFieldEnable(dataField)) {
+            inputField.addClass('disabled-field disable-selection');
+            inputField.prop('disabled', true);
+            inputField.prop('required', false);
+            inputField.parent().addClass('disable-div-selection');
+        }
     }
 
     prevPage() {
