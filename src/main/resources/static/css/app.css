@@ -1112,7 +1112,7 @@ height: 100%;
 }
 
 input:placeholder-shown.required-field {
-    background-color: rgba(255, 0, 21, 0.13) !important;
+    background-color: rgba(255, 0, 0, 0.2) !important;
 }
 
 input[type="checkbox"] {
@@ -1120,7 +1120,7 @@ input[type="checkbox"] {
 }
 
 input[type="checkbox"]:not(:checked).required-field {
-    background-color: rgba(255, 0, 21, 0.13) !important;
+    background-color: rgba(255, 0, 0, 0.2) !important;
     border: 1px solid black;
 }
 
@@ -1129,12 +1129,12 @@ input[type="radio"] {
 }
 
 input[type="radio"]:not(:checked).required-field {
-    background-color: rgba(255, 0, 21, 0.13) !important;
+    background-color: rgba(255, 0, 0, 0.2) !important;
     border: 1px solid black;
 }
 
 textarea:placeholder-shown.required-field {
-    background-color: rgba(255, 0, 21, 0.13) !important;
+    background-color: rgba(255, 0, 0, 0.2) !important;
 }
 
 .disabled-field {
@@ -1562,12 +1562,19 @@ textarea:placeholder-shown.required-field {
 }
 
 .annotationLayer .buttonWidgetAnnotation.radioButton input:checked:before {
-    left: 27%;
-    top: 24%;
+    left: 25%;
+    top: 25%;
+    border: 1px solid black;
 }
 
 .annotationLayer .buttonWidgetAnnotation.checkBox input:checked:before, .annotationLayer .buttonWidgetAnnotation.checkBox input:checked:after {
-    left: 50%;
+    left: 45%;
+    top: 10%;
+    border: 1px solid black;
+}
+
+.annotationLayer .buttonWidgetAnnotation.checkBox input, .annotationLayer .buttonWidgetAnnotation.radioButton input {
+    appearance: initial;
 }
 
 .pushButton {
