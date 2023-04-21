@@ -1561,6 +1561,15 @@ textarea:placeholder-shown.required-field {
     font-size: 14px !important;
 }
 
+.annotationLayer .buttonWidgetAnnotation.radioButton input:checked:before {
+    left: 27%;
+    top: 24%;
+}
+
+.annotationLayer .buttonWidgetAnnotation.checkBox input:checked:before, .annotationLayer .buttonWidgetAnnotation.checkBox input:checked:after {
+    left: 50%;
+}
+
 .pushButton {
     display: none;
 }
