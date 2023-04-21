@@ -172,7 +172,7 @@
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>pdfjs-dist</artifactId>
-			<version>3.4.120</version>
+			<version>3.5.141</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
