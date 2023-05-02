@@ -352,7 +352,7 @@ public class SignService {
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			ImageIO.write(bufferedSignImage, "png", os);
 			fileDocumentImage = new InMemoryDocument(new ByteArrayInputStream(os.toByteArray()), "sign.png");
-			fileDocumentImage.setMimeType(MimeType.PNG);
+			fileDocumentImage.setMimeType(MimeTypeEnum.PNG);
 			imageParameters.setImage(fileDocumentImage);
 			SignatureFieldParameters signatureFieldParameters = imageParameters.getFieldParameters();
 			signatureFieldParameters.setPage(signRequestParams.getSignPageNumber());

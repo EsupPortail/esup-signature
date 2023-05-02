@@ -230,6 +230,8 @@ public class GlobalProperties {
      */
     private Boolean smsRequired = true;
 
+    private Integer maxMrTests = 1;
+
     public String getRootUrl() {
         return rootUrl;
     }
@@ -596,5 +598,13 @@ public class GlobalProperties {
 
     public void setSmsRequired(Boolean smsRequired) {
         this.smsRequired = smsRequired;
+    }
+
+    public Integer getMaxMrTests() {
+        return maxMrTests;
+    }
+
+    public void setMaxMrTests(Integer maxMrTests) {
+        this.maxMrTests = maxMrTests;
     }
 }
