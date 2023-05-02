@@ -163,7 +163,7 @@
                     <xsl:with-param name="indicationClass" select="$indicationCssClass"/>
                 </xsl:apply-templates>
 
-                <xsl:apply-templates select="dss:ValidationDetails" />
+                <xsl:apply-templates select="dss:AdESValidationDetails" />
 
                 <dl>
                     <xsl:attribute name="class">row mb-0</xsl:attribute>
@@ -186,10 +186,10 @@
                                             <i><xsl:attribute name="class">fa fa-link mr-2</xsl:attribute></i>
                                             <xsl:choose>
                                                 <xsl:when test="$index = 1">
-                                                    <b><xsl:value-of select="dss:qualifiedName" /></b>
+                                                    <b><xsl:value-of select="dss:QualifiedName" /></b>
                                                 </xsl:when>
                                                 <xsl:otherwise>
-                                                    <xsl:value-of select="dss:qualifiedName" />
+                                                    <xsl:value-of select="dss:QualifiedName" />
                                                 </xsl:otherwise>
                                             </xsl:choose>
                                         </li>

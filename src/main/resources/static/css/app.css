@@ -1975,6 +1975,21 @@ progress:before {
     text-overflow: ellipsis;
 }
 
+.badge-success {
+    --bs-bg-opacity: 1;
+    background-color: rgba(var(--bs-success-rgb),var(--bs-bg-opacity))!important;
+}
+
+.badge-warning {
+    --bs-bg-opacity: 1;
+    background-color: rgba(var(--bs-warning-rgb),var(--bs-bg-opacity))!important;
+}
+
+.badge-danger {
+    --bs-bg-opacity: 1;
+    background-color: rgba(var(--bs-danger-rgb),var(--bs-bg-opacity))!important;
+}
+
 .highlight {
     border: 1px solid red !important;
     animation: blink 1s !important;
