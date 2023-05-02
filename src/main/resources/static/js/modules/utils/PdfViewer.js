@@ -368,12 +368,12 @@ export class PdfViewer extends EventFactory {
     }
 
     restoreValues(items) {
-       console.log("set fields " + items.length);
+        console.log("set fields " + items.length);
         for (let i = 0; i < items.length; i++) {
             if(items[i].fieldName != null) {
                 let inputName = items[i].fieldName.split(/\$|#|!/)[0];
                 let savedValue = this.savedFields.get(items[i].fieldName);
-                let inputField = $('#' + $.escapeSelector(inputName));
+                let inputField = $('[name="' + inputName + '"]');
                 if (inputField.val() != null) {
                     if(savedValue != null) {
                         if (inputField.is(':checkbox')) {
@@ -419,15 +419,6 @@ export class PdfViewer extends EventFactory {
                     });
                 }
             }
-        }
-    }
-
-    disableInput(inputField, dataField, readOnly) {
-        if (readOnly || dataField == null || dataField.readOnly || this.disableAllFields || !this.isFieldEnable(dataField)) {
-            inputField.addClass('disabled-field disable-selection');
-            inputField.prop('disabled', true);
-            inputField.prop('required', false);
-            inputField.parent().addClass('disable-div-selection');
         }
     }
 
@@ -630,17 +621,28 @@ export class PdfViewer extends EventFactory {
     }
 
     isFieldEnable(dataField) {
-        return dataField.editable;
+        return dataField.editable && !dataField.readOnly;
     }
 
     enableInputField(inputField, dataField) {
         inputField.prop('disabled', false);
         inputField.removeClass('disabled-field disable-selection');
+        inputField.prop('required', false);
+        inputField.removeClass('required-field');
         if (dataField.required) {
             inputField.prop('required', true);
             inputField.addClass('required-field');
         }
         inputField.attr('title', dataField.description);
+    }
+
+    disableInput(inputField, dataField, readOnly) {
+        if (readOnly || dataField == null || dataField.readOnly || this.disableAllFields || !this.isFieldEnable(dataField)) {
+            inputField.addClass('disabled-field disable-selection');
+            inputField.prop('disabled', true);
+            inputField.prop('required', false);
+            inputField.parent().addClass('disable-div-selection');
+        }
     }
 
     prevPage() {
