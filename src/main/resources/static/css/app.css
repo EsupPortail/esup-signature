@@ -1121,7 +1121,7 @@ input[type="checkbox"] {
 
 input[type="checkbox"]:not(:checked).required-field {
     background-color: rgba(255, 0, 0, 0.2) !important;
-    border: 1px solid black;
+    /*border: 1px solid black;*/
 }
 
 input[type="radio"] {
@@ -1130,28 +1130,40 @@ input[type="radio"] {
 
 input[type="radio"]:not(:checked).required-field {
     background-color: rgba(255, 0, 0, 0.2) !important;
-    border: 1px solid black;
+    /*border: 1px solid black;*/
 }
 
 textarea:placeholder-shown.required-field {
     background-color: rgba(255, 0, 0, 0.2) !important;
 }
 
-.disabled-field {
-    background-color: transparent !important;
-    border-color: #eeeeee !important;
-}
-
-.field-type-radio {
-    border-color: transparent !important;
-}
-
-.field-type-checkbox {
-    border-color: transparent !important;
+.field-type-text {
+    border: 1px solid black !important;
 }
 
 .field-type-textarea {
-    border-color: transparent !important;
+    border: 1px solid black !important;
+}
+
+.field-type-radio {
+    border: 1px solid black !important;
+}
+
+.field-type-checkbox {
+    border: 1px solid black !important;
+}
+
+.field-type-select {
+    border: 1px solid black !important;
+}
+
+.field-type-textarea {
+    border: 1px solid black !important;
+}
+
+
+.disabled-field {
+    border-color: #b9bbbe !important;
 }
 
 .crop {
@@ -1523,16 +1535,16 @@ textarea:placeholder-shown.required-field {
     min-width: 60px !important;
 }
 
-.textWidgetAnnotation input {
-    border: 1px solid black !important;
-}
+/*.textWidgetAnnotation input {*/
+/*    border: 1px solid black !important;*/
+/*}*/
 
-.textWidgetAnnotation input:focus {
-    background-color: #e0e0e0 !important;
-}
+/*.textWidgetAnnotation input:focus {*/
+/*    background-color: #e0e0e0 !important;*/
+/*}*/
 
 .textWidgetAnnotation textarea {
-    border: 1px solid black !important;
+    /*border: 1px solid black !important;*/
     overflow: hidden;
     resize: none;
 }
@@ -1543,13 +1555,12 @@ textarea:placeholder-shown.required-field {
 
 .choiceWidgetAnnotation {
     border: 1px solid transparent !important;
-
 }
 
 .choiceWidgetAnnotation select {
     margin-top: -1px !important;
     font-size: 14px !important;
-    border: 1px solid black !important;
+    /*border: 1px solid black !important;*/
     height: 140% !important;
 }
 
