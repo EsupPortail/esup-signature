@@ -230,7 +230,10 @@ public class GlobalProperties {
      */
     private Boolean smsRequired = true;
 
-    private Integer maxMrTests = 1;
+    /**
+     * The org.bouncycastle.rsa.max_mr_tests property check has been added to allow capping of MR tests done on RSA moduli.
+     */
+    private Integer bouncycastelMaxMrTests = 1;
 
     public String getRootUrl() {
         return rootUrl;
@@ -600,11 +603,11 @@ public class GlobalProperties {
         this.smsRequired = smsRequired;
     }
 
-    public Integer getMaxMrTests() {
-        return maxMrTests;
+    public Integer getBouncycastelMaxMrTests() {
+        return bouncycastelMaxMrTests;
     }
 
-    public void setMaxMrTests(Integer maxMrTests) {
-        this.maxMrTests = maxMrTests;
+    public void setBouncycastelMaxMrTests(Integer bouncycastelMaxMrTests) {
+        this.bouncycastelMaxMrTests = bouncycastelMaxMrTests;
     }
 }
