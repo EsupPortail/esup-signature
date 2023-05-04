@@ -921,11 +921,11 @@ export class WorkspacePdf {
                 value: 'comment'
             });
         }
-        data.push({
-            html: '<div style="width: 200px;"><i class="fas fa-eye text-info pr-2 m-1"></i><b>Mode lecture</b></div>',
-            text: 'Lecture',
-            value: 'read'
-        });
+        // data.push({
+        //     html: '<div style="width: 200px;"><i class="fas fa-eye text-info pr-2 m-1"></i><b>Mode lecture</b></div>',
+        //     text: 'Lecture',
+        //     value: 'read'
+        // });
 
         if($("#changeMode").length) {
             this.changeModeSelector = new SlimSelect({

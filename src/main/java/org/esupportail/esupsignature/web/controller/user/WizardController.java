@@ -78,7 +78,6 @@ public class WizardController {
     @PostMapping(value = "/wiz-add-step", produces = "text/html")
     public String wizX(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                        @SessionAttribute("signBookId") Long signBookId,
-                       @RequestParam(name="addNew", required = false) Boolean addNew,
                        @RequestParam(name="userSignFirst", required = false) Boolean userSignFirst,
                        @RequestParam(name="end", required = false) Boolean end,
                        @RequestParam(name="close", required = false) Boolean close,
@@ -135,14 +134,13 @@ public class WizardController {
     @PostMapping(value = "/wiz-add-step-workflow", produces = "text/html")
     public String wizXWorkflow(@ModelAttribute("userEppn") String userEppn,
                                @RequestParam(name="end", required = false) Boolean end,
-                               @RequestBody JsonWorkflowStep step,
+                               @RequestBody JsonWorkflowStep jsonWorkflowStep,
                                Model model) {
         User user = (User) model.getAttribute("user");
-        String[] recipientsEmailsArray = new String[step.getRecipientsEmails().size()];
-        recipientsEmailsArray = step.getRecipientsEmails().toArray(recipientsEmailsArray);
-        Workflow  workflow = null;
+        String[] recipientsEmailsArray = new String[jsonWorkflowStep.getRecipientsEmails().size()];
+        recipientsEmailsArray = jsonWorkflowStep.getRecipientsEmails().toArray(recipientsEmailsArray);
         try {
-            workflow = workflowService.addStepToWorkflow(step.getWorkflowId(), SignType.valueOf(step.getSignType()), step.getAllSignToComplete(), recipientsEmailsArray, user);
+            Workflow workflow = workflowService.addStepToWorkflow(jsonWorkflowStep.getWorkflowId(), SignType.valueOf(jsonWorkflowStep.getSignType()), jsonWorkflowStep.getAllSignToComplete(), jsonWorkflowStep.getChangeable(), recipientsEmailsArray, user);
             model.addAttribute("workflow", workflow);
             if(end != null && end) {
                 if(workflow.getWorkflowSteps().size() >  0) {

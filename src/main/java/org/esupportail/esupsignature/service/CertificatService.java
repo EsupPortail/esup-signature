@@ -151,7 +151,7 @@ public class CertificatService {
                 }
             }
         }
-        throw new EsupSignatureKeystoreException("no seal certificat present");
+        throw new EsupSignatureKeystoreException("no seal certificat present (no type or no pin");
     }
 
     public KeyStore getSealKeyStore() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException, EsupSignatureKeystoreException {

@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.ActionType;
