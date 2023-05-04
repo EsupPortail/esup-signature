@@ -160,7 +160,7 @@ public class SignService {
 				try {
 					abstractKeyStoreTokenConnection = certificatService.getSealToken();
 				} catch (Exception e) {
-					throw new EsupSignatureRuntimeException("unable to open pkcs11 token", e);
+					throw new EsupSignatureRuntimeException("unable to open seal token", e);
 				}
 			} else if (signWith.equals(SignWith.openPkiCert)) {
 				abstractKeyStoreTokenConnection = openXPKICertificatGenerationService.generateTokenForUser(user);

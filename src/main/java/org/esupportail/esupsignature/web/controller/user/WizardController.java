@@ -139,9 +139,8 @@ public class WizardController {
         User user = (User) model.getAttribute("user");
         String[] recipientsEmailsArray = new String[jsonWorkflowStep.getRecipientsEmails().size()];
         recipientsEmailsArray = jsonWorkflowStep.getRecipientsEmails().toArray(recipientsEmailsArray);
-        Workflow  workflow = null;
         try {
-            workflow = workflowService.addStepToWorkflow(jsonWorkflowStep.getWorkflowId(), SignType.valueOf(jsonWorkflowStep.getSignType()), jsonWorkflowStep.getAllSignToComplete(), jsonWorkflowStep.getChangeable(), recipientsEmailsArray, user);
+            Workflow workflow = workflowService.addStepToWorkflow(jsonWorkflowStep.getWorkflowId(), SignType.valueOf(jsonWorkflowStep.getSignType()), jsonWorkflowStep.getAllSignToComplete(), jsonWorkflowStep.getChangeable(), recipientsEmailsArray, user);
             model.addAttribute("workflow", workflow);
             if(end != null && end) {
                 if(workflow.getWorkflowSteps().size() >  0) {
