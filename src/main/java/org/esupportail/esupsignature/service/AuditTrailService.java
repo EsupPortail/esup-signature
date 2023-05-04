@@ -4,6 +4,7 @@ import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.repository.AuditStepRepository;
 import org.esupportail.esupsignature.repository.AuditTrailRepository;
 import org.esupportail.esupsignature.service.utils.file.FileService;
@@ -49,9 +50,9 @@ public class AuditTrailService {
 
     @Resource
     private LogService logService;
-
-    @Resource
-    private SignRequestService signRequestService;
+//
+//    @Resource
+//    private SignRequestService signRequestService;
 
     @Resource
     private TemplateEngine templateEngine;
@@ -131,8 +132,8 @@ public class AuditTrailService {
         }
         List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
         vars.put("logs", logs);
-        vars.put("usersHasSigned", signRequestService.checkUserResponseSigned(signRequest));
-        vars.put("usersHasRefused", signRequestService.checkUserResponseRefused(signRequest));
+        vars.put("usersHasSigned", checkUserResponseSigned(signRequest));
+        vars.put("usersHasRefused", checkUserResponseRefused(signRequest));
         vars.put("signRequest", signRequest);
         vars.put("print", true);
 
@@ -168,5 +169,26 @@ public class AuditTrailService {
                     + "/";
         }
         return baseUrl;
+    }
+
+
+    public List<User> checkUserResponseSigned(SignRequest signRequest) {
+        List<User> usersHasSigned = new ArrayList<>();
+        for(Map.Entry<Recipient, Action> recipientActionEntry : signRequest.getRecipientHasSigned().entrySet()) {
+            if (recipientActionEntry.getValue().getActionType().equals(ActionType.signed)) {
+                usersHasSigned.add(recipientActionEntry.getKey().getUser());
+            }
+        }
+        return usersHasSigned;
+    }
+
+    public List<User> checkUserResponseRefused(SignRequest signRequest) {
+        List<User> usersHasRefused = new ArrayList<>();
+        for(Map.Entry<Recipient, Action> recipientActionEntry : signRequest.getRecipientHasSigned().entrySet()) {
+            if (recipientActionEntry.getValue().getActionType().equals(ActionType.refused)) {
+                usersHasRefused.add(recipientActionEntry.getKey().getUser());
+            }
+        }
+        return usersHasRefused;
     }
 }

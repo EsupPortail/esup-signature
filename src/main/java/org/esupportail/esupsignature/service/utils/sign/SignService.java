@@ -156,7 +156,7 @@ public class SignService {
 			} else if(signWith.equals(SignWith.groupCert)){
 				Certificat certificat = certificatService.getCertificatByUser(userEppn).get(0);
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
-			} else if (signWith.equals(SignWith.sealCert) && user.getRoles().contains("ROLE_SEAL")) {
+			} else if (signWith.equals(SignWith.sealCert) && (user.getRoles().contains("ROLE_SEAL") || userEppn.equals("system"))) {
 				try {
 					abstractKeyStoreTokenConnection = certificatService.getSealToken();
 				} catch (Exception e) {
