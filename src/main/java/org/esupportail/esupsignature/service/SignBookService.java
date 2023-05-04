@@ -1637,7 +1637,7 @@ public class SignBookService {
             for (Recipient recipient : liveWorkflowStep.getRecipients()) {
                 recipientsEmails.add(recipient.getUser().getEmail());
             }
-            WorkflowStep toSaveWorkflowStep = workflowStepService.createWorkflowStep("" , liveWorkflowStep.getAllSignToComplete(), liveWorkflowStep.getSignType(), recipientsEmails.toArray(String[]::new));
+            WorkflowStep toSaveWorkflowStep = workflowStepService.createWorkflowStep("" , liveWorkflowStep.getAllSignToComplete(), liveWorkflowStep.getSignType(), false, recipientsEmails.toArray(String[]::new));
             workflow.getWorkflowSteps().add(toSaveWorkflowStep);
         }
     }
