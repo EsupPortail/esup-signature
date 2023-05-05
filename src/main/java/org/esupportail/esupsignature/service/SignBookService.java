@@ -1070,7 +1070,9 @@ public class SignBookService {
             if(isComplete) {
                 try {
                     completeSignBook(signRequest.getParentSignBook().getId(), authUserEppn, "Tous les documents sont signés");
-                    sealAllDocs(signRequest.getParentSignBook().getId(), userEppn);
+                    if(globalProperties.getSealAllDocs()) {
+                        sealAllDocs(signRequest.getParentSignBook().getId(), userEppn);
+                    }
                     Document signedDocument = signRequest.getLastSignedDocument();
                     auditTrailService.closeAuditTrail(signRequest.getToken(), signedDocument, signedDocument.getInputStream());
                } catch(IOException e) {
