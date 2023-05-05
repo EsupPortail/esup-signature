@@ -201,6 +201,7 @@ export class WizUi {
         step.workflowId = $('#wizWorkflowId').val();
         step.recipientsEmails = $('#recipientsEmailsWiz').find(`[data-es-check-cert='true']`).prevObject[0].slim.getSelected();
         step.allSignToComplete = $('#allSignToCompleteWiz').is(':checked');
+        step.changeable = $('#changeableWiz').is(':checked');
         step.autoSign = $('#autoSign').is(':checked');
         let userSignFirst = $('#userSignFirstWiz').is(':checked');
         step.signType = $('#signTypeWiz').val();

@@ -134,8 +134,8 @@ public class PublicController {
     private void setControlValues(Model model, SignRequest signRequest, AuditTrail auditTrail, String eppn) {
         List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
         model.addAttribute("logs", logs);
-        model.addAttribute("usersHasSigned", signRequestService.checkUserResponseSigned(signRequest));
-        model.addAttribute("usersHasRefused", signRequestService.checkUserResponseRefused(signRequest));
+        model.addAttribute("usersHasSigned", auditTrailService.checkUserResponseSigned(signRequest));
+        model.addAttribute("usersHasRefused", auditTrailService.checkUserResponseRefused(signRequest));
         model.addAttribute("signRequest", signRequest);
         if(auditTrail.getDocumentSize() != null) {
             model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));

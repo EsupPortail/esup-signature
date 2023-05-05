@@ -23,7 +23,7 @@
                      th:class="${'card border-' + status}">
 
                     <div th:class="${'card-header clearfix bg-' + status}">
-					<span th:class="${'badge pull-right badge-' + status}" th:if="${tlInfo.parsingCacheInfo != null and tlInfo.parsingCacheInfo.trustServiceProviders != null}"
+					<span th:class="${'badge pull-right bg-' + status}" th:if="${tlInfo.parsingCacheInfo != null and tlInfo.parsingCacheInfo.trustServiceProviders != null}"
                           th:text="${#lists.size(tlInfo.parsingCacheInfo.trustServiceProviders)}" title="Number of Trust Service Providers"></span>
                         <th:block th:if="${tlInfo.parsingCacheInfo != null}" th:with="country=${tlInfo.parsingCacheInfo.isResultExist()}?${tlInfo.parsingCacheInfo.territory}:'no_country'">
                             <span th:class="'small_flag flag_' + ${country}" th:title="${country != 'no_country'}?${tlInfo.parsingCacheInfo.territory}:'?'"></span>

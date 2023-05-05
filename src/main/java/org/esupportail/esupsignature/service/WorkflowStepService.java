@@ -42,7 +42,7 @@ public class WorkflowStepService {
     private UserListService userListService;
 
     @Transactional
-    public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, String... recipientEmails) throws EsupSignatureRuntimeException {
+    public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, Boolean changeable, String... recipientEmails) throws EsupSignatureRuntimeException {
         WorkflowStep workflowStep = new WorkflowStep();
         if (name != null) {
             workflowStep.setName(name);
@@ -53,6 +53,7 @@ public class WorkflowStepService {
             workflowStep.setAllSignToComplete(allSignToComplete);
         }
         workflowStep.setSignType(signType);
+        workflowStep.setChangeable(changeable);
         workflowStepRepository.save(workflowStep);
         if (recipientEmails != null && recipientEmails.length > 0) {
             addRecipientsToWorkflowStep(workflowStep, recipientEmails);
@@ -140,9 +141,8 @@ public class WorkflowStepService {
             throw new EsupSignatureRuntimeException("Certificat is empty");
         }
         Workflow workflow = workflowRepository.findById(workflowId).get();
-        WorkflowStep workflowStep = createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+        WorkflowStep workflowStep = createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), changeable, recipientsEmails);
         workflowStep.setDescription(description);
-        workflowStep.setChangeable(changeable);
         if(maxRecipients != null) {
             workflowStep.setMaxRecipients(maxRecipients);
         }
