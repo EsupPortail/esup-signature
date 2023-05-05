@@ -43,7 +43,9 @@ public class RestExtValue implements ExtValue {
 		RestTemplate restTemplate = new RestTemplate();
 		LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 		map.add("eppn", user.getEppn());
-		map.add("signRequestId", signRequest.getId());
+		if(signRequest != null) {
+			map.add("signRequestId", signRequest.getId());
+		}
 		HttpHeaders headers = new HttpHeaders();
 		HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
 		return restTemplate.postForObject(globalProperties.getRestExtValueUrl(), requestEntity, HashMap.class);
