@@ -476,7 +476,11 @@ export class WorkspacePdf {
                 if (this.mode === 'comment') {
                     postitDiv.show();
                     postitDiv.css('left', ((parseInt(comment.posX) * this.pdfViewer.scale)) + "px");
-                    let offset = $("#page_" + comment.pageNumber).offset().top - this.pdfViewer.initialOffset + 10;
+                    let pageOffset = $("#page_" + comment.pageNumber).offset();
+                    let offset = 10;
+                    if(pageOffset) {
+                        offset = pageOffset.top - this.pdfViewer.initialOffset + 10;
+                    }
                     postitDiv.css('top', ((parseInt(comment.posY) * this.pdfViewer.scale) - 48 + offset) + "px");
                     postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                     postitButton.css("background-color", "#FFC");
@@ -811,7 +815,7 @@ export class WorkspacePdf {
         });
         $(".circle").each(function () {
             $(this).hide();
-        })
+        });
         this.hideAllPostits();
     }
 
