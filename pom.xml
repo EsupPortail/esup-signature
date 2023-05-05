@@ -422,6 +422,7 @@
 		</dependency>
 
 		<!-- SEDA dependencies -->
+
 		<dependency>
 			<groupId>net.byteseek</groupId>
 			<artifactId>byteseek</artifactId>
@@ -482,6 +483,19 @@
 			<groupId>de.schlichtherle.truezip</groupId>
 			<artifactId>truezip-file</artifactId>
 			<version>7.7.10</version>
+		</dependency>
+
+		<!-- Plugins dependencies -->
+
+		<dependency>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-antrun-plugin</artifactId>
+			<version>3.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-surefire-plugin</artifactId>
+			<version>3.0.0</version>
 		</dependency>
 
 		<!-- Other dependencies -->
@@ -699,7 +713,7 @@
 		<dependency>
 			<groupId>de.codecentric</groupId>
 			<artifactId>spring-boot-admin-client</artifactId>
-			<version>2.7.3</version>
+			<version>3.0.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
@@ -763,7 +777,7 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.1.0</version>
 				<executions>
 					<execution>
 						<phase>compile</phase>
@@ -784,7 +798,7 @@
 
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.22.2</version>
+				<version>3.0.0</version>
 			</plugin>
 
 			<plugin>
