@@ -25,6 +25,11 @@ public class CommentService {
     private UserService userService;
 
     @Transactional
+    public Comment getById(Long id) {
+        return commentRepository.findById(id).orElseThrow();
+    }
+
+    @Transactional
     public Comment create(Long signRequestId, String text, Integer posX, Integer posY, Integer pageNumer, Integer stepNumber, Boolean postit, String postitColor, String userEppn) {
         User user = userService.getByEppn(userEppn);
         SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
