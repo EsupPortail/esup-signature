@@ -2,7 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<!--/*@thymesVar id="postits" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
+<!--/*@thymesVar id="postits" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <!--/*@thymesVar id="signatureIds" type="java.util.List<String>"*/-->
 <!--/*@thymesVar id="currentSignType" type="org.esupportail.esupsignature.entity.enums.SignType"*/-->
@@ -143,7 +143,12 @@
                         <button th:es-postit-id="${postit.id}" type="button" title="Copier le texte du postit" class="postit-copy btn btn-sm btn-transparent text-dark">
                             <i th:es-postit-id="${postit.id}" class="far fa-copy"></i>
                         </button>
-                        <p  th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></p>
+                        <p th:class="${postit.createBy.eppn == userEppn} ? 'd-none' : ''" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></p>
+                        <form th:if="${postit.createBy.eppn == userEppn}" th:action="${'/user/signrequests/comment/' + signRequest.id + '/update/' + postit.id}" th:method="post">
+                            <textarea style="background-color: #FFF740;" name="comment" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></textarea>
+                            <button type="submit" class="btn btn-sm btn-dark"><i class="fa fa-save"></i></button>
+                        </form>
+
                     </div>
                 </th:block>
             </div>
