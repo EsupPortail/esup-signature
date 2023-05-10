@@ -1079,7 +1079,9 @@ public class SignBookService {
                     throw new EsupSignatureRuntimeException(e.getMessage());
                 }
             } else {
-                pendingSignBook(signRequest.getParentSignBook().getId(), null, userEppn, authUserEppn, false);
+                if(signRequestService.isCurrentStepCompleted(signRequest)) {
+                    pendingSignBook(signRequest.getParentSignBook().getId(), null, userEppn, authUserEppn, false);
+                }
             }
             return true;
         }
