@@ -4,18 +4,18 @@ export default class Toast {
 
     constructor(message) {
         this.resetToasts();
-        this.launchMsg = (message != null && message != "");
+        this.launchMsg = (message != null && message !== "");
         this.message = new Message(message);
         this.toastBackdrop = $("#toast-backdrop");
         this.toast = null;
-        this.initListener();
+        // this.initListener();
         this.init();
     }
 
-    initListener() {
-        document.addEventListener("global", e => this.launch(e.detail));
-        document.addEventListener("user", e => this.launch(e.detail));
-    }
+    // initListener() {
+    //     document.addEventListener("global", e => this.launch(e.detail));
+    //     document.addEventListener("user", e => this.launch(e.detail));
+    // }
 
     init() {
         let self = this;

@@ -1143,4 +1143,14 @@ public class SignRequestService {
 		SignRequest signRequest = getById(id);
 		return objectMapper.writeValueAsString(signRequest.getAuditTrail());
 	}
+
+	@Transactional
+	public void updateComment(Long id, String text, String authUserEppn) {
+		Comment comment = commentService.getById(id);
+		if(comment.getCreateBy().getEppn().equals(authUserEppn)) {
+			comment.setText(text);
+		} else {
+			throw new EsupSignatureRuntimeException("unauthorised");
+		}
+	}
 }
