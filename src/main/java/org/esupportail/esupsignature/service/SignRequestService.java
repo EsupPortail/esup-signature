@@ -331,8 +331,12 @@ public class SignRequestService {
 	public void seal(Long signRequestId, String userEppn) {
 		SignRequest signRequest = getById(signRequestId);
 		Document document = signService.certSign(signRequest, userEppn, "", SignWith.sealCert);
-		signRequest.getSignedDocuments().remove(signRequest.getSignedDocuments().size() - 1);
-		signRequest.getSignedDocuments().remove(signRequest.getSignedDocuments().size() - 2);
+		if(signRequest.getSignedDocuments().size() > 1) {
+			signRequest.getSignedDocuments().remove(signRequest.getSignedDocuments().size() - 1);
+		}
+		if(signRequest.getSignedDocuments().size() > 1) {
+			signRequest.getSignedDocuments().remove(signRequest.getSignedDocuments().size() - 2);
+		}
 		signRequest.getSignedDocuments().add(document);
 	}
 
