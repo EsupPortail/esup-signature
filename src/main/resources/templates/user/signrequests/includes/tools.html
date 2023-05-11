@@ -79,7 +79,7 @@
 			</a>
 		</th:block>
 	</div>
-	<div id="second-tools" class="d-none mb-1">
+	<div id="second-tools" class="d-flex mb-1">
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
 			<th:block >
 				<div class="input-group-text me-1 d-none d-xl-inline">Choix du mode : </div>
@@ -95,12 +95,12 @@
 				signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign
 				}"
 						id="addSignButton"
-						class="btn btn-light btn-outline-primary">
+						class="btn btn-light btn-outline-primary d-none">
 					<i class="fas fa-plus"></i> <span class="d-none d-md-inline">Insérer une signature</span>
 				</button>
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
 						id="addSignButton"
-						class="btn btn-light btn-outline-primary">
+						class="btn btn-light btn-outline-primary d-none">
 					<i class="fas fa-plus"></i> <span class="d-none d-md-inline">Insérer un visa</span>
 				</button>
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"

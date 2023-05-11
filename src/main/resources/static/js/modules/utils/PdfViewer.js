@@ -268,8 +268,10 @@ export class PdfViewer extends EventFactory {
     }
     
     promiseToggleFields(enable) {
-        for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
-            this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.toggleItems(items, enable)));
+        if(this.pdfDoc != null) {
+            for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
+                this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.toggleItems(items, enable)));
+            }
         }
     }
 

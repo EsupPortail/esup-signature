@@ -145,7 +145,7 @@
                         </button>
                         <p th:class="${postit.createBy.eppn == userEppn} ? 'd-none' : ''" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></p>
                         <form th:if="${postit.createBy.eppn == userEppn}" th:action="${'/user/signrequests/comment/' + signRequest.id + '/update/' + postit.id}" th:method="post">
-                            <textarea style="background-color: #FFF740;" name="comment" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></textarea>
+                            <textarea th:style="'background-color: ' + ${postit.postitColor}" name="comment" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></textarea>
                             <button type="submit" class="btn btn-sm btn-dark"><i class="fa fa-save"></i></button>
                         </form>
 
