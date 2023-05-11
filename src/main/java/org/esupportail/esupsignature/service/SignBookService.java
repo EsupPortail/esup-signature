@@ -1084,7 +1084,7 @@ public class SignBookService {
                     pendingSignBook(signRequest.getParentSignBook().getId(), null, userEppn, authUserEppn, false);
                 }
             }
-            return true;
+            return isComplete;
         }
     }
 
@@ -2062,4 +2062,15 @@ public class SignBookService {
         }
     }
 
+    @Transactional
+    public void completeSignRequest(Long id, String authUserEppn, String text) {
+        SignRequest signRequest = signRequestService.getById(id);
+        completeSignBook(signRequest.getParentSignBook().getId(), authUserEppn, text);
+    }
+
+    @Transactional
+    public void pendingSignRequest(Long id, Data data, String userEppn, String authUserEppn, boolean forceSendEmail) {
+        SignRequest signRequest = signRequestService.getById(id);
+        pendingSignBook(signRequest.getParentSignBook().getId(), data, userEppn, authUserEppn, forceSendEmail);
+    }
 }
