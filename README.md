@@ -6,7 +6,7 @@ Esup-signature permet gérer les circuits de visa et de signer des documents aux
 
 Son objectif est de proposer un module de signature type micro-service permettant à un établissement d’intégrer la signature numérique dans ses services institutionnels.
 
-L’usage commun au niveau des établissements de l'Enseignement Supérieur et de la Recherche des briques que sont shibboleth (fédération d'identités Renater), ldap (supann), TCS (Trusted Certificate Service) de Renater via digicert font d’esup-signature un outil qui peut potentiellement s’adapter aux différents établissements de l’ESR.
+L’usage commun au niveau des établissements de l’Enseignement Supérieur et de la Recherche des briques que sont shibboleth (fédération d'identités Renater), ldap (supann), TCS (Trusted Certificate Service) de Renater via digicert font d’esup-signature un outil qui peut potentiellement s’adapter aux différents établissements de l’ESR.
 
 La signature électronique s’appuie sur la solution DSS de la Commission Européenne, voir :
 https://ec.europa.eu/cefdigital/wiki/display/CEFDIGITAL/DSS+releases
@@ -15,14 +15,14 @@ La signature à l’aide d’une clé matérielle est possible à l’aide de l�
 
 # Changelog
 
-Important, sur la page changelog vous trouverez aussi des détails sur les montés de version : 
+Important, sur la page changelog, vous trouverez aussi des détails sur les montées de version : 
 
 https://www.esup-portail.org/wiki/display/SIGN/Change+log
 
 # Prérequis
 
  * OpenJDK 14
- * Maven 3.1
+ * Maven 3.5
  * GhostScript
  * PostgreSQL
  
@@ -51,7 +51,7 @@ mvn spring-boot:run
 
 # Démonstration
 
-Site de démonstration, s'appuyant sur l'authentification shibboleth via la fédération Renater :
+Site de démonstration, s’appuyant sur l’authentification shibboleth via la fédération Renater :
 
 https://esup-signature-demo.univ-rouen.fr
 
