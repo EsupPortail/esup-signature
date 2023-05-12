@@ -817,6 +817,7 @@ public class SignBookService {
         return sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, userEppn, authUserEppn, forceSendEmail);
     }
 
+    @Transactional
     public Map<SignBook, String> sendSignBook(SignBook signBook, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureRuntimeException {
         User user = userService.getByEppn(userEppn);
         logger.info(userEppn + " envoi d'une demande de signature à " + recipientsEmails);
@@ -830,9 +831,10 @@ public class SignBookService {
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(signBook, null,false, null, true, false, allSignToComplete, signType, recipientsEmails, externalUsersInfos));
         signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
         workflowService.dispatchSignRequestParams(signBook);
-        if (pending != null && pending) {
+        if (pending == null || pending) {
             pendingSignBook(signBook.getId(), null, userEppn, authUserEppn, forceSendEmail);
         } else {
+            updateStatus(signBook, SignRequestStatus.draft,  "Création de la demande " + signBook.getId(), "SUCCESS", null, userEppn, authUserEppn);
             message = "Après vérification/annotation, vous devez cliquer sur 'Démarrer le circuit' pour transmettre la demande aux participants";
         }
         if (comment != null && !comment.isEmpty()) {
