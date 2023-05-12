@@ -70,8 +70,9 @@ export class WorkspacePdf {
         this.wsTabs = $("#ws-tabs");
         this.workspace = $("#workspace");
         this.secondTools = $("#second-tools");
+        this.addSignButton = $("#addSignButton")
         if (signType === "form" || (formId == null && !workflow) || currentSignRequestParamses.length === 0) {
-            this.secondTools.toggleClass("d-none d-flex");
+            this.addSignButton.toggleClass("d-none d-block");
             if(this.wsTabs.length) {
                 this.autocollapse();
                 let self = this;

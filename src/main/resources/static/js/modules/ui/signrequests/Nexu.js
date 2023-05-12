@@ -100,12 +100,13 @@ export class Nexu {
         $('#bar').removeClass('progress-bar-success active').addClass('progress-bar-danger');
         if (error!= null && error.responseJSON !=null) {
             let jsonResp = error.responseJSON;
-            if (jsonResp.message !=null){
+            if (jsonResp.trace != null) {
+                $("#errorcontent").html(jsonResp.trace.split('\n')[0]);
+            } else if (jsonResp.message !=null){
                 $("#errorcontent").html(jsonResp.message);
             } else if (jsonResp.errorMessage !=null){
                 $("#errorcontent").html(jsonResp.errorMessage);
-            }
-            else if (jsonResp.error != null){
+            } else if (jsonResp.error != null){
                 $("#errorcontent").html(jsonResp.error);
             }
         }

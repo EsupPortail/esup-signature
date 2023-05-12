@@ -59,7 +59,7 @@ public class WizardController {
                        @RequestParam(value = "recipientsCCEmailsWiz", required = false) List<String> recipientsCCEmailsWiz,
                        @RequestParam(value = "comment", required = false) String comment,
                        Model model) {
-        SignBook signBook = signBookService.getById(signBookId);
+        SignBook signBook = signBookService.getByIdWithLock(signBookId);
         signBookService.finishSignBookUpload(signBookId, userEppn);
         signBook.setDescription(comment);
         signBook.setForceAllDocsSign(forceAllSign);
