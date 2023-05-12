@@ -1114,7 +1114,7 @@ public class SignBookService {
                 reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.noSignField);
                 error = messageSource.getMessage("report.reportstatus." + ReportStatus.noSignField, null, Locale.FRENCH);
             }
-            else if (signRequest.getStatus().equals(SignRequestStatus.pending) && initSign(id,null, null, null, password, signWith, userShareId, userEppn, authUserEppn)) {
+            else if (signRequest.getStatus().equals(SignRequestStatus.pending) && initSign(id,null, null, null, password, signWith, userShareId, userEppn, authUserEppn) != null) {
                 reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signed);
                 error = null;
             }
