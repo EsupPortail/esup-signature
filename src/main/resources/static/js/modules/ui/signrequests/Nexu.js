@@ -13,7 +13,7 @@ export class Nexu {
         this.detectedPort = "";
         this.successDiv = $("#success");
         this.successDiv.hide();
-        $("#warning-text").html("NexU not detected or not started ! ");
+        $("#warning-text").html("NexU n'a pas été détecté sur le poste !");
         $("#nexu_missing_alert").show();
         let self = this;
         $(document).ready(function() {
@@ -32,8 +32,9 @@ export class Nexu {
                 if(currentSignType === 'nexuSign') {
                     $("#alertNexu").show();
                     $("#signLaunchButton").hide();
-                    $("#second-tools").removeClass("d-flex");
-                    $("#second-tools").hide();
+                    let secondTools = $("#second-tools");
+                    secondTools.removeClass("d-flex");
+                    secondTools.hide();
                 }
                 $("#certType > option[value='nexuCert']").attr('disabled', 'disabled');
             });
@@ -90,8 +91,10 @@ export class Nexu {
 
     static downloadSignedDocument() {
         Nexu.updateProgressBar("Signature terminée", "100%");
-        $('#bar').removeClass('progress-bar-striped active');
-        $('#bar').addClass('progress-bar-success');
+        let bar = $('#bar');
+        bar.removeClass('progress-bar-striped active');
+        bar.addClass('progress-bar-success');
+        window.location.href = "/user/signrequests/" + Nexu.id;
         $("#success").show();
     }
 
