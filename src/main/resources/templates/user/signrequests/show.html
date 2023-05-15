@@ -248,12 +248,12 @@
                     </div>
                 </div>
                 <div id="noOptions" class="alert alert-danger mt-1" style="display: none;">
-                    Votre profile ne possède pas les prérequis nécessaires pour signer cette demande. Si vous en avez la possibilité, merci de contrôler vos paramètres de signature, d’importer un certificat ou de démarrer NexU.
+                    Votre profil ne possède pas les prérequis nécessaires pour signer cette demande. Si vous en avez la possibilité, merci de contrôler vos paramètres de signature, d’importer un certificat ou de démarrer NexU.
                     <br>
                     Sinon merci de contacter la personne ou le service émetteur de cette demande de signature.
                 </div>
                 <div id="noSeal" th:if="${!sealCertOK}" class="alert alert-danger mt-1" style="display: none;">
-                    La signature par certificat cachet d’établissement et temporairement indisponible pour des raisons de maintenance. Merci refaire un essai ultérieurement.
+                    La signature par certificat cachet d’établissement est temporairement indisponible pour des raisons de maintenance. Merci refaire un essai ultérieurement.
                 </div>
                 <div id="selectTypeDiv" class="alert alert-success mt-1" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                     <label for="certType">Merci de sélectionner le type de signature que vous souhaitez utiliser parmi les types disponibles</label>
