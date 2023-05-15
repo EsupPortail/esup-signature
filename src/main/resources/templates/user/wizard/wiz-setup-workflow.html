@@ -42,7 +42,7 @@
                         <span th:text="${user.email}"></span>
                         <span th:if="${iterator.index >= step.users.size()}">, </span>
                     </th:block>
-                    <span th:if="${step.repeatable}"> (cette étape peut donner lieu à plusieurs validations en séries)</span>
+                    <span th:if="${step.repeatable}"> (cette étape peut donner lieu à plusieurs validations en série)</span>
                     </th:block>
                     <th:block th:if="${step.autoSign}">
                         Étape automatique
