@@ -16,7 +16,7 @@
         <div class="alert alert-success col-6 mb-2 mx-auto">
             <h3>Signature NexU en cours</h3>
             <p>
-                L'application Nexu va s’ouvrir, vous pourrez utiliser le gestionnaire de clés windows ou une
+                L'application NexU va s’ouvrir, vous pourrez utiliser le gestionnaire de clés windows ou une
                 clé matérielle
                 <br>
                 Il est possible que vous deviez saisir votre mot de passe plusieurs fois pendant la
@@ -28,23 +28,27 @@
                 <h5 class="text-center"><b>Progression de la procédure de signature</b></h5>
                 <div class="progress">
                     <div class="progress-bar progress-bar-striped active"
-                         style="width: 10%;" id="bar">
-                        <span id="bar-text">Loading certificates...</span>
+                         style="width: 20%;" id="bar">
+                        <span id="bar-text">Chargement du certificat...</span>
                     </div>
                 </div>
                 <div id="error" style="display: none" class="text-center mt-2">
                     <div class="alert alert-danger" role="danger">
-                        <strong id="errorText">Une erreur s'est produite lors de la signature</strong>
-                        <br>
-                        <small>Erreur : <span id="errorcontent"></span></small>
-                        <br/>
-                        <a onclick="location.reload();" class="btn btn-danger text-white">
-                            <i class="fas fa-sync-alt fa-2x"></i><br/> Relancer
+                        <h3 id="errorText">Une erreur s’est produite lors de la signature</h3>
+                        <p class="mt-2">
+                            <button class="btn btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseError" aria-expanded="false" aria-controls="collapseError">
+                                Voir le detail de l’erreur
+                            </button>
+                        </p>
+                        <div class="collapse" id="collapseError">
+                            <textarea class="form-control mb-2" id="errorcontent"></textarea>
+                        </div>
+                        <a onclick="location.reload();" class="btn btn-primary">
+                            <i class="fas fa-sync-alt fa-2x"></i><br/> Relancer la procédure de signature
                         </a>
                     </div>
                 </div>
-                <div class="alert alert-success text-center mt-2" role="danger"
-                     id="success">
+                <div class="alert alert-success text-center mt-2" role="danger" id="success">
                     <strong>Signature effectuée</strong>
                     <br/>
                     <a th:href="'/user/signrequests/' + ${id}" class="btn btn-success" id="return2">

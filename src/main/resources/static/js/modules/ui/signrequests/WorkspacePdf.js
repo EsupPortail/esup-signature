@@ -70,8 +70,9 @@ export class WorkspacePdf {
         this.wsTabs = $("#ws-tabs");
         this.workspace = $("#workspace");
         this.secondTools = $("#second-tools");
+        this.addSignButton = $("#addSignButton")
         if (signType === "form" || (formId == null && !workflow) || currentSignRequestParamses.length === 0) {
-            this.secondTools.toggleClass("d-none d-flex");
+            this.addSignButton.toggleClass("d-none d-block");
             if(this.wsTabs.length) {
                 this.autocollapse();
                 let self = this;
@@ -476,7 +477,11 @@ export class WorkspacePdf {
                 if (this.mode === 'comment') {
                     postitDiv.show();
                     postitDiv.css('left', ((parseInt(comment.posX) * this.pdfViewer.scale)) + "px");
-                    let offset = $("#page_" + comment.pageNumber).offset().top - this.pdfViewer.initialOffset + 10;
+                    let pageOffset = $("#page_" + comment.pageNumber).offset();
+                    let offset = 10;
+                    if(pageOffset) {
+                        offset = pageOffset.top - this.pdfViewer.initialOffset + 10;
+                    }
                     postitDiv.css('top', ((parseInt(comment.posY) * this.pdfViewer.scale) - 48 + offset) + "px");
                     postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                     postitButton.css("background-color", "#FFC");
@@ -811,7 +816,7 @@ export class WorkspacePdf {
         });
         $(".circle").each(function () {
             $(this).hide();
-        })
+        });
         this.hideAllPostits();
     }
 
@@ -921,11 +926,11 @@ export class WorkspacePdf {
                 value: 'comment'
             });
         }
-        data.push({
-            html: '<div style="width: 200px;"><i class="fas fa-eye text-info pr-2 m-1"></i><b>Mode lecture</b></div>',
-            text: 'Lecture',
-            value: 'read'
-        });
+        // data.push({
+        //     html: '<div style="width: 200px;"><i class="fas fa-eye text-info pr-2 m-1"></i><b>Mode lecture</b></div>',
+        //     text: 'Lecture',
+        //     value: 'read'
+        // });
 
         if($("#changeMode").length) {
             this.changeModeSelector = new SlimSelect({

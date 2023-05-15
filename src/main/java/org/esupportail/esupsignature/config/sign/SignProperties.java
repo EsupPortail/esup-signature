@@ -15,6 +15,7 @@ public class SignProperties {
     private SignatureLevel cadesSignatureLevel;
     private ASiCContainerType containerType;
     private SignaturePackaging signaturePackaging;
+    private Boolean signWithExpiredCertificate = false;
     private Long passwordTimeout;
     private String aesKey;
 
@@ -87,6 +88,14 @@ public class SignProperties {
 
     public void setSignaturePackaging(SignaturePackaging signaturePackaging) {
         this.signaturePackaging = signaturePackaging;
+    }
+
+    public Boolean getSignWithExpiredCertificate() {
+        return signWithExpiredCertificate;
+    }
+
+    public void setSignWithExpiredCertificate(Boolean signWithExpiredCertificate) {
+        this.signWithExpiredCertificate = signWithExpiredCertificate;
     }
 
     public Long getPasswordTimeout() {

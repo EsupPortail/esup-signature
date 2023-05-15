@@ -383,13 +383,28 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
+    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#signRequestId, #userEppn)")
+    @PostMapping(value = "/comment/{signRequestId}/update/{postitId}")
+    public String commentUpdate(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                                @PathVariable("signRequestId") Long signRequestId,
+                                @PathVariable("postitId") Long postitId,
+                                @RequestParam(value = "comment", required = false) String comment, RedirectAttributes redirectAttributes) {
+        try {
+            signRequestService.updateComment(postitId, comment, authUserEppn);
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Annotation modifiée"));
+        } catch (EsupSignatureRuntimeException e) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Annotation interdite"));
+        }
+        return "redirect:/user/signrequests/" + signRequestId;
+    }
+
     @PreAuthorize("@preAuthorizeService.signBookCreator(#id, #authUserEppn)")
     @PostMapping(value = "/send-otp/{id}/{recipientId}")
     public String sendOtp(@ModelAttribute("authUserEppn") String authUserEppn,
                           @PathVariable("id") Long id,
                           @PathVariable("recipientId") Long recipientId,
                           @RequestParam(value = "phone", required = false) String phone,
-                          RedirectAttributes redirectAttributes) throws Exception {
+                          RedirectAttributes redirectAttributes) {
         if(otpService.generateOtpForSignRequest(id, recipientId, phone)){
             redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Demande OTP envoyée"));
         } else {

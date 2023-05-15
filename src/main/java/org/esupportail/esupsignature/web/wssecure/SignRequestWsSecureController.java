@@ -86,8 +86,8 @@ public class SignRequestWsSecureController {
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
         try {
-            boolean result = signBookService.initSign(id, signRequestParamsJsonString, comment, formData, password, certType, userShareId, userEppn, authUserEppn);
-            if(!result) {
+            Boolean result = signBookService.initSign(id, signRequestParamsJsonString, comment, formData, password, certType, userShareId, userEppn, authUserEppn);
+            if(result == null) {
                 return ResponseEntity.status(HttpStatus.OK).body("initNexu");
             }
             return new ResponseEntity<>(HttpStatus.OK);
@@ -265,6 +265,7 @@ public class SignRequestWsSecureController {
                                                           @RequestParam(value = "forcesmses", required = false) List<String> forcesmses,
                                                           @RequestParam(value = "title", required = false) String title,
                                                           Model model) throws EsupSignatureRuntimeException {
+        if(pending == null) pending = false;
         recipientsEmails = recipientsEmails.stream().distinct().collect(Collectors.toList());
         List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones, forcesmses);
         SignBook signBook = signBookService.createFullSignBook(title, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, userEppn, authUserEppn, false, forceAllSign);

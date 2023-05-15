@@ -285,17 +285,22 @@
                                     <!--                            <div class="form-group mb-3">-->
                                     <!--                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>-->
                                     <!--                            </div>-->
-                                    <div class="form-group d-inline">
-                                        <h3 class="d-inline"><span class="badge rounded-pill text-bg-primary" th:text="${iterator.index + 1}"></span></h3>
-                                        <span th:if="${step.description != null && step.description != ''}" th:text="${step.description}"></span>
-                                        <th:block th:if="${(step.description == null || step.description == '') && step.users.size() > 0}">
-                                            <span th:if="${step.description != '' && step.description != null}"> - </span>
-                                            <th:block th:each="user, iterator : ${step.users}">
-                                                <span th:text="${user.firstname} + ' ' + ${user.name}"></span>
-                                            </th:block>
-                                        </th:block>
-                                        <span th:if="${step.repeatable}"> (cette étape peut donner lieu à plusieurs validations en séries)</span>
-                                    </div>
+                                        <div class="form-group d-inline">
+                                            <div>
+                                                <h3 class="d-inline">
+                                                    <span class="badge rounded-pill text-bg-primary me-4 align-middle" th:text="${iterator.index + 1}"></span>
+                                                </h3>
+                                                <b th:if="${step.description != null && step.description != ''}" th:text="${step.description}"></b>
+                                                <th:block th:if="${step.users.size() > 0}">
+                                                    <div th:if="${step.description != null && step.description != ''}"></div>
+                                                    <th:block th:each="user, iterator : ${step.users}">
+                                                        <span th:text="${user.firstname} + ' ' + ${user.name}"></span>
+                                                        <span th:if="${iterator.index < step.users.size() - 1}"> ,</span>
+                                                    </th:block>
+                                                </th:block>
+                                            </div>
+                                            <span th:if="${step.repeatable}"> (cette étape peut donner lieu à plusieurs validations en série)</span>
+                                        </div>
                                         <div th:if="${step.changeable == true}" class="form-group mb-3">
                                             <label><span th:text="'Merci de saisir le' + ${step.maxRecipients != null && step.maxRecipients > 1 ? '(s)' : ''} + ' participant' + ${step.maxRecipients != null && step.maxRecipients > 1 ? '(s)' : ''} + ' pour l\'étape ' + ${iterator.index + 1}"></span></label>
                                             <select class="select-users" th:id="'recipientEmailsSelect-' + ${form.id} + '_' + ${iterator.index + 1}"
