@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -61,11 +62,11 @@ public class NexuProcessController implements Serializable {
 
 	@Scope(value = "session")
 	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
-	@PostMapping(value = "/get-data-to-sign")
+	@PostMapping(value = "/get-data-to-sign", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE, MediaType.APPLICATION_JSON_VALUE})
 	@ResponseBody
 	public GetDataToSignResponse getDataToSign(@ModelAttribute("userEppn") String userEppn,
 											   @ModelAttribute("authUserEppn") String authUserEppn,
-											   @Valid DataToSignParams params,
+											   @RequestBody @Valid DataToSignParams params,
 											   @ModelAttribute("id") Long id, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
 		logger.info("get data to sign for signRequest: " + id);
 		AbstractSignatureForm abstractSignatureForm = signService.getAbstractSignatureForm(id, userEppn);
@@ -88,10 +89,10 @@ public class NexuProcessController implements Serializable {
 
 	@Scope(value = "session")
 	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
-	@PostMapping(value = "/sign-document")
+	@PostMapping(value = "/sign-document", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE, MediaType.APPLICATION_JSON_VALUE})
 	@ResponseBody
 	public SignDocumentResponse signDocument(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
-											 @Valid SignatureValueAsString signatureValue,
+											 @RequestBody @Valid SignatureValueAsString signatureValue,
 											 @ModelAttribute("id") Long id, HttpSession httpSession) throws EsupSignatureRuntimeException, IOException {
 		AbstractSignatureForm abstractSignatureForm = (AbstractSignatureForm) httpSession.getAttribute("abstractSignatureForm");
 		abstractSignatureForm.setBase64SignatureValue(signatureValue.getSignatureValue());
