@@ -50,7 +50,10 @@ export class SignRequestParams extends EventFactory {
         this.csrf = csrf;
         this.signType = signType;
         if(!light) {
-            this.offset = ($("#page_" + this.signPageNumber).offset().top) + (10 * (parseInt(this.signPageNumber) - 1));
+            let signPage = $("#page_" + this.signPageNumber);
+            if(signImages != null && signPage.offset() != null) {
+                this.offset = (signPage.offset().top) + (10 * (parseInt(this.signPageNumber) - 1));
+            }
         }
         if(signImages === -999999) {
             this.initSpot();
