@@ -7,6 +7,7 @@ export class Nexu {
         Nexu.rootUrl = this.globalProperties.rootUrl;
         Nexu.addExtra = addExtra;
         Nexu.id = id;
+        Nexu.version;
         this.tokenId = null;
         this.keyId = null;
         this.bindingPorts = "9795, 9886, 9887, 9888";
@@ -55,9 +56,11 @@ export class Nexu {
             let encryptionAlgorithm = certificateData.response.encryptionAlgorithm;
             Nexu.tokenId = certificateData.response.tokenId.id;
             Nexu.keyId = certificateData.response.keyId;
+            console.info("NexU version : " + Nexu.version);
             console.log("init tokenId : " + this.tokenId + "," + this.keyId);
+            let url = "/user/nexu-sign/get-data-to-sign";
             let toSend = { signingCertificate: signingCertificate, certificateChain: certificateChain, encryptionAlgorithm: encryptionAlgorithm };
-            callUrl(Nexu.rootUrl + "/user/nexu-sign/get-data-to-sign?addExtra=" + Nexu.addExtra + "&id=" + Nexu.id, "POST",  JSON.stringify(toSend), Nexu.sign, Nexu.error);
+            callUrl(Nexu.rootUrl + url + "?addExtra=" + Nexu.addExtra + "&id=" + Nexu.id, "POST",  JSON.stringify(toSend), Nexu.sign, Nexu.error);
         }
     }
 
@@ -150,6 +153,7 @@ export class Nexu {
                     detectNexu = true;
                     self.detectedPort = port.trim();
                     self.checkNexu(data);
+                    Nexu.version = data.version;
                     $("#nexu_missing_alert").hide();
                     $("#noOptions").hide();
                     $("#selectTypeDiv").show();
