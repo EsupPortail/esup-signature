@@ -167,6 +167,18 @@ public class SignRequestService {
 		return null;
 	}
 
+	public SignRequest getWithLockingById(long id) {
+		Optional<SignRequest> signRequest = signRequestRepository.findWithLockingById(id);
+		if(signRequest.isPresent()) {
+			Data data = dataService.getBySignBook(signRequest.get().getParentSignBook());
+			if (data != null) {
+				signRequest.get().setData(data);
+			}
+			return signRequest.get();
+		}
+		return null;
+	}
+
 	public String getStatus(long id) {
 		SignRequest signRequest = getById(id);
 		if(signRequest != null){
@@ -888,28 +900,33 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, String postit, Integer spotStepNumber, String authUserEppn) {
-			SignRequest signRequest = getById(id);
-		if(spotStepNumber != null && spotStepNumber > 0) {
-			SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
-			int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
-			signRequestParams.setSignDocumentNumber(docNumber);
-			signRequestParams.setComment(commentText);
-			signRequest.getSignRequestParams().add(signRequestParams);
-			signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getSignRequestParams().add(signRequestParams);
-		}
-		Comment comment = commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, "on".equals(postit), null, authUserEppn);
-		if(!(spotStepNumber != null && spotStepNumber > 0)) {
-			updateStatus(signRequest.getId(), null, "Ajout d'un commentaire", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
-			if(globalProperties.getSendPostitByEmail() && !authUserEppn.equals(signRequest.getCreateBy().getEppn())) {
-				try {
-					mailService.sendPostit(signRequest.getParentSignBook(), comment);
-				} catch (EsupSignatureMailException e) {
-					logger.warn("postit not sended", e);
-				}
+	public boolean addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, String postit, Integer spotStepNumber, String authUserEppn, String userEppn) {
+		SignRequest signRequest = getWithLockingById(id);
+		if(spotStepNumber == null || userEppn.equals(signRequest.getCreateBy().getEppn())) {
+			if (spotStepNumber != null && spotStepNumber > 0) {
+				SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
+				int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
+				signRequestParams.setSignDocumentNumber(docNumber);
+				signRequestParams.setComment(commentText);
+				signRequest.getSignRequestParams().add(signRequestParams);
+				signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getSignRequestParams().add(signRequestParams);
 			}
+			Comment comment = commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, "on".equals(postit), null, authUserEppn);
+			if (!(spotStepNumber != null && spotStepNumber > 0)) {
+				updateStatus(signRequest.getId(), null, "Ajout d'un commentaire", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
+				if (globalProperties.getSendPostitByEmail() && !authUserEppn.equals(signRequest.getCreateBy().getEppn())) {
+					try {
+						mailService.sendPostit(signRequest.getParentSignBook(), comment);
+					} catch (EsupSignatureMailException e) {
+						logger.warn("postit not sended", e);
+					}
+				}
+			} else {
+				updateStatus(signRequest.getId(), null, "Ajout d'un emplacement de signature", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
+			}
+			return true;
 		} else {
-			updateStatus(signRequest.getId(), null, "Ajout d'un emplacement de signature", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
+			return false;
 		}
 	}
 
