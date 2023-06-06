@@ -25,31 +25,36 @@
                 <ul id="buttonList" class="list-unstyled">
                     <li>
                         <a type="button" id="checkCertSignButton"
-                           class="btn-floating btn-lg bg-success wave-effect d-none">
+                            title="Signer en masse les demandes sélectionnées"
+                            class="btn-floating btn-lg bg-success wave-effect d-none">
                             <i class="fas fa-file-signature"></i>
                         </a>
                     </li>
                     <li>
                         <a type="button" id="deleteMultipleButton"
-                           class="btn-floating btn-lg bg-danger wave-effect d-none">
+                            title="Supprimer en masse les demandes sélectionnées"
+                            class="btn-floating btn-lg bg-danger wave-effect d-none">
                             <i class="fas fa-trash-alt"></i>
                         </a>
                     </li>
                     <li>
                         <a type="button" id="downloadMultipleButton"
-                           class="btn-floating btn-lg bg-primary wave-effect d-none">
+                            title="Télécharger la selection"
+                            class="btn-floating btn-lg bg-primary wave-effect d-none">
                             <i class="fas fa-download"></i>
                         </a>
                     </li>
                     <li>
                         <a type="button" id="downloadMultipleButtonWithReport"
-                           class="btn-floating btn-lg bg-primary wave-effect d-none">
+                            title="Télécharger la selection avec les rapports"
+                            class="btn-floating btn-lg bg-primary wave-effect d-none">
                             <i class="fas fa-file-archive"></i>
                         </a>
                     </li>
                     <li>
                         <a th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')') || #authorization.expression('hasRole(''ROLE_FRANCECONNECT'')')}" data-bs-toggle="modal" data-bs-target="#newFomModal" type="button"
-                           class="btn-floating btn-lg bg-primary wave-effect">
+                            title="Créer une nouvelle demande"
+                            class="btn-floating btn-lg bg-primary wave-effect">
                             <i class="fas fa-plus"></i>
                         </a>
                     </li>
