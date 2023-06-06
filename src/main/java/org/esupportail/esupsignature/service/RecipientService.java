@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.repository.RecipientRepository;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -37,6 +38,7 @@ public class RecipientService {
         return false;
     }
 
+    @Transactional
     public void validateRecipient(SignRequest signRequest, String userEppn) {
         Recipient validateRecipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().getEppn().equals(userEppn)).findFirst().get();
         signRequest.getRecipientHasSigned().get(validateRecipient).setActionType(ActionType.signed);
