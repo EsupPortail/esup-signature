@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
+import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.hibernate.HibernateException;
@@ -86,8 +87,8 @@ public class SignRequestWsSecureController {
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
         try {
-            Boolean result = signBookService.initSign(id, signRequestParamsJsonString, comment, formData, password, certType, userShareId, userEppn, authUserEppn);
-            if(result == null) {
+            StepStatus stepStatus = signBookService.initSign(id, signRequestParamsJsonString, comment, formData, password, certType, userShareId, userEppn, authUserEppn);
+            if(stepStatus.equals(StepStatus.nexu_redirect)) {
                 return ResponseEntity.status(HttpStatus.OK).body("initNexu");
             }
             return new ResponseEntity<>(HttpStatus.OK);
