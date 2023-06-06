@@ -16,7 +16,7 @@
 	<name>esup-signature</name>
 	<properties>
 		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
-		<java.version>14</java.version>
+		<java.version>17</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dss.framework.version>5.12</dss.framework.version>
 		<dss.framework.safeVersion>5.4.3</dss.framework.safeVersion>

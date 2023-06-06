@@ -494,7 +494,7 @@ public class PdfService {
                         output.append(line).append("\n");
                     }
                     logger.warn(output.toString());
-                    logger.warn("PDF/A convertion failure : document will be signed without convertion");
+                    logger.warn("PDF/A conversion failure : document will be signed without conversion");
                     process.destroy();
                     return originalBytes;
                 }

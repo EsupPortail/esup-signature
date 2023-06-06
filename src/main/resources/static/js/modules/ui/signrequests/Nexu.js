@@ -171,7 +171,7 @@ export class Nexu {
 
     checkNexu(data) {
         console.log("Check NexU");
-        if(data.version.startsWith(this.nexuVersion) || data.version.startsWith("1.23") || data.version.startsWith("1.22") || data.version.startsWith("1.8")) {
+        if(data.version.startsWith(this.nexuVersion) || data.version.startsWith("1.24") || data.version.startsWith("1.23") || data.version.startsWith("1.22") || data.version.startsWith("1.8")) {
             $("#nexu_ready_alert").show();
             $("#submit-button").prop('disabled', false);
         } else {
