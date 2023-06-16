@@ -593,6 +593,7 @@ public class SignBookService {
                     if (!signBook.getViewers().contains(user)) {
                         signBook.getViewers().add(user);
                         addUserInTeam(user.getId(), signBookId);
+                        mailService.sendCCtAlert(Collections.singletonList(recipientsEmail), signBook.getSignRequests().get(0));
                     }
                 }
         } else {

@@ -866,7 +866,7 @@ public class SignRequestService {
 	public boolean addAttachement(MultipartFile[] multipartFiles, String link, Long signRequestId) throws EsupSignatureIOException {
 		SignRequest signRequest = getById(signRequestId);
 		int nbAttachmentAdded = 0;
-		if(multipartFiles != null && multipartFiles.length > 0) {
+		if(multipartFiles != null) {
 			for (MultipartFile multipartFile : multipartFiles) {
 				if(multipartFile.getSize() > 0) {
 					addAttachmentToSignRequest(signRequest, multipartFile);
