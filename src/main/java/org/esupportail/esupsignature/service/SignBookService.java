@@ -593,6 +593,7 @@ public class SignBookService {
                     if (!signBook.getViewers().contains(user)) {
                         signBook.getViewers().add(user);
                         addUserInTeam(user.getId(), signBookId);
+                        mailService.sendCCtAlert(Collections.singletonList(recipientsEmail), signBook.getSignRequests().get(0));
                     }
                 }
         } else {
@@ -1514,9 +1515,11 @@ public class SignBookService {
         SignRequest signRequest = signRequestService.getById(id);
         checkSignRequestSignable(signRequest, userEppn, authUserEppn);
         User user = userService.getByEppn(userEppn);
+        SignBook signBook = signRequest.getParentSignBook();
         if ((signRequest.getStatus().equals(SignRequestStatus.pending)
                 && (isUserInRecipients(signRequest, userEppn)
-                || signRequest.getCreateBy().getEppn().equals(userEppn)))
+                || signRequest.getCreateBy().getEppn().equals(userEppn)
+                || signBook.getViewers().contains(user)))
                 || (signRequest.getStatus().equals(SignRequestStatus.draft)
                 && signRequest.getCreateBy().getEppn().equals(user.getEppn()))
         ) {

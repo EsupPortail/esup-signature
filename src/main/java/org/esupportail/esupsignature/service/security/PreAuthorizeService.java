@@ -109,6 +109,16 @@ public class PreAuthorizeService {
         return false;
     }
 
+    public boolean signRequestRecipientAndViewers(Long id, String userEppn) {
+        if(userEppn != null) {
+            SignRequest signRequest = signRequestRepository.findById(id).get();
+            return (signRequest.getStatus().equals(SignRequestStatus.pending) &&
+                    (signBookService.isUserInRecipients(signRequest, userEppn) || signRequest.getParentSignBook().getViewers().stream().anyMatch(u -> u.getEppn().equals(userEppn)) || signRequest.getCreateBy().getEppn().equals(userEppn)))
+                    || (signRequest.getStatus().equals(SignRequestStatus.draft) && signRequest.getCreateBy().getEppn().equals(userEppn));
+        }
+        return false;
+    }
+
     public boolean reportOwner(Long id, String userEppn) {
         if(userEppn != null) {
             Report report = reportService.getById(id);
