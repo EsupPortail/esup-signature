@@ -343,7 +343,14 @@ public class WorkflowService {
             recipientEmails = recipientEmails.stream().filter(r -> r.startsWith(String.valueOf(stepNumber))).collect(Collectors.toList());
             for (String recipientEmail : recipientEmails) {
                 String userEmail = recipientEmail.split("\\*")[1];
-                users.add(userService.getUserByEmail(userEmail));
+                List<String> groupList = userListService.getUsersEmailFromList(recipientEmail);
+                if(groupList.size() == 0) {
+                    users.add(userService.getUserByEmail(userEmail));
+                } else {
+                    for(String email : groupList) {
+                        users.add(userService.getUserByEmail(email));
+                    }
+                }
             }
         }
         return users;

@@ -23,10 +23,13 @@ public class UserPropertieService {
         return userPropertieRepository.findById(id).get();
     }
 
+    @Transactional
     public void createUserPropertieFromMails(User user, List<String> recipientEmails) {
         for (String recipientEmail : recipientEmails) {
             User favoriteUser = userService.getUserByEmail(recipientEmail);
-            createUserPropertie(user, favoriteUser);
+            if(favoriteUser!= null) {
+                createUserPropertie(user, favoriteUser);
+            }
         }
     }
 
