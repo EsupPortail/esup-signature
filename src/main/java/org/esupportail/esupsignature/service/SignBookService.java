@@ -581,7 +581,9 @@ public class SignBookService {
         if(recipientsCCEmails != null) {
             addViewers(signBookId, recipientsCCEmails);
         }
-        mailService.sendCCtAlert(signBook.getViewers().stream().map(User::getEmail).collect(Collectors.toList()), signBook.getSignRequests().get(0));
+        if(globalProperties.getSendCreationMailToViewers()) {
+            mailService.sendCCAlert(signBook.getViewers().stream().map(User::getEmail).collect(Collectors.toList()), signBook.getSignRequests().get(0));
+        }
     }
 
     @Transactional
@@ -593,7 +595,7 @@ public class SignBookService {
                     if (!signBook.getViewers().contains(user)) {
                         signBook.getViewers().add(user);
                         addUserInTeam(user.getId(), signBookId);
-                        mailService.sendCCtAlert(Collections.singletonList(recipientsEmail), signBook.getSignRequests().get(0));
+                        sendCCEmail(signBookId, Collections.singletonList(recipientsEmail));
                     }
                 }
         } else {
@@ -909,9 +911,7 @@ public class SignBookService {
                     if (!emailSended) {
                         try {
                             mailService.sendEmailAlerts(signRequest, userEppn, data, forceSendEmail);
-                            if(globalProperties.getSendCreationMailToViewers()) {
-                                mailService.sendSignRequestAlertCC(signRequest);
-                            }
+                            sendCCEmail(signBookId, null);
                             emailSended = true;
                         } catch (EsupSignatureMailException e) {
                             throw new EsupSignatureRuntimeException(e.getMessage());
