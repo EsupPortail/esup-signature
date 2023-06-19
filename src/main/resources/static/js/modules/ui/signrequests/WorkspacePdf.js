@@ -1,7 +1,6 @@
 import {PdfViewer} from "../../utils/PdfViewer.js?version=@version@";
 import {SignPosition} from "./SignPosition.js?version=@version@";
 import {WheelDetector} from "../../utils/WheelDetector.js?version=@version@";
-import {Message} from "../../../prototypes/Message.js?version=@version@";
 import {UserUi} from '../users/UserUi.js?version=@version@';
 
 export class WorkspacePdf {
@@ -514,7 +513,6 @@ export class WorkspacePdf {
             if(spot.stepNumber != null) {
                 let spotDiv = $('#inDocSpot_' + spot.id);
                 let signDiv = $('#inDocSign_' + spot.id);
-                // let signSpaceDiv = $("#signSpace_" + iterator);
                 if (this.mode === 'comment') {
                     spotDiv.show();
                     let offset = $("#page_" + spot.pageNumber).offset().top - this.pdfViewer.initialOffset;
@@ -535,7 +533,7 @@ export class WorkspacePdf {
                         bootbox.confirm("Supprimer cet emplacement de signature ?", function (result) {
                             if (result) {
                                 let url = "/ws-secure/signrequests/delete-comment/" + self.signRequestId + "/" + spot.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token;
-                                if(this.currentSignType !== "form") {
+                                if(self.currentSignType === "form") {
                                     url = "/admin/forms/delete-spot/" + self.formId + "/" + spot.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token;
                                 }
                                 $.ajax({

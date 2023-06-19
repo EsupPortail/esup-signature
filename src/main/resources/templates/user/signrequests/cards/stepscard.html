@@ -57,7 +57,7 @@
                                             <td th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
                                             <td class="text-right">
                                                 <i title="A signé le document" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" class="fas fa-check-circle text-success"></i>
-                                                <i title="N'a pas signé le document" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none'}" class="fas fa-minus-circle text-secondary"></i>
+                                                <i title="En attente de signature" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none'}" class="fas fa-clock text-warning"></i>
                                                 <i title="A refusé le document" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'refused'}" class="fas fa-times-circle text-danger"></i>
                                             </td>
                                             <td>

@@ -84,6 +84,9 @@ public class WorkflowService {
     @Resource
     private ObjectMapper objectMapper;
 
+    @Resource
+    private RecipientService recipientService;
+
     @PostConstruct
     public void initCreatorWorkflow() {
         User creator= userService.getByEppn("creator");
@@ -343,7 +346,9 @@ public class WorkflowService {
             recipientEmails = recipientEmails.stream().filter(r -> r.startsWith(String.valueOf(stepNumber))).collect(Collectors.toList());
             for (String recipientEmail : recipientEmails) {
                 String userEmail = recipientEmail.split("\\*")[1];
-                users.add(userService.getUserByEmail(userEmail));
+                for(String realUserEmail : recipientService.getCompleteRecipientList(Collections.singletonList(userEmail))) {
+                    users.add(userService.getUserByEmail(realUserEmail));
+                }
             }
         }
         return users;

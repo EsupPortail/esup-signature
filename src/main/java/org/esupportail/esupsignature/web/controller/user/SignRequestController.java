@@ -364,7 +364,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #userEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")
     @PostMapping(value = "/comment/{id}")
     public String comment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
@@ -373,9 +373,7 @@ public class SignRequestController {
                           @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
                           @RequestParam(value = "commentPosY", required = false) Integer commentPosY,
                           @RequestParam(value = "postit", required = false) String postit, Model model) {
-        SignRequest signRequest = signRequestService.getById(id);
-        if(spotStepNumber == null || userEppn.equals(signRequest.getCreateBy().getEppn())) {
-            signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, postit, spotStepNumber, authUserEppn);
+        if(signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, postit, spotStepNumber, authUserEppn, userEppn)) {
             model.addAttribute("message", new JsonMessage("success", "Annotation ajoutée"));
         } else {
             model.addAttribute("message", new JsonMessage("error", "Ajout d'emplacement non autorisé"));

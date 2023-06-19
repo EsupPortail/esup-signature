@@ -71,6 +71,7 @@ public class LiveWorkflowStepService {
     }
 
     public void addRecipientsToWorkflowStep(SignBook signBook, LiveWorkflowStep liveWorkflowStep, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos) {
+        recipientsEmails = recipientService.getCompleteRecipientList(recipientsEmails);
         for (String recipientEmail : recipientsEmails) {
             User recipientUser = userService.getUserByEmail(recipientEmail);
             if(recipientUser != null && recipientUser.getUserType().equals(UserType.external) && externalUsersInfos != null) {
