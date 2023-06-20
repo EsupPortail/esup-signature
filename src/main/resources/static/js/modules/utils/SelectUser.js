@@ -161,27 +161,28 @@ export default class SelectUser {
             } else {
                 recipientEmails = new Array(this.slimSelect.getSelected());
             }
-            $('[id^="allSignToComplete-"]').each(function () {
-                if (recipientEmails.length > 1) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
+            if(!this.selectField.attr('id').includes("CC")) {
+                $('[id^="allSignToComplete-"]').each(function () {
+                    if (recipientEmails.length > 1) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                })
+                if (this.csrf) {
+                    let csrf = this.csrf;
+                    $.ajax({
+                        url: "/ws-secure/users/check-temp-users/?" + csrf.parameterName + "=" + csrf.token,
+                        type: 'POST',
+                        contentType: "application/json",
+                        dataType: 'json',
+                        async: true,
+                        data: JSON.stringify(recipientEmails),
+                        success: data => this.displayTempUsersSuccess(data),
+                        error: e => this.displayExternalsError()
+                    });
                 }
-            })
-            if (this.csrf) {
-                let csrf = this.csrf;
-                $.ajax({
-                    url: "/ws-secure/users/check-temp-users/?" + csrf.parameterName + "=" + csrf.token,
-                    type: 'POST',
-                    contentType: "application/json",
-                    dataType: 'json',
-                    async: true,
-                    data: JSON.stringify(recipientEmails),
-                    success: data => this.displayTempUsersSuccess(data),
-                    error: e => this.displayExternalsError()
-                });
             }
-
             if (this.flag === true && e.length > 0) {
                 let text = e[e.length - 1].value;
                 console.info("check : " + text);
