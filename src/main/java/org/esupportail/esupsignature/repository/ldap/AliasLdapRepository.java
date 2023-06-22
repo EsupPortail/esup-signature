@@ -10,4 +10,3 @@ import java.util.List;
 public interface AliasLdapRepository extends LdapRepository<AliasLdap> {
     List<AliasLdap> findByMailStartingWith(String mail);
 }
-

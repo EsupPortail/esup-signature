@@ -22,6 +22,7 @@ public final class AliasLdap {
 	public void setCn(String cn) {
 		this.cn = cn;
 	}
+
 	public String getMail() {
 		return mail;
 	}
