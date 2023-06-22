@@ -226,8 +226,12 @@ public class UserService {
                 } else {
                     logger.debug("eppn found " + eppn);
                 }
-                String name = personLdaps.get(0).getSn();
-                String firstName = personLdaps.get(0).getGivenName();
+                String name = personLdaps.get(0).getDisplayName();
+                String firstName = "";
+                if(StringUtils.hasText(personLdaps.get(0).getSn()) && StringUtils.hasText(personLdaps.get(0).getGivenName())) {
+                    name = personLdaps.get(0).getSn();
+                    firstName = personLdaps.get(0).getGivenName();
+                }
                 return createUser(eppn, name, firstName, mail, UserType.ldap, false);
             } else {
                 logger.warn(mail + " not found or more than one result in ldap when search by email");

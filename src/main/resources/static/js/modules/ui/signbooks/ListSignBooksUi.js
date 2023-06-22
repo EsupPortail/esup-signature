@@ -248,6 +248,10 @@ export class ListSignBooksUi {
         for (let i = 0 ; i < filters.length ; i++) {
             currentParams.set(filters.eq(i).attr('id'), filters.eq(i).val());
         }
+        filters = $('input.sign-request-filter');
+        for (let i = 0 ; i < filters.length ; i++) {
+            currentParams.set(filters.eq(i).attr('id'), filters.eq(i).val());
+        }
         document.location.href = "/" + this.mode + "/signbooks?" + currentParams.toString();
     }
 

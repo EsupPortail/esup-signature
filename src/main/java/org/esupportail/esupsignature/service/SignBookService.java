@@ -326,6 +326,9 @@ public class SignBookService {
             signBook.setSubject(generateName(signBookId, null, user, false));
         }
         signBook.setStatus(SignRequestStatus.draft);
+        if(globalProperties.getSendCreationMailToViewers()) {
+            mailService.sendCCAlert(signBook.getViewers().stream().map(User::getEmail).collect(Collectors.toList()), signBook.getSignRequests().get(0));
+        }
     }
 
     public List<User> getRecipientsNames(String userEppn) {
@@ -581,7 +584,6 @@ public class SignBookService {
         if(recipientsCCEmails != null) {
             addViewers(signBookId, recipientsCCEmails);
         }
-        mailService.sendCCtAlert(signBook.getViewers().stream().map(User::getEmail).collect(Collectors.toList()), signBook.getSignRequests().get(0));
     }
 
     @Transactional
@@ -593,6 +595,7 @@ public class SignBookService {
                     if (!signBook.getViewers().contains(user)) {
                         signBook.getViewers().add(user);
                         addUserInTeam(user.getId(), signBookId);
+                        sendCCEmail(signBookId, Collections.singletonList(recipientsEmail));
                     }
                 }
         } else {
@@ -908,9 +911,7 @@ public class SignBookService {
                     if (!emailSended) {
                         try {
                             mailService.sendEmailAlerts(signRequest, userEppn, data, forceSendEmail);
-                            if(globalProperties.getSendCreationMailToViewers()) {
-                                mailService.sendSignRequestAlertCC(signRequest);
-                            }
+                            sendCCEmail(signBookId, null);
                             emailSended = true;
                         } catch (EsupSignatureMailException e) {
                             throw new EsupSignatureRuntimeException(e.getMessage());
@@ -1200,6 +1201,7 @@ public class SignBookService {
 
     @Transactional
     public SignBook startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String title, List<String> recipientEmails, List<String> allSignToCompletes, List<String> targetEmails, List<String> targetUrls, String signRequestParamsJsonString) throws EsupSignatureFsException, EsupSignatureRuntimeException, EsupSignatureIOException {
+        logger.info("starting workflow " + id + " by " + createByEppn);
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
         if (signRequestParamsJsonString != null) {
             signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
@@ -1514,9 +1516,11 @@ public class SignBookService {
         SignRequest signRequest = signRequestService.getById(id);
         checkSignRequestSignable(signRequest, userEppn, authUserEppn);
         User user = userService.getByEppn(userEppn);
+        SignBook signBook = signRequest.getParentSignBook();
         if ((signRequest.getStatus().equals(SignRequestStatus.pending)
                 && (isUserInRecipients(signRequest, userEppn)
-                || signRequest.getCreateBy().getEppn().equals(userEppn)))
+                || signRequest.getCreateBy().getEppn().equals(userEppn)
+                || signBook.getViewers().contains(user)))
                 || (signRequest.getStatus().equals(SignRequestStatus.draft)
                 && signRequest.getCreateBy().getEppn().equals(user.getEppn()))
         ) {

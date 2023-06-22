@@ -314,51 +314,6 @@ public class MailService {
             logger.error("unable to send ALERT email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
         }
-
-    }
-
-    public void sendSignRequestAlertCC(SignRequest signRequest) throws EsupSignatureMailException {
-        if (!checkMailSender()) {
-            return;
-        }
-        final Context ctx = new Context(Locale.FRENCH);
-
-        PersonLdap personLdap = userService.findPersonLdapByUser(signRequest.getCreateBy());
-        if(personLdap != null) {
-            OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
-            ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
-        }
-        ctx.setVariable("signRequest", signRequest);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
-        setTemplate(ctx);
-        try {
-            MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
-            String htmlContent = templateEngine.process("mail/email-cc.html", ctx);
-            addInLineImages(mimeMessage, htmlContent);
-            mimeMessage.setSubject("Vous êtes en copie d'une demande de signature crée par " + signRequest.getCreateBy().getFirstname() + " " + signRequest.getCreateBy().getName());
-            mimeMessage.setFrom(mailConfig.getMailFrom());
-            List<User> viewersArray = new ArrayList<>(signRequest.getParentSignBook().getViewers());
-            if (viewersArray.size() > 0) {
-                String[] to = new String[viewersArray.size()];
-                int i = 0;
-                for (User userTo : viewersArray) {
-                    to[i] = userTo.getEmail();
-                    i++;
-                }
-                mimeMessage.setTo(to);
-                logger.info("send email completes cc for " + to);
-                if (mailSender != null) {
-                    mailSender.send(mimeMessage.getMimeMessage());
-                }
-            } else {
-                logger.debug("no viewers to send mail");
-            }
-        } catch (Exception e) {
-            logger.error("unable to send ALERT email", e);
-            throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
-        }
-
     }
 
     public void sendSignRequestReplayAlert(List<String> recipientsEmails, SignRequest signRequest) throws EsupSignatureMailException {
@@ -393,7 +348,7 @@ public class MailService {
 
     }
 
-    public void sendCCtAlert(List<String> recipientsEmails, SignRequest signRequest) throws EsupSignatureMailException {
+    public void sendCCAlert(List<String> recipientsEmails, SignRequest signRequest) throws EsupSignatureMailException {
         if (!checkMailSender() || recipientsEmails.size() == 0) {
             return;
         }

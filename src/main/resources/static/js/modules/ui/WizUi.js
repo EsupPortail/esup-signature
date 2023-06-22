@@ -168,12 +168,13 @@ export class WizUi {
     }
 
     initWiz2(html) {
+        let self = this;
         this.div.html(html);
         if($("#recipientsEmailsWiz").length) {
             new SelectUser("recipientsEmailsWiz", null, null, this.csrf);
         }
         $('[id^="recipientEmailsWizSelect_"]').each(function (){
-            new SelectUser($(this).attr('id'), null, null, this.csrf);
+            new SelectUser($(this).attr('id'), null, null, self.csrf);
         });
         if($("#targetEmailsSelect").length) {
             new SelectUser("targetEmailsSelect", null, null, this.csrf);
@@ -181,7 +182,6 @@ export class WizUi {
         if($("#recipientsCCEmailsWiz").length) {
             this.recipientCCSelect = new SelectUser("recipientsCCEmailsWiz", null, null, this.csrf);
         }
-        let self = this;
         $("#end").on('click', function (){
             self.end = true;
         });
