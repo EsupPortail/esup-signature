@@ -326,6 +326,9 @@ public class SignBookService {
             signBook.setSubject(generateName(signBookId, null, user, false));
         }
         signBook.setStatus(SignRequestStatus.draft);
+        if(globalProperties.getSendCreationMailToViewers()) {
+            mailService.sendCCAlert(signBook.getViewers().stream().map(User::getEmail).collect(Collectors.toList()), signBook.getSignRequests().get(0));
+        }
     }
 
     public List<User> getRecipientsNames(String userEppn) {
@@ -580,9 +583,6 @@ public class SignBookService {
         SignBook signBook = getById(signBookId);
         if(recipientsCCEmails != null) {
             addViewers(signBookId, recipientsCCEmails);
-        }
-        if(globalProperties.getSendCreationMailToViewers()) {
-            mailService.sendCCAlert(signBook.getViewers().stream().map(User::getEmail).collect(Collectors.toList()), signBook.getSignRequests().get(0));
         }
     }
 
