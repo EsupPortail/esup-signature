@@ -326,6 +326,9 @@ public class SignBookService {
             signBook.setSubject(generateName(signBookId, null, user, false));
         }
         signBook.setStatus(SignRequestStatus.draft);
+        if(globalProperties.getSendCreationMailToViewers()) {
+            mailService.sendCCAlert(signBook.getViewers().stream().map(User::getEmail).collect(Collectors.toList()), signBook.getSignRequests().get(0));
+        }
     }
 
     public List<User> getRecipientsNames(String userEppn) {
@@ -580,9 +583,6 @@ public class SignBookService {
         SignBook signBook = getById(signBookId);
         if(recipientsCCEmails != null) {
             addViewers(signBookId, recipientsCCEmails);
-        }
-        if(globalProperties.getSendCreationMailToViewers()) {
-            mailService.sendCCAlert(signBook.getViewers().stream().map(User::getEmail).collect(Collectors.toList()), signBook.getSignRequests().get(0));
         }
     }
 
@@ -1201,6 +1201,7 @@ public class SignBookService {
 
     @Transactional
     public SignBook startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String title, List<String> recipientEmails, List<String> allSignToCompletes, List<String> targetEmails, List<String> targetUrls, String signRequestParamsJsonString) throws EsupSignatureFsException, EsupSignatureRuntimeException, EsupSignatureIOException {
+        logger.info("starting workflow " + id + " by " + createByEppn);
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
         if (signRequestParamsJsonString != null) {
             signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
