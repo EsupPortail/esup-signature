@@ -185,8 +185,8 @@
                 <h4>Demandes en retard</h4>
             </div>
             <div class="modal-body">
-                <p>Les demandes suivantes sont en attente depuis plus de -- jours.</p>
-                <p>Ces demandes seront <b>mises à la corbeille</b> automatiquement dans -- jours</p>
+                <p>Les demandes suivantes sont en attente depuis plus de <span th:text="${globalProperties.nbDaysBeforeWarning}"></span> jours.</p>
+                <p>Ces demandes seront <b>mises à la corbeille</b> automatiquement dans <span th:text="${globalProperties.nbDaysBeforeDeleting}"></span> jours</p>
                 <ul>
                     <th:block th:each="signRequest : ${oldSignRequests}">
                         <li>
