@@ -1,15 +1,11 @@
 package org.esupportail.esupsignature.service.ldap.entry;
 
 import org.springframework.ldap.odm.annotations.Attribute;
-import org.springframework.ldap.odm.annotations.Entry;
-import org.springframework.ldap.odm.annotations.Id;
 
 import javax.naming.Name;
 
-@Entry(objectClasses = {"nisMailAlias"})
 public final class AliasLdap {
 
-	@Id
 	private Name dn;
 	private @Attribute(name = "cn") String cn;
 	private @Attribute(name = "mail") String mail;

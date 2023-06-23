@@ -33,7 +33,7 @@ public class LdapUserList implements UserList {
 
     @Override
     public List<Map.Entry<String, String>> getListOfLists(String search) {
-        List<Map.Entry<String, String>> listNames= ldapGroupService.getAllGroups(search);
+        List<Map.Entry<String, String>> listNames= ldapGroupService.getAllGroupsStartWith(search);
         return listNames;
     }
 }
