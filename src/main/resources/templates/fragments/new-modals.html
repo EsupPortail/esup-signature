@@ -89,6 +89,12 @@
                                 <label class="form-check-label">Forcer la signature de tous les documents</label>
                             </div>
                             <div class="form-group mb-3">
+                                <div class="form-check form-switch form-switch-md">
+                                    <label class="form-check-label" for="userSignFirst">Je dois signer ce document avant l'envoi</label>
+                                    <input type="checkbox" class="form-check-input" name="userSignFirst" id="userSignFirst">
+                                </div>
+                            </div>
+                            <div class="form-group mb-3">
                                 <label class="form-label" for="signType2">Choisir un type de signature</label>
                                 <select class="slim-select-simple" name="signType" id="signType2">
                                     <th:block th:each="signType : ${signTypes}">
@@ -108,12 +114,6 @@
                                 <div class="form-check form-switch form-switch-md">
                                     <label  class="form-check-label" for="allSignToComplete">Tous les participants doivent-ils signer ?</label>
                                     <input type="checkbox" class="form-check-input" name="allSignToComplete" id="allSignToComplete"/>
-                                </div>
-                            </div>
-                            <div class="form-group mb-3">
-                                <div class="form-check form-switch form-switch-md">
-                                    <label class="form-check-label" for="userSignFirst">Je dois signer ce document avant l'envoi</label>
-                                    <input type="checkbox" class="form-check-input" name="userSignFirst" id="userSignFirst">
                                 </div>
                             </div>
                             <div class="form-group mb-3">
