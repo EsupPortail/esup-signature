@@ -73,7 +73,12 @@ public class PersonLdapAttributesMapper implements AttributesMapper<PersonLdap> 
     }
 
     private String getStringAttribute(Attributes attributes, String attributeName) throws NamingException {
-        return (String) attributes.get(attributeName).get();
+        Attribute attribute = attributes.get(attributeName);
+        if(attribute != null) {
+            return (String) attribute.get();
+        } else {
+            return "";
+        }
     }
 
     private List<String> getStringListAttribute(Attributes attributes, String attributeName) throws NamingException {

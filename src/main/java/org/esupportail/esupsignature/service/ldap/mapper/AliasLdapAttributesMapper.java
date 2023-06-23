@@ -4,6 +4,7 @@ import org.esupportail.esupsignature.service.ldap.entry.AliasLdap;
 import org.springframework.ldap.core.AttributesMapper;
 
 import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 
 public class AliasLdapAttributesMapper implements AttributesMapper<AliasLdap> {
@@ -18,6 +19,11 @@ public class AliasLdapAttributesMapper implements AttributesMapper<AliasLdap> {
     }
 
     private String getStringAttribute(Attributes attributes, String attributeName) throws NamingException {
-        return (String) attributes.get(attributeName).get();
+        Attribute attribute = attributes.get(attributeName);
+        if(attribute != null) {
+            return (String) attribute.get();
+        } else {
+            return "";
+        }
     }
 }
