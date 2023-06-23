@@ -69,7 +69,7 @@ public class CasLdapAuthoritiesPopulator extends DefaultLdapAuthoritiesPopulator
 		for(MappingGroupsRoles mappingGroupsRoles : mappingGroupsRolesRepository.findAll()) {
 			ldapGroupService.getLdapFiltersGroups().put(mappingGroupsRoles.getGroupe(), mappingGroupsRoles.getRole());
 		}
-		List<String> ldapGroups = ldapGroupService.getGroups(username.toLowerCase());
+		List<String> ldapGroups = ldapGroupService.getGroupsOfUser(username.toLowerCase());
 		List<String> roles = new ArrayList<>(group2UserRoleService.getRoles(username.toLowerCase()));
 		for (String role : roles) {
 			SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(role);

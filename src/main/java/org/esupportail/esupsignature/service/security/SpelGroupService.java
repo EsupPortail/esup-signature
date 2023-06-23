@@ -25,12 +25,12 @@ public class SpelGroupService implements GroupService {
 	}
 
 	@Override
-	public List<Map.Entry<String, String>> getAllGroups(String search) {
+	public List<Map.Entry<String, String>> getAllGroupsStartWith(String search) {
 		return null;
 	}
 
 	@Override
-	public List<String> getGroups(String userName) {
+	public List<String> getGroupsOfUser(String userName) {
 		String eppn;
 		if(!userName.contains("@")) {
 			eppn = userName + "@" + globalProperties.getDomain();

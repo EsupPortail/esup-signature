@@ -7,8 +7,8 @@ import java.util.Map;
 
 public interface GroupService {
 
-	List<Map.Entry<String, String>> getAllGroups(String search);
-	List<String> getGroups(String userName);
+	List<Map.Entry<String, String>> getAllGroupsStartWith(String search);
+	List<String> getGroupsOfUser(String userName);
 	List<String> getMembers(String groupName) throws EsupSignatureRuntimeException;
 
 }
