@@ -8,10 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import javax.sql.DataSource;
 
 @Configuration
-@EnableJpaRepositories(basePackages = "org.esupportail.esupsignature.repository",
-        excludeFilters = {
-        @ComponentScan.Filter(type = FilterType.REGEX, pattern = "org.esupportail.esupsignature.repository.ldap.*")
-        })
+@EnableJpaRepositories(basePackages = "org.esupportail.esupsignature.repository")
 public class DataSourceConfig {
 
     @Bean

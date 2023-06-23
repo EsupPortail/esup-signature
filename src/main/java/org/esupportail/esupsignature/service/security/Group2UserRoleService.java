@@ -29,7 +29,7 @@ public class Group2UserRoleService {
 
 	public Set<String> getRoles(String userName) {
 		Set<String> roles = new HashSet<>();
-		for(String groupName : groupService.getGroups(userName)) {
+		for(String groupName : groupService.getGroupsOfUser(userName)) {
 			if (mappingGroupesRoles.containsKey(groupName)) {
 				String role = mappingGroupesRoles.get(groupName);
 				roles.add(role);
