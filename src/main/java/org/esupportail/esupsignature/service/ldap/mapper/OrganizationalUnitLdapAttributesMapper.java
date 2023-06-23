@@ -4,6 +4,7 @@ import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
 import org.springframework.ldap.core.AttributesMapper;
 
 import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 
 public class OrganizationalUnitLdapAttributesMapper implements AttributesMapper<OrganizationalUnitLdap> {
@@ -20,8 +21,9 @@ public class OrganizationalUnitLdapAttributesMapper implements AttributesMapper<
     }
 
     private String getStringAttribute(Attributes attributes, String attributeName) throws NamingException {
-        if(attributes.get(attributeName) != null) {
-            return (String) attributes.get(attributeName).get();
+        Attribute attribute = attributes.get(attributeName);
+        if(attribute != null) {
+            return (String) attribute.get();
         } else {
             return "";
         }
