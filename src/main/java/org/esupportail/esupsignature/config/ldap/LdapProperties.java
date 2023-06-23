@@ -55,7 +55,7 @@ public class LdapProperties {
      */
     private String eppnLeftPartSearchFilter;
     /**
-     * Requete pour trouver les OU
+     * Requete pour trouver les OU des utilisateurs (utile seulement pour le pré-remplissage de l'affectation dans les formulaires)
      */
     private String ouSearchFilter = "(supannCodeEntite={0})";
     /**

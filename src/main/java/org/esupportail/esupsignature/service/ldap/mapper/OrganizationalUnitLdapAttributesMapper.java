@@ -20,6 +20,10 @@ public class OrganizationalUnitLdapAttributesMapper implements AttributesMapper<
     }
 
     private String getStringAttribute(Attributes attributes, String attributeName) throws NamingException {
-        return (String) attributes.get(attributeName).get();
+        if(attributes.get(attributeName) != null) {
+            return (String) attributes.get(attributeName).get();
+        } else {
+            return "";
+        }
     }
 }
