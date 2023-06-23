@@ -1,15 +1,11 @@
 package org.esupportail.esupsignature.service.ldap.entry;
 
 import org.springframework.ldap.odm.annotations.Attribute;
-import org.springframework.ldap.odm.annotations.Entry;
-import org.springframework.ldap.odm.annotations.Id;
 
 import javax.naming.Name;
 
-@Entry(objectClasses = {"inetOrgPerson"})
 public final class PersonLightLdap {
 
-	@Id
 	private Name dn;
 	private @Attribute(name = "uid") String uid;
 	private @Attribute(name = "cn") String cn;
