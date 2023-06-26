@@ -49,6 +49,13 @@ Un jeu de test est exécuté au moment de la compilation, tous les prérequis et
 mvn spring-boot:run
 ```
 
+# Esup-DSS-Client
+
+Pour signer à l'aide de certificats sur support cryptographique (eIDas) il est necessaire d'installer une application sur le poste client.
+Esup-DSS-Client est disponible ici :
+
+https://github.com/EsupPortail/esup-dss-client
+
 # Démonstration
 
 Site de démonstration, s’appuyant sur l’authentification shibboleth via la fédération Renater :
