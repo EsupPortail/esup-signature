@@ -901,7 +901,7 @@ public class SignRequestService {
 
 	@Transactional
 	public boolean addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, String postit, Integer spotStepNumber, String authUserEppn, String userEppn) {
-		SignRequest signRequest = getWithLockingById(id);
+		SignRequest signRequest = getById(id);
 		if(spotStepNumber == null || userEppn.equals(signRequest.getCreateBy().getEppn())) {
 			if (spotStepNumber != null && spotStepNumber > 0) {
 				SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
