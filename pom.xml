@@ -269,13 +269,7 @@
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>slim-select</artifactId>
-			<version>2.4.2</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.webjars.npm</groupId>
-					<artifactId>npm-check</artifactId>
-				</exclusion>
-			</exclusions>
+			<version>2.5.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
