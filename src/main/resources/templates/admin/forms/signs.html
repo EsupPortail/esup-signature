@@ -80,7 +80,7 @@
         false
     );
 </script>
-<div th:if="${form.signRequestParams != null}" class="modal fade" id="updateSignsModal" tabindex="-1" aria-labelledby="updateSignsModalTitle" data-bs-focus="false" aria-hidden="true">
+<div th:if="${form.signRequestParams != null}" class="modal fade" id="updateSignsModal" tabindex="-1" aria-labelledby="updateSignsModalTitle"  aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -129,7 +129,7 @@
     </div>
 </div>
 <th:block th:if="${form.signRequestParams != null}" th:each="signRequestParams : ${form.signRequestParams}">
-<div class="modal" th:id="'modal-warning-' + ${signRequestParams.id}" data-bs-focus="false">
+<div class="modal" th:id="'modal-warning-' + ${signRequestParams.id}" >
     <div class="modal-dialog">
         <div class="modal-content">
             <form th:action="'/admin/forms/remove-signRequestParams/' + ${form.id} + '/' + ${signRequestParams.id}" th:method="delete">
