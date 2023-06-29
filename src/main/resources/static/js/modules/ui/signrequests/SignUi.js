@@ -98,6 +98,7 @@ export class SignUi {
 
     launchSignModal() {
         console.info("launch sign modal");
+        this.workspace.saveData();
         window.onbeforeunload = null;
         let self = this;
         if (this.isPdf && this.currentSignType !== 'hiddenVisa') {

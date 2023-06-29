@@ -561,7 +561,9 @@ export class WorkspacePdf {
                 $(this).removeAttr('disabled');
             });
         }
-        this.initFormAction();
+        if(this.status === "pending") {
+            this.initFormAction();
+        }
         if(this.currentSignType !== "form") {
             this.initSignFields();
         }

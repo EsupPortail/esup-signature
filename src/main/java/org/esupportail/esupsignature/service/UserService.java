@@ -576,7 +576,9 @@ public class UserService {
                     recipientEmail = recipientEmail.split("\\*")[1];
                 }
                 Optional<User> optionalUser = userRepository.findByEmail(recipientEmail);
-                if (optionalUser.isEmpty() || optionalUser.get().getUserType().equals(UserType.external)) {
+                if(optionalUser.isPresent() && optionalUser.get().getUserType().equals(UserType.external)) {
+                    tempUsers.add(optionalUser.get());
+                } else {
                     List<String> groupUsers = new ArrayList<>();
                     try {
                         groupUsers.addAll(userListService.getUsersEmailFromList(recipientEmail));

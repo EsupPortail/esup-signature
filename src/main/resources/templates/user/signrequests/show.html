@@ -198,7 +198,7 @@
     </div>
 </main>
 
-<div id="wait" class="modal fade" data-bs-focus="false" role="dialog" data-keyboard="false" data-backdrop="static">
+<div id="wait" class="modal fade"  role="dialog" data-keyboard="false" data-backdrop="static">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-body text-center">
@@ -223,7 +223,7 @@
 </div>
 
 <div th:if="${signable}" th:with="signType = ${signRequest.currentSignType}" class="modal fade" id="signModal"
-     data-bs-focus="false" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
+      role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -323,7 +323,7 @@
     </div>
 </div>
 
-<div th:if="${signable}" class="modal fade" id="signAllModal" data-bs-focus="false" role="dialog"
+<div th:if="${signable}" class="modal fade" id="signAllModal"  role="dialog"
      aria-labelledby="signModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -353,7 +353,7 @@
     </div>
 </div>
 
-<div th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}" class="modal fade" id="stepRepeatableModal" data-bs-focus="false" role="dialog"
+<div th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}" class="modal fade" id="stepRepeatableModal"  role="dialog"
      aria-labelledby="signModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -457,7 +457,7 @@
 </div>
 
 <div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
-     class="modal fade" id="sendModal" data-bs-focus="false" role="dialog" aria-hidden="true">
+     class="modal fade" id="sendModal"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -624,7 +624,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="refuseModal" data-bs-focus="false" role="dialog" aria-labelledby="refuseModalLabel"
+<div class="modal fade" id="refuseModal"  role="dialog" aria-labelledby="refuseModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -655,7 +655,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="detailsModal" data-bs-focus="false" role="dialog" aria-labelledby="detailsModalLabel"
+<div class="modal fade" id="detailsModal"  role="dialog" aria-labelledby="detailsModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -673,7 +673,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="forwardModal" data-bs-focus="false" role="dialog" aria-labelledby="forwardModalLabel"
+<div class="modal fade" id="forwardModal"  role="dialog" aria-labelledby="forwardModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -698,7 +698,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="addCommentModal" data-bs-focus="false" role="dialog" aria-labelledby="detailsModalLabel"
+<div class="modal fade" id="addCommentModal"  role="dialog" aria-labelledby="detailsModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -720,7 +720,7 @@
     </div>
 </div>
 <div th:replace="user/signrequests/includes/modals/attachment :: attachment"></div>
-<div id="add-sign-image" class="modal" data-bs-focus="false">
+<div id="add-sign-image" class="modal" >
     <div class="modal-dialog modal-lg">
         <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
         <input type="hidden" name="id" th:value="${authUser.id}"/>

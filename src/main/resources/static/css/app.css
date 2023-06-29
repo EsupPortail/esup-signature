@@ -507,8 +507,7 @@ input:checked + .slider:before {
 /* custom slimselect */
 
 :root {
-    --ss-disabled-color: #e9ecef;
-    --ss-spacing-l: 22px;
+    --ss-spacing-l: 10px;
 }
 
 .ss-value-text {
