@@ -51,15 +51,15 @@
                 <ul id="buttonList" class="list-unstyled">
                     <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <a id="signLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
-                           title="Signer"><i class="fas fa-file-signature"></i></a>
+                            title="Signer"><i class="fas fa-file-signature"></i></a>
                     </li>
                     <li th:unless="${!signable || signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <a id="visaLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
-                           title="Viser"><i class="fas fa-check"></i></a>
+                            title="Viser"><i class="fas fa-check"></i></a>
                     </li>
                     <li th:if="${signRequest.createBy.eppn != userEppn && signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a id="refuseLaunchButton" role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Refuser"
-                           th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"><i
+                            th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"><i
                                 class="fas fa-file-excel"></i></a>
                     </li>
                     <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}">
