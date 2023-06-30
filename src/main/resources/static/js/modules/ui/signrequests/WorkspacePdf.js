@@ -224,6 +224,7 @@ export class WorkspacePdf {
         if((this.signType === "nexuSign" || this.signType === "certSign") && !this.notSigned) {
             $("#addSignButton").attr("disabled", true);
         }
+        $("#signLaunchButton").addClass("pulse-success");
     }
 
     initWorkspace() {
@@ -273,18 +274,18 @@ export class WorkspacePdf {
     //     $(input).change(e => this.saveData());
     // }
 
-    saveData() {
+    saveData(disableAlert) {
         let self = this;
         for(let i = 1; i < this.pdfViewer.pdfDoc.numPages + 1; i++) {
             this.pdfViewer.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.pdfViewer.saveValues(items)).then(function(){
                 if(i === self.pdfViewer.pdfDoc.numPages) {
-                    self.pushData(false);
+                    self.pushData(false, disableAlert);
                 }
             }));
         }
     }
 
-    pushData(redirect) {
+    pushData(redirect, disableAlert) {
         console.debug("debug - " + "push data");
         let formData = new Map();
 
@@ -310,7 +311,7 @@ export class WorkspacePdf {
                 }
             });
         } else {
-            if(!this.saveAlert) {
+            if(!this.saveAlert && !disableAlert) {
                 this.saveAlert = true;
                 bootbox.alert("Attention, <p>Vous modifier les champs d’un PDF en dehors d’une procédure de formulaire esup-signature.<br> " +
                     "Dans ce cas, vos modifications seront prises en compte seulement si vous allez jusqu’à la signature du document. <br>Dans le cas contraire, si vous abandonnez, votre saisie sera perdue.</p>", function (){ });

@@ -488,6 +488,7 @@ export class SignRequestParams extends EventFactory {
         });
         this.cross.remove();
         this.fireEvent("delete", ["ok"]);
+        $("#signLaunchButton").removeClass("pulse-success");
     }
 
     getTools() {
