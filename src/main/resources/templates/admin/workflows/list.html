@@ -103,7 +103,7 @@
                                         </ul>
                                     </div>
 
-                                    <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${workflow.id}">
+                                    <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${workflow.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <form id="command" th:action="'/admin/workflows/' + ${workflow.id}" th:method="delete">
@@ -137,7 +137,7 @@
     import {WorkflowManualAdd } from '/js/modules/ui/workflows/WorkflowManualAdd.js?version=[[${versionApp}]]';
     new WorkflowManualAdd();
 </script>
-<div class="modal fade" id="newWorkflow"  role="dialog" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="newWorkflow"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form th:action="'/admin/workflows'" method="post">

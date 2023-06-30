@@ -73,7 +73,7 @@
                                                 <small th:if="${signRequest.recipientHasSigned.get(recipient) != null}" th:text="${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}"></small>
                                             </td>
                                         </tr>
-                                        <div th:if="${userEppn == signRequest.createBy.eppn && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="modal " th:id="'menu-' + ${recipient.id}">
+                                        <div th:if="${userEppn == signRequest.createBy.eppn && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" data-bs-focus="false" class="modal " th:id="'menu-' + ${recipient.id}">
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
                                                     <div class="modal-header"><h3>Envoyer un nouveau lien d’accès</h3></div>

@@ -65,7 +65,7 @@
                                             </li>
                                         </ul>
                                     </div>
-                                    <div class="modal modal-warning fade in" th:id="'modal-delete-' + ${user.id}">
+                                    <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-delete-' + ${user.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <form th:id="${user.id}" th:action="'/admin/users/anonymize/'+ ${user.id}" th:method="post">

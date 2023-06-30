@@ -178,7 +178,7 @@
     </div>
 </main>
 <footer th:replace="fragments/footer :: footer"></footer>
-<div id="oldSignRequests" class="modal fade" role="dialog" th:if="${oldSignRequests.size() > 0}">
+<div id="oldSignRequests" data-bs-focus="false" class="modal fade" role="dialog" th:if="${oldSignRequests.size() > 0}">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -201,7 +201,7 @@
         </div>
     </div>
 </div>
-<div id="recipientNotPresentSignRequests" class="modal fade" role="dialog" th:if="${recipientNotPresentSignRequests.size() > 0}">
+<div id="recipientNotPresentSignRequests" data-bs-focus="false" class="modal fade" role="dialog" th:if="${recipientNotPresentSignRequests.size() > 0}">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">

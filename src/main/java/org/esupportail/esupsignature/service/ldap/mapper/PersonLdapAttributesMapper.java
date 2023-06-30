@@ -95,7 +95,11 @@ public class PersonLdapAttributesMapper implements AttributesMapper<PersonLdap> 
     }
 
     private Long getLongAttribute(Attributes attributes, String attributeName) throws NamingException {
-        String attributeValue = (String) attributes.get(attributeName).get();
-        return Long.parseLong(attributeValue);
+        Attribute attribute = attributes.get(attributeName);
+        if(attribute != null) {
+            return Long.parseLong((String) attribute.get());
+        } else {
+            return -1L;
+        }
     }
 }

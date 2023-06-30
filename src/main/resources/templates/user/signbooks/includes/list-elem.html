@@ -140,7 +140,7 @@
                     </li>
                 </ul>
             </div>
-            <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signBook.id}">
+            <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${signBook.id}">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <form th:id="'signBookDel' + ${signBook.id}" th:action="'/user/signbooks/'+ ${signBook.id}" th:method="delete">
@@ -217,7 +217,7 @@
                     </li>
                 </ul>
             </div>
-            <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signBook.id}">
+            <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${signBook.id}">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <form th:id="'signBookDel' + ${signBook.id}" th:action="'/user/signbooks/force-delete/'+ ${signBook.id}" th:method="delete">
