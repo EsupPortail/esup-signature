@@ -83,7 +83,7 @@
                                                 </li>
                                             </ul>
                                         </div>
-                                        <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
+                                        <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
                                                     <form id="command" th:action="'/user/signrequests/force-delete/'+ ${signRequest.id}" th:method="delete">
@@ -123,7 +123,7 @@
     </div>
 </main>
 
-<div class="modal fade" id="addDoc"  role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="addDoc"  role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form th:action="'/user/signbooks/add-docs/' + ${signBook.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
@@ -154,7 +154,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="addStep"  role="dialog" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="addStep"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form th:action="'/user/signbooks/add-live-step/' + ${id}" method="post">
@@ -213,7 +213,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="sendModal"  role="dialog" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="sendModal"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form th:action="'/user/signbooks/pending/' + ${id}" method="post">
