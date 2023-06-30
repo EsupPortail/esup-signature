@@ -88,7 +88,7 @@
                                             class="btn btn-danger">
                                         <i class="fas fa-trash"></i>
                                     </button>
-                                    <div class="modal modal-warning fade in"
+                                    <div data-bs-focus="false" class="modal modal-warning fade in"
                                          th:id="modal-warning+${userShare.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
@@ -127,7 +127,7 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="newShareModal"  role="dialog"
+    <div data-bs-focus="false" class="modal fade" id="newShareModal"  role="dialog"
          aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">

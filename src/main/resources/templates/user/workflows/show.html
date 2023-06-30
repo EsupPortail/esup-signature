@@ -80,7 +80,7 @@
                     </dl>
                 </div>
             </div>
-            <div class="modal fade" id="addStep"  role="dialog" aria-labelledby="addStepLabel" aria-hidden="true">
+            <div data-bs-focus="false" class="modal fade" id="addStep"  role="dialog" aria-labelledby="addStepLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
                         <form th:action="'/user/workflows/add-step/' + ${workflow.id}" method="post">
