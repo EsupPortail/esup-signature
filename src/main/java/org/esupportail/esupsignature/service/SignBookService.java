@@ -1977,13 +1977,17 @@ public class SignBookService {
 
     @Transactional
     public void transfertSignRequest(Long signRequestId, String userEppn, String replacedByUserEmail) {
-        SignRequest signRequest = signRequestService.getById(signRequestId);
-        User user = userService.getByEppn(userEppn);
-        User replacedByUser = userService.getUserByEmail(replacedByUserEmail);
-        if(user.equals(replacedByUser)) {
+        SignRequest signRequest = getSignRequestFullById(signRequestId, userEppn, userEppn);
+        if(signRequest.getSignable()) {
+            User user = userService.getByEppn(userEppn);
+            User replacedByUser = userService.getUserByEmail(replacedByUserEmail);
+            if (user.equals(replacedByUser)) {
+                throw new EsupSignatureRuntimeException("Transfer impossible");
+            }
+            transfertSignRequest(signRequest, user, replacedByUser);
+        } else {
             throw new EsupSignatureRuntimeException("Transfer impossible");
         }
-        transfertSignRequest(signRequest, user, replacedByUser);
     }
 
     public void transfertSignRequest(SignRequest signRequest, User user, User replacedByUser) {
