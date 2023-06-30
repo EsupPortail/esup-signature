@@ -351,7 +351,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
     @PostMapping(value = "/transfert/{id}")
     public String transfer(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                 @RequestParam(value = "transfertRecipientsEmails") List<String> transfertRecipientsEmails, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
