@@ -198,7 +198,7 @@
     </div>
 </main>
 
-<div id="wait" class="modal fade"  role="dialog" data-keyboard="false" data-backdrop="static">
+<div id="wait" data-bs-focus="false" class="modal fade"  role="dialog" data-keyboard="false" data-backdrop="static">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-body text-center">
@@ -222,7 +222,7 @@
     </div>
 </div>
 
-<div th:if="${signable}" th:with="signType = ${signRequest.currentSignType}" class="modal fade" id="signModal"
+<div th:if="${signable}" th:with="signType = ${signRequest.currentSignType}" data-bs-focus="false" class="modal fade" id="signModal"
       role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -323,7 +323,7 @@
     </div>
 </div>
 
-<div th:if="${signable}" class="modal fade" id="signAllModal"  role="dialog"
+<div th:if="${signable}" data-bs-focus="false" class="modal fade" id="signAllModal"  role="dialog"
      aria-labelledby="signModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -353,7 +353,7 @@
     </div>
 </div>
 
-<div th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}" class="modal fade" id="stepRepeatableModal"  role="dialog"
+<div th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}" data-bs-focus="false" class="modal fade" id="stepRepeatableModal"  role="dialog"
      aria-labelledby="signModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -457,7 +457,7 @@
 </div>
 
 <div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
-     class="modal fade" id="sendModal"  role="dialog" aria-hidden="true">
+     data-bs-focus="false" class="modal fade" id="sendModal"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -601,7 +601,7 @@
 </div>
 
 <div th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}"
-     class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
+     data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
     <div class="modal-dialog">
         <div class="modal-content">
             <form id="command" th:action="'/user/signbooks/'+ ${signRequest.parentSignBook.id}" th:method="delete">
@@ -624,7 +624,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="refuseModal"  role="dialog" aria-labelledby="refuseModalLabel"
+<div data-bs-focus="false" class="modal fade" id="refuseModal"  role="dialog" aria-labelledby="refuseModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -655,7 +655,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="detailsModal"  role="dialog" aria-labelledby="detailsModalLabel"
+<div data-bs-focus="false" class="modal fade" id="detailsModal"  role="dialog" aria-labelledby="detailsModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -673,7 +673,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="forwardModal"  role="dialog" aria-labelledby="forwardModalLabel"
+<div data-bs-focus="false" class="modal fade" id="forwardModal"  role="dialog" aria-labelledby="forwardModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -698,7 +698,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="addCommentModal"  role="dialog" aria-labelledby="detailsModalLabel"
+<div data-bs-focus="false" class="modal fade" id="addCommentModal"  role="dialog" aria-labelledby="detailsModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">

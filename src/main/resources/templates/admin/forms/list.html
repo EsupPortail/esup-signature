@@ -101,7 +101,7 @@
                                         </ul>
                                     </div>
 
-                                    <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${form.id}">
+                                    <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${form.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <form id="command" th:action="'/admin/forms/' + ${form.id}" th:method="delete">
@@ -147,7 +147,7 @@
     import {FormManualAdd } from '/js/modules/ui/forms/FormManualAdd.js?version=[[${versionApp}]]';
     new FormManualAdd();
 </script>
-<div class="modal fade" id="newManualForm"  role="dialog" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="newManualForm"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -205,7 +205,7 @@
         </div>
     </div>
 </div>
-<div class="modal fade" id="newForm"  role="dialog" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="newForm"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">

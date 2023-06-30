@@ -12,7 +12,7 @@
 		</footer>
 	</div>
 	<div id="snackbar"></div>
-	<div id="helpModal" class="modal fade" th:if="${globalProperties != null}">
+	<div id="helpModal" data-bs-focus="false" class="modal fade" th:if="${globalProperties != null}">
 		<div class="modal-dialog modal-xl" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
@@ -25,7 +25,7 @@
 			</div>
 		</div>
 	</div>
-	<div id="timeoutModal" class="modal fade" th:if="${maxInactiveInterval != null}">
+	<div id="timeoutModal" data-bs-focus="false" class="modal fade" th:if="${maxInactiveInterval != null}">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
