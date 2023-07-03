@@ -550,13 +550,13 @@
                                     <div th:if="${recipient.user.userType.name() == 'external'}">
                                         <b>Destinataire : <span th:text="${recipient.user.email}"></span></b>
                                         <div class="form-inline">
-                                            <input id="emails" type="hidden" name="emails" th:value="${user.email}">
+                                            <input id="emails" type="hidden" name="emails" th:value="${recipient.user.email}">
                                             <label for="names">Nom</label>
                                             <input id="names" class="form-control me-2" type="text" name="names" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.name} : ''" required>
                                             <label for="firstnames">Prénom</label>
                                             <input id="firstnames" class="form-control me-2" type="text" name="firstnames" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.firstname} : ''" required>
                                             <label for="phones">Mobile</label>
-                                            <input id="phones" class="form-control  me-2" type="text" name="phones" value="" required>
+                                            <input id="phones" class="form-control  me-2" type="text" name="phones" value="" th:required="${globalProperties.smsRequired}">
                                         </div>
                                     </div>
                                 </th:block>
@@ -572,7 +572,7 @@
                                             <label for="firstnames">Prénom</label>
                                             <input id="firstnames" class="form-control me-2" type="text" name="firstnames" th:value="${user.firstname}" required>
                                             <label for="phones">Mobile</label>
-                                            <input id="phones" class="form-control  me-2" type="text" name="phones" th:value="${user.eppn}" required>
+                                            <input id="phones" class="form-control  me-2" type="text" name="phones" th:value="${user.eppn}" th:required="${globalProperties.smsRequired}">
                                         </div>
                                     </div>
                                 </th:block>
@@ -678,13 +678,14 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title" id="forwardModalLabel">Transférer la demande</h3>
+                <h3 class="modal-title" id="forwardModalLabel">Réaffecter la demande</h3>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="form-group mb-3">
+                    <p>Vous allez réaffecter la demande à une autre personne que vous.</p>
                     <form id="send-sign-form" method="post" th:action="'/user/signrequests/transfert/' + ${signRequest.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
-                    <label class="form-label" for="transfertRecipientsEmails">Choisir le destinataire</label>
+                    <label class="form-label" for="transfertRecipientsEmails">Choisir la personne qui vous remplacera dans cette demande</label>
                     <select class="select-users" name="transfertRecipientsEmails" id="transfertRecipientsEmails" size="1" multiple="multiple" required="required">
                         <option data-placeholder="true"></option>
                     </select>

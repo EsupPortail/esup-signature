@@ -597,15 +597,16 @@ public class UserService {
         return tempUsers;
     }
 
+    @Transactional
     public List<User> getTempUsers(SignRequest signRequest, List<String> recipientsEmails) throws EsupSignatureRuntimeException {
-        Set<User> users = new HashSet<>();
-        users.addAll(getTempUsers(signRequest));
+        Set<User> users = new HashSet<>(getTempUsers(signRequest));
         if(recipientsEmails != null) {
             users.addAll(getTempUsersFromRecipientList(recipientsEmails));
         }
         return new ArrayList<>(users);
     }
 
+    @Transactional
     public List<User> getTempUsers(SignRequest signRequest) {
         Set<User> users = new HashSet<>();
         if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size() > 0) {
