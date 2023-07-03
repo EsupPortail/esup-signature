@@ -55,9 +55,9 @@ public class LdapGroupService implements GroupService {
     @Override
     public List<Map.Entry<String, String>> getAllGroupsStartWith(String search) {
         List<Map.Entry<String, String>> groups = new ArrayList<>();
-        logger.debug("search goups by name");
+        logger.debug("search groups by name");
         if(ldapProperties.getAllGroupsSearchFilter() != null) {
-            String formattedFilter = MessageFormat.format(ldapProperties.getAllGroupsSearchFilter(), search) + "*";
+            String formattedFilter = MessageFormat.format(ldapProperties.getAllGroupsSearchFilter(), search);
             StringBuilder objectClasses = new StringBuilder();
             for(String objectClass : ldapProperties.getGroupObjectClasses()) {
                 objectClasses.append("(objectClass=").append(objectClass).append(")");
