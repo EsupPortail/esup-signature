@@ -781,6 +781,7 @@ public class SignRequestService {
 		return userService.getTempUsers(signRequest).size() > 0;
 	}
 
+	@Transactional
 	public boolean checkTempUsers(Long id, List<String> recipientEmails, List<JsonExternalUserInfo> externalUsersInfos) throws EsupSignatureRuntimeException {
 		SignRequest signRequest = getById(id);
 		List<User> tempUsers = userService.getTempUsers(signRequest, recipientEmails);

@@ -87,13 +87,13 @@
                             </div>
                         </div>
                     </th:block>
-                </th:block>
+                </th:block>²
             </th:block>
             </ul>
         </div>
         <th:block th:each="target, iterator : ${signBook.liveWorkflow.workflow.targets}">
                 <div th:if="${target.targetUri.contains('mailto:')}" class="form-group mb-3">
-                    <label>Etape finale : Envoi par mail à </label>
+                    <label>Étape finale : Envoi par mail à </label>
                     <select class="select-users" id="targetEmailsSelect" multiple="multiple" name="targetEmails">
                         <option data-placeholder="true"></option>
                         <th:block th:each="targetEmail : ${target.targetUri.replace('mailto:', '').split(',')}">
