@@ -550,13 +550,13 @@
                                     <div th:if="${recipient.user.userType.name() == 'external'}">
                                         <b>Destinataire : <span th:text="${recipient.user.email}"></span></b>
                                         <div class="form-inline">
-                                            <input id="emails" type="hidden" name="emails" th:value="${user.email}">
+                                            <input id="emails" type="hidden" name="emails" th:value="${recipient.user.email}">
                                             <label for="names">Nom</label>
                                             <input id="names" class="form-control me-2" type="text" name="names" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.name} : ''" required>
                                             <label for="firstnames">Prénom</label>
                                             <input id="firstnames" class="form-control me-2" type="text" name="firstnames" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.firstname} : ''" required>
                                             <label for="phones">Mobile</label>
-                                            <input id="phones" class="form-control  me-2" type="text" name="phones" value="" required>
+                                            <input id="phones" class="form-control  me-2" type="text" name="phones" value="" th:required="${globalProperties.smsRequired}">
                                         </div>
                                     </div>
                                 </th:block>
@@ -572,7 +572,7 @@
                                             <label for="firstnames">Prénom</label>
                                             <input id="firstnames" class="form-control me-2" type="text" name="firstnames" th:value="${user.firstname}" required>
                                             <label for="phones">Mobile</label>
-                                            <input id="phones" class="form-control  me-2" type="text" name="phones" th:value="${user.eppn}" required>
+                                            <input id="phones" class="form-control  me-2" type="text" name="phones" th:value="${user.eppn}" th:required="${globalProperties.smsRequired}">
                                         </div>
                                     </div>
                                 </th:block>

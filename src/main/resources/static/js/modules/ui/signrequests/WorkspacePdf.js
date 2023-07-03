@@ -516,7 +516,11 @@ export class WorkspacePdf {
                 let signDiv = $('#inDocSign_' + spot.id);
                 if (this.mode === 'comment') {
                     spotDiv.show();
-                    let offset = $("#page_" + spot.pageNumber).offset().top - this.pdfViewer.initialOffset;
+                    let page = $("#page_" + spot.pageNumber);
+                    let offset = 0;
+                    if(page.offset() != null) {
+                        offset = page.offset().top - this.pdfViewer.initialOffset;
+                    }
                     let posX = Math.round((parseInt(spot.posX) * this.pdfViewer.scale) - 18);
                     let posY = Math.round((parseInt(spot.posY) * this.pdfViewer.scale) + offset - 38);
                     console.log("spot pos : " + posX + ", " + posY);
