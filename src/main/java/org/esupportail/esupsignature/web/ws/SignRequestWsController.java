@@ -29,6 +29,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/ws/signrequests")
@@ -45,7 +46,7 @@ public class SignRequestWsController {
     @CrossOrigin
     @PostMapping("/new")
     @Operation(description = "Création d'une demande de signature")
-    public Long create(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
+    public String create(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
                        @Parameter(description = "Liste des participants") @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
                        @Parameter(description = "Liste des participants (ancien nom)") @RequestParam(value = "recipientEmails", required = false) List<String> recipientEmails,
                        @Parameter(description = "Liste des personnes en copie") @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
@@ -71,10 +72,11 @@ public class SignRequestWsController {
         }
         try {
             Map<SignBook, String> signBookStringMap = signBookService.sendSignRequest(title, multipartFiles, SignType.valueOf(signType), allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, createByEppn, createByEppn, true, forceAllSign, targetUrl);
-            return signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
+            return signBookStringMap.keySet().stream().map(sb -> sb.getSignRequests().stream().map(signRequest -> signRequest.getId().toString()).collect(Collectors.joining(","))).collect(Collectors.joining(","));
+//            return signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
         } catch (EsupSignatureRuntimeException e) {
             logger.error(e.getMessage(), e);
-            return -1L;
+            return "-1";
         }
     }
 

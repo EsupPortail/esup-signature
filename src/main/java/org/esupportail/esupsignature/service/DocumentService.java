@@ -87,7 +87,7 @@ public class DocumentService {
 	public String getSignedName(String originalName) {
 		String suffix = globalProperties.getSignedSuffix();
 		String name = "";
-		name += fileService.getNameOnly(originalName).replaceAll(" ", "-");
+		name += fileService.getNameOnly(originalName);
 		if(name.endsWith(suffix)) {
 			name = name.replace(suffix, "");
 		}
@@ -147,6 +147,7 @@ public class DocumentService {
 		documentRepository.delete(document);
 	}
 
+	@Transactional
 	public Document addSignedFile(SignRequest signRequest, InputStream signedInputStream, String originalName, String mimeType) throws IOException {
 		String docName = getSignedName(originalName);
 		Document document = createDocument(signedInputStream, docName, mimeType);
