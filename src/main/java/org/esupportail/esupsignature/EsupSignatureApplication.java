@@ -45,16 +45,16 @@ public class EsupSignatureApplication extends SpringBootServletInitializer imple
 	@Override
 	public void run(String... args) throws Exception {
 		System.setProperty("org.bouncycastle.rsa.max_mr_tests", globalProperties.getBouncycastelMaxMrTests().toString());
-		boolean upgrage = globalProperties.getAutoUpgrade();
+		boolean upgrade = globalProperties.getAutoUpgrade();
 		boolean close = false;
 		for(String arg : args) {
 			if("upgrade".equals(arg)) {
-				upgrage = true;
+				upgrade = true;
 				close = true;
 				break;
 			}
 		}
-		if(upgrage) {
+		if(upgrade) {
 			upgradeService.launch();
 			if(close) System.exit(SpringApplication.exit(applicationContext));
 		}
