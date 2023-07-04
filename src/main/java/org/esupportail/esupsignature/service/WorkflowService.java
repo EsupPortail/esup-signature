@@ -322,7 +322,7 @@ public class WorkflowService {
                             workflowStep.getUsers().add(oneUser);
                         }
                     }
-                    if(allSignToCompletes != null && allSignToCompletes.contains(step + "")) {
+                    if(allSignToCompletes != null && allSignToCompletes.contains(String.valueOf(step))) {
                         workflowStep.setAllSignToComplete(true);
                     }
                     if(signTypes != null) {

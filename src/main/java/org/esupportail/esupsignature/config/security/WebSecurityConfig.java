@@ -236,6 +236,16 @@ public class WebSecurityConfig {
 		AccessDeniedHandlerImpl accessDeniedHandlerImpl = new AccessDeniedHandlerImpl();
 		accessDeniedHandlerImpl.setErrorPage("/denied");
 		http.exceptionHandling().accessDeniedHandler(accessDeniedHandlerImpl);
+		http.authorizeRequests()
+				.antMatchers("/").permitAll()
+				.antMatchers("/admin/", "/admin/**").access("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
+				.antMatchers("/user/", "/user/**").access("hasAnyRole('ROLE_USER')")
+				.antMatchers("/otp-access/**").permitAll()
+				.antMatchers("/otp/", "/otp/**").access("hasAnyRole('ROLE_OTP', 'ROLE_FRANCECONNECT')")
+				.antMatchers("/ws-secure/", "/ws-secure/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP', 'ROLE_FRANCECONNECT')")
+				.antMatchers("/public/", "/public/**").permitAll()
+				.antMatchers("/error").permitAll();
+
 		String hasIpAddresses = "";
 		int nbIps = 0;
 		if(webSecurityProperties.getWsAccessAuthorizeIps() != null) {
@@ -255,16 +265,6 @@ public class WebSecurityConfig {
 			http.authorizeRequests().antMatchers("/actuator/**").denyAll();
 			http.authorizeRequests().antMatchers("/swagger-ui/**").denyAll();
 		}
-		http.authorizeRequests()
-				.antMatchers("/").permitAll()
-				.antMatchers("/admin/", "/admin/**").access("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
-				.antMatchers("/user/", "/user/**").access("hasAnyRole('ROLE_USER')")
-				.antMatchers("/otp-access/**").permitAll()
-				.antMatchers("/otp/", "/otp/**").access("hasAnyRole('ROLE_OTP', 'ROLE_FRANCECONNECT')")
-				.antMatchers("/ws-secure/", "/ws-secure/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP', 'ROLE_FRANCECONNECT')")
-				.antMatchers("/public/", "/public/**").permitAll()
-				.antMatchers("/error").permitAll();
-
 	}
 
 	@Bean
