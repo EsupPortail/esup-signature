@@ -67,8 +67,8 @@ public class FormWsController {
                       @RequestParam(required = false) @Parameter(description = "Paramètres de signature", example = "[{\"xPos\":100, \"yPos\":100, \"signPageNumber\":1}, {\"xPos\":200, \"yPos\":200, \"signPageNumber\":1}]") String signRequestParamsJsonString,
                       @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls,
                       @RequestParam(required = false) @Parameter(description = "Données par défaut à remplir dans le formulaire", example = "{'field1' : 'toto, 'field2' : 'tata'}") String formDatas,
-                      @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title
-    ) {
+                      @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title) {
+        logger.debug("init new form instance : " + id);
         if(recipientEmails == null && recipientsEmails.size() > 0) {
             recipientEmails = recipientsEmails;
         }

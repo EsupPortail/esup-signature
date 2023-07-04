@@ -193,6 +193,7 @@ public class WebSecurityConfig {
 				.ignoringAntMatchers("/resources/**")
 				.ignoringAntMatchers("/webjars/**")
 				.ignoringAntMatchers("/ws/**")
+				.ignoringAntMatchers("/swagger-ui/**")
 				.ignoringAntMatchers("/user/nexu-sign/**")
 				.ignoringAntMatchers("/otp-access/**")
 				.ignoringAntMatchers("/log/**")
@@ -247,10 +248,12 @@ public class WebSecurityConfig {
 			}
 			http.authorizeRequests().antMatchers("/ws/**").access(hasIpAddresses);
 			http.authorizeRequests().antMatchers("/actuator/**").access(hasIpAddresses);
+			http.authorizeRequests().antMatchers("/swagger-ui/**").access(hasIpAddresses);
 //			http.authorizeRequests().antMatchers("/ws/**").access("hasRole('ROLE_WS')").and().addFilter(apiKeyFilter());
 		} else {
 			http.authorizeRequests().antMatchers("/ws/**").denyAll();
 			http.authorizeRequests().antMatchers("/actuator/**").denyAll();
+			http.authorizeRequests().antMatchers("/swagger-ui/**").denyAll();
 		}
 		http.authorizeRequests()
 				.antMatchers("/").permitAll()
