@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.interfaces.listsearch.impl;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.esupportail.esupsignature.service.extdb.ExtDbService;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserList;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -48,6 +49,7 @@ public class SympaUserList implements UserList {
 
     @Override
     public List<Map.Entry<String, String>> getListOfLists(String search) {
+        search = StringEscapeUtils.escapeSql(search);
         List<Map.Entry<String, String>> listNames= new ArrayList<>();
         jdbcTemplate.query("select distinct concat(name_list, '@', robot_list ) as list_name, subject_list  from list_table where searchkey_list like '%" + search + "%' or name_list like '%" + search + "%'", (ResultSet rs) -> {
             listNames.add(new AbstractMap.SimpleEntry<>(rs.getString("list_name"), rs.getString("subject_list")));
