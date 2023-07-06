@@ -98,7 +98,7 @@ public class SignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
-        SignRequest signRequest = signBookService.getSignRequestsFullById(id, userEppn, authUserEppn);
+        SignRequest signRequest = signBookService.getSignRequestFullById(id, userEppn, authUserEppn);
         boolean displayNotif = false;
         if (signRequest.getLastNotifDate() == null && Duration.between(signRequest.getCreateDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()) {
             displayNotif = true;
@@ -133,7 +133,6 @@ public class SignRequestController {
         model.addAttribute("nextSignRequest", signBookService.getNextSignRequest(signRequest.getId(), userEppn));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
-        model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
         model.addAttribute("favoriteSignRequestParamsJson", userService.getFavoriteSignRequestParamsJson(userEppn));
         try {
             Object userShareString = httpSession.getAttribute("userShareId");
@@ -352,7 +351,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
     @PostMapping(value = "/transfert/{id}")
     public String transfer(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                 @RequestParam(value = "transfertRecipientsEmails") List<String> transfertRecipientsEmails, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
@@ -365,7 +364,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #userEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")
     @PostMapping(value = "/comment/{id}")
     public String comment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
@@ -374,9 +373,7 @@ public class SignRequestController {
                           @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
                           @RequestParam(value = "commentPosY", required = false) Integer commentPosY,
                           @RequestParam(value = "postit", required = false) String postit, Model model) {
-        SignRequest signRequest = signRequestService.getById(id);
-        if(spotStepNumber == null || userEppn.equals(signRequest.getCreateBy().getEppn())) {
-            signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, postit, spotStepNumber, authUserEppn);
+        if(signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, postit, spotStepNumber, authUserEppn, userEppn)) {
             model.addAttribute("message", new JsonMessage("success", "Annotation ajoutée"));
         } else {
             model.addAttribute("message", new JsonMessage("error", "Ajout d'emplacement non autorisé"));
@@ -384,19 +381,34 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#signRequestId, #userEppn)")
+    @PostMapping(value = "/comment/{signRequestId}/update/{postitId}")
+    public String commentUpdate(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                                @PathVariable("signRequestId") Long signRequestId,
+                                @PathVariable("postitId") Long postitId,
+                                @RequestParam(value = "comment", required = false) String comment, RedirectAttributes redirectAttributes) {
+        try {
+            signRequestService.updateComment(postitId, comment, authUserEppn);
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Annotation modifiée"));
+        } catch (EsupSignatureRuntimeException e) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Annotation interdite"));
+        }
+        return "redirect:/user/signrequests/" + signRequestId;
+    }
+
+    @PreAuthorize("@preAuthorizeService.signBookCreator(#id, #authUserEppn)")
     @PostMapping(value = "/send-otp/{id}/{recipientId}")
     public String sendOtp(@ModelAttribute("authUserEppn") String authUserEppn,
                           @PathVariable("id") Long id,
                           @PathVariable("recipientId") Long recipientId,
-                          @RequestParam("phone") String phone,
-                          RedirectAttributes redirectAttributes) throws Exception {
+                          @RequestParam(value = "phone", required = false) String phone,
+                          RedirectAttributes redirectAttributes) {
         if(otpService.generateOtpForSignRequest(id, recipientId, phone)){
             redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Demande OTP envoyée"));
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Problème d'envoi OTP"));
         }
-        return "redirect:/user/signrequests/" + id;
+        return "redirect:/user/signbooks/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")

@@ -2,7 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<!--/*@thymesVar id="postits" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
+<!--/*@thymesVar id="postits" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <!--/*@thymesVar id="signatureIds" type="java.util.List<String>"*/-->
 <!--/*@thymesVar id="currentSignType" type="org.esupportail.esupsignature.entity.enums.SignType"*/-->
@@ -51,15 +51,15 @@
                 <ul id="buttonList" class="list-unstyled">
                     <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <a id="signLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
-                           title="Signer"><i class="fas fa-file-signature"></i></a>
+                            title="Signer"><i class="fas fa-file-signature"></i></a>
                     </li>
                     <li th:unless="${!signable || signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <a id="visaLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
-                           title="Viser"><i class="fas fa-check"></i></a>
+                            title="Viser"><i class="fas fa-check"></i></a>
                     </li>
                     <li th:if="${signRequest.createBy.eppn != userEppn && signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a id="refuseLaunchButton" role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Refuser"
-                           th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"><i
+                            th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"><i
                                 class="fas fa-file-excel"></i></a>
                     </li>
                     <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}">
@@ -143,7 +143,12 @@
                         <button th:es-postit-id="${postit.id}" type="button" title="Copier le texte du postit" class="postit-copy btn btn-sm btn-transparent text-dark">
                             <i th:es-postit-id="${postit.id}" class="far fa-copy"></i>
                         </button>
-                        <p  th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></p>
+                        <p th:class="${postit.createBy.eppn == userEppn} ? 'd-none' : ''" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></p>
+                        <form th:if="${postit.createBy.eppn == userEppn}" th:action="${'/user/signrequests/comment/' + signRequest.id + '/update/' + postit.id}" th:method="post">
+                            <textarea th:style="'background-color: ' + ${postit.postitColor}" name="comment" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></textarea>
+                            <button type="submit" class="btn btn-sm btn-dark"><i class="fa fa-save"></i></button>
+                        </form>
+
                     </div>
                 </th:block>
             </div>
@@ -193,7 +198,7 @@
     </div>
 </main>
 
-<div id="wait" class="modal fade" data-bs-focus="false" role="dialog" data-keyboard="false" data-backdrop="static">
+<div id="wait" data-bs-focus="false" class="modal fade"  role="dialog" data-keyboard="false" data-backdrop="static">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-body text-center">
@@ -217,8 +222,8 @@
     </div>
 </div>
 
-<div th:if="${signable}" th:with="signType = ${signRequest.currentSignType}" class="modal fade" id="signModal"
-     data-bs-focus="false" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
+<div th:if="${signable}" th:with="signType = ${signRequest.currentSignType}" data-bs-focus="false" class="modal fade" id="signModal"
+      role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -243,12 +248,12 @@
                     </div>
                 </div>
                 <div id="noOptions" class="alert alert-danger mt-1" style="display: none;">
-                    Votre profile ne possède pas les prérequis nécessaires pour signer cette demande. Si vous en avez la possibilité, merci de contrôler vos paramètres de signature, d’importer un certificat ou de démarrer NexU.
+                    Votre profil ne possède pas les prérequis nécessaires pour signer cette demande. Si vous en avez la possibilité, merci de contrôler vos paramètres de signature, d’importer un certificat ou de démarrer NexU.
                     <br>
                     Sinon merci de contacter la personne ou le service émetteur de cette demande de signature.
                 </div>
                 <div id="noSeal" th:if="${!sealCertOK}" class="alert alert-danger mt-1" style="display: none;">
-                    La signature par certificat cachet d’établissement et temporairement indisponible pour des raisons de maintenance. Merci refaire un essai ultérieurement.
+                    La signature par certificat cachet d’établissement est temporairement indisponible pour des raisons de maintenance. Merci refaire un essai ultérieurement.
                 </div>
                 <div id="selectTypeDiv" class="alert alert-success mt-1" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                     <label for="certType">Merci de sélectionner le type de signature que vous souhaitez utiliser parmi les types disponibles</label>
@@ -307,7 +312,7 @@
                     <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer</span>
                     <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>
                 </button>
-                <button id="checkValidateSignButtonNext" th:if="${nextSignBook != null}"
+                <button id="checkValidateSignButtonNext" th:if="${nextSignBook != null && otp == null}"
                         class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
                     <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer et aller à la suivante </span>
                     <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser et aller à la suivante </span>
@@ -318,7 +323,7 @@
     </div>
 </div>
 
-<div th:if="${signable}" class="modal fade" id="signAllModal" data-bs-focus="false" role="dialog"
+<div th:if="${signable}" data-bs-focus="false" class="modal fade" id="signAllModal"  role="dialog"
      aria-labelledby="signModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -348,7 +353,7 @@
     </div>
 </div>
 
-<div th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}" class="modal fade" id="stepRepeatableModal" data-bs-focus="false" role="dialog"
+<div th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}" data-bs-focus="false" class="modal fade" id="stepRepeatableModal"  role="dialog"
      aria-labelledby="signModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -452,7 +457,7 @@
 </div>
 
 <div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
-     class="modal fade" id="sendModal" data-bs-focus="false" role="dialog" aria-hidden="true">
+     data-bs-focus="false" class="modal fade" id="sendModal"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -545,12 +550,13 @@
                                     <div th:if="${recipient.user.userType.name() == 'external'}">
                                         <b>Destinataire : <span th:text="${recipient.user.email}"></span></b>
                                         <div class="form-inline">
+                                            <input id="emails" type="hidden" name="emails" th:value="${recipient.user.email}">
                                             <label for="names">Nom</label>
                                             <input id="names" class="form-control me-2" type="text" name="names" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.name} : ''" required>
                                             <label for="firstnames">Prénom</label>
                                             <input id="firstnames" class="form-control me-2" type="text" name="firstnames" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.firstname} : ''" required>
                                             <label for="phones">Mobile</label>
-                                            <input id="phones" class="form-control  me-2" type="text" name="phones" value="" required>
+                                            <input id="phones" class="form-control  me-2" type="text" name="phones" value="" th:required="${globalProperties.smsRequired}">
                                         </div>
                                     </div>
                                 </th:block>
@@ -560,12 +566,13 @@
                                     <div th:if="${user.userType.name() == 'external'}">
                                         <b>Destinataire : <span th:text="${user.email}"></span></b>
                                         <div class="form-inline">
+                                            <input id="emails" type="hidden" name="emails" th:value="${user.email}">
                                             <label for="names">Nom</label>
                                             <input id="names" class="form-control me-2" type="text" name="names" th:value="${user.name}" required>
                                             <label for="firstnames">Prénom</label>
                                             <input id="firstnames" class="form-control me-2" type="text" name="firstnames" th:value="${user.firstname}" required>
                                             <label for="phones">Mobile</label>
-                                            <input id="phones" class="form-control  me-2" type="text" name="phones" th:value="${user.eppn}" required>
+                                            <input id="phones" class="form-control  me-2" type="text" name="phones" th:value="${user.eppn}" th:required="${globalProperties.smsRequired}">
                                         </div>
                                     </div>
                                 </th:block>
@@ -594,7 +601,7 @@
 </div>
 
 <div th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}"
-     class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
+     data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
     <div class="modal-dialog">
         <div class="modal-content">
             <form id="command" th:action="'/user/signbooks/'+ ${signRequest.parentSignBook.id}" th:method="delete">
@@ -617,7 +624,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="refuseModal" data-bs-focus="false" role="dialog" aria-labelledby="refuseModalLabel"
+<div data-bs-focus="false" class="modal fade" id="refuseModal"  role="dialog" aria-labelledby="refuseModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -636,7 +643,7 @@
                                 class="btn btn-danger me-1" title="Refuser" autofocus>
                             <span>Refuser</span>
                         </button>
-                        <button type="submit" id="refuseNext" th:if="${nextSignBook != null}" name="redirect" th:value="${nextSignRequest.id}"
+                        <button type="submit" id="refuseNext" th:if="${nextSignBook != null && otp == null}" name="redirect" th:value="${nextSignRequest.id}"
                                 class="btn btn-danger" title="Refuser et aller à la suivante" autofocus>
                             <span>Refuser et aller à la suivante </span>
                             <i class="fas fa-arrow-alt-circle-right"></i>
@@ -648,7 +655,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="detailsModal" data-bs-focus="false" role="dialog" aria-labelledby="detailsModalLabel"
+<div data-bs-focus="false" class="modal fade" id="detailsModal"  role="dialog" aria-labelledby="detailsModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -666,18 +673,19 @@
     </div>
 </div>
 
-<div class="modal fade" id="forwardModal" data-bs-focus="false" role="dialog" aria-labelledby="forwardModalLabel"
+<div data-bs-focus="false" class="modal fade" id="forwardModal"  role="dialog" aria-labelledby="forwardModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title" id="forwardModalLabel">Transférer la demande</h3>
+                <h3 class="modal-title" id="forwardModalLabel">Réaffecter la demande</h3>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="form-group mb-3">
+                    <p>Vous allez réaffecter la demande à une autre personne que vous.</p>
                     <form id="send-sign-form" method="post" th:action="'/user/signrequests/transfert/' + ${signRequest.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
-                    <label class="form-label" for="transfertRecipientsEmails">Choisir le destinataire</label>
+                    <label class="form-label" for="transfertRecipientsEmails">Choisir la personne qui vous remplacera dans cette demande</label>
                     <select class="select-users" name="transfertRecipientsEmails" id="transfertRecipientsEmails" size="1" multiple="multiple" required="required">
                         <option data-placeholder="true"></option>
                     </select>
@@ -691,7 +699,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="addCommentModal" data-bs-focus="false" role="dialog" aria-labelledby="detailsModalLabel"
+<div data-bs-focus="false" class="modal fade" id="addCommentModal"  role="dialog" aria-labelledby="detailsModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -713,7 +721,7 @@
     </div>
 </div>
 <div th:replace="user/signrequests/includes/modals/attachment :: attachment"></div>
-<div id="add-sign-image" class="modal" data-bs-focus="false">
+<div id="add-sign-image" class="modal" >
     <div class="modal-dialog modal-lg">
         <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
         <input type="hidden" name="id" th:value="${authUser.id}"/>
@@ -811,7 +819,7 @@
     import {Nexu} from '/js/modules/ui/signrequests/Nexu.js?version=[[${versionApp}]]';
     import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=[[${versionApp}]]';
     import {SignRequestHelp} from '/js/modules/help/SignRequestHelp.js?version=[[${versionApp}]]';
-    let help = new SignRequestHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]], [[${user.userType.name() == 'external' ? 'otp' : 'user'}]]);
+    let help = new SignRequestHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]], [[${user.userType.name() == 'external' ? 'otp' : 'user'}]]);
     help.autoStart();
     let signable = [[${signable}]];
     let editable = [[${editable}]];

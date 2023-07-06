@@ -73,7 +73,7 @@ public class CertificatService {
 
     @Transactional
     public List<Certificat> getCertificatByUser(String userEppn) {
-        User user = userService.getUserByEppn(userEppn);
+        User user = userService.getByEppn(userEppn);
         Set<String> roles = user.getRoles();
         Set<Certificat> certificats = new HashSet<>(certificatRepository.findByRolesIn(roles));
         return new ArrayList<>(certificats);
@@ -151,7 +151,7 @@ public class CertificatService {
                 }
             }
         }
-        throw new EsupSignatureKeystoreException("no seal certificat present");
+        throw new EsupSignatureKeystoreException("no seal certificat present (no type or no pin");
     }
 
     public KeyStore getSealKeyStore() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException, EsupSignatureKeystoreException {

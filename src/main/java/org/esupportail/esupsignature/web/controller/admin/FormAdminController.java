@@ -3,7 +3,9 @@ package org.esupportail.esupsignature.web.controller.admin;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.Form;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -41,7 +43,7 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/admin/forms")
 public class FormAdminController {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(FormAdminController.class);
 
 	@ModelAttribute("adminMenu")
@@ -81,7 +83,7 @@ public class FormAdminController {
 	@GetMapping()
 	public String list(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
 		Set<Form> forms = new HashSet<>();
-		User user = userService.getUserByEppn(authUserEppn);
+		User user = userService.getByEppn(authUserEppn);
 		if(user.getRoles().contains("ROLE_ADMIN")) {
 			forms.addAll(formService.getAllForms());
 			model.addAttribute("roles", userService.getAllRoles());
@@ -91,7 +93,7 @@ public class FormAdminController {
 			model.addAttribute("roles", userService.getManagersRoles(authUserEppn));
 			model.addAttribute("workflowTypes", workflowService.getManagerWorkflows(authUserEppn));
 		}
-		model.addAttribute("forms", forms.stream().sorted(Comparator.comparing(Form::getDescription)).collect(Collectors.toList()));
+		model.addAttribute("forms", forms.stream().sorted(Comparator.comparing(Form::getTitle)).collect(Collectors.toList()));
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("preFillTypes", preFillService.getPreFillValues());
 		return "admin/forms/list";
@@ -109,7 +111,7 @@ public class FormAdminController {
 						 @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
 		try {
 			Form form = formService.createForm(null, name, title, workflowId, prefillType, roleNames, publicUsage, fieldNames, fieldTypes);
-			User user = userService.getUserByEppn(authUserEppn);
+			User user = userService.getByEppn(authUserEppn);
 			if(!user.getRoles().contains("ROLE_ADMIN")) {
 				form.setManagerRole(managerRole);
 			}
@@ -132,7 +134,7 @@ public class FormAdminController {
 						   @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
 		try {
 			Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, publicUsage);
-			User user = userService.getUserByEppn(authUserEppn);
+			User user = userService.getByEppn(authUserEppn);
 			if(!user.getRoles().contains("ROLE_ADMIN")) {
 				form.setManagerRole(managerRole);
 			}
@@ -147,7 +149,7 @@ public class FormAdminController {
 	@GetMapping("{id}/fields")
 	@PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String fields(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-		User user = userService.getUserByEppn(authUserEppn);
+		User user = userService.getByEppn(authUserEppn);
 		if(preAuthorizeService.formManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
 			Form form = formService.getById(id);
 			model.addAttribute("form", form);
@@ -169,21 +171,14 @@ public class FormAdminController {
 	@PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String addSigns(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) throws EsupSignatureIOException {
 		Form form = formService.getById(id);
-		Map<Integer, Long> srpMap = new HashMap<>();
 		if (form.getWorkflow() != null) {
-			for (WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
-				for (SignRequestParams signRequestParams : workflowStep.getSignRequestParams()) {
-					srpMap.put(form.getWorkflow().getWorkflowSteps().indexOf(workflowStep) + 1, signRequestParams.getId());
-				}
-			}
 			model.addAttribute("spots", formService.getSpots(id));
-			model.addAttribute("srpMap", srpMap);
+			model.addAttribute("srpMap", formService.getSrpMap(form));
 		}
 		if (form.getDocument() != null) {
 			form.setTotalPageCount(formService.getTotalPagesCount(id));
 		}
 		model.addAttribute("form", form);
-		model.addAttribute("srpMap", srpMap);
 		model.addAttribute("workflow", form.getWorkflow());
 		model.addAttribute("document", form.getDocument());
 		return "admin/forms/signs";
@@ -202,12 +197,12 @@ public class FormAdminController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@DeleteMapping("/remove-signRequestParams/{formId}/{id}")
+	@DeleteMapping("/remove-signRequestParams/{formId}/{signRequestParamsId}")
 	@PreAuthorize("@preAuthorizeService.formManager(#formId, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String removeSignRequestParams(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("formId") Long formId,
-									   @PathVariable("id") Long id,
+									   @PathVariable("signRequestParamsId") Long signRequestParamsId,
 									   RedirectAttributes redirectAttributes) {
-		formService.removeSignRequestParamsSteps(formId, id);
+		formService.removeSignRequestParamsSteps(formId, signRequestParamsId);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Champ signature supprimé"));
 		return "redirect:/admin/forms/" + formId + "/signs";
 	}
@@ -255,7 +250,7 @@ public class FormAdminController {
 	public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @ModelAttribute Form updateForm,
 							 @RequestParam(value = "types", required = false) String[] types,
 							 RedirectAttributes redirectAttributes) {
-		User user = userService.getUserByEppn(authUserEppn);
+		User user = userService.getByEppn(authUserEppn);
 		if(preAuthorizeService.formManager(updateForm.getId(), authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
 			formService.updateForm(updateForm.getId(), updateForm, types, true);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
@@ -294,7 +289,7 @@ public class FormAdminController {
 	public ResponseEntity<Void> getFormDatasCsv(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String name, HttpServletResponse response) {
 		List<Form> forms = formService.getFormByName(name);
 		if (forms.size() > 0) {
-			User user = userService.getUserByEppn(authUserEppn);
+			User user = userService.getByEppn(authUserEppn);
 			if(preAuthorizeService.formManager(forms.get(0).getId(), authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
 				try {
 					response.setContentType("text/csv; charset=utf-8");

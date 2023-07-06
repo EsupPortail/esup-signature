@@ -83,7 +83,7 @@
                                         </th:block>
                                     </select>
                                 </th>
-                                <th class="d-none d-xxxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date de signature/refus</a></th>
+                                <th class="d-none d-xxxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date dernière modification</a></th>
                                 <th class="d-none d-md-table-cell">
                                     <div class="d-flex text-center">
                                     <select class="slim-select-filter sign-request-filter" name="statusFilter" id="statusFilter" onchange="submit();">
@@ -171,7 +171,7 @@
                                             </ul>
                                         </div>
 
-                                        <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signBook.id}">
+                                        <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${signBook.id}">
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
                                                     <form th:id="'signBookDel' + ${signBook.id}" th:action="'/user/signbooks/'+ ${signBook.id}" th:method="delete">

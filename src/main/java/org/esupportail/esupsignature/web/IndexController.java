@@ -22,8 +22,8 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.ldap.LdapPersonService;
-import org.esupportail.esupsignature.service.ldap.PersonLdapLight;
+import org.esupportail.esupsignature.service.ldap.LdapPersonLightService;
+import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -38,6 +38,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -53,12 +54,10 @@ public class IndexController {
 
 	private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
 
+	private final GlobalProperties globalProperties;
+
 	@Resource
 	private PreAuthorizeService preAuthorizeService;
-
-	public IndexController(GlobalProperties globalProperties) {
-		this.globalProperties = globalProperties;
-	}
 
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
@@ -74,20 +73,21 @@ public class IndexController {
 	@Resource
 	private SignRequestService signRequestService;
 
-	@Autowired(required = false)
-	private LdapPersonService ldapPersonService;
+	private final LdapPersonLightService ldapPersonLightService;
 
-	private final GlobalProperties globalProperties;
+	public IndexController(GlobalProperties globalProperties, @Autowired(required = false) LdapPersonLightService ldapPersonLightService) {
+		this.globalProperties = globalProperties;
+		this.ldapPersonLightService = ldapPersonLightService;
+	}
 
 	@GetMapping
-	public String index(Model model, HttpServletRequest httpServletRequest) {
+	public String index(@ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) {
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpServletRequest.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 		if(defaultSavedRequest != null && defaultSavedRequest.getServletPath().startsWith("/ws")) {
 			return "redirect:/denied/ws";
 		}
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		User authUser = getAuthUser(auth);
-		if(authUser != null && !authUser.getEppn().equals("system")) {
+		if(StringUtils.hasText(authUserEppn) && !authUserEppn.equals("system")) {
 			model.asMap().clear();
 			return "redirect:/user/";
 		} else {
@@ -154,18 +154,24 @@ public class IndexController {
 	public User getAuthUser(Authentication auth) {
 		User user = null;
 		if (auth != null && !auth.getName().equals("anonymousUser")) {
-			if(ldapPersonService != null) {
-				List<PersonLdapLight> personLdaps =  ldapPersonService.getPersonLdapLight(auth.getName());
-				if(personLdaps.size() > 0) {
+			if(ldapPersonLightService != null) {
+				List<PersonLightLdap> personLdaps =  ldapPersonLightService.getPersonLdapLight(auth.getName());
+				if(personLdaps.size() == 1) {
 					String eppn = personLdaps.get(0).getEduPersonPrincipalName();
-					if(eppn == null) {
+					if (!StringUtils.hasText(eppn)) {
 						eppn = userService.buildEppn(auth.getName());
 					}
-					user = userService.getUserByEppn(eppn);
+					user = userService.getByEppn(eppn);
+				} else {
+					if (personLdaps.size() == 0) {
+						logger.debug("no result on ldap search for " + auth.getName());
+					} else {
+						logger.debug("more than one result on ldap search for " + auth.getName());
+					}
 				}
 			} else {
 				logger.debug("Try to retrieve "+ auth.getName() + " without ldap");
-				user = userService.getUserByEppn(auth.getName());
+				user = userService.getByEppn(auth.getName());
 			}
 		}
 		return user;

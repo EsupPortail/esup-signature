@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,14 +93,18 @@ public class NexuProcessController implements Serializable {
 	@ResponseBody
 	public SignDocumentResponse signDocument(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 											 @RequestBody @Valid SignatureValueAsString signatureValue,
-											 @ModelAttribute("id") Long id, HttpSession httpSession) throws EsupSignatureRuntimeException, IOException {
+											 @ModelAttribute("id") Long id, HttpSession httpSession) throws EsupSignatureRuntimeException {
 		AbstractSignatureForm abstractSignatureForm = (AbstractSignatureForm) httpSession.getAttribute("abstractSignatureForm");
 		abstractSignatureForm.setBase64SignatureValue(signatureValue.getSignatureValue());
-		SignDocumentResponse signDocumentResponse = signService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn, authUserEppn);
 		signRequestService.updateStatus(id, SignRequestStatus.signed, "Signature", "SUCCESS", userEppn, authUserEppn);
-		signBookService.applyEndOfSignRules(id, userEppn, authUserEppn, SignType.nexuSign, "");
+		StepStatus stepStatus = signRequestService.applyEndOfSignRules(id, userEppn, authUserEppn, SignType.nexuSign, "");
+		if(stepStatus.equals(StepStatus.last_end)) {
+			signBookService.completeSignRequest(id, authUserEppn, "Tous les documents sont signés");
+		} else if (stepStatus.equals(StepStatus.completed)){
+			signBookService.pendingSignRequest(id, null, userEppn, authUserEppn, false);
+		}
 		httpSession.removeAttribute("abstractSignatureForm");
-		return signDocumentResponse;
+		return signService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn, authUserEppn);
 	}
 
 }

@@ -37,11 +37,13 @@ export class WizUi {
         let form = $("#start-workflow-form");
         let title = $("#title-wiz");
         if(this.workflowName === "custom" && title.val() === "") {
+            console.log("submit form custom");
             $(window).on('scroll', function(e) {
                 window.scrollTo(0,0);
             });
             $("#title-wiz-submit").click();
         } else {
+            console.log("send post " + form.attr("action"));
             $.post({
                 url: form.attr("action"),
                 data: form.serialize(),
@@ -58,13 +60,14 @@ export class WizUi {
             let self = this;
             bootbox.confirm("Attention si vous fermez cette fenêtre, les modifications seront perdues", function(result) {
                 if(result) {
-                    if (workflowId) {
+                    if (workflowId != null) {
                         $.ajax({
                             method: "DELETE",
                             url: "/user/workflows/silent-delete/" + workflowId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
                             cache: false
                         });
                     } else {
+                        console.log(self.signBookId);
                         $.ajax({
                             method: "DELETE",
                             url: "/user/signbooks/silent-delete/" + self.signBookId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
@@ -105,19 +108,21 @@ export class WizUi {
     }
 
     initWiz1(html) {
+        let self = this;
         this.div.html(html);
         $("#wiz-start-button").on('click', e => this.submitStartWorkflow());
         this.input = $("#multipartFiles_" + this.workflowId);
         if(!this.workflowId) this.input = $("#multipartFiles_0");
         this.fileInput = new FilesInput(this.input, this.maxSize, this.csrf, this.workflowName, null, false);
-        this.input.on("filebatchuploadsuccess", e => this.gotoStep2(e));
+        this.input.on("fileuploaded", function(event, data, previewId, index, fileId) {
+            self.gotoStep2(data.response);
+        });
         let id = this.workflowId;
         if(id === "") {
             id = 0;
         }
         this.recipientCCSelect = new SelectUser("recipientsCCEmailsWiz" + id, null, null, this.csrf);
         this.form = this.div.find('form');
-        let self = this;
         this.form.on('submit', function(e){
             e.preventDefault();
             let url = self.form.attr('action') + "/?" + self.csrf.parameterName + '=' + self .csrf.token;
@@ -139,7 +144,7 @@ export class WizUi {
     }
 
     gotoStep2(e) {
-        console.log(e);
+        console.log("goto step 2");
         let comment = $("#commentWiz");
         let title = $("#title-wiz");
         let id = this.workflowId;
@@ -163,12 +168,13 @@ export class WizUi {
     }
 
     initWiz2(html) {
+        let self = this;
         this.div.html(html);
         if($("#recipientsEmailsWiz").length) {
             new SelectUser("recipientsEmailsWiz", null, null, this.csrf);
         }
         $('[id^="recipientEmailsWizSelect_"]').each(function (){
-            new SelectUser($(this).attr('id'), null, null, this.csrf);
+            new SelectUser($(this).attr('id'), null, null, self.csrf);
         });
         if($("#targetEmailsSelect").length) {
             new SelectUser("targetEmailsSelect", null, null, this.csrf);
@@ -176,7 +182,6 @@ export class WizUi {
         if($("#recipientsCCEmailsWiz").length) {
             this.recipientCCSelect = new SelectUser("recipientsCCEmailsWiz", null, null, this.csrf);
         }
-        let self = this;
         $("#end").on('click', function (){
             self.end = true;
         });
@@ -196,6 +201,7 @@ export class WizUi {
         step.workflowId = $('#wizWorkflowId').val();
         step.recipientsEmails = $('#recipientsEmailsWiz').find(`[data-es-check-cert='true']`).prevObject[0].slim.getSelected();
         step.allSignToComplete = $('#allSignToCompleteWiz').is(':checked');
+        step.changeable = $('#changeableWiz').is(':checked');
         step.autoSign = $('#autoSign').is(':checked');
         let userSignFirst = $('#userSignFirstWiz').is(':checked');
         step.signType = $('#signTypeWiz').val();

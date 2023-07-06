@@ -42,7 +42,7 @@
                         <span th:text="${user.email}"></span>
                         <span th:if="${iterator.index >= step.users.size()}">, </span>
                     </th:block>
-                    <span th:if="${step.repeatable}"> (cette étape peut donner lieu à plusieurs validations en séries)</span>
+                    <span th:if="${step.repeatable}"> (cette étape peut donner lieu à plusieurs validations en série)</span>
                     </th:block>
                     <th:block th:if="${step.autoSign}">
                         Étape automatique
@@ -50,7 +50,7 @@
                 </div>
                 <div th:if="${step.changeable == true}" class="form-group mb-1">
                     <label><span th:text="'Merci de saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span></label>
-                    <select th:id="'recipientEmailsWizSelect_' + ${iterator.index + 1}" multiple="multiple" name="recipientEmails" required="required">
+                    <select  th:id="'recipientEmailsWizSelect_' + ${iterator.index + 1}" multiple="multiple" name="recipientEmails" required="required">
                         <option data-placeholder="true"></option>
                         <th:block th:each="user : ${step.users}">
                             <option th:if="${user.email != null}" selected="selected"
@@ -74,26 +74,26 @@
                             <b>Destinataire : <span th:text="${user.email}"></span></b>
                             <input id="emails" type="hidden" name="emails" th:value="${user.email}">
                             <div class="d-flex col-10">
-                            <label class="col-2" for="names">Nom</label>
-                            <input id="names" class="form-control col-10" type="text" name="names" th:value="${user.firstname != 'Nouvel utilisateur'} ? ${user.name} : ''" required>
+                                <label class="col-2" for="names">Nom</label>
+                                <input id="names" class="form-control col-10" type="text" name="names" th:value="${user.firstname != 'Nouvel utilisateur'} ? ${user.name} : ''" required>
                             </div>
                             <div class="d-flex col-10">
-                            <label class="col-2" for="firstnames">Prénom</label>
-                            <input id="firstnames" class="form-control col-10" type="text" name="firstnames" th:value="${user.firstname != 'Nouvel utilisateur'} ? ${user.firstname} : ''" required>
+                                <label class="col-2" for="firstnames">Prénom</label>
+                                <input id="firstnames" class="form-control col-10" type="text" name="firstnames" th:value="${user.firstname != 'Nouvel utilisateur'} ? ${user.firstname} : ''" required>
                             </div>
                             <div class="d-flex col-10">
-                            <label class="col-2" for="phones">Mobile</label>
-                            <input id="phones" class="form-control col-10" type="text" name="phones" value="" required>
+                                <label class="col-2" for="phones">Mobile</label>
+                                <input id="phones" class="form-control col-10" type="text" name="phones" value="" th:required="${globalProperties.smsRequired}">
                             </div>
                         </div>
                     </th:block>
-                </th:block>
+                </th:block>²
             </th:block>
             </ul>
         </div>
         <th:block th:each="target, iterator : ${signBook.liveWorkflow.workflow.targets}">
                 <div th:if="${target.targetUri.contains('mailto:')}" class="form-group mb-3">
-                    <label>Etape finale : Envoi par mail à </label>
+                    <label>Étape finale : Envoi par mail à </label>
                     <select class="select-users" id="targetEmailsSelect" multiple="multiple" name="targetEmails">
                         <option data-placeholder="true"></option>
                         <th:block th:each="targetEmail : ${target.targetUri.replace('mailto:', '').split(',')}">

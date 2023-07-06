@@ -128,7 +128,7 @@
                                 <button type="button" data-bs-toggle="modal" data-bs-target="#modal-warning" th:attr="data-bs-target='#modal-warning' + ${field.id}" class="btn btn-danger">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
-                                <div class="modal modal-warning fade in" th:id="'modal-warning' + ${field.id}">
+                                <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning' + ${field.id}">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <form id="command" th:action="'/admin/forms/' + ${form.id} + '/fields/' + ${field.id} + '/delete'" th:method="delete">
@@ -173,7 +173,7 @@
         </div>
     </div>
 </main>
-<div class="modal fade" id="newManualForm" data-bs-focus="false" role="dialog" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="newManualForm"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">

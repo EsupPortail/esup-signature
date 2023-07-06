@@ -44,9 +44,9 @@
                         </thead>
                         <tbody>
                         <th:block th:each="workflow : ${workflows}">
-                            <tr>
-                                <td th:text="${workflow.description}"></td>
-                                <td th:text="${workflow.createBy.eppn}"></td>
+                            <tr th:data-href="'/admin/workflows/update/' + ${workflow.id}">
+                                <td class="clickable-td" th:text="${workflow.description}"></td>
+                                <td class="clickable-td" th:text="${workflow.createBy.eppn}"></td>
                                 <td th:if="${workflow.workflowSteps.size() > 0}">
                                     <ul class="list-group">
                                     <th:block th:each="workflowStep,iterator : ${workflow.workflowSteps}">
@@ -79,7 +79,7 @@
                                             </li>
                                             <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
-                                                   th:href="'/admin/workflows/' + ${workflow.id}">
+                                                   th:href="'/admin/workflows/steps/' + ${workflow.id}">
                                                     <i class="fas fa-shoe-prints pr-2"></i> Modifier les étapes
                                                 </a>
                                             </li>
@@ -103,7 +103,7 @@
                                         </ul>
                                     </div>
 
-                                    <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${workflow.id}">
+                                    <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${workflow.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <form id="command" th:action="'/admin/workflows/' + ${workflow.id}" th:method="delete">
@@ -137,7 +137,7 @@
     import {WorkflowManualAdd } from '/js/modules/ui/workflows/WorkflowManualAdd.js?version=[[${versionApp}]]';
     new WorkflowManualAdd();
 </script>
-<div class="modal fade" id="newWorkflow" data-bs-focus="false" role="dialog" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="newWorkflow"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form th:action="'/admin/workflows'" method="post">

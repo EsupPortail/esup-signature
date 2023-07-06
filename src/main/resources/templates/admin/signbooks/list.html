@@ -126,7 +126,7 @@
 <!--                                    </th:block>-->
 <!--                                </select>-->
                             </th>
-                            <th class="d-none d-xxxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date de signature/refus</a></th>
+                            <th class="d-none d-xxxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date dernière modification</a></th>
                             <th class="d-none d-md-table-cell">
                                 <select id="statusFilter" name="statusFilter" class="slim-select-filter sign-request-filter spinner-borders" data-placeholder="Statut">
                                     <option data-placeholder="true"></option>
@@ -157,8 +157,8 @@
         </div>
     </div>
 </main>
-<div class="modal fade" id="checkCertSignModal"
-     data-bs-focus="false" role="dialog" aria-labelledby="checkCertSignModalLabel" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="checkCertSignModal"
+      role="dialog" aria-labelledby="checkCertSignModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -186,7 +186,7 @@
         </div>
     </div>
 </div>
-<div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">

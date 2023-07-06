@@ -7,11 +7,11 @@ import com.google.common.cache.LoadingCache;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import org.bouncycastle.util.encoders.Hex;
 import org.esupportail.esupsignature.entity.Data;
-import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ public class OtpService {
     private static LoadingCache<String, Otp> otpCache;
 
     @Resource
-    private SignRequestRepository signRequestRepository;
+    private SignBookRepository signBookRepository;
 
     @Resource
     private MailService mailService;
@@ -60,16 +60,19 @@ public class OtpService {
     public boolean generateOtpForSignRequest(Long id, Long extUserId, String phone) throws EsupSignatureMailException {
         User extUser = userService.getById(extUserId);
         if(extUser.getUserType().equals(UserType.external)) {
-            SignRequest signRequest = signRequestRepository.findById(id).get();
+
+            SignBook signBook = signBookRepository.findById(id).get();
             Otp otp = new Otp();
             otp.setCreateDate(new Data());
-            otp.setPhoneNumber(phone);
+            if(StringUtils.hasText(phone)) {
+                otp.setPhoneNumber(phone);
+            }
             otp.setEmail(extUser.getEmail());
-            otp.setSignRequestId(signRequest.getId());
+            otp.setSignBookId(signBook.getId());
             otp.setForceSms(extUser.getForceSms());
             String urlId = UUID.randomUUID().toString();
-            mailService.sendOtp(otp, urlId, signRequest);
-            signRequest.setLastOtp(urlId);
+            mailService.sendOtp(otp, urlId, signBook);
+            signBook.setLastOtp(urlId);
             removeOtpFromCache(extUser.getEppn());
             removeOtpFromCache(extUser.getEmail());
             otpCache.put(urlId, otp);
@@ -93,7 +96,7 @@ public class OtpService {
 
     public void deleteOtpBySignRequestId(Long id) {
         for (Map.Entry<String, Otp> otpEntry : otpCache.asMap().entrySet()) {
-            if(otpEntry.getValue().getSignRequestId().equals(id)) {
+            if(otpEntry.getValue().getSignBookId().equals(id)) {
                 clearOTP(otpEntry.getKey());
             }
         }

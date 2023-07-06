@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -43,7 +44,7 @@ public class DataService {
     private FieldPropertieService fieldPropertieService;
 
     public Data getById(Long dataId) {
-        return dataRepository.findById(dataId).get();
+        return dataRepository.findWithLockingById(dataId).orElseThrow();
     }
 
     public Data getBySignRequest(SignRequest signRequest) {
@@ -66,7 +67,10 @@ public class DataService {
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user, data.getSignBook().getSignRequests().get(0));
         for(Field field : fields) {
             if(field.getWorkflowSteps().stream().noneMatch(workflowStep -> workflowStep.getId().equals(signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getId()))) {
-                formDatas.put(field.getName(), data.getDatas().get(field.getName()));
+                String newData = data.getDatas().get(field.getName());
+                if(StringUtils.hasText(newData) && !StringUtils.hasText(formDatas.get(field.getName()))) {
+                    formDatas.put(field.getName(), data.getDatas().get(field.getName()));
+                }
             }
             if(!field.getStepZero()) {
                 field.setDefaultValue("");
@@ -98,7 +102,7 @@ public class DataService {
     }
 
     public Data cloneData(Data data, String authUserEppn) {
-        User authUser = userService.getUserByEppn(authUserEppn);
+        User authUser = userService.getByEppn(authUserEppn);
         Form form = formService.getFormByNameAndActiveVersion(data.getForm().getName(), true).get(0);
         Data cloneData = new Data();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
@@ -162,7 +166,7 @@ public class DataService {
 
     @Transactional
     public Data addData(Long formId, String authUserEppn) {
-        User authUser = userService.getUserByEppn(authUserEppn);
+        User authUser = userService.getByEppn(authUserEppn);
         Form form = formService.getById(formId);
         Data data = new Data();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -185,7 +189,7 @@ public class DataService {
 
     @Transactional
     public void anonymize(String userEppn, User anonymous) {
-        User user = userService.getUserByEppn(userEppn);
+        User user = userService.getByEppn(userEppn);
         for (Data data : dataRepository.findByCreateBy(user)) {
             data.setCreateBy(anonymous);
         }

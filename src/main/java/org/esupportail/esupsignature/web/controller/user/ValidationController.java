@@ -5,9 +5,9 @@ import eu.europa.esig.dss.diagnostic.DiagnosticDataFacade;
 import eu.europa.esig.dss.diagnostic.RevocationWrapper;
 import eu.europa.esig.dss.diagnostic.TimestampWrapper;
 import eu.europa.esig.dss.diagnostic.jaxb.XmlDiagnosticData;
+import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.RevocationType;
 import eu.europa.esig.dss.enumerations.TimestampType;
-import eu.europa.esig.dss.model.MimeType;
 import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import eu.europa.esig.dss.validation.reports.Reports;
@@ -16,8 +16,8 @@ import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
+import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -33,7 +33,10 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -116,7 +119,7 @@ public class ValidationController {
 	public void downloadSimpleReport(HttpSession session, HttpServletResponse response) {
 		try {
 			String simpleReport = session.getAttribute("simpleReportXml").toString();
-			response.setContentType(MimeType.PDF.getMimeTypeString());
+			response.setContentType(MimeTypeEnum.PDF.getMimeTypeString());
 			response.setHeader("Content-Disposition", "attachment; filename=Rapport-Signature.pdf");
 			fopService.generateSimpleReport(simpleReport, response.getOutputStream());
 		} catch (Exception e) {
@@ -128,7 +131,7 @@ public class ValidationController {
 	public void downloadDetailedReport(HttpSession session, HttpServletResponse response) {
 		try {
 			String detailedReport = session.getAttribute("detailedReportXml").toString();
-			response.setContentType(MimeType.PDF.getMimeTypeString());
+			response.setContentType(MimeTypeEnum.PDF.getMimeTypeString());
 			response.setHeader("Content-Disposition", "attachment; filename=Rapport-Signature-Complet.pdf");
 			fopService.generateDetailedReport(detailedReport, response.getOutputStream());
 		} catch (Exception e) {
@@ -140,7 +143,7 @@ public class ValidationController {
 	public void downloadDiagnosticData(HttpSession session, HttpServletResponse response) {
 		String report = session.getAttribute("diagnosticDataXml").toString();
 
-		response.setContentType(MimeType.XML.getMimeTypeString());
+		response.setContentType(MimeTypeEnum.XML.getMimeTypeString());
 		response.setHeader("Content-Disposition", "attachment; filename=DSS-Diagnotic-data.xml");
 		try {
 			Utils.write(report.getBytes(StandardCharsets.UTF_8), response.getOutputStream());
@@ -155,7 +158,7 @@ public class ValidationController {
 		String report = session.getAttribute("diagnosticDataXml").toString();
 
 		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.valueOf(MimeType.SVG.getMimeTypeString()));
+		headers.setContentType(MediaType.valueOf(MimeTypeEnum.SVG.getMimeTypeString()));
 		return new ResponseEntity<>(xsltService.generateSVG(report), headers,
 				HttpStatus.OK);
 	}
@@ -171,11 +174,11 @@ public class ValidationController {
 			throw new Exception(message);
 		}
 		String filename = revocationData.getId();
-		MimeType mimeType;
+		MimeTypeEnum mimeType;
 		byte[] binaries;
 
 		if (RevocationType.CRL.equals(revocationData.getRevocationType())) {
-			mimeType = MimeType.CRL;
+			mimeType = MimeTypeEnum.CRL;
 			filename += ".crl";
 
 			if (Utils.areStringsEqualIgnoreCase(format, "pem")) {
@@ -187,7 +190,7 @@ public class ValidationController {
 				binaries = revocationData.getBinaries();
 			}
 		} else {
-			mimeType = MimeType.BINARY;
+			mimeType = MimeTypeEnum.BINARY;
 			filename += ".ocsp";
 			binaries = revocationData.getBinaries();
 		}
@@ -195,8 +198,8 @@ public class ValidationController {
 		addTokenToResponse(response, filename, mimeType, binaries);
 	}
 
-	protected void addTokenToResponse(HttpServletResponse response, String filename, MimeType mimeType, byte[] binaries) {
-		response.setContentType(MimeType.TST.getMimeTypeString());
+	protected void addTokenToResponse(HttpServletResponse response, String filename, MimeTypeEnum mimeType, byte[] binaries) {
+		response.setContentType(MimeTypeEnum.TST.getMimeTypeString());
 		response.setHeader("Content-Disposition", "attachment; filename=" + filename);
 		try (InputStream is = new ByteArrayInputStream(binaries); OutputStream os = response.getOutputStream()) {
 			Utils.copy(is, os);
@@ -228,7 +231,7 @@ public class ValidationController {
 		}
 
 		String filename = type.name() + ".tst";
-		addTokenToResponse(response, filename, MimeType.TST, binaries);
+		addTokenToResponse(response, filename, MimeTypeEnum.TST, binaries);
 	}
 
 	public DiagnosticData getDiagnosticData(HttpSession session) {

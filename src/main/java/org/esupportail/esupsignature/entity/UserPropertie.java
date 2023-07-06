@@ -19,7 +19,7 @@ public class UserPropertie {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private Map<User, Date> favorites = new HashMap<>();
 
     public Long getId() {

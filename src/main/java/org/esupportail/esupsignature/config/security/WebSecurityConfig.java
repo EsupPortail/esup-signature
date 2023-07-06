@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.service.security.oauth.CustomAuthorizationR
 import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.ValidatingOAuth2UserService;
 import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
+import org.esupportail.esupsignature.service.security.su.SuAuthenticationSuccessHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -192,6 +193,7 @@ public class WebSecurityConfig {
 				.ignoringAntMatchers("/resources/**")
 				.ignoringAntMatchers("/webjars/**")
 				.ignoringAntMatchers("/ws/**")
+				.ignoringAntMatchers("/swagger-ui/**")
 				.ignoringAntMatchers("/user/nexu-sign/**")
 				.ignoringAntMatchers("/otp-access/**")
 				.ignoringAntMatchers("/log/**")
@@ -234,6 +236,16 @@ public class WebSecurityConfig {
 		AccessDeniedHandlerImpl accessDeniedHandlerImpl = new AccessDeniedHandlerImpl();
 		accessDeniedHandlerImpl.setErrorPage("/denied");
 		http.exceptionHandling().accessDeniedHandler(accessDeniedHandlerImpl);
+		http.authorizeRequests()
+				.antMatchers("/").permitAll()
+				.antMatchers("/admin/", "/admin/**").access("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
+				.antMatchers("/user/", "/user/**").access("hasAnyRole('ROLE_USER')")
+				.antMatchers("/otp-access/**").permitAll()
+				.antMatchers("/otp/", "/otp/**").access("hasAnyRole('ROLE_OTP', 'ROLE_FRANCECONNECT')")
+				.antMatchers("/ws-secure/", "/ws-secure/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP', 'ROLE_FRANCECONNECT')")
+				.antMatchers("/public/", "/public/**").permitAll()
+				.antMatchers("/error").permitAll();
+
 		String hasIpAddresses = "";
 		int nbIps = 0;
 		if(webSecurityProperties.getWsAccessAuthorizeIps() != null) {
@@ -246,21 +258,13 @@ public class WebSecurityConfig {
 			}
 			http.authorizeRequests().antMatchers("/ws/**").access(hasIpAddresses);
 			http.authorizeRequests().antMatchers("/actuator/**").access(hasIpAddresses);
+			http.authorizeRequests().antMatchers("/swagger-ui/**").access(hasIpAddresses);
 //			http.authorizeRequests().antMatchers("/ws/**").access("hasRole('ROLE_WS')").and().addFilter(apiKeyFilter());
 		} else {
 			http.authorizeRequests().antMatchers("/ws/**").denyAll();
 			http.authorizeRequests().antMatchers("/actuator/**").denyAll();
+			http.authorizeRequests().antMatchers("/swagger-ui/**").denyAll();
 		}
-		http.authorizeRequests()
-				.antMatchers("/").permitAll()
-				.antMatchers("/admin/", "/admin/**").access("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
-				.antMatchers("/user/", "/user/**").access("hasAnyRole('ROLE_USER')")
-				.antMatchers("/otp-access/**").permitAll()
-				.antMatchers("/otp/", "/otp/**").access("hasAnyRole('ROLE_OTP', 'ROLE_FRANCECONNECT')")
-				.antMatchers("/ws-secure/", "/ws-secure/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP', 'ROLE_FRANCECONNECT')")
-				.antMatchers("/public/", "/public/**").permitAll()
-				.antMatchers("/error").permitAll();
-
 	}
 
 	@Bean
@@ -290,7 +294,7 @@ public class WebSecurityConfig {
 		switchUserFilter.setUserDetailsService(userDetailsService());
 		switchUserFilter.setSwitchUserUrl("/admin/su-login");
 		switchUserFilter.setExitUserUrl("/su-logout");
-		switchUserFilter.setTargetUrl("/");
+		switchUserFilter.setSuccessHandler(new SuAuthenticationSuccessHandler());
 		switchUserFilter.setFailureHandler(new ExceptionMappingAuthenticationFailureHandler());
 		return switchUserFilter;
 	}

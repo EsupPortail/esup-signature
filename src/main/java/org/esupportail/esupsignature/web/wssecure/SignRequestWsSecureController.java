@@ -6,12 +6,13 @@ import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
+import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.hibernate.HibernateException;
@@ -86,8 +87,8 @@ public class SignRequestWsSecureController {
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
         try {
-            boolean result = signBookService.initSign(id, signRequestParamsJsonString, comment, formData, password, certType, userShareId, userEppn, authUserEppn);
-            if(!result) {
+            StepStatus stepStatus = signBookService.initSign(id, signRequestParamsJsonString, comment, formData, password, certType, userShareId, userEppn, authUserEppn);
+            if(stepStatus.equals(StepStatus.nexu_redirect)) {
                 return ResponseEntity.status(HttpStatus.OK).body("initNexu");
             }
             return new ResponseEntity<>(HttpStatus.OK);
@@ -226,13 +227,13 @@ public class SignRequestWsSecureController {
     @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
     @ResponseBody
     @PostMapping(value = "/add-docs", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> addDocumentToNewSignRequest(@SessionAttribute("signBookId") Long signBookId,  @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles, @RequestParam(required = false) Boolean separated) throws EsupSignatureIOException {
+    public String addDocumentToNewSignRequest(@SessionAttribute("signBookId") Long signBookId,  @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents");
         try {
             signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn);
-            return new ResponseEntity<>("{}", HttpStatus.OK);
+            return signBookId.toString();
         } catch (HibernateException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return "";
         }
     }
 
@@ -265,6 +266,7 @@ public class SignRequestWsSecureController {
                                                           @RequestParam(value = "forcesmses", required = false) List<String> forcesmses,
                                                           @RequestParam(value = "title", required = false) String title,
                                                           Model model) throws EsupSignatureRuntimeException {
+        if(pending == null) pending = false;
         recipientsEmails = recipientsEmails.stream().distinct().collect(Collectors.toList());
         List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones, forcesmses);
         SignBook signBook = signBookService.createFullSignBook(title, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, userEppn, authUserEppn, false, forceAllSign);
@@ -286,6 +288,7 @@ public class SignRequestWsSecureController {
         } else {
             signBook = signBookService.createSignBook(title, null, "Demande personnalisée", userEppn, false);
         }
+        logger.info("signbook created " + signBook.getId());
         model.addAttribute("signBookId", signBook.getId());
         return new ResponseEntity<>(signBook.getId(), HttpStatus.OK);
     }

@@ -8,7 +8,7 @@
     import {HomeUi} from '/js/modules/ui/HomeUi.js?version=[[${versionApp}]]';
     import {HomeHelp} from '/js/modules/help/HomeHelp.js?version=[[${versionApp}]]';
     new HomeUi([[${startFormId}]]);
-    let help = new HomeHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).homeHelp)}]]);
+    let help = new HomeHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).homeHelp)}]]);
     help.autoStart();
 </script>
 <body>
@@ -178,15 +178,15 @@
     </div>
 </main>
 <footer th:replace="fragments/footer :: footer"></footer>
-<div id="oldSignRequests" class="modal fade" role="dialog" th:if="${oldSignRequests.size() > 0}">
+<div id="oldSignRequests" data-bs-focus="false" class="modal fade" role="dialog" th:if="${oldSignRequests.size() > 0}">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h4>Demandes en retard</h4>
             </div>
             <div class="modal-body">
-                <p>Les demandes suivante sont en attente depuis plus de -- jours.</p>
-                <p>Ces demandes seront <b>mises à la corbeille</b> automatiquement dans -- jours</p>
+                <p>Les demandes suivantes sont en attente depuis plus de <span th:text="${globalProperties.nbDaysBeforeWarning}"></span> jours.</p>
+                <p>Ces demandes seront <b>mises à la corbeille</b> automatiquement dans <span th:text="${globalProperties.nbDaysBeforeDeleting}"></span> jours</p>
                 <ul>
                     <th:block th:each="signRequest : ${oldSignRequests}">
                         <li>
@@ -201,7 +201,7 @@
         </div>
     </div>
 </div>
-<div id="recipientNotPresentSignRequests" class="modal fade" role="dialog" th:if="${recipientNotPresentSignRequests.size() > 0}">
+<div id="recipientNotPresentSignRequests" data-bs-focus="false" class="modal fade" role="dialog" th:if="${recipientNotPresentSignRequests.size() > 0}">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">

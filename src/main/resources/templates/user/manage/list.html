@@ -45,7 +45,7 @@
                                 </td>
                                 <td>
                                     <button th:if="${managedForms.contains(workflow)}" type="button" class="btn btn-sm btn-primary" th:data-bs-target="'#sendModal_' +  ${workflow.id}"  data-bs-toggle="modal"><i class="fas fa-paper-plane"></i> Envoyer le formulaire</button>
-                                    <div th:if="${managedForms.contains(workflow)}" class="modal fade" th:id="'sendModal_' +  ${workflow.id}" data-bs-focus="false" role="dialog" aria-hidden="true">
+                                    <div th:if="${managedForms.contains(workflow)}" data-bs-focus="false" class="modal fade" th:id="'sendModal_' +  ${workflow.id}"  role="dialog" aria-hidden="true">
                                         <div class="modal-dialog modal-lg" role="document">
                                             <div class="modal-content modal-lg">
                                                 <div class="modal-header">
@@ -78,7 +78,7 @@
                                                                                     <span th:text="${user.firstname} + ' ' + ${user.name}"></span>
                                                                                 </th:block>
                                                                             </th:block>
-                                                                            <span th:if="${step.repeatable}"> (cette étape peut donner lieu à plusieurs validations en séries)</span>
+                                                                            <span th:if="${step.repeatable}"> (cette étape peut donner lieu à plusieurs validations en série)</span>
                                                                         </div>
                                                                         <div th:if="${step.changeable == true}" class="form-group mb-3">
                                                                             <label><span th:text="'Merci de saisir le' + ${step.maxRecipients != null && step.maxRecipients > 1 ? '(s)' : ''} + 'participant' + ${step.maxRecipients != null && step.maxRecipients > 1 ? '(s)' : ''} + ' pour l\'étape ' + ${iterator.index + 1}"></span></label>

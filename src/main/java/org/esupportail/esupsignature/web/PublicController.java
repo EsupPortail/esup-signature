@@ -83,7 +83,7 @@ public class PublicController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && !auth.getName().equals("anonymousUser")) {
             String eppn = userService.tryGetEppnFromLdap(auth);
-            if(eppn != null && userService.getUserByEppn(eppn) != null && auditTrail != null) {
+            if(eppn != null && userService.getByEppn(eppn) != null && auditTrail != null) {
                 model.addAttribute("signRequest", signRequest);
                 setControlValues(model, signRequest, auditTrail, eppn);
             }
@@ -134,8 +134,8 @@ public class PublicController {
     private void setControlValues(Model model, SignRequest signRequest, AuditTrail auditTrail, String eppn) {
         List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
         model.addAttribute("logs", logs);
-        model.addAttribute("usersHasSigned", signRequestService.checkUserResponseSigned(signRequest));
-        model.addAttribute("usersHasRefused", signRequestService.checkUserResponseRefused(signRequest));
+        model.addAttribute("usersHasSigned", auditTrailService.checkUserResponseSigned(signRequest));
+        model.addAttribute("usersHasRefused", auditTrailService.checkUserResponseRefused(signRequest));
         model.addAttribute("signRequest", signRequest);
         if(auditTrail.getDocumentSize() != null) {
             model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));

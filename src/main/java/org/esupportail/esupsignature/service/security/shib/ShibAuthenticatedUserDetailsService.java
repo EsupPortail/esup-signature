@@ -1,4 +1,4 @@
-/**
+ /**
  * Licensed to ESUP-Portail under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -17,11 +17,14 @@
  */
 package org.esupportail.esupsignature.service.security.shib;
 
+import org.esupportail.esupsignature.entity.MappingFiltersGroups;
+import org.esupportail.esupsignature.entity.MappingGroupsRoles;
+import org.esupportail.esupsignature.repository.MappingFiltersGroupsRepository;
+import org.esupportail.esupsignature.repository.MappingGroupsRolesRepository;
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,7 +35,10 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,6 +54,10 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 
 	private Group2UserRoleService group2UserRoleService;
 
+	private MappingFiltersGroupsRepository mappingFiltersGroupsRepository;
+
+	private MappingGroupsRolesRepository mappingGroupsRolesRepository;
+
 	public void setLdapGroupService(LdapGroupService ldapGroupService) {
 		this.ldapGroupService = ldapGroupService;
 	}
@@ -62,6 +72,14 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 	
 	public void setGroup2UserRoleService(Group2UserRoleService group2UserRoleService) {
 		this.group2UserRoleService = group2UserRoleService;
+	}
+
+	public void setMappingFiltersGroupsRepository(MappingFiltersGroupsRepository mappingFiltersGroupsRepository) {
+		this.mappingFiltersGroupsRepository = mappingFiltersGroupsRepository;
+	}
+
+	public void setMappingGroupsRolesRepository(MappingGroupsRolesRepository mappingGroupsRolesRepository) {
+		this.mappingGroupsRolesRepository = mappingGroupsRolesRepository;
 	}
 
 	public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws AuthenticationException {
@@ -84,6 +102,12 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 				} catch (Exception e) {
 					logger.debug("unable to find credentials", e);
 				}
+				for(MappingFiltersGroups mappingFiltersGroups : mappingFiltersGroupsRepository.findAll()) {
+					ldapGroupService.getLdapFiltersGroups().put(mappingFiltersGroups.getGroupe(), mappingFiltersGroups.getQuery());
+				}
+				for(MappingGroupsRoles mappingGroupsRoles : mappingGroupsRolesRepository.findAll()) {
+					ldapGroupService.getLdapFiltersGroups().put(mappingGroupsRoles.getGroupe(), mappingGroupsRoles.getRole());
+				}
 				for(String mappingGroupesRole : mappingGroupesRoles.keySet()) {
 					if (credential.contains(mappingGroupesRole)) {
 						grantedAuthorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(mappingGroupesRole)));
@@ -104,18 +128,15 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 					logger.debug("loading authorities : " + simpleGrantedAuthority.getAuthority());
 				}
 				if (ldapGroupService != null && ldapGroupService.getDomain().equals(token.getName().split("@")[1])) {
-					ldapGroups.addAll(ldapGroupService.getGroups(token.getName().replaceAll("@.*", "")));
+					ldapGroups.addAll(ldapGroupService.getGroupsOfUser(token.getName().replaceAll("@.*", "")));
 					ldapGroupService.addLdapRoles(grantedAuthorities, new ArrayList<>(ldapGroups), groupPrefixRoleName, mappingGroupesRoles);
 				}
 			} catch (Exception e) {
 				logger.warn("unable to find authorities", e);
 			}
-			return createUserDetails(token, grantedAuthorities);
+			return new User(token.getName(), "N/A", true, true, true, true, grantedAuthorities);
 		}
 		return new User("anonymousUser", "N/A", false, false, false, false, grantedAuthorities);
 	}
 
-	protected UserDetails createUserDetails(Authentication token, Collection<? extends GrantedAuthority> grantedAuthorities) {
-		return new User(token.getName(), "N/A", true, true, true, true, grantedAuthorities);
-	}
 }

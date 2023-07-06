@@ -65,10 +65,6 @@ public class SignBook {
 
     @JsonIgnore
     @Transient
-    transient List<Log> logs;
-
-    @JsonIgnore
-    @Transient
     transient String comment;
 
     @ManyToMany
@@ -85,6 +81,8 @@ public class SignBook {
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date endDate;
+
+    private String lastOtp;
 
     public Long getId() {
         return id;
@@ -192,14 +190,6 @@ public class SignBook {
         this.signRequests = signRequests;
     }
 
-    public List<Log> getLogs() {
-        return logs;
-    }
-
-    public void setLogs(List<Log> logs) {
-        this.logs = logs;
-    }
-
     public String getComment() {
         return comment;
     }
@@ -248,6 +238,13 @@ public class SignBook {
         this.endDate = endDate;
     }
 
+    public String getLastOtp() {
+        return lastOtp;
+    }
+
+    public void setLastOtp(String lastOtp) {
+        this.lastOtp = lastOtp;
+    }
 
     public List<Comment> getPostits() {
         return signRequests.stream().map(SignRequest::getComments).flatMap(comments -> comments.stream().filter(Comment::getPostit)).collect(Collectors.toList());

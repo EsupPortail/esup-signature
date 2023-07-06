@@ -17,13 +17,9 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div id="addButton" class="fixed-action-btn" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
-                <a class="btn-floating btn-lg bg-primary waves-effect">
-                    <i class="fas fa-plus"></i>
-                </a>
+            <div id="addButton" class="fixed-action-btns" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <ul id="collapseExample" class="list-unstyled">
-                    <li><a title="Créer un formulaire manuellement" data-bs-toggle="modal" data-bs-target="#newManualForm" class="btn-floating text-dark bg-primary waves-effect"><i class="fas fa-hand-paper"></i></a></li>
-                    <li><a title="Créer un formulaire depuis un formulaire PDF" data-bs-toggle="modal" data-bs-target="#newForm" class="btn-floating text-dark bg-primary waves-effect"><i class="fas fa-file-pdf"></i></a></li>
+                    <li><a title="Créer un formulaire depuis un formulaire PDF" data-bs-toggle="modal" data-bs-target="#newForm" class="btn-lg btn-floating text-dark bg-primary waves-effect"><i class="fas fa-plus"></i></a></li>
                 </ul>
             </div>
             <div class="card col-lg-10 mx-auto">
@@ -44,21 +40,21 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr th:each="form : ${forms}">
-                                <td th:text="${form.title}"></td>
-                                <td th:text="${form.name}"></td>
+                            <tr th:each="form : ${forms}" th:data-href="'/admin/forms/update/' + ${form.id}">
+                                <td class="clickable-td" th:text="${form.title}"></td>
+                                <td class="clickable-td" th:text="${form.name}"></td>
                                 <td>
                                     <a th:if="${form.workflow != null}" th:href="'/admin/workflows/update/' + ${form.workflow.id}" th:text="${form.workflow.description}"></a>
                                 </td>
-                                <td th:text="${form.version}"></td>
-                                <td>
+                                <td class="clickable-td" th:text="${form.version}"></td>
+                                <td class="clickable-td">
                                     <i th:if="${form.activeVersion}" class="fas fa-check text-success"></i>
                                     <i th:unless="${form.activeVersion}" class="fas fa-times text-danger"></i>
                                 </td>
-                                <td>
+                                <td class="clickable-td">
                                     <i th:if="${form.deleted}" class="fas fa-times text-danger"></i>
                                 </td>
-                                <td th:text="${form.roles}"></td>
+                                <td class="clickable-td" th:text="${form.roles}"></td>
                                 <td class="text-center">
                                     <div class="dropdown position-relative">
                                         <button type="button" th:id="'menu-toggle_' + ${form.id}" class="btn text-dark" th:title="'Actions ' + ${form.title}"
@@ -105,7 +101,7 @@
                                         </ul>
                                     </div>
 
-                                    <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${form.id}">
+                                    <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${form.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <form id="command" th:action="'/admin/forms/' + ${form.id}" th:method="delete">
@@ -151,7 +147,7 @@
     import {FormManualAdd } from '/js/modules/ui/forms/FormManualAdd.js?version=[[${versionApp}]]';
     new FormManualAdd();
 </script>
-<div class="modal fade" id="newManualForm" data-bs-focus="false" role="dialog" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="newManualForm"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -209,7 +205,7 @@
         </div>
     </div>
 </div>
-<div class="modal fade" id="newForm" data-bs-focus="false" role="dialog" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="newForm"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">

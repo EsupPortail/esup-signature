@@ -64,7 +64,7 @@
                                     <a class="btn btn-danger" th:href="'#modal-warning'" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning'">
                                         <i class="fas fa-trash-alt"></i>
                                     </a>
-                                    <div class="modal modal-warning fade in" th:id="'modal-warning'">
+                                    <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning'">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <form th:action="'/admin/certificats'" th:method="delete">
@@ -96,7 +96,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="newCertificat" data-bs-focus="false" role="dialog" aria-hidden="true">
+    <div data-bs-focus="false" class="modal fade" id="newCertificat"  role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">

@@ -79,13 +79,11 @@ public class SignRequest {
 
     private Date lastNotifDate;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
     @OneToOne(cascade = CascadeType.DETACH)
     private AuditTrail auditTrail;
-
-    private String lastOtp;
 
     @JsonIgnore
     @Transient
@@ -261,14 +259,6 @@ public class SignRequest {
 
     public void setLastNotifDate(Date lastNotifDate) {
         this.lastNotifDate = lastNotifDate;
-    }
-
-    public String getLastOtp() {
-        return lastOtp;
-    }
-
-    public void setLastOtp(String lastOtp) {
-        this.lastOtp = lastOtp;
     }
 
     @JsonIgnore

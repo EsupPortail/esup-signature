@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 @Service
 public class SignRequestParamsService {
 
+    Float fixFactor = .75f;
+
     private static final Logger logger = LoggerFactory.getLogger(SignRequestParamsService.class);
 
     @Resource
@@ -39,16 +41,15 @@ public class SignRequestParamsService {
     private ObjectMapper objectMapper;
 
     public SignRequestParams getById(Long id) {
-        return signRequestParamsRepository.findById(id).get();
+        return signRequestParamsRepository.findById(id).orElseThrow();
     }
 
     public SignRequestParams createFromPdf(PDTerminalField pdSignatureField, int signPageNumber, PDPage pdPage) {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignImageNumber(0);
         signRequestParams.setPdSignatureFieldName(pdSignatureField.getPartialName());
-//        int xPosCentered = (int) ((int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX() + ((int) pdSignatureField.getWidgets().get(0).getRectangle().getWidth() / 2) - (100 * 0.75));
-        signRequestParams.setxPos(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX() / 0.75f));
-        signRequestParams.setyPos(Math.round((pdPage.getBBox().getHeight() - pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - pdSignatureField.getWidgets().get(0).getRectangle().getHeight()) / .75f));
+        signRequestParams.setxPos(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX() / fixFactor));
+        signRequestParams.setyPos(Math.round((pdPage.getBBox().getHeight() - pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - pdSignatureField.getWidgets().get(0).getRectangle().getHeight()) / fixFactor));
         signRequestParams.setSignPageNumber(signPageNumber);
         signRequestParams.setSignWidth(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getWidth()));
         signRequestParams.setSignHeight(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getHeight()));

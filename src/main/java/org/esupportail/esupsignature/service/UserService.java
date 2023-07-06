@@ -16,6 +16,10 @@ import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.ldap.*;
+import org.esupportail.esupsignature.service.ldap.entry.AliasLdap;
+import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
+import org.esupportail.esupsignature.service.ldap.entry.PersonLdap;
+import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.hibernate.LazyInitializationException;
@@ -28,6 +32,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -54,6 +59,10 @@ public class UserService {
 
     private final LdapPersonService ldapPersonService;
 
+    private final LdapPersonLightService ldapPersonLightService;
+
+    private final LdapAliasService ldapAliasService;
+
     private final LdapGroupService ldapGroupService;
 
     private final LdapOrganizationalUnitService ldapOrganizationalUnitService;
@@ -64,11 +73,15 @@ public class UserService {
     public UserService(GlobalProperties globalProperties,
                        WebSecurityProperties webSecurityProperties,
                        @Autowired(required = false) LdapPersonService ldapPersonService,
+                       @Autowired(required = false) LdapPersonLightService ldapPersonLightService,
+                       @Autowired(required = false) LdapAliasService ldapAliasService,
                        @Autowired(required = false) LdapGroupService ldapGroupService,
                        @Autowired(required = false) LdapOrganizationalUnitService ldapOrganizationalUnitService) {
         this.globalProperties = globalProperties;
         this.webSecurityProperties = webSecurityProperties;
         this.ldapPersonService = ldapPersonService;
+        this.ldapPersonLightService = ldapPersonLightService;
+        this.ldapAliasService = ldapAliasService;
         this.ldapGroupService = ldapGroupService;
         this.ldapOrganizationalUnitService = ldapOrganizationalUnitService;
     }
@@ -96,11 +109,7 @@ public class UserService {
     }
 
     public User getByEppn(String eppn) {
-        List<User> users = userRepository.findByEppn(eppn);
-        if(users.size() > 0) {
-            return users.get(0);
-        }
-        return null;
+        return  userRepository.findByEppn(eppn).orElse(null);
     }
 
     public User getSystemUser() {
@@ -134,26 +143,12 @@ public class UserService {
     }
 
     public User getUserByEmail(String email) {
-        if (userRepository.countByEmail(email.toUpperCase()) > 0) {
-            return userRepository.findByEmail(email).get(0);
-        } else {
-            return createUserWithEmail(email);
-        }
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        return optionalUser.orElseGet(() -> createUserWithEmail(email));
     }
 
     public User isUserByEmailExist(String email) {
-        if (userRepository.countByEmail(email.toUpperCase()) > 0) {
-            return userRepository.findByEmail(email).get(0);
-        }
-        return null;
-    }
-
-    public User getGroupUserByEmail(String email) {
-        if (userRepository.countByEmailIgnoreCaseAndUserType(email, UserType.group) > 0) {
-            return userRepository.findByEmailAndUserType(email, UserType.group).get(0);
-        } else {
-            return createGroupUserWithEmail(email);
-        }
+        return userRepository.findByEmail(email).orElse(null);
     }
 
     @Transactional
@@ -166,7 +161,7 @@ public class UserService {
     }
 
     @Transactional
-    public User getUserByEppn(String eppn) {
+    public User getFullUserByEppn(String eppn) {
         if (eppn.equals("scheduler")) {
             return getSchedulerUser();
         }
@@ -175,8 +170,10 @@ public class UserService {
         }
         User user = getByEppn(eppn);
         if (user != null) {
-            user.setKeystoreFileName(this.getKeystoreFileName(user));
-            user.setSignImagesIds(this.getSignImagesIds(user));
+            if(user.getKeystore() != null) {
+                user.setKeystoreFileName(user.getKeystore().getFileName());
+            }
+            user.setSignImagesIds(user.getSignImages().stream().map(Document::getId).collect(Collectors.toList()));
             if (user.getDefaultSignImageNumber() == null || user.getDefaultSignImageNumber() < 0 || user.getDefaultSignImageNumber() >= user.getSignImages().size()) {
                 user.setDefaultSignImageNumber(0);
             }
@@ -189,16 +186,16 @@ public class UserService {
     }
 
     public String buildEppn(String uid) {
-        uid = uid.trim().toLowerCase();
+        uid = uid.trim();
         if (uid.split("@").length == 1
-                && !(uid.equals("creator") || uid.equals("system") || uid.equals("scheduler") || uid.equals("generic") )) {
+                && !(uid.equalsIgnoreCase("creator") || uid.equalsIgnoreCase("system") || uid.equalsIgnoreCase("scheduler") || uid.equalsIgnoreCase("generic") )) {
             uid = uid + "@" + globalProperties.getDomain();
         }
         return uid;
     }
 
     public User createUserWithEppn(String eppn) throws EsupSignatureUserException {
-        User user = getUserByEppn(eppn);
+        User user = getByEppn(eppn);
         if (user != null && !user.getEppn().equals(getSystemUser().getEppn())) {
             return user;
         }
@@ -221,16 +218,23 @@ public class UserService {
     public User createUserWithEmail(String mail) {
         if (ldapPersonService != null) {
             List<PersonLdap> personLdaps = ldapPersonService.getPersonLdapByMail(mail);
-            if (personLdaps.size() > 0) {
+            if (personLdaps.size() == 1) {
                 String eppn = personLdaps.get(0).getEduPersonPrincipalName();
-                if (eppn == null) {
+                if (!StringUtils.hasText(eppn)) {
+                    logger.debug("eppn not found for " + mail);
                     eppn = buildEppn(personLdaps.get(0).getUid());
+                } else {
+                    logger.debug("eppn found " + eppn);
                 }
-                String name = personLdaps.get(0).getSn();
-                String firstName = personLdaps.get(0).getGivenName();
+                String name = personLdaps.get(0).getDisplayName();
+                String firstName = "";
+                if(StringUtils.hasText(personLdaps.get(0).getSn()) && StringUtils.hasText(personLdaps.get(0).getGivenName())) {
+                    name = personLdaps.get(0).getSn();
+                    firstName = personLdaps.get(0).getGivenName();
+                }
                 return createUser(eppn, name, firstName, mail, UserType.ldap, false);
             } else {
-                logger.warn(mail + " not found in ldap when search by email");
+                logger.warn(mail + " not found or more than one result in ldap when search by email");
             }
         } else {
             logger.warn("no ldap service available");
@@ -248,7 +252,7 @@ public class UserService {
     }
 
     @Transactional
-    public User createUserWithAuthentication(Authentication authentication) {
+    public User createUserWithAuthentication(String eppn, String name, String firstName, String mail, Authentication authentication, UserType userType) {
         String authName;
         if (authentication.getName().contains("@")) {
             authName = authentication.getName().substring(0, authentication.getName().indexOf("@"));
@@ -256,28 +260,59 @@ public class UserService {
             authName = authentication.getName();
         }
         logger.info("user control for " + authName);
-        List<PersonLdapLight> personLdaps =  Objects.requireNonNull(ldapPersonService).getPersonLdapLight(authName);
-        String eppn = personLdaps.get(0).getEduPersonPrincipalName();
-        if (eppn == null) {
-            eppn = buildEppn(authName);
+        logger.debug("authentication attributs found : " + eppn + ", " + name + ", " + firstName + ", " + mail);
+        if(ldapPersonLightService != null && StringUtils.hasText(authName)) {
+            List<PersonLightLdap> personLdaps = new ArrayList<>();
+            if (userType.equals(UserType.ldap)) {
+                personLdaps = ldapPersonLightService.getPersonLdapLight(authName);
+            } else if(userType.equals(UserType.shib)) {
+                personLdaps = ldapPersonLightService.getPersonLdapLightByEppn(eppn);
+            }
+            if (personLdaps.size() == 1) {
+                eppn = personLdaps.get(0).getEduPersonPrincipalName();
+                if (!StringUtils.hasText(eppn)) {
+                    logger.debug("eppn not found for " + authName);
+                    eppn = buildEppn(authName);
+                } else {
+                    logger.debug("eppn found " + eppn);
+                }
+                if(StringUtils.hasText(personLdaps.get(0).getMail())) {
+                    mail = personLdaps.get(0).getMail();
+                }
+                if(StringUtils.hasText(personLdaps.get(0).getSn())) {
+                    name = personLdaps.get(0).getSn();
+                }
+                if(StringUtils.hasText(personLdaps.get(0).getGivenName())) {
+                    firstName = personLdaps.get(0).getGivenName();
+                }
+                logger.debug("ldap attributs found : " + eppn + ", " + name + ", " + firstName + ", " + mail);
+            } else if (!StringUtils.hasText(eppn)) {
+                if (personLdaps.size() == 0) {
+                    logger.debug("no result on ldap search for " + authName);
+                } else {
+                    logger.debug("more than one result on ldap search for " + authName);
+                }
+                throw new EsupSignatureUserException("user " + authName + " not found");
+            }
         }
-        String mail = personLdaps.get(0).getMail();
-        String name = personLdaps.get(0).getSn();
-        String firstName = personLdaps.get(0).getGivenName();
-        return createUser(eppn, name, firstName, mail, UserType.ldap, true);
+        return createUser(eppn, name, firstName, mail, userType, true);
     }
 
     @Transactional
     public User createUser(String eppn, String name, String firstName, String email, UserType userType, boolean updateCurrentUserRoles) {
         User user;
-        if (userRepository.countByEppn(eppn) > 0) {
-            user = getByEppn(eppn);
-        } else if(userRepository.countByEmail(email.toUpperCase()) > 0) {
-            user = userRepository.findByEmail(email).get(0);
+        Optional<User> optionalUser = userRepository.findByEppn(eppn);
+        if (optionalUser.isPresent()) {
+            user = optionalUser.get();
         } else {
-            logger.info("creation de l'utilisateur " + eppn);
-            user = new User();
-            user.setKeystore(null);
+            optionalUser = userRepository.findByEmail(email);
+            if (optionalUser.isPresent()) {
+                user = optionalUser.get();
+            } else {
+                logger.info("create user with : " + eppn + ", " + name + ", " + firstName + ", " + email);
+                user = new User();
+                user.setKeystore(null);
+            }
         }
         user.setName(name);
         user.setFirstname(firstName);
@@ -373,62 +408,67 @@ public class UserService {
     }
 
     @Transactional
-    public List<PersonLdapLight> getPersonLdapsLight(String searchString, String authUserEppn) {
-        List<PersonLdapLight> personLdapLights = new ArrayList<>();
+    public List<PersonLightLdap> getPersonLdapsLight(String searchString, String authUserEppn) {
+        List<PersonLightLdap> personLightLdaps = new ArrayList<>();
         Set<User> users = new HashSet<>();
         users.addAll(userRepository.findByEppnStartingWith(searchString));
         users.addAll(userRepository.findByNameStartingWithIgnoreCase(searchString.toUpperCase()));
         users.addAll(userRepository.findByEmailStartingWith(searchString));
-        if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 2) {
-            List<PersonLdapLight> ldapSearchList = ldapPersonService.searchLight(searchString);
+        if (ldapPersonLightService != null && !searchString.trim().isEmpty() && searchString.length() > 2) {
+            List<PersonLightLdap> ldapSearchList = ldapPersonLightService.searchLight(searchString);
             if (ldapSearchList.size() > 0) {
-                List<PersonLdapLight> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdapLight::getCn)).collect(Collectors.toList());
-                for (PersonLdapLight personLdapList : ldapList) {
+                List<PersonLightLdap> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLightLdap::getCn)).collect(Collectors.toList());
+                for (PersonLightLdap personLdapList : ldapList) {
                     if (personLdapList.getMail() != null) {
-                        if (personLdapLights.stream().noneMatch(personLdap -> personLdap != null &&  personLdap.getMail() != null && personLdap.getMail().equals(personLdapList.getMail()))) {
-                            personLdapLights.add(personLdapList);
+                        if (personLightLdaps.stream().noneMatch(personLdap -> personLdap != null &&  personLdap.getMail() != null && personLdap.getMail().equals(personLdapList.getMail()))) {
+                            personLightLdaps.add(personLdapList);
                         }
                     }
                 }
             }
         }
-        List<PersonLdapLight> personLdapLightsToRemove = new ArrayList<>();
-        for(PersonLdapLight personLdapLight : personLdapLights) {
-            User user = isUserByEmailExist(personLdapLight.getMail());
+        List<PersonLightLdap> personLightLdapsToRemove = new ArrayList<>();
+        for(PersonLightLdap personLightLdap : personLightLdaps) {
+            User user = isUserByEmailExist(personLightLdap.getMail());
             if(user != null && user.getReplaceByUser() != null) {
-                personLdapLightsToRemove.add(personLdapLight);
+                personLightLdapsToRemove.add(personLightLdap);
             }
         }
-        personLdapLights.removeAll(personLdapLightsToRemove);
+        personLightLdaps.removeAll(personLightLdapsToRemove);
         for (User user : users) {
             if(user.getEppn().equals("creator")) {
-                personLdapLights.add(getPersonLdapLightFromUser(user));
+                personLightLdaps.add(getPersonLdapLightFromUser(user));
             }
-            if(personLdapLights.size() > 0 && personLdapLights.stream().noneMatch(personLdapLight -> personLdapLight != null && personLdapLight.getMail() != null && user.getEmail().equals(personLdapLight.getMail()))) {
-                PersonLdapLight personLdapLight = getPersonLdapLightFromUser(user);
+            if(personLightLdaps.size() > 0 && personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && user.getEmail().equals(personLightLdap.getMail()))) {
+                PersonLightLdap personLightLdap = getPersonLdapLightFromUser(user);
                 if(user.getUserType().equals(UserType.group)) {
-                    personLdapLight.setDisplayName(personLdapLight.getDisplayName());
+                    personLightLdap.setDisplayName(personLightLdap.getDisplayName());
                 }
-                personLdapLights.add(personLdapLight);
+                personLightLdaps.add(personLightLdap);
             }
         }
         for(Map.Entry<String,String> string : userListService.getListsNames(searchString).entrySet()) {
-            if(personLdapLights.size() > 0 && personLdapLights.stream().noneMatch(personLdapLight -> personLdapLight != null && personLdapLight.getMail() != null && personLdapLight.getMail().equals(string.getKey()))) {
-                PersonLdapLight personLdapLight = new PersonLdapLight();
-                personLdapLight.setMail(string.getKey());
+            if(personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && personLightLdap.getMail().equals(string.getKey()))) {
+                PersonLightLdap personLightLdap = new PersonLightLdap();
+                personLightLdap.setMail(string.getKey());
                 if(string.getValue() != null) {
-                    personLdapLight.setDisplayName(string.getValue());
+                    personLightLdap.setDisplayName(string.getValue());
                 } else {
-                    personLdapLight.setDisplayName(string.getKey());
+                    personLightLdap.setDisplayName(string.getKey());
                 }
-                personLdapLights.add(personLdapLight);
+                personLightLdaps.add(personLightLdap);
             }
         }
-        User user = getUserByEppn(authUserEppn);
+            if(ldapAliasService != null) {
+            for (AliasLdap aliasLdap : ldapAliasService.searchByMail(searchString)) {
+                personLightLdaps.add(new PersonLightLdap(aliasLdap.getMail()));
+            }
+        }
+        User user = getByEppn(authUserEppn);
         if(user.getRoles().contains("ROLE_ADMIN")) {
-            return personLdapLights;
+            return personLightLdaps;
         } else {
-            return personLdapLights.stream().filter(personLdapLight -> !webSecurityProperties.getExcludedEmails().contains(personLdapLight.getMail())).collect(Collectors.toList());
+            return personLightLdaps.stream().filter(personLightLdap -> !webSecurityProperties.getExcludedEmails().contains(personLightLdap.getMail())).collect(Collectors.toList());
         }
     }
 
@@ -443,8 +483,8 @@ public class UserService {
         return personLdap;
     }
 
-    public PersonLdapLight getPersonLdapLightFromUser(User user) {
-        PersonLdapLight personLdap = new PersonLdapLight();
+    public PersonLightLdap getPersonLdapLightFromUser(User user) {
+        PersonLightLdap personLdap = new PersonLightLdap();
         if(user.getReplaceByUser() != null) {
             personLdap.setUid(user.getReplaceByUser().getEppn());
             personLdap.setSn(user.getReplaceByUser().getName());
@@ -461,10 +501,10 @@ public class UserService {
         return personLdap;
     }
 
-    public PersonLdapLight findPersonLdapLightByUser(User user) {
-        PersonLdapLight personLdap = null;
-        if (ldapPersonService != null) {
-            List<PersonLdapLight> personLdaps =  ldapPersonService.getPersonLdapLightByEppn(user.getEppn());
+    public PersonLightLdap findPersonLdapLightByUser(User user) {
+        PersonLightLdap personLdap = null;
+        if (ldapPersonLightService != null) {
+            List<PersonLightLdap> personLdaps =  ldapPersonLightService.getPersonLdapLightByEppn(user.getEppn());
             if (personLdaps.size() > 0) {
                 personLdap = personLdaps.get(0);
             }
@@ -488,7 +528,7 @@ public class UserService {
     }
 
     public OrganizationalUnitLdap findOrganizationalUnitLdapByPersonLdap(PersonLdap personLdap) {
-        if (ldapPersonService != null) {
+        if (ldapOrganizationalUnitService != null) {
             return ldapOrganizationalUnitService.getOrganizationalUnitLdap(personLdap.getSupannEntiteAffectationPrincipale());
         }
         return null;
@@ -535,8 +575,10 @@ public class UserService {
                 if (recipientEmail.contains("*")) {
                     recipientEmail = recipientEmail.split("\\*")[1];
                 }
-                List<User> users = userRepository.findByEmail(recipientEmail);
-                if (users.size() == 0 || users.get(0).getUserType().equals(UserType.external)) {
+                Optional<User> optionalUser = userRepository.findByEmail(recipientEmail);
+                if(optionalUser.isPresent() && optionalUser.get().getUserType().equals(UserType.external)) {
+                    tempUsers.add(optionalUser.get());
+                } else {
                     List<String> groupUsers = new ArrayList<>();
                     try {
                         groupUsers.addAll(userListService.getUsersEmailFromList(recipientEmail));
@@ -555,15 +597,16 @@ public class UserService {
         return tempUsers;
     }
 
+    @Transactional
     public List<User> getTempUsers(SignRequest signRequest, List<String> recipientsEmails) throws EsupSignatureRuntimeException {
-        Set<User> users = new HashSet<>();
-        users.addAll(getTempUsers(signRequest));
+        Set<User> users = new HashSet<>(getTempUsers(signRequest));
         if(recipientsEmails != null) {
             users.addAll(getTempUsersFromRecipientList(recipientsEmails));
         }
         return new ArrayList<>(users);
     }
 
+    @Transactional
     public List<User> getTempUsers(SignRequest signRequest) {
         Set<User> users = new HashSet<>();
         if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size() > 0) {
@@ -612,17 +655,6 @@ public class UserService {
         return signature;
     }
 
-    private List<Long> getSignImagesIds(User user) {
-        return user.getSignImages().stream().map(Document::getId).collect(Collectors.toList());
-    }
-
-    private String getKeystoreFileName(User user) {
-        if(user.getKeystore() != null) {
-            return user.getKeystore().getFileName();
-        }
-        return null;
-    }
-
     @Transactional
     public void deleteSign(String authUserEppn, long id) {
         User authUser = getByEppn(authUserEppn);
@@ -662,20 +694,19 @@ public class UserService {
 
     @Transactional
     public Map<UiParams, String> getUiParams(String authUserEppn) {
-        User user = getUserByEppn(authUserEppn);
-        Map<UiParams, String> uiParamsStringMap = new HashMap<>(user.getUiParams());
-        return uiParamsStringMap;
+        User user = getByEppn(authUserEppn);
+        return new HashMap<>(user.getUiParams()); //new HashMap to force lazy loading
     }
 
     @Transactional
     public void setUiParams(String authUserEppn, UiParams key, String value) {
-        User user = getUserByEppn(authUserEppn);
+        User user = getByEppn(authUserEppn);
         user.getUiParams().put(key, value);
     }
 
     @Transactional
     public void setDefaultSignImage(String authUserEppn, int signImageNumber) {
-        User user = getUserByEppn(authUserEppn);
+        User user = getByEppn(authUserEppn);
         user.setDefaultSignImageNumber(signImageNumber);
     }
 
@@ -687,7 +718,7 @@ public class UserService {
                 jsonExternalUserInfo.setEmail(emails.get(i));
                 jsonExternalUserInfo.setName(names.get(i));
                 jsonExternalUserInfo.setFirstname(firstnames.get(i));
-                if(forcesmses != null && forcesmses.size() > i + 1) {
+                if(forcesmses != null && forcesmses.size() >= i + 1) {
                     jsonExternalUserInfo.setForcesms(forcesmses.get(i));
                 }
                 if(phones.size() >= i + 1) {
@@ -701,14 +732,14 @@ public class UserService {
 
     @Transactional
     public void updateRoles(String userEppn, List<String> roles) {
-        User user = getUserByEppn(userEppn);
+        User user = getByEppn(userEppn);
         user.getRoles().clear();
         user.getRoles().addAll(roles);
     }
 
     @Transactional
     public void updatePhone(String userEppn, String phone) {
-        User user = getUserByEppn(userEppn);
+        User user = getByEppn(userEppn);
         user.setPhone(phone);
     }
 
@@ -741,7 +772,7 @@ public class UserService {
 
     @Transactional
     public void updateReplaceUserBy(String eppn, String[] byEmail, String beginDate, String endDate) {
-        User user = getUserByEppn(eppn);
+        User user = getByEppn(eppn);
         if(user != null ) {
             if(byEmail != null) {
                 User byUser = getUserByEmail(byEmail[0]);
@@ -766,37 +797,43 @@ public class UserService {
         }
     }
 
+    @Transactional
     public String tryGetEppnFromLdap(Authentication auth) {
-        String eppn = auth.getName();
-        if(ldapPersonService != null) {
-            List<PersonLdapLight> personLdaps = ldapPersonService.getPersonLdapLight(auth.getName());
-            if(personLdaps.size() > 0) {
+        String eppn = null;
+        if(ldapPersonLightService != null) {
+            List<PersonLightLdap> personLdaps = ldapPersonLightService.getPersonLdapLight(auth.getName());
+            if(personLdaps.size() == 1) {
                 eppn = personLdaps.get(0).getEduPersonPrincipalName();
-                if (eppn == null) {
-                    eppn = buildEppn(auth.getName());
+            } else {
+                if (personLdaps.size() == 0) {
+                    logger.debug("no result on ldap search for " + auth.getName());
+                } else {
+                    logger.debug("more than one result on ldap search for " + auth.getName());
                 }
             }
+        }
+        if (!StringUtils.hasText(eppn)) {
+            User user = getByEppn(auth.getName());
+            if(user != null) {
+                eppn = user.getEppn();
+            } else {
+                logger.debug("eppn not found for " + auth.getName());
+                eppn = buildEppn(auth.getName());
+            }
+        } else {
+            logger.debug("eppn found " + eppn);
         }
         return eppn;
     }
 
     public String getFavoriteSignRequestParamsJson(String userEppn) throws JsonProcessingException {
-        User user = getUserByEppn(userEppn);
+        User user = getByEppn(userEppn);
         return objectMapper.writer().writeValueAsString(user.getFavoriteSignRequestParams());
     }
 
     @Transactional
-    public void updateUserInfos(Long id, String eppn, String name, String firstname, UserType userType) {
-        User user = getById(id);
-        user.setEppn(eppn);
-        user.setName(name);
-        user.setFirstname(firstname);
-        user.setUserType(userType);
-    }
-
-    @Transactional
     public String getDefaultImage(String eppn) throws IOException {
-        User user = getUserByEppn(eppn);
+        User user = getByEppn(eppn);
         return fileService.getBase64Image(fileService.getDefaultImage(user.getName(), user.getFirstname()), "default");
     }
 
@@ -805,14 +842,15 @@ public class UserService {
         return userRepository.findByUserType(UserType.group);
     }
 
+    @Transactional
     public List<String> getManagersRoles(String authUserEppn) {
-        User user = getUserByEppn(authUserEppn);
+        User user = getByEppn(authUserEppn);
         return user.getManagersRoles().stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
     @Transactional
     public void anonymize(Long id) {
-        User user = userRepository.findById(id).get();
+        User user = userRepository.findById(id).orElseThrow();
         List<User> users = userRepository.findByReplaceByUser(user);
         for(User user1 : users) {
             user1.setReplaceByUser(user.getReplaceByUser());
@@ -864,7 +902,7 @@ public class UserService {
 
     @Transactional
     public void delete(Long id) {
-        User user = userRepository.findById(id).get();
+        User user = userRepository.findById(id).orElseThrow();
         userRepository.delete(user);
     }
 }

@@ -9,7 +9,7 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
-import org.esupportail.esupsignature.service.ldap.PersonLdapLight;
+import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +71,6 @@ public class UserController {
 	public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
 		model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
 		model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
-		model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
 		if(referer != null && !"".equals(referer) && !"null".equals(referer)) {
 			model.addAttribute("referer", request.getHeader(HttpHeaders.REFERER));
 		}
@@ -114,8 +113,8 @@ public class UserController {
     }
 
 	@GetMapping(value = "/remove-keystore")
-	public String removeKeystore(@ModelAttribute("authUserEppn") String authUserEppn, Model model, RedirectAttributes redirectAttributes) {
-		User authUser = userService.getUserByEppn(authUserEppn);
+	public String removeKeystore(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
+		User authUser = userService.getByEppn(authUserEppn);
 		authUser.setKeystore(null);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le magasin de clés à bien été supprimé"));
 		return "redirect:/user/users/";
@@ -123,9 +122,9 @@ public class UserController {
 
 	@GetMapping(value="/search-user")
 	@ResponseBody
-	public List<PersonLdapLight> searchLdap(@RequestParam(value="searchString") String searchString, @ModelAttribute("authUserEppn") String authUserEppn) {
+	public List<PersonLightLdap> searchLdap(@RequestParam(value="searchString") String searchString, @ModelAttribute("authUserEppn") String authUserEppn) {
 		logger.debug("ldap search for : " + searchString);
-		return userService.getPersonLdapsLight(searchString, authUserEppn).stream().sorted(Comparator.comparing(PersonLdapLight::getDisplayName, Comparator.nullsLast(String::compareTo))).collect(Collectors.toList());
+		return userService.getPersonLdapsLight(searchString, authUserEppn).stream().sorted(Comparator.comparing(PersonLightLdap::getDisplayName, Comparator.nullsLast(String::compareTo))).collect(Collectors.toList());
    }
 
 	@GetMapping(value = "/search-user-list")

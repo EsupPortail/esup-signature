@@ -5,7 +5,7 @@ import {Step} from "../../../prototypes/Step.js?version=@version@";
 export class SignUi {
 
     constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, isPdf, currentStepNumber, currentStepMultiSign, workflow, signImages, userName, authUserName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone, returnToHome) {
-        console.info("Starting sign UI");
+        console.info("Starting sign UI for " + id);
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.returnToHome = returnToHome;
         this.signRequestId = id;
@@ -98,6 +98,7 @@ export class SignUi {
 
     launchSignModal() {
         console.info("launch sign modal");
+        this.workspace.saveData(true);
         window.onbeforeunload = null;
         let self = this;
         if (this.isPdf && this.currentSignType !== 'hiddenVisa') {
@@ -330,9 +331,11 @@ export class SignUi {
                     formData[this.name] = this.value;
                 }
             });
-            this.workspace.pdfViewer.savedFields.forEach((value, key) => {
-                formData[key] = value;
-            });
+            if(this.formId != null) {
+                this.workspace.pdfViewer.savedFields.forEach((value, key) => {
+                    formData[key] = value;
+                });
+            }
         }
         if(this.workspace != null) {
             let signRequestParamses = Array.from(this.workspace.signPosition.signRequestParamses.values());

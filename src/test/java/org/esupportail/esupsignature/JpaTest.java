@@ -8,15 +8,17 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.tool.hbm2ddl.SchemaValidator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.reflections.Reflections;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = EsupSignatureApplication.class)
@@ -34,18 +36,18 @@ public class JpaTest {
     }
 
     @Test
-    public void testUpdateDatabase() {
+    public void testUpdateDatabase() throws ClassNotFoundException {
         Session session = (Session) entityManager.getDelegate();
         serviceRegistry = new StandardServiceRegistryBuilder().applySettings(session.getSessionFactory().getProperties()).build();
         MetadataSources metadataSources = new MetadataSources(serviceRegistry);
-        Reflections reflections = new Reflections("org.esupportail.esupsignature.entity");
-        Set<Class<?>> allClasses = reflections.getTypesAnnotatedWith(Entity.class);
-        for(Class<?> eClass : allClasses) {
-            metadataSources.addAnnotatedClass(eClass);
+        final ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
+        provider.addIncludeFilter(new RegexPatternTypeFilter(Pattern.compile(".*")));
+        final Set<BeanDefinition> beanDefinitions = provider.findCandidateComponents("org.esupportail.esupsignature.entity");
+        for(BeanDefinition beanDefinition : beanDefinitions) {
+            metadataSources.addAnnotatedClass(Class.forName(beanDefinition.getBeanClassName()));
         }
         Metadata metadata =  metadataSources.buildMetadata();
         new SchemaValidator().validate(metadata);
-
     }
 
 }

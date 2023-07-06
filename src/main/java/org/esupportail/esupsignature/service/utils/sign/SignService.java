@@ -22,6 +22,7 @@ import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.utils.Utils;
+import eu.europa.esig.dss.validation.reports.Reports;
 import eu.europa.esig.dss.validation.timestamp.TimestampToken;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
@@ -72,6 +73,8 @@ import java.util.stream.Collectors;
 @Service
 @EnableConfigurationProperties(SignProperties.class)
 public class SignService {
+
+	Float fixFactor = .75f;
 
 	private static final Logger logger = LoggerFactory.getLogger(SignService.class);
 
@@ -139,7 +142,7 @@ public class SignService {
 	}
 
 	public Document certSign(SignRequest signRequest, String userEppn, String password, SignWith signWith) throws EsupSignatureRuntimeException {
-		User user = userService.getUserByEppn(userEppn);
+		User user = userService.getByEppn(userEppn);
 		logger.info("start certSign for signRequest : " + signRequest.getId());
 		SignatureForm signatureForm;
 		List<Document> toSignDocuments = new ArrayList<>(getToSignDocuments(signRequest.getId()));
@@ -153,11 +156,11 @@ public class SignService {
 			} else if(signWith.equals(SignWith.groupCert)){
 				Certificat certificat = certificatService.getCertificatByUser(userEppn).get(0);
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
-			} else if (signWith.equals(SignWith.sealCert) && user.getRoles().contains("ROLE_SEAL")) {
+			} else if ((signWith.equals(SignWith.sealCert) && (user.getRoles().contains("ROLE_SEAL")) || userEppn.equals("system"))) {
 				try {
 					abstractKeyStoreTokenConnection = certificatService.getSealToken();
 				} catch (Exception e) {
-					throw new EsupSignatureRuntimeException("unable to open pkcs11 token", e);
+					throw new EsupSignatureRuntimeException("unable to open seal token", e);
 				}
 			} else if (signWith.equals(SignWith.openPkiCert)) {
 				abstractKeyStoreTokenConnection = openXPKICertificatGenerationService.generateTokenForUser(user);
@@ -329,7 +332,6 @@ public class SignService {
 	}
 
 	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, InputStream toSignFile, Color color, User user, Date date) throws IOException {
-		float fixFactor = .75f;
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
@@ -350,7 +352,7 @@ public class SignService {
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			ImageIO.write(bufferedSignImage, "png", os);
 			fileDocumentImage = new InMemoryDocument(new ByteArrayInputStream(os.toByteArray()), "sign.png");
-			fileDocumentImage.setMimeType(MimeType.PNG);
+			fileDocumentImage.setMimeType(MimeTypeEnum.PNG);
 			imageParameters.setImage(fileDocumentImage);
 			SignatureFieldParameters signatureFieldParameters = imageParameters.getFieldParameters();
 			signatureFieldParameters.setPage(signRequestParams.getSignPageNumber());
@@ -458,7 +460,8 @@ public class SignService {
 		List<Document> documents = getToSignDocuments(signRequest.getId());
 		if(documents.size() > 0 && (signRequest.getParentSignBook().getLiveWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign) || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.nexuSign)))) {
 			byte[] bytes = getToSignDocuments(signRequest.getId()).get(0).getInputStream().readAllBytes();
-			return signRequest.getSignedDocuments().size() == 0 && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0;
+			Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
+			return signRequest.getSignedDocuments().size() == 0 && reports != null && reports.getSimpleReport().getSignatureIdList().size() == 0;
 		} else {
 			return true;
 		}
@@ -510,7 +513,7 @@ public class SignService {
 			}
 			abstractSignatureForm = signatureDocumentForm;
 		}
-		if(environment.getActiveProfiles().length > 0 && environment.getActiveProfiles()[0].equals("dev")) {
+		if(signProperties.getSignWithExpiredCertificate() || (environment.getActiveProfiles().length > 0 && environment.getActiveProfiles()[0].equals("dev"))) {
 			abstractSignatureForm.setSignWithExpiredCertificate(true);
 		}
 		abstractSignatureForm.setSignatureForm(signatureForm);
@@ -675,7 +678,7 @@ public class SignService {
 
 	@Transactional
 	public AbstractSignatureForm getAbstractSignatureForm(Long signRequestId, String userEppn) throws IOException, EsupSignatureRuntimeException {
-		User user = userService.getUserByEppn(userEppn);
+		User user = userService.getByEppn(userEppn);
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		List<SignRequestParams> liveWfSignRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
 		return getSignatureDocumentForm(getToSignDocuments(signRequest.getId()), signRequest, user, new Date(), false);

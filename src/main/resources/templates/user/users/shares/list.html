@@ -88,7 +88,7 @@
                                             class="btn btn-danger">
                                         <i class="fas fa-trash"></i>
                                     </button>
-                                    <div class="modal modal-warning fade in"
+                                    <div data-bs-focus="false" class="modal modal-warning fade in"
                                          th:id="modal-warning+${userShare.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
@@ -127,7 +127,7 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="newShareModal" data-bs-focus="false" role="dialog"
+    <div data-bs-focus="false" class="modal fade" id="newShareModal"  role="dialog"
          aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -139,8 +139,8 @@
                     <div class="modal-body">
 
                         <div class="form-group mb-3">
-                            <label for="selectTarget">Type d'élément à déléguer (un circuit, un formulaire ou toutes mes demandes)</label>
-                            <select class="slim-select-simple" id="selectTarget" name="target" required="required">
+                            <label for="selectTarget">Type d’élément à déléguer (un circuit, un formulaire ou toutes mes demandes)</label>
+                            <select class="form-select" id="selectTarget" name="target" required="required">
                                 <option value="" data-placeholder="true">Choisir un type</option>
                                 <option value="all">Toutes les demandes</option>
                                 <option value="workflow">Circuit</option>
@@ -150,7 +150,7 @@
 
                         <div id="selectFormDiv" class="form-group d-none">
                             <label for="selectForm">Formulaires à déléguer</label>
-                            <select class="slim-select-simple" id="selectForm" name="form">
+                            <select class="form-select" id="selectForm" name="form">
                                 <option value="" data-placeholder="true">Choisir un formulaire</option>
                                 <th:block th:each="form : ${forms}">
                                     <option th:data="${form.authorizedShareTypes}" th:value="${form.id}" th:text="${form.title}"></option>
@@ -160,7 +160,7 @@
 
                         <div id="selectWorkflowDiv" class="form-group d-none">
                             <label for="selectWorkflow">Circuits à déléguer</label>
-                            <select class="slim-select-simple" id="selectWorkflow" name="workflow">
+                            <select class="form-select" id="selectWorkflow" name="workflow">
                                 <option value="" data-placeholder="true">Choisir un circuit</option>
                                 <th:block th:each="workflow : ${workflows}">
                                     <option th:data="${workflow.authorizedShareTypes}" th:value="${workflow.id}" th:text="${workflow.description}"></option>

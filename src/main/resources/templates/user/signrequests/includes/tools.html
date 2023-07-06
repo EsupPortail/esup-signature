@@ -20,7 +20,7 @@
 				});
 			}
 		</script>
-		<a th:if="${signable}" class="btn btn-light btn-outline-dark d-block" title="Transférer la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
+		<a th:if="${signable}" class="btn btn-light btn-outline-dark d-block" title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
 			<i class="fas fa-share"></i>
 		</a>
 		<div class="border ms-3 me-3 d-none d-lg-block ms-1"></div>
@@ -79,7 +79,7 @@
 			</a>
 		</th:block>
 	</div>
-	<div id="second-tools" class="d-none mb-1">
+	<div id="second-tools" class="d-flex mb-1">
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
 			<th:block >
 				<div class="input-group-text me-1 d-none d-xl-inline">Choix du mode : </div>
@@ -95,12 +95,12 @@
 				signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign
 				}"
 						id="addSignButton"
-						class="btn btn-light btn-outline-primary">
+						class="btn btn-light btn-outline-primary d-none">
 					<i class="fas fa-plus"></i> <span class="d-none d-md-inline">Insérer une signature</span>
 				</button>
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
 						id="addSignButton"
-						class="btn btn-light btn-outline-primary">
+						class="btn btn-light btn-outline-primary d-none">
 					<i class="fas fa-plus"></i> <span class="d-none d-md-inline">Insérer un visa</span>
 				</button>
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
@@ -129,7 +129,7 @@
 		<th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
 			<li class="nav-item overflow-hidden ws-tab" th:classappend="${(signRequest.id == signRequestTab.id ? 'active' : '') + ' ' + (nbSignRequestInSignBookParent > 1 ? 'file-tab' : '')}">
 				<a class="nav-link" th:classappend="${(signRequest.id == signRequestTab.id ? 'current alert-secondary text-black' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'alert-success' : '')}"
-				   th:href="'/user/signrequests/' + ${signRequestTab.id}"
+				   th:href="${otp} ? '/otp/signrequests/' + ${signRequestTab.id} : '/user/signrequests/' + ${signRequestTab.id}"
 				   th:title="${signRequestTab.title}">
 					<div class="truncate">
 						<span title="À signer" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">

@@ -2,7 +2,7 @@ global:
     root-url: https://esup-signature.univ-ville.fr
     domain: univ-ville.fr
     nexu-url: http://localhost:9795
-    nexu-version: 1.23-SNAPSHOT
+    nexu-version: 1.22, 1.23 ou Esup-DSS-Client 1.0
     nexu-download-url: /downloads/nexu-bundle.zip
     hide-wizard: false
     hide-auto-sign: false
@@ -49,16 +49,12 @@ management:
                 include: '*'
     endpoint:
         health:
-            show-details: always
+            show-details: ALWAYS
 
 spring:
     session:
         jdbc:
           initialize-schema: ALWAYS
-    data:
-        ldap:
-            repositories:
-                enabled: true
     datasource:
         driver-class-name: org.postgresql.Driver
         url: jdbc:postgresql://localhost:5432/esupsignature
@@ -135,11 +131,18 @@ spring:
 
 ldap:
     search-base: ou=people
+    user-object-classes: inetOrgPerson
+    group-object-classes: groupOfNames
+    ou-object-classes: organizationalUnit
+    alias-object-classes: nisMailAlias
     users-search-filter: (&(|(displayName={0}*)(cn={0}*)(uid={0})(mail={0}*))(mail=*))
     group-search-base: ou=groups
     group-search-filter: member={0}
     all-groups-search-filter: cn=*{0}
     user-id-search-filter: (uid={0})
+    user-eppn-search-filter: (eduPersonPrincipalName={0})
+    user-mail-search-filter: (mail={0})
+    ou-search-filter: (supannCodeEntite={0})
     member-search-filter: (&(uid={0})({1}))
     members-of-group-search-filter: memberOf=cn={0},ou=groups,dc=univ-ville,dc=fr
     mapping-filters-groups:

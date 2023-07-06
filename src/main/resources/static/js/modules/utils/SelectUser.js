@@ -161,27 +161,28 @@ export default class SelectUser {
             } else {
                 recipientEmails = new Array(this.slimSelect.getSelected());
             }
-            $('[id^="allSignToComplete-"]').each(function () {
-                if (recipientEmails.length > 1) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
+            if(!this.selectField.attr('id').includes("CC")) {
+                $('[id^="allSignToComplete-"]').each(function () {
+                    if (recipientEmails.length > 1) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                })
+                if (this.csrf) {
+                    let csrf = this.csrf;
+                    $.ajax({
+                        url: "/ws-secure/users/check-temp-users/?" + csrf.parameterName + "=" + csrf.token,
+                        type: 'POST',
+                        contentType: "application/json",
+                        dataType: 'json',
+                        async: true,
+                        data: JSON.stringify(recipientEmails),
+                        success: data => this.displayTempUsersSuccess(data),
+                        error: e => this.displayExternalsError()
+                    });
                 }
-            })
-            if (this.csrf) {
-                let csrf = this.csrf;
-                $.ajax({
-                    url: "/ws-secure/users/check-temp-users/?" + csrf.parameterName + "=" + csrf.token,
-                    type: 'POST',
-                    contentType: "application/json",
-                    dataType: 'json',
-                    async: true,
-                    data: JSON.stringify(recipientEmails),
-                    success: data => this.displayTempUsersSuccess(data),
-                    error: e => this.displayExternalsError()
-                });
             }
-
             if (this.flag === true && e.length > 0) {
                 let text = e[e.length - 1].value;
                 console.info("check : " + text);
@@ -283,7 +284,7 @@ export default class SelectUser {
                 "<div class=\"d-flex col-12\"><label for=\"phones\" class='col-3'>Mobile</label>" +
                 "<input id=\"phones\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + e.phone + "\"></div>" +
                 "<div class=\"d-flex col-12\"><label for=\"forcesms\" class='col-3'>Autentification SMS</label>" +
-                "<input id=\"forcesmses\" class=\"form-check-input \" type=\"checkbox\" name=\"forcesmses\" value='true'></div>" +
+                "<input id=\"forcesmses\" class=\"form-check-input \" type=\"checkbox\" name=\"forcesmses\" value='1'></div>" +
                 "</div>");
         }
     }

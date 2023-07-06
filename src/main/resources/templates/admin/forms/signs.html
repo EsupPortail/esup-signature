@@ -23,7 +23,7 @@
         <div id="content" class="content">
             <div class="fixed-action-btns active" th:if="${form.workflow != null}">
                 <ul class="list-unstyled">
-                    <li th:if="${form.document != null}">
+                    <li th:if="${form.document != null && form.signRequestParams != null}">
                         <a id="addSignRequestParams" title="Modifier les champs signature" type="button" data-bs-toggle="modal" data-bs-target="#updateSignsModal" class="btn-floating btn-lg bg-warning">
                             <i class="fas fa-pencil"></i>
                         </a>
@@ -80,7 +80,7 @@
         false
     );
 </script>
-<div class="modal fade" id="updateSignsModal" tabindex="-1" aria-labelledby="updateSignsModalTitle" data-bs-focus="false" aria-hidden="true">
+<div th:if="${form.signRequestParams != null}" data-bs-focus="false" class="modal fade" id="updateSignsModal" tabindex="-1" aria-labelledby="updateSignsModalTitle"  aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -92,7 +92,7 @@
                     <thead class="table-secondary">
                     <tr>
                         <th class="align-middle th-fixed">Champ signature</th>
-                        <th class="align-middle th-fixed">Etapes</th>
+                        <th class="align-middle th-fixed">Étapes</th>
                         <th class="align-middle th-fixed">Supprimer</th>
                     </tr>
                     </thead>
@@ -102,7 +102,8 @@
                             <tr>
                                 <td><span th:if="${signRequestParams.pdSignatureFieldName != null}" th:text="${signRequestParams.pdSignatureFieldName} + ' :'" ></span> page <span th:text="${signRequestParams.signPageNumber + ' (' + signRequestParams.xPos + ', ' + signRequestParams.yPos + ')'}"></span></td>
                                 <td>
-                                    <select th:id="'srp_' + ${signRequestParams.id}"  name="test[]" class="slim-select-simple" size="3" data-placeholder="Choisir des étapes">
+                                    <select th:id="'srp_' + ${signRequestParams.id}"  name="test[]" class="form-select" data-placeholder="Choisir des étapes">
+                                        <option data-placeholder="true"></option>
                                         <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
                                             <option th:value="${iterator.index + 1}" th:text="${iterator.index + 1}" th:selected="${srpMap.get(iterator.index + 1) == signRequestParams.id}"></option>
                                         </th:block>
@@ -127,8 +128,8 @@
         </div>
     </div>
 </div>
-<th:block th:each="signRequestParams : ${form.signRequestParams}">
-<div class="modal" th:id="'modal-warning-' + ${signRequestParams.id}" data-bs-focus="false">
+<th:block th:if="${form.signRequestParams != null}" th:each="signRequestParams : ${form.signRequestParams}">
+<div class="modal" th:id="'modal-warning-' + ${signRequestParams.id}" >
     <div class="modal-dialog">
         <div class="modal-content">
             <form th:action="'/admin/forms/remove-signRequestParams/' + ${form.id} + '/' + ${signRequestParams.id}" th:method="delete">

@@ -82,10 +82,10 @@ public class GlobalAttributsControllerAdvice {
         if(userEppn != null) {
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
-            User user = userService.getUserByEppn(userEppn);
+            User user = userService.getFullUserByEppn(userEppn);
             userService.parseRoles(userEppn, myGlobalProperties);
             model.addAttribute("user", user);
-            model.addAttribute("authUser", userService.getUserByEppn(authUserEppn));
+            model.addAttribute("authUser", userService.getByEppn(authUserEppn));
             model.addAttribute("keystoreFileName", user.getKeystoreFileName());
             model.addAttribute("userImagesIds", user.getSignImagesIds());
             model.addAttribute("suUsers", userShareService.getSuUsers(authUserEppn));
@@ -99,6 +99,7 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("globalPropertiesJson", objectMapper.writer().writeValueAsString(myGlobalProperties));
             model.addAttribute("reportNumber", reportService.countByUser(authUserEppn));
             model.addAttribute("hoursBeforeRefreshNotif", myGlobalProperties.getHoursBeforeRefreshNotif());
+            model.addAttribute("myUiParams", userService.getUiParams(authUserEppn));
             if (environment.getActiveProfiles().length > 0 && environment.getActiveProfiles()[0].equals("dev")) {
                 model.addAttribute("profile", environment.getActiveProfiles()[0]);
             }
@@ -111,6 +112,7 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
             model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
             model.addAttribute("nbToSign", signRequestService.nbToSignSignRequests(userEppn));
+            model.addAttribute("nbFollowByMe", signRequestService.nbFollowedByMe(userEppn));
             try {
                 model.addAttribute("dssStatus", ojService.checkOjFreshness());
             } catch (IOException e) {

@@ -5,10 +5,13 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.repository.RecipientRepository;
+import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +24,12 @@ public class RecipientService {
 
     @Resource
     private WebUtilsService webUtilsService;
+
+    @Resource
+    private UserListService userListService;
+
+    @Resource
+    private UserService userService;
 
     public Recipient createRecipient(User user) {
         Recipient recipient = new Recipient();
@@ -37,6 +46,7 @@ public class RecipientService {
         return false;
     }
 
+    @Transactional
     public void validateRecipient(SignRequest signRequest, String userEppn) {
         Recipient validateRecipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().getEppn().equals(userEppn)).findFirst().get();
         signRequest.getRecipientHasSigned().get(validateRecipient).setActionType(ActionType.signed);
@@ -54,6 +64,23 @@ public class RecipientService {
         for (Recipient recipient : recipients) {
             recipient.setUser(anonymous);
         }
+    }
+
+    public List<String> getCompleteRecipientList(List<String> recipientEmails) {
+        List<User> users = new ArrayList<>();
+        if (recipientEmails != null && recipientEmails.size() > 0) {
+            for (String recipientEmail : recipientEmails) {
+                List<String> groupList = userListService.getUsersEmailFromList(recipientEmail);
+                if(groupList.size() == 0) {
+                    users.add(userService.getUserByEmail(recipientEmail));
+                } else {
+                    for(String email : groupList) {
+                        users.add(userService.getUserByEmail(email));
+                    }
+                }
+            }
+        }
+        return users.stream().map(User::getEmail).collect(Collectors.toList());
     }
 
 }

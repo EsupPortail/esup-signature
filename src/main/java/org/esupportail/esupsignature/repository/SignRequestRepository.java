@@ -5,14 +5,20 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
+import javax.persistence.LockModeType;
 import java.util.List;
+import java.util.Optional;
 
 public interface SignRequestRepository extends CrudRepository<SignRequest, Long>, PagingAndSortingRepository<SignRequest, Long> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<SignRequest> findWithLockingById(Long id);
 
     @Query("select count(distinct  s) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and s.parentSignBook.hidedBy is empty and r.user.eppn = :recipientUserEppn")
     Long countByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
@@ -45,6 +51,5 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
     @Query(value = "select * from sign_request where DATE_PART('day', now() - create_date) > :nbBeforeDelete and status = 'pending' and warning_readed = true", nativeQuery = true)
     List<SignRequest> findByOlderPendingAndWarningReaded(Integer nbBeforeDelete);
 
-    SignRequest findByLastOtp(String urlId);
 }
 

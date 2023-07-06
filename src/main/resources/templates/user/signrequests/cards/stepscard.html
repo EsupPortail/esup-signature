@@ -57,13 +57,13 @@
                                             <td th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
                                             <td class="text-right">
                                                 <i title="A signé le document" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" class="fas fa-check-circle text-success"></i>
-                                                <i title="N'a pas signé le document" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none'}" class="fas fa-minus-circle text-secondary"></i>
+                                                <i title="En attente de signature" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none'}" class="fas fa-clock text-warning"></i>
                                                 <i title="A refusé le document" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'refused'}" class="fas fa-times-circle text-danger"></i>
                                             </td>
                                             <td>
                                                 <button class="btn btn-sm"
                                                         title="Envoyer un nouveau lien d'accès"
-                                                        th:onclick="'$(\'#menu-' + ${recipient.id} + '\').show();'"
+                                                        th:onclick="'$(\'#menu-' + ${recipient.id} + '\').toggle();'"
                                                         th:if="${userEppn == signRequest.createBy.eppn && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                                                     <i class="fas fa-key"></i></button>
                                             </td>
@@ -73,15 +73,20 @@
                                                 <small th:if="${signRequest.recipientHasSigned.get(recipient) != null}" th:text="${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}"></small>
                                             </td>
                                         </tr>
-                                        <div th:if="${userEppn == signRequest.createBy.eppn && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="card position-absolute collapse mini-menu position-fixed" th:id="'menu-' + ${recipient.id}" style="z-index: 10000; width: 300px; left:150px">
-                                            <div class="card-header" style="height: 40px;">Envoyer un nouveau lien d'accès</div>
-                                            <div class=" card-body">
-                                                <form th:action="'/user/signrequests/send-otp/' + ${signRequest.id} + '/' + ${recipient.user.id}" method="post">
-                                                <input type="text" name="phone" class="form-control" placeholder="Numéro de mobile" th:value="${recipient.user.phone}">
-                                                <br>
-                                                <button type="submit" class="btn btn-success float-end mb-2" title="Envoyer un nouveau lien d'accès"><i class="fas fa-key"></i></button>
-                                                </form>
-                                                <button class="btn btn-secondary float-start" title="Fermer" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').hide();'"><i class="fas fa-times"></i></button>
+                                        <div th:if="${userEppn == signRequest.createBy.eppn && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" data-bs-focus="false" class="modal " th:id="'menu-' + ${recipient.id}">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header"><h3>Envoyer un nouveau lien d’accès</h3></div>
+                                                    <div class="modal-body">
+                                                        <p>Confirmer l’envoi un nouveau lien d’accès</p>
+                                                        <form th:action="'/user/signrequests/send-otp/' + ${signRequest.parentSignBook.id} + '/' + ${recipient.user.id}" method="post">
+                                                        <input type="text" name="phone" class="form-control" placeholder="Numéro de mobile" th:value="${recipient.user.phone}" th:if="${globalProperties.smsRequired}">
+                                                        <br>
+                                                        <button type="submit" class="btn btn-success float-end mb-2" title="Envoyer un nouveau lien d'accès">Confirmer</button>
+                                                        </form>
+                                                        <button class="btn btn-secondary float-start" title="Fermer" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').hide();'">Annuler</button>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </th:block>

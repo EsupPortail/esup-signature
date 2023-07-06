@@ -7,13 +7,14 @@ export class Nexu {
         Nexu.rootUrl = this.globalProperties.rootUrl;
         Nexu.addExtra = addExtra;
         Nexu.id = id;
+        Nexu.version;
         this.tokenId = null;
         this.keyId = null;
         this.bindingPorts = "9795, 9886, 9887, 9888";
         this.detectedPort = "";
         this.successDiv = $("#success");
         this.successDiv.hide();
-        $("#warning-text").html("NexU not detected or not started ! ");
+        $("#warning-text").html("NexU n'a pas été détecté sur le poste !");
         $("#nexu_missing_alert").show();
         let self = this;
         $(document).ready(function() {
@@ -32,8 +33,9 @@ export class Nexu {
                 if(currentSignType === 'nexuSign') {
                     $("#alertNexu").show();
                     $("#signLaunchButton").hide();
-                    $("#second-tools").removeClass("d-flex");
-                    $("#second-tools").hide();
+                    let secondTools = $("#second-tools");
+                    secondTools.removeClass("d-flex");
+                    secondTools.hide();
                 }
                 $("#certType > option[value='nexuCert']").attr('disabled', 'disabled');
             });
@@ -54,9 +56,11 @@ export class Nexu {
             let encryptionAlgorithm = certificateData.response.encryptionAlgorithm;
             Nexu.tokenId = certificateData.response.tokenId.id;
             Nexu.keyId = certificateData.response.keyId;
+            console.info("NexU version : " + Nexu.version);
             console.log("init tokenId : " + this.tokenId + "," + this.keyId);
+            let url = "/user/nexu-sign/get-data-to-sign";
             let toSend = { signingCertificate: signingCertificate, certificateChain: certificateChain, encryptionAlgorithm: encryptionAlgorithm };
-            callUrl(Nexu.rootUrl + "/user/nexu-sign/get-data-to-sign?addExtra=" + Nexu.addExtra + "&id=" + Nexu.id, "POST",  JSON.stringify(toSend), Nexu.sign, Nexu.error);
+            callUrl(Nexu.rootUrl + url + "?addExtra=" + Nexu.addExtra + "&id=" + Nexu.id, "POST",  JSON.stringify(toSend), Nexu.sign, Nexu.error);
         }
     }
 
@@ -90,8 +94,10 @@ export class Nexu {
 
     static downloadSignedDocument() {
         Nexu.updateProgressBar("Signature terminée", "100%");
-        $('#bar').removeClass('progress-bar-striped active');
-        $('#bar').addClass('progress-bar-success');
+        let bar = $('#bar');
+        bar.removeClass('progress-bar-striped active');
+        bar.addClass('progress-bar-success');
+        window.location.href = "/user/signrequests/" + Nexu.id;
         $("#success").show();
     }
 
@@ -100,12 +106,13 @@ export class Nexu {
         $('#bar').removeClass('progress-bar-success active').addClass('progress-bar-danger');
         if (error!= null && error.responseJSON !=null) {
             let jsonResp = error.responseJSON;
-            if (jsonResp.message !=null){
+            if (jsonResp.trace != null) {
+                $("#errorcontent").html(jsonResp.trace.split('\n')[0]);
+            } else if (jsonResp.message !=null){
                 $("#errorcontent").html(jsonResp.message);
             } else if (jsonResp.errorMessage !=null){
                 $("#errorcontent").html(jsonResp.errorMessage);
-            }
-            else if (jsonResp.error != null){
+            } else if (jsonResp.error != null){
                 $("#errorcontent").html(jsonResp.error);
             }
         }
@@ -146,6 +153,7 @@ export class Nexu {
                     detectNexu = true;
                     self.detectedPort = port.trim();
                     self.checkNexu(data);
+                    Nexu.version = data.version;
                     $("#nexu_missing_alert").hide();
                     $("#noOptions").hide();
                     $("#selectTypeDiv").show();
@@ -163,13 +171,13 @@ export class Nexu {
 
     checkNexu(data) {
         console.log("Check NexU");
-        if(data.version.startsWith(this.nexuVersion) || data.version.startsWith("1.23") || data.version.startsWith("1.22") || data.version.startsWith("1.8")) {
+        if(data.version.startsWith("1.0") || data.version.startsWith("1.24") || data.version.startsWith("1.23") || data.version.startsWith("1.22") || data.version.startsWith("1.8")) {
             $("#nexu_ready_alert").show();
             $("#submit-button").prop('disabled', false);
         } else {
             // need update
             $("#nexu_version_alert").show();
-            console.log("Bad NexU version " + data.version + " instead of " + this.nexuVersion);
+            console.log("Bad NexU version : " + data.version);
         }
     }
 

@@ -8,8 +8,8 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValue;
 import org.esupportail.esupsignature.service.ldap.LdapOrganizationalUnitService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
-import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
-import org.esupportail.esupsignature.service.ldap.PersonLdap;
+import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
+import org.esupportail.esupsignature.service.ldap.entry.PersonLdap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -22,7 +22,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base"})
+@ConditionalOnProperty({"spring.ldap.base"})
 @Component
 public class LdapExtValue implements ExtValue {
 

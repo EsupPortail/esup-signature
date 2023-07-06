@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.service.security.cas;
 
-import org.esupportail.esupsignature.config.security.cas.CasProperties;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +15,7 @@ import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletException;
@@ -32,15 +33,16 @@ public class CasAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
 	@Resource
 	private UserService userService;
 
-	@Resource
-	private CasProperties casProperties;
-
 	private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
 	@Override
+	@Transactional
 	public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
 		logger.info("authentication success for " + authentication.getName());
-        User user = userService.createUserWithAuthentication(authentication);
+		String name = httpServletRequest.getHeader("sn");
+		String firstname = httpServletRequest.getHeader("givenName");
+		String email = httpServletRequest.getHeader("mail");
+        User user = userService.createUserWithAuthentication(null, name, firstname, email, authentication, UserType.ldap);
 		if(user.getManagersRoles().size() > 0) {
 			CasAuthenticationToken auth = (CasAuthenticationToken) authentication;
 			List<GrantedAuthority> updatedAuthorities = new ArrayList<>(auth.getAuthorities());

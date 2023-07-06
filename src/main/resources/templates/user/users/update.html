@@ -6,7 +6,7 @@
     import {UserUi} from '/js/modules/ui/users/UserUi.js?version=[[${versionApp}]]';
     import {UserParamsHelp} from '/js/modules/help/UserParamsHelp.js?version=[[${versionApp}]]';
     new UserUi([[${user.firstname + ' ' + user.name}]], [[${user.favoriteSignRequestParams}]]);
-    let help = new UserParamsHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).userParamsHelp)}]]);
+    let help = new UserParamsHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).userParamsHelp)}]]);
     help.autoStart();
 </script>
 <body>
@@ -273,7 +273,7 @@
         </div>
     </div>
 </main>
-<div class="modal fade" id="testKeystore" data-bs-focus="false" role="dialog" aria-labelledby="testKeystore" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="testKeystore"  role="dialog" aria-labelledby="testKeystore" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form th:action="'/user/users/view-cert'" method="post">
@@ -300,7 +300,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="removeKeystore" data-bs-focus="false" role="dialog" aria-labelledby="testKeystore" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="removeKeystore"  role="dialog" aria-labelledby="testKeystore" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form action="/user/users/remove-keystore" method="get">

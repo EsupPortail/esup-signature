@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
+import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
@@ -50,7 +51,7 @@ public class OtpAccessController {
     private OtpService otpService;
 
     @Resource
-    private SignRequestService signRequestService;
+    private SignBookService signBookService;
 
     @Resource
     private UserService userService;
@@ -93,10 +94,10 @@ public class OtpAccessController {
                 }
             } else {
                 authOtp(model, httpServletRequest, user);
-                return "redirect:/otp/signrequests/" + otp.getSignRequestId();
+                return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBookId();
             }
         } else {
-            signRequestService.renewOtp(urlId);
+            signBookService.renewOtp(urlId);
         }
         return "redirect:/otp-access/expired";
     }
@@ -156,7 +157,7 @@ public class OtpAccessController {
                     userService.updatePhone(user.getEppn(), PhoneNumberUtil.normalizeDiallableCharsOnly(otp.getPhoneNumber()));
                 }
                 authOtp(model, httpServletRequest, user);
-                return "redirect:/otp/signrequests/" + otp.getSignRequestId();
+                return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBookId();
             } else {
                 model.addAttribute("result", "KO");
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Mauvais code SMS, un nouveau code vous à été envoyé"));

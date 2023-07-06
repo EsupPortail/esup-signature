@@ -1,15 +1,11 @@
-package org.esupportail.esupsignature.service.ldap;
+package org.esupportail.esupsignature.service.ldap.entry;
 
 import org.springframework.ldap.odm.annotations.Attribute;
-import org.springframework.ldap.odm.annotations.Entry;
-import org.springframework.ldap.odm.annotations.Id;
 
 import javax.naming.Name;
 
-@Entry(objectClasses = {"top"})
-public final class PersonLdapLight {
+public final class PersonLightLdap {
 
-	@Id
 	private Name dn;
 	private @Attribute(name = "uid") String uid;
 	private @Attribute(name = "cn") String cn;
@@ -18,6 +14,13 @@ public final class PersonLdapLight {
 	private @Attribute(name = "displayName") String displayName;
 	private @Attribute(name = "mail") String mail;
 	private @Attribute(name = "eduPersonPrincipalName") String eduPersonPrincipalName;
+
+	public PersonLightLdap() {
+	}
+
+	public PersonLightLdap(String mail) {
+		this.mail = mail;
+	}
 
 	public String getUid() {
 		return uid;
