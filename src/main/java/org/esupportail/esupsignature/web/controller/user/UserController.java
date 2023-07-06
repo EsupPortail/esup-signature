@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.esupportail.esupsignature.entity.FieldPropertie;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
@@ -125,7 +124,6 @@ public class UserController {
 	@ResponseBody
 	public List<PersonLightLdap> searchLdap(@RequestParam(value="searchString") String searchString, @ModelAttribute("authUserEppn") String authUserEppn) {
 		logger.debug("ldap search for : " + searchString);
-		searchString = StringEscapeUtils.escapeSql(searchString);
 		return userService.getPersonLdapsLight(searchString, authUserEppn).stream().sorted(Comparator.comparing(PersonLightLdap::getDisplayName, Comparator.nullsLast(String::compareTo))).collect(Collectors.toList());
    }
 
