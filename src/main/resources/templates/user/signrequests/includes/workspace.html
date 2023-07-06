@@ -23,7 +23,7 @@
         </div>
         <th:block th:if="${toSignDocument.contentType == 'application/pdf'}">
             <div id="commentHelp" th:unless="${signRequest.comments.size() > 0}" class="alert alert-warning border-dark d-none" style="width: 100%">
-                Pour ajouter des commentaires ou des emplacements de signature, cliquez sur le bouton correspondant puis sur le document
+                Pour ajouter des annotations ou des emplacements de signature, cliquez sur le bouton correspondant puis sur le document
                 <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
             </div>
         </th:block>
@@ -39,22 +39,22 @@
         <div id="pdf" class="mx-auto" style="position: relative !important;">
             <th:block th:each="comment : ${comments}">
                 <div th:if="${signRequest.createBy.eppn == user.eppn && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
-                     class="circle" th:id="'inDocComment_' + ${comment.id}"
-                     th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
-                     th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'" title="Cliquer pour supprimer l'annotation">
+                    class="circle" th:id="'inDocComment_' + ${comment.id}"
+                    th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
+                    th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'" title="Cliquer pour supprimer l'annotation">
                     <i class="fas fa-comment fa-3x"></i>
                 </div>
                 <div th:unless="${signRequest.createBy.eppn == user.eppn && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
-                     class="circle" th:id="'inDocComment_' + ${comment.id}"
-                     th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
-                     th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'">
+                    class="circle" th:id="'inDocComment_' + ${comment.id}"
+                    th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
+                    th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'">
                     <i class="fas fa-comment fa-3x"></i>
                 </div>
             </th:block>
             <th:block th:each="spot, iterator : ${spots}">
                 <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}" title="Cliquer pour supprimer l'emplacement de signature"
-                     th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').addClass(\'circle-border\');'"
-                     th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').removeClass(\'circle-border\');'">
+                    th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').addClass(\'circle-border\');'"
+                    th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').removeClass(\'circle-border\');'">
                     <i class="fas fa-map-marker-alt fa-3x" title="Cliquer pour supprimer l'emplacement de signature"></i>
                     <div th:id="'inDocSign_' + ${spot.id}" style="width: 200px; height: 150px; margin-left: 18px;color: #000;" class="sign-field">
 
