@@ -47,7 +47,11 @@ public class WorkflowWsController {
                       @RequestParam(required = false) @Parameter(description = "Paramètres de signature", example = "[{\"xPos\":100, \"yPos\":100, \"signPageNumber\":1}, {\"xPos\":200, \"yPos\":200, \"signPageNumber\":1}]") String signRequestParamsJsonString,
                       @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls
     ) {
-        if(recipientEmails == null && recipientsEmails.size() > 0) {
+        logger.debug("init new workflow instance : " + id);
+        if(createByEppn == null) {
+            throw new EsupSignatureRuntimeException("Required request parameter 'createByEppn' for method parameter type String is not present");
+        }
+        if(recipientEmails == null && recipientsEmails != null && recipientsEmails.size() > 0) {
             recipientEmails = recipientsEmails;
         }
         try {

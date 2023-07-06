@@ -60,8 +60,8 @@ public class FormWsController {
                       @RequestParam(required = false) @Parameter(description = "Eppn du propriétaire du futur document (ancien nom)") String eppn,
                       @RequestParam(required = false) @Parameter(description = "Eppn du propriétaire du futur document : eppn ou createByEppn requis") String createByEppn,
                       @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape (ancien nom)", example = "[stepNumber*email]") List<String> recipientEmails,
-                      @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape : recipientEmails ou recipientsEmails requis", example = "[stepNumber*email]") List<String> recipientsEmails,
-                      @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*signTypes]") List<String> signTypes,
+                      @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*email]") List<String> recipientsEmails,
+                      @RequestParam(required = false) @Parameter(description = "Liste des types de signature pour chaque étape", example = "[stepNumber*signTypes]") List<String> signTypes,
                       @RequestParam(required = false) @Parameter(description = "Lites des numéros d'étape pour lesquelles tous les participants doivent signer", example = "[stepNumber]") List<String> allSignToCompletes,
                       @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
                       @RequestParam(required = false) @Parameter(description = "Paramètres de signature", example = "[{\"xPos\":100, \"yPos\":100, \"signPageNumber\":1}, {\"xPos\":200, \"yPos\":200, \"signPageNumber\":1}]") String signRequestParamsJsonString,
@@ -69,7 +69,7 @@ public class FormWsController {
                       @RequestParam(required = false) @Parameter(description = "Données par défaut à remplir dans le formulaire", example = "{'field1' : 'toto, 'field2' : 'tata'}") String formDatas,
                       @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title) {
         logger.debug("init new form instance : " + id);
-        if(recipientEmails == null && recipientsEmails.size() > 0) {
+        if(recipientEmails == null && recipientsEmails != null && recipientsEmails.size() > 0) {
             recipientEmails = recipientsEmails;
         }
         if(createByEppn == null && eppn != null && !eppn.isEmpty()) {
