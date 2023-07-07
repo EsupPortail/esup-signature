@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.entity.Comment;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.CommentRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,9 @@ public class CommentService {
     public Comment create(Long signRequestId, String text, Integer posX, Integer posY, Integer pageNumer, Integer stepNumber, Boolean postit, String postitColor, String userEppn) {
         User user = userService.getByEppn(userEppn);
         SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
+        if(signRequest.getComments().stream().filter(Comment::getPostit).count() > 8) {
+            throw new EsupSignatureRuntimeException("Trop de postit, tue le postit");
+        }
         Comment comment = new Comment();
         comment.setText(text);
         comment.setCreateBy(user);
