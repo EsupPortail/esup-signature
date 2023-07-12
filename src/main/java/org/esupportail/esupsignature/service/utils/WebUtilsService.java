@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +25,7 @@ public class WebUtilsService {
 
     public void copyFileStreamToHttpResponse(String name, String contentType, String disposition, InputStream inputStream, HttpServletResponse httpServletResponse) throws IOException {
         httpServletResponse.setContentType(contentType);
-        httpServletResponse.setHeader("Content-Disposition", disposition + "; filename=\"" + name + "\"");
+        httpServletResponse.setHeader("Content-Disposition", disposition + "; filename=" + URLEncoder.encode(name, StandardCharsets.UTF_8));
         IOUtils.copyLarge(inputStream, httpServletResponse.getOutputStream());
     }
 

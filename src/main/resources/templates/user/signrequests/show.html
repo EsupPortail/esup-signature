@@ -134,7 +134,7 @@
             <div style="position: absolute;left: 270px;top: 180px;">
                 <th:block th:each="postit, iterate : ${postits}">
                     <div class="postit-global d-none"
-                         th:style="'background-color: ' + ${postit.postitColor} + ';position: fixed; right: ' + ${150 - (iterate.index * 10)} + 'px; top : ' + ${215 + (iterate.index * 190)} + 'px;'">
+                         th:style="'background-color: ' + ${postit.postitColor} + ';position: fixed; left: ' + ${280 + (iterate.index * 10)} + 'px; top : ' + ${180 + (iterate.index * 70)} + 'px;'">
                         <button type="button" class="postit-global-close close">
                             <i class="fas fa-eye"></i>
                         </button>
@@ -144,9 +144,9 @@
                             <i th:es-postit-id="${postit.id}" class="far fa-copy"></i>
                         </button>
                         <p th:class="${postit.createBy.eppn == userEppn} ? 'd-none' : ''" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></p>
-                        <form th:if="${postit.createBy.eppn == userEppn}" th:action="${'/user/signrequests/comment/' + signRequest.id + '/update/' + postit.id}" th:method="post">
-                            <textarea th:style="'background-color: ' + ${postit.postitColor}" name="comment" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></textarea>
-                            <button type="submit" class="btn btn-sm btn-dark"><i class="fa fa-save"></i></button>
+                        <form style="height: 70%;" th:if="${postit.createBy.eppn == userEppn}" th:action="${'/user/signrequests/comment/' + signRequest.id + '/update/' + postit.id}" th:method="post">
+                            <textarea th:style="'height: 70%;background-color: ' + ${postit.postitColor}" name="comment" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></textarea>
+                            <button type="submit" class="btn btn-sm btn-dark float-end"><i class="fa fa-save"></i></button>
                         </form>
 
                     </div>

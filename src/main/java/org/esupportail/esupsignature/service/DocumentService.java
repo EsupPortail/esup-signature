@@ -87,7 +87,7 @@ public class DocumentService {
 	public String getSignedName(String originalName) {
 		String suffix = globalProperties.getSignedSuffix();
 		String name = "";
-		name += fileService.getNameOnly(originalName);
+		name += fileService.getNameOnly(originalName).replaceAll(" ", "_");
 		if(name.endsWith(suffix)) {
 			name = name.replace(suffix, "");
 		}
