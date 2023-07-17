@@ -86,7 +86,7 @@ export default class FilesInput extends EventFactory {
             dropZoneEnabled: !readOnly,
             browseOnZoneClick: !readOnly,
             uploadUrl: this.uploadUrl,
-            maxAjaxThreads: 5,
+            maxAjaxThreads: 1,
             uploadAsync: true,
             theme: 'explorer-fa6',
             pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
