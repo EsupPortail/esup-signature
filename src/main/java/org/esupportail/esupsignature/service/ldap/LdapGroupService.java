@@ -131,16 +131,24 @@ public class LdapGroupService implements GroupService {
     @Override
     public List<String> getMembers(String groupName) throws EsupSignatureRuntimeException {
         List<String> eppns = new ArrayList<>();
+        String groupCn = null;
         List<Map.Entry<String, String>> group = getAllGroupsStartWith(groupName);
+        //TODO : faire d'abord une requete start with * puis une requete stricte avec le cn
+        if(group.size() == 1 ) {
+            groupCn = group.stream().map(Map.Entry::getKey).toList().get(0);
+        } else if (group.size() > 0) {
+            groupCn = groupName;
+        }
+        logger.debug("getMembers of : " + groupCn);
         if (ldapProperties.getMembersOfGroupSearchFilter() != null) {
-            String formattedFilter = MessageFormat.format(ldapProperties.getMembersOfGroupSearchFilter(), groupName);
+            String formattedFilter = MessageFormat.format(ldapProperties.getMembersOfGroupSearchFilter(), groupCn);
             eppns = ldapTemplate.search(ldapProperties.getSearchBase(), formattedFilter, (ContextMapper<String>) ctx -> {
                 DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                 return searchResultContext.getStringAttribute("mail");
             });
         }
         if(group.size() > 0 && eppns.size() == 0) {
-            throw new EsupSignatureRuntimeException("empty group " + groupName);
+            throw new EsupSignatureRuntimeException("empty group " + groupCn);
         }
         return eppns;
     }
