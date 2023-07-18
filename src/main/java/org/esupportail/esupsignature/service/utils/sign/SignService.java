@@ -363,6 +363,8 @@ public class SignService {
 			int heightAdjusted = Math.round(signRequestParams.getSignHeight() * fixFactor);
 
 			if(pdfParameters.getRotation() == 0) {
+//				if(widthAdjusted + Math.round(signRequestParams.getxPos() * fixFactor) < 0) widthAdjusted = 0;
+//				if(widthAdjusted + Math.round(signRequestParams.getxPos() * fixFactor) > 612) widthAdjusted = widthAdjusted - (widthAdjusted + Math.round(signRequestParams.getxPos() * fixFactor) - 612) ;
 				signatureFieldParameters.setWidth(widthAdjusted);
 				signatureFieldParameters.setHeight(heightAdjusted);
 				signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() * fixFactor));
@@ -372,6 +374,7 @@ public class SignService {
 				signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() - 50 * fixFactor));
 			}
 			int yPos = Math.round(signRequestParams.getyPos() * fixFactor);
+			if(yPos < 0) yPos = 0;
 			signatureFieldParameters.setOriginY(yPos);
 			imageParameters.setFieldParameters(signatureFieldParameters);
 			imageParameters.setDpi(300);
