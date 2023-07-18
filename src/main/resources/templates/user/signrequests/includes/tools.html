@@ -20,9 +20,6 @@
 				});
 			}
 		</script>
-		<a th:if="${signable}" class="btn btn-light btn-outline-dark d-block" title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
-			<i class="fas fa-share"></i>
-		</a>
 		<div class="border ms-3 me-3 d-none d-lg-block ms-1"></div>
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf'}">
 			<button id="zoomout" title="Zoom arrière" class="btn btn-light btn-outline-dark"><i
@@ -71,13 +68,18 @@
 				</button>
 			</form>
 		</th:block>
-		<th:block th:if="${signRequest.parentSignBook.createBy.eppn == user.eppn
-						&& (signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) && editable}">
-			<div class="border ms-3 me-3 d-none d-lg-block ms-1"></div>
-			<a class="btn btn-light btn-outline-dark me-1 d-none d-md-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/update/' + ${signRequest.parentSignBook.id}">
-				<i class="fas fa-pencil-alt"></i>
-			</a>
-		</th:block>
+		<div class="border ms-3 me-3 d-none d-lg-block ms-1"></div>
+
+		<a th:if="${signable}" class="btn btn-light btn-outline-dark d-block" title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
+			<i class="fas fa-people-arrows"></i>
+		</a>
+		<a th:if="${signRequest.parentSignBook.createBy.eppn == user.eppn}" class="btn btn-light btn-outline-dark d-block ms-1" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal">
+			<i class="fas fa-users-viewfinder"></i>
+		</a>
+		<a th:if="${signRequest.parentSignBook.createBy.eppn == user.eppn
+				&& (signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) && editable}" class="btn btn-light btn-outline-dark ms-1 d-none d-md-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/update/' + ${signRequest.parentSignBook.id}">
+			<i class="fas fa-pencil-alt"></i>
+		</a>
 	</div>
 	<div id="second-tools" class="d-flex mb-1">
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">

@@ -596,7 +596,7 @@ public class SignBookService {
                         if (!signBook.getViewers().contains(user) && !signBook.getCreateBy().equals(user)) {
                             signBook.getViewers().add(user);
                             addUserInTeam(user.getId(), signBookId);
-                            if (globalProperties.getSendCreationMailToViewers() && signBook.getStatus().equals(SignRequestStatus.pending)) {
+                            if (globalProperties.getSendCreationMailToViewers() && !signBook.getStatus().equals(SignRequestStatus.draft) && !signBook.getStatus().equals(SignRequestStatus.uploading)) {
                                 mailService.sendCCAlert(signBook, recipientsCCEmails);
                             }
                         }
