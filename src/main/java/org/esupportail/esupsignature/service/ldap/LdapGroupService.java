@@ -133,10 +133,11 @@ public class LdapGroupService implements GroupService {
         List<String> eppns = new ArrayList<>();
         String groupCn = null;
         List<Map.Entry<String, String>> group = getAllGroupsStartWith(groupName);
+        //TODO : faire d'abord une requete start with * puis une requete stricte avec le cn
         if(group.size() == 1 ) {
-            groupCn = groupName;
-        } else if (group.size() > 0) {
             groupCn = group.stream().map(Map.Entry::getKey).toList().get(0);
+        } else if (group.size() > 0) {
+            groupCn = groupName;
         }
         logger.debug("getMembers of : " + groupCn);
         if (ldapProperties.getMembersOfGroupSearchFilter() != null) {
