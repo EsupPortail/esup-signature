@@ -58,7 +58,7 @@ public class UserPropertieService {
     }
 
     @Transactional
-    public List<String> getFavoritesEmails(String userEppn) {
+    public List<User> getFavoritesEmails(String userEppn) {
         List<UserPropertie> userProperties = getUserProperties(userEppn);
         Map<User, Date> favorites = new HashMap<>();
         for(UserPropertie userPropertie : userProperties) {
@@ -66,7 +66,7 @@ public class UserPropertieService {
         }
         List<Map.Entry<User, Date>> entrySet = new ArrayList<>(favorites.entrySet());
         entrySet.sort(Map.Entry.<User, Date>comparingByValue().reversed());
-        return entrySet.stream().map(Map.Entry::getKey).map(User::getEmail).limit(5).collect(Collectors.toList());
+        return entrySet.stream().map(Map.Entry::getKey).limit(5).collect(Collectors.toList());
     }
 
     @Transactional
