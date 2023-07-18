@@ -61,6 +61,7 @@ public class FormWsController {
                       @RequestParam(required = false) @Parameter(description = "Eppn du propriétaire du futur document : eppn ou createByEppn requis") String createByEppn,
                       @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape (ancien nom)", example = "[stepNumber*email]") List<String> recipientEmails,
                       @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*email]") List<String> recipientsEmails,
+                      @RequestParam(required = false) @Parameter(description = "Liste des personnes en copie (emails). Ne prend pas en charge les groupes")  List<String> recipientsCCEmails,
                       @RequestParam(required = false) @Parameter(description = "Liste des types de signature pour chaque étape", example = "[stepNumber*signTypes]") List<String> signTypes,
                       @RequestParam(required = false) @Parameter(description = "Lites des numéros d'étape pour lesquelles tous les participants doivent signer", example = "[stepNumber]") List<String> allSignToCompletes,
                       @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
@@ -86,6 +87,7 @@ public class FormWsController {
                 datas = objectMapper.readValue(formDatas, type);
             }
             SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, signTypes, allSignToCompletes, null, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, signRequestParamsJsonString, title);
+            signBookService.addViewers(signBook.getId(), recipientsCCEmails);
             return signBook.getSignRequests().get(0).getId();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
