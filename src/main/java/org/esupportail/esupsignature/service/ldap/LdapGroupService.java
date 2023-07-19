@@ -131,13 +131,15 @@ public class LdapGroupService implements GroupService {
     @Override
     public List<String> getMembers(String groupName) throws EsupSignatureRuntimeException {
         List<String> eppns = new ArrayList<>();
-        String groupCn = null;
+        String groupCn;
         List<Map.Entry<String, String>> group = getAllGroupsStartWith(groupName);
         //TODO : faire d'abord une requete start with * puis une requete stricte avec le cn
         if(group.size() == 1 ) {
             groupCn = group.stream().map(Map.Entry::getKey).toList().get(0);
         } else if (group.size() > 0) {
             groupCn = groupName;
+        } else {
+            return eppns;
         }
         logger.debug("getMembers of : " + groupCn);
         if (ldapProperties.getMembersOfGroupSearchFilter() != null) {
