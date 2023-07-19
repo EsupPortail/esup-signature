@@ -233,7 +233,7 @@ public class GlobalProperties {
     /**
      * The org.bouncycastle.rsa.max_mr_tests property check has been added to allow capping of MR tests done on RSA moduli.
      */
-    private Integer bouncycastelMaxMrTests = 1;
+    private Integer bouncycastelMaxMrTests = 0;
 
     public String getRootUrl() {
         return rootUrl;

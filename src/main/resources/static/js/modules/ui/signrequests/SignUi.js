@@ -47,7 +47,12 @@ export class SignUi {
         let self = this;
         $("#password").on('keyup', function (e) {
             if (e.keyCode === 13) {
-                self.launchSign(true);
+                let nextSignRequest = $("#nextSignRequest");
+                if (nextSignRequest.length > 0) {
+                    self.launchSign(true);
+            	} else {
+                    self.launchSign(false);
+                }
             }
         });
         $("#certType").on("change", e => this.togglePasswordField());
@@ -373,6 +378,8 @@ export class SignUi {
     sendData(signRequestUrlParams) {
         this.reset();
         let self = this;
+        console.log("start sign");
+        console.log(self.signRequestId);
         $.ajax({
             url: "/ws-secure/signrequests/sign/" + this.signRequestId + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
             type: 'POST',
