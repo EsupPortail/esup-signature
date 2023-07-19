@@ -41,6 +41,36 @@
     font-weight: 100;
 }
 
+@font-face {
+    font-family: 'Signature';
+    src: url('/fonts/Signature.otf') format('opentype');
+    font-weight: 700;
+}
+
+@font-face {
+    font-family: 'Signature';
+    src: url('/fonts/Signature.otf') format('opentype');
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: 'Signature';
+    src: url('/fonts/Signature.otf') format('opentype');
+    font-weight: 300;
+}
+
+@font-face {
+    font-family: 'Signature';
+    src: url('/fonts/Signature/otf') format('opentype');
+    font-weight: 200;
+}
+
+@font-face {
+    font-family: 'Signature';
+    src: url('/fonts/Signature.otf') format('opentype');
+    font-weight: 100;
+}
+
 .select-users {
     /*for javascript detection : new SelectUser()*/
 }
