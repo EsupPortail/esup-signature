@@ -47,7 +47,12 @@ export class SignUi {
         let self = this;
         $("#password").on('keyup', function (e) {
             if (e.keyCode === 13) {
-                self.launchSign(true);
+                let nextSignRequest = $("#nextSignRequest");
+                if (nextSignRequest.length > 0) {
+                    self.launchSign(true);
+            	} else {
+                    self.launchSign(false);
+                }
             }
         });
         $("#certType").on("change", e => this.togglePasswordField());
@@ -383,9 +388,8 @@ export class SignUi {
                 if(data === "initNexu") {
                     document.location.href="/user/nexu-sign/" + self.signRequestId;
                 } else {
-                    let nextSignRequest = $("#nextSignRequest");
-                    if (nextSignRequest != null && self.gotoNext) {
-                        document.location.href = nextSignRequest.attr('href');
+                    if (self.gotoNext) {
+                        document.location.href = $("#nextSignRequest").attr('href');
                     } else {
                         if(self.isOtp== null || !self.isOtp) {
                             if(self.returnToHome == null) {
