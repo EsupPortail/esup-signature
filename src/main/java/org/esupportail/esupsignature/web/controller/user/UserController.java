@@ -37,7 +37,7 @@ public class UserController {
 
 	@ModelAttribute("paramMenu")
 	public String getActiveMenu() {
-		return "active";
+		return "bg-secondary";
 	}
 
 	@Resource

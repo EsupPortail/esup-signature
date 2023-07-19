@@ -373,6 +373,8 @@ export class SignUi {
     sendData(signRequestUrlParams) {
         this.reset();
         let self = this;
+        console.log("start sign");
+        console.log(self.signRequestId);
         $.ajax({
             url: "/ws-secure/signrequests/sign/" + this.signRequestId + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
             type: 'POST',
@@ -381,8 +383,9 @@ export class SignUi {
                 if(data === "initNexu") {
                     document.location.href="/user/nexu-sign/" + self.signRequestId;
                 } else {
-                    if (self.gotoNext) {
-                        document.location.href = $("#nextSignRequest").attr('href');
+                    let nextSignRequest = $("#nextSignRequest");
+                    if (nextSignRequest != null && self.gotoNext) {
+                        document.location.href = nextSignRequest.attr('href');
                     } else {
                         if(self.isOtp== null || !self.isOtp) {
                             if(self.returnToHome == null) {
