@@ -32,6 +32,7 @@ public class UserListService {
                 List<String> emails = new ArrayList<>();
                 for (UserList userList : userLists) {
                     emails.addAll(userList.getUsersEmailFromList(listName));
+                    emails.addAll(userList.getUsersEmailFromAliases(listName));
                 }
                 return emails;
             }

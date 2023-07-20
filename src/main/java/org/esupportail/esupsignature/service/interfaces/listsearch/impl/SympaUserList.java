@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.interfaces.listsearch.impl;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.extdb.ExtDbService;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserList;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -45,6 +46,11 @@ public class SympaUserList implements UserList {
             }
         });
         return userEmails;
+    }
+
+    @Override
+    public List<String> getUsersEmailFromAliases(String listName) throws DataAccessException, EsupSignatureRuntimeException {
+        return new ArrayList<>();
     }
 
     @Override

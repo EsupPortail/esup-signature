@@ -460,7 +460,7 @@ public class UserService {
             }
         }
             if(ldapAliasService != null) {
-            for (AliasLdap aliasLdap : ldapAliasService.searchByMail(searchString)) {
+            for (AliasLdap aliasLdap : ldapAliasService.searchByMail(searchString, false)) {
                 personLightLdaps.add(new PersonLightLdap(aliasLdap.getMail()));
             }
         }

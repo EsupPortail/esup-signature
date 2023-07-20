@@ -2,13 +2,17 @@ package org.esupportail.esupsignature.service.interfaces.listsearch.impl;
 
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserList;
+import org.esupportail.esupsignature.service.ldap.LdapAliasService;
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;
+import org.esupportail.esupsignature.service.ldap.entry.AliasLdap;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +24,9 @@ public class LdapUserList implements UserList {
     @Resource
     private LdapGroupService ldapGroupService;
 
+    @Resource
+    private LdapAliasService ldapAliasService;
+
     @Override
     public String getName() {
         return "ldap";
@@ -28,6 +35,33 @@ public class LdapUserList implements UserList {
     @Override
     public List<String> getUsersEmailFromList(String listName) throws DataAccessException, EsupSignatureRuntimeException {
         List<String> userEmails = ldapGroupService.getMembers(listName);
+        for(String userEmail : userEmails) {
+            List<String> childsUserEmails = getUsersEmailFromList(userEmail);
+            if(childsUserEmails.size() > 0) {
+               userEmails.remove(userEmail);
+               userEmails.addAll(childsUserEmails);
+            }
+        }
+        return userEmails;
+    }
+
+    @Override
+    public List<String> getUsersEmailFromAliases(String listName) throws DataAccessException, EsupSignatureRuntimeException {
+        List<String> userEmails = new ArrayList<>();
+        if(StringUtils.hasText(listName)) {
+            List<AliasLdap> aliasLdaps = ldapAliasService.searchByMail(listName, true);
+            if (aliasLdaps.size() > 0) {
+                for (AliasLdap userEmail : aliasLdaps) {
+                    if (userEmail.getRfc822MailMember().size() > 0) {
+                        for (String alias : userEmail.getRfc822MailMember()) {
+                            userEmails.addAll(getUsersEmailFromAliases(alias));
+                        }
+                    }
+                }
+            } else {
+                userEmails.add(listName);
+            }
+        }
         return userEmails;
     }
 
