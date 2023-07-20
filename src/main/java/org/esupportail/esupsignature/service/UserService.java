@@ -580,11 +580,7 @@ public class UserService {
                     tempUsers.add(optionalUser.get());
                 } else {
                     List<String> groupUsers = new ArrayList<>();
-                    try {
-                        groupUsers.addAll(userListService.getUsersEmailFromList(recipientEmail));
-                    } catch (EsupSignatureRuntimeException e) {
-                        logger.debug(e.getMessage());
-                    }
+                    groupUsers.addAll(userListService.getUsersEmailFromList(recipientEmail));
                     if (groupUsers.size() == 0 && !recipientEmail.contains(globalProperties.getDomain())) {
                         User recipientUser = getUserByEmail(recipientEmail);
                         if (recipientUser.getUserType().equals(UserType.external)) {

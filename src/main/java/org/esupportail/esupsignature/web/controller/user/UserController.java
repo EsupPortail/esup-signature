@@ -133,7 +133,7 @@ public class UserController {
 		try {
 			return userListService.getUsersEmailFromList(searchString);
 		} catch (DataAccessException | EsupSignatureRuntimeException e) {
-			logger.warn(e.getMessage());
+			logger.debug(e.getMessage());
 		}
 		return null;
 	}
