@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.interfaces.listsearch.impl;
 
+import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserList;
 import org.esupportail.esupsignature.service.ldap.LdapAliasService;
@@ -34,15 +35,17 @@ public class LdapUserList implements UserList {
 
     @Override
     public List<String> getUsersEmailFromList(String listName) throws DataAccessException, EsupSignatureRuntimeException {
+        List<String> userEmailsOk = new ArrayList<>();
         List<String> userEmails = ldapGroupService.getMembers(listName);
         for(String userEmail : userEmails) {
             List<String> childsUserEmails = getUsersEmailFromList(userEmail);
             if(childsUserEmails.size() > 0) {
-               userEmails.remove(userEmail);
-               userEmails.addAll(childsUserEmails);
+                userEmailsOk.addAll(childsUserEmails);
+            } else {
+                userEmailsOk.add(userEmail);
             }
         }
-        return userEmails;
+        return userEmailsOk;
     }
 
     @Override
@@ -59,7 +62,9 @@ public class LdapUserList implements UserList {
                     }
                 }
             } else {
-                userEmails.add(listName);
+                if(EmailValidator.getInstance().isValid(listName)) {
+                    userEmails.add(listName);
+                }
             }
         }
         return userEmails;
