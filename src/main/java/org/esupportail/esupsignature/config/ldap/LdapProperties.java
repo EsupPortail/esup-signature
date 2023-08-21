@@ -31,6 +31,10 @@ public class LdapProperties {
      */
     private String allGroupsSearchFilter = "cn=*{0}";
     /**
+     * Filtre utilisé pour rechercher des aliases, ex : (mail=*{0})
+     */
+    private String allAliasesSearchFilter = "(mail={0})";
+    /**
      * Filtre utilisé pour retrouver les membres d’un groupe, ex : memberOf=cn={0},ou=groups,dc=univ-ville,dc=fr
      */
     private String membersOfGroupSearchFilter = "memberOf=cn={0},ou=groups,dc=univ-ville,dc=fr";
@@ -122,6 +126,14 @@ public class LdapProperties {
 
     public void setAllGroupsSearchFilter(String allGroupsSearchFilter) {
         this.allGroupsSearchFilter = allGroupsSearchFilter;
+    }
+
+    public String getAllAliasesSearchFilter() {
+        return allAliasesSearchFilter;
+    }
+
+    public void setAllAliasesSearchFilter(String allAliasesSearchFilter) {
+        this.allAliasesSearchFilter = allAliasesSearchFilter;
     }
 
     public String getMembersOfGroupSearchFilter() {

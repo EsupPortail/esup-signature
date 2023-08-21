@@ -471,7 +471,7 @@ public class UserService {
             }
         }
             if(ldapAliasService != null) {
-            for (AliasLdap aliasLdap : ldapAliasService.searchByMail(searchString)) {
+            for (AliasLdap aliasLdap : ldapAliasService.searchByMail(searchString, false)) {
                 personLightLdaps.add(new PersonLightLdap(aliasLdap.getMail()));
             }
         }
@@ -591,11 +591,7 @@ public class UserService {
                     tempUsers.add(optionalUser.get());
                 } else {
                     List<String> groupUsers = new ArrayList<>();
-                    try {
-                        groupUsers.addAll(userListService.getUsersEmailFromList(recipientEmail));
-                    } catch (EsupSignatureRuntimeException e) {
-                        logger.debug(e.getMessage());
-                    }
+                    groupUsers.addAll(userListService.getUsersEmailFromList(recipientEmail));
                     if (groupUsers.size() == 0 && !recipientEmail.contains(globalProperties.getDomain())) {
                         User recipientUser = getUserByEmail(recipientEmail);
                         if (recipientUser.getUserType().equals(UserType.external)) {
@@ -845,7 +841,7 @@ public class UserService {
     @Transactional
     public String getDefaultImage(String eppn) throws IOException {
         User user = getByEppn(eppn);
-        return fileService.getBase64Image(fileService.getDefaultImage(user.getName(), user.getFirstname()), "default");
+        return fileService.getBase64Image(fileService.getDefaultImage(user.getName(), user.getFirstname(), 1), "default");
     }
 
     @Transactional

@@ -202,10 +202,12 @@ export default class SelectUser {
     displayExternalsError() {
         let name = '#tempUsers-' + this.selectField.attr("id");
         let tempUsersDiv = $(name);
-        tempUsersDiv.append(
-            "<div class='alert alert-danger' id='externalUserInfos_'>" +
-            "<b>Le destinataire saisi n’est pas conforme</b><br>Soit les destinataires externes ne sont pas autorisés, soit il s’agit d’un groupe vide" +
-            "</div>");
+        if($("#externalUserInfos_").length === 0) {
+            tempUsersDiv.append(
+                "<div class='alert alert-danger' id='externalUserInfos_'>" +
+                "<b>Le destinataire saisi n’est pas conforme</b><br>Soit les destinataires externes ne sont pas autorisés, soit il s’agit d’un groupe vide" +
+                "</div>");
+        }
     }
 
     addListMembers(data, selectValue) {

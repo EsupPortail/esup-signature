@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -335,18 +336,18 @@ public class FileService {
 		imgBuf.setRGB(0, 0, w, h, rgb, 0, w);
 	}
 
-	public InputStream getDefaultImage(String name, String firstname) throws IOException {
-		BufferedImage bufferedImage = new BufferedImage(600, 300, BufferedImage.TYPE_INT_ARGB);
+	public InputStream getDefaultImage(String name, String firstname, int factor) throws IOException {
+		BufferedImage bufferedImage = new BufferedImage(600 * factor, 300 * factor, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics2D = bufferedImage.createGraphics();
 		graphics2D.setColor(new Color(0f,0f,0f,0f ));
 		Rectangle rect = new Rectangle();
-		rect.setRect(0, 0, 600, 300);
-		graphics2D.fillRect(0, 0, 600, 300);
+		rect.setRect(0, 0, 600 * factor, 300 * factor);
+		graphics2D.fillRect(0, 0, 600 * factor, 300 * factor);
 		setQualityParams(graphics2D);
-		float fontSize = (float) 600 / Math.max(firstname.length(), name.length()) / 1.8f;
+		float fontSize = (float) 600 * factor / Math.max(firstname.length(), name.length());
 		Font font = null;
 		try {
-			font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(fontSize);
+			font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/Signature.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(fontSize);
 		} catch (FontFormatException e) {
 			logger.warn("unable to get font");
 		}
@@ -355,8 +356,8 @@ public class FileService {
 		FontMetrics fm = graphics2D.getFontMetrics();
 		int y = rect.y + ((rect.height - fm.getHeight()) / 2) + fm.getAscent();
 		int lineHeight = Math.round(fontSize);
-		graphics2D.drawString(firstname.toUpperCase(), 300, y - lineHeight);
-		graphics2D.drawString(name.toUpperCase(), 300, y + lineHeight);
+		graphics2D.drawString(StringUtils.capitalize(firstname), 300 * factor, y - lineHeight);
+		graphics2D.drawString(StringUtils.capitalize(name), 300 * factor, y + lineHeight);
 		graphics2D.dispose();
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		ImageIO.write(bufferedImage, "png", outputStream);

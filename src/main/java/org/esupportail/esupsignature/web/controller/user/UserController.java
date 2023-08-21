@@ -37,7 +37,7 @@ public class UserController {
 
 	@ModelAttribute("paramMenu")
 	public String getActiveMenu() {
-		return "active";
+		return "bg-secondary";
 	}
 
 	@Resource
@@ -133,7 +133,7 @@ public class UserController {
 		try {
 			return userListService.getUsersEmailFromList(searchString);
 		} catch (DataAccessException | EsupSignatureRuntimeException e) {
-			logger.warn(e.getMessage());
+			logger.debug(e.getMessage());
 		}
 		return null;
 	}

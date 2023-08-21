@@ -307,7 +307,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button id="checkValidateSignButtonEnd"
+                <button id="checkValidateSignButtonEnd" th:if="${signBook.signRequests.size() == 1 || nextSignBook == null}"
                         class="btn btn-success me-1" title="Signer" th:value="${signRequest.id}" autofocus>
                     <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer</span>
                     <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>
@@ -639,7 +639,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <div th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}">
-                        <button type="submit" id="refuseEnd" name="redirect" value="end"
+                        <button type="submit" id="refuseEnd" name="redirect" value="end" th:if="${signBook.signRequests.size() == 1 || nextSignBook == null}"
                                 class="btn btn-danger me-1" title="Refuser" autofocus>
                             <span>Refuser</span>
                         </button>

@@ -12,7 +12,7 @@
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.25.16</version>
+	<version>1.25.17</version>
 	<name>esup-signature</name>
 	<properties>
 		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
@@ -640,10 +640,14 @@
 		<dependency>
 			<groupId>eu.agno3.jcifs</groupId>
 			<artifactId>jcifs-ng</artifactId>
-			<version>2.1.8</version>
+			<version>2.1.9</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>bcprov-jdk15to18</artifactId>
+					<groupId>org.bouncycastle</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>bcprov-jdk15on</artifactId>
 					<groupId>org.bouncycastle</groupId>
 				</exclusion>
 			</exclusions>
