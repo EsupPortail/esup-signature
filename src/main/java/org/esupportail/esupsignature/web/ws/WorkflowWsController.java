@@ -37,11 +37,10 @@ public class WorkflowWsController {
     @PostMapping(value = "/{id}/new")
     @Operation(description = "Dépôt d'un document dans une nouvelle instance d'un circuit")
     public String start(@PathVariable Long id,
-           	          @Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
+                      @Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
                       @RequestParam @Parameter(description = "Eppn du propriétaire du futur document") String createByEppn,
                       @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title,
                       @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*email]") List<String> recipientsEmails,
-                      @RequestParam(required = false) @Parameter(description = "Liste des personnes en copie (emails). Ne prend pas en charge les groupes")  List<String> recipientsCCEmails,
                       @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape (ancien nom)", example = "[stepNumber*email]") List<String> recipientEmails,
                       @RequestParam(required = false) @Parameter(description = "Lites des numéros d'étape pour lesquelles tous les participants doivent signer", example = "[stepNumber]") List<String> allSignToCompletes,
                       @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
@@ -57,7 +56,6 @@ public class WorkflowWsController {
         }
         try {
             SignBook signBook = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, recipientEmails, allSignToCompletes, targetEmails, targetUrls, signRequestParamsJsonString);
-            signBookService.addViewers(signBook.getId(), recipientsCCEmails);
             return signBook.getSignRequests().stream().map(signRequest -> signRequest.getId().toString()).collect(Collectors.joining(","));
         } catch (EsupSignatureRuntimeException e) {
             logger.error(e.getMessage(), e);
@@ -74,7 +72,7 @@ public class WorkflowWsController {
 
     @CrossOrigin
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(description = "Récupération d'une demande de signature", responses = @ApiResponse(description = "List<JsonDtoWorkflow>", content = @Content(schema = @Schema(implementation = List.class))))
+    @Operation(description = "Récupération de la liste des circuits disponibles", responses = @ApiResponse(description = "List<JsonDtoWorkflow>", content = @Content(schema = @Schema(implementation = List.class))))
     public String getAll() throws JsonProcessingException {
         return workflowService.getAllWorkflowsJson();
     }
