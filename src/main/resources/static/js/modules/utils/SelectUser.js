@@ -202,10 +202,12 @@ export default class SelectUser {
     displayExternalsError() {
         let name = '#tempUsers-' + this.selectField.attr("id");
         let tempUsersDiv = $(name);
-        tempUsersDiv.append(
-            "<div class='alert alert-danger' id='externalUserInfos_'>" +
-            "<b>Le destinataire saisi n’est pas conforme</b><br>Soit les destinataires externes ne sont pas autorisés, soit il s’agit d’un groupe vide" +
-            "</div>");
+        if($("#externalUserInfos_").length === 0) {
+            tempUsersDiv.append(
+                "<div class='alert alert-danger' id='externalUserInfos_'>" +
+                "<b>Le destinataire saisi n’est pas conforme</b><br>Soit les destinataires externes ne sont pas autorisés, soit il s’agit d’un groupe vide" +
+                "</div>");
+        }
     }
 
     addListMembers(data, selectValue) {
@@ -305,11 +307,13 @@ export default class SelectUser {
             let selected = this.slimSelect.getSelected();
             let favorites = this.slimSelect.getData();
             for (let j = 0; j < response.length; j++) {
-                let value = response[j];
-                if (this.favorites.filter(f => f.value === this.valuePrefix + value).length === 0) {
+                let user = response[j];
+                let prefixedValue = this.valuePrefix + user.email;
+                console.log(prefixedValue);
+                if (this.favorites.filter(f => f.value === prefixedValue).length === 0) {
                     favorites.push({
-                        text: value,
-                        value: this.valuePrefix + value,
+                        text: user.firstname + " " + user.name + " (" + user.email + ")",
+                        value: prefixedValue,
                         selected: false
                     });
                 }

@@ -72,7 +72,7 @@ public class WorkflowWsController {
 
     @CrossOrigin
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(description = "Récupération d'une demande de signature", responses = @ApiResponse(description = "List<JsonDtoWorkflow>", content = @Content(schema = @Schema(implementation = List.class))))
+    @Operation(description = "Récupération de la liste des circuits disponibles", responses = @ApiResponse(description = "List<JsonDtoWorkflow>", content = @Content(schema = @Schema(implementation = List.class))))
     public String getAll() throws JsonProcessingException {
         return workflowService.getAllWorkflowsJson();
     }

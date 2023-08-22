@@ -29,11 +29,16 @@ public class UserListService {
             }
             Optional<User> optionalUser = userRepository.findByEmail(listName);
             if(optionalUser.isEmpty() || optionalUser.get().getUserType().equals(UserType.group)) {
-                List<String> emails = new ArrayList<>();
+                Set<String> emails = new HashSet<>();
                 for (UserList userList : userLists) {
                     emails.addAll(userList.getUsersEmailFromList(listName));
+                    emails.addAll(userList.getUsersEmailFromAliases(listName));
                 }
-                return emails;
+                if(emails.size() >0 ) {
+                    return emails.stream().toList();
+                } else {
+                    throw new EsupSignatureRuntimeException("no users found");
+                }
             }
         }
         return new ArrayList<>();

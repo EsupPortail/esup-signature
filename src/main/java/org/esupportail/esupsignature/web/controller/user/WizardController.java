@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.esupportail.esupsignature.web.ws.json.JsonWorkflowStep;
 import org.slf4j.Logger;
@@ -41,6 +42,9 @@ public class WizardController {
 
     @Resource
     private SignRequestService signRequestService;
+
+    @Resource
+    private MailService mailService;
 
     @GetMapping(value = "/wiz-start-by-docs", produces = "text/html")
     public String wiz2(@RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
@@ -197,7 +201,7 @@ public class WizardController {
     public String wizEnd(@ModelAttribute("userEppn") String userEppn, @SessionAttribute("signBookId") Long signBookId, @RequestParam(name="close") String close, Model model) throws EsupSignatureRuntimeException, EsupSignatureMailException {
         SignBook signBook = signBookService.getById(signBookId);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
-            signBookService.sendCCEmail(signBookId, null);
+            mailService.sendCCAlert(signBook, null);
             model.addAttribute("signBook", signBook);
             model.addAttribute("close", close);
             return "user/wizard/wizend";

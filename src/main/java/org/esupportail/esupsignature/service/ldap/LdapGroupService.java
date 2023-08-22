@@ -133,10 +133,9 @@ public class LdapGroupService implements GroupService {
         List<String> eppns = new ArrayList<>();
         String groupCn;
         List<Map.Entry<String, String>> group = getAllGroupsStartWith(groupName);
-        //TODO : faire d'abord une requete start with * puis une requete stricte avec le cn
         if(group.size() == 1 ) {
             groupCn = group.stream().map(Map.Entry::getKey).toList().get(0);
-        } else if (group.size() > 0) {
+        } else if (group.size() > 1) {
             groupCn = groupName;
         } else {
             return eppns;

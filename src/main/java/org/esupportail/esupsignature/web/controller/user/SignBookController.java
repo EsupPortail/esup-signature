@@ -247,6 +247,16 @@ public class SignBookController {
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
+    @PostMapping(value = "/add-viewers/{id}")
+    public String addViewers(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+                         @RequestParam(required = false) List<String> viewers,
+                         RedirectAttributes redirectAttributes) {
+        signBookService.addViewers(id, viewers);
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Observateurs ajoutés"));
+        return "redirect:/user/signbooks/" + id;
+    }
+
+    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @PostMapping(value = "/add-live-step/{id}")
     public String addStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam("recipientsEmails") List<String> recipientsEmails,

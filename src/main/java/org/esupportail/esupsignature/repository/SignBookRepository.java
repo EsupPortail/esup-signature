@@ -94,13 +94,13 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
 
     @Query("select distinct sb from SignBook sb " +
             "left join sb.liveWorkflow.currentStep.recipients r " +
-            "where (sb.workflowName = :workflowFilter or :workflowFilter is null) " +
-            "and (sb.subject = :docTitleFilter or :docTitleFilter is null) " +
-            "and sb.status = 'pending' and size(sb.signRequests) > 0 and r.user = :user and r.signed = false " +
-            "and (sb.createBy = :creatorFilter or :creatorFilter is null)" +
+            "where (:workflowFilter is null or sb.workflowName = :workflowFilter) " +
+            "and (:docTitleFilter is null or sb.subject = :docTitleFilter) " +
+            "and sb.status = 'pending' and size(sb.signRequests) > 0 and r.user.eppn = :userEppn " +
+            "and (:creatorFilter is null or sb.createBy = :creatorFilter)" +
             "and (sb.createDate between :startDateFilter and :endDateFilter) " +
             "and sb.hidedBy is empty")
-    Page<SignBook> findToSign(User user, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
+    Page<SignBook> findToSign(String userEppn, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     @Query("select distinct sb from SignBook sb join sb.liveWorkflow.currentStep.recipients r where size(sb.signRequests) = 0 and (r.user = :user or sb.createBy = :user)")
     Page<SignBook> findEmpty(User user, Pageable pageable);
