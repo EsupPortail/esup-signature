@@ -61,7 +61,7 @@ public class UserWsSecureController {
 
     @ResponseBody
     @GetMapping("/get-favorites")
-    private List<String> getFavorites(@ModelAttribute("authUserEppn") String authUserEppn) {
+    private List<User> getFavorites(@ModelAttribute("authUserEppn") String authUserEppn) {
         return userPropertieService.getFavoritesEmails(authUserEppn);
     }
 

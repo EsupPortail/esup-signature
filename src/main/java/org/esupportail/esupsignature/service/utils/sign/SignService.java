@@ -33,8 +33,8 @@ import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.SignWith;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.CertificatService;
 import org.esupportail.esupsignature.service.DocumentService;
@@ -170,7 +170,7 @@ public class SignService {
 
 			CertificateToken certificateToken = userKeystoreService.getCertificateToken(abstractKeyStoreTokenConnection);
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(abstractKeyStoreTokenConnection);
-			AbstractSignatureForm signatureDocumentForm = getSignatureDocumentForm(toSignDocuments, signRequest, user, new Date(), abstractKeyStoreTokenConnection instanceof Pkcs11SignatureToken);
+			AbstractSignatureForm signatureDocumentForm = getSignatureDocumentForm(toSignDocuments, signRequest, user, new Date());
 			signatureForm = signatureDocumentForm.getSignatureForm();
 			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 			signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
@@ -193,7 +193,7 @@ public class SignService {
 			} else {
 				List<SignRequestParams> signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
 				List<SignRequestParams> signRequestParamsesForSign = signRequestParamses.stream().filter(srp -> srp.getSignImageNumber() >= 0 && srp.getTextPart() == null).collect(Collectors.toList());
-				if(abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken && signRequestParamsesForSign.size() == 1) {
+				if((abstractKeyStoreTokenConnection instanceof Pkcs11SignatureToken || abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken) && signRequestParamsesForSign.size() == 1) {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequestParamsesForSign.get(0) , new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), new Color(214, 0, 128), user, signatureDocumentForm.getSigningDate());
 				} else {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, user);
@@ -363,6 +363,8 @@ public class SignService {
 			int heightAdjusted = Math.round(signRequestParams.getSignHeight() * fixFactor);
 
 			if(pdfParameters.getRotation() == 0) {
+//				if(widthAdjusted + Math.round(signRequestParams.getxPos() * fixFactor) < 0) widthAdjusted = 0;
+//				if(widthAdjusted + Math.round(signRequestParams.getxPos() * fixFactor) > 612) widthAdjusted = widthAdjusted - (widthAdjusted + Math.round(signRequestParams.getxPos() * fixFactor) - 612) ;
 				signatureFieldParameters.setWidth(widthAdjusted);
 				signatureFieldParameters.setHeight(heightAdjusted);
 				signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() * fixFactor));
@@ -372,6 +374,7 @@ public class SignService {
 				signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() - 50 * fixFactor));
 			}
 			int yPos = Math.round(signRequestParams.getyPos() * fixFactor);
+			if(yPos < 0) yPos = 0;
 			signatureFieldParameters.setOriginY(yPos);
 			imageParameters.setFieldParameters(signatureFieldParameters);
 			imageParameters.setDpi(300);
@@ -467,7 +470,8 @@ public class SignService {
 		}
 	}
 
-	public AbstractSignatureForm getSignatureDocumentForm(List<Document> documents, SignRequest signRequest, User user, Date date, boolean sealSign) throws IOException, EsupSignatureRuntimeException {
+	@Transactional
+	public AbstractSignatureForm getSignatureDocumentForm(List<Document> documents, SignRequest signRequest, User user, Date date) throws IOException, EsupSignatureRuntimeException {
 		SignatureForm signatureForm;
 		AbstractSignatureForm abstractSignatureForm;
 		if(documents.size() > 1) {
@@ -680,8 +684,8 @@ public class SignService {
 	public AbstractSignatureForm getAbstractSignatureForm(Long signRequestId, String userEppn) throws IOException, EsupSignatureRuntimeException {
 		User user = userService.getByEppn(userEppn);
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
-		List<SignRequestParams> liveWfSignRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
-		return getSignatureDocumentForm(getToSignDocuments(signRequest.getId()), signRequest, user, new Date(), false);
+//		List<SignRequestParams> liveWfSignRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
+		return getSignatureDocumentForm(getToSignDocuments(signRequest.getId()), signRequest, user, new Date());
 	}
 
 	@Transactional

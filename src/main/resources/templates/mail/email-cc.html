@@ -14,17 +14,17 @@
     <tr>
         <td style="width:100%; padding:10px;background-color:#f8f9fa;">
             <p style="margin-bottom:1rem; margin-top:0">Bonjour,</p>
-            <p style="margin-bottom:1rem; margin-top:0">Vous faites parti des utilisateurs en copie de cette demande de signature  : </p>
-            <p style="margin-bottom:1rem; margin-top:0" th:text="'Nom : ' + ${signRequest.title}"></p>
-            <p style="margin-bottom:1rem; margin-top:0" th:text="'Date de création : ' + ${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></p>
+            <p style="margin-bottom:1rem; margin-top:0">Vous faites partie des utilisateurs en copie de cette demande de signature : </p>
+            <p style="margin-bottom:1rem; margin-top:0" th:text="'Nom : ' + ${signBook.subject}"></p>
+            <p style="margin-bottom:1rem; margin-top:0" th:text="'Date de création : ' + ${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></p>
             <p style="margin-bottom:1rem; margin-top:0">
-                <span th:text="'Créé par : ' + ${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span>
+                <span th:text="'Créé par : ' + ${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></span>
             </p>
             <p style="margin-bottom:1rem; margin-top:0" th:if="${organizationalUnitLdap != null}">
                 <span th:text="'Composante : ' + ${organizationalUnitLdap.description}"></span>
             </p>
             <p style="margin-bottom:1rem; margin-top:0">
-                <a class="btn btn-sm btn-dark mx-auto" th:href="@{|${rootUrl}/user/signrequests/${signRequest.id}|}" style="background-color:#343a40; color:#fff; text-decoration:none; -moz-user-select:none; -ms-user-select:none; -webkit-user-select:none; border:1px solid transparent; border-radius:3px; display:inline-block; font-size:0.875rem; font-weight:400; line-height:1.5; padding:10px; text-align:center; transition:color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; user-select:none; vertical-align:middle; border-color:#343a40; margin-right:auto; margin-left:auto" bgcolor="#343a40" align="center" valign="middle">Accéder au document</a>
+                <a class="btn btn-sm btn-dark mx-auto" th:href="@{|${rootUrl}/user/signbooks/${signBook.id}|}" style="background-color:#343a40; color:#fff; text-decoration:none; -moz-user-select:none; -ms-user-select:none; -webkit-user-select:none; border:1px solid transparent; border-radius:3px; display:inline-block; font-size:0.875rem; font-weight:400; line-height:1.5; padding:10px; text-align:center; transition:color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; user-select:none; vertical-align:middle; border-color:#343a40; margin-right:auto; margin-left:auto" bgcolor="#343a40" align="center" valign="middle">Accéder au document</a>
             </p>
         </td>
     </tr>

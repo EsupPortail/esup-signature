@@ -307,11 +307,13 @@ export default class SelectUser {
             let selected = this.slimSelect.getSelected();
             let favorites = this.slimSelect.getData();
             for (let j = 0; j < response.length; j++) {
-                let value = response[j];
-                if (this.favorites.filter(f => f.value === this.valuePrefix + value).length === 0) {
+                let user = response[j];
+                let prefixedValue = this.valuePrefix + user.email;
+                console.log(prefixedValue);
+                if (this.favorites.filter(f => f.value === prefixedValue).length === 0) {
                     favorites.push({
-                        text: value,
-                        value: this.valuePrefix + value,
+                        text: user.firstname + " " + user.name + " (" + user.email + ")",
+                        value: prefixedValue,
                         selected: false
                     });
                 }

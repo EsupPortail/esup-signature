@@ -348,18 +348,21 @@ public class MailService {
 
     }
 
-    public void sendCCAlert(List<String> recipientsEmails, SignRequest signRequest) throws EsupSignatureMailException {
-        if (!checkMailSender() || recipientsEmails.size() == 0) {
+    public void sendCCAlert(SignBook signBook, List<String> recipientsCCEmails) throws EsupSignatureMailException {
+        if(recipientsCCEmails == null) {
+            recipientsCCEmails = signBook.getViewers().stream().map(User::getEmail).toList();
+        }
+        if (!checkMailSender() || recipientsCCEmails.size() == 0) {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
 
-        PersonLdap personLdap = userService.findPersonLdapByUser(signRequest.getCreateBy());
+        PersonLdap personLdap = userService.findPersonLdapByUser(signBook.getCreateBy());
         if(personLdap != null) {
             OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
             ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
         }
-        ctx.setVariable("signRequest", signRequest);
+        ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);
         setTemplate(ctx);
@@ -367,13 +370,12 @@ public class MailService {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-cc.html", ctx);
             addInLineImages(mimeMessage, htmlContent);
-            User creator = signRequest.getCreateBy();
+            User creator = signBook.getCreateBy();
             mimeMessage.setSubject("Vous êtes en copie d'une demande de signature crée par " + creator.getFirstname() + " " + creator.getName());
             mimeMessage.setFrom(mailConfig.getMailFrom());
-            mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
-            logger.info("send email cc for " + recipientsEmails.get(0));
+            mimeMessage.setTo(recipientsCCEmails.toArray(String[]::new));
+            logger.info("send email cc for " + String.join(";", recipientsCCEmails));
             mailSender.send(mimeMessage.getMimeMessage());
-            signRequest.setLastNotifDate(new Date());
         } catch (MessagingException e) {
             logger.error("unable to send CC ALERT email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);

@@ -25,19 +25,19 @@ public class UserPropertieService {
 
     @Transactional
     public void createUserPropertieFromMails(User user, List<String> recipientEmails) {
-        for (String recipientEmail : recipientEmails) {
+	        for (String recipientEmail : recipientEmails) {
             User favoriteUser = userService.getUserByEmail(recipientEmail);
             if(favoriteUser!= null) {
-                createUserPropertie(user, favoriteUser);
+                createUserProperty(user, favoriteUser);
             }
         }
     }
 
     @Transactional
-    public void createUserPropertie(User user, User favoriteUser) {
+    public void createUserProperty(User user, User favoriteUser) {
         List<UserPropertie> userProperties = getUserProperties(user.getEppn());
         if (userProperties == null || userProperties.size() == 0) {
-            addPropertie(user, favoriteUser);
+            addProperty(user, favoriteUser);
         } else {
             for(UserPropertie userPropertie : userProperties) {
                 if(!userPropertie.getFavorites().containsKey(favoriteUser)) {
@@ -50,7 +50,7 @@ public class UserPropertieService {
         }
     }
 
-    private void addPropertie(User user, User favoriteUser) {
+    private void addProperty(User user, User favoriteUser) {
         UserPropertie userPropertie = new UserPropertie();
         userPropertie.getFavorites().put(favoriteUser, new Date());
         userPropertie.setUser(user);
@@ -58,7 +58,7 @@ public class UserPropertieService {
     }
 
     @Transactional
-    public List<String> getFavoritesEmails(String userEppn) {
+    public List<User> getFavoritesEmails(String userEppn) {
         List<UserPropertie> userProperties = getUserProperties(userEppn);
         Map<User, Date> favorites = new HashMap<>();
         for(UserPropertie userPropertie : userProperties) {
@@ -66,7 +66,7 @@ public class UserPropertieService {
         }
         List<Map.Entry<User, Date>> entrySet = new ArrayList<>(favorites.entrySet());
         entrySet.sort(Map.Entry.<User, Date>comparingByValue().reversed());
-        return entrySet.stream().map(Map.Entry::getKey).map(User::getEmail).limit(5).collect(Collectors.toList());
+        return entrySet.stream().map(Map.Entry::getKey).limit(5).collect(Collectors.toList());
     }
 
     @Transactional

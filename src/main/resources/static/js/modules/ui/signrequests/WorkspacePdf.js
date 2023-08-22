@@ -791,16 +791,13 @@ export class WorkspacePdf {
     }
 
     disableAllModes() {
-        //this.mode = 'sign';
         $('#workspace').removeClass('alert-success').removeClass('alert-secondary').removeClass('alert-warning').removeClass('alert-primary');
         $('#commentModeButton').removeClass('btn-outline-warning');
         $('#signModeButton').removeClass('btn-outline-success');
         $('#readModeButton').removeClass('btn-outline-secondary');
         $('#signLaunchButton').addClass('d-none');
         $('#refuseLaunchButton').addClass('d-none');
-        $('#trashLaunchButton').addClass('d-none');
         $("#commentHelp").addClass("d-none");
-        // this.signPosition.crossTools.addClass('d-none');
         $('#commentsTools').hide();
         $('#commentsBar').hide();
         let signTools = $('#sign-tools');

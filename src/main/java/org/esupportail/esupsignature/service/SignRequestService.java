@@ -193,7 +193,7 @@ public class SignRequestService {
 		return null;
 	}
 
-	public SignRequest getSignRequestByToken(String token) {
+	public Optional<SignRequest> getSignRequestByToken(String token) {
 		return signRequestRepository.findByToken(token);
 	}
 
@@ -430,7 +430,12 @@ public class SignRequestService {
 		return getSignRequestsFromLogs(logs);
 	}
 
+	@Transactional
 	public SignRequest createSignRequest(String name, SignBook signBook, String userEppn, String authUserEppn) {
+		String token = UUID.randomUUID().toString();
+		while (signRequestRepository.findByToken(token).isPresent()) {
+			token = UUID.randomUUID().toString();
+		}
 		User user = userService.getByEppn(userEppn);
 		SignRequest signRequest = new SignRequest();
 		if(name == null || name.isEmpty()) {
@@ -442,7 +447,7 @@ public class SignRequestService {
 		} else {
 			signRequest.setTitle(name);
 		}
-		signRequest.setToken(UUID.randomUUID().toString());
+		signRequest.setToken(token);
 		signRequest.setCreateBy(user);
 		signRequest.setCreateDate(new Date());
 		signRequest.setParentSignBook(signBook);
