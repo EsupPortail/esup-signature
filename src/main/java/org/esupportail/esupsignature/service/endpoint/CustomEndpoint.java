@@ -11,7 +11,7 @@ public class CustomEndpoint {
 
     @ReadOperation
     public String test() {
-        return "test de la mort";
+        return "test custom actuator endpoint";
     }
 
     @ReadOperation

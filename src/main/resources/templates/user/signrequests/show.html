@@ -673,8 +673,7 @@
     </div>
 </div>
 
-<div data-bs-focus="false" class="modal fade" id="forwardModal"  role="dialog" aria-labelledby="forwardModalLabel"
-     aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="forwardModal"  role="dialog" aria-labelledby="forwardModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -684,7 +683,7 @@
             <div class="modal-body">
                 <div class="form-group mb-3">
                     <p>Vous allez réaffecter la demande à une autre personne que vous.</p>
-                    <form id="send-sign-form" method="post" th:action="'/user/signrequests/transfert/' + ${signRequest.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
+                    <form id="send-sign-form" method="post" th:action="'/user/signrequests/transfert/'">
                     <label class="form-label" for="transfertRecipientsEmails">Choisir la personne qui vous remplacera dans cette demande</label>
                     <select class="select-users" name="transfertRecipientsEmails" id="transfertRecipientsEmails" size="1" multiple="multiple" required="required">
                         <option data-placeholder="true"></option>
@@ -698,6 +697,31 @@
         </div>
     </div>
 </div>
+
+<div data-bs-focus="false" class="modal fade" id="addViewersModal"  role="dialog" aria-labelledby="forwardModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="addViewersLabel">Ajouter des observateurs</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group mb-3">
+                    <p>Vous allez réaffecter la demande à une autre personne que vous.</p>
+                    <form id="add-viewers-form" th:method="post" th:action="'/user/signbooks/add-viewers/' + ${signBook.id}">
+                    <label class="form-label" for="transfertRecipientsEmails">Choisir la personne qui vous remplacera dans cette demande</label>
+                    <select class="select-users mb-4" name="viewers" id="viewers" size="1" multiple="multiple" required="required">
+                        <option data-placeholder="true"></option>
+                    </select>
+                    <button type="submit" class="btn btn-success float-end">Valider</button>
+                    <button type="button" class="btn btn-secondary float-end me-1" data-bs-dismiss="modal">Fermer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <div data-bs-focus="false" class="modal fade" id="addCommentModal"  role="dialog" aria-labelledby="detailsModalLabel"
      aria-hidden="true">

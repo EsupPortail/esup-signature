@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.entity.*;
@@ -326,9 +327,6 @@ public class SignBookService {
             signBook.setSubject(generateName(signBookId, null, user, false));
         }
         signBook.setStatus(SignRequestStatus.draft);
-        if(globalProperties.getSendCreationMailToViewers()) {
-            mailService.sendCCAlert(signBook.getViewers().stream().map(User::getEmail).collect(Collectors.toList()), signBook.getSignRequests().get(0));
-        }
     }
 
     public List<User> getRecipientsNames(String userEppn) {
@@ -373,10 +371,10 @@ public class SignBookService {
         if(forceAllSign == null) forceAllSign = false;
         SignBook signBook = createSignBook(title, null, "Demande simple", userEppn, false);
         signBook.setForceAllDocsSign(forceAllSign);
+        Map<SignBook, String> signBookStringMap = sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, userEppn, authUserEppn, forceSendEmail);
         if(recipientsCCEmails != null) {
             addViewers(signBook.getId(), recipientsCCEmails);
         }
-        Map<SignBook, String> signBookStringMap = sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, userEppn, authUserEppn, forceSendEmail);
         return new ArrayList<>(signBookStringMap.keySet()).get(0);
     }
 
@@ -580,7 +578,6 @@ public class SignBookService {
 
     @Transactional
     public void sendCCEmail(Long signBookId, List<String> recipientsCCEmails) throws EsupSignatureMailException {
-        SignBook signBook = getById(signBookId);
         if(recipientsCCEmails != null) {
             addViewers(signBookId, recipientsCCEmails);
         }
@@ -590,12 +587,19 @@ public class SignBookService {
     public void addViewers(Long signBookId, List<String> recipientsCCEmails) {
         SignBook signBook = getById(signBookId);
         if(recipientsCCEmails != null && recipientsCCEmails.size() > 0) {
-                for (String recipientsEmail : recipientsCCEmails) {
-                    User user = userService.getUserByEmail(recipientsEmail);
-                    if (!signBook.getViewers().contains(user)) {
-                        signBook.getViewers().add(user);
-                        addUserInTeam(user.getId(), signBookId);
-                        sendCCEmail(signBookId, Collections.singletonList(recipientsEmail));
+                for (String recipientCCEmail : recipientsCCEmails) {
+                    if(recipientCCEmail.contains("*")) {
+                        recipientCCEmail = recipientCCEmail.split("\\*")[1];
+                    }
+                    if(EmailValidator.getInstance().isValid(recipientCCEmail)) {
+                        User user = userService.getUserByEmail(recipientCCEmail);
+                        if (!signBook.getViewers().contains(user) && !signBook.getCreateBy().equals(user)) {
+                            signBook.getViewers().add(user);
+                            addUserInTeam(user.getId(), signBookId);
+                            if (globalProperties.getSendCreationMailToViewers() && !signBook.getStatus().equals(SignRequestStatus.draft) && !signBook.getStatus().equals(SignRequestStatus.uploading)) {
+                                mailService.sendCCAlert(signBook, recipientsCCEmails);
+                            }
+                        }
                     }
                 }
         } else {
@@ -766,6 +770,7 @@ public class SignBookService {
         }
     }
 
+    @Transactional
     public SignBook addDocsInNewSignBookSeparated(String title, String workflowName, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
         User authUser = userService.getByEppn(authUserEppn);
         Workflow workflow = workflowRepository.findByName(workflowName);
@@ -810,11 +815,7 @@ public class SignBookService {
         logger.info(title);
         SignBook signBook = addDocsInNewSignBookSeparated(title, "Demande simple", multipartFiles, userEppn);
         signBook.setForceAllDocsSign(forceAllSign);
-        try {
-            sendCCEmail(signBook.getId(), recipientsCCEmails);
-        } catch (EsupSignatureMailException e) {
-            throw new EsupSignatureRuntimeException(e.getMessage());
-        }
+        addViewers(signBook.getId(), recipientsCCEmails);
         if(targetUrl != null && !targetUrl.isEmpty()) {
             signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
         }
@@ -911,7 +912,7 @@ public class SignBookService {
                     if (!emailSended) {
                         try {
                             mailService.sendEmailAlerts(signRequest, userEppn, data, forceSendEmail);
-                            sendCCEmail(signBookId, null);
+                            mailService.sendCCAlert(signBook, null);
                             emailSended = true;
                         } catch (EsupSignatureMailException e) {
                             throw new EsupSignatureRuntimeException(e.getMessage());
