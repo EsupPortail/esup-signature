@@ -15,7 +15,7 @@
 	<version>1.25.18</version>
 	<name>esup-signature</name>
 	<properties>
-		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
+		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
 		<java.version>17</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dss.framework.version>5.12.1</dss.framework.version>
@@ -781,7 +781,7 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>${project.artifactId}</finalName>
+		<finalName>esup-signature</finalName>
 		<plugins>
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
@@ -808,7 +808,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>${start-class}</mainClass>
+					<mainClass>${startClass}</mainClass>
 					<executable>true</executable>
 				</configuration>
 				<executions>
