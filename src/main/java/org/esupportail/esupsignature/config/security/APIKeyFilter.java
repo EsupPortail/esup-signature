@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.config.security;
 
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.cert.X509Certificate;
 
 public class APIKeyFilter extends X509AuthenticationFilter {

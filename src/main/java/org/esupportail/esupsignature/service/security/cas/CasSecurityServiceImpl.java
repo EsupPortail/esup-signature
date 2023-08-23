@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.service.security.cas;
 
+import jakarta.annotation.Resource;
+import org.apereo.cas.client.validation.Cas20ServiceTicketValidator;
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
@@ -9,7 +11,6 @@ import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.SpelGroupService;
-import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -27,7 +28,6 @@ import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsService;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 

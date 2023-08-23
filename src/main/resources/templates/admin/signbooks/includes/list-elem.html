@@ -45,7 +45,7 @@
         </td>
         <td class="clickable-td d-none d-md-table-cell"
             style="width: 150px;">
-            <div th:replace="user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})"></div>
+            <div th:replace="~{user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})}"></div>
         </td>
         <td>
             <div class="dropdown position-relative">
@@ -125,7 +125,7 @@
         <td></td>
         <td class="d-none d-md-table-cell"
             style="width: 150px;">
-            <div th:replace="user/signbooks/includes/status :: status(signBook=${signBook})"></div>
+            <div th:replace="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
         </td>
         <td>
             <div class="dropdown position-relative">

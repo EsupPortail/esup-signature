@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="preFillTypes" type="java.util.List<org.esupportail.esupsignature.service.interfaces.prefill.PreFill>"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
     import {FormUi} from '/js/modules/ui/forms/FormUi.js?version=[[${versionApp}]]';
     new FormUi();
 </script>
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
-        <nav th:replace="fragments/sides/side-manager :: side-manager"></nav>
+        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+        <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
                 <li class="breadcrumb-item active" th:text="'Modifier le formulaire : ' + ${form.name}"></li>
             </ol>
@@ -43,7 +43,7 @@
                     <h3>FORM ID : <input type="text" readonly disabled th:value="${form.id}"></h3>
                     <div class="alert alert-dark bg-white mb-2">
                         <p><strong>Modification du modèle </strong>(<span th:if="${form.document != null}">Modele actuel : <a th:href="'/admin/forms/get-file/' + ${form.id}" target="_blank"><span th:text="${form.document.fileName}"></span></a></span>)</p>
-                        <form id="formUpdateModel" th:action="'/admin/forms/update-model/' + ${form.id} + '/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
+                        <form id="formUpdateModel" th:action="'/admin/forms/update-model/' + ${form.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
                             <div class="form-group mb-3">
                                 <div class="custom-file">
                                     <label for="multipartModel" class="custom-file-label"> Choisir un nouveau modèle au format PDF</label>
@@ -157,7 +157,7 @@
                             </script>
                         </div>
                     </form>
-                    <form id="importFormSetup" th:action="'/admin/forms/import/' + ${form.id} + '/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
+                    <form id="importFormSetup" th:action="'/admin/forms/import/' + ${form.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
                         <label class="form-label">Importer une configuration</label>
                         <div class="form-group mb-3">
                             <div class="custom-file">
@@ -177,6 +177,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

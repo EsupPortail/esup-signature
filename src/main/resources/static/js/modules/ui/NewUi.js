@@ -82,7 +82,7 @@ export class NewUi {
             success: function(signBookId) {
                 fileInput.on('filebatchuploadsuccess', function() {
                     $.post({
-                        url : "/ws-secure/signrequests/finish-signbook/?" + self.csrf.parameterName + "=" + self.csrf.token,
+                        url : "/ws-secure/signrequests/finish-signbook?" + self.csrf.parameterName + "=" + self.csrf.token,
                         success: function() {
                             if(send) {
                                 location.href = "/user/signbooks/pending/" + signBookId;

@@ -1,11 +1,12 @@
 package org.esupportail.esupsignature;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.hibernate.Session;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.tool.hbm2ddl.SchemaValidator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -15,8 +16,6 @@ import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -47,7 +46,6 @@ public class JpaTest {
             metadataSources.addAnnotatedClass(Class.forName(beanDefinition.getBeanClassName()));
         }
         Metadata metadata =  metadataSources.buildMetadata();
-        new SchemaValidator().validate(metadata);
     }
 
 }

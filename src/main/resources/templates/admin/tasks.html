@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <meta http-equiv="refresh" content="10">
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active">Tâches planifiées</li>
             </ol>
         </nav>
@@ -65,6 +65,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

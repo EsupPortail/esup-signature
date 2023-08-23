@@ -6,7 +6,7 @@
         <h5 class="text-center sidebar-label"><b>Paramètres</b></h5>
         <a class="btn col-12 mb-1 text-left"
            th:classappend="${activeMenu == 'settings'} ? 'btn-secondary' : 'btn-light'"
-           href="/user/users/?form" title="Paramètres de signature">
+           href="/user/users?form" title="Paramètres de signature">
             <i class="fas fa-user-cog"></i> <span class="sidebar-label">Paramètres de signature</span>
         </a>
         <a th:if="${globalProperties.shareMode > 0}" class="btn col-12 mb-1 text-left" href="/user/users/replace"

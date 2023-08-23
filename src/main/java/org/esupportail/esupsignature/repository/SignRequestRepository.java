@@ -11,7 +11,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
-import javax.persistence.LockModeType;
+import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
 

@@ -9,10 +9,10 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContext;
 
-import javax.annotation.Resource;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.SessionTrackingMode;
+import jakarta.annotation.Resource;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.SessionTrackingMode;
 import java.util.Collections;
 
 @SpringBootApplication

@@ -6,7 +6,7 @@ import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.io.IOException;
 
 @CrossOrigin(origins = "*")

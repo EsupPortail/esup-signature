@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body>
 <script th:inline="javascript" type="module">
     import {WorkflowUi} from '/js/modules/ui/workflows/WorkflowUi.js?version=[[${versionApp}]]';
     new WorkflowUi();
 </script>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side :: side"></nav>
+        <nav th:replace="~{fragments/sides/side :: side}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb col-12">
                 <li class="breadcrumb-item active"><a href="/">Accueil</a></li>
@@ -72,7 +72,7 @@
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Circuit de signatures</dt>
                         <dd>
-                            <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="admin/workflows/cards/stepscard :: stepscard"></div>
+                            <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="~{admin/workflows/cards/stepscard :: stepscard}"></div>
                             <div th:unless="${workflow.workflowSteps.size() > 0}" class="alert alert-secondary">
                                 Vous pouvez ajouter des étapes
                             </div>
@@ -191,6 +191,6 @@
     </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

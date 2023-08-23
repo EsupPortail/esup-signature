@@ -4,38 +4,38 @@
 <nav th:fragment="side-dashboard" id="sidebar" class="scrollbar-lite scrollbar-style">
     <div class="ms-1 mt-2">
         <h5 class="text-center sidebar-label"><b>Dossiers</b></h5>
-        <a th:classappend="${statusFilter == ''} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signbooks/?statusFilter=all">Tout voir</a>
+        <a th:classappend="${statusFilter == ''} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signbooks?statusFilter=all">Tout voir</a>
         <div class="hr"><i class="fas fa-inbox me-1"></i><span class="sidebar-label"> Demandes reçues</span></div>
-        <a th:classappend="${statusFilter == 'toSign'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signbooks/?statusFilter=toSign">
+        <a th:classappend="${statusFilter == 'toSign'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signbooks?statusFilter=toSign">
             <span class="sidebar-label">A signer</span>
             <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-md-inline" th:text="${nbToSign}">
             </span>
         </a>
-        <a th:classappend="${statusFilter == 'signedByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks/?statusFilter=signedByMe">Signées</a>
-        <a th:classappend="${statusFilter == 'refusedByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks/?statusFilter=refusedByMe">Refusées</a>
+        <a th:classappend="${statusFilter == 'signedByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks?statusFilter=signedByMe">Signées</a>
+        <a th:classappend="${statusFilter == 'refusedByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks?statusFilter=refusedByMe">Refusées</a>
         <div class="hr"><i class="fas fa-paper-plane me-1"></i><span class="sidebar-label"> Demandes envoyées</span></div>
-        <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signbooks/?statusFilter=pending">
+        <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signbooks?statusFilter=pending">
             <span class="sidebar-label">En attente</span>
             <span title="Demandes en attente" th:if="${nbSignRequests > 0  && userEppn == authUserEppn}" class="badge bg-warning d-none d-md-inline" th:text="${nbSignRequests}">
             </span>
         </a>
-        <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks/?statusFilter=completed">Signées</a>
-        <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks/?statusFilter=refused">Refusées</a>
+        <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks?statusFilter=completed">Signées</a>
+        <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks?statusFilter=refused">Refusées</a>
         <div class="hr sidebar-label"><i class="fas fa-archive me-1"></i><span> Autres demandes</span></div>
-        <a th:classappend="${statusFilter == 'followByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks/?statusFilter=followByMe">Demandes suivies
+        <a th:classappend="${statusFilter == 'followByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks?statusFilter=followByMe">Demandes suivies
             <span title="Demandes suivie" th:if="${nbFollowByMe > 0  && userEppn == authUserEppn}" class="badge bg-primary d-none d-md-inline" th:text="${nbFollowByMe}">
             </span>
         </a>
-        <a th:classappend="${statusFilter == 'sharedSign'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks/?statusFilter=sharedSign">Demandes que j’ai signées lors d’une délégation</a>
-        <a th:classappend="${statusFilter == 'hided'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks/?statusFilter=hided">Demandes masquées</a>
-        <a th:if="${nbEmpty > 0}" th:classappend="${statusFilter == 'empty'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks/?statusFilter=empty">Demandes vides</a>
+        <a th:classappend="${statusFilter == 'sharedSign'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks?statusFilter=sharedSign">Demandes que j’ai signées lors d’une délégation</a>
+        <a th:classappend="${statusFilter == 'hided'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks?statusFilter=hided">Demandes masquées</a>
+        <a th:if="${nbEmpty > 0}" th:classappend="${statusFilter == 'empty'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks?statusFilter=empty">Demandes vides</a>
         <div class="hr sidebar-label"><i class="fab fa-firstdraft me-1 sidebar-label"></i><span> Brouillons</span></div>
-        <a th:classappend="${statusFilter == 'draft'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks/?statusFilter=draft">Brouillons
+        <a th:classappend="${statusFilter == 'draft'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks?statusFilter=draft">Brouillons
             <span title="Brouillons" th:if="${nbDraft > 0  && userEppn == authUserEppn}" class="badge bg-secondary d-none d-md-inline" th:text="${nbDraft}">
             </span>
         </a>
         <div class="hr sidebar-label"><i class="fas fa-trash-alt me-1 sidebar-label"></i><span> Corbeille</span></div>
-        <a th:classappend="${statusFilter == 'deleted'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks/?statusFilter=deleted">Demandes supprimées</a>
+        <a th:classappend="${statusFilter == 'deleted'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks?statusFilter=deleted">Demandes supprimées</a>
     </div>
 </nav>
 </html>

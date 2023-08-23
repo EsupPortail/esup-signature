@@ -16,7 +16,7 @@
 <!-- Cached Result -->
 <span class="task-result" th:fragment="task-result(result)">
 	<span th:text="${result.getStatusName()}"></span>
-	<span th:replace="fragments/tl-info-fragments :: result-status(result=${result})"></span>
+	<span th:replace="~{fragments/tl-info-fragments :: result-status(result=${result})}"></span>
 	<span th:text="${result.isError()}?${' (' + #dates.format(result.exceptionFirstOccurrenceTime, 'dd-MMM-yyyy HH:mm:ss') + ') '}:
             ${#dates.format(result.lastStateTransitionTime, 'dd-MMM-yyyy HH:mm:ss')}"></span>
 </span>
@@ -31,7 +31,7 @@
 <!-- Validation result -->
 <span class="task-result" th:fragment="validation-result(validationResult)">
 	<span th:text="${validationResult.getStatusName()}"></span>
-	<span th:replace="fragments/tl-info-fragments :: validation-status(validationResult=${validationResult})"></span>
+	<span th:replace="~{fragments/tl-info-fragments :: validation-status(validationResult=${validationResult})}"></span>
     <span th:text="${validationResult.isError()}?${' (' + #dates.format(validationResult.exceptionFirstOccurrenceTime, 'dd-MMM-yyyy HH:mm:ss') + ') '}:
             ${#dates.format(validationResult.lastStateTransitionTime, 'dd-MMM-yyyy HH:mm:ss')}"></span>
 </span>

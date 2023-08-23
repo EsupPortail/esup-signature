@@ -7,7 +7,7 @@
         <div class="hr sidebar-label">Statut</div>
         <div class="card card-body bg-light">
             <th:block th:if="${signRequest != null}">
-                <div th:include="user/signbooks/includes/status :: status(signBook=${signBook})" class="mb-1"></div>
+                <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}" class="mb-1"></div>
                 <span th:if="${workflow != null}" th:text="'Circuit : ' + ${workflow.description}"></span>
                 <span>Créé par <span th:text="${signRequest.createBy.firstname + ' ' + signRequest.createBy.name}"></span></span>
                 <th:block th:if="${signBook.viewers.size() > 0 }">
@@ -23,7 +23,7 @@
                 </th:block>
             </th:block>
             <th:block th:unless="${signRequest != null}">
-                <div th:include="user/signbooks/includes/status :: status(signBook=${signBook})"></div>
+                <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
             </th:block>
         </div>
 <!--        <div class="hr sidebar-label" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">Changer de mode</div>-->
@@ -43,7 +43,7 @@
         <!--    <div th:replace="user/signbooks/includes/statusdetails :: statusdetails"></div>-->
 
 
-        <div th:if="${signRequest != null}" th:include="user/signrequests/cards/stepscard :: stepscard"></div>
+        <div th:if="${signRequest != null}" th:insert="~{user/signrequests/cards/stepscard :: stepscard}"></div>
     </div>
 </nav>
 </html>

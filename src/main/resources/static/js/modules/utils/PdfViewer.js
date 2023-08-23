@@ -80,7 +80,7 @@ export class PdfViewer extends EventFactory {
                         controller = new AbortController()
                         signal = controller.signal;
                         $.ajax({
-                            url: "/ws-secure/users/search-extvalue/?searchType=" + searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
+                            url: "/ws-secure/users/search-extvalue?searchType=" + searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
                             dataType: "json",
                             signal: signal,
                             data: {

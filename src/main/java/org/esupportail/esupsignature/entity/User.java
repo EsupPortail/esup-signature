@@ -6,8 +6,8 @@ import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
+import jakarta.persistence.*;
 import java.time.DayOfWeek;
 import java.util.*;
 

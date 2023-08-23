@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
-import javax.persistence.LockModeType;
+import jakarta.persistence.LockModeType;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +41,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "left join sb.team team " +
             "left join sb.signRequests sr " +
             "left join sr.recipientHasSigned rhs " +
-            "where :user in team " +
+            "where :user in (team) " +
             "and (sb.status != 'pending' or key(rhs).user = :user or sb.createBy = :user) " +
             "and (:workflowFilter is null or sb.workflowName = :workflowFilter) " +
             "and (:docTitleFilter is null or sb.subject = :docTitleFilter) " +
@@ -60,7 +60,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "left join lw.liveWorkflowSteps lws " +
             "left join lws.recipients r " +
             "left join r.user u " +
-            "where :user in team " +
+            "where :user in (team) " +
             "and (sb.status != 'pending' or key(rhs).user = :user or :user in (u) or sb.createBy = :user) " +
             "and (:workflowFilter is null or sb.workflowName = :workflowFilter) " +
             "and (:docTitleFilter is null or sb.subject = :docTitleFilter) " +

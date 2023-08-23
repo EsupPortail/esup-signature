@@ -27,7 +27,7 @@
 <hr>
 <h4 class="d-flex justify-content-center mt-4">Dépôt des fichiers</h4>
 <div class="col-lg-12">
-    <form id="start-workflow-form" th:action="'/ws-secure/signrequests/start-workflow/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="post">
+    <form id="start-workflow-form" th:action="'/ws-secure/signrequests/start-workflow?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="post">
         <input type="hidden" name="workflowId" th:value="${workflow.id}" th:if="${workflow != null}">
     <div class="form-group mb-3">
         <label class="form-label" for="title-wiz">Titre <span th:if="${workflow != null}">(Facultatif)</span><span th:unless="${workflow != null}">(Obligatoire)</span></label>

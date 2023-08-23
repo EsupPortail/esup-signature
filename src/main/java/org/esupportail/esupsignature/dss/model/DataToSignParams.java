@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.dss.model;
 
 import eu.europa.esig.dss.enumerations.EncryptionAlgorithm;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
 
