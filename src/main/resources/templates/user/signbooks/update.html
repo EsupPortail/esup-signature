@@ -117,7 +117,7 @@
                 </div>
             </div>
             <th:block th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-                <div th:replace="user/signrequests/cards/stepscard-updatable"></div>
+                <div th:replace="~{user/signrequests/cards/stepscard-updatable}"></div>
             </th:block>
         </div>
     </div>

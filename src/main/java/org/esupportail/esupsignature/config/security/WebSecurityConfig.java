@@ -155,12 +155,17 @@ public class WebSecurityConfig {
 
 //	@Bean
 //	public WebSecurityCustomizer webSecurityCustomizer() {
-//		return (web) -> web.ignoring().antMatchers("/resources/**", "/webjars/**");
+//		return (web) -> web.ignoring().requestMatchers("/resources/**", "/webjars/**")
+//				.requestMatchers("/logged-out")
+//				.requestMatchers("/webjars", "/webjars/**")
+//				.requestMatchers("/css", "/css/**")
+//				.requestMatchers("/images", "/images/**")
+//				.requestMatchers("/js", "/js/**")
+//				.requestMatchers("/fonts", "/fonts/**");
 //	}
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		setAuthorizeRequests(http);
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers("/").permitAll());
 		devSecurityFilters.forEach(devSecurityFilter -> http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class));
 		http.exceptionHandling(exceptionHandling -> exceptionHandling.defaultAuthenticationEntryPointFor(new IndexEntryPoint("/"), new AntPathRequestMatcher("/")));
@@ -207,6 +212,7 @@ public class WebSecurityConfig {
 				.ignoringRequestMatchers("/h2-console/**"))
 				;
 		http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
+		setAuthorizeRequests(http);
 		return http.build();
 	}
 
@@ -261,21 +267,13 @@ public class WebSecurityConfig {
 			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers("/actuator/**").denyAll());
 		}
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
-				.requestMatchers("/logged-out").permitAll()
-				.requestMatchers("/webjars", "/webjars/**").permitAll()
-				.requestMatchers("/css", "/css/**").permitAll()
-				.requestMatchers("/images", "/images/**").permitAll()
-				.requestMatchers("/js", "/js/**").permitAll()
-				.requestMatchers("/fonts", "/fonts/**").permitAll()
 				.requestMatchers("/api-docs/", "/api-docs/**").hasAnyRole("ADMIN")
 				.requestMatchers("/swagger-ui.html", "/swagger-ui/", "/swagger-ui/**").hasAnyRole("ADMIN")
 				.requestMatchers("/admin/", "/admin/**").hasAnyRole("ADMIN", "MANAGER")
 				.requestMatchers("/user/", "/user/**").hasAnyRole("USER")
-				.requestMatchers("/otp-access/**").permitAll()
 				.requestMatchers("/otp/", "/otp/**").hasAnyRole("OTP", "FRANCECONNECT")
 				.requestMatchers("/ws-secure/", "/ws-secure/**").hasAnyRole("USER", "OTP", "FRANCECONNECT")
-				.requestMatchers("/public/", "/public/**").permitAll()
-				.requestMatchers("/error").permitAll());
+				.anyRequest().permitAll());
 	}
 
 	@Bean
