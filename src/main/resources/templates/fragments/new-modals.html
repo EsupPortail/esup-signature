@@ -8,7 +8,7 @@
              aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
-                    <form id="fast-sign-form" th:action="'/ws-secure/signrequests/create-sign-book/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
+                    <form id="fast-sign-form" th:action="'/ws-secure/signrequests/create-sign-book?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
                           method="post" enctype="multipart/form-data">
                         <div class="modal-header">
                             <h3 class="modal-title" id="fastSignRequestLabel">Signer un document présent sur votre poste de travail</h3>
@@ -65,7 +65,7 @@
         <div data-bs-focus="false" class="modal fade" id="sendSignRequestModal"  role="dialog" aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
-                    <form id="send-sign-form" th:action="'/ws-secure/signrequests/create-full-sign-book/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
+                    <form id="send-sign-form" th:action="'/ws-secure/signrequests/create-full-sign-book?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
                           method="post" enctype="multipart/form-data">
                         <div class="modal-header">
                             <h3 class="modal-title" id="sendSignRequestLabel">Créer une demande de signature</h3>

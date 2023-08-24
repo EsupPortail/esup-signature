@@ -2,12 +2,12 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side-home :: side-home"></nav>
+        <nav th:replace="~{fragments/sides/side-home :: side-home}"></nav>
         <div id="content" class="content">
             <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav-full">
                 <ol class="breadcrumb">
@@ -18,6 +18,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer-light :: footer"></footer>
+<footer th:replace="~{fragments/footer-light :: footer}"></footer>
 </body>
 </html>

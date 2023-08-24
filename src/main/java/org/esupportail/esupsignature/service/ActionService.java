@@ -4,7 +4,7 @@ import org.esupportail.esupsignature.entity.Action;
 import org.esupportail.esupsignature.repository.ActionRepository;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 @Service
 public class ActionService {

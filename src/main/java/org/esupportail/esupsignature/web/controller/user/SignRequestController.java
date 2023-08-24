@@ -27,11 +27,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.annotation.Resource;
-import javax.mail.MessagingException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.annotation.Resource;
+import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -92,7 +92,7 @@ public class SignRequestController {
 
     @GetMapping()
     public String show() {
-        return "redirect:/user/";
+        return "redirect:/user";
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
@@ -246,7 +246,7 @@ public class SignRequestController {
             signBookService.deleteDefinitive(signRequest.getParentSignBook().getId(), authUserEppn);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
             if(referer.contains("signrequests")) {
-                return "redirect:/user/";
+                return "redirect:/user";
             } else {
                 return "redirect:" + referer;
             }

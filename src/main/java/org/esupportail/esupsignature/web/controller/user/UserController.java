@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.DayOfWeek;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -98,7 +98,7 @@ public class UserController {
 	public String deleteSign(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes) {
 		userService.deleteSign(authUserEppn, id);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Signature supprimée"));
-		return "redirect:/user/users/";
+		return "redirect:/user/users";
 	}
 
 	@PostMapping(value = "/view-cert")
@@ -109,7 +109,7 @@ public class UserController {
         	logger.warn("open keystore fail : " + e.getMessage());
         	redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Mauvais mot de passe"));
 		}
-        return "redirect:/user/users/";
+        return "redirect:/user/users";
     }
 
 	@GetMapping(value = "/remove-keystore")
@@ -117,7 +117,7 @@ public class UserController {
 		User authUser = userService.getByEppn(authUserEppn);
 		authUser.setKeystore(null);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le magasin de clés à bien été supprimé"));
-		return "redirect:/user/users/";
+		return "redirect:/user/users";
 	}
 
 	@GetMapping(value="/search-user")
@@ -207,7 +207,7 @@ public class UserController {
 	@GetMapping("/set-default-sign-image/{signImageNumber}")
 	public String setDefaultSignImage(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signImageNumber") Integer signImageNumber) {
     	userService.setDefaultSignImage(authUserEppn, signImageNumber);
-		return "redirect:/user/users/";
+		return "redirect:/user/users";
 	}
 
 	@GetMapping("/replace")

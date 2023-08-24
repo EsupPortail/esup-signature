@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.entity;
 
 import org.esupportail.esupsignature.entity.enums.ShareType;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.*;
 
 @Entity

@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.entity;
 
 import org.springframework.beans.factory.annotation.Configurable;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;

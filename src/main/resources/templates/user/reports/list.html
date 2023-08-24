@@ -2,12 +2,12 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml">
 <!--/*@thymesVar id="report" type="org.esupportail.esupsignature.entity.Report"*/-->
 <!--/*@thymesVar id="reportsMap" type="java.util.Map<org.esupportail.esupsignature.entity.Report, java.util.Map<org.esupportail.esupsignature.entity.enums.ReportStatus, java.util.Set<java.lang.Long>>>"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side :: side"></nav>
+        <nav th:replace="~{fragments/sides/side :: side}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb col-12">
                 <li class="breadcrumb-item active">Mes rapports</li>
@@ -81,7 +81,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div th:replace="fragments/new :: new"></div>
+                <div th:replace="~{fragments/new :: new}"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -89,6 +89,6 @@
         </div>
     </div>
 </div>
-<div th:replace="fragments/footer :: footer"></div>
+<div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>

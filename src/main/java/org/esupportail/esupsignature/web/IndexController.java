@@ -42,9 +42,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 @RequestMapping("/")
@@ -89,7 +89,7 @@ public class IndexController {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if(StringUtils.hasText(authUserEppn) && !authUserEppn.equals("system")) {
 			model.asMap().clear();
-			return "redirect:/user/";
+			return "redirect:/user";
 		} else {
 			if("anonymousUser".equals(auth.getName())) {
 				logger.trace("auth user : " + auth.getName());
@@ -104,7 +104,7 @@ public class IndexController {
 				if(defaultSavedRequest != null && !defaultSavedRequest.getRequestURI().equals("/login/casentry")) {
 					return "redirect:" + defaultSavedRequest.getServletPath();
 				} else {
-					return "redirect:/user/";
+					return "redirect:/user";
 				}
 			}
 		}
@@ -112,7 +112,7 @@ public class IndexController {
 
 	@GetMapping("/login/**")
 	public String loginRedirection() {
-		return "redirect:/user/";
+		return "redirect:/user";
 	}
 
 	@RequestMapping(value = "/denied/ws/**", method = {RequestMethod.GET, RequestMethod.POST})
@@ -125,9 +125,9 @@ public class IndexController {
 	public String denied(HttpSession httpSession, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		User authUser = getAuthUser(auth);
-		Object forwardObject = httpServletRequest.getAttribute("javax.servlet.forward.request_uri");
+		Object forwardObject = httpServletRequest.getAttribute("jakarta.servlet.forward.request_uri");
 		if(forwardObject != null) {
-			String forwardUri = httpServletRequest.getAttribute("javax.servlet.forward.request_uri").toString();
+			String forwardUri = httpServletRequest.getAttribute("jakarta.servlet.forward.request_uri").toString();
 			String[] uriParams = forwardUri.split("/");
 			if (uriParams.length == 4 && uriParams[1].equals("user") && uriParams[2].equals("signrequests")) {
 				try {
@@ -141,10 +141,10 @@ public class IndexController {
 						}
 					} else {
 						redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande non trouvée"));
-						return "redirect:/user/";
+						return "redirect:/user";
 					}
 				} catch (Exception e) {
-					return "redirect:/user/";
+					return "redirect:/user";
 				}
 			}
 		}

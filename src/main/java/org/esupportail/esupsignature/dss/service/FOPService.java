@@ -5,7 +5,7 @@ import eu.europa.esig.dss.simplereport.SimpleReportFacade;
 import org.apache.fop.apps.*;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import javax.xml.transform.Result;
 import javax.xml.transform.sax.SAXResult;
 import java.io.File;

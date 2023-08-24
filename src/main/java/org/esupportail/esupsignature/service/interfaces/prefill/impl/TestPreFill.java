@@ -12,7 +12,7 @@ import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValueService
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.*;
 
 @Component

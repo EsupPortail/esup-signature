@@ -21,13 +21,13 @@ import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-@RequestMapping("/user/")
+@RequestMapping("/user")
 @Controller
 @EnableConfigurationProperties(GlobalProperties.class)
 public class HomeController {

@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "sign_request_params")

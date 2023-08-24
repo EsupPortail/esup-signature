@@ -3,7 +3,7 @@
 <div th:fragment="help" id="help">
     <h5>Bienvenue sur l'application Esup-Signature.</h5>
     <br>
-    <div th:if="${#httpServletRequest != null && (#httpServletRequest.requestURI == '/user/' || #httpServletRequest.requestURI == '/user/users/' || (signRequest != null &&#httpServletRequest.requestURI == '/user/signrequests/' + signRequest.id))}" class="col-12 text-center">
+    <div th:if="${#httpServletRequest != null && (#httpServletRequest.requestURI == '/user' || #httpServletRequest.requestURI == '/user/users' || (signRequest != null &&#httpServletRequest.requestURI == '/user/signrequests/' + signRequest.id))}" class="col-12 text-center">
         <button th:if="${splashMessage == null || splashMessage == 'null'}" class="btn btn-primary mx-auto" id="helpStartButton">Lancer le didacticiel</button>
     </div>
     <br>

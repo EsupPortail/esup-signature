@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.DayOfWeek;
 import java.util.Arrays;
 
@@ -54,13 +54,13 @@ public class OtpUserController {
     public String deleteSign(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes) {
         userService.deleteSign(authUserEppn, id);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Signature supprimée"));
-        return "redirect:/otp/users/";
+        return "redirect:/otp/users";
     }
 
     @GetMapping("/set-default-sign-image/{signImageNumber}")
     public String setDefaultSignImage(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signImageNumber") Integer signImageNumber) {
         userService.setDefaultSignImage(authUserEppn, signImageNumber);
-        return "redirect:/otp/users/";
+        return "redirect:/otp/users";
     }
 
     @GetMapping("/mark-intro-as-read/{name}")

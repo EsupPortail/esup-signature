@@ -3,7 +3,7 @@ package org.esupportail.esupsignature.entity;
 import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Date;
 
 @Entity

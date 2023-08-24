@@ -125,7 +125,7 @@ export class WizUi {
         this.form = this.div.find('form');
         this.form.on('submit', function(e){
             e.preventDefault();
-            let url = self.form.attr('action') + "/?" + self.csrf.parameterName + '=' + self .csrf.token;
+            let url = self.form.attr('action') + "?" + self.csrf.parameterName + '=' + self .csrf.token;
             let formData = new FormData(this);
             $.ajax( {
                 url: url,
@@ -160,7 +160,7 @@ export class WizUi {
         this.signBookId = e;
         $.ajax({
             type: "GET",
-            url: '/user/wizard/wiz-init-steps/?workflowId=' + id + "&recipientsCCEmailsWiz=" + recipientsCCEmailsWiz + "&forceAllSign=" + forceAllSign + "&comment=" + encodeURIComponent(comment.val()) + "&title=" + title.val(),
+            url: '/user/wizard/wiz-init-steps?workflowId=' + id + "&recipientsCCEmailsWiz=" + recipientsCCEmailsWiz + "&forceAllSign=" + forceAllSign + "&comment=" + encodeURIComponent(comment.val()) + "&title=" + title.val(),
             dataType : 'html',
             cache: false,
             success : html => this.initWiz2(html)
@@ -218,7 +218,7 @@ export class WizUi {
         console.log(signBookId);
         let self = this;
         $.ajax({
-            url: "/user/wizard/wiz-add-step"+ this.mode +"/?end=" + self.end + "&userSignFirst=" + userSignFirst + "&start=" + self.start + "&close=" + self.close + "&" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/wizard/wiz-add-step"+ this.mode +"?end=" + self.end + "&userSignFirst=" + userSignFirst + "&start=" + self.start + "&close=" + self.close + "&" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             contentType: "application/json",
             data: JSON.stringify(step),

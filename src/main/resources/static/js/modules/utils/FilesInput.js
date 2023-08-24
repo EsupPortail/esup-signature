@@ -57,7 +57,7 @@ export default class FilesInput extends EventFactory {
                 }
                 let deleteUrl = "";
                 if(!readOnly) {
-                    deleteUrl = "/ws-secure/signrequests/remove-doc/" + document.id + "/?" + csrf.parameterName + "=" + csrf.token;
+                    deleteUrl = "/ws-secure/signrequests/remove-doc/" + document.id + "?" + csrf.parameterName + "=" + csrf.token;
                 }
                 let preview = new DocumentPreview(
                     type,

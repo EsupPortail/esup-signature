@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head-lite :: head-lite"></head>
+<head th:replace="~{fragments/head-lite :: head-lite}"></head>
 <body>
-<header th:replace="fragments/nav-empty :: nav-empty"></header>
+<header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
 <main role="main">
     <div class="wrapper">
         <div id="content" class="content">
@@ -19,7 +19,7 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer-light :: footer"></footer>
+<footer th:replace="~{fragments/footer-light :: footer}"></footer>
 <div th:replace="fragments/message"></div>
 </body>
 </html>

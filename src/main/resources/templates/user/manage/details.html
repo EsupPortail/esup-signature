@@ -5,12 +5,12 @@
 <!--/*@thymesVar id="signRequests" type="org.springframework.data.domain.Page<esupportail.esupsignature.entity.SignRequest>"*/-->
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side :: side"></nav>
+        <nav th:replace="~{fragments/sides/side :: side}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/manage">Espace superviseurs</a></li>
@@ -145,7 +145,7 @@
                                     </td>
                                     <td class="clickable-td d-none d-md-table-cell"
                                         style="width: 150px;">
-                                        <div th:replace="user/signbooks/includes/status :: status(signBook=${signBook})"></div>
+                                        <div th:replace="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
                                     </td>
                                     <td>
                                         <div class="dropdown position-relative">
@@ -199,7 +199,7 @@
                             <tfoot>
                             <tr>
                                 <td colspan="100%">
-                                    <nav th:replace="fragments/pagination :: pagination"></nav>
+                                    <nav th:replace="~{fragments/pagination :: pagination}"></nav>
                                 </td>
                             </tr>
                             </tfoot>
@@ -211,6 +211,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

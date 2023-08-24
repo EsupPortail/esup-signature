@@ -2,16 +2,16 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="userShare" type="org.esupportail.esupsignature.entity.UserShare"*/-->
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
     import {default as ShareUi} from '/js/modules/ui/users/ShareUi.js?version=[[${versionApp}]]';
     new ShareUi();
 </script>
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side-user :: side-user"></nav>
+        <nav th:replace="~{fragments/sides/side-user :: side-user}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/users/shares">Délégations</a></li>
@@ -101,6 +101,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

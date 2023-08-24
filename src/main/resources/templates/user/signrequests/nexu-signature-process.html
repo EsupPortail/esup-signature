@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
     import {Nexu} from '/js/modules/ui/signrequests/Nexu.js?version=[[${versionApp}]]';
     $(document).ready(function() {
@@ -9,9 +9,9 @@
     });
 </script>
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <nav th:replace="fragments/sides/side :: side"></nav>
+    <nav th:replace="~{fragments/sides/side :: side}"></nav>
     <div id="content" class="content">
         <div class="alert alert-success col-6 mb-2 mx-auto">
             <h3>Signature NexU en cours</h3>
@@ -59,6 +59,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>
