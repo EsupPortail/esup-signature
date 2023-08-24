@@ -1,11 +1,10 @@
 package org.esupportail.esupsignature.entity;
 
-import jakarta.persistence.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.GenericGenerator;
 
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -15,15 +14,13 @@ import java.util.Set;
 public class WorkflowStep {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "sequence-generator")
-    @GenericGenerator(
-            name = "sequence-generator",
-            type = org.hibernate.id.enhanced.SequenceStyleGenerator.class,
-            parameters = {
-                    @org.hibernate.annotations.Parameter(name = "sequence_name", value = "hibernate_sequence"),
-                    @org.hibernate.annotations.Parameter(name = "initial_value", value = "1"),
-                    @org.hibernate.annotations.Parameter(name = "increment_size", value = "1")
-            }
+    @GeneratedValue(
+    strategy = GenerationType.SEQUENCE,
+    generator = "hibernate_sequence"
+    )
+    @SequenceGenerator(
+        name = "hibernate_sequence",
+        allocationSize = 1
     )
     private Long id;
 
