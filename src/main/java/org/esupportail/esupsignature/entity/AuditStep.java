@@ -1,8 +1,9 @@
 package org.esupportail.esupsignature.entity;
 
+import jakarta.persistence.*;
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import jakarta.persistence.*;
 import java.util.Date;
 import java.util.Map;
 
@@ -10,7 +11,16 @@ import java.util.Map;
 public class AuditStep {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "sequence-generator")
+    @GenericGenerator(
+            name = "sequence-generator",
+            type = org.hibernate.id.enhanced.SequenceStyleGenerator.class,
+            parameters = {
+                    @org.hibernate.annotations.Parameter(name = "sequence_name", value = "hibernate_sequence"),
+                    @org.hibernate.annotations.Parameter(name = "initial_value", value = "1"),
+                    @org.hibernate.annotations.Parameter(name = "increment_size", value = "1")
+            }
+    )
     private Long id;
 
     private String login;
