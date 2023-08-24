@@ -307,7 +307,7 @@ public class SignBookController {
                           @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) throws EsupSignatureRuntimeException {
         SignBook signBook = signBookService.getById(id);
         signBookService.addWorkflowToSignBook(signBook, authUserEppn, workflowSignBookId);
-        return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "/?form";
+        return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "?form";
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")

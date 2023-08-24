@@ -119,7 +119,7 @@ public class HomeController {
 
     @GetMapping("/start-form/{formId}")
     public String startForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long formId) {
-        return "redirect:/user/?formId=" + formId;
+        return "redirect:/user?formId=" + formId;
     }
 
 }
