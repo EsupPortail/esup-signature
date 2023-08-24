@@ -10,14 +10,8 @@ import java.util.regex.Pattern;
 public class Target {
 
     @Id
-    @GeneratedValue(
-    strategy = GenerationType.SEQUENCE,
-    generator = "hibernate_sequence"
-    )
-    @SequenceGenerator(
-        name = "hibernate_sequence",
-        allocationSize = 1
-    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hibernate_sequence")
+    @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
     private String targetUri;

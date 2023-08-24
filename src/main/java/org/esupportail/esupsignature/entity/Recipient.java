@@ -9,14 +9,8 @@ import jakarta.persistence.*;
 public class Recipient {
 
     @Id
-    @GeneratedValue(
-    strategy = GenerationType.SEQUENCE,
-    generator = "hibernate_sequence"
-    )
-    @SequenceGenerator(
-        name = "hibernate_sequence",
-        allocationSize = 1
-    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hibernate_sequence")
+    @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
     @Version

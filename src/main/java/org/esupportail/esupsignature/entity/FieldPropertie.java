@@ -12,14 +12,8 @@ import java.util.Map;
 public class FieldPropertie {
 
     @Id
-    @GeneratedValue(
-    strategy = GenerationType.SEQUENCE,
-    generator = "hibernate_sequence"
-    )
-    @SequenceGenerator(
-        name = "hibernate_sequence",
-        allocationSize = 1
-    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hibernate_sequence")
+    @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
