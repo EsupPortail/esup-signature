@@ -3,20 +3,20 @@
 <!--/*@thymesVar id="field" type="org.esupportail.esupsignature.entity.Field"*/-->
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
 <!--/*@thymesVar id="preFillTypes" type="java.util.Map<String, java.util.List<String>>"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
     import {FormFieldsUi} from '/js/modules/ui/forms/FormFieldsUi.js?version=[[${versionApp}]]';
     new FormFieldsUi("admin", [[${form.id}]], [[${preFillTypes}]]);
 </script>
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
-        <nav th:replace="fragments/sides/side-manager :: side-manager"></nav>
+        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+        <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
                 <li class="breadcrumb-item active" th:text="'Liste des champs du formulaire : ' + ${form.name}"></li>
             </ol>
@@ -205,6 +205,6 @@
         </div>
     </div>
 </div>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

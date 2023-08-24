@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main" class="main-selectable">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active">Utilisateurs</li>
             </ol>
         </nav>
@@ -52,10 +52,10 @@
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
                                         <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${user.id}">
-                                                <!--                        <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">-->
+                                                <!--                        <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">-->
                                                 <!--                            <i class="fas fa-eye-slash pr-2"></i> Masquer-->
                                                 <!--                        </a>-->
-                                                <!--                        <a th:if="${signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">-->
+                                                <!--                        <a th:if="${signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">-->
                                                 <!--                            <i class="fas fa-eye-slash pr-2"></i> Afficher dans la liste-->
                                                 <!--                        </a>-->
                                             <li>
@@ -107,12 +107,12 @@
                         </th:block>
                         </tbody>
                     </table>
-                    <nav th:replace="fragments/pagination :: pagination"></nav>
+                    <nav th:replace="~{fragments/pagination :: pagination}"></nav>
                 </div>
             </div>
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

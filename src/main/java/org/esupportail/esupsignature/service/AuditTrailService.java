@@ -1,6 +1,10 @@
 package org.esupportail.esupsignature.service;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import jakarta.annotation.Resource;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
@@ -18,13 +22,11 @@ import org.springframework.web.servlet.support.RequestContext;
 import org.springframework.web.servlet.view.AbstractTemplateView;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
-import org.thymeleaf.spring5.context.webmvc.SpringWebMvcThymeleafRequestContext;
-import org.thymeleaf.spring5.naming.SpringContextVariableNames;
+import org.thymeleaf.spring6.context.webmvc.SpringWebMvcThymeleafRequestContext;
+import org.thymeleaf.spring6.naming.SpringContextVariableNames;
+import org.thymeleaf.web.servlet.IServletWebExchange;
+import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
-import javax.annotation.Resource;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -140,7 +142,9 @@ public class AuditTrailService {
         vars.put(AbstractTemplateView.SPRING_MACRO_REQUEST_CONTEXT_ATTRIBUTE, requestContext);
         vars.put(SpringContextVariableNames.SPRING_REQUEST_CONTEXT, requestContext);
         vars.put(SpringContextVariableNames.THYMELEAF_REQUEST_CONTEXT, new SpringWebMvcThymeleafRequestContext(requestContext, httpServletRequest));
-        final WebContext webContext = new WebContext(httpServletRequest, httpServletResponse, servletContext, Locale.FRENCH);
+        JakartaServletWebApplication jakartaServletWebApplication = JakartaServletWebApplication.buildApplication(httpServletRequest.getServletContext());
+        IServletWebExchange iServletWebExchange = jakartaServletWebApplication.buildExchange(httpServletRequest, httpServletResponse);
+        final WebContext webContext = new WebContext(iServletWebExchange, Locale.FRENCH);
         for (final Map.Entry<String, Object> entry : vars.entrySet()) {
             webContext.setVariable(entry.getKey(), entry.getValue());
         }

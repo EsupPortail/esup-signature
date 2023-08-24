@@ -3,8 +3,8 @@ package org.esupportail.esupsignature.dss.model;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 
-import javax.validation.constraints.AssertTrue;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 
 public class SignatureDocumentForm extends AbstractSignatureForm implements Serializable {

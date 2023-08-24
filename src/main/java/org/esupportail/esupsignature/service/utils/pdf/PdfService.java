@@ -66,7 +66,7 @@ import org.verapdf.pdfa.PDFAValidator;
 import org.verapdf.pdfa.results.TestAssertion;
 import org.verapdf.pdfa.results.ValidationResult;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.xml.transform.TransformerException;
 import java.awt.*;

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="securityServices" type="java.util.List<org.esupportail.esupsignature.service.security.SecurityService>"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body>
-<header th:replace="fragments/nav-empty :: nav-empty"></header>
+<header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
 <main role="main">
     <div class="card col-lg-10 mx-auto" style="top: 60px;">
         <div class="card-body text-center">
@@ -11,6 +11,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer-light :: footer"></footer>
+<footer th:replace="~{fragments/footer-light :: footer}"></footer>
 </body>
 </html>

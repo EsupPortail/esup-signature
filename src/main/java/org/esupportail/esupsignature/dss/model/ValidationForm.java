@@ -3,7 +3,7 @@ package org.esupportail.esupsignature.dss.model;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.AssertTrue;
 import java.util.List;
 
 public class ValidationForm {

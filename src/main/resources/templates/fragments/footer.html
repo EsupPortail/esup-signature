@@ -2,9 +2,9 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div th:fragment="footer">
-	<div th:replace="fragments/new-modals :: new-modals"></div>
+	<div th:replace="~{fragments/new-modals :: new-modals}"></div>
 	<th:block th:if="${error == null && print != true}">
-		<div th:replace="fragments/message :: message"></div>
+		<div th:replace="~{fragments/message :: message}"></div>
 	</th:block>
 	<div id="footer">
 		<footer  class="footer bg-secondary fixed-bottom text-center text-white">
@@ -20,7 +20,7 @@
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
-					<div th:include="fragments/help :: help"></div>
+					<div th:insert="~{fragments/help :: help}"></div>
 				</div>
 			</div>
 		</div>

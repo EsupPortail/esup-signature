@@ -2,15 +2,15 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="certificats" type="java.util.List<org.esupportail.esupsignature.entity.Certificat>"*/-->
 <!--/*@thymesVar id="sealCertificats" type="java.util.List<eu.europa.esig.dss.token.DSSPrivateKeyEntry>"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active">Certificats</li>
             </ol>
         </nav>
@@ -140,6 +140,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

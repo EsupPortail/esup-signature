@@ -20,9 +20,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.io.Serializable;

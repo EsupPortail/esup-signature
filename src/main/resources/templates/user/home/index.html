@@ -3,7 +3,7 @@
 <!--/*@thymesVar id="signBook" type="org.springframework.data.domain.Page<esupportail.esupsignature.entity.SignBook>"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="authUser" type="org.esupportail.esupsignature.entity.User"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
     import {HomeUi} from '/js/modules/ui/HomeUi.js?version=[[${versionApp}]]';
     import {HomeHelp} from '/js/modules/help/HomeHelp.js?version=[[${versionApp}]]';
@@ -12,10 +12,10 @@
     help.autoStart();
 </script>
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')')}" th:replace="fragments/sides/side-home :: side-home"></nav>
+        <nav th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')')}" th:replace="~{fragments/sides/side-home :: side-home}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Accueil</li>
@@ -24,7 +24,7 @@
         <div id="content" class="content flex align-content-center">
             <div class="row">
                 <div id="new-div" style="z-index: 1000;">
-                    <div th:replace="fragments/new :: new"></div>
+                    <div th:replace="~{fragments/new :: new}"></div>
                 </div>
                 <div id="listSignRequestTable" class="div-scrollable scrollbar-style">
                 <div id="to-sign-list" class="d-flex col-12">
@@ -177,7 +177,7 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 <div id="oldSignRequests" data-bs-focus="false" class="modal fade" role="dialog" th:if="${oldSignRequests.size() > 0}">
     <div class="modal-dialog">
         <div class="modal-content">

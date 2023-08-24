@@ -27,8 +27,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
@@ -82,7 +82,7 @@ public class DataController {
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Formulaire non autorisé"));
-			return "redirect:/user/";
+			return "redirect:/user";
 		}
 
 	}

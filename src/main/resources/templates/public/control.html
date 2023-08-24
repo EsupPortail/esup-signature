@@ -3,9 +3,9 @@
 <!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="auditTrail" type="org.esupportail.esupsignature.entity.AuditTrail"*/-->
-<head th:replace="fragments/head-lite :: head-lite"></head>
+<head th:replace="~{fragments/head-lite :: head-lite}"></head>
 <body>
-<header th:replace="fragments/nav-empty :: nav-empty"></header>
+<header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
 <main role="main">
     <div class="col-10 mx-auto" style="margin-top: 60px" th:fragment="control">
         <div class="alert alert-primary mb-1 text-center">
@@ -166,6 +166,6 @@
         </th:block>
     </div>
 </main>
-<footer th:replace="fragments/footer-light :: footer"></footer>
+<footer th:replace="~{fragments/footer-light :: footer}"></footer>
 </body>
 </html>

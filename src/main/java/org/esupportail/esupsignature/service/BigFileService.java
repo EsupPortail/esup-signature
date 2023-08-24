@@ -4,7 +4,7 @@ import org.esupportail.esupsignature.entity.BigFile;
 import org.esupportail.esupsignature.repository.BigFileRepository;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.io.InputStream;
 
 @Service

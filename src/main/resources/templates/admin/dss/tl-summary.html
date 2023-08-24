@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" th:with="currentPage=#{label.tsls.summary}">
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active">Statut DSS</li>
             </ol>
         </nav>
@@ -57,7 +57,7 @@
                                 </h2>
 
                                 <!-- LOTL Info -->
-                                <div th:replace="fragments/lotl-info-fragments :: lotl-info-summary(downloadResult=${downloadResult}, parsingResult=${parsingResult}, validationResult=${validationResult})"></div>
+                                <div th:replace="~{fragments/lotl-info-fragments :: lotl-info-summary(downloadResult=${downloadResult}, parsingResult=${parsingResult}, validationResult=${validationResult}, parsingResult=${parsingResult}, validationResult=${validationResult})}"></div>
 
                                 <!-- Pivots -->
                                 <div class="table-container row" th:if="${not #lists.isEmpty(lotl.pivotInfos)}">
@@ -93,17 +93,17 @@
 
                                             <!-- Download result -->
                                             <td>
-                                                <span th:replace="fragments/tl-info-fragments :: result-status(result=${downloadResult})"></span>
+                                                <span th:replace="~{fragments/tl-info-fragments :: result-status(result=${downloadResult})}"></span>
                                             </td>
 
                                             <!-- Parsing result -->
                                             <td>
-                                                <span th:replace="fragments/tl-info-fragments :: result-status(result=${parsingResult})"></span>
+                                                <span th:replace="~{fragments/tl-info-fragments :: result-status(result=${parsingResult})}"></span>
                                             </td>
 
                                             <!-- Validation result -->
                                             <td>
-                                                <span th:replace="fragments/tl-info-fragments :: validation-status(validationResult=${validationResult})"></span>
+                                                <span th:replace="~{fragments/tl-info-fragments :: validation-status(validationResult=${validationResult})}"></span>
                                             </td>
                                         </tr>
                                         </tbody>
@@ -114,7 +114,7 @@
                                 <div class="table-container row" th:if="${not #lists.isEmpty(lotl.getTLInfos())}">
                                     <h4 th:text="#{label.summary.tl.info.header}"></h4>
                                     <table class="tl-summary summary-table table accordion">
-                                        <thead th:replace="fragments/tl-info :: tl-info-header()"></thead>
+                                        <thead th:replace="~{fragments/tl-info :: tl-info-header()}"></thead>
 
                                         <tbody th:each="tl,iterTL : ${lotl.getTLInfos()}" th:with="id=${tl.getDSSId().asXmlId()},
 									country=${tl.parsingCacheInfo.isResultExist()}?${tl.parsingCacheInfo.territory}:'no_country',
@@ -123,12 +123,10 @@
 									validationResult=${tl.validationCacheInfo}">
 
                                         <!-- TL-Info preview -->
-                                        <tr th:replace="fragments/tl-info :: tl-info-preview(id=${id}, country=${country}, downloadResult=${downloadResult},
-											parsingResult=${parsingResult}, validationResult=${validationResult})"></tr>
+                                        <tr th:replace="~{fragments/tl-info :: tl-info-preview(id=${id}, country=${country}, downloadResult=${downloadResult}, parsingResult=${parsingResult}, validationResult=${validationResult})}"></tr>
 
                                         <!-- TL-Info body -->
-                                        <tr th:replace="fragments/tl-info :: tl-info-body(id=${id}, url=${tl.url}, downloadResult=${downloadResult},
-											parsingResult=${parsingResult}, validationResult=${validationResult})"></tr>
+                                        <tr th:replace="~{fragments/tl-info :: tl-info-body(id=${id}, url=${tl.url}, downloadResult=${downloadResult}, parsingResult=${parsingResult}, validationResult=${validationResult})}"></tr>
                                         </tbody>
 
                                     </table>
@@ -139,7 +137,7 @@
                             <div class="table-container row" th:if="${not #lists.isEmpty(summary.otherTLInfos)}">
                                 <h2 th:text=#{label.summary.tl.info.other.header}></h2>
                                 <table class="tl-summary summary-table table accordion">
-                                    <thead th:replace="fragments/tl-info :: tl-info-header()"></thead>
+                                    <thead th:replace="~{fragments/tl-info :: tl-info-header()}							parsingResult=${parsingResult}, validationResult=${validationResult})}"></thead>
 
                                     <tbody th:each="tl,iterTL : ${summary.otherTLInfos}" th:with="id=${tl.getDSSId().asXmlId()},
 								country=${tl.parsingCacheInfo.isResultExist()}?${tl.parsingCacheInfo.territory}:'no_country',
@@ -148,12 +146,12 @@
 								validationResult=${tl.validationCacheInfo}">
 
                                     <!-- TL-Info preview -->
-                                    <tr th:replace="fragments/tl-info :: tl-info-preview(id=${id}, country=${country}, downloadResult=${downloadResult},
-										parsingResult=${parsingResult}, validationResult=${validationResult})"></tr>
+                                    <tr th:replace="~{fragments/tl-info :: tl-info-preview(id=${id}, country=${country}, downloadResult=${downloadResult},
+										parsingResult=${parsingResult}, validationResult=${validationResult})}"></tr>
 
                                     <!-- TL-Info body -->
-                                    <tr th:replace="fragments/tl-info :: tl-info-body(id=${id}, url=${tl.url}, downloadResult=${downloadResult},
-										parsingResult=${parsingResult}, validationResult=${validationResult})"></tr>
+                                    <tr th:replace="~{fragments/tl-info :: tl-info-body(id=${id}, url=${tl.url}, downloadResult=${downloadResult},
+										parsingResult=${parsingResult}, validationResult=${validationResult})}"></tr>
                                     </tbody>
 
                                 </table>
@@ -174,6 +172,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

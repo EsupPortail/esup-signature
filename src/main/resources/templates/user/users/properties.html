@@ -2,12 +2,12 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="userProperties" type="java.util.List<org.esupportail.esupsignature.entity.UserPropertie>"*/-->
 <!--/*@thymesVar id="fieldProperties" type="java.util.List<org.esupportail.esupsignature.entity.fieldPropertie>"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side-user :: side-user"></nav>
+        <nav th:replace="~{fragments/sides/side-user :: side-user}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Favoris</li>
@@ -84,6 +84,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

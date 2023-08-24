@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="user" type="org.esupportail.esupsignature.entity.User"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
     import {UserUi} from '/js/modules/ui/users/UserUi.js?version=[[${versionApp}]]';
     import {UserParamsHelp} from '/js/modules/help/UserParamsHelp.js?version=[[${versionApp}]]';
@@ -10,10 +10,10 @@
     help.autoStart();
 </script>
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side-user :: side-user"></nav>
+        <nav th:replace="~{fragments/sides/side-user :: side-user}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Paramètres :
@@ -161,7 +161,7 @@
                         <button type="button" id="signRequestParamsClean" class="btn btn-warning">Nettoyer mes paramètres enregistrés</button>
                     </div>
                     <div id="signRequestParamsFormDiv" class="card-body mx-auto" style="min-height: 400px;">
-                        <div th:replace="fragments/signrequestparams :: signrequestparam"></div>
+                        <div th:replace="~{fragments/signrequestparams :: signrequestparam}"></div>
                     </div>
                 </div>
 
@@ -316,6 +316,6 @@
         </div>
     </div>
 </div>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

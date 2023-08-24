@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" th:with="currentPage=#{label.tsls.summary}">
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active"><a href="/admin/dss">Statut DSS</a></li>
                 <li class="breadcrumb-item active" th:text="#{${'label.country.code.'+ tlInfo.parsingCacheInfo.territory}}" ></li>
             </ol>
@@ -35,16 +35,12 @@
                     <div class="card-body">
                         <div class="dl-horizontal">
                             <!-- TL-Info body -->
-                            <div th:replace="fragments/tl-info :: tl-info-body-content(url=${tlInfo.url}, 
-								downloadResult=${tlInfo.downloadCacheInfo}, 
-								parsingResult=${tlInfo.parsingCacheInfo}, 
-								validationResult=${tlInfo.validationCacheInfo}, 
-								potentialSigners=${tlInfo.validationCacheInfo.potentialSigners})"></div>
+                            <div th:replace="~{fragments/tl-info :: tl-info-body-content(url=${tlInfo.url}, downloadResult=${tlInfo.downloadCacheInfo}, parsingResult=${tlInfo.parsingCacheInfo}, validationResult=${tlInfo.validationCacheInfo}, potentialSigners=${tlInfo.validationCacheInfo.potentialSigners})}"></div>
                         </div>
                         <div th:if="${tlInfo.parsingCacheInfo != null and not #lists.isEmpty(tlInfo.parsingCacheInfo.trustServiceProviders)}">
                             <br>
                             <th:block th:each="serviceProvider,sp : ${tlInfo.parsingCacheInfo.trustServiceProviders}">
-                                <div th:replace="fragments/tl-info :: tl-tsp(serviceProvider=${serviceProvider}, sp=${sp})"></div>
+                                <div th:replace="~{fragments/tl-info :: tl-tsp(serviceProvider=${serviceProvider}, sp=${sp})}"></div>
                             </th:block>
                         </div>
 
@@ -54,6 +50,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

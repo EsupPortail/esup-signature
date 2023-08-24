@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.dss.model;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.AssertTrue;
 
 public class CertificateForm {
 

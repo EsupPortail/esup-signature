@@ -14,11 +14,7 @@
 			
 			<!-- LOTL info body -->
 			<div class="card-body">
-				<div th:replace="fragments/tl-info :: tl-info-body-content(url='lotl',
-						downloadResult=${downloadResult}, 
-						parsingResult=${parsingResult}, 
-						validationResult=${validationResult}, 
-						potentialSigners=null)"></div>
+				<div th:replace="~{fragments/tl-info :: tl-info-body-content(url='lotl',downloadResult=${downloadResult}, parsingResult=${parsingResult}, validationResult=${validationResult}, potentialSigners=null)}"></div>
 			</div>
 		</div>
 	</div>
