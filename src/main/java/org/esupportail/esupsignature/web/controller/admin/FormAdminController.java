@@ -119,7 +119,7 @@ public class FormAdminController {
 		} catch (EsupSignatureRuntimeException e) {
 			logger.error(e.getMessage());
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
-			return "redirect:/admin/forms/";
+			return "redirect:/admin/forms";
 		}
 	}
 
@@ -142,7 +142,7 @@ public class FormAdminController {
 		} catch (EsupSignatureRuntimeException e) {
 			logger.error(e.getMessage());
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
-			return "redirect:/admin/forms/";
+			return "redirect:/admin/forms";
 		}
 	}
 
@@ -164,7 +164,7 @@ public class FormAdminController {
 			return "admin/forms/fields";
 		}
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
-		return "redirect:/admin/forms/";
+		return "redirect:/admin/forms";
 	}
 
 	@GetMapping("{id}/signs")
@@ -271,7 +271,7 @@ public class FormAdminController {
 		} catch (EsupSignatureRuntimeException e) {
 			logger.error(e.getMessage());
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
-			return "redirect:/admin/forms/";
+			return "redirect:/admin/forms";
 		}
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
 		return "redirect:/admin/forms/update/" + id;

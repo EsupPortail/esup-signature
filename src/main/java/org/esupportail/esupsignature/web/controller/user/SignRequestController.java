@@ -306,7 +306,7 @@ public class SignRequestController {
     public String changeStepSignType(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name = "signType") SignType signType) {
         SignRequest signRequest = signRequestService.getById(id);
         signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signType);
-        return "redirect:/user/signrequests/" + id + "/?form";
+        return "redirect:/user/signrequests/" + id + "?form";
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
@@ -348,7 +348,7 @@ public class SignRequestController {
                                 @RequestParam(name = "signType") SignType signType,
                                 @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureRuntimeException {
         signBookService.addStep(id, recipientsEmails, signType, allSignToComplete, authUserEppn);
-        return "redirect:/user/signrequests/" + id + "/?form";
+        return "redirect:/user/signrequests/" + id + "?form";
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
