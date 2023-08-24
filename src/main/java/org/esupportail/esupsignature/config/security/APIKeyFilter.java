@@ -11,7 +11,7 @@ public class APIKeyFilter extends X509AuthenticationFilter {
     protected Object getPreAuthenticatedPrincipal(HttpServletRequest request)
     {
         X509Certificate[] certs = (X509Certificate[]) request
-                .getAttribute("javax.servlet.request.X509Certificate");
+                .getAttribute("jakarta.servlet.request.X509Certificate");
 
         if(certs != null && certs.length > 0)
         {
@@ -25,7 +25,7 @@ public class APIKeyFilter extends X509AuthenticationFilter {
     protected Object getPreAuthenticatedCredentials(HttpServletRequest request)
     {
         X509Certificate[] certs = (X509Certificate[]) request
-                .getAttribute("javax.servlet.request.X509Certificate");
+                .getAttribute("jakarta.servlet.request.X509Certificate");
 
         if(certs != null && certs.length > 0)
         {
