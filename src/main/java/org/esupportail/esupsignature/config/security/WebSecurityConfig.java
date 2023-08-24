@@ -155,7 +155,13 @@ public class WebSecurityConfig {
 
 //	@Bean
 //	public WebSecurityCustomizer webSecurityCustomizer() {
-//		return (web) -> web.ignoring().antMatchers("/resources/**", "/webjars/**");
+//		return (web) -> web.ignoring().requestMatchers("/resources/**", "/webjars/**")
+//				.requestMatchers("/logged-out")
+//				.requestMatchers("/webjars", "/webjars/**")
+//				.requestMatchers("/css", "/css/**")
+//				.requestMatchers("/images", "/images/**")
+//				.requestMatchers("/js", "/js/**")
+//				.requestMatchers("/fonts", "/fonts/**");
 //	}
 
 	@Bean
@@ -261,12 +267,7 @@ public class WebSecurityConfig {
 			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers("/actuator/**").denyAll());
 		}
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
-				.requestMatchers("/logged-out").permitAll()
-				.requestMatchers("/webjars", "/webjars/**").permitAll()
-				.requestMatchers("/css", "/css/**").permitAll()
-				.requestMatchers("/images", "/images/**").permitAll()
-				.requestMatchers("/js", "/js/**").permitAll()
-				.requestMatchers("/fonts", "/fonts/**").permitAll()
+				.requestMatchers("/", "/**").permitAll()
 				.requestMatchers("/api-docs/", "/api-docs/**").hasAnyRole("ADMIN")
 				.requestMatchers("/swagger-ui.html", "/swagger-ui/", "/swagger-ui/**").hasAnyRole("ADMIN")
 				.requestMatchers("/admin/", "/admin/**").hasAnyRole("ADMIN", "MANAGER")
