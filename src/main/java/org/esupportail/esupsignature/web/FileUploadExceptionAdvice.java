@@ -7,10 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 @ControllerAdvice
 public class FileUploadExceptionAdvice {
@@ -24,12 +23,12 @@ public class FileUploadExceptionAdvice {
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public String handleMaxSizeException(HttpServletRequest request,
-                                         RedirectAttributes redirectAttributes,
+    @ResponseBody
+    public String handleMaxSizeException(RedirectAttributes redirectAttributes,
                                          MaxUploadSizeExceededException exc) {
         logger.warn(exc.getMessage());
         redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Fichier trop volumineux. Taille supérieure à " + FileUtils.byteCountToDisplaySize(globalProperties.getMaxUploadSize())));
-        return "redirect:" + request.getHeader("referer");
+        return "{\"error\" : \"Fichier trop volumineux. Taille supérieure à " + FileUtils.byteCountToDisplaySize(globalProperties.getMaxUploadSize()) + "\"}";
     }
 
 }
