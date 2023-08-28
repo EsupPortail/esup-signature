@@ -66,7 +66,7 @@ public class DataService {
         SignBook signBook = data.getSignBook();
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user, data.getSignBook().getSignRequests().get(0));
         for(Field field : fields) {
-            if(field.getWorkflowSteps().stream().noneMatch(workflowStep -> workflowStep.getId().equals(signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getId()))) {
+            if(field.getWorkflowSteps() != null && field.getWorkflowSteps().stream().noneMatch(workflowStep -> workflowStep.getId().equals(signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getId()))) {
                 String newData = data.getDatas().get(field.getName());
                 if(StringUtils.hasText(newData) && !StringUtils.hasText(formDatas.get(field.getName()))) {
                     formDatas.put(field.getName(), data.getDatas().get(field.getName()));
