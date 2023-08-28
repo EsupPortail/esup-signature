@@ -72,7 +72,7 @@ public class HomeController {
     @Resource
     private UserService userService;
 
-    @GetMapping
+    @GetMapping(value = {"", "/"})
     public String home(@ModelAttribute("userEppn") String userEppn,
                        @ModelAttribute("authUserEppn") String authUserEppn,
                        @RequestParam(required = false, name = "formId") Long formId,
