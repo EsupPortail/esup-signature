@@ -76,16 +76,16 @@ public class PublicController {
             if(reports != null) {
                 model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
             } else {
-                model.addAttribute("signRequest", signRequest);
+                model.addAttribute("signRequest", signRequest.get());
             }
         } else {
-            model.addAttribute("signRequest", signRequest);
+            model.addAttribute("signRequest", signRequest.get());
         }
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && !auth.getName().equals("anonymousUser")) {
             String eppn = userService.tryGetEppnFromLdap(auth);
             if(eppn != null && userService.getByEppn(eppn) != null && auditTrail != null) {
-                model.addAttribute("signRequest", signRequest);
+                model.addAttribute("signRequest", signRequest.get());
                 setControlValues(model, signRequest.get(), auditTrail, eppn);
             }
         }
