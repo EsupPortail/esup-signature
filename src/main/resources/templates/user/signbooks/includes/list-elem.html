@@ -7,7 +7,7 @@
                 th:data-id-signbook="${signBook.id}">
         </td>
         <td class="w-20 d-none d-lg-table-cell">
-            <button title="Afficher les postits" th:if="${signBook.postits.size() > 0}" th:text="${signBook.postits.size()}" type="button" class="badge bg-warning border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
+            <button title="Afficher les postits" th:if="${signBook.postits.size() > 0}" th:text="${signBook.postits.size()}" type="button" class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
             </button>
             <ul class="dropdown-menu striped-list" th:aria-labelledby="'commentButton-' + ${signBook.id}">
                 <th:block th:each="postit : ${signBook.postits}">
