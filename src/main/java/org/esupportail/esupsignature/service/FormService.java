@@ -322,7 +322,7 @@ public class FormService {
 								type = cosString.toString();
 							}
 						}
-						if (type.equals("text")) {
+						if (type == null || type.equals("text")) {
 							field.setType(FieldType.text);
 						} else if (type.contains("Time")) {
 							field.setType(FieldType.time);

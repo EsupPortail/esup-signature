@@ -940,6 +940,13 @@ height: 100%;
     z-index: 10000 !important;
 }
 
+.bg-postit {
+    --bs-bg-opacity: 1;
+    background-color: #FFF740 !important;
+    color: black;
+    border: 1px solid black !important;
+}
+
 .box-wrap{
     display:block;
     position: absolute;
