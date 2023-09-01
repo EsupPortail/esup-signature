@@ -77,8 +77,7 @@ public class CurrentSessionsController {
 					sessionSize += session.getAttribute(attr).toString().getBytes().length;
 				}
 				sessions.add(session);
-				if(sessionInformation != null && sessionInformation.getPrincipal() instanceof LdapUserDetailsImpl) {
-					LdapUserDetailsImpl ldapUserDetails = (LdapUserDetailsImpl) sessionInformation.getPrincipal();
+				if(sessionInformation != null && sessionInformation.getPrincipal() instanceof LdapUserDetailsImpl ldapUserDetails) {
 					if(!allSessions.containsKey(ldapUserDetails.getUsername())) {
 						allSessions.put(ldapUserDetails.getUsername(), sessions);
 					} else {

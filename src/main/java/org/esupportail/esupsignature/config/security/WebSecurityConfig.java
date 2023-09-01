@@ -45,9 +45,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
-import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
-import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -201,7 +199,6 @@ public class WebSecurityConfig {
 						));
 		http.logout(logout -> logout.addLogoutHandler(logoutHandler())
 				.logoutSuccessUrl("/login").permitAll());
-		http.sessionManagement(sessionManagement -> sessionManagement.sessionAuthenticationStrategy(sessionAuthenticationStrategy()).maximumSessions(5).sessionRegistry(sessionRegistry()));
 		http.csrf(csrf -> csrf.ignoringRequestMatchers("/resources/**")
 				.ignoringRequestMatchers("/webjars/**")
 				.ignoringRequestMatchers("/ws/**")
@@ -284,16 +281,6 @@ public class WebSecurityConfig {
 	@Bean
 	public SessionRegistryImpl sessionRegistry() {
 		return new SessionRegistryImpl();
-	}
-
-	@Bean
-	public ConcurrentSessionFilter concurrencyFilter() {
-		return new ConcurrentSessionFilter(sessionRegistry());
-	}
-
-	@Bean
-	public RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy() {
-		return new RegisterSessionAuthenticationStrategy(sessionRegistry());
 	}
 
 	@Bean
