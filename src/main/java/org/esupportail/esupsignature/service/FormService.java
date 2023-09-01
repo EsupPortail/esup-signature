@@ -343,8 +343,7 @@ public class FormService {
 						parseField(field, pdField, pdAnnotationWidget, page);
 						fields.add(field);
 						logger.info(field.getName() + " added");
-					} else if (pdField instanceof PDRadioButton) {
-						PDRadioButton pdRadioButton = (PDRadioButton) pdField;
+					} else if (pdField instanceof PDRadioButton pdRadioButton) {
 						for (PDAnnotationWidget pdAnnotationWidget : pdRadioButton.getWidgets()) {
 							if (pdAnnotationWidget.getRectangle() == null) {
 								continue;
