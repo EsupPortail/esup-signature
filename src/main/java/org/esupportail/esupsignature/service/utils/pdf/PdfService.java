@@ -609,8 +609,7 @@ public class PdfService {
                             if (datas.get(filedName) != null && datas.get(filedName).equals("on")) {
                                 ((PDCheckBox) pdField).check();
                             }
-                        } else if (pdField instanceof PDRadioButton) {
-                            PDRadioButton pdRadioButton = (PDRadioButton) pdField;
+                        } else if (pdField instanceof PDRadioButton pdRadioButton) {
                             try {
                                 String value = datas.get(filedName);
                                 if(value.isEmpty()) {
@@ -620,9 +619,8 @@ public class PdfService {
                             } catch (NullPointerException | IllegalArgumentException e) {
                                 logger.debug("radio value error", e);
                             }
-                        } else if (pdField instanceof PDListBox) {
+                        } else if (pdField instanceof PDListBox pdListBox) {
                             String value = datas.get(filedName);
-                            PDListBox pdListBox = (PDListBox) pdField;
                             pdListBox.setValue(value);
                             if(isLastStep) {
                                 PDTextField pdTextField = new PDTextField(pdAcroForm);
