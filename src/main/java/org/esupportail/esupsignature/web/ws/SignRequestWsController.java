@@ -119,6 +119,19 @@ public class SignRequestWsController {
     }
 
     @CrossOrigin
+    @DeleteMapping("/soft/{id}")
+    @Operation(description = "Supprimer une demande de signature")
+    public ResponseEntity<String> softDelete(@PathVariable Long id) {
+        Long signBookId = signRequestService.getParentIdIfSignRequestUnique(id);
+        if(signBookId != null) {
+            signBookService.delete(signBookId, "system");
+        } else {
+            signRequestService.delete(id, "system");
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @CrossOrigin
     @DeleteMapping("/{id}/signbook")
     @Operation(description = "Supprimer le parapheur dans lequel se trouve la demande ciblée")
     public ResponseEntity<String> deleteSignBook(@PathVariable Long id) {
