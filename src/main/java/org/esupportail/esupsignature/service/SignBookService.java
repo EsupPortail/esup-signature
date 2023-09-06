@@ -1201,7 +1201,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignBook startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String title, List<String> recipientEmails, List<String> allSignToCompletes, List<String> targetEmails, List<String> targetUrls, String signRequestParamsJsonString) throws EsupSignatureFsException, EsupSignatureRuntimeException, EsupSignatureIOException {
+    public SignBook startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String title, List<String> recipientEmails, List<String> allSignToCompletes, List<String> targetEmails, List<String> targetUrls, String signRequestParamsJsonString, Boolean scanSignatureFields) throws EsupSignatureFsException, EsupSignatureRuntimeException, EsupSignatureIOException {
         logger.info("starting workflow " + id + " by " + createByEppn);
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
         if (signRequestParamsJsonString != null) {
@@ -1215,7 +1215,7 @@ public class SignBookService {
         for(MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(multipartFile.getOriginalFilename(), signBook, createByEppn, createByEppn);
             signRequest.getSignRequestParams().addAll(signRequestParamses);
-            signRequestService.addDocsToSignRequest(signRequest, false, 0, new ArrayList<>(), multipartFile);
+            signRequestService.addDocsToSignRequest(signRequest, scanSignatureFields, 0, new ArrayList<>(), multipartFile);
             if (targetUrls != null) {
                 for (String targetUrl : targetUrls) {
                     if (signBook.getLiveWorkflow().getTargets().stream().noneMatch(target -> target != null && target.getTargetUri().equals(targetUrl))) {
