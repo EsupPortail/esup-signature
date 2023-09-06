@@ -468,9 +468,8 @@ public class SignRequestService {
 					if("application/pdf".equals(multipartFiles[0].getContentType()) && scanSignatureFields) {
 						bytes = pdfService.normalizeGS(bytes);
 						List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
-						if(signRequestParamses.size() == 0) {
+						if(signRequestParamses.isEmpty()) {
 							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), docNumber);
-
 						} else {
 							for (SignRequestParams signRequestParams : signRequestParamses) {
 								toAddSignRequestParams.add(signRequestParamsService.createSignRequestParams(signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
