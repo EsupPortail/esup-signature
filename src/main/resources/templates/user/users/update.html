@@ -244,19 +244,16 @@
                                 </th:block>
                             </select>
                         </div>
-                        <div class="form-group mb-3" id="emailAlertHourDiv" style="display: none;">
-                            <label class="col-form-label" for="emailAlertHour"> <strong>Heure d'alerte</strong>
+                        <div class="form-group col-10 mx-auto d-none" id="emailAlertHourDiv">
+                            <label class="col-form-label" for="emailAlertHour"> <strong>Heure d’alerte</strong>
                             </label>
-<!--                            <input name="emailAlertHour" step="3600000" class="form-control" type="time"-->
-<!--                                   th:value="${authUser.emailAlertHour}" autocomplete="off"/>-->
                             <select class="slim-select-simple" name="emailAlertHour" id="emailAlertHour">
-                                <option th:each="i : ${#numbers.sequence(0, 23)}" th:value="${i}" th:text="${i}" th:selected="${i==authUser.emailAlertHour}"></option>
+                                <option th:each="i : ${#numbers.sequence(0, 23)}" th:value="${i}" th:text="${i} + ':00'" th:selected="${i==authUser.emailAlertHour}"></option>
                             </select>
                         </div>
-                        <div class="form-group mb-3" id="emailAlertDay" style="display: none;">
-                            <label class="col-form-label" for="_emailAlertDay_id"> <strong>Jour de
-                                l'alerte</strong></label>
-                            <select class="slim-select-simple" id="_emailAlertDay_id" name="emailAlertDay">
+                        <div class="form-group col-10 mb-3 d-none" id="emailAlertDayDiv">
+                            <label class="col-form-label" for="emailAlertDay"> <strong>Jour de l’alerte</strong></label>
+                            <select class="slim-select-simple" id="emailAlertDay" name="emailAlertDay">
                                 <th:block th:each="emailAlertDay : ${daysOfWeek}" var="emailAlertDay">
                                     <option th:if="${emailAlertDay == user.emailAlertDay}" selected="selected"
                                             th:value="${emailAlertDay}"
