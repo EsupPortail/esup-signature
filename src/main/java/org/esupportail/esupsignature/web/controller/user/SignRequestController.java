@@ -203,7 +203,7 @@ public class SignRequestController {
         signBookService.refuse(id, comment, userEppn, authUserEppn);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
         if(redirect.equals("end")) {
-            return "redirect:/user/signbooks/";
+            return "redirect:/user/signbooks";
         } else {
             return "redirect:/user/signrequests/" + redirect;
         }
@@ -238,7 +238,7 @@ public class SignRequestController {
             signRequestService.deleteDefinitive(id);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
             if(referer.contains("signrequests")) {
-                return "redirect:/user/signbooks/";
+                return "redirect:/user/signbooks";
             } else {
                 return "redirect:" + referer;
             }

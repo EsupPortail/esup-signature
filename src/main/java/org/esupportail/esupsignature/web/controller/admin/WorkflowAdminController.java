@@ -116,7 +116,7 @@ public class WorkflowAdminController {
 			}
 		} catch (EsupSignatureRuntimeException e) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit possède déjà ce préfixe"));
-			return "redirect:/admin/workflows/";
+			return "redirect:/admin/workflows";
 		}
 		return "redirect:/admin/workflows/update/" + workflow.getId();
 	}

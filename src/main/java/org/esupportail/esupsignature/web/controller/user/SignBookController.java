@@ -230,7 +230,7 @@ public class SignBookController {
             return "user/signbooks/update";
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande non trouvée"));
-            return "redirect:/user/signbooks/";
+            return "redirect:/user/signbooks";
         }
     }
 

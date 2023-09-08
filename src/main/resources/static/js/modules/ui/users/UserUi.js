@@ -6,9 +6,9 @@ export class UserUi {
 
     constructor(userName, signRequestParams) {
         console.log('Starting user UI');
-        this.emailAlertFrequencySelect = document.getElementById("emailAlertFrequency_id");
-        this.emailAlertDay = document.getElementById("emailAlertDay");
-        this.emailAlertHour = document.getElementById("emailAlertHour");
+        this.emailAlertFrequencySelect = $("#emailAlertFrequency_id");
+        this.emailAlertDay = $("#emailAlertDayDiv");
+        this.emailAlertHour = $("#emailAlertHourDiv");
         this.userSignaturePad = new UserSignaturePad();
         this.userSignatureCrop = new UserSignatureCrop();
         this.saveSignRequestParams = false;
@@ -28,7 +28,7 @@ export class UserUi {
 
         this.userSignatureCrop.addEventListener("started", e => this.userSignaturePad.clear());
         if(this.emailAlertFrequencySelect != null) {
-            this.emailAlertFrequencySelect.addEventListener("change", e => this.checkAlertFrequency(e));
+            this.emailAlertFrequencySelect.on("change", e => this.checkAlertFrequency(e));
         }
         $('[id^="deleteSign_"]').each(function() {
             $(this).on('click', function (e){
@@ -77,18 +77,17 @@ export class UserUi {
     }
 
     checkAlertFrequency() {
-        if(this.emailAlertFrequencySelect != null) {
-            let selectedValue = this.emailAlertFrequencySelect.options[this.emailAlertFrequencySelect.selectedIndex].value;
-            if(selectedValue === 'daily') {
-                this.emailAlertDay.style.display = "none";
-                this.emailAlertHour.style.display = "flex";
-            } else if(selectedValue === 'weekly') {
-                this.emailAlertDay.style.display = "flex";
-                this.emailAlertHour.style.display = "none";
-            } else {
-                this.emailAlertDay.style.display = "none";
-                this.emailAlertHour.style.display = "none";
-            }
+        let selectedValue = this.emailAlertFrequencySelect.val();
+        console.info("selected check alert frequency : " + selectedValue);
+        if(selectedValue === 'daily') {
+            this.emailAlertDay.addClass("d-none");
+            this.emailAlertHour.removeClass("d-none");
+        } else if(selectedValue === 'weekly') {
+            this.emailAlertDay.removeClass("d-none");
+            this.emailAlertHour.addClass("d-none");
+        } else {
+            this.emailAlertDay.addClass("d-none");
+            this.emailAlertHour.addClass("d-none");
         }
     }
 }
