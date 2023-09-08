@@ -322,7 +322,7 @@ public class SignBookService {
     @Transactional
     public void finishSignBookUpload(Long signBookId, String userEppn) {
         User user = userService.getByEppn(userEppn);
-        SignBook signBook = getByIdWithLock(signBookId);
+        SignBook signBook = getById(signBookId);
         if(signBook.getSubject().isEmpty()) {
             signBook.setSubject(generateName(signBookId, null, user, false));
         }
@@ -402,11 +402,6 @@ public class SignBookService {
     @Transactional
     public SignBook getById(Long id) {
         return signBookRepository.findById(id).orElse(null);
-    }
-
-    @Transactional
-    public SignBook getByIdWithLock(Long id) {
-        return signBookRepository.findWithLockingById(id).orElseThrow();
     }
 
     @Transactional
@@ -750,7 +745,7 @@ public class SignBookService {
     @Transactional
     public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
         int i = 0;
-        SignBook signBook = getByIdWithLock(signBookId);
+        SignBook signBook = getById(signBookId);
         for (MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, authUserEppn, authUserEppn);
             try {

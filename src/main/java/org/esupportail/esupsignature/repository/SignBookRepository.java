@@ -7,19 +7,13 @@ import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
-import jakarta.persistence.LockModeType;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 public interface SignBookRepository extends CrudRepository<SignBook, Long> {
-
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<SignBook> findWithLockingById(Long id);
 
     List<SignBook> findBySubject(String subject);
 

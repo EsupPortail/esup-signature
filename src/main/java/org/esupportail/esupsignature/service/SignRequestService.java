@@ -168,18 +168,6 @@ public class SignRequestService {
 		return null;
 	}
 
-	public SignRequest getWithLockingById(long id) {
-		Optional<SignRequest> signRequest = signRequestRepository.findWithLockingById(id);
-		if(signRequest.isPresent()) {
-			Data data = dataService.getBySignBook(signRequest.get().getParentSignBook());
-			if (data != null) {
-				signRequest.get().setData(data);
-			}
-			return signRequest.get();
-		}
-		return null;
-	}
-
 	public String getStatus(long id) {
 		SignRequest signRequest = getById(id);
 		if(signRequest != null){

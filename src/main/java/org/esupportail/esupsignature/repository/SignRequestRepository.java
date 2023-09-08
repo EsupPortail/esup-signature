@@ -5,20 +5,15 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
-import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
 
 public interface SignRequestRepository extends CrudRepository<SignRequest, Long>, PagingAndSortingRepository<SignRequest, Long> {
-
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<SignRequest> findWithLockingById(Long id);
 
     @Query("select count(distinct  s) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and s.parentSignBook.hidedBy is empty and r.user.eppn = :recipientUserEppn")
     Long countByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
