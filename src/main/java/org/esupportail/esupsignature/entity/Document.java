@@ -22,8 +22,7 @@ public class Document {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-	@Version
-    private Integer version;
+	
 	
 	private String fileName;
 
@@ -122,13 +121,9 @@ public class Document {
         this.id = id;
     }
 
-	public Integer getVersion() {
-        return this.version;
-    }
+	
 
-	public void setVersion(Integer version) {
-        this.version = version;
-    }
+	
 
     public InputStream getTransientInputStream() {
         return transientInputStream;
