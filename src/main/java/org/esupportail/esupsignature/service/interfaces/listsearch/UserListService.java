@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.interfaces.listsearch;
 
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -17,9 +18,12 @@ public class UserListService {
 
     private final UserRepository userRepository;
 
-    public UserListService(@Autowired(required = false) List<UserList> userLists, UserRepository userRepository) {
+    private final GlobalProperties globalProperties;
+    
+    public UserListService(@Autowired(required = false) List<UserList> userLists, UserRepository userRepository, GlobalProperties globalProperties) {
         this.userLists = userLists;
         this.userRepository = userRepository;
+        this.globalProperties = globalProperties;
     }
 
     public List<String> getUsersEmailFromList(String listName) throws DataAccessException, EsupSignatureRuntimeException {
@@ -36,7 +40,7 @@ public class UserListService {
                 }
                 if(emails.size() >0 ) {
                     return emails.stream().toList();
-                } else {
+                } else  if (listName.contains(globalProperties.getDomain())) {
                     throw new EsupSignatureRuntimeException("no users found");
                 }
             }
