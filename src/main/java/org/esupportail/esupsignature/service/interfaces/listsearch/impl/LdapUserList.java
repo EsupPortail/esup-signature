@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.interfaces.listsearch.impl;
 
 import org.apache.commons.validator.routines.EmailValidator;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserList;
 import org.esupportail.esupsignature.service.ldap.LdapAliasService;
@@ -27,6 +28,9 @@ public class LdapUserList implements UserList {
 
     @Resource
     private LdapAliasService ldapAliasService;
+
+    @Resource
+    private GlobalProperties globalProperties;
 
     @Override
     public String getName() {
@@ -62,7 +66,7 @@ public class LdapUserList implements UserList {
                     }
                 }
             } else {
-                if(EmailValidator.getInstance().isValid(listName)) {
+                if(EmailValidator.getInstance().isValid(listName) && listName.contains(globalProperties.getDomain())) {
                     userEmails.add(listName);
                 }
             }
