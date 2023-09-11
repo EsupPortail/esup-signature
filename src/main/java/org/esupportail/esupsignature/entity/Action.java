@@ -22,8 +22,7 @@ public class Action {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-    @Version
-    private Integer version;
+    
 
     @Enumerated(EnumType.STRING)
     private ActionType actionType = ActionType.none;
@@ -42,13 +41,9 @@ public class Action {
         this.id = id;
     }
 
-    public Integer getVersion() {
-        return version;
-    }
+    
 
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
+    
 
     public ActionType getActionType() {
         return actionType;

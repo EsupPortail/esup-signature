@@ -17,8 +17,7 @@ public class LiveWorkflowStep {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-    @Version
-    private Integer version;
+    
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     private List<Recipient> recipients = new ArrayList<>();
@@ -51,13 +50,9 @@ public class LiveWorkflowStep {
         this.id = id;
     }
 
-    public Integer getVersion() {
-        return version;
-    }
+    
 
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
+    
 
     public List<Recipient> getRecipients() {
         return recipients;

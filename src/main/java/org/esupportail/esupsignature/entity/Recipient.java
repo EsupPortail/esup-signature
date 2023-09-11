@@ -13,8 +13,7 @@ public class Recipient {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-    @Version
-    private Integer version;
+    
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
@@ -29,13 +28,9 @@ public class Recipient {
         this.id = id;
     }
 
-    public Integer getVersion() {
-        return version;
-    }
+    
 
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
+    
 
     public User getUser() {
         return user;

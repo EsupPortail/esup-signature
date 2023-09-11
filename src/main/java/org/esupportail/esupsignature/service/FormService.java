@@ -234,7 +234,6 @@ public class FormService {
 		form.setName(name);
 		form.setTitle(title);
 		form.setActiveVersion(true);
-		form.setVersion(1);
 		if (document == null) {
 			if(fieldNames != null && fieldNames.length > 0) {
 				int i = 0;
