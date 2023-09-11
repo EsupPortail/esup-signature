@@ -44,7 +44,7 @@ public class DataService {
     private FieldPropertieService fieldPropertieService;
 
     public Data getById(Long dataId) {
-        return dataRepository.findWithLockingById(dataId).orElseThrow();
+        return dataRepository.findById(dataId).orElseThrow();
     }
 
     public Data getBySignRequest(SignRequest signRequest) {
@@ -94,7 +94,7 @@ public class DataService {
         }
         data.setForm(form);
         data.setFormName(form.getName());
-        data.setFormVersion(form.getVersion());
+        data.setFormVersion(form.getId().intValue());
         data.setUpdateBy(authUser);
         data.setUpdateDate(new Date());
         dataRepository.save(data);
@@ -173,7 +173,7 @@ public class DataService {
         data.setName(form.getTitle() + "_" + format.format(new Date()));
         data.setForm(form);
         data.setFormName(form.getName());
-        data.setFormVersion(form.getVersion());
+        data.setFormVersion(form.getId().intValue());
         data.setStatus(SignRequestStatus.draft);
         data.setCreateBy(authUser);
         data.setCreateDate(new Date());

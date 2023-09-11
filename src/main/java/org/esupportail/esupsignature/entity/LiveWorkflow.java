@@ -17,8 +17,7 @@ public class LiveWorkflow {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-    @Version
-    private Integer version;
+    
 
     private String title;
 
@@ -43,9 +42,7 @@ public class LiveWorkflow {
         this.id = id;
     }
 
-    public Integer getVersion() {
-        return version;
-    }
+    
 
     public String getTitle() {
         return title;
@@ -55,9 +52,7 @@ public class LiveWorkflow {
         this.title = title;
     }
 
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
+    
 
     public List<LiveWorkflowStep> getLiveWorkflowSteps() {
         return liveWorkflowSteps;

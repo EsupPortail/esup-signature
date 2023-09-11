@@ -22,8 +22,7 @@ public class Field {
 	)
 	private Long id;
 
-	@Version
-    private Integer version;
+	
 	
 	private String name;
 
@@ -80,13 +79,9 @@ public class Field {
 		this.id = id;
 	}
 
-	public Integer getVersion() {
-		return version;
-	}
+	
 
-	public void setVersion(Integer version) {
-		this.version = version;
-	}
+	
 
 	public String getName() {
 		return name;

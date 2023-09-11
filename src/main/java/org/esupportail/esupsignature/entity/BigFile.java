@@ -30,8 +30,7 @@ public class BigFile {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-    @Version
-    private Integer version;
+    
 
     @Lob
     @Basic(fetch = FetchType.LAZY)
@@ -45,13 +44,9 @@ public class BigFile {
         this.id = id;
     }
 
-    public Integer getVersion() {
-        return this.version;
-    }
+    
 
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
+    
 
     public Blob getBinaryFile() {
         return this.binaryFile;
