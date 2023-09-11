@@ -80,7 +80,7 @@ public class RecipientService {
                 }
             }
         }
-        return users.stream().map(User::getEmail).collect(Collectors.toList());
+        return users.stream().filter(Objects::nonNull).map(User::getEmail).collect(Collectors.toList());
     }
 
 }
