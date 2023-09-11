@@ -97,7 +97,9 @@ public class DataService {
         data.setFormVersion(form.getId().intValue());
         data.setUpdateBy(authUser);
         data.setUpdateDate(new Date());
-        dataRepository.save(data);
+        if(data.getId() == null) {
+            dataRepository.save(data);
+        }
         return data;
     }
 
