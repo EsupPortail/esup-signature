@@ -149,6 +149,7 @@ public class LdapGroupService implements GroupService {
             });
         }
         if(group.size() > 0 && eppns.size() == 0) {
+            logger.warn("empty group " + groupCn);
             throw new EsupSignatureRuntimeException("empty group " + groupCn);
         }
         return eppns;

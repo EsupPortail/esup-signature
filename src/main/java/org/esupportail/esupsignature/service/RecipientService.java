@@ -14,6 +14,7 @@ import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -71,7 +72,7 @@ public class RecipientService {
         if (recipientEmails != null && recipientEmails.size() > 0) {
             for (String recipientEmail : recipientEmails) {
                 List<String> groupList = userListService.getUsersEmailFromList(recipientEmail);
-                if(groupList.size() == 0) {
+                if(groupList.isEmpty()) {
                     users.add(userService.getUserByEmail(recipientEmail));
                 } else {
                     for(String email : groupList) {
@@ -80,7 +81,7 @@ public class RecipientService {
                 }
             }
         }
-        return users.stream().map(User::getEmail).collect(Collectors.toList());
+        return users.stream().filter(Objects::nonNull).map(User::getEmail).collect(Collectors.toList());
     }
 
 }
