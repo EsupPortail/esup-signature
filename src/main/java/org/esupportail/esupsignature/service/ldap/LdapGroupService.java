@@ -143,6 +143,7 @@ public class LdapGroupService implements GroupService {
         logger.debug("getMembers of : " + groupCn);
         if (ldapProperties.getMembersOfGroupSearchFilter() != null) {
             String formattedFilter = MessageFormat.format(ldapProperties.getMembersOfGroupSearchFilter(), groupCn);
+            logger.debug("getMembers query : " + formattedFilter);
             eppns = ldapTemplate.search(ldapProperties.getSearchBase(), formattedFilter, (ContextMapper<String>) ctx -> {
                 DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                 return searchResultContext.getStringAttribute("mail");
