@@ -16,6 +16,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
+import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.ldap.*;
 import org.esupportail.esupsignature.service.ldap.entry.AliasLdap;
 import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
@@ -68,6 +69,8 @@ public class UserService {
 
     private final LdapOrganizationalUnitService ldapOrganizationalUnitService;
 
+    private final SmsService smsService;
+
     @Resource
     private ObjectMapper objectMapper;
 
@@ -77,7 +80,8 @@ public class UserService {
                        @Autowired(required = false) LdapPersonLightService ldapPersonLightService,
                        @Autowired(required = false) LdapAliasService ldapAliasService,
                        @Autowired(required = false) LdapGroupService ldapGroupService,
-                       @Autowired(required = false) LdapOrganizationalUnitService ldapOrganizationalUnitService) {
+                       @Autowired(required = false) LdapOrganizationalUnitService ldapOrganizationalUnitService,
+                       @Autowired(required = false) SmsService smsService) {
         this.globalProperties = globalProperties;
         this.webSecurityProperties = webSecurityProperties;
         this.ldapPersonService = ldapPersonService;
@@ -85,6 +89,7 @@ public class UserService {
         this.ldapAliasService = ldapAliasService;
         this.ldapGroupService = ldapGroupService;
         this.ldapOrganizationalUnitService = ldapOrganizationalUnitService;
+        this.smsService = smsService;
     }
 
     @Resource
@@ -576,6 +581,25 @@ public class UserService {
             logger.error(e.getMessage());
         }
         return null;
+    }
+
+    @Transactional
+    public List<User> checkTempUsers(List<String> recipientEmails) {
+        if (recipientEmails!= null && !recipientEmails.isEmpty()) {
+            try {
+                List<User> users = getTempUsersFromRecipientList(recipientEmails);
+                if (smsService != null || !globalProperties.getSmsRequired()) {
+                    return users;
+                } else {
+                    if (!users.isEmpty()) {
+                        return null;
+                    }
+                }
+            } catch (EsupSignatureRuntimeException e) {
+                return null;
+            }
+        }
+        return new ArrayList<>();
     }
 
     @Transactional
