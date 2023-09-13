@@ -159,7 +159,7 @@ public class SignBookController {
 
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
-    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes, Model model) {
         SignBook signBook = signBookService.getById(id);
         if(signBook.getSignRequests().size() > 0) {
             Long signRequestId = signBook.getSignRequests().get(0).getId();
@@ -167,6 +167,9 @@ public class SignBookController {
                 if (signBook.getSignRequests().stream().anyMatch(s -> s.getStatus().equals(SignRequestStatus.pending))) {
                     signRequestId = signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending)).findFirst().get().getId();
                 }
+            }
+            if(model.getAttribute("message") != null) {
+                redirectAttributes.addFlashAttribute("message", model.getAttribute("message"));
             }
             return "redirect:/user/signrequests/" + signRequestId;
         } else {

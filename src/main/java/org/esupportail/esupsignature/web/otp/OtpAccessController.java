@@ -93,7 +93,7 @@ public class OtpAccessController {
                     }
                     return "otp/enter-phonenumber";
                 }
-            } else {
+            } else if(!globalProperties.getSmsRequired()){
                 authOtp(model, httpServletRequest, user);
                 return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBookId();
             }
