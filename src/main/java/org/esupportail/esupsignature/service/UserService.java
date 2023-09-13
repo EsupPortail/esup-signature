@@ -594,7 +594,7 @@ public class UserService {
                     groupUsers.addAll(userListService.getUsersEmailFromList(recipientEmail));
                     if (groupUsers.size() == 0 && !recipientEmail.contains(globalProperties.getDomain())) {
                         User recipientUser = getUserByEmail(recipientEmail);
-                        if (recipientUser.getUserType().equals(UserType.external)) {
+                        if (recipientUser != null && recipientUser.getUserType().equals(UserType.external)) {
                             tempUsers.add(recipientUser);
                         }
                     }
