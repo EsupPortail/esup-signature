@@ -18,6 +18,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import org.springframework.util.StringUtils;
+
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.regex.Matcher;
