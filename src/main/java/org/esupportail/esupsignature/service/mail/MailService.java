@@ -407,7 +407,7 @@ public class MailService {
 
     public void sendOtp(Otp otp, String urlId, SignBook signBook) throws EsupSignatureMailException {
         final Context ctx = new Context(Locale.FRENCH);
-        ctx.setVariable("url", globalProperties.getRootUrl() + "/otp-access/" + urlId);
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/otp-access/first/" + urlId);
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);
