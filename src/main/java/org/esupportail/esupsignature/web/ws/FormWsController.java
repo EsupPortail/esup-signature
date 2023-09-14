@@ -68,9 +68,11 @@ public class FormWsController {
                       @RequestParam(required = false) @Parameter(description = "Paramètres de signature", example = "[{\"xPos\":100, \"yPos\":100, \"signPageNumber\":1}, {\"xPos\":200, \"yPos\":200, \"signPageNumber\":1}]") String signRequestParamsJsonString,
                       @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls,
                       @RequestParam(required = false) @Parameter(description = "Données par défaut à remplir dans le formulaire", example = "{'field1' : 'toto, 'field2' : 'tata'}") String formDatas,
-                      @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title) {
+                      @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title,
+                      @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Envoyer une alerte mail") Boolean sendEmailAlert
+    ) {
         logger.debug("init new form instance : " + id);
-        if(recipientEmails == null && recipientsEmails != null && recipientsEmails.size() > 0) {
+        if(recipientEmails == null && recipientsEmails != null && !recipientsEmails.isEmpty()) {
             recipientEmails = recipientsEmails;
         }
         if(createByEppn == null && eppn != null && !eppn.isEmpty()) {
@@ -86,7 +88,7 @@ public class FormWsController {
             if(formDatas != null) {
                 datas = objectMapper.readValue(formDatas, type);
             }
-            SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, signTypes, allSignToCompletes, null, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, signRequestParamsJsonString, title);
+            SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, signTypes, allSignToCompletes, null, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, signRequestParamsJsonString, title, sendEmailAlert);
             signBookService.addViewers(signBook.getId(), recipientsCCEmails);
             return signBook.getSignRequests().get(0).getId();
         } catch (Exception e) {
@@ -117,9 +119,10 @@ public class FormWsController {
                              @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls,
                              @RequestParam(required = false) @Parameter(description = "Paramètres de signature", example = "[{\"xPos\":100, \"yPos\":100, \"signPageNumber\":1}, {\"xPos\":200, \"yPos\":200, \"signPageNumber\":1}]") String signRequestParamsJsonString,
                              @RequestParam(required = false) @Parameter(description = "Données par défaut à remplir dans le formulaire", example = "{'field1' : 'toto, 'field2' : 'tata'}") String formDatas,
-                             @RequestParam(required = false) @Parameter(description = "Titre") String title
+                             @RequestParam(required = false) @Parameter(description = "Titre") String title,
+                             @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Envoyer une alerte mail") Boolean sendEmailAlert
     ) {
-        if(recipientEmails == null && recipientsEmails.size() > 0) {
+        if(recipientEmails == null && !recipientsEmails.isEmpty()) {
             recipientEmails = recipientsEmails;
         }
         Data data = dataService.addData(id, createByEppn);
@@ -129,7 +132,7 @@ public class FormWsController {
             if(formDatas != null) {
                 datas.putAll(objectMapper.readValue(formDatas, type));
             }
-            SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, signTypes, allSignToCompletes, null, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), signRequestParamsJsonString, title);
+            SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, signTypes, allSignToCompletes, null, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), signRequestParamsJsonString, title, sendEmailAlert);
             signRequestService.addAttachement(attachementMultipartFiles, null, signBook.getSignRequests().get(0).getId());
             return signBook.getSignRequests().get(0).getId();
         } catch (Exception e) {
