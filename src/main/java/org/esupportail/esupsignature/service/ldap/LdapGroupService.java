@@ -18,6 +18,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
+import org.springframework.util.StringUtils;
+
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -143,12 +145,18 @@ public class LdapGroupService implements GroupService {
         logger.debug("getMembers of : " + groupCn);
         if (ldapProperties.getMembersOfGroupSearchFilter() != null) {
             String formattedFilter = MessageFormat.format(ldapProperties.getMembersOfGroupSearchFilter(), groupCn);
+            logger.info("getMembers query : " + formattedFilter);
             eppns = ldapTemplate.search(ldapProperties.getSearchBase(), formattedFilter, (ContextMapper<String>) ctx -> {
                 DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
-                return searchResultContext.getStringAttribute("mail");
+                String mail = searchResultContext.getStringAttribute("mail");
+                if(StringUtils.hasText(mail)) {
+                    return searchResultContext.getStringAttribute("mail");
+                } else {
+                    return searchResultContext.getStringAttribute("cn");
+                }
             });
         }
-        if(group.size() > 0 && eppns.size() == 0) {
+        if(!group.isEmpty() && eppns.isEmpty()) {
             logger.warn("empty group " + groupCn);
             throw new EsupSignatureRuntimeException("empty group " + groupCn);
         }
