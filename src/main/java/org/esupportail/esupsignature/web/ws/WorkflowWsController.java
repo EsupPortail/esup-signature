@@ -40,30 +40,24 @@ public class WorkflowWsController {
                       @Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
                       @RequestParam @Parameter(description = "Eppn du propriétaire du futur document") String createByEppn,
                       @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title,
-                      @RequestParam(required = false) @Parameter(description = "Scanner les champs signature (false par défaut)") Boolean scanSignatureFields,
+                      @RequestParam(required = false, defaultValue = "false") @Parameter(description = "Scanner les champs signature (false par défaut)") Boolean scanSignatureFields,
                       @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*email]") List<String> recipientsEmails,
                       @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape (ancien nom)", example = "[stepNumber*email]") List<String> recipientEmails,
                       @RequestParam(required = false) @Parameter(description = "Lites des numéros d'étape pour lesquelles tous les participants doivent signer", example = "[stepNumber]") List<String> allSignToCompletes,
                       @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
                       @RequestParam(required = false) @Parameter(description = "Paramètres de signature", example = "[{\"xPos\":100, \"yPos\":100, \"signPageNumber\":1}, {\"xPos\":200, \"yPos\":200, \"signPageNumber\":1}]") String signRequestParamsJsonString,
                       @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls,
-                      @RequestParam(required = false) @Parameter(description = "Envoyer une alerte mail (true par défaut") Boolean sendEmailAlert
+                      @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Envoyer une alerte mail") Boolean sendEmailAlert
     ) {
         logger.debug("init new workflow instance : " + id);
         if(createByEppn == null) {
             throw new EsupSignatureRuntimeException("Required request parameter 'createByEppn' for method parameter type String is not present");
         }
-        if(recipientEmails == null && recipientsEmails != null && recipientsEmails.size() > 0) {
+        if(recipientEmails == null && recipientsEmails != null && !recipientsEmails.isEmpty()) {
             recipientEmails = recipientsEmails;
         }
-        if(scanSignatureFields == null) {
-            scanSignatureFields = false;
-        }
-        if(sendEmailAlert == null) {
-            sendEmailAlert = false;
-        }
         try {
-            SignBook signBook = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, recipientEmails, allSignToCompletes, targetEmails, targetUrls, signRequestParamsJsonString, scanSignatureFields);
+            SignBook signBook = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, recipientEmails, allSignToCompletes, targetEmails, targetUrls, signRequestParamsJsonString, scanSignatureFields, sendEmailAlert);
             return signBook.getSignRequests().stream().map(signRequest -> signRequest.getId().toString()).collect(Collectors.joining(","));
         } catch (EsupSignatureRuntimeException e) {
             logger.error(e.getMessage(), e);
