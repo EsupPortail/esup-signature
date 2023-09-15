@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body>
+<header th:replace="~{fragments/nav :: nav}"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
+                <li class="breadcrumb-item active">Statistiques</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-body">
+                    <h5 class="text-center"><b>Statistiques</b></h5>
+                    <div class="col-lg-4">
+                        <canvas id="signsCount"></canvas>
+                        <script th:inline="javascript">
+                            const ctx = document.getElementById('signsCount');
+                            new Chart(ctx, [[${signsByYears}]]);
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>

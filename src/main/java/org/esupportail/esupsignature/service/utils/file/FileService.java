@@ -344,7 +344,7 @@ public class FileService {
 		rect.setRect(0, 0, 600 * factor, 300 * factor);
 		graphics2D.fillRect(0, 0, 600 * factor, 300 * factor);
 		setQualityParams(graphics2D);
-		float fontSize = (float) 600 * factor / Math.max(firstname.length(), name.length());
+		float fontSize = (float) 300 * factor / Math.max(firstname.length(), name.length());
 		Font font = null;
 		try {
 			font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/Signature.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(fontSize);
