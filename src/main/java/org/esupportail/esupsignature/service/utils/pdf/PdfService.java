@@ -587,7 +587,7 @@ public class PdfService {
         return result;
     }
 
-    public byte[] fill(InputStream pdfFile, Map<String, String> datas, boolean isLastStep) {
+    public byte[] fill(InputStream pdfFile, Map<String, String> datas, boolean isLastStep, boolean isForm) {
         try {
             PDDocument pdDocument = PDDocument.load(pdfFile);
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
@@ -662,13 +662,9 @@ public class PdfService {
                             }
                         }
                     }
-                    if (!pdField.isReadOnly()) {
+                    if (!pdField.isReadOnly() && !isForm) {
                         pdField.setReadOnly(true);
-                    } else {
-                        pdField.setReadOnly(false);
-                        pdField.setRequired(true);
                     }
-
                 }
                 if(isLastStep) {
                     pdAcroForm.flatten();
