@@ -15,6 +15,8 @@ import software.xdev.chartjs.model.options.Plugins;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ChartsService {
@@ -38,7 +40,8 @@ public class ChartsService {
         BarDataset countSignsDataset = new BarDataset().setLabel("Nombre de signatures par année").addBackgroundColor(new Color(54, 162, 235));
         signaturesByYears.stream().map(SignaturesByYears::getCount).forEach(s -> countSignsDataset.addData(Integer.parseInt(s)));
         datasets.add(countSignsDataset);
-        List<String> labels = signsByYears.stream().map(SignedDocumentsByYears::getYear).toList();
+        Set<String> labels = signsByYears.stream().map(SignedDocumentsByYears::getYear).collect(Collectors.toSet());
+        labels.addAll(signaturesByYears.stream().map(SignaturesByYears::getYear).collect(Collectors.toSet()));
         BarOptions options = new BarOptions().setResponsive(true).setPlugins(new Plugins().setLegend(new Legend().setPosition(Legend.Position.RIGHT).setDisplay(true)));
         BarData data = new BarData().setLabels(labels).setDatasets(datasets);
         return new BarChart(data, options).toJson();
