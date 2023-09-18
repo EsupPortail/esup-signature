@@ -33,15 +33,17 @@ public class ChartsService {
     public String getSignsByYears() {
         List<SignedDocumentsByYears> signsByYears = logRepository.countAllByYears();
         List<SignaturesByYears> signaturesByYears = auditStepRepository.countAllByYears();
-        List<BarDataset> datasets = new ArrayList<>();
-        BarDataset countDocsDataset = new BarDataset().setLabel("Nombre de documents signés par année").addBackgroundColor(new Color(255, 99, 132));
-        signsByYears.stream().map(SignedDocumentsByYears::getCount).forEach(s -> countDocsDataset.addData(Integer.parseInt(s)));
-        datasets.add(countDocsDataset);
-        BarDataset countSignsDataset = new BarDataset().setLabel("Nombre de signatures par année").addBackgroundColor(new Color(54, 162, 235));
-        signaturesByYears.stream().map(SignaturesByYears::getCount).forEach(s -> countSignsDataset.addData(Integer.parseInt(s)));
-        datasets.add(countSignsDataset);
         Set<String> labels = signsByYears.stream().map(SignedDocumentsByYears::getYear).collect(Collectors.toSet());
         labels.addAll(signaturesByYears.stream().map(SignaturesByYears::getYear).collect(Collectors.toSet()));
+        BarDataset countDocsDataset = new BarDataset().setLabel("Nombre de documents signés par année").addBackgroundColor(new Color(255, 99, 132));
+        BarDataset countSignsDataset = new BarDataset().setLabel("Nombre de signatures par année").addBackgroundColor(new Color(54, 162, 235));
+        List<BarDataset> datasets = new ArrayList<>();
+        for(String label: labels) {
+            countDocsDataset.addData(Integer.parseInt(signsByYears.stream().filter(s -> s.getYear().equals(label)).map(SignedDocumentsByYears::getCount).findFirst().orElse("0")));
+            countSignsDataset.addData(Integer.parseInt(signaturesByYears.stream().filter(s -> s.getYear().equals(label)).map(SignaturesByYears::getCount).findFirst().orElse("0")));
+        }
+        datasets.add(countDocsDataset);
+        datasets.add(countSignsDataset);
         BarOptions options = new BarOptions().setResponsive(true).setPlugins(new Plugins().setLegend(new Legend().setPosition(Legend.Position.RIGHT).setDisplay(true)));
         BarData data = new BarData().setLabels(labels).setDatasets(datasets);
         return new BarChart(data, options).toJson();
