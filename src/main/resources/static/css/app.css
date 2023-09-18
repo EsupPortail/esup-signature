@@ -182,6 +182,11 @@ header {
     z-index: 1029 !important;
 }
 
+h7 {
+    text-overflow: ellipsis;
+    height: 72px;
+    overflow: hidden;
+}
 input:invalid {
     box-shadow:none;
 }
