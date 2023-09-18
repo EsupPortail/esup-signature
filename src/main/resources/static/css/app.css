@@ -717,6 +717,11 @@ input:checked + .slider:before {
     width: calc(100vw - 70px);
 }
 
+.new-height {
+    height: calc(100vh - 120px);
+    overflow: auto;
+}
+
 #sidebar {
     top: 50px;
     padding-right: 5px;

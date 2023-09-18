@@ -60,8 +60,10 @@ export class HomeUi {
         console.info("toggle new menu");
         $('#new-scroll').toggleClass('text-nowrap').toggleClass('new-min-h');
         // $('#to-sign-list').toggleClass('d-flex d-none');
-        $('#new-div').toggleClass('position-fixed');
-        $('#new-div').toggleClass('new-width');
+        let newDiv = $('#new-div');
+        newDiv.toggleClass('position-fixed');
+        newDiv.toggleClass('new-width');
+        newDiv.toggleClass('new-height');
         $('#toggle-new-grid').children().toggleClass('fa-th fa-chevron-up');
         $('#listSignRequestTable').toggleClass('d-none');
         $('.newHr').toggleClass('d-none');
