@@ -790,6 +790,11 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>com.xdev-software</groupId>
+			<artifactId>chartjs-java-model</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 
 		<!-- Plugins dependencies -->
 		<dependency>

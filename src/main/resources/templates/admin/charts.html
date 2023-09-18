@@ -16,11 +16,11 @@
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <h5 class="text-center"><b>Statistiques</b></h5>
-                    <div class="col-lg-4">
-                        <canvas id="signsCount"></canvas>
+                    <div>
+                        <canvas id="signsCount" height="80"></canvas>
                         <script th:inline="javascript">
                             const ctx = document.getElementById('signsCount');
-                            new Chart(ctx, [[${signsByYears}]]);
+                            new Chart(ctx, JSON.parse([[${signsByYears}]]));
                         </script>
                     </div>
                 </div>
