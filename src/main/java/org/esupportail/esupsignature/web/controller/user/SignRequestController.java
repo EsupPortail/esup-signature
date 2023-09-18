@@ -322,14 +322,16 @@ public class SignRequestController {
                           @RequestParam(value = "phones", required = false) List<String> phones,
                           @RequestParam(value = "forcesmses", required = false) List<String> forcesmses,
                           @RequestParam(value = "draft", required = false) Boolean draft,
+                          @RequestParam(value = "sendEmailAlert", required = false, defaultValue = "true") Boolean sendEmailAlert,
                           RedirectAttributes redirectAttributes) throws MessagingException, EsupSignatureRuntimeException {
+        if (sendEmailAlert == null) sendEmailAlert = true;
         List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones, forcesmses);
         if(signRequestService.checkTempUsers(id, recipientEmails, externalUsersInfos)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
             return "redirect:/user/signrequests/" + id;
         }
         try {
-            signBookService.initWorkflowAndPendingSignBook(id, recipientEmails, allSignToCompletes, externalUsersInfos, targetEmails, userEppn, authUserEppn, draft);
+            signBookService.initWorkflowAndPendingSignBook(id, recipientEmails, allSignToCompletes, externalUsersInfos, targetEmails, userEppn, authUserEppn, draft, sendEmailAlert);
             if(comment != null && !comment.isEmpty()) {
                 signRequestService.addPostit(id, comment, userEppn, authUserEppn);
             }

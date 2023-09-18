@@ -121,16 +121,11 @@ public class DataService {
     public byte[] generateFile(Data data, InputStream inputStream) throws IOException {
         Form form = data.getForm();
         if(inputStream != null && inputStream.available() > 0) {
-            return pdfService.fill(inputStream, data.getDatas(), false);
+            return pdfService.fill(inputStream, data.getDatas(), false, true);
         } else  if(form.getDocument() != null) {
-            return pdfService.fill(form.getDocument().getInputStream(), data.getDatas(), false);
+            return pdfService.fill(form.getDocument().getInputStream(), data.getDatas(), false, true);
         } else {
             logger.error("no pdf model");
-//            try {
-//                return pdfService.generatePdfFromData(data);
-//            } catch (IOException e) {
-//                logger.error("pdf generation error", e);
-//            }
         }
         return null;
     }

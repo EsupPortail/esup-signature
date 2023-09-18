@@ -203,6 +203,7 @@ public class SignRequestService {
 		List<Document> toSignDocuments = signService.getToSignDocuments(signRequest.getId());
 		SignType signType = signRequest.getCurrentSignType();
 		byte[] filledInputStream;
+		boolean isForm = false;
 		if(!isNextWorkFlowStep(signRequest.getParentSignBook())) {
 			Data data = dataService.getBySignRequest(signRequest);
 			if(data != null && data.getForm() != null) {
@@ -215,13 +216,14 @@ public class SignRequestService {
 						}
 					}
 				}
+				isForm = true;
 			}
 		}
 		byte[] bytes = toSignDocuments.get(0).getInputStream().readAllBytes();
 		Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
 		if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf")
 				&& (reports == null || reports.getSimpleReport().getSignatureIdList().size() == 0)) {
-			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, isStepAllSignDone(signRequest.getParentSignBook()));
+			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, isStepAllSignDone(signRequest.getParentSignBook()), isForm);
 		} else {
 			filledInputStream = toSignDocuments.get(0).getInputStream().readAllBytes();
 		}

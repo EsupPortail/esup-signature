@@ -208,13 +208,13 @@ public class PreAuthorizeService {
                 List<SignRequest> signRequests = signRequestRepository.findByIdAndRecipient(signRequest.getId(), userEppn);
                 Data data = signBookService.getBySignBook(signRequest.getParentSignBook());
                 User authUser = userService.getByEppn(authUserEppn);
-                if ((data != null && (data.getForm() != null && data.getForm().getWorkflow() != null && data.getForm().getWorkflow().getManagers().contains(authUser.getEmail())))
+                return (data != null && (data.getForm() != null && data.getForm().getWorkflow() != null && data.getForm().getWorkflow().getManagers().contains(authUser.getEmail())))
+                        ||
+                        (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(authUser.getEmail()))
                         || signRequest.getCreateBy().getEppn().equals(userEppn)
                         || signRequest.getParentSignBook().getViewers().contains(userService.getByEppn(authUserEppn))
                         || signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getUsers).anyMatch(users -> users.contains(user))
-                        || signRequests.size() > 0) {
-                    return true;
-                }
+                        || !signRequests.isEmpty();
             }
         }
         return false;

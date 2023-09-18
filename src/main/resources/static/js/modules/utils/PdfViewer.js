@@ -445,7 +445,6 @@ export class PdfViewer extends EventFactory {
                 })[0];
             }
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
-
             if (inputField.length) {
                 inputField.addClass("field-type-text");
                 inputField.on('input', e => this.fireEvent('change', ['checked']));

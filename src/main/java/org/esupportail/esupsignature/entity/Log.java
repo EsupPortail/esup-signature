@@ -16,8 +16,6 @@ public class Log {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-	
-
     private String signRequestToken;
 
 	@Temporal(TemporalType.TIMESTAMP)

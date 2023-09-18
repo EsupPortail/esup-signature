@@ -1,8 +1,10 @@
 package org.esupportail.esupsignature.repository;
 
+import org.esupportail.esupsignature.dto.charts.SignedDocumentsByYears;
 import org.esupportail.esupsignature.entity.Log;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
@@ -13,4 +15,6 @@ public interface LogRepository extends CrudRepository<Log, Long>  {
     List<Log> findBySignRequestIdAndFinalStatus(Long signResquestId, String finalStatus);
     List<Log> findBySignRequestId(Long signResquestId);
     List<Log> findBySignRequestIdAndPageNumberIsNotNullAndStepNumberIsNullAndCommentIsNotNull(Long signResquestId);
+    @Query(nativeQuery = true, value = "select date_part('Year', log_date) as year, count(*) as count from log where initial_status = 'completed' and final_status = 'completed' group by date_part('Year', log_date)")
+    List<SignedDocumentsByYears> countAllByYears();
 }
