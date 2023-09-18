@@ -187,6 +187,11 @@
 			<version>6.0.0</version>
 		</dependency>
 		<dependency>
+			<groupId>org.webjars.npm</groupId>
+			<artifactId>chart.js</artifactId>
+			<version>4.3.3</version>
+		</dependency>
+		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>momentjs</artifactId>
 			<version>2.29.4</version>
@@ -784,6 +789,11 @@
 					<artifactId>hamcrest-core</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.xdev-software</groupId>
+			<artifactId>chartjs-java-model</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!-- Plugins dependencies -->

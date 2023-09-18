@@ -55,6 +55,7 @@
                         <th:block th:each="workflow : ${workflows}">
                             <a role="button" class="start-wizard-workflow-button btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0 workflow-button"
                                 style="width: 120px; height: 170px;display: inline-flex; flex-direction: column;"
+                               th:title="${workflow.description}"
                                 th:attr="data-workflow-id=${workflow.id}, data-workflow-name=${workflow.name} "
                                 th:alt="'Circuit : ' + ${workflow.description}">
                                 <div class="crop">
@@ -95,7 +96,9 @@
                     <div class="d-inline-block" id="newForm">
                         <th:block th:each="form : ${forms}">
                             <a role="button" class="btn btn-material btn-light text-center pt-3 me-2 overflow-hidden p-0 form-button"
-                               style="width: 120px; height: 170px;" data-bs-toggle="modal" th:data-bs-target="'#sendModal_' + ${form.id}" >
+                               style="width: 120px; height: 170px;"
+                               th:title="${form.title}"
+                               data-bs-toggle="modal" th:data-bs-target="'#sendModal_' + ${form.id}" >
                                 <div class="crop">
                                     <i class="fas fa-file-alt fa-3x file-alt-color"></i>
 <!--                                    <img th:src="'/user/datas/forms/' + ${form.id} + '/get-image/'" height="150px"/>-->
