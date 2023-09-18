@@ -581,7 +581,7 @@ public class SignBookService {
     @Transactional
     public void addViewers(Long signBookId, List<String> recipientsCCEmails) {
         SignBook signBook = getById(signBookId);
-        if(recipientsCCEmails != null && recipientsCCEmails.size() > 0) {
+        if(recipientsCCEmails != null && !recipientsCCEmails.isEmpty()) {
                 for (String recipientCCEmail : recipientsCCEmails) {
                     if(recipientCCEmail.contains("*")) {
                         recipientCCEmail = recipientCCEmail.split("\\*")[1];
