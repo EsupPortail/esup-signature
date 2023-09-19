@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
-import org.esupportail.esupsignature.dto.charts.SignaturesByYears;
+import org.esupportail.esupsignature.dto.charts.CountByYears;
 import org.esupportail.esupsignature.entity.AuditStep;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -14,5 +14,5 @@ public interface AuditStepRepository extends CrudRepository<AuditStep, Long>  {
             join audit_step aus on atas.audit_steps_id = aus.id
             group by date_part('Year', aus.time_stamp_date)
             """)
-    List<SignaturesByYears> countAllByYears();
+    List<CountByYears> countAllByYears();
 }
