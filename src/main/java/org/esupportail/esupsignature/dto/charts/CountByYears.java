@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.dto.charts;
 
-public interface SignaturesByYears {
+public interface CountByYears {
     String getYear();
     String getCount();
 }
