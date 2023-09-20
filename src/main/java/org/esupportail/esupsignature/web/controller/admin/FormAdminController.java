@@ -311,7 +311,7 @@ public class FormAdminController {
 	}
 
 	@ResponseBody
-	@PutMapping("{formId}/fields/{id}/update")
+	@PostMapping("{formId}/fields/{id}/update")
 	@PreAuthorize("@preAuthorizeService.formManager(#formId, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public ResponseEntity<String> updateField(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("formId") Long formId, @PathVariable("id") Long id,
 											  @RequestParam(value = "description", required = false) String description,
