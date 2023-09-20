@@ -7,15 +7,15 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.7.13</version>
+		<version>2.7.14</version>
 		<relativePath/>
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.25.15</version>
+	<version>1.25.20</version>
 	<name>esup-signature</name>
 	<properties>
-		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
+		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
 		<java.version>17</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dss.framework.version>5.12.1</dss.framework.version>
@@ -640,10 +640,14 @@
 		<dependency>
 			<groupId>eu.agno3.jcifs</groupId>
 			<artifactId>jcifs-ng</artifactId>
-			<version>2.1.8</version>
+			<version>2.1.9</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>bcprov-jdk15to18</artifactId>
+					<groupId>org.bouncycastle</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>bcprov-jdk15on</artifactId>
 					<groupId>org.bouncycastle</groupId>
 				</exclusion>
 			</exclusions>
@@ -777,7 +781,7 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>${project.artifactId}</finalName>
+		<finalName>esup-signature</finalName>
 		<plugins>
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
@@ -804,7 +808,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>${start-class}</mainClass>
+					<mainClass>${startClass}</mainClass>
 					<executable>true</executable>
 				</configuration>
 				<executions>

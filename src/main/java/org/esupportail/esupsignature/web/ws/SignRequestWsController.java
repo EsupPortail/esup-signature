@@ -49,7 +49,7 @@ public class SignRequestWsController {
     public String create(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
                        @Parameter(description = "Liste des participants") @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
                        @Parameter(description = "Liste des participants (ancien nom)") @RequestParam(value = "recipientEmails", required = false) List<String> recipientEmails,
-                       @Parameter(description = "Liste des personnes en copie") @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
+                       @Parameter(description = "Liste des personnes en copie (emails). Ne prend pas en charge les groupes") @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
                        @Parameter(description = "Tout les participants doivent-ils signer ?") @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
                        @Parameter(description = "Le créateur doit-il signer en premier ?") @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
                        @Parameter(description = "Envoyer la demande automatiquement") @RequestParam(value = "pending", required = false) Boolean pending,
@@ -70,14 +70,16 @@ public class SignRequestWsController {
         if(recipientsEmails == null && recipientEmails.size() > 0) {
             recipientsEmails = recipientEmails;
         }
-        try {
-            Map<SignBook, String> signBookStringMap = signBookService.sendSignRequest(title, multipartFiles, SignType.valueOf(signType), allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, createByEppn, createByEppn, true, forceAllSign, targetUrl);
-            return signBookStringMap.keySet().stream().map(sb -> sb.getSignRequests().stream().map(signRequest -> signRequest.getId().toString()).collect(Collectors.joining(","))).collect(Collectors.joining(","));
-//            return signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
-        } catch (EsupSignatureRuntimeException e) {
-            logger.error(e.getMessage(), e);
-            return "-1";
+        if(recipientsEmails != null) {
+            try {
+                Map<SignBook, String> signBookStringMap = signBookService.sendSignRequest(title, multipartFiles, SignType.valueOf(signType), allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, createByEppn, createByEppn, true, forceAllSign, targetUrl);
+                return signBookStringMap.keySet().stream().map(sb -> sb.getSignRequests().stream().map(signRequest -> signRequest.getId().toString()).collect(Collectors.joining(","))).collect(Collectors.joining(","));
+            } catch (EsupSignatureRuntimeException e) {
+                logger.error(e.getMessage(), e);
+                return "-1";
+            }
         }
+        return "-1";
     }
 
     @CrossOrigin

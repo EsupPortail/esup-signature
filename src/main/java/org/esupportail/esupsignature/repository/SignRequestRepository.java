@@ -23,9 +23,12 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
     @Query("select count(distinct  s) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and s.parentSignBook.hidedBy is empty and r.user.eppn = :recipientUserEppn")
     Long countByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
 
+    @Query("select distinct s from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and s.parentSignBook.hidedBy is empty and r.user.eppn = :recipientUserEppn")
+    List<SignRequest> signRequestByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
+
     List<SignRequest> findByIdIn(List<Long> ids);
 
-    SignRequest findByToken(String token);
+    Optional<SignRequest> findByToken(String token);
 
     @Query("select distinct s from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and s.parentSignBook.hidedBy is empty and r.user.eppn = :recipientUserEppn")
     List<SignRequest> findByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);

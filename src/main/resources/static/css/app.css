@@ -41,6 +41,36 @@
     font-weight: 100;
 }
 
+@font-face {
+    font-family: 'Signature';
+    src: url('/fonts/Signature.otf') format('opentype');
+    font-weight: 700;
+}
+
+@font-face {
+    font-family: 'Signature';
+    src: url('/fonts/Signature.otf') format('opentype');
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: 'Signature';
+    src: url('/fonts/Signature.otf') format('opentype');
+    font-weight: 300;
+}
+
+@font-face {
+    font-family: 'Signature';
+    src: url('/fonts/Signature/otf') format('opentype');
+    font-weight: 200;
+}
+
+@font-face {
+    font-family: 'Signature';
+    src: url('/fonts/Signature.otf') format('opentype');
+    font-weight: 100;
+}
+
 .select-users {
     /*for javascript detection : new SelectUser()*/
 }
@@ -1076,14 +1106,22 @@ height: 100%;
     border-bottom : 1px solid #000000;
 }
 
+.nav-item.ws-tab a {
+    opacity: 0.6;
+}
+
+.nav-item.ws-tab.active a {
+    opacity: 1;
+}
+
 .nav-item.ws-tab.active {
     border-bottom : 1px solid #ffffff;
 }
 
 .nav-tabs .nav-link {
-    color: rgba(0, 0, 0, 0.46);
-    border-color: rgba(0, 0, 0, 0.46) !important;
-    border-bottom : 1px solid rgba(0, 0, 0, 0.46) !important;
+    color: rgba(0, 0, 0, 1);
+    border-color: rgba(0, 0, 0, 1) !important;
+    border-bottom : 1px solid rgba(0, 0, 0, 1) !important;
     background-color: #FFF;
 }
 

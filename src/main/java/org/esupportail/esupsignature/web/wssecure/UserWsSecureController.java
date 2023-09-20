@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.web.wssecure;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UiParams;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.FieldPropertieService;
 import org.esupportail.esupsignature.service.UserPropertieService;
 import org.esupportail.esupsignature.service.UserService;
@@ -60,7 +61,7 @@ public class UserWsSecureController {
 
     @ResponseBody
     @GetMapping("/get-favorites")
-    private List<String> getFavorites(@ModelAttribute("authUserEppn") String authUserEppn) {
+    private List<User> getFavorites(@ModelAttribute("authUserEppn") String authUserEppn) {
         return userPropertieService.getFavoritesEmails(authUserEppn);
     }
 
@@ -88,13 +89,17 @@ public class UserWsSecureController {
     @PostMapping(value ="/check-temp-users")
     private List<User> checkTempUsers(@RequestBody(required = false) List<String> recipientEmails) {
         if (recipientEmails!= null && recipientEmails.size() > 0) {
-            List<User> users = userService.getTempUsersFromRecipientList(recipientEmails);
-            if (smsService != null) {
-                return users;
-            } else {
-                if (users.size() > 0) {
-                    return null;
+            try {
+                List<User> users = userService.getTempUsersFromRecipientList(recipientEmails);
+                if (smsService != null) {
+                    return users;
+                } else {
+                    if (users.size() > 0) {
+                        return null;
+                    }
                 }
+            } catch (EsupSignatureRuntimeException e) {
+                return null;
             }
         }
         return new ArrayList<>();

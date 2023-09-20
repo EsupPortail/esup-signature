@@ -27,6 +27,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 
@@ -62,16 +63,16 @@ public class PublicController {
 
     @GetMapping(value = "/control/{token}")
     public String control(@PathVariable String token, Model model) throws EsupSignatureFsException, IOException {
-        SignRequest signRequest = signRequestService.getSignRequestByToken(token);
-        if(signRequest == null) {
+        Optional<SignRequest> signRequest = signRequestService.getSignRequestByToken(token);
+        if(signRequest.isEmpty()) {
             return "error";
         }
-        AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
-        Document signedDocument = signRequestService.getLastSignedFile(signRequest.getId());
+        AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(token);
+        Document signedDocument = signRequestService.getLastSignedFile(signRequest.get().getId());
         model.addAttribute("size", FileUtils.byteCountToDisplaySize(signedDocument.getSize()));
         model.addAttribute("auditTrail", auditTrail);
         if(auditTrail != null && auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
-            Reports reports = signRequestService.validate(signRequest.getId());
+            Reports reports = signRequestService.validate(signRequest.get().getId());
             if(reports != null) {
                 model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
             } else {
@@ -85,7 +86,7 @@ public class PublicController {
             String eppn = userService.tryGetEppnFromLdap(auth);
             if(eppn != null && userService.getByEppn(eppn) != null && auditTrail != null) {
                 model.addAttribute("signRequest", signRequest);
-                setControlValues(model, signRequest, auditTrail, eppn);
+                setControlValues(model, signRequest.get(), auditTrail, eppn);
             }
         }
         if (buildProperties != null) {
@@ -101,8 +102,8 @@ public class PublicController {
         String checksum = fileService.getFileChecksum(multipartFile.getInputStream());
         AuditTrail auditTrail = auditTrailService.getAuditTrailFromCheksum(checksum);
         if(auditTrail != null && auditTrail.getToken().equals(token)) {
-            SignRequest signRequest = signRequestService.getSignRequestByToken(token);
-            if(signRequest != null) {
+            Optional<SignRequest> signRequest = signRequestService.getSignRequestByToken(token);
+            if(signRequest.isEmpty()) {
                 model.addAttribute("signRequest", signRequest);
             }
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -117,12 +118,12 @@ public class PublicController {
                 model.addAttribute("version", buildProperties.getVersion());
             }
             model.addAttribute("auditTrail", auditTrail);
-            if(signRequest != null) {
-                setControlValues(model, signRequest, auditTrail, eppn);
-            }
-            if(auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
-                Reports reports = signRequestService.validate(signRequest.getId());
-                model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
+            if(signRequest.isPresent()) {
+                setControlValues(model, signRequest.get(), auditTrail, eppn);
+                if(auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
+                    Reports reports = signRequestService.validate(signRequest.get().getId());
+                    model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
+                }
             }
         } else {
             model.addAttribute("error", true);

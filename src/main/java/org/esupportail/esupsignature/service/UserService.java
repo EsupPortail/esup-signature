@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
@@ -112,22 +113,27 @@ public class UserService {
         return  userRepository.findByEppn(eppn).orElse(null);
     }
 
+    @Transactional
     public User getSystemUser() {
         return createUser("system", "Esup-Signature", "Automate", "system", UserType.system, false);
     }
 
+    @Transactional
     public User getAnonymousUser() {
         return createUser("anonymous", "Anonyme", "Utilisateur", "anonymous", UserType.system, false);
     }
 
+    @Transactional
     public User getCreatorUser() {
         return createUser("creator", "Createur de la demande", "", "creator", UserType.system, false);
     }
 
+    @Transactional
     public User getSchedulerUser() {
         return createUser("scheduler", "Esup-Signature", "Automate", globalProperties.getApplicationEmail(), UserType.system, false);
     }
 
+    @Transactional
     public User getGenericUser() {
         return createUser("generic", "Utilisateur issue des favoris", "", "generic", UserType.system, false);
     }
@@ -142,9 +148,13 @@ public class UserService {
         return list;
     }
 
+    @Transactional
     public User getUserByEmail(String email) {
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-        return optionalUser.orElseGet(() -> createUserWithEmail(email));
+        if(EmailValidator.getInstance().isValid(email)) {
+            Optional<User> optionalUser = userRepository.findByEmail(email);
+            return optionalUser.orElseGet(() -> createUserWithEmail(email));
+        }
+        return null;
     }
 
     public User isUserByEmailExist(String email) {
@@ -194,6 +204,7 @@ public class UserService {
         return uid;
     }
 
+    @Transactional
     public User createUserWithEppn(String eppn) throws EsupSignatureUserException {
         User user = getByEppn(eppn);
         if (user != null && !user.getEppn().equals(getSystemUser().getEppn())) {
@@ -210,7 +221,7 @@ public class UserService {
                 throw new EsupSignatureUserException("ldap user not found : " + eppn);
             }
         }
-        logger.error("user not found with : " + eppn);
+        logger.error("user not found with eppn : " + eppn);
         return null;
     }
 
@@ -247,7 +258,7 @@ public class UserService {
         } else if (userType.equals(UserType.shib)) {
             return createUser(mail, mail, "Nouvel utilisateur fédération", mail, UserType.shib, false);
         }
-        logger.error("user not found with : " + mail);
+        logger.error("user not found with mail : " + mail);
         return null;
     }
 
@@ -460,7 +471,7 @@ public class UserService {
             }
         }
             if(ldapAliasService != null) {
-            for (AliasLdap aliasLdap : ldapAliasService.searchByMail(searchString)) {
+            for (AliasLdap aliasLdap : ldapAliasService.searchByMail(searchString, false)) {
                 personLightLdaps.add(new PersonLightLdap(aliasLdap.getMail()));
             }
         }
@@ -580,14 +591,10 @@ public class UserService {
                     tempUsers.add(optionalUser.get());
                 } else {
                     List<String> groupUsers = new ArrayList<>();
-                    try {
-                        groupUsers.addAll(userListService.getUsersEmailFromList(recipientEmail));
-                    } catch (EsupSignatureRuntimeException e) {
-                        logger.debug(e.getMessage());
-                    }
+                    groupUsers.addAll(userListService.getUsersEmailFromList(recipientEmail));
                     if (groupUsers.size() == 0 && !recipientEmail.contains(globalProperties.getDomain())) {
                         User recipientUser = getUserByEmail(recipientEmail);
-                        if (recipientUser.getUserType().equals(UserType.external)) {
+                        if (recipientUser != null && recipientUser.getUserType().equals(UserType.external)) {
                             tempUsers.add(recipientUser);
                         }
                     }
@@ -834,7 +841,7 @@ public class UserService {
     @Transactional
     public String getDefaultImage(String eppn) throws IOException {
         User user = getByEppn(eppn);
-        return fileService.getBase64Image(fileService.getDefaultImage(user.getName(), user.getFirstname()), "default");
+        return fileService.getBase64Image(fileService.getDefaultImage(user.getName(), user.getFirstname(), 1), "default");
     }
 
     @Transactional
