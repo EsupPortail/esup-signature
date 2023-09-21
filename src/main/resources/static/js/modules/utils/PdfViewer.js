@@ -176,24 +176,11 @@ export class PdfViewer extends EventFactory {
         }
         this.numPages = this.pdfDoc.numPages;
         document.getElementById('page_count').textContent = this.pdfDoc.numPages;
-        this.render()
+        for(let i = 1; i < this.pdfDoc.numPages + 1; i++) {
+            this.pdfDoc.getPage(i).then(page => this.renderTask(page, i));
+        }
         this.refreshTools();
-        this.initialOffset = parseInt($("#page_1").offset().top);
         this.fireEvent("ready", ['ok']);
-    }
-
-    render() {
-        this.renderedPages++;
-        let self = this;
-        this.pdfDoc.getPage(this.renderedPages).then(page => this.renderTask(page, this.renderedPages).then(function (){
-            if(self.renderedPages < self.numPages) {
-                self.render();
-            } else {
-                self.initialOffset = parseInt($("#page_1").offset().top);
-                self.fireEvent('renderFinished', ['ok']);
-                $(document).trigger("renderFinished");
-            }
-        }));
     }
 
     scrollToPage(num) {
@@ -257,6 +244,12 @@ export class PdfViewer extends EventFactory {
                 container.style.width = Math.round(pdfPageView.viewport.width) + "px";
                 container.style.height = Math.round(pdfPageView.viewport.height) + "px";
                 self.postRender(i, page);
+                self.renderedPages++;
+                if(self.renderedPages === self.numPages) {
+                    self.initialOffset = parseInt($("#page_1").offset().top);
+                    self.fireEvent('renderFinished', ['ok']);
+                    $(document).trigger("renderFinished");
+                }
                 resolve("ok");
             });
             pdfPageView.draw();
