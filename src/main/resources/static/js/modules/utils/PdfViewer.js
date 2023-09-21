@@ -39,6 +39,7 @@ export class PdfViewer extends EventFactory {
         this.pdfFields = [];
         this.events = {};
         this.rotation = 0;
+        this.renderedPages = 0
         this.initListeners();
         pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
 
@@ -175,23 +176,24 @@ export class PdfViewer extends EventFactory {
         }
         this.numPages = this.pdfDoc.numPages;
         document.getElementById('page_count').textContent = this.pdfDoc.numPages;
-        for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
-            let container = document.createElement("div");
-            $(container).attr("id", "page_" + i);
-            $(container).attr("page-num", i);
-            $(container).addClass("drop-shadows");
-            $(container).addClass("pdf-page");
-            this.pdfDiv.append(container);
-            $(container).droppable({
-                drop: function( event, ui ) {
-                    ui.helper.attr("page", i)
-                }
-            });
-            this.pdfDoc.getPage(i).then(page => this.renderTask(page, container, i));
-        }
+        this.render()
         this.refreshTools();
         this.initialOffset = parseInt($("#page_1").offset().top);
         this.fireEvent("ready", ['ok']);
+    }
+
+    render() {
+        this.renderedPages++;
+        let self = this;
+        this.pdfDoc.getPage(this.renderedPages).then(page => this.renderTask(page, this.renderedPages).then(function (){
+            if(self.renderedPages < self.numPages) {
+                self.render();
+            } else {
+                self.initialOffset = parseInt($("#page_1").offset().top);
+                self.fireEvent('renderFinished', ['ok']);
+                $(document).trigger("renderFinished");
+            }
+        }));
     }
 
     scrollToPage(num) {
@@ -214,46 +216,56 @@ export class PdfViewer extends EventFactory {
         // this.pdfDoc.getPage(this.pageNum).then(page => this.renderTask(page));
     }
 
-    renderTask(page, container, i) {
-        console.info("launch render task scaled to : " + this.scale);
-        this.page = page;
-        let self = this;
-        let scale = this.scale;
-        localStorage.setItem('scale', this.scale.toPrecision(2) + "");
-        let viewport = page.getViewport({scale : this.scale, rotation : this.rotation});
-        let dispatchToDOM = false;
-        let globalEventBus = new EventBus({ dispatchToDOM });
-        let pdfPageView = new pdfjsViewer.PDFPageView({
-            eventBus: globalEventBus,
-            container: container,
-            id: this.pageNum,
-            scale: this.scale,
-            rotation: this.rotation,
-            defaultViewport: viewport,
-            useOnlyCssZoom: false,
-            defaultZoomDelay: 0,
-            textLayerMode: 0,
-            renderer: "canvas",
+    renderTask(page, i) {
+        return new Promise((resolve, reject) => {
+            console.info("launch render task scaled to : " + this.scale);
+            let container = document.createElement("div");
+            $(container).attr("id", "page_" + i);
+            $(container).attr("page-num", i);
+            $(container).addClass("drop-shadows");
+            $(container).addClass("pdf-page");
+            this.pdfDiv.append(container);
+            $(container).droppable({
+                drop: function (event, ui) {
+                    ui.helper.attr("page", i)
+                }
+            });
+            this.page = page;
+            let self = this;
+            let scale = this.scale;
+            localStorage.setItem('scale', this.scale.toPrecision(2) + "");
+            let viewport = page.getViewport({scale: this.scale, rotation: this.rotation});
+            let dispatchToDOM = false;
+            let globalEventBus = new EventBus({dispatchToDOM});
+            let pdfPageView = new pdfjsViewer.PDFPageView({
+                eventBus: globalEventBus,
+                container: container,
+                id: this.pageNum,
+                scale: this.scale,
+                rotation: this.rotation,
+                defaultViewport: viewport,
+                useOnlyCssZoom: false,
+                defaultZoomDelay: 0,
+                textLayerMode: 0,
+                renderer: "canvas",
+            });
+            pdfPageView.setPdfPage(page);
+            pdfPageView.eventBus.on("annotationlayerrendered", function () {
+                // $(".annotationLayer").each(function() {
+                //     $(this).addClass("d-none");
+                // });
+                container.style.width = Math.round(pdfPageView.viewport.width) + "px";
+                container.style.height = Math.round(pdfPageView.viewport.height) + "px";
+                self.postRender(i, page);
+                resolve("ok");
+            });
+            pdfPageView.draw();
         });
-        pdfPageView.setPdfPage(page);
-        pdfPageView.eventBus.on("annotationlayerrendered", function() {
-            // $(".annotationLayer").each(function() {
-            //     $(this).addClass("d-none");
-            // });
-            container.style.width = Math.round(pdfPageView.viewport.width) +"px";
-            container.style.height = Math.round(pdfPageView.viewport.height) + "px";
-            self.postRender(i, page);
-        });
-        pdfPageView.draw();
     }
 
     postRender(i, page) {
         let self = this;
-        this.promiseRenderForm(false, page).then(e => this.promiseRestoreValue()).then(function(){
-            if(i === self.pdfDoc.numPages) {
-                self.fireEvent('renderFinished', ['ok']);
-            }
-        });
+        this.promiseRenderForm(false, page).then(e => this.promiseRestoreValue());
         console.groupEnd();
         this.restoreScrolling();
     }
