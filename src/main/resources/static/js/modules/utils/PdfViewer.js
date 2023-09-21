@@ -170,9 +170,7 @@ export class PdfViewer extends EventFactory {
         $(".pdf-page").each(function(e) {
            $(this).remove();
         });
-        if(this.pdfDoc != null) {
-            pdf = this.pdfDoc;
-        } else {
+        if(this.pdfDoc == null) {
             this.pdfDoc = pdf;
         }
         this.numPages = this.pdfDoc.numPages;
@@ -189,7 +187,7 @@ export class PdfViewer extends EventFactory {
                     ui.helper.attr("page", i)
                 }
             });
-            pdf.getPage(i).then(page => this.renderTask(page, container, i));
+            this.pdfDoc.getPage(i).then(page => this.renderTask(page, container, i));
         }
         this.refreshTools();
         this.initialOffset = parseInt($("#page_1").offset().top);
