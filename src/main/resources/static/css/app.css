@@ -1418,7 +1418,7 @@ textarea:placeholder-shown.required-field {
     pointer-events: none;
     position: fixed;
     right: 1vw;
-    bottom: 80px;
+    bottom: 25px;
     margin-bottom: 0;
     z-index: 6;
     overflow: hidden;
@@ -1725,6 +1725,21 @@ input:focus, textarea:focus, select:focus {
     z-index:2;
 }
 
+@media (max-height: 525px) {
+
+    .fixed-action-btns {
+        height: 100px;
+        width: 500px;
+        overflow: revert;
+    }
+    .fixed-action-btns ul {
+        -webkit-box-orient: revert;
+        -webkit-box-direction: revert;
+        -ms-flex-direction: revert;
+        flex-direction: revert;
+    }
+}
+
 @media (max-width: 785px) {
 
     #returnButton {
@@ -1777,7 +1792,7 @@ input:focus, textarea:focus, select:focus {
     }
 
     .fixed-action-btns {
-        bottom: 50px;
+        bottom: 25px;
         right: 30px;
     }
 
