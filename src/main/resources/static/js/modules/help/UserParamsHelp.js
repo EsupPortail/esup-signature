@@ -1,7 +1,8 @@
 export class UserParamsHelp {
 
-    constructor(doneTour) {
+    constructor(doneTour, isOtp) {
         this.doneTour = doneTour;
+        this.isOtp = isOtp;
         this.intro = introJs();
         this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'x', showStepNumbers: 'false', overlayOpacity: 0.8, disableInteraction: true})
         this.initListeners();
@@ -11,8 +12,13 @@ export class UserParamsHelp {
     initListeners() {
         this.intro.onbeforechange(e => this.scrollTop(e));
         this.intro.onafterchange(e => this.modButtons());
+        let self = this;
         this.intro.onexit(function () {
-            $.get("/user/users/mark-intro-as-read/userParamsHelp");
+            if(self.isOtp) {
+                $.get("/otp/users/mark-intro-as-read/userParamsHelp");
+            } else {
+                $.get("/user/users/mark-intro-as-read/userParamsHelp");
+            }
         });
         $("#helpStartButton").on('click', e => this.start());
     }
@@ -20,7 +26,7 @@ export class UserParamsHelp {
     initStep() {
 
         this.intro.addStep({
-            intro: "Sur cette page vous pouvez modifier vos paramètres de signature :" +
+            intro: "Sur cette page, vous pouvez modifier vos paramètres de signature :" +
                 "<ul>" +
                 "<li>Ajouter / supprimer des images de votre signature</li>" +
                 "<li>Ajouter un certificat pour effectuer des signatures électroniques</li>" +
