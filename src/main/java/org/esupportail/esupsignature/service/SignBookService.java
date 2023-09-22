@@ -944,6 +944,10 @@ public class SignBookService {
                                 }
                             }
                         }
+                    } else {
+                        if(signBook.getLiveWorkflow().getWorkflow() == null) {
+                            workflowService.dispatchSignRequestParams(signBook);
+                        }
                     }
                 } else {
                     completeSignBook(signBook.getId(), userEppn, "Tous les documents sont signés");

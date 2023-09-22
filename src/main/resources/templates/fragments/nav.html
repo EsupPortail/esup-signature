@@ -32,6 +32,14 @@
                         </span>
                     </a>
                 </li>
+                <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_OTP'')') && signRequestId != null}">
+                    <a th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
+                       th:href="'/otp/signrequests/' + ${signRequestId}" class="btn btn-transparent text-left me-1">
+                        <i class="fas fa-file-signature"></i> <span class="nav-item-label d-none d-xxl-inline">Retour à ma demande</span>
+                        <span title="Retour à ma demande" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-md-inline" th:text="${nbToSign}">
+                        </span>
+                    </a>
+                </li>
                 <li class="nav-item text-white" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a th:classappend="${activeMenu == 'signbooks'} ? 'bg-secondary'" title="Tableau de bord"
                         th:if="${userEppn == authUserEppn || isOneSignShare || isOneReadShare}"
