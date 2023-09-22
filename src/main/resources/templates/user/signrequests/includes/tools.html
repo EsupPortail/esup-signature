@@ -12,7 +12,6 @@
 		<script th:inline="javascript">
 			function printIt() {
 				let win = window.open('/ws-secure/signrequests/get-last-file-inline/[[${id}]]', '', '');
-				win.window.onafterprint = function () {alert("TOTO")};
 				$(win).ready(function() {
 					setTimeout(function(){
 						win.window.print();

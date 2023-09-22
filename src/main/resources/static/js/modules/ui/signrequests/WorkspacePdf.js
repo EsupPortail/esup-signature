@@ -104,7 +104,7 @@ export class WorkspacePdf {
             this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
             this.pdfViewer.addEventListener('renderFinished', e => this.refreshAfterPageChange());
             this.pdfViewer.addEventListener('renderFinished', e => this.initForm());
-            this.pdfViewer.addEventListener('change', e => this.saveData());
+            this.pdfViewer.addEventListener('change', e => this.saveData(localStorage.getItem('disableFormAlert') === "true"));
             this.pdfViewer.pdfDiv.on('click', e => this.clickAction(e));
 
             $(".postit-global-close").on('click', function () {
@@ -313,8 +313,24 @@ export class WorkspacePdf {
         } else {
             if(!this.saveAlert && !disableAlert) {
                 this.saveAlert = true;
-                bootbox.alert("Attention, <p>Vous modifier les champs d’un PDF en dehors d’une procédure de formulaire esup-signature.<br> " +
-                    "Dans ce cas, vos modifications seront prises en compte seulement si vous allez jusqu’à la signature du document. <br>Dans le cas contraire, si vous abandonnez, votre saisie sera perdue.</p>", function (){ });
+                bootbox.confirm({
+                    message : "Attention, <p>Vous modifier les champs d’un PDF en dehors d’une procédure de formulaire esup-signature.<br>Dans ce cas, vos modifications seront prises en compte seulement si vous allez jusqu’à la signature du document. <br>Dans le cas contraire, si vous abandonnez, votre saisie sera perdue.</p>",
+                    buttons: {
+                        cancel: {
+                            label: 'Ok',
+                            className: 'btn-primary'
+                        },
+                        confirm: {
+                            label: 'Ne plus me montrer ce message',
+                            className: 'btn-secondary'
+                        }
+                    },
+                    callback: function (result) {
+                        if (result) {
+                            localStorage.setItem('disableFormAlert', true)
+                        }
+                    }
+                });
             }
         }
         this.executeNextCommand();

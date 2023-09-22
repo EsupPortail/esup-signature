@@ -343,12 +343,16 @@ public class WorkflowService {
 
     public List<User> getFavoriteRecipientEmail(int stepNumber, List<String> recipientEmails) {
         List<User> users = new ArrayList<>();
-        if (recipientEmails != null && recipientEmails.size() > 0) {
+        if (recipientEmails != null && !recipientEmails.isEmpty()) {
             recipientEmails = recipientEmails.stream().filter(r -> r.startsWith(String.valueOf(stepNumber))).collect(Collectors.toList());
             for (String recipientEmail : recipientEmails) {
                 String userEmail = recipientEmail.split("\\*")[1];
                 for(String realUserEmail : recipientService.getCompleteRecipientList(Collections.singletonList(userEmail))) {
-                    users.add(userService.getUserByEmail(realUserEmail));
+                    User user = userService.getUserByEmail(realUserEmail);
+                    if(user.getUserType().equals(UserType.external) && recipientEmail.split("\\*").length > 2) {
+                        user.setPhone(recipientEmail.split("\\*")[2]);
+                    }
+                    users.add(user);
                 }
             }
         }
