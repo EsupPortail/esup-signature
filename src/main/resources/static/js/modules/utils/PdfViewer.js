@@ -233,7 +233,7 @@ export class PdfViewer extends EventFactory {
                 defaultViewport: viewport,
                 useOnlyCssZoom: false,
                 defaultZoomDelay: 0,
-                textLayerMode: 0,
+                textLayerMode: 1,
                 renderer: "canvas",
             });
             pdfPageView.setPdfPage(page);
