@@ -233,7 +233,7 @@ export class PdfViewer extends EventFactory {
                 defaultViewport: viewport,
                 useOnlyCssZoom: false,
                 defaultZoomDelay: 0,
-                textLayerMode: 0,
+                textLayerMode: 1,
                 renderer: "canvas",
             });
             pdfPageView.setPdfPage(page);
@@ -443,6 +443,10 @@ export class PdfViewer extends EventFactory {
                 dataField = this.dataFields.filter(obj => {
                     return obj.name === inputName
                 })[0];
+            }
+            let canvasField = $('section[data-annotation-id=' + items[i].id + '] > canvas');
+            if (canvasField.length) {
+                canvasField.remove();
             }
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if (inputField.length) {
