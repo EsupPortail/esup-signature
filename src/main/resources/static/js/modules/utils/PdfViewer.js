@@ -233,7 +233,8 @@ export class PdfViewer extends EventFactory {
                 defaultViewport: viewport,
                 useOnlyCssZoom: false,
                 defaultZoomDelay: 0,
-                textLayerMode: 1,
+                textLayerMode: 0,
+                renderer: "canvas",
             });
             pdfPageView.setPdfPage(page);
             pdfPageView.eventBus.on("pagerendered", function () {
