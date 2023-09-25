@@ -234,7 +234,6 @@ export class PdfViewer extends EventFactory {
                 useOnlyCssZoom: false,
                 defaultZoomDelay: 0,
                 textLayerMode: 1,
-                renderer: "canvas",
             });
             pdfPageView.setPdfPage(page);
             pdfPageView.eventBus.on("annotationlayerrendered", function () {
