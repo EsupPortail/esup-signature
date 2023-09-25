@@ -444,6 +444,10 @@ export class PdfViewer extends EventFactory {
                     return obj.name === inputName
                 })[0];
             }
+            let canvasField = $('section[data-annotation-id=' + items[i].id + '] > canvas');
+            if (canvasField.length) {
+                canvasField.remove();
+            }
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if (inputField.length) {
                 inputField.addClass("field-type-text");
