@@ -91,33 +91,6 @@
                                 </table>
                                 <div th:utext="${simpleReport}"></div>
                             </div>
-                            <div class="alert alert-light border-secondary mx-auto" style="page-break-after: auto;">
-                                <h4>Journal des actions</h4>
-                                <table class="table table-sm table-hover">
-                                    <thead class="table-secondary">
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Nom</th>
-                                        <th>Action</th>
-                                        <th>Commentaire</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <th:block th:each="log : ${logs}">
-                                        <tr>
-                                            <td class="text-left"><span
-                                                    th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
-                                            <td class="text-left"><span th:text="${log.user.firstname} + ' ' + ${log.user.name}"></span></td>
-                                            <td class="text-left"><span
-                                                    th:text="#{'signbook.status.' + ${log.finalStatus}}"></span></td>
-                                            <td class="text-left"><span th:if="${log.action == 'Apposition de la signature'}"
-                                                                        th:text="'Apposition d`un visuel en page ' + ${log.pageNumber} + ' aux coordonnées (' + ${log.posX} + ', ' + ${log.posY} + ')'"></span>
-                                            </td>
-                                        </tr>
-                                    </th:block>
-                                    </tbody>
-                                </table>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -131,6 +104,41 @@
                     <h5>Le document est en cours de signature</h5>
                 </div>
             </th:block>
+            <div class="alert alert-light border-secondary mx-auto" style="page-break-after: auto;">
+                <h4>Journal des actions</h4>
+                <table class="table table-sm table-hover">
+                    <thead class="table-secondary">
+                    <tr>
+                        <th>Date</th>
+                        <th>Nom</th>
+                        <th>Statut</th>
+                        <th>Action</th>
+                        <th>Commentaire</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <th:block th:each="log : ${logs}">
+                        <tr>
+                            <td class="text-left"><span
+                                    th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
+                            <td class="text-left"><span th:text="${log.user.firstname} + ' ' + ${log.user.name}"></span></td>
+                            <td class="text-left">
+                                <span th:text="#{'signbook.status.' + ${log.finalStatus}}"></span>
+                            </td>
+                            <td class="text-left">
+                                <span th:text="${log.action}"></span>
+                            </td>
+                            <td class="text-left" th:if="${log.action == 'Apposition de la signature'}">
+                                <span th:text="'Apposition d`un visuel en page ' + ${log.pageNumber} + ' aux coordonnées (' + ${log.posX} + ', ' + ${log.posY} + ')'"></span>
+                            </td>
+                            <td class="text-left" th:unless="${log.action == 'Apposition de la signature'}">
+                                <span th:text="${log.comment}"></span>
+                            </td>
+                        </tr>
+                    </th:block>
+                    </tbody>
+                </table>
+            </div>
             <th:block th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
                 <div class="alert alert-danger mb-1">
                     <h5>Le document a été refusé</h5>
