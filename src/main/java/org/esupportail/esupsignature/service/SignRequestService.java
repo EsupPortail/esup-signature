@@ -868,6 +868,7 @@ public class SignRequestService {
 				if(multipartFile.getSize() > 0) {
 					addAttachmentToSignRequest(signRequest, authUserEppn, multipartFile);
 					nbAttachmentAdded++;
+					logService.create(signRequestId, signRequest.getStatus(), "Ajout d'une pièce jointe", multipartFile.getOriginalFilename(), "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
 				}
 			}
 		}
