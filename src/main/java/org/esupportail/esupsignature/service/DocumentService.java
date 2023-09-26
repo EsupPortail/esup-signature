@@ -1,13 +1,15 @@
 package org.esupportail.esupsignature.service;
 
+import jakarta.annotation.Resource;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.BigFile;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
@@ -19,7 +21,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,7 +59,7 @@ public class DocumentService {
 	}
 
 	@Transactional
-	public Document createDocument(InputStream inputStream, String name, String contentType) throws IOException {
+	public Document createDocument(InputStream inputStream, User createBy, String name, String contentType) throws IOException {
 		long size = inputStream.available();
 		if(size == 0) {
 			logger.warn("upload aborted cause file size is 0");
@@ -66,6 +67,7 @@ public class DocumentService {
 		}
 		byte[] bytes = inputStream.readAllBytes();
 		Document document = new Document();
+		document.setCreateBy(createBy);
 		document.setCreateDate(new Date());
 		document.setFileName(name);
 		document.setContentType(contentType);
@@ -150,7 +152,7 @@ public class DocumentService {
 	@Transactional
 	public Document addSignedFile(SignRequest signRequest, InputStream signedInputStream, String originalName, String mimeType) throws IOException {
 		String docName = getSignedName(originalName);
-		Document document = createDocument(signedInputStream, docName, mimeType);
+		Document document = createDocument(signedInputStream, signRequest.getCreateBy(), docName, mimeType);
 		document.setParentId(signRequest.getId());
 		signRequest.getSignedDocuments().add(document);
 		return document;

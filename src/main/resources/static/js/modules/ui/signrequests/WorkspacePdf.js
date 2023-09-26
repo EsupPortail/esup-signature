@@ -144,30 +144,6 @@ export class WorkspacePdf {
         $("#addCircle").on("click", e => this.signPosition.addCircleImage(this.pdfViewer.pageNum));
         $("#addText").on("click", e => this.signPosition.addText(this.pdfViewer.pageNum));
 
-        $('[id^="deleteAttachement-"]').each(function () {
-            $(this).on('click', function (e) {
-                e.preventDefault();
-                let target = e.currentTarget;
-                bootbox.confirm("Confirmez-vous la suppression de la pièce jointe ?", function (result) {
-                    if (result) {
-                        location.href = $(target).attr('href');
-                    }
-                });
-            });
-        });
-
-        $('[id^="deleteLink_"]').each(function () {
-            $(this).on('click', function (e) {
-                e.preventDefault();
-                let target = e.currentTarget;
-                bootbox.confirm("Confirmez la suppression du lien ?", function (result) {
-                    if (result) {
-                        location.href = $(target).attr('href');
-                    }
-                });
-            });
-        });
-
         let signImageBtn = $("#signImage");
         signImageBtn.unbind();
         signImageBtn.on('click', function () {
