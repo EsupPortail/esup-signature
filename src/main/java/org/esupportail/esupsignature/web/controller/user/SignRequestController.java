@@ -260,7 +260,7 @@ public class SignRequestController {
                                  @RequestParam(value = "link", required = false) String link,
                                  RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         logger.info("start add attachment");
-        if(signRequestService.addAttachement(multipartFiles, link, id)) {
+        if(signRequestService.addAttachement(multipartFiles, link, id, authUserEppn)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La piece jointe à bien été ajoutée"));
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucune pièce jointe n'a été ajoutée. Merci de contrôle la validité du document"));
@@ -268,8 +268,8 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
-    @GetMapping(value = "/remove-attachment/{id}/{attachementId}")
+    @PreAuthorize("@preAuthorizeService.attachmentCreator(#attachementId, #userEppn, #authUserEppn)")
+    @DeleteMapping(value = "/remove-attachment/{id}/{attachementId}")
     public String removeAttachement(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, RedirectAttributes redirectAttributes) {
         logger.info("start remove attachment");
         signRequestService.removeAttachement(id, attachementId, redirectAttributes);
@@ -277,10 +277,8 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
-
-
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
-    @GetMapping(value = "/remove-link/{id}/{linkId}")
+    @DeleteMapping(value = "/remove-link/{id}/{linkId}")
     public String removeLink(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("linkId") Integer linkId, RedirectAttributes redirectAttributes) {
         logger.info("start remove link");
         signRequestService.removeLink(id, linkId);
@@ -383,18 +381,24 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#signRequestId, #userEppn)")
-    @PostMapping(value = "/comment/{signRequestId}/update/{postitId}")
+    @PreAuthorize("@preAuthorizeService.commentCreator(#postitId, #userEppn)")
+    @PutMapping(value = "/comment/{signRequestId}/update/{postitId}")
     public String commentUpdate(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                 @PathVariable("signRequestId") Long signRequestId,
                                 @PathVariable("postitId") Long postitId,
                                 @RequestParam(value = "comment", required = false) String comment, RedirectAttributes redirectAttributes) {
-        try {
-            signRequestService.updateComment(postitId, comment, authUserEppn);
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Annotation modifiée"));
-        } catch (EsupSignatureRuntimeException e) {
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Annotation interdite"));
-        }
+        signRequestService.updateComment(postitId, comment);
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Annotation modifiée"));
+        return "redirect:/user/signrequests/" + signRequestId;
+    }
+
+    @PreAuthorize("@preAuthorizeService.commentCreator(#postitId, #userEppn)")
+    @DeleteMapping(value = "/comment/{signRequestId}/delete/{postitId}")
+    public String commentDelete(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                                @PathVariable("signRequestId") Long signRequestId,
+                                @PathVariable("postitId") Long postitId, RedirectAttributes redirectAttributes) {
+        signRequestService.deleteComment(signRequestId, postitId);
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Postit supprimé"));
         return "redirect:/user/signrequests/" + signRequestId;
     }
 

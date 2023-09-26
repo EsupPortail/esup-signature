@@ -144,11 +144,13 @@
                             <i th:es-postit-id="${postit.id}" class="far fa-copy"></i>
                         </button>
                         <p th:class="${postit.createBy.eppn == userEppn} ? 'd-none' : ''" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></p>
-                        <form style="height: 70%;" th:if="${postit.createBy.eppn == userEppn}" th:action="${'/user/signrequests/comment/' + signRequest.id + '/update/' + postit.id}" th:method="post">
+                        <form style="height: 70%;" th:if="${postit.createBy.eppn == userEppn}" th:action="${'/user/signrequests/comment/' + signRequest.id + '/update/' + postit.id}" th:method="put">
                             <textarea th:style="'height: 70%;background-color: ' + ${postit.postitColor}" name="comment" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></textarea>
-                            <button type="submit" class="btn btn-sm btn-dark float-end"><i class="fa fa-save"></i></button>
+                            <button type="submit" class="btn btn-sm btn-dark float-end" title="Enregistrer"><i class="fa fa-save"></i></button>
                         </form>
-
+                        <form th:if="${postit.createBy.eppn == userEppn}" th:action="${'/user/signrequests/comment/' + signRequest.id + '/delete/' + postit.id}" th:method="delete">
+                            <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-sm btn-dark float-start position-absolute" title="Supprimer" style="bottom: 10px;"><i class="fa fa-trash"></i></button>
+                        </form>
                     </div>
                 </th:block>
             </div>
