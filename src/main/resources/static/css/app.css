@@ -630,6 +630,8 @@ input:checked + .slider:before {
 .workspace-sign {
     margin-top: 128px;
     display: flex;
+    margin-left: 5px;
+    margin-right: 5px;
 }
 
 .cross {

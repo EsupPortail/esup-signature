@@ -131,10 +131,10 @@
                 </ul>
             </div>
             <div th:replace="~{user/signrequests/includes/tools :: tools}"></div>
-            <div style="position: absolute;left: 270px;top: 200px;">
+            <div style="position: absolute;top: 200px;">
                 <th:block th:each="postit, iterate : ${postits}">
                     <div class="postit-global d-none"
-                         th:style="'background-color: ' + ${postit.postitColor} + ';position: fixed; left: ' + ${270 + (iterate.index * 10)} + 'px; top : ' + ${220 + (iterate.index * 70)} + 'px;'">
+                         th:style="'background-color: ' + ${postit.postitColor} + ';position: fixed; left: ' + ${275 + (iterate.index * 10)} + 'px; top : ' + ${220 + (iterate.index * 70)} + 'px;'">
                         <button type="button" class="postit-global-close close">
                             <i class="fas fa-eye"></i>
                         </button>
