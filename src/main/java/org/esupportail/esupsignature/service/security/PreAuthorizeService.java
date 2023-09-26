@@ -26,6 +26,9 @@ public class PreAuthorizeService {
     private SignBookService signBookService;
 
     @Resource
+    private DocumentService documentService;
+
+    @Resource
     private WorkflowService workflowService;
 
     @Resource
@@ -132,6 +135,17 @@ public class PreAuthorizeService {
             Optional<SignRequest> signRequest = signRequestRepository.findById(id);
             if (signRequest.isPresent()) {
                 return checkUserViewRights(signRequest.get(), userEppn, authUserEppn) || signBookService.checkUserSignRights(signRequest.get(), userEppn, authUserEppn);
+            }
+        }
+        return false;
+    }
+
+    public boolean attachmentCreator(Long id, String userEppn, String authUserEppn) {
+        if(userEppn != null && authUserEppn != null) {
+            User user = userService.getByEppn(userEppn);
+            Document document = documentService.getById(id);
+            if(document.getCreateBy().equals(user)) {
+                return true;
             }
         }
         return false;

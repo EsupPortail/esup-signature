@@ -92,7 +92,7 @@ public class CertificatService {
             byte[] keystoreBytes = keystore.getBytes();
             Pkcs12SignatureToken pkcs12SignatureToken = userKeystoreService.getPkcs12Token(new ByteArrayInputStream(keystoreBytes), password);
             CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
-            certificat.setKeystore(documentService.createDocument(new ByteArrayInputStream(keystoreBytes), certificateToken.getSubject().getPrincipal().getName("CANONICAL"), keystore.getContentType()));
+            certificat.setKeystore(documentService.createDocument(new ByteArrayInputStream(keystoreBytes), userService.getSystemUser(), certificateToken.getSubject().getPrincipal().getName("CANONICAL"), keystore.getContentType()));
             certificat.setRoles(roles);
             certificat.setPassword(encryptPassword(password));
             certificat.setExpireDate(certificateToken.getNotAfter());

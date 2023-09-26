@@ -475,7 +475,7 @@ public class SignRequestService {
 						contentType = "application/pdf";
 						inputStream = new ByteArrayInputStream(bytes);
 					}
-					Document document = documentService.createDocument(inputStream, multipartFile.getOriginalFilename(), contentType);
+					Document document = documentService.createDocument(inputStream, signRequest.getCreateBy(), multipartFile.getOriginalFilename(), contentType);
 					signRequest.getOriginalDocuments().add(document);
 					document.setParentId(signRequest.getId());
 				} else {
@@ -492,10 +492,11 @@ public class SignRequestService {
 		}
 	}
 
-	public void addAttachmentToSignRequest(SignRequest signRequest, MultipartFile... multipartFiles) throws EsupSignatureIOException {
+	public void addAttachmentToSignRequest(SignRequest signRequest, String authUserEppn, MultipartFile... multipartFiles) throws EsupSignatureIOException {
+		User user = userService.getByEppn(authUserEppn);
 		for(MultipartFile multipartFile : multipartFiles) {
 			try {
-				Document document = documentService.createDocument(multipartFile.getInputStream(), "attachement_" + signRequest.getAttachments().size() + "_" + multipartFile.getOriginalFilename(), multipartFile.getContentType());
+				Document document = documentService.createDocument(multipartFile.getInputStream(), user, "attachement_" + signRequest.getAttachments().size() + "_" + multipartFile.getOriginalFilename(), multipartFile.getContentType());
 				signRequest.getAttachments().add(document);
 				document.setParentId(signRequest.getId());
 			} catch (IOException e) {
@@ -859,13 +860,13 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public boolean addAttachement(MultipartFile[] multipartFiles, String link, Long signRequestId) throws EsupSignatureIOException {
+	public boolean addAttachement(MultipartFile[] multipartFiles, String link, Long signRequestId, String authUserEppn) throws EsupSignatureIOException {
 		SignRequest signRequest = getById(signRequestId);
 		int nbAttachmentAdded = 0;
 		if(multipartFiles != null) {
 			for (MultipartFile multipartFile : multipartFiles) {
 				if(multipartFile.getSize() > 0) {
-					addAttachmentToSignRequest(signRequest, multipartFile);
+					addAttachmentToSignRequest(signRequest, authUserEppn, multipartFile);
 					nbAttachmentAdded++;
 				}
 			}

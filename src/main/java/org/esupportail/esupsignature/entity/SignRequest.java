@@ -25,8 +25,6 @@ public class SignRequest {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-	
-	
 	@Column(unique=true)
 	private String token;
 	

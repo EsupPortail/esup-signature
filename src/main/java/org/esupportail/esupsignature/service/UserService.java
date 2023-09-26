@@ -390,10 +390,10 @@ public class UserService {
             if(authUser.getKeystore() != null) {
                 documentService.delete(authUser.getKeystore());
             }
-            authUser.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), authUser.getEppn() + "_" + multipartKeystore.getOriginalFilename().split("\\.")[0] + ".p12", multipartKeystore.getContentType()));
+            authUser.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), authUser, authUser.getEppn() + "_" + multipartKeystore.getOriginalFilename().split("\\.")[0] + ".p12", multipartKeystore.getContentType()));
         }
         if(signImageBase64 != null && !signImageBase64.isEmpty()) {
-            authUser.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signImageBase64), authUser.getEppn() + "_sign.png", "image/png"));
+            authUser.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signImageBase64), authUser, authUser.getEppn() + "_sign.png", "image/png"));
             if(authUser.getSignImages().size() == 1) {
                 authUser.setDefaultSignImageNumber(0);
             }

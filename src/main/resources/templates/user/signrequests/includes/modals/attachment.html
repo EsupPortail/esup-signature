@@ -14,14 +14,25 @@
             <form th:action="'/user/signrequests/add-attachment/' + ${signRequest.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
                     <table th:if="${attachments != null && attachments.size() > 0}" class="table table-borderless table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <td>Fichier</td>
+                                <td>Créateur</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </thead>
                         <th:block th:each="attachment : ${attachments}">
                             <tr>
                                 <td th:text="${attachment.fileName}"></td>
+                                <td><span th:if="${attachment.createBy != null}" th:text="${attachment.createBy.firstname} + ' ' + ${attachment.createBy.name}"></span></td>
                                 <td>
                                     <a th:href="'/user/signrequests/get-attachment/' + ${signRequest.id} + '/' + ${attachment.id}" target="_blank" class="btn btn-primary"><i class="fas fa-download"></i></a>
                                 </td>
-                                <td th:if="${signRequest.createBy.eppn == userEppn}">
+                                <td th:if="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn) || signRequest.createBy.eppn == userEppn}">
                                     <a th:id="'deleteAttachement-' + ${attachment.id}" th:href="'/user/signrequests/remove-attachment/' + ${signRequest.id} + '/' + ${attachment.id}"  class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
+                                </td>
+                                <td th:unless="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn) || signRequest.createBy.eppn == userEppn}">
                                 </td>
                             </tr>
                         </th:block>

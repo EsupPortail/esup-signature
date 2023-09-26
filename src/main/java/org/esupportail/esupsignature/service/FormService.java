@@ -106,7 +106,7 @@ public class FormService {
 	@Transactional
 	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage) throws IOException, EsupSignatureRuntimeException {
 		byte[] bytes = multipartFile.getInputStream().readAllBytes();
-		Document document = documentService.createDocument(new ByteArrayInputStream(bytes), multipartFile.getOriginalFilename(), multipartFile.getContentType());
+		Document document = documentService.createDocument(new ByteArrayInputStream(bytes), userService.getSystemUser(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
 		Form form = createForm(document, name, title, workflowId, prefillType, roleNames, publicUsage, null, null);
 		try {
 			updateSignRequestParams(form.getId(), new ByteArrayInputStream(bytes));
@@ -191,7 +191,7 @@ public class FormService {
 					}
 				}
 				updateSignRequestParams(id, new ByteArrayInputStream(tempDocument));
-				Document newModel = documentService.createDocument(pdfService.removeSignField(new ByteArrayInputStream(tempDocument)), multipartModel.getOriginalFilename(), multipartModel.getContentType());
+				Document newModel = documentService.createDocument(pdfService.removeSignField(new ByteArrayInputStream(tempDocument)), userService.getSystemUser(), multipartModel.getOriginalFilename(), multipartModel.getContentType());
 				form.setDocument(newModel);
 
 			} catch (IOException | EsupSignatureIOException e) {

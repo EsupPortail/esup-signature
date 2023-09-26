@@ -179,12 +179,12 @@ public class OtpSignRequestController {
                                  @RequestParam(value = "link", required = false) String link,
                                  RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         logger.info("start add attachment");
-        signRequestService.addAttachement(multipartFiles, link, id);
+        signRequestService.addAttachement(multipartFiles, link, id, authUserEppn);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La piece jointe à bien été ajoutée"));
         return "redirect:/otp/signrequests/" + id;
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.attachmentCreator(#attachementId, #userEppn, #authUserEppn)")
     @GetMapping(value = "/remove-attachment/{id}/{attachementId}")
     public String removeAttachement(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, RedirectAttributes redirectAttributes) {
         logger.info("start remove attachment");

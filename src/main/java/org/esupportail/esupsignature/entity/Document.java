@@ -22,8 +22,6 @@ public class Document {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-	
-	
 	private String fileName;
 
     private Long size;
@@ -33,6 +31,9 @@ public class Document {
     private Long parentId;
 
     private String contentType;
+
+    @ManyToOne
+    private User createBy;
 
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
@@ -97,7 +98,15 @@ public class Document {
         this.contentType = contentType;
     }
 
-	public Date getCreateDate() {
+    public User getCreateBy() {
+        return createBy;
+    }
+
+    public void setCreateBy(User createBy) {
+        this.createBy = createBy;
+    }
+
+    public Date getCreateDate() {
         return this.createDate;
     }
 
