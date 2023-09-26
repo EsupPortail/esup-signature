@@ -11,46 +11,50 @@
 
                 </button>
             </div>
-            <form th:action="'/user/signrequests/add-attachment/' + ${signRequest.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
-                <div class="modal-body">
-                    <table th:if="${attachments != null && attachments.size() > 0}" class="table table-borderless table-striped table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <td>Fichier</td>
-                                <td>Créateur</td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                        </thead>
-                        <th:block th:each="attachment : ${attachments}">
-                            <tr>
-                                <td th:text="${attachment.fileName}"></td>
-                                <td><span th:if="${attachment.createBy != null}" th:text="${attachment.createBy.firstname} + ' ' + ${attachment.createBy.name}"></span></td>
-                                <td>
-                                    <a th:href="'/user/signrequests/get-attachment/' + ${signRequest.id} + '/' + ${attachment.id}" target="_blank" class="btn btn-primary"><i class="fas fa-download"></i></a>
-                                </td>
-                                <td th:if="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn) || signRequest.createBy.eppn == userEppn}">
-                                    <a th:id="'deleteAttachement-' + ${attachment.id}" th:href="'/user/signrequests/remove-attachment/' + ${signRequest.id} + '/' + ${attachment.id}"  class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
-                                </td>
-                                <td th:unless="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn) || signRequest.createBy.eppn == userEppn}">
-                                </td>
-                            </tr>
-                        </th:block>
-                    </table>
-                    <table th:if="${signRequest.links.size() > 0}" class="table table-borderless table-striped table-hover">
-                        <th:block th:each="link, iterator : ${signRequest.links}">
-                            <tr>
-                                <td>
-                                    <a th:href="${link}" target="_blank" th:text="${link}"></a>
-                                </td>
-                                <td th:if="${signRequest.createBy.eppn == userEppn}">
-                                    <a th:id="'deleteLink_' + ${iterator.index}" th:href="'/user/signrequests/remove-link/' + ${signRequest.id} + '/' + ${iterator.index}" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
-                                </td>
-                            </tr>
-                        </th:block>
-                    </table>
-                    <div th:unless="${attachments.size() > 0}" class="alert alert-secondary">Aucune pièce jointe</div>
-                    <hr/>
+            <div class="modal-body">
+                <table th:if="${attachments != null && attachments.size() > 0}" class="table table-borderless table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <td>Fichier</td>
+                            <td>Créateur</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </thead>
+                    <th:block th:each="attachment : ${attachments}">
+                        <tr>
+                            <td th:text="${attachment.fileName}"></td>
+                            <td><span th:if="${attachment.createBy != null}" th:text="${attachment.createBy.firstname} + ' ' + ${attachment.createBy.name}"></span></td>
+                            <td>
+                                <a th:href="'/user/signrequests/get-attachment/' + ${signRequest.id} + '/' + ${attachment.id}" target="_blank" class="btn btn-primary"><i class="fas fa-download"></i></a>
+                            </td>
+                            <td th:if="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn) || signRequest.createBy.eppn == userEppn}">
+                                <form th:action="'/user/signrequests/remove-attachment/' + ${signRequest.id} + '/' + ${attachment.id}" th:method="delete">
+                                    <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;"><i class="fa fa-trash-alt"></i></button>
+                                </form>
+                            </td>
+                            <td th:unless="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn) || signRequest.createBy.eppn == userEppn}">
+                            </td>
+                        </tr>
+                    </th:block>
+                </table>
+                <table th:if="${signRequest.links.size() > 0}" class="table table-borderless table-striped table-hover">
+                    <th:block th:each="link, iterator : ${signRequest.links}">
+                        <tr>
+                            <td>
+                                <a th:href="${link}" target="_blank" th:text="${link}"></a>
+                            </td>
+                            <td th:if="${signRequest.createBy.eppn == userEppn}">
+                                <form th:action="'/user/signrequests/remove-link/' + ${signRequest.id} + '/' + ${iterator.index}" th:method="delete">
+                                    <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;"><i class="fa fa-trash-alt"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    </th:block>
+                </table>
+                <div th:unless="${attachments.size() > 0}" class="alert alert-secondary">Aucune pièce jointe</div>
+                <hr/>
+                <form th:action="'/user/signrequests/add-attachment/' + ${signRequest.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                     <div th:if="${editable}" class="form-group mb-3">
                         <label>Ajouter une pièce jointe</label>
                         <div class="custom-file">

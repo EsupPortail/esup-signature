@@ -29,6 +29,9 @@ public class PreAuthorizeService {
     private DocumentService documentService;
 
     @Resource
+    private CommentService commentService;
+
+    @Resource
     private WorkflowService workflowService;
 
     @Resource
@@ -232,5 +235,10 @@ public class PreAuthorizeService {
             }
         }
         return false;
+    }
+
+    public boolean commentCreator(Long postitId, String userEppn) {
+        Comment comment = commentService.getById(postitId);
+        return comment.getCreateBy().getEppn().equals(userEppn);
     }
 }

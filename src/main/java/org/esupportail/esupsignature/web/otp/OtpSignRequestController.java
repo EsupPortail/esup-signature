@@ -185,7 +185,7 @@ public class OtpSignRequestController {
     }
 
     @PreAuthorize("@preAuthorizeService.attachmentCreator(#attachementId, #userEppn, #authUserEppn)")
-    @GetMapping(value = "/remove-attachment/{id}/{attachementId}")
+    @DeleteMapping(value = "/remove-attachment/{id}/{attachementId}")
     public String removeAttachement(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, RedirectAttributes redirectAttributes) {
         logger.info("start remove attachment");
         signRequestService.removeAttachement(id, attachementId, redirectAttributes);
@@ -194,7 +194,7 @@ public class OtpSignRequestController {
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
-    @GetMapping(value = "/remove-link/{id}/{linkId}")
+    @DeleteMapping(value = "/remove-link/{id}/{linkId}")
     public String removeLink(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("linkId") Integer linkId, RedirectAttributes redirectAttributes) {
         logger.info("start remove link");
         signRequestService.removeLink(id, linkId);

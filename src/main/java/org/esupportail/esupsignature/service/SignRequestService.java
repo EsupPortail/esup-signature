@@ -740,7 +740,7 @@ public class SignRequestService {
 		}
 		List<Long> commentsIds = signRequest.getComments().stream().map(Comment::getId).collect(Collectors.toList());
 		for (Long commentId : commentsIds) {
-			commentService.deleteComment(commentId);
+			commentService.deleteComment(commentId, signRequest);
 		}
 		signRequest.getParentSignBook().getSignRequests().remove(signRequest);
 		signRequestRepository.delete(signRequest);
@@ -1162,12 +1162,17 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void updateComment(Long id, String text, String authUserEppn) {
+	public void updateComment(Long id, String text) {
 		Comment comment = commentService.getById(id);
-		if(comment.getCreateBy().getEppn().equals(authUserEppn)) {
-			comment.setText(text);
-		} else {
-			throw new EsupSignatureRuntimeException("unauthorised");
-		}
+		comment.setText(text);
 	}
+
+	@Transactional
+	public void deleteComment(Long id, Long postitId) {
+		Comment comment = commentService.getById(postitId);
+		SignRequest signRequest = signRequestRepository.findById(id).orElseThrow();
+		signRequest.getComments().remove(comment);
+		commentService.deleteComment(postitId, signRequest);
+	}
+
 }
