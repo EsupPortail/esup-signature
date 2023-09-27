@@ -40,7 +40,7 @@ public class ChartsService {
         labels.addAll(refusedByYears.stream().map(CountByYears::getYear).collect(Collectors.toSet()));
         BarDataset countDocsDataset = new BarDataset().setStack("0").setLabel("Nombre de documents signés par année").addBackgroundColor(new Color(170, 222, 167));
         BarDataset countCertDataset = new BarDataset().setStack("1").setLabel("Nombre de signatures avec certificat par année").addBackgroundColor(new Color(255, 206, 86));
-        BarDataset countSignsDataset = new BarDataset().setStack("1").setLabel("Nombre de signatures par année").addBackgroundColor(new Color(54, 162, 235));
+        BarDataset countSignsDataset = new BarDataset().setStack("1").setLabel("Nombre de signatures sans certificat par année").addBackgroundColor(new Color(54, 162, 235));
         BarDataset countRefusedDataset = new BarDataset().setStack("2").setLabel("Nombre de signatures refusées par année").addBackgroundColor(new Color(255, 99, 132));
         List<BarDataset> datasets = new ArrayList<>();
         for(String label: labels) {

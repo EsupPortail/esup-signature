@@ -174,7 +174,7 @@ public class SignRequestService {
 			return signRequest.getStatus().name();
 		} else {
 			List<Log> logs = logService.getBySignRequest(id);
-			if(logs.size() > 0) {
+			if(!logs.isEmpty()) {
 				return "fully-deleted";
 			}
 		}
@@ -221,8 +221,8 @@ public class SignRequestService {
 		}
 		byte[] bytes = toSignDocuments.get(0).getInputStream().readAllBytes();
 		Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
-		if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf")
-				&& (reports == null || reports.getSimpleReport().getSignatureIdList().size() == 0)) {
+		if(formDataMap != null && !formDataMap.isEmpty() && toSignDocuments.get(0).getContentType().equals("application/pdf")
+				&& (reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty())) {
 			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, isStepAllSignDone(signRequest.getParentSignBook()), isForm);
 		} else {
 			filledInputStream = toSignDocuments.get(0).getInputStream().readAllBytes();
@@ -232,7 +232,7 @@ public class SignRequestService {
 			byte[] signedInputStream = filledInputStream;
 			String fileName = toSignDocuments.get(0).getFileName();
 			if(signType.equals(SignType.hiddenVisa)) visual = false;
-			if(signRequestParamses.size() == 0 && visual) {
+			if(signRequestParamses.isEmpty() && visual) {
 				throw new EsupSignatureRuntimeException("Il manque une signature !");
 			}
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
@@ -260,7 +260,7 @@ public class SignRequestService {
 			reports = validationService.validate(getToValidateFile(signRequest.getId()), null);
 			DiagnosticData diagnosticData = reports.getDiagnosticData();
 			long nbSignatures = signRequestParamses.stream().filter(srp -> srp.getSignImageNumber() >= 0 && srp.getTextPart() == null).count();
-			if(diagnosticData.getAllSignatures().size() == 0) {
+			if(diagnosticData.getAllSignatures().isEmpty()) {
 				for (SignRequestParams signRequestParams : signRequestParamses) {
 					if (nbSignatures > 1 || signRequestParams.getSignImageNumber() < 0 || StringUtils.hasText(signRequestParams.getTextPart())) {
 						filledInputStream = pdfService.stampImage(filledInputStream, signRequest, signRequestParams, 1, signerUser, date);
@@ -280,7 +280,7 @@ public class SignRequestService {
 			diagnosticData = reports.getDiagnosticData();
 			String certificat = new ArrayList<>(diagnosticData.getAllSignatures()).get(diagnosticData.getAllSignatures().size() - 1).getSigningCertificate().toString();
 			String timestamp = diagnosticData.getTimestampList().get(0).getSigningCertificate().toString();
-			if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > 0) {
+			if(!signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty()) {
 				SignRequestParams signRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0);
 				auditTrailService.addAuditStep(signRequest.getToken(), userEppn, certificat, timestamp, reports.getSimpleReport().getValidationTime(), null, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
 			} else {
@@ -738,7 +738,7 @@ public class SignRequestService {
 			signRequest.setData(null);
 			dataService.deleteOnlyData(dataId);
 		}
-		List<Long> commentsIds = signRequest.getComments().stream().map(Comment::getId).collect(Collectors.toList());
+		List<Long> commentsIds = signRequest.getComments().stream().map(Comment::getId).toList();
 		for (Long commentId : commentsIds) {
 			commentService.deleteComment(commentId, signRequest);
 		}
@@ -748,7 +748,7 @@ public class SignRequestService {
 
 	public Date getEndDate(SignRequest signRequest) {
 		List<Action> action = signRequest.getRecipientHasSigned().values().stream().filter(action1 -> !action1.getActionType().equals(ActionType.none)).sorted(Comparator.comparing(Action::getDate)).collect(Collectors.toList());
-		if(action.size() > 0) {
+		if(!action.isEmpty()) {
 			return action.get(0).getDate();
 		}
 		return null;
@@ -773,14 +773,14 @@ public class SignRequestService {
 	@Transactional
 	public boolean isTempUsers(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
-		return userService.getTempUsers(signRequest).size() > 0;
+		return !userService.getTempUsers(signRequest).isEmpty();
 	}
 
 	@Transactional
 	public boolean checkTempUsers(Long id, List<String> recipientEmails, List<JsonExternalUserInfo> externalUsersInfos) throws EsupSignatureRuntimeException {
 		SignRequest signRequest = getById(id);
 		List<User> tempUsers = userService.getTempUsers(signRequest, recipientEmails);
-		if(tempUsers.size() > 0) {
+		if(!tempUsers.isEmpty()) {
 			if (externalUsersInfos != null && tempUsers.size() == externalUsersInfos.size()) {
 				for (User tempUser : tempUsers) {
 					if (tempUser.getUserType().equals(UserType.shib)) {
@@ -826,7 +826,7 @@ public class SignRequestService {
 		}
 		for (Field field : prefilledFields) {
 			if (field.getName() != null
-				&& data.getDatas().size() > 0
+				&& !data.getDatas().isEmpty()
 				&& data.getDatas().get(field.getName()) != null
 				&& !data.getDatas().get(field.getName()).isEmpty()) {
 				field.setDefaultValue(data.getDatas().get(field.getName()));
@@ -852,7 +852,7 @@ public class SignRequestService {
 	@Transactional
 	public Document getLastSignedFile(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
-		if(signRequest.getSignedDocuments().size() > 0) {
+		if(!signRequest.getSignedDocuments().isEmpty()) {
 			return signRequest.getSignedDocuments().get(signRequest.getSignedDocuments().size() - 1);
 		} else {
 			return null;
@@ -952,7 +952,7 @@ public class SignRequestService {
 		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			List<Document> documents = signService.getToSignDocuments(signRequest.getId());
 			Document document;
-			if(documents.size() > 0) {
+			if(!documents.isEmpty()) {
 				document = documents.get(0);
 			} else {
 				document = signRequest.getOriginalDocuments().get(0);
@@ -970,7 +970,7 @@ public class SignRequestService {
 		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			List<Document> documents = signService.getToSignDocuments(signRequest.getId());
 			Document document;
-			if(documents.size() > 0) {
+			if(!documents.isEmpty()) {
 				document = documents.get(0);
 			} else {
 				document = signRequest.getOriginalDocuments().get(0);
@@ -1009,7 +1009,7 @@ public class SignRequestService {
 		if(signRequest.getLastNotifDate() != null) {
 			notifTime = Duration.between(signRequest.getLastNotifDate().toInstant(), new Date().toInstant()).toHours();
 		}
-		if(recipientEmails.size() > 0 && notifTime >= globalProperties.getHoursBeforeRefreshNotif() && signRequest.getStatus().equals(SignRequestStatus.pending)) {
+		if(!recipientEmails.isEmpty() && notifTime >= globalProperties.getHoursBeforeRefreshNotif() && signRequest.getStatus().equals(SignRequestStatus.pending)) {
 			mailService.sendSignRequestReplayAlert(recipientEmails, signRequest);
 			return true;
 		}
@@ -1078,7 +1078,7 @@ public class SignRequestService {
 			&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null
 			&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentAlert() != null
 			&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentAlert()
-			&& signRequest.getAttachments().size() == 0) {
+			&& signRequest.getAttachments().isEmpty()) {
 			attachmentAlert = true;
 		}
 		return attachmentAlert;
@@ -1089,7 +1089,7 @@ public class SignRequestService {
 			&&signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null
 			&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentRequire() != null
 			&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentRequire()
-			&& signRequest.getAttachments().size() == 0) {
+			&& signRequest.getAttachments().isEmpty()) {
 			attachmentRequire = true;
 		}
 		return attachmentRequire;
@@ -1098,7 +1098,7 @@ public class SignRequestService {
 	@Transactional
 	public Reports validate(long signRequestId) throws IOException {
 		List<Document> documents = signService.getToSignDocuments(signRequestId);
-		if(documents.size() > 0) {
+		if(!documents.isEmpty()) {
 			byte[] bytes = documents.get(0).getInputStream().readAllBytes();
 			return validationService.validate(new ByteArrayInputStream(bytes), null);
 		} else {
