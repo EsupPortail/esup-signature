@@ -10,7 +10,7 @@ import org.esupportail.esupsignature.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +24,12 @@ public class PreAuthorizeService {
 
     @Resource
     private SignBookService signBookService;
+
+    @Resource
+    private DocumentService documentService;
+
+    @Resource
+    private CommentService commentService;
 
     @Resource
     private WorkflowService workflowService;
@@ -137,6 +143,17 @@ public class PreAuthorizeService {
         return false;
     }
 
+    public boolean attachmentCreator(Long id, String userEppn, String authUserEppn) {
+        if(userEppn != null && authUserEppn != null) {
+            User user = userService.getByEppn(userEppn);
+            Document document = documentService.getById(id);
+            if(document.getCreateBy().equals(user)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean signRequestSign(Long id, String userEppn, String authUserEppn) {
         if(userEppn != null && authUserEppn != null) {
             Optional<SignRequest> signRequest = signRequestRepository.findById(id);
@@ -208,15 +225,20 @@ public class PreAuthorizeService {
                 List<SignRequest> signRequests = signRequestRepository.findByIdAndRecipient(signRequest.getId(), userEppn);
                 Data data = signBookService.getBySignBook(signRequest.getParentSignBook());
                 User authUser = userService.getByEppn(authUserEppn);
-                if ((data != null && (data.getForm() != null && data.getForm().getWorkflow() != null && data.getForm().getWorkflow().getManagers().contains(authUser.getEmail())))
+                return (data != null && (data.getForm() != null && data.getForm().getWorkflow() != null && data.getForm().getWorkflow().getManagers().contains(authUser.getEmail())))
+                        ||
+                        (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(authUser.getEmail()))
                         || signRequest.getCreateBy().getEppn().equals(userEppn)
                         || signRequest.getParentSignBook().getViewers().contains(userService.getByEppn(authUserEppn))
                         || signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getUsers).anyMatch(users -> users.contains(user))
-                        || signRequests.size() > 0) {
-                    return true;
-                }
+                        || !signRequests.isEmpty();
             }
         }
         return false;
+    }
+
+    public boolean commentCreator(Long postitId, String userEppn) {
+        Comment comment = commentService.getById(postitId);
+        return comment.getCreateBy().getEppn().equals(userEppn);
     }
 }

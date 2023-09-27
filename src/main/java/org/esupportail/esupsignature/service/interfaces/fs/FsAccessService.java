@@ -20,7 +20,7 @@ package org.esupportail.esupsignature.service.interfaces.fs;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.interfaces.fs.uri.UriManipulateService;
 
-import javax.mail.Quota;
+import jakarta.mail.Quota;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;

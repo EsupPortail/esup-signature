@@ -17,8 +17,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpSession;
 import java.util.Collections;
 import java.util.List;
 
@@ -63,7 +63,7 @@ public class WizardController {
                        @RequestParam(value = "recipientsCCEmailsWiz", required = false) List<String> recipientsCCEmailsWiz,
                        @RequestParam(value = "comment", required = false) String comment,
                        Model model) {
-        SignBook signBook = signBookService.getByIdWithLock(signBookId);
+        SignBook signBook = signBookService.getById(signBookId);
         signBookService.finishSignBookUpload(signBookId, userEppn);
         signBook.setDescription(comment);
         signBook.setForceAllDocsSign(forceAllSign);
@@ -236,7 +236,7 @@ public class WizardController {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
             }
         }
-        return "redirect:/user/";
+        return "redirect:/user";
     }
 
 }

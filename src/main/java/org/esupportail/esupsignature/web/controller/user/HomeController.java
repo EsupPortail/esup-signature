@@ -21,13 +21,13 @@ import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-@RequestMapping("/user/")
+@RequestMapping("/user")
 @Controller
 @EnableConfigurationProperties(GlobalProperties.class)
 public class HomeController {
@@ -72,7 +72,7 @@ public class HomeController {
     @Resource
     private UserService userService;
 
-    @GetMapping
+    @GetMapping(value = {"", "/"})
     public String home(@ModelAttribute("userEppn") String userEppn,
                        @ModelAttribute("authUserEppn") String authUserEppn,
                        @RequestParam(required = false, name = "formId") Long formId,
@@ -119,7 +119,7 @@ public class HomeController {
 
     @GetMapping("/start-form/{formId}")
     public String startForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long formId) {
-        return "redirect:/user/?formId=" + formId;
+        return "redirect:/user?formId=" + formId;
     }
 
 }

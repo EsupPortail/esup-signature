@@ -13,7 +13,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -57,9 +57,9 @@ public class LdapUserList implements UserList {
         List<String> userEmails = new ArrayList<>();
         if(StringUtils.hasText(listName)) {
             List<AliasLdap> aliasLdaps = ldapAliasService.searchByMail(listName, true);
-            if (aliasLdaps.size() > 0) {
+            if (!aliasLdaps.isEmpty()) {
                 for (AliasLdap userEmail : aliasLdaps) {
-                    if (userEmail.getRfc822MailMember().size() > 0) {
+                    if (!userEmail.getRfc822MailMember().isEmpty()) {
                         for (String alias : userEmail.getRfc822MailMember()) {
                             userEmails.addAll(getUsersEmailFromAliases(alias));
                         }

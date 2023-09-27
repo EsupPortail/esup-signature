@@ -302,7 +302,7 @@ export class ListSignBooksUi {
         this.reset();
         let self = this;
         $.ajax({
-            url: "/" + this.mode + "/signbooks/mass-sign/?" + self.csrf.parameterName + "=" + self.csrf.token,
+            url: "/" + this.mode + "/signbooks/mass-sign?" + self.csrf.parameterName + "=" + self.csrf.token,
             type: 'POST',
             data: signRequestUrlParams,
             success: function() {

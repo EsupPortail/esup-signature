@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.config.security;
 
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.cert.X509Certificate;
 
 public class APIKeyFilter extends X509AuthenticationFilter {
@@ -11,7 +11,7 @@ public class APIKeyFilter extends X509AuthenticationFilter {
     protected Object getPreAuthenticatedPrincipal(HttpServletRequest request)
     {
         X509Certificate[] certs = (X509Certificate[]) request
-                .getAttribute("javax.servlet.request.X509Certificate");
+                .getAttribute("jakarta.servlet.request.X509Certificate");
 
         if(certs != null && certs.length > 0)
         {
@@ -25,7 +25,7 @@ public class APIKeyFilter extends X509AuthenticationFilter {
     protected Object getPreAuthenticatedCredentials(HttpServletRequest request)
     {
         X509Certificate[] certs = (X509Certificate[]) request
-                .getAttribute("javax.servlet.request.X509Certificate");
+                .getAttribute("jakarta.servlet.request.X509Certificate");
 
         if(certs != null && certs.length > 0)
         {

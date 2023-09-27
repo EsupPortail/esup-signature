@@ -33,10 +33,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -159,7 +159,7 @@ public class SignBookController {
 
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
-    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes, Model model) {
         SignBook signBook = signBookService.getById(id);
         if(signBook.getSignRequests().size() > 0) {
             Long signRequestId = signBook.getSignRequests().get(0).getId();
@@ -167,6 +167,9 @@ public class SignBookController {
                 if (signBook.getSignRequests().stream().anyMatch(s -> s.getStatus().equals(SignRequestStatus.pending))) {
                     signRequestId = signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending)).findFirst().get().getId();
                 }
+            }
+            if(model.getAttribute("message") != null) {
+                redirectAttributes.addFlashAttribute("message", model.getAttribute("message"));
             }
             return "redirect:/user/signrequests/" + signRequestId;
         } else {
@@ -230,7 +233,7 @@ public class SignBookController {
             return "user/signbooks/update";
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande non trouvée"));
-            return "redirect:/user/signbooks/";
+            return "redirect:/user/signbooks";
         }
     }
 
@@ -307,7 +310,7 @@ public class SignBookController {
                           @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) throws EsupSignatureRuntimeException {
         SignBook signBook = signBookService.getById(id);
         signBookService.addWorkflowToSignBook(signBook, authUserEppn, workflowSignBookId);
-        return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "/?form";
+        return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "?form";
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
@@ -321,13 +324,13 @@ public class SignBookController {
         } catch(EsupSignatureIOException e) {
             logger.warn("redirect to home");
         }
-        return "redirect:/user/";
+        return "redirect:/user";
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @GetMapping(value = "/pending/{id}")
     public String pending(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws EsupSignatureRuntimeException {
-        signBookService.pendingSignBook(id, null, authUserEppn, authUserEppn, false);
+        signBookService.pendingSignBook(id, null, authUserEppn, authUserEppn, false, true);
         return "redirect:/user/signbooks/" + id;
     }
 

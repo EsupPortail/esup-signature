@@ -54,7 +54,7 @@ management:
 spring:
     session:
         jdbc:
-          initialize-schema: ALWAYS
+            initialize-schema: ALWAYS
     datasource:
         driver-class-name: org.postgresql.Driver
         url: jdbc:postgresql://localhost:5432/esupsignature
@@ -84,6 +84,10 @@ spring:
         basename: i18n/messages
         encoding: UTF-8
         fallback-to-system-locale: false
+    data:
+        ldap:
+            repositories:
+                enabled: false
 #    security:
 #        oauth2:
 #            client:
@@ -107,27 +111,27 @@ spring:
 #                        user-info-uri: https://fcp.integ01.dev-franceconnect.fr/api/v1/userinfo
 #                        user-name-attribute: sub
 #                        user-info-authentication-method: header
-    servlet:
-        multipart:
-            enabled: true
-            max-file-size: 1280KB
-            max-request-size: 1280KB
-            resolve-lazily: true
-    thymeleaf:
-        cache: false
-        encoding: UTF-8
-        mode: HTML
-        servlet:
-            produce-partial-output-while-processing: false
-    web:
-        resources:
-            cache:
-                cachecontrol:
-                    max-age: 1d
-                    cache-public: true
-            static-locations: classpath:/static
-    mvc:
-        static-path-pattern: /**
+#    servlet:
+#        multipart:
+#            enabled: true
+#            max-file-size: 1280KB
+#            max-request-size: 1280KB
+#            resolve-lazily: true
+#    thymeleaf:
+#        cache: false
+#        encoding: UTF-8
+#        mode: HTML
+#        servlet:
+#            produce-partial-output-while-processing: false
+#    web:
+#        resources:
+#            cache:
+#                cachecontrol:
+#                    max-age: 1d
+#                    cache-public: true
+#            static-locations: classpath:/static
+#    mvc:
+#        static-path-pattern: /**
 
 ldap:
     search-base: ou=people
@@ -250,14 +254,16 @@ logging:
         org.verapdf: error
         org.apache.pdfbox: error
         eu.europa.esig.dss: error
-        org.springframework.web.filter.CommonsRequestLoggingFilter: error
+#        org.springframework.web.filter.CommonsRequestLoggingFilter: error
 #    config: classpath:logback-prod.xml
 
 springdoc:
     api-docs:
         enabled: true
+        path: /api-docs
     swagger-ui:
         enabled: true
         supported-submit-methods: []
-        disable-swagger-default-url: true
+        path: /swagger-ui.html
     packages-to-scan: org.esupportail.esupsignature.web.ws
+    show-actuator: true

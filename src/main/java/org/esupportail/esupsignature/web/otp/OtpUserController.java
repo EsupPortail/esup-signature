@@ -1,6 +1,10 @@
 package org.esupportail.esupsignature.web.otp;
 
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
@@ -12,10 +16,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.time.DayOfWeek;
 import java.util.Arrays;
+import java.util.List;
 
 @CrossOrigin(origins = "*")
 @RequestMapping("/otp/users")
@@ -27,6 +30,9 @@ public class OtpUserController {
     @Resource
     private UserService userService;
 
+    @Resource
+    private SignRequestService signRequestService;
+
     @GetMapping
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
         model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
@@ -35,6 +41,8 @@ public class OtpUserController {
             model.addAttribute("referer", request.getHeader(HttpHeaders.REFERER));
         }
         model.addAttribute("activeMenu", "settings");
+        List<SignRequest> signRequests = signRequestService.getToSignRequests(authUserEppn);
+        model.addAttribute("signRequestId", signRequests.get(0).getId());
         return "user/users/update";
     }
 
@@ -54,13 +62,13 @@ public class OtpUserController {
     public String deleteSign(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes) {
         userService.deleteSign(authUserEppn, id);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Signature supprimée"));
-        return "redirect:/otp/users/";
+        return "redirect:/otp/users";
     }
 
     @GetMapping("/set-default-sign-image/{signImageNumber}")
     public String setDefaultSignImage(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signImageNumber") Integer signImageNumber) {
         userService.setDefaultSignImage(authUserEppn, signImageNumber);
-        return "redirect:/otp/users/";
+        return "redirect:/otp/users";
     }
 
     @GetMapping("/mark-intro-as-read/{name}")

@@ -39,6 +39,7 @@ export class PdfViewer extends EventFactory {
         this.pdfFields = [];
         this.events = {};
         this.rotation = 0;
+        this.renderedPages = 0
         this.initListeners();
         pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
 
@@ -80,7 +81,7 @@ export class PdfViewer extends EventFactory {
                         controller = new AbortController()
                         signal = controller.signal;
                         $.ajax({
-                            url: "/ws-secure/users/search-extvalue/?searchType=" + searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
+                            url: "/ws-secure/users/search-extvalue?searchType=" + searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
                             dataType: "json",
                             signal: signal,
                             data: {
@@ -109,6 +110,7 @@ export class PdfViewer extends EventFactory {
     }
 
     checkCurrentPage(e) {
+        if(this.renderedPages < this.numPages) return;
         let numPages = this.pdfDoc.numPages;
         for(let i = 1; i < numPages + 1; i++) {
             if(e > $("#page_" + i).offset().top - 250) {
@@ -170,30 +172,29 @@ export class PdfViewer extends EventFactory {
         $(".pdf-page").each(function(e) {
            $(this).remove();
         });
-        if(this.pdfDoc != null) {
-            pdf = this.pdfDoc;
-        } else {
+        if(this.pdfDoc == null) {
             this.pdfDoc = pdf;
         }
         this.numPages = this.pdfDoc.numPages;
         document.getElementById('page_count').textContent = this.pdfDoc.numPages;
-        for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
-            let container = document.createElement("div");
-            $(container).attr("id", "page_" + i);
-            $(container).attr("page-num", i);
-            $(container).addClass("drop-shadows");
-            $(container).addClass("pdf-page");
-            this.pdfDiv.append(container);
-            $(container).droppable({
-                drop: function( event, ui ) {
-                    ui.helper.attr("page", i)
-                }
-            });
-            pdf.getPage(i).then(page => this.renderTask(page, container, i));
-        }
+        this.renderedPages = 0;
+        this.render();
         this.refreshTools();
-        this.initialOffset = parseInt($("#page_1").offset().top);
         this.fireEvent("ready", ['ok']);
+    }
+
+    render() {
+        this.renderedPages++;
+        let self = this;
+        this.pdfDoc.getPage(this.renderedPages).then(page => this.renderTask(page, this.renderedPages).then(function (){
+            if(self.renderedPages < self.numPages) {
+                self.render();
+            } else {
+                self.initialOffset = parseInt($("#page_1").offset().top);
+                self.fireEvent('renderFinished', ['ok']);
+                $(document).trigger("renderFinished");
+            }
+        }));
     }
 
     scrollToPage(num) {
@@ -216,46 +217,53 @@ export class PdfViewer extends EventFactory {
         // this.pdfDoc.getPage(this.pageNum).then(page => this.renderTask(page));
     }
 
-    renderTask(page, container, i) {
-        console.info("launch render task scaled to : " + this.scale);
-        this.page = page;
-        let self = this;
-        let scale = this.scale;
-        localStorage.setItem('scale', this.scale.toPrecision(2) + "");
-        let viewport = page.getViewport({scale : this.scale, rotation : this.rotation});
-        let dispatchToDOM = false;
-        let globalEventBus = new EventBus({ dispatchToDOM });
-        let pdfPageView = new pdfjsViewer.PDFPageView({
-            eventBus: globalEventBus,
-            container: container,
-            id: this.pageNum,
-            scale: this.scale,
-            rotation: this.rotation,
-            defaultViewport: viewport,
-            useOnlyCssZoom: false,
-            defaultZoomDelay: 0,
-            textLayerMode: 0,
-            renderer: "canvas",
+    renderTask(page, i) {
+        return new Promise((resolve, reject) => {
+            console.info("launch render task scaled to : " + this.scale);
+            let container = document.createElement("div");
+            $(container).attr("id", "page_" + i);
+            $(container).attr("page-num", i);
+            $(container).addClass("drop-shadows");
+            $(container).addClass("pdf-page");
+            this.pdfDiv.append(container);
+            $(container).droppable({
+                drop: function (event, ui) {
+                    ui.helper.attr("page", i)
+                }
+            });
+            this.page = page;
+            let self = this;
+            let scale = this.scale;
+            localStorage.setItem('scale', this.scale.toPrecision(2) + "");
+            let viewport = page.getViewport({scale: this.scale, rotation: this.rotation});
+            let dispatchToDOM = false;
+            let globalEventBus = new EventBus({dispatchToDOM});
+            let pdfPageView = new pdfjsViewer.PDFPageView({
+                eventBus: globalEventBus,
+                container: container,
+                id: this.pageNum,
+                scale: this.scale,
+                rotation: this.rotation,
+                defaultViewport: viewport,
+                useOnlyCssZoom: false,
+                defaultZoomDelay: 0,
+                textLayerMode: 1,
+                renderer: "canvas",
+            });
+            pdfPageView.setPdfPage(page);
+            pdfPageView.eventBus.on("pagerendered", function () {
+                container.style.width = Math.round(pdfPageView.viewport.width) + "px";
+                container.style.height = Math.round(pdfPageView.viewport.height) + "px";
+                self.postRender(i, page);
+                resolve("ok");
+            });
+            pdfPageView.draw();
         });
-        pdfPageView.setPdfPage(page);
-        pdfPageView.eventBus.on("annotationlayerrendered", function() {
-            // $(".annotationLayer").each(function() {
-            //     $(this).addClass("d-none");
-            // });
-            container.style.width = Math.round(pdfPageView.viewport.width) +"px";
-            container.style.height = Math.round(pdfPageView.viewport.height) + "px";
-            self.postRender(i, page);
-        });
-        pdfPageView.draw();
     }
 
     postRender(i, page) {
         let self = this;
-        this.promiseRenderForm(false, page).then(e => this.promiseRestoreValue()).then(function(){
-            if(i === self.pdfDoc.numPages) {
-                self.fireEvent('renderFinished', ['ok']);
-            }
-        });
+        this.promiseRenderForm(false, page).then(e => this.promiseRestoreValue());
         console.groupEnd();
         this.restoreScrolling();
     }
@@ -444,8 +452,11 @@ export class PdfViewer extends EventFactory {
                     return obj.name === inputName
                 })[0];
             }
+            let canvasField = $('section[data-annotation-id=' + items[i].id + '] > canvas');
+            if (canvasField.length) {
+                canvasField.remove();
+            }
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
-
             if (inputField.length) {
                 inputField.addClass("field-type-text");
                 inputField.on('input', e => this.fireEvent('change', ['checked']));
@@ -456,6 +467,7 @@ export class PdfViewer extends EventFactory {
                 inputField.attr('name', inputName);
                 inputField.attr('placeholder', " ");
                 inputField.removeAttr("maxlength");
+                inputField.removeAttr("hidden");
                 inputField.attr('id', inputName);
                 inputField.attr('title', dataField.description);
                 if (dataField.favorisable && !$("#div_" + inputField.attr('id')).length) {
@@ -501,6 +513,7 @@ export class PdfViewer extends EventFactory {
                         inputField.attr("checked", "checked");
                         inputField.prop("checked", true);
                     }
+                    inputField.unbind();
                     inputField.on('click', e => this.fireEvent('change', ['checked']));
                 }
                 if (dataField.type === 'checkbox') {
@@ -510,7 +523,7 @@ export class PdfViewer extends EventFactory {
                         inputField.attr("checked", "checked");
                         inputField.prop("checked", true);
                     }
-                    inputField.unbind('input');
+                    inputField.unbind();
                     inputField.on('click', e => this.fireEvent('change', ['checked']));
                 }
                 if (dataField.type === "date") {
@@ -594,6 +607,7 @@ export class PdfViewer extends EventFactory {
                 inputField.attr('name', inputName);
                 inputField.attr('placeholder', " ");
                 inputField.removeAttr("maxlength");
+                inputField.removeAttr("hidden");
                 inputField.attr('id', inputName);
                 if (this.isFieldEnable(dataField)) {
                     inputField.val(dataField.defaultValue);
@@ -609,6 +623,7 @@ export class PdfViewer extends EventFactory {
                 this.disableInput(inputField, dataField, items[i].readOnly);
                 if(this.disableAllFields) continue;
                 inputField.removeAttr('size');
+                inputField.removeAttr("hidden");
                 inputField.attr('name', inputName);
                 inputField.attr('id', inputName);
                 if (this.isFieldEnable(dataField)) {

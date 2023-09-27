@@ -9,7 +9,7 @@ import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.Date;
 import java.util.Optional;
 
@@ -55,10 +55,12 @@ public class CommentService {
     }
 
     @Transactional
-    public void deleteComment(Long commentId) {
+    public void deleteComment(Long commentId, SignRequest signRequest) {
         Optional<Comment> comment = commentRepository.findById(commentId);
         if(comment.isPresent()) {
-            SignRequest signRequest = signRequestRepository.findSignRequestByCommentsContains(comment.get());
+            if(signRequest == null) {
+                signRequest = signRequestRepository.findSignRequestByCommentsContains(comment.get());
+            }
             if (comment.get().getStepNumber() != null && comment.get().getStepNumber() > 0 && signRequest.getSignRequestParams().size() > comment.get().getStepNumber() - 1) {
                 signRequest.getSignRequestParams().remove(comment.get().getStepNumber() - 1);
                 if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size() > comment.get().getStepNumber()) {

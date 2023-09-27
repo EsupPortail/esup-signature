@@ -182,6 +182,11 @@ header {
     z-index: 1029 !important;
 }
 
+h7 {
+    text-overflow: ellipsis;
+    height: 72px;
+    overflow: hidden;
+}
 input:invalid {
     box-shadow:none;
 }
@@ -625,6 +630,8 @@ input:checked + .slider:before {
 .workspace-sign {
     margin-top: 128px;
     display: flex;
+    margin-left: 5px;
+    margin-right: 5px;
 }
 
 .cross {
@@ -710,6 +717,11 @@ input:checked + .slider:before {
 
 .new-width-full {
     width: calc(100vw - 70px);
+}
+
+.new-height {
+    height: calc(100vh - 120px);
+    overflow: auto;
 }
 
 #sidebar {
@@ -940,6 +952,13 @@ height: 100%;
     z-index: 10000 !important;
 }
 
+.bg-postit {
+    --bs-bg-opacity: 1;
+    background-color: #FFF740 !important;
+    color: black;
+    border: 1px solid black !important;
+}
+
 .box-wrap{
     display:block;
     position: absolute;
@@ -984,6 +1003,10 @@ height: 100%;
 
 .pdf-page {
     margin-bottom: 10px !important; /* Never change margin between pages */
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
 }
 
 .angle-3 {
@@ -1401,7 +1424,7 @@ textarea:placeholder-shown.required-field {
     pointer-events: none;
     position: fixed;
     right: 1vw;
-    bottom: 80px;
+    bottom: 25px;
     margin-bottom: 0;
     z-index: 6;
     overflow: hidden;
@@ -1708,6 +1731,21 @@ input:focus, textarea:focus, select:focus {
     z-index:2;
 }
 
+@media (max-height: 525px) {
+
+    .fixed-action-btns {
+        height: 100px;
+        width: 500px;
+        overflow: revert;
+    }
+    .fixed-action-btns ul {
+        -webkit-box-orient: revert;
+        -webkit-box-direction: revert;
+        -ms-flex-direction: revert;
+        flex-direction: revert;
+    }
+}
+
 @media (max-width: 785px) {
 
     #returnButton {
@@ -1760,7 +1798,7 @@ input:focus, textarea:focus, select:focus {
     }
 
     .fixed-action-btns {
-        bottom: 50px;
+        bottom: 25px;
         right: 30px;
     }
 

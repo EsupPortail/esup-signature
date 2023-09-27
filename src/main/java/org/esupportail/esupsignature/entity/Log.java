@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Date;
 
 @Entity
@@ -12,11 +12,9 @@ import java.util.Date;
 public class Log {
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hibernate_sequence")
+    @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
-
-	@Version
-    private Integer version;
 
     private String signRequestToken;
 
@@ -159,13 +157,9 @@ public class Log {
         this.id = id;
     }
 
-	public Integer getVersion() {
-        return this.version;
-    }
+	
 
-	public void setVersion(Integer version) {
-        this.version = version;
-    }
+	
 
     public Integer getPageNumber() {
         return pageNumber;

@@ -3,11 +3,11 @@
     <tr th:if="${statusFilter != 'empty' && signBook.signRequests.size() > 0}" th:with="signRequest = ${signBook.signRequests.get(0)}" th:data-href="'/user/signbooks/' + ${signBook.id}" data-bs-toggle="tooltip" th:title="${signBook.description}">
         <td class="w-20 d-none d-lg-table-cell">
             <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"
-                   th:data-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"
-                   th:data-id-signbook="${signBook.id}">
+                th:data-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"
+                th:data-id-signbook="${signBook.id}">
         </td>
         <td class="w-20 d-none d-lg-table-cell">
-            <button title="Afficher les postits" th:if="${signBook.postits.size() > 0}" th:text="${signBook.postits.size()}" type="button" class="badge bg-warning border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
+            <button title="Afficher les postits" th:if="${signBook.postits.size() > 0}" th:text="${signBook.postits.size()}" type="button" class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
             </button>
             <ul class="dropdown-menu striped-list" th:aria-labelledby="'commentButton-' + ${signBook.id}">
                 <th:block th:each="postit : ${signBook.postits}">
@@ -75,11 +75,11 @@
         </td>
         <td class="clickable-td d-none d-md-table-cell"
             style="width: 150px;">
-            <div th:replace="user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})"></div>
+            <div th:replace="~{user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})}"></div>
         </td>
         <td class="clickable-td d-md-none"
             style="width: 150px;">
-            <div th:replace="user/signbooks/includes/status-sm :: status(signBook=${signRequest.parentSignBook})"></div>
+            <div th:replace="~{user/signbooks/includes/status-sm :: status(signBook=${signRequest.parentSignBook})}"></div>
         </td>
         <td>
             <div class="dropdown position-relative">
@@ -107,12 +107,12 @@
                         </form>
                     </li>
                     <li>
-                        <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">
+                        <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">
                             <i class="fas fa-eye-slash pr-2"></i> Masquer
                         </a>
                     </li>
                     <li>
-                        <a th:if="${signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">
+                        <a th:if="${signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">
                             <i class="fas fa-eye-slash pr-2"></i> Afficher dans la liste
                         </a>
                     </li>
@@ -195,7 +195,7 @@
         <td></td>
         <td class="d-none d-md-table-cell"
             style="width: 150px;">
-            <div th:replace="user/signbooks/includes/status :: status(signBook=${signBook})"></div>
+            <div th:replace="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
         </td>
         <td>
             <div class="dropdown position-relative">
@@ -204,10 +204,10 @@
                 </button>
                 <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signBook.id}">
 
-<!--                        <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">-->
+<!--                        <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">-->
 <!--                            <i class="fas fa-eye-slash pr-2"></i> Masquer-->
 <!--                        </a>-->
-<!--                        <a th:if="${signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '/?statusFilter=' + ${statusFilter}">-->
+<!--                        <a th:if="${signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">-->
 <!--                            <i class="fas fa-eye-slash pr-2"></i> Afficher dans la liste-->
 <!--                        </a>-->
                     <li>

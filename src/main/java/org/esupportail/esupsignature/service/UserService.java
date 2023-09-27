@@ -16,6 +16,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
+import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.ldap.*;
 import org.esupportail.esupsignature.service.ldap.entry.AliasLdap;
 import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
@@ -36,7 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -68,6 +69,8 @@ public class UserService {
 
     private final LdapOrganizationalUnitService ldapOrganizationalUnitService;
 
+    private final SmsService smsService;
+
     @Resource
     private ObjectMapper objectMapper;
 
@@ -77,7 +80,8 @@ public class UserService {
                        @Autowired(required = false) LdapPersonLightService ldapPersonLightService,
                        @Autowired(required = false) LdapAliasService ldapAliasService,
                        @Autowired(required = false) LdapGroupService ldapGroupService,
-                       @Autowired(required = false) LdapOrganizationalUnitService ldapOrganizationalUnitService) {
+                       @Autowired(required = false) LdapOrganizationalUnitService ldapOrganizationalUnitService,
+                       @Autowired(required = false) SmsService smsService) {
         this.globalProperties = globalProperties;
         this.webSecurityProperties = webSecurityProperties;
         this.ldapPersonService = ldapPersonService;
@@ -85,6 +89,7 @@ public class UserService {
         this.ldapAliasService = ldapAliasService;
         this.ldapGroupService = ldapGroupService;
         this.ldapOrganizationalUnitService = ldapOrganizationalUnitService;
+        this.smsService = smsService;
     }
 
     @Resource
@@ -385,10 +390,10 @@ public class UserService {
             if(authUser.getKeystore() != null) {
                 documentService.delete(authUser.getKeystore());
             }
-            authUser.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), authUser.getEppn() + "_" + multipartKeystore.getOriginalFilename().split("\\.")[0] + ".p12", multipartKeystore.getContentType()));
+            authUser.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), authUser, authUser.getEppn() + "_" + multipartKeystore.getOriginalFilename().split("\\.")[0] + ".p12", multipartKeystore.getContentType()));
         }
         if(signImageBase64 != null && !signImageBase64.isEmpty()) {
-            authUser.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signImageBase64), authUser.getEppn() + "_sign.png", "image/png"));
+            authUser.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signImageBase64), authUser, authUser.getEppn() + "_sign.png", "image/png"));
             if(authUser.getSignImages().size() == 1) {
                 authUser.setDefaultSignImageNumber(0);
             }
@@ -470,7 +475,7 @@ public class UserService {
                 personLightLdaps.add(personLightLdap);
             }
         }
-            if(ldapAliasService != null) {
+        if(ldapAliasService != null) {
             for (AliasLdap aliasLdap : ldapAliasService.searchByMail(searchString, false)) {
                 personLightLdaps.add(new PersonLightLdap(aliasLdap.getMail()));
             }
@@ -579,6 +584,25 @@ public class UserService {
     }
 
     @Transactional
+    public List<User> checkTempUsers(List<String> recipientEmails) {
+        if (recipientEmails!= null && !recipientEmails.isEmpty()) {
+            try {
+                List<User> users = getTempUsersFromRecipientList(recipientEmails);
+                if (smsService != null || !globalProperties.getSmsRequired()) {
+                    return users;
+                } else {
+                    if (!users.isEmpty()) {
+                        return null;
+                    }
+                }
+            } catch (EsupSignatureRuntimeException e) {
+                return null;
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    @Transactional
     public List<User> getTempUsersFromRecipientList(List<String> recipientsEmails) {
         List<User> tempUsers = new ArrayList<>();
         for (String recipientEmail : recipientsEmails) {
@@ -637,7 +661,6 @@ public class UserService {
         }
         return new ArrayList<>(users);
     }
-
 
     @Transactional
     public Map<String, Object> getKeystoreByUser(String authUserEppn) throws IOException {

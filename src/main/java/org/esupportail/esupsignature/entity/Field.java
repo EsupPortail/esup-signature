@@ -3,7 +3,7 @@ package org.esupportail.esupsignature.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,11 +12,17 @@ import java.util.List;
 public class Field {
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(
+    strategy = GenerationType.SEQUENCE,
+    generator = "hibernate_sequence"
+	)
+	@SequenceGenerator(
+		name = "hibernate_sequence",
+		allocationSize = 1
+	)
 	private Long id;
 
-	@Version
-    private Integer version;
+	
 	
 	private String name;
 
@@ -73,13 +79,9 @@ public class Field {
 		this.id = id;
 	}
 
-	public Integer getVersion() {
-		return version;
-	}
+	
 
-	public void setVersion(Integer version) {
-		this.version = version;
-	}
+	
 
 	public String getName() {
 		return name;

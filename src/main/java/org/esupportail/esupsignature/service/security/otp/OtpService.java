@@ -6,6 +6,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import org.bouncycastle.util.encoders.Hex;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
@@ -13,14 +14,16 @@ import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -48,7 +51,14 @@ public class OtpService {
     @Resource
     private UserService userService;
 
-    public OtpService() {
+    private final GlobalProperties globalProperties;
+
+    private final SmsService smsService;
+
+
+    public OtpService(GlobalProperties globalProperties, @Autowired(required = false) SmsService smsService) {
+        this.globalProperties = globalProperties;
+        this.smsService = smsService;
         otpCache = CacheBuilder.newBuilder().expireAfterWrite(EXPIRE_MINS, TimeUnit.MINUTES).build(new CacheLoader<>() {
             public Otp load(String urlId) {
                 return null;
@@ -59,7 +69,7 @@ public class OtpService {
     @Transactional
     public boolean generateOtpForSignRequest(Long id, Long extUserId, String phone) throws EsupSignatureMailException {
         User extUser = userService.getById(extUserId);
-        if(extUser.getUserType().equals(UserType.external)) {
+        if(extUser.getUserType().equals(UserType.external) && (!globalProperties.getSmsRequired() || smsService != null)) {
 
             SignBook signBook = signBookRepository.findById(id).get();
             Otp otp = new Otp();

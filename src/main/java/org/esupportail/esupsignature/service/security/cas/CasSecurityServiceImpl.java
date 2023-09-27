@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.service.security.cas;
 
+import jakarta.annotation.Resource;
+import org.apereo.cas.client.validation.Cas20ServiceTicketValidator;
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
@@ -9,7 +11,6 @@ import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.SpelGroupService;
-import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -19,6 +20,7 @@ import org.springframework.security.cas.authentication.CasAssertionAuthenticatio
 import org.springframework.security.cas.authentication.CasAuthenticationProvider;
 import org.springframework.security.cas.web.CasAuthenticationEntryPoint;
 import org.springframework.security.cas.web.CasAuthenticationFilter;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
@@ -27,7 +29,6 @@ import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsService;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,9 +51,6 @@ public class CasSecurityServiceImpl implements SecurityService {
 
 	@Resource
 	private CasAuthenticationSuccessHandler casAuthenticationSuccessHandler;
-	
-	@Resource
-	private RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
 
 	@Resource
 	private LdapContextSource ldapContextSource;
@@ -62,6 +60,9 @@ public class CasSecurityServiceImpl implements SecurityService {
 
 	@Resource
 	private MappingGroupsRolesRepository mappingGroupsRolesRepository;
+
+	@Resource
+	private SessionRegistry sessionRegistry;
 
 	@Override
 	public String getTitle() {
@@ -90,7 +91,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 	public CasAuthenticationFilter getAuthenticationProcessingFilter() {
 		CasAuthenticationFilter authenticationFilter = new CasAuthenticationFilter();
 		authenticationFilter.setAuthenticationManager(casAuthenticationManager());
-		authenticationFilter.setSessionAuthenticationStrategy(sessionAuthenticationStrategy);
+		authenticationFilter.setSessionAuthenticationStrategy(new RegisterSessionAuthenticationStrategy(sessionRegistry));
 		authenticationFilter.setAuthenticationSuccessHandler(casAuthenticationSuccessHandler);
 		return authenticationFilter;
 	}

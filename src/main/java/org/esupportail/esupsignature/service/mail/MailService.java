@@ -29,10 +29,10 @@ import org.springframework.util.FileCopyUtils;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import javax.annotation.Resource;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import javax.transaction.Transactional;
+import jakarta.annotation.Resource;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -49,15 +49,12 @@ public class MailService {
 
     private final GlobalProperties globalProperties;
 
-    private MailConfig mailConfig;
+    private final MailConfig mailConfig;
 
-    public MailService(GlobalProperties globalProperties) {
+    public MailService(GlobalProperties globalProperties, @Autowired(required = false) MailConfig mailConfig, TemplateEngine templateEngine) {
         this.globalProperties = globalProperties;
-    }
-
-    @Autowired(required = false)
-    public void setMailConfig(MailConfig mailConfig) {
         this.mailConfig = mailConfig;
+        this.templateEngine = templateEngine;
     }
 
     private JavaMailSenderImpl mailSender;
@@ -67,8 +64,7 @@ public class MailService {
         this.mailSender = mailSender;
     }
 
-    @Resource
-    private TemplateEngine templateEngine;
+    private final TemplateEngine templateEngine;
 
     @Resource
     private UserService userService;
@@ -411,7 +407,7 @@ public class MailService {
 
     public void sendOtp(Otp otp, String urlId, SignBook signBook) throws EsupSignatureMailException {
         final Context ctx = new Context(Locale.FRENCH);
-        ctx.setVariable("url", globalProperties.getRootUrl() + "/otp-access/" + urlId);
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/otp-access/first/" + urlId);
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);

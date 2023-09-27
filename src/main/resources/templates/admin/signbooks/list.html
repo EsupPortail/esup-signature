@@ -5,19 +5,19 @@
 <!--/*@thymesVar id="signRequests" type="org.springframework.data.domain.Page<esupportail.esupsignature.entity.SignRequest>"*/-->
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <!--/*@thymesVar id="infiniteScrolling" type="java.lang.Boolean"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
     import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=[[${versionApp}]]';
     new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${creatorFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "admin");
 </script>
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main" th:style="${infiniteScrolling} ? '' : 'padding-bottom: 0px;'">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active">Tableau de bord</li>
             </ol>
         </nav>
@@ -140,7 +140,7 @@
                         </tr>
                         </thead>
                         <tbody id="signRequestTable">
-                        <tr th:replace="admin/signbooks/includes/list-elem"></tr>
+                        <tr th:replace="~{admin/signbooks/includes/list-elem}"></tr>
                         </tbody>
                         <tfoot>
                         <tr>
@@ -153,7 +153,7 @@
                     </div>
                 </div>
             </div>
-            <nav th:unless="${infiniteScrolling}" th:include="fragments/pagination :: pagination"></nav>
+            <nav th:unless="${infiniteScrolling}" th:insert="~{fragments/pagination :: pagination}"></nav>
         </div>
     </div>
 </main>
@@ -209,6 +209,6 @@
         </div>
     </div>
 </div>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

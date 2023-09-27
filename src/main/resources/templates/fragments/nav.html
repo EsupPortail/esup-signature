@@ -26,16 +26,24 @@
             <ul id="navbar-buttons" class="navbar-nav" th:if="${#authorization.expression('isAuthenticated()')}">
                 <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
-                            href="/user/" class="btn btn-transparent text-left me-1">
+                            href="/user" class="btn btn-transparent text-left me-1">
                         <i class="fas fa-home"></i> <span class="nav-item-label d-none d-xxl-inline">Accueil</span>
                         <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-md-inline" th:text="${nbToSign}">
                         </span>
                     </a>
                 </li>
+                <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_OTP'')') && signRequestId != null}">
+                    <a th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
+                       th:href="'/otp/signrequests/' + ${signRequestId}" class="btn btn-transparent text-left me-1">
+                        <i class="fas fa-file-signature"></i> <span class="nav-item-label d-none d-xxl-inline">Retour à ma demande</span>
+                        <span title="Retour à ma demande" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-md-inline" th:text="${nbToSign}">
+                        </span>
+                    </a>
+                </li>
                 <li class="nav-item text-white" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a th:classappend="${activeMenu == 'signbooks'} ? 'bg-secondary'" title="Tableau de bord"
-                       th:if="${userEppn == authUserEppn || isOneSignShare || isOneReadShare}"
-                       href="/user/signbooks" class="btn btn-transparent text-left me-1">
+                        th:if="${userEppn == authUserEppn || isOneSignShare || isOneReadShare}"
+                        href="/user/signbooks" class="btn btn-transparent text-left me-1">
                         <i class="fas fa-paste"></i> <span
                             class="nav-item-label d-none d-xl-inline">Tableau de bord</span>
                         <span title="Demandes en attente" th:if="${nbSignRequests > 0  && userEppn == authUserEppn}" class="badge bg-warning d-none d-md-inline" th:text="${nbSignRequests}">
@@ -44,26 +52,26 @@
                 </li>
                 <li class="nav-item text-white" th:if="${userEppn == authUserEppn && reportNumber > 0}">
                     <a th:classappend="${activeMenu == 'reports'} ? 'bg-secondary'" title="Rapport"
-                       href="/user/reports" class="btn btn-transparent text-left me-1">
+                        href="/user/reports" class="btn btn-transparent text-left me-1">
                         <i class="fas fa-file-contract"></i> <span
                             class="nav-item-label d-none d-xl-inline">Rapports</span>
                     </a>
                 </li>
                 <li class="nav-item dropdown" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a class="btn btn-transparent text-left me-1 text-white dropdown-toggle" href="#" id="navbarDropdown"
-                       role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-toolbox"></i> <span class="nav-item-label d-none d-lg-inline">Outils</span>
                     </a>
                     <div class="dropdown-menu bg-dark border-secondary align-items-center" aria-labelledby="navbarDropdown" >
                         <a th:if="${managedWorkflowsSize > 0}" th:classappend="${activeMenu == 'manage'} ? 'bg-secondary'"
-                           title="Vue manager" href="/user/manage"
-                           class="btn text-white btn-transparent text-left m-1" style="width: 250px;" >
+                            title="Vue manager" href="/user/manage"
+                            class="btn text-white btn-transparent text-left m-1" style="width: 250px;" >
                             <i class="fas fa-tasks"></i> <span class="nav-item-label d-inline">Espace superviseur</span>
                         </a>
                         <div th:if="${managedWorkflowsSize > 0}" class="dropdown-divider"></div>
                         <a id="start-wizard-button" th:unless="${globalProperties.hideWizard}" role="button" class="btn text-white btn-transparent text-left m-1" data-bs-toggle="modal"
-                           data-bs-target="#wizModal"
-                           title="Créez un nouveau circuit à l'aide de l'assistant">
+                            data-bs-target="#wizModal"
+                            title="Créez un nouveau circuit à l'aide de l'assistant">
                                 <i class="fas fa-magic"></i> Assistant de création de circuit
                         </a>
 <!--                        <a role="button" href class="btn text-white btn-transparent text-left m-1" style="width: 250px;"-->
@@ -79,13 +87,13 @@
 <!--                            <i class="fas fa-paper-plane"></i><span class="nav-item-label d-none d-xl-inline"> Demander une signature</span>-->
 <!--                        </a>-->
                         <div th:unless="${globalProperties.hideWizard}" class="dropdown-divider"></div>
-                        <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/'">
+                        <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users'">
                             <i class="fas fa-user-cog"></i> Modifier mes paramètres
                         </a>
                         <div class="dropdown-divider"></div>
                         <a th:classappend="${activeMenu == 'validation'} ? 'bg-secondary'"
-                           title="Valider la signature d'un document" href="/user/validation"
-                           class="btn text-white btn-transparent text-left m-1" style="width: 250px;" >
+                            title="Valider la signature d'un document" href="/user/validation"
+                            class="btn text-white btn-transparent text-left m-1" style="width: 250px;" >
                             <i class="fas fa-shield-alt"></i> <span class="nav-item-label d-inline">Contrôler un document</span>
                         </a>
                     </div>
@@ -119,13 +127,13 @@
                 </li>
                 <li class="nav-item text-white me-1" th:if="${isManager && userEppn == authUserEppn}" title="Menu gestionnaire">
                     <a href="/admin/workflows" class="btn text-white btn-transparent"
-                       th:classappend="${managerMenu == 'active'} ? 'bg-secondary'">
+                        th:classappend="${managerMenu == 'active'} ? 'bg-secondary'">
                         <i class="fas fa-user-tie"></i> <span class="nav-item-label d-none d-xxl-inline">Gestionnaire</span>
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')') && userEppn == authUserEppn}" title="Menu admin">
-                    <a href="/admin/" class="btn text-white btn-transparent"
-                       th:classappend="${adminMenu == 'active'} ? 'bg-secondary' : ''">
+                    <a href="/admin" class="btn text-white btn-transparent"
+                        th:classappend="${adminMenu == 'active'} ? 'bg-secondary' : ''">
                         <i class="fas fa-crown"></i><span class="nav-item-label d-none d-xxl-inline">Admin</span>
                         <span title="Statut DSS" th:if="${dssStatus == null || dssStatus == true}" class="badge bg-danger d-none d-md-inline ms-1">
                             !
@@ -142,24 +150,24 @@
 <!--                <li class="nav-item text-white" >-->
 <!--                <a th:unless="${isUserOnSu}" class="btn text-white btn-transparent"-->
 <!--                   aria-label="Paramètres utilisateur "-->
-<!--                   title="Paramètres" href="/user/users/?form">-->
+<!--                   title="Paramètres" href="/user/users?form">-->
 <!--                    <i class="fas fa-user-cog"></i>-->
 <!--                </a>-->
 <!--                </li>-->
                 <li class="nav-item">
                     <a class="btn btn-transparent user-toggle d-inline-flex text-white align-middle me-1" id="user-toggle"
-                       th:classappend="${paramMenu}" type="button" href="#user-infos"
-                       aria-expanded="false"
-                       aria-controls="user-infos"
-                       data-bs-toggle="collapse">
+                        th:classappend="${paramMenu}" type="button" href="#user-infos"
+                        aria-expanded="false"
+                        aria-controls="user-infos"
+                        data-bs-toggle="collapse">
                         <b class="nav-item-label d-none d-md-inline"
-                           th:text="${user.firstname} + ' ' + ${user.name}"></b>
+                            th:text="${user.firstname} + ' ' + ${user.name}"></b>
                         <div class="user-toggle align-middle ms-2"><i class="fas fa-user"></i></div>
                     </a>
                 </li>
                 <li class="nav-item">
                 <a rel="noreferrer" title="Aide en ligne" data-bs-toggle="modal"
-                   data-bs-target="#helpModal" aria-label="Guide utilisateur" style="background-color: #096fb2;" class="btn text-white float-end align-middle d-none d-md-inline" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur"><i class="fas fa-question"></i></a>
+                    data-bs-target="#helpModal" aria-label="Guide utilisateur" style="background-color: #096fb2;" class="btn text-white float-end align-middle d-none d-md-inline" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur"><i class="fas fa-question"></i></a>
                 </li>
             </ul>
         </div>
@@ -187,8 +195,8 @@
                 </select>
             </form>
             <a th:unless="${isUserOnSu}" class="btn btn-sm light btn-outline-dark mt-1"
-               aria-label="Paramètres utilisateur "
-               title="Paramètres" href="/user/users/shares">
+                aria-label="Paramètres utilisateur "
+                title="Paramètres" href="/user/users/shares">
                 <i class="fas fa-share-alt"></i> Gérer mes délégations
             </a>
             <hr>
@@ -214,7 +222,7 @@
                 </tr>
                 <tr th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" >
                     <th>Auth</th>
-                    <td th:text="${#request.getSession().getAttribute('securityServiceName')}"></td>
+                    <td th:text="${securityServiceName}"></td>
                 </tr>
                 <tr>
                     <th>Mes signatures</th>
@@ -259,14 +267,14 @@
                 </tbody>
             </table>
             <a th:unless="${isUserOnSu}" class="btn btn-sm btn-light btn-outline-dark"
-               aria-label="Paramètres utilisateur "
-               title="Paramètres" th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/'">
+                aria-label="Paramètres utilisateur "
+                title="Paramètres" th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users'">
                 <i class="fas fa-user-cog"></i> Modifier mes paramètres
             </a>
             <hr>
             <a th:unless="${isUserOnSu}" class="btn btn-sm btn-light btn-outline-dark"
-               aria-label="Paramètres utilisateur "
-               title="Déconnexion" href="/logout">
+                aria-label="Paramètres utilisateur "
+                title="Déconnexion" href="/logout">
                 <i class="fas fa-power-off"></i> Déconnexion
             </a>
         </div>

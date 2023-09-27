@@ -25,9 +25,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
@@ -116,7 +116,7 @@ public class WorkflowAdminController {
 			}
 		} catch (EsupSignatureRuntimeException e) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit possède déjà ce préfixe"));
-			return "redirect:/admin/workflows/";
+			return "redirect:/admin/workflows";
 		}
 		return "redirect:/admin/workflows/update/" + workflow.getId();
 	}
@@ -135,7 +135,7 @@ public class WorkflowAdminController {
 			return "admin/workflows/update";
 		}
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
-		return "redirect:/user/";
+		return "redirect:/user";
     }
 
     @PostMapping(value = "/update")
@@ -151,7 +151,7 @@ public class WorkflowAdminController {
 			return "redirect:/admin/workflows/update/" + updateWorkflow.getId();
 		}
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
-		return "redirect:/user/";
+		return "redirect:/user";
     }
 
     @DeleteMapping(value = "/{id}", produces = "text/html")

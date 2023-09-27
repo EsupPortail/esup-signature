@@ -1,27 +1,23 @@
 package org.esupportail.esupsignature.web.wssecure;
 
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UiParams;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.FieldPropertieService;
 import org.esupportail.esupsignature.service.UserPropertieService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValue;
 import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValueService;
-import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -40,13 +36,6 @@ public class UserWsSecureController {
 
     @Resource
     private UserService userService;
-
-    private SmsService smsService;
-
-    @Autowired(required = false)
-    public void setSmsService(SmsService smsService) {
-        this.smsService = smsService;
-    }
 
     @Resource
     private ExtValueService extValueService;
@@ -88,21 +77,7 @@ public class UserWsSecureController {
     @ResponseBody
     @PostMapping(value ="/check-temp-users")
     private List<User> checkTempUsers(@RequestBody(required = false) List<String> recipientEmails) {
-        if (recipientEmails!= null && recipientEmails.size() > 0) {
-            try {
-                List<User> users = userService.getTempUsersFromRecipientList(recipientEmails);
-                if (smsService != null) {
-                    return users;
-                } else {
-                    if (users.size() > 0) {
-                        return null;
-                    }
-                }
-            } catch (EsupSignatureRuntimeException e) {
-                return null;
-            }
-        }
-        return new ArrayList<>();
+        return userService.checkTempUsers(recipientEmails);
     }
 
     @GetMapping(value = "/get-sign-image/{id}")

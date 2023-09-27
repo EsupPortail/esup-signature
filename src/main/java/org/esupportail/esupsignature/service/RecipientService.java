@@ -10,7 +10,7 @@ import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -72,7 +72,7 @@ public class RecipientService {
         if (recipientEmails != null && recipientEmails.size() > 0) {
             for (String recipientEmail : recipientEmails) {
                 List<String> groupList = userListService.getUsersEmailFromList(recipientEmail);
-                if(groupList.size() == 0) {
+                if(groupList.isEmpty()) {
                     users.add(userService.getUserByEmail(recipientEmail));
                 } else {
                     for(String email : groupList) {

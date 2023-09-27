@@ -104,7 +104,7 @@ export class WorkspacePdf {
             this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
             this.pdfViewer.addEventListener('renderFinished', e => this.refreshAfterPageChange());
             this.pdfViewer.addEventListener('renderFinished', e => this.initForm());
-            this.pdfViewer.addEventListener('change', e => this.saveData());
+            this.pdfViewer.addEventListener('change', e => this.saveData(localStorage.getItem('disableFormAlert') === "true"));
             this.pdfViewer.pdfDiv.on('click', e => this.clickAction(e));
 
             $(".postit-global-close").on('click', function () {
@@ -143,30 +143,6 @@ export class WorkspacePdf {
         $("#addTimes").on("click", e => this.signPosition.addTimesImage(this.pdfViewer.pageNum));
         $("#addCircle").on("click", e => this.signPosition.addCircleImage(this.pdfViewer.pageNum));
         $("#addText").on("click", e => this.signPosition.addText(this.pdfViewer.pageNum));
-
-        $('[id^="deleteAttachement-"]').each(function () {
-            $(this).on('click', function (e) {
-                e.preventDefault();
-                let target = e.currentTarget;
-                bootbox.confirm("Confirmez-vous la suppression de la pièce jointe ?", function (result) {
-                    if (result) {
-                        location.href = $(target).attr('href');
-                    }
-                });
-            });
-        });
-
-        $('[id^="deleteLink_"]').each(function () {
-            $(this).on('click', function (e) {
-                e.preventDefault();
-                let target = e.currentTarget;
-                bootbox.confirm("Confirmez la suppression du lien ?", function (result) {
-                    if (result) {
-                        location.href = $(target).attr('href');
-                    }
-                });
-            });
-        });
 
         let signImageBtn = $("#signImage");
         signImageBtn.unbind();
@@ -313,8 +289,24 @@ export class WorkspacePdf {
         } else {
             if(!this.saveAlert && !disableAlert) {
                 this.saveAlert = true;
-                bootbox.alert("Attention, <p>Vous modifier les champs d’un PDF en dehors d’une procédure de formulaire esup-signature.<br> " +
-                    "Dans ce cas, vos modifications seront prises en compte seulement si vous allez jusqu’à la signature du document. <br>Dans le cas contraire, si vous abandonnez, votre saisie sera perdue.</p>", function (){ });
+                bootbox.confirm({
+                    message : "Attention, <p>Vous modifier les champs d’un PDF en dehors d’une procédure de formulaire esup-signature.<br>Dans ce cas, vos modifications seront prises en compte seulement si vous allez jusqu’à la signature du document. <br>Dans le cas contraire, si vous abandonnez, votre saisie sera perdue.</p>",
+                    buttons: {
+                        cancel: {
+                            label: 'Ok',
+                            className: 'btn-primary'
+                        },
+                        confirm: {
+                            label: 'Ne plus me montrer ce message',
+                            className: 'btn-secondary'
+                        }
+                    },
+                    callback: function (result) {
+                        if (result) {
+                            localStorage.setItem('disableFormAlert', true)
+                        }
+                    }
+                });
             }
         }
         this.executeNextCommand();
@@ -455,7 +447,7 @@ export class WorkspacePdf {
         }
         $.ajax({
             method: 'POST',
-            url: "/user/signrequests/comment/" + this.signRequestId + "/?" + commentUrlParams,
+            url: "/user/signrequests/comment/" + this.signRequestId + "?" + commentUrlParams,
             success: function () {
                 document.location.reload();
             }
@@ -493,7 +485,7 @@ export class WorkspacePdf {
                                 if (result) {
                                     $.ajax({
                                         method: 'DELETE',
-                                        url: "/ws-secure/signrequests/delete-comment/" + self.signRequestId + "/" + comment.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
+                                        url: "/ws-secure/signrequests/delete-comment/" + self.signRequestId + "/" + comment.id + "?" + self.csrf.parameterName + "=" + self.csrf.token,
                                         success: function () {
                                             document.location.reload();
                                         }
@@ -537,9 +529,9 @@ export class WorkspacePdf {
                         e.stopPropagation();
                         bootbox.confirm("Supprimer cet emplacement de signature ?", function (result) {
                             if (result) {
-                                let url = "/ws-secure/signrequests/delete-comment/" + self.signRequestId + "/" + spot.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token;
+                                let url = "/ws-secure/signrequests/delete-comment/" + self.signRequestId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
                                 if(self.currentSignType === "form") {
-                                    url = "/admin/forms/delete-spot/" + self.formId + "/" + spot.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token;
+                                    url = "/admin/forms/delete-spot/" + self.formId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
                                 }
                                 $.ajax({
                                     method: 'DELETE',

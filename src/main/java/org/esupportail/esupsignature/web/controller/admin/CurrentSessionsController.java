@@ -29,9 +29,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -77,8 +77,7 @@ public class CurrentSessionsController {
 					sessionSize += session.getAttribute(attr).toString().getBytes().length;
 				}
 				sessions.add(session);
-				if(sessionInformation != null && sessionInformation.getPrincipal() instanceof LdapUserDetailsImpl) {
-					LdapUserDetailsImpl ldapUserDetails = (LdapUserDetailsImpl) sessionInformation.getPrincipal();
+				if(sessionInformation != null && sessionInformation.getPrincipal() instanceof LdapUserDetailsImpl ldapUserDetails) {
 					if(!allSessions.containsKey(ldapUserDetails.getUsername())) {
 						allSessions.put(ldapUserDetails.getUsername(), sessions);
 					} else {

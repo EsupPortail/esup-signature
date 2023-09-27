@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Date;
@@ -18,12 +18,10 @@ public class Document {
 	private static final Logger logger = LoggerFactory.getLogger(Document.class);
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hibernate_sequence")
+    @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-	@Version
-    private Integer version;
-	
 	private String fileName;
 
     private Long size;
@@ -34,12 +32,15 @@ public class Document {
 
     private String contentType;
 
+    @ManyToOne
+    private User createBy;
+
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
     @JsonIgnore
-    @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST}, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, orphanRemoval = true)
     private BigFile bigFile = new BigFile();
 
     @JsonIgnore
@@ -97,7 +98,15 @@ public class Document {
         this.contentType = contentType;
     }
 
-	public Date getCreateDate() {
+    public User getCreateBy() {
+        return createBy;
+    }
+
+    public void setCreateBy(User createBy) {
+        this.createBy = createBy;
+    }
+
+    public Date getCreateDate() {
         return this.createDate;
     }
 
@@ -121,13 +130,9 @@ public class Document {
         this.id = id;
     }
 
-	public Integer getVersion() {
-        return this.version;
-    }
+	
 
-	public void setVersion(Integer version) {
-        this.version = version;
-    }
+	
 
     public InputStream getTransientInputStream() {
         return transientInputStream;

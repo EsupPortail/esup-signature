@@ -3,16 +3,16 @@
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <!--/*@thymesVar id="preFillTypes" type="java.util.List<org.esupportail.esupsignature.service.interfaces.prefill.PreFill>"*/-->
 <!--/*@thymesVar id="workflowTypes" type="java.util.List<org.esupportail.esupsignature.service.interfaces.workflow.Workflow>"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
-        <nav th:replace="fragments/sides/side-manager :: side-manager"></nav>
+        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+        <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active">Liste des formulaires</li>
             </ol>
         </nav>
@@ -32,7 +32,6 @@
                                 <th class="w-50">Titre</th>
                                 <th>Nom</th>
                                 <th>Circuit associé</th>
-                                <th>Version</th>
                                 <th>Actif</th>
                                 <th>Supprimé</th>
                                 <th>Rôle</th>
@@ -46,7 +45,6 @@
                                 <td>
                                     <a th:if="${form.workflow != null}" th:href="'/admin/workflows/update/' + ${form.workflow.id}" th:text="${form.workflow.description}"></a>
                                 </td>
-                                <td class="clickable-td" th:text="${form.version}"></td>
                                 <td class="clickable-td">
                                     <i th:if="${form.activeVersion}" class="fas fa-check text-success"></i>
                                     <i th:unless="${form.activeVersion}" class="fas fa-times text-danger"></i>
@@ -274,6 +272,6 @@
         </div>
     </div>
 </div>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

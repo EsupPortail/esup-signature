@@ -17,7 +17,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import org.springframework.util.StringUtils;
 
 import java.text.MessageFormat;
@@ -156,7 +156,8 @@ public class LdapGroupService implements GroupService {
                 }
             });
         }
-        if(group.size() > 0 && eppns.size() == 0) {
+        if(!group.isEmpty() && eppns.isEmpty()) {
+            logger.warn("empty group " + groupCn);
             throw new EsupSignatureRuntimeException("empty group " + groupCn);
         }
         return eppns;

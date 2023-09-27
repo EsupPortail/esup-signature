@@ -157,9 +157,9 @@ export class SignRequestParams extends EventFactory {
                 "&commentPageNumber=" + this.signPageNumber +
                 "&spotStepNumber=" + spotStepNumber +
                 "&" + this.csrf.parameterName + "=" + this.csrf.token;
-            let url = "/user/signrequests/comment/" + $("#saveSpotButton").attr("data-es-signrequest-id") + "/?" + commentUrlParams;
+            let url = "/user/signrequests/comment/" + $("#saveSpotButton").attr("data-es-signrequest-id") + "?" + commentUrlParams;
             if (this.signType === "form") {
-                url = "/admin/forms/add-spot/" + $("#saveSpotButton").attr("data-es-signrequest-id") + "/?" + commentUrlParams;
+                url = "/admin/forms/add-spot/" + $("#saveSpotButton").attr("data-es-signrequest-id") + "?" + commentUrlParams;
             }
             $.ajax({
                 method: 'POST',

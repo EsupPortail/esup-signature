@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.entity;
 
 import org.springframework.beans.factory.annotation.Configurable;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.*;
 
 @Entity
@@ -13,7 +13,8 @@ import java.util.*;
 public class UserPropertie {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hibernate_sequence")
+    @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -1,5 +1,5 @@
 import {default as SelectUser} from "../utils/SelectUser.js?version=@version@";
-import {WizUi} from "./WizUi.js";
+import {WizUi} from "./WizUi.js?version=@version@";
 
 export class GlobalUi {
 
@@ -282,10 +282,10 @@ export class GlobalUi {
             }
             if(!url.match("/user/users+[\\w\\W]+")
                 && !url.match("/user/users")
-                && !url.match("/admin/")
+                && !url.match("/admin")
                 && !url.match("/admin/+[\\w\\W]+")
                 && !url.match("/manager/+[\\w\\W]+")
-                && !url.match("^/user/$")
+                && !url.match("^/user$")
                 && !url.match("^/user/signrequests$")
                 && !url.match("/user/signrequests/+[\\w\\W]+")
                 && !url.match("^/user/signbooks$")
@@ -498,7 +498,7 @@ export class GlobalUi {
             $("#timeoutModal").modal("show");
         }, this.maxInactiveInterval * 1000);
         $("#timeoutModal").on('hidden.bs.modal', function(){
-            window.location.href = "/user/";
+            window.location.href = "/user";
         });
     }
 

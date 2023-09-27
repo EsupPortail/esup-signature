@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -344,24 +345,53 @@ public class FileService {
 		rect.setRect(0, 0, 600 * factor, 300 * factor);
 		graphics2D.fillRect(0, 0, 600 * factor, 300 * factor);
 		setQualityParams(graphics2D);
-		float fontSize = (float) 600 * factor / Math.max(firstname.length(), name.length());
-		Font font = null;
+		String word;
+		if (name.length() >= firstname.length()) {
+			word = name;
+		} else {
+			word = firstname;
+		}
 		try {
-			font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/Signature.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(fontSize);
+			Font font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/Signature.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(12f);
+			int fontSize = findFontSize(word, 250 * factor, font);
+			font = font.deriveFont((float) fontSize);
+			graphics2D.setFont(font);
+			graphics2D.setColor(Color.BLACK);
+			FontMetrics fm = graphics2D.getFontMetrics();
+			int y = rect.y + ((rect.height - fm.getHeight()) / 2) + fm.getAscent();
+			int lineHeight = Math.round((float) fontSize / 1.5f);
+			graphics2D.drawString(StringUtils.capitalize(firstname), 300 * factor, y - lineHeight);
+			graphics2D.drawString(StringUtils.capitalize(name), 300 * factor, y + lineHeight);
+			graphics2D.dispose();
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			ImageIO.write(bufferedImage, "png", outputStream);
+			return new ByteArrayInputStream(outputStream.toByteArray());
 		} catch (FontFormatException e) {
 			logger.warn("unable to get font");
+			throw new EsupSignatureRuntimeException("unable to get font", e);
 		}
-		graphics2D.setFont(font);
-		graphics2D.setColor(Color.BLACK);
-		FontMetrics fm = graphics2D.getFontMetrics();
-		int y = rect.y + ((rect.height - fm.getHeight()) / 2) + fm.getAscent();
-		int lineHeight = Math.round(fontSize);
-		graphics2D.drawString(StringUtils.capitalize(firstname), 300 * factor, y - lineHeight);
-		graphics2D.drawString(StringUtils.capitalize(name), 300 * factor, y + lineHeight);
-		graphics2D.dispose();
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		ImageIO.write(bufferedImage, "png", outputStream);
-		return new ByteArrayInputStream(outputStream.toByteArray());
+	}
+
+	private int findFontSize(String word, int maxWidth, Font font) {
+		int maxSize = 1000;
+		Graphics graphics = createGraphics();
+		FontMetrics metrics = graphics.getFontMetrics(font);
+		while (font.getSize() < maxSize) {
+			int largeurTexte = metrics.stringWidth(word);
+			if (largeurTexte >= maxWidth) {
+				return font.getSize();
+			}
+			font = font.deriveFont((float) (font.getSize() + 1));
+			metrics = graphics.getFontMetrics(font);
+		}
+		return font.getSize();
+	}
+
+	private Graphics createGraphics() {
+		BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g2d = img.createGraphics();
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		return g2d;
 	}
 
 	public InputStream getFaImageByIndex(int index) throws IOException {

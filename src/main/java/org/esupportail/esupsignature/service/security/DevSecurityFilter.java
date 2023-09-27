@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.service.security;
 
-import javax.servlet.Filter;
+import jakarta.servlet.Filter;
 
 public interface DevSecurityFilter extends Filter {
 

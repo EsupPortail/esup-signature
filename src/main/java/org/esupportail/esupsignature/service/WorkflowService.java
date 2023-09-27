@@ -20,10 +20,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -343,12 +343,16 @@ public class WorkflowService {
 
     public List<User> getFavoriteRecipientEmail(int stepNumber, List<String> recipientEmails) {
         List<User> users = new ArrayList<>();
-        if (recipientEmails != null && recipientEmails.size() > 0) {
+        if (recipientEmails != null && !recipientEmails.isEmpty()) {
             recipientEmails = recipientEmails.stream().filter(r -> r.startsWith(String.valueOf(stepNumber))).collect(Collectors.toList());
             for (String recipientEmail : recipientEmails) {
                 String userEmail = recipientEmail.split("\\*")[1];
                 for(String realUserEmail : recipientService.getCompleteRecipientList(Collections.singletonList(userEmail))) {
-                    users.add(userService.getUserByEmail(realUserEmail));
+                    User user = userService.getUserByEmail(realUserEmail);
+                    if(user.getUserType().equals(UserType.external) && recipientEmail.split("\\*").length > 2) {
+                        user.setPhone(recipientEmail.split("\\*")[2]);
+                    }
+                    users.add(user);
                 }
             }
         }

@@ -25,8 +25,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -114,6 +114,19 @@ public class SignRequestWsController {
             signBookService.deleteDefinitive(signBookId, "system");
         } else {
             signRequestService.deleteDefinitive(id);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @CrossOrigin
+    @DeleteMapping("/soft/{id}")
+    @Operation(description = "Supprimer une demande de signature")
+    public ResponseEntity<String> softDelete(@PathVariable Long id) {
+        Long signBookId = signRequestService.getParentIdIfSignRequestUnique(id);
+        if(signBookId != null) {
+            signBookService.delete(signBookId, "system");
+        } else {
+            signRequestService.delete(id, "system");
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }

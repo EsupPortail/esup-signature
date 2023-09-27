@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" th:with="currentPage=#{label.tsls.summary}">
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin/">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active"><a href="/admin/dss">Statut DSS</a></li>
                 <li class="breadcrumb-item active">Pivots</li>
             </ol>
@@ -54,7 +54,7 @@
                                 </div>
                                 <div class="card-body rounded-bottom bg-white text-dark p-0 collapse" th:id="${certId}">
                                     <div class="p-3">
-                                        <div th:replace="fragments/certificate :: certificate(certificateToken=${certificate})"></div>
+                                        <div th:replace="~{fragments/certificate :: certificate(certificateToken=${certificate})}"></div>
                                     </div>
                                 </div>
                             </div>
@@ -96,7 +96,7 @@
                                     </div>
                                     <div class="card-body rounded-bottom bg-white text-dark p-0 collapse" th:id="${pivotId + '-' + certId}">
                                         <div class="p-3">
-                                            <div th:replace="fragments/certificate :: certificate(certificateToken=${certificateEntry.key})"></div>
+                                            <div th:replace="~{fragments/certificate :: certificate(certificateToken=${certificateEntry.key})}"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -108,7 +108,7 @@
        </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>
 

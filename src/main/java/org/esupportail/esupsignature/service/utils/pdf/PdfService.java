@@ -66,7 +66,7 @@ import org.verapdf.pdfa.PDFAValidator;
 import org.verapdf.pdfa.results.TestAssertion;
 import org.verapdf.pdfa.results.ValidationResult;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.xml.transform.TransformerException;
 import java.awt.*;
@@ -587,7 +587,7 @@ public class PdfService {
         return result;
     }
 
-    public byte[] fill(InputStream pdfFile, Map<String, String> datas, boolean isLastStep) {
+    public byte[] fill(InputStream pdfFile, Map<String, String> datas, boolean isLastStep, boolean isForm) {
         try {
             PDDocument pdDocument = PDDocument.load(pdfFile);
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
@@ -609,8 +609,7 @@ public class PdfService {
                             if (datas.get(filedName) != null && datas.get(filedName).equals("on")) {
                                 ((PDCheckBox) pdField).check();
                             }
-                        } else if (pdField instanceof PDRadioButton) {
-                            PDRadioButton pdRadioButton = (PDRadioButton) pdField;
+                        } else if (pdField instanceof PDRadioButton pdRadioButton) {
                             try {
                                 String value = datas.get(filedName);
                                 if(value.isEmpty()) {
@@ -620,9 +619,8 @@ public class PdfService {
                             } catch (NullPointerException | IllegalArgumentException e) {
                                 logger.debug("radio value error", e);
                             }
-                        } else if (pdField instanceof PDListBox) {
+                        } else if (pdField instanceof PDListBox pdListBox) {
                             String value = datas.get(filedName);
-                            PDListBox pdListBox = (PDListBox) pdField;
                             pdListBox.setValue(value);
                             if(isLastStep) {
                                 PDTextField pdTextField = new PDTextField(pdAcroForm);
@@ -664,13 +662,9 @@ public class PdfService {
                             }
                         }
                     }
-                    if (!pdField.isReadOnly()) {
+                    if (!pdField.isReadOnly() && !isForm) {
                         pdField.setReadOnly(true);
-                    } else {
-                        pdField.setReadOnly(false);
-                        pdField.setRequired(true);
                     }
-
                 }
                 if(isLastStep) {
                     pdAcroForm.flatten();

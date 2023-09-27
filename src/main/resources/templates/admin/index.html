@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body>
-<header th:replace="fragments/nav :: nav"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/sides/side-admin :: side-admin"></nav>
+        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Administration</li>
@@ -24,6 +24,9 @@
                         </a>
                         <a title="Tous les utilisateurs" type="button" href="/admin/users" class="btn text-center col-2">
                             <i class="fas fa-users fa-2x"></i><br><span>Utilisateurs</span>
+                        </a>
+                        <a title="Statistiques" type="button" href="/admin/charts" class="btn text-center col-2">
+                            <i class="fas fa-chart-column fa-2x"></i><br><span>Statistiques</span>
                         </a>
                         <a title="Exports" type="button" href="/admin/export" class="btn text-center col-2">
                             <i class="fas fa-file-export fa-2x"></i><br><span>Exports</span>
@@ -72,6 +75,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

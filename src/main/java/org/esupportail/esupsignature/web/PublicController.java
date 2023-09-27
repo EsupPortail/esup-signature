@@ -23,8 +23,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -76,16 +76,16 @@ public class PublicController {
             if(reports != null) {
                 model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
             } else {
-                model.addAttribute("signRequest", signRequest);
+                model.addAttribute("signRequest", signRequest.get());
             }
         } else {
-            model.addAttribute("signRequest", signRequest);
+            model.addAttribute("signRequest", signRequest.get());
         }
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && !auth.getName().equals("anonymousUser")) {
             String eppn = userService.tryGetEppnFromLdap(auth);
             if(eppn != null && userService.getByEppn(eppn) != null && auditTrail != null) {
-                model.addAttribute("signRequest", signRequest);
+                model.addAttribute("signRequest", signRequest.get());
                 setControlValues(model, signRequest.get(), auditTrail, eppn);
             }
         }

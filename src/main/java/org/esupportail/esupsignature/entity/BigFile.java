@@ -18,47 +18,41 @@
 
 package org.esupportail.esupsignature.entity;
 
-import org.hibernate.annotations.Type;
+import jakarta.persistence.*;
 
-import javax.persistence.*;
 import java.sql.Blob;
 
 @Entity
 public class BigFile {
 
-	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hibernate_sequence")
+    @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-	@Version
-    private Integer version;
     
-	@Lob
-	@Type(type="org.hibernate.type.BlobType")
-	@Basic(fetch = FetchType.LAZY)
-	private Blob binaryFile;
-	
-	public Long getId() {
+
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    private Blob binaryFile;
+
+    public Long getId() {
         return this.id;
     }
 
-	public void setId(Long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-	public Integer getVersion() {
-        return this.version;
-    }
+    
 
-	public void setVersion(Integer version) {
-        this.version = version;
-    }
+    
 
-	public Blob getBinaryFile() {
+    public Blob getBinaryFile() {
         return this.binaryFile;
     }
 
-	public void setBinaryFile(Blob binaryFile) {
+    public void setBinaryFile(Blob binaryFile) {
         this.binaryFile = binaryFile;
     }
 

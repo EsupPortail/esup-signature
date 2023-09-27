@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -44,7 +44,7 @@ public class DataService {
     private FieldPropertieService fieldPropertieService;
 
     public Data getById(Long dataId) {
-        return dataRepository.findWithLockingById(dataId).orElseThrow();
+        return dataRepository.findById(dataId).orElseThrow();
     }
 
     public Data getBySignRequest(SignRequest signRequest) {
@@ -66,7 +66,7 @@ public class DataService {
         SignBook signBook = data.getSignBook();
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user, data.getSignBook().getSignRequests().get(0));
         for(Field field : fields) {
-            if(field.getWorkflowSteps().stream().noneMatch(workflowStep -> workflowStep.getId().equals(signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getId()))) {
+            if(field.getWorkflowSteps() != null && field.getWorkflowSteps().stream().noneMatch(workflowStep -> signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep() != null && workflowStep.getId().equals(signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getId()))) {
                 String newData = data.getDatas().get(field.getName());
                 if(StringUtils.hasText(newData) && !StringUtils.hasText(formDatas.get(field.getName()))) {
                     formDatas.put(field.getName(), data.getDatas().get(field.getName()));
@@ -94,10 +94,12 @@ public class DataService {
         }
         data.setForm(form);
         data.setFormName(form.getName());
-        data.setFormVersion(form.getVersion());
+        data.setFormVersion(form.getId().intValue());
         data.setUpdateBy(authUser);
         data.setUpdateDate(new Date());
-        dataRepository.save(data);
+        if(data.getId() == null) {
+            dataRepository.save(data);
+        }
         return data;
     }
 
@@ -119,16 +121,11 @@ public class DataService {
     public byte[] generateFile(Data data, InputStream inputStream) throws IOException {
         Form form = data.getForm();
         if(inputStream != null && inputStream.available() > 0) {
-            return pdfService.fill(inputStream, data.getDatas(), false);
+            return pdfService.fill(inputStream, data.getDatas(), false, true);
         } else  if(form.getDocument() != null) {
-            return pdfService.fill(form.getDocument().getInputStream(), data.getDatas(), false);
+            return pdfService.fill(form.getDocument().getInputStream(), data.getDatas(), false, true);
         } else {
             logger.error("no pdf model");
-//            try {
-//                return pdfService.generatePdfFromData(data);
-//            } catch (IOException e) {
-//                logger.error("pdf generation error", e);
-//            }
         }
         return null;
     }
@@ -173,7 +170,7 @@ public class DataService {
         data.setName(form.getTitle() + "_" + format.format(new Date()));
         data.setForm(form);
         data.setFormName(form.getName());
-        data.setFormVersion(form.getVersion());
+        data.setFormVersion(form.getId().intValue());
         data.setStatus(SignRequestStatus.draft);
         data.setCreateBy(authUser);
         data.setCreateDate(new Date());

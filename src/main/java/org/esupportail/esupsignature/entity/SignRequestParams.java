@@ -1,17 +1,18 @@
 package org.esupportail.esupsignature.entity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name = "sign_request_params")
 public class SignRequestParams {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hibernate_sequence")
+    @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-	@Version
-    private Integer version;
+	
 
 	private String pdSignatureFieldName;
 
@@ -75,13 +76,9 @@ public class SignRequestParams {
         this.id = id;
     }
 
-    public Integer getVersion() {
-        return version;
-    }
+    
 
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
+    
 
     public String getPdSignatureFieldName() {
         return pdSignatureFieldName;

@@ -19,18 +19,18 @@ package org.esupportail.esupsignature.entity;
 
 import org.springframework.beans.factory.annotation.Configurable;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Configurable
 @Entity
 public class AppliVersion {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hibernate_sequence")
+    @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-    @Version
-    private Integer version;
+    
 
 	String esupSignatureVersion;
 
@@ -42,13 +42,9 @@ public class AppliVersion {
         this.id = id;
     }
 
-    public Integer getVersion() {
-        return version;
-    }
+    
 
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
+    
 
     public String getEsupSignatureVersion() {
         return esupSignatureVersion;

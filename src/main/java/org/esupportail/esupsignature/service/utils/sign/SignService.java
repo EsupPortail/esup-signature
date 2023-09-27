@@ -54,7 +54,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -133,7 +133,7 @@ public class SignService {
 	public List<Document> getToSignDocuments(Long signRequestId) {
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		List<Document> documents = new ArrayList<>();
-		if(signRequest.getSignedDocuments() != null && signRequest.getSignedDocuments().size() > 0 ) {
+		if(signRequest.getSignedDocuments() != null && !signRequest.getSignedDocuments().isEmpty()) {
 			documents.add(signRequest.getLastSignedDocument());
 		} else {
 			documents.addAll(signRequest.getOriginalDocuments());
@@ -141,6 +141,7 @@ public class SignService {
 		return documents;
 	}
 
+	@Transactional
 	public Document certSign(SignRequest signRequest, String userEppn, String password, SignWith signWith) throws EsupSignatureRuntimeException {
 		User user = userService.getByEppn(userEppn);
 		logger.info("start certSign for signRequest : " + signRequest.getId());
@@ -461,10 +462,10 @@ public class SignService {
 	@Transactional
 	public boolean isNotSigned(SignRequest signRequest) throws IOException {
 		List<Document> documents = getToSignDocuments(signRequest.getId());
-		if(documents.size() > 0 && (signRequest.getParentSignBook().getLiveWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign) || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.nexuSign)))) {
+		if(!documents.isEmpty() && (signRequest.getParentSignBook().getLiveWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign) || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.nexuSign)))) {
 			byte[] bytes = getToSignDocuments(signRequest.getId()).get(0).getInputStream().readAllBytes();
 			Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
-			return signRequest.getSignedDocuments().size() == 0 && reports != null && reports.getSimpleReport().getSignatureIdList().size() == 0;
+			return signRequest.getSignedDocuments().isEmpty() && reports != null && reports.getSimpleReport().getSignatureIdList().isEmpty();
 		} else {
 			return true;
 		}
@@ -597,18 +598,18 @@ public class SignService {
 			service = (DocumentSignatureService) getASiCSignatureService(signatureForm);
 		} else {
 			switch (signatureForm) {
-			case CAdES:
-				service = cadesService;
-				break;
-			case PAdES:
-				service = padesService;
-				break;
-			case XAdES:
-				service = xadesService;
-				break;
-			default:
-				logger.error("Unknow signature form : " + signatureForm);
-			}
+				case CAdES:
+					service = cadesService;
+					break;
+				case PAdES:
+					service = padesService;
+					break;
+				case XAdES:
+					service = xadesService;
+					break;
+				default:
+					logger.error("Unknow signature form : " + signatureForm);
+				}
 		}
 		return service;
 	}
@@ -619,19 +620,19 @@ public class SignService {
 			parameters = getASiCSignatureParameters(containerType, signatureForm);
 		} else {
 			switch (signatureForm) {
-			case CAdES:
-				parameters = new CAdESSignatureParameters();
-				break;
-			case PAdES:
-				PAdESSignatureParameters padesParams = new PAdESSignatureParameters();
-				padesParams.setContentSize(9472 * 2); // double reserved space for signature
-				parameters = padesParams;
-				break;
-			case XAdES:
-				parameters = new XAdESSignatureParameters();
-				break;
-			default:
-				logger.error("Unknow signature form : " + signatureForm);
+				case CAdES:
+					parameters = new CAdESSignatureParameters();
+					break;
+				case PAdES:
+					PAdESSignatureParameters padesParams = new PAdESSignatureParameters();
+					padesParams.setContentSize(9472 * 2); // double reserved space for signature
+					parameters = padesParams;
+					break;
+				case XAdES:
+					parameters = new XAdESSignatureParameters();
+					break;
+				default:
+					logger.error("Unknow signature form : " + signatureForm);
 			}
 		}
 		return parameters;
@@ -697,7 +698,7 @@ public class SignService {
 		} else {
 			if(abstractSignatureForm.getSignatureForm().equals(SignatureForm.PAdES)) {
 				SignatureDocumentForm documentForm = (SignatureDocumentForm) abstractSignatureForm;
-				if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > 0) {
+				if(!signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty()) {
 					parameters = fillVisibleParameters((SignatureDocumentForm) abstractSignatureForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(documentForm.getDocumentToSign()), new Color(61, 170, 231), user, abstractSignatureForm.getSigningDate());
 				} else {
 					parameters = fillVisibleParameters((SignatureDocumentForm) abstractSignatureForm, user);
@@ -727,6 +728,7 @@ public class SignService {
 		return null;
 	}
 
+	@Transactional
 	public Document nexuSign(SignRequest signRequest, String userEppn, AbstractSignatureForm signatureDocumentForm) throws IOException {
 		logger.info(userEppn + " launch nexu signature for signRequest : " + signRequest.getId());
 		DSSDocument dssDocument;

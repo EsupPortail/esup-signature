@@ -5,6 +5,8 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -14,12 +16,14 @@ import java.util.*;
 @Service
 public class UserListService {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserListService.class);
+
     private final List<UserList> userLists;
 
     private final UserRepository userRepository;
 
     private final GlobalProperties globalProperties;
-    
+
     public UserListService(@Autowired(required = false) List<UserList> userLists, UserRepository userRepository, GlobalProperties globalProperties) {
         this.userLists = userLists;
         this.userRepository = userRepository;
@@ -27,7 +31,7 @@ public class UserListService {
     }
 
     public List<String> getUsersEmailFromList(String listName) throws DataAccessException, EsupSignatureRuntimeException {
-        if(userLists != null && userLists.size() > 0) {
+        if(userLists != null && !userLists.isEmpty()) {
             if(listName.contains("*")) {
                 listName = listName.split("\\*")[1];
             }
@@ -38,18 +42,20 @@ public class UserListService {
                     emails.addAll(userList.getUsersEmailFromList(listName));
                     emails.addAll(userList.getUsersEmailFromAliases(listName));
                 }
-                if(emails.size() >0 ) {
+                if(!emails.isEmpty()) {
                     return emails.stream().toList();
-                } else  if (listName.contains(globalProperties.getDomain())) {
+                } else if (listName.contains(globalProperties.getDomain())) {
                     throw new EsupSignatureRuntimeException("no users found");
                 }
+            } else {
+                logger.debug("user founded as local user : " + optionalUser.get().getEppn() + " as " + optionalUser.get().getUserType().name());
             }
         }
         return new ArrayList<>();
     }
 
     public Map<String, String> getListsNames(String search) throws DataAccessException {
-        if(userLists != null && userLists.size() > 0 && search.length() > 4) {
+        if(userLists != null && !userLists.isEmpty() && search.length() > 4) {
             Map<String, String> names = new HashMap<>();
             for (UserList userList : userLists) {
                 List<Map.Entry<String, String>> entries = userList.getListOfLists(search);

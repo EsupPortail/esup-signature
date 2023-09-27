@@ -1,8 +1,8 @@
 export class SignRequestHelp {
 
-    constructor(doneTour, path) {
+    constructor(doneTour, isOtp) {
         this.doneTour = doneTour;
-        this.path = path;
+        this.isOtp = isOtp;
         this.intro = introJs();
         this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'x', showStepNumbers: 'false', overlayOpacity: 0.3})
         this.initListeners();
@@ -14,7 +14,11 @@ export class SignRequestHelp {
         this.intro.onafterchange(e => this.modButtons());
         let self = this;
         this.intro.onexit(function () {
-            $.get("/" + self.path + "/users/mark-intro-as-read/signRequestHelp");
+            if(self.isOtp) {
+                $.get("/otp/users/mark-intro-as-read/signRequestHelp");
+            } else {
+                $.get("/user/users/mark-intro-as-read/signRequestHelp");
+            }
         });
         $("#helpStartButton").on('click', e => this.start());
     }

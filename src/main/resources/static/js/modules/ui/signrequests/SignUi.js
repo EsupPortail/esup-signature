@@ -381,7 +381,7 @@ export class SignUi {
         console.log("start sign");
         console.log(self.signRequestId);
         $.ajax({
-            url: "/ws-secure/signrequests/sign/" + this.signRequestId + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
+            url: "/ws-secure/signrequests/sign/" + this.signRequestId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
             type: 'POST',
             data: signRequestUrlParams,
             success: function(data, textStatus, xhr) {
@@ -396,11 +396,11 @@ export class SignUi {
                                 if (self.nbSignRequests > 1 || !self.globalProperties.returnToHomeAfterSign) {
                                     document.location.href = "/user/signrequests/" + self.signRequestId;
                                 } else {
-                                    document.location.href = "/user/";
+                                    document.location.href = "/user";
                                 }
                             } else {
                                 if(self.returnToHome) {
-                                    document.location.href = "/user/";
+                                    document.location.href = "/user";
                                 } else {
                                     document.location.href = "/user/signrequests/" + self.signRequestId;
                                 }
@@ -462,7 +462,7 @@ export class SignUi {
         step.autoSign = $('#autoSign').is(':checked');
         step.signType = $('#signTypeInfinite').val();
         $.ajax({
-            url: "/user/signbooks/add-repeatable-step/" + signRequestId + "/?" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/signbooks/add-repeatable-step/" + signRequestId + "?" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             contentType: "application/json",
             data: JSON.stringify(step),

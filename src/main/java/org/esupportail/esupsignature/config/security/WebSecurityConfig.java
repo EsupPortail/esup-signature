@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.config.security;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
@@ -26,8 +27,10 @@ import org.springframework.core.annotation.Order;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -40,13 +43,11 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
-import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
-import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import javax.annotation.Resource;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -56,6 +57,9 @@ import java.util.Map;
 
 @Configuration
 @EnableWebSecurity(debug = false)
+@EnableMethodSecurity(
+		securedEnabled = true,
+		jsr250Enabled = true)
 @EnableConfigurationProperties({WebSecurityProperties.class, ShibProperties.class, CasProperties.class, DevShibProperties.class})
 public class WebSecurityConfig {
 
@@ -149,25 +153,32 @@ public class WebSecurityConfig {
 
 //	@Bean
 //	public WebSecurityCustomizer webSecurityCustomizer() {
-//		return (web) -> web.ignoring().antMatchers("/resources/**", "/webjars/**");
+//		return (web) -> web.ignoring().requestMatchers("/resources/**", "/webjars/**")
+//				.requestMatchers("/logged-out")
+//				.requestMatchers("/webjars", "/webjars/**")
+//				.requestMatchers("/css", "/css/**")
+//				.requestMatchers("/images", "/images/**")
+//				.requestMatchers("/js", "/js/**")
+//				.requestMatchers("/fonts", "/fonts/**");
 //	}
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		setAuthorizeRequests(http);
-		http.antMatcher("/**").authorizeRequests().antMatchers("/").permitAll();
+		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers("/").permitAll());
 		devSecurityFilters.forEach(devSecurityFilter -> http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class));
-		http.exceptionHandling().defaultAuthenticationEntryPointFor(new IndexEntryPoint("/"), new AntPathRequestMatcher("/"));
+		http.exceptionHandling(exceptionHandling -> exceptionHandling.defaultAuthenticationEntryPointFor(new IndexEntryPoint("/"), new AntPathRequestMatcher("/")));
 		for(SecurityService securityService : securityServices) {
-			http.antMatcher("/**").authorizeRequests().antMatchers(securityService.getLoginUrl()).authenticated();
-			http.exceptionHandling().defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), new AntPathRequestMatcher(securityService.getLoginUrl()));
+			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(securityService.getLoginUrl()).authenticated());
+			http.exceptionHandling(exceptionHandling -> exceptionHandling.defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), new AntPathRequestMatcher(securityService.getLoginUrl())));
 			if(securityService.getClass().equals(OAuthSecurityServiceImpl.class)) {
-				http.oauth2Login(oauth2 -> oauth2.loginPage("/"))
-						.oauth2Login()
-						.successHandler(((OAuthSecurityServiceImpl) securityService).getoAuthAuthenticationSuccessHandler())
-						.userInfoEndpoint().userService(new ValidatingOAuth2UserService(jwtDecoder()))
-						.and()
-						.authorizationEndpoint().authorizationRequestResolver(new CustomAuthorizationRequestResolver(clientRegistrationRepository, webSecurityProperties.getFranceConnectAcr()));
+				http.oauth2Login(oauth2Login -> oauth2Login.loginPage("/"))
+						.oauth2Login(oauth2Login -> oauth2Login.successHandler(((OAuthSecurityServiceImpl) securityService).getoAuthAuthenticationSuccessHandler())
+								.userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
+										.userService(new ValidatingOAuth2UserService(jwtDecoder()))))
+						.oauth2Login(oauth2Login -> oauth2Login
+								.authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
+										.authorizationRequestResolver(new CustomAuthorizationRequestResolver(clientRegistrationRepository, webSecurityProperties.getFranceConnectAcr()))));
+
 			} else {
 				http.addFilterBefore(securityService.getAuthenticationProcessingFilter(), OAuth2AuthorizationRequestRedirectFilter.class);
 			}
@@ -182,25 +193,23 @@ public class WebSecurityConfig {
 				}
 			}
 		}
-		http.logout().invalidateHttpSession(true)
-				.logoutRequestMatcher(
-						new AntPathRequestMatcher("/logout")
-				)
-				.addLogoutHandler(logoutHandler())
-				.logoutSuccessUrl("/login").permitAll();
-		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy()).maximumSessions(5).sessionRegistry(sessionRegistry());
-		http.csrf()
-				.ignoringAntMatchers("/resources/**")
-				.ignoringAntMatchers("/webjars/**")
-				.ignoringAntMatchers("/ws/**")
-				.ignoringAntMatchers("/swagger-ui/**")
-				.ignoringAntMatchers("/user/nexu-sign/**")
-				.ignoringAntMatchers("/otp-access/**")
-				.ignoringAntMatchers("/log/**")
-				.ignoringAntMatchers("/actuator/**")
-				.ignoringAntMatchers("/h2-console/**");
-		http.headers().frameOptions().sameOrigin();
-		http.headers().disable();
+		http.logout(logout -> logout.invalidateHttpSession(true)
+						.logoutRequestMatcher(
+								new AntPathRequestMatcher("/logout")
+						));
+		http.logout(logout -> logout.addLogoutHandler(logoutHandler())
+				.logoutSuccessUrl("/login").permitAll());
+		http.csrf(csrf -> csrf.ignoringRequestMatchers("/resources/**")
+				.ignoringRequestMatchers("/webjars/**")
+				.ignoringRequestMatchers("/ws/**")
+				.ignoringRequestMatchers("/user/nexu-sign/**")
+				.ignoringRequestMatchers("/otp-access/**")
+				.ignoringRequestMatchers("/log/**")
+				.ignoringRequestMatchers("/actuator/**")
+				.ignoringRequestMatchers("/h2-console/**"))
+				;
+		http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
+		setAuthorizeRequests(http);
 		return http.build();
 	}
 
@@ -232,20 +241,10 @@ public class WebSecurityConfig {
 //	}
 
 	private void setAuthorizeRequests(HttpSecurity http) throws Exception {
-		http.logout().logoutSuccessUrl("/").permitAll();
+		http.logout(logout -> logout.logoutSuccessUrl("/").permitAll());
 		AccessDeniedHandlerImpl accessDeniedHandlerImpl = new AccessDeniedHandlerImpl();
 		accessDeniedHandlerImpl.setErrorPage("/denied");
-		http.exceptionHandling().accessDeniedHandler(accessDeniedHandlerImpl);
-		http.authorizeRequests()
-				.antMatchers("/").permitAll()
-				.antMatchers("/admin/", "/admin/**").access("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
-				.antMatchers("/user/", "/user/**").access("hasAnyRole('ROLE_USER')")
-				.antMatchers("/otp-access/**").permitAll()
-				.antMatchers("/otp/", "/otp/**").access("hasAnyRole('ROLE_OTP', 'ROLE_FRANCECONNECT')")
-				.antMatchers("/ws-secure/", "/ws-secure/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP', 'ROLE_FRANCECONNECT')")
-				.antMatchers("/public/", "/public/**").permitAll()
-				.antMatchers("/error").permitAll();
-
+		http.exceptionHandling(exceptionHandling -> exceptionHandling.accessDeniedHandler(accessDeniedHandlerImpl));
 		String hasIpAddresses = "";
 		int nbIps = 0;
 		if(webSecurityProperties.getWsAccessAuthorizeIps() != null) {
@@ -256,15 +255,22 @@ public class WebSecurityConfig {
 					hasIpAddresses += " or ";
 				}
 			}
-			http.authorizeRequests().antMatchers("/ws/**").access(hasIpAddresses);
-			http.authorizeRequests().antMatchers("/actuator/**").access(hasIpAddresses);
-			http.authorizeRequests().antMatchers("/swagger-ui/**").access(hasIpAddresses);
-//			http.authorizeRequests().antMatchers("/ws/**").access("hasRole('ROLE_WS')").and().addFilter(apiKeyFilter());
+			String finalHasIpAddresses = hasIpAddresses;
+			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers("/ws/**").access(new WebExpressionAuthorizationManager(finalHasIpAddresses)));
+			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers("/actuator/**").access(new WebExpressionAuthorizationManager(finalHasIpAddresses)));
+//			http.authorizeRequests().requestMatchers("/ws/**").access("hasRole('WS')").and().addFilter(apiKeyFilter());
 		} else {
-			http.authorizeRequests().antMatchers("/ws/**").denyAll();
-			http.authorizeRequests().antMatchers("/actuator/**").denyAll();
-			http.authorizeRequests().antMatchers("/swagger-ui/**").denyAll();
+			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers("/ws/**").denyAll());
+			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers("/actuator/**").denyAll());
 		}
+		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
+				.requestMatchers("/api-docs/", "/api-docs/**").hasAnyRole("ADMIN")
+				.requestMatchers("/swagger-ui.html", "/swagger-ui/", "/swagger-ui/**").hasAnyRole("ADMIN")
+				.requestMatchers("/admin/", "/admin/**").hasAnyRole("ADMIN", "MANAGER")
+				.requestMatchers("/user/", "/user/**").hasAnyRole("USER")
+				.requestMatchers("/otp/", "/otp/**").hasAnyRole("OTP", "FRANCECONNECT")
+				.requestMatchers("/ws-secure/", "/ws-secure/**").hasAnyRole("USER", "OTP", "FRANCECONNECT")
+				.anyRequest().permitAll());
 	}
 
 	@Bean
@@ -275,16 +281,6 @@ public class WebSecurityConfig {
 	@Bean
 	public SessionRegistryImpl sessionRegistry() {
 		return new SessionRegistryImpl();
-	}
-
-	@Bean
-	public ConcurrentSessionFilter concurrencyFilter() {
-		return new ConcurrentSessionFilter(sessionRegistry());
-	}
-
-	@Bean
-	public RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy() {
-		return new RegisterSessionAuthenticationStrategy(sessionRegistry());
 	}
 
 	@Bean

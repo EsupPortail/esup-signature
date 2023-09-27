@@ -1,12 +1,14 @@
 package org.esupportail.esupsignature.web.otp;
 
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.security.otp.Otp;
@@ -14,7 +16,7 @@ import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,16 +29,12 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
 
-@ConditionalOnProperty(value = "sms.enable-sms", havingValue = "true")
 @RequestMapping("/otp-access")
 @Controller
 
@@ -59,15 +57,18 @@ public class OtpAccessController {
     @Resource
     AuthenticationManager authenticationManager;
 
-    @Resource
-    private SmsService smsService;
+    final private SmsService smsService;
+
+    public OtpAccessController(@Autowired(required = false) SmsService smsService) {
+        this.smsService = smsService;
+    }
 //
 //    @GetMapping
 //    public String signin() {
 //        return "otp/end";
 //    }
 
-    @GetMapping(value = "/{urlId}")
+    @GetMapping(value = "/first/{urlId}")
     public String signin(@PathVariable String urlId, Model model, HttpServletRequest httpServletRequest) {
         model.addAttribute("urlId", urlId);
         Otp otp = otpService.getOtp(urlId);
@@ -92,7 +93,7 @@ public class OtpAccessController {
                     }
                     return "otp/enter-phonenumber";
                 }
-            } else {
+            } else if(!globalProperties.getSmsRequired()){
                 authOtp(model, httpServletRequest, user);
                 return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBookId();
             }
@@ -130,14 +131,14 @@ public class OtpAccessController {
                         return "otp/signin";
                     } else {
                         redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Numéro de mobile incorrect"));
-                        return "redirect:/otp-access/" + urlId;
+                        return "redirect:/otp-access/first/" + urlId;
                     }
                 }
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Merci de saisir le code reçu par SMS"));
-                return "redirect:/otp-access/" + urlId;
+                return "redirect:/otp-access/first/" + urlId;
             } else {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Ce numéro ne peut pas être utilisé"));
-                return "redirect:/otp-access/" + urlId;
+                return "redirect:/otp-access/first/" + urlId;
             }
         } else {
             return "redirect:/denied/" + urlId;
@@ -161,10 +162,10 @@ public class OtpAccessController {
             } else {
                 model.addAttribute("result", "KO");
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Mauvais code SMS, un nouveau code vous à été envoyé"));
-                return "redirect:/otp-access/" + urlId;
+                return "redirect:/otp-access/first/" + urlId;
             }
         } else {
-            return "redirect:/otp-access/" + urlId;
+            return "redirect:/otp-access/first/" + urlId;
         }
     }
 

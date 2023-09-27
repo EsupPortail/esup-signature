@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head-lite :: head-lite"></head>
+<head th:replace="~{fragments/head-lite :: head-lite}"></head>
 <body>
-<header th:replace="fragments/nav-empty :: nav-empty"></header>
+<header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
 <main role="main">
     <div class="wrapper">
         <div id="content" class="content">
             <h1>Signature OTP</h1>
             <p class="alert alert-danger w-75">
-                Le lien que vous utilisez a expiré. Nous vous avons envoyé un nouveau lien. Si vous ne recevez pas de nouveau lien, merci de contacter le créateur de la demande (son nom est présent dans le mail que vous avez reçu).
+                Le lien que vous utilisez a expiré. Nous vous avons envoyé un nouveau lien. Si vous ne recevez pas de nouveau lien, merci de contacter le créateur de la demande (son nom est présent dans le premier mail que vous avez reçu).
             </p>
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer-light :: footer"></footer>
+<footer th:replace="~{fragments/footer-light :: footer}"></footer>
 </body>
 </html>

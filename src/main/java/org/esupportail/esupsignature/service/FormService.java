@@ -25,8 +25,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -106,7 +106,7 @@ public class FormService {
 	@Transactional
 	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage) throws IOException, EsupSignatureRuntimeException {
 		byte[] bytes = multipartFile.getInputStream().readAllBytes();
-		Document document = documentService.createDocument(new ByteArrayInputStream(bytes), multipartFile.getOriginalFilename(), multipartFile.getContentType());
+		Document document = documentService.createDocument(new ByteArrayInputStream(bytes), userService.getSystemUser(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
 		Form form = createForm(document, name, title, workflowId, prefillType, roleNames, publicUsage, null, null);
 		try {
 			updateSignRequestParams(form.getId(), new ByteArrayInputStream(bytes));
@@ -191,7 +191,7 @@ public class FormService {
 					}
 				}
 				updateSignRequestParams(id, new ByteArrayInputStream(tempDocument));
-				Document newModel = documentService.createDocument(pdfService.removeSignField(new ByteArrayInputStream(tempDocument)), multipartModel.getOriginalFilename(), multipartModel.getContentType());
+				Document newModel = documentService.createDocument(pdfService.removeSignField(new ByteArrayInputStream(tempDocument)), userService.getSystemUser(), multipartModel.getOriginalFilename(), multipartModel.getContentType());
 				form.setDocument(newModel);
 
 			} catch (IOException | EsupSignatureIOException e) {
@@ -234,7 +234,6 @@ public class FormService {
 		form.setName(name);
 		form.setTitle(title);
 		form.setActiveVersion(true);
-		form.setVersion(1);
 		if (document == null) {
 			if(fieldNames != null && fieldNames.length > 0) {
 				int i = 0;
@@ -322,7 +321,7 @@ public class FormService {
 								type = cosString.toString();
 							}
 						}
-						if (type.equals("text")) {
+						if (type == null || type.equals("text")) {
 							field.setType(FieldType.text);
 						} else if (type.contains("Time")) {
 							field.setType(FieldType.time);
@@ -343,8 +342,7 @@ public class FormService {
 						parseField(field, pdField, pdAnnotationWidget, page);
 						fields.add(field);
 						logger.info(field.getName() + " added");
-					} else if (pdField instanceof PDRadioButton) {
-						PDRadioButton pdRadioButton = (PDRadioButton) pdField;
+					} else if (pdField instanceof PDRadioButton pdRadioButton) {
 						for (PDAnnotationWidget pdAnnotationWidget : pdRadioButton.getWidgets()) {
 							if (pdAnnotationWidget.getRectangle() == null) {
 								continue;
