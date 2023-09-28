@@ -114,7 +114,7 @@ export class WizUi {
         this.input = $("#multipartFiles_" + this.workflowId);
         if(!this.workflowId) this.input = $("#multipartFiles_0");
         this.fileInput = new FilesInput(this.input, this.maxSize, this.csrf, this.workflowName, null, false);
-        this.input.on("fileuploaded", function(event, data, previewId, index, fileId) {
+        this.input.on("filebatchuploadcomplete", function(event, data, previewId, index, fileId) {
             self.gotoStep2(data.response);
         });
         let id = this.workflowId;

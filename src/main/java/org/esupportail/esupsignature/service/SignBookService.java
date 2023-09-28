@@ -1602,7 +1602,7 @@ public class SignBookService {
     private void checkSignRequestSignable(SignRequest signRequest, String userEppn, String authUserEppn) {
         if (signRequest.getStatus().equals(SignRequestStatus.pending)
                 && checkUserSignRights(signRequest, userEppn, authUserEppn)
-                && signRequest.getOriginalDocuments().size() > 0
+                && !signRequest.getOriginalDocuments().isEmpty()
                 && needToSign(signRequest, userEppn)) {
             signRequest.setSignable(true);
             for(Document document : signRequest.getOriginalDocuments()) {
