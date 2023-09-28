@@ -893,8 +893,6 @@ public class SignBookService {
     public void pendingSignBook(Long signBookId, Data data, String userEppn, String authUserEppn, boolean forceSendEmail, boolean sendEmailAlert) throws EsupSignatureRuntimeException {
         SignBook signBook = signBookRepository.findById(signBookId).orElseThrow();
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
-        updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber(), "SUCCESS", signBook.getComment(), userEppn, authUserEppn);
-        logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());
         boolean emailSended = false;
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getCurrentStep() != null && signBook.getLiveWorkflow().getCurrentStep().getAutoSign()) {
@@ -946,7 +944,7 @@ public class SignBookService {
                         }
                     } else {
                         if(signBook.getLiveWorkflow().getWorkflow() == null) {
-                            workflowService.dispatchSignRequestParams(signBook);
+                            workflowService.dispatchSignRequestParams(signRequest);
                         }
                     }
                 } else {
@@ -956,6 +954,8 @@ public class SignBookService {
                 }
             }
         }
+        updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber(), "SUCCESS", signBook.getComment(), userEppn, authUserEppn);
+        logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());
         for (Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
             if (recipient.getUser().getUserType().equals(UserType.external)) {
                 try {
@@ -1244,10 +1244,10 @@ public class SignBookService {
 
     @Transactional
     public boolean startLiveWorkflow(SignBook signBook, String userEppn, String authUserEppn, Boolean start) throws EsupSignatureRuntimeException {
-        if(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >  0) {
+        if(!signBook.getLiveWorkflow().getLiveWorkflowSteps().isEmpty()) {
             signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
             if(start != null && start) {
-                workflowService.dispatchSignRequestParams(signBook);
+//                workflowService.dispatchSignRequestParams(signBook);
                 pendingSignBook(signBook.getId(), null, userEppn, authUserEppn, false, true);
             }
             return true;
@@ -1602,7 +1602,7 @@ public class SignBookService {
     private void checkSignRequestSignable(SignRequest signRequest, String userEppn, String authUserEppn) {
         if (signRequest.getStatus().equals(SignRequestStatus.pending)
                 && checkUserSignRights(signRequest, userEppn, authUserEppn)
-                && signRequest.getOriginalDocuments().size() > 0
+                && !signRequest.getOriginalDocuments().isEmpty()
                 && needToSign(signRequest, userEppn)) {
             signRequest.setSignable(true);
             for(Document document : signRequest.getOriginalDocuments()) {
