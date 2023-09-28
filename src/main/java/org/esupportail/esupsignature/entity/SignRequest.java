@@ -257,7 +257,7 @@ public class SignRequest {
 
     @JsonIgnore
     public Map<Recipient, Action> getOrderedRecipientHasSigned() {
-        if(recipientHasSigned.size() > 0) {
+        if(!recipientHasSigned.isEmpty()) {
             Set<Map.Entry<Recipient, Action>> entries = recipientHasSigned.entrySet().stream().filter(recipientActionEntry -> recipientActionEntry.getValue() != null && recipientActionEntry.getValue().getDate() != null).sorted((o1, o2) -> o2.getValue().getDate().compareTo(o1.getValue().getDate())).collect(Collectors.toCollection(LinkedHashSet::new));
             Map<Recipient, Action> recipientActionMap = new LinkedHashMap<>();
             for (Map.Entry<Recipient, Action> entry : entries) {
