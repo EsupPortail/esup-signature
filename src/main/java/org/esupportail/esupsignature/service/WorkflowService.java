@@ -579,13 +579,18 @@ public class WorkflowService {
 
     public void dispatchSignRequestParams(SignBook signBook) {
         for(SignRequest signRequest : signBook.getSignRequests()) {
-            if(signRequest.getSignRequestParams().size() > 0) {
+            dispatchSignRequestParams(signRequest);
+        }
+    }
+
+    public void dispatchSignRequestParams(SignRequest signRequest) {
+            if(!signRequest.getSignRequestParams().isEmpty()) {
                 int i = 0;
-                for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+                for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
                     if (liveWorkflowStep.getWorkflowStep() != null) {
                         WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
                         if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
-                            if(workflowStep.getSignRequestParams().size() > 0) {
+                            if(!workflowStep.getSignRequestParams().isEmpty()) {
                                 for (SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
                                         for(SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
                                             if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
@@ -601,20 +606,19 @@ public class WorkflowService {
                                 }
                             }
                         }
-                    } else {
+                    } else if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().allMatch(liveWorkflowStep1 -> liveWorkflowStep1.getSignRequestParams().isEmpty())){
                         signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(0).getSignRequestParams().addAll(signRequest.getSignRequestParams());
                     }
                     i++;
                 }
             } else {
-                for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+                for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
                     if(liveWorkflowStep.getWorkflowStep() != null) {
                         WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
                         liveWorkflowStep.getSignRequestParams().addAll(workflowStep.getSignRequestParams());
                     }
                 }
             }
-        }
     }
 
     public void rename(Long id, String name) {
