@@ -692,7 +692,7 @@ input:checked + .slider:before {
 .sign-space {
     cursor: pointer !important;
     position: absolute;
-    z-index: 2 !important;
+    z-index: 3 !important;
 }
 
 .wrapper {
@@ -1661,6 +1661,7 @@ input:focus, textarea:focus, select:focus {
     background-color: rgba(189, 255, 189, 1) !important;
     mix-blend-mode: multiply;
     cursor: pointer;
+    overflow: hidden;
 }
 
 .sign-field:hover {
