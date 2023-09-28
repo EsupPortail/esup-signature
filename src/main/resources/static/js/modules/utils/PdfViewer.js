@@ -168,6 +168,7 @@ export class PdfViewer extends EventFactory {
     }
 
     startRender(pdf) {
+        this.pdfDiv.css('opacity', 0);
         this.saveScrolling = window.scrollY / this.scale;
         $(".pdf-page").each(function(e) {
            $(this).remove();
@@ -481,7 +482,7 @@ export class PdfViewer extends EventFactory {
                 if (this.isFieldEnable(dataField)) {
                     inputField.val(items[i].fieldValue);
                     if (dataField.defaultValue != null) {
-                        inputField.attr("es-data", dataField.defaultValue);
+                        // inputField.attr("es-data", dataField.defaultValue);
                         inputField.val(dataField.defaultValue);
                     }
                     this.enableInputField(inputField, dataField)
