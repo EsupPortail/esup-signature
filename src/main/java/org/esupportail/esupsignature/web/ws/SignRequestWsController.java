@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.entity.AuditTrail;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
@@ -18,18 +20,14 @@ import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/ws/signrequests")
@@ -46,7 +44,7 @@ public class SignRequestWsController {
     @CrossOrigin
     @PostMapping("/new")
     @Operation(description = "Création d'une demande de signature")
-    public String create(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
+    public ResponseEntity<?> create(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
                        @Parameter(description = "Liste des participants") @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
                        @Parameter(description = "Liste des participants (ancien nom)") @RequestParam(value = "recipientEmails", required = false) List<String> recipientEmails,
                        @Parameter(description = "Liste des personnes en copie (emails). Ne prend pas en charge les groupes") @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
@@ -60,26 +58,35 @@ public class SignRequestWsController {
                        @Parameter(description = "EPPN du créateur/propriétaire de la demande (ancien nom)") @RequestParam(required = false) String eppn,
                        @Parameter(description = "EPPN du créateur/propriétaire de la demande") @RequestParam(required = false) String createByEppn,
                        @Parameter(description = "Un titre (facultatif)") @RequestParam(value = "title", required = false) String title,
-                       @RequestParam(required = false) @Parameter(description = "Emplacement final", example = "smb://drive.univ-ville.fr/forms-archive/") String targetUrl) {
+                       @RequestParam(required = false) @Parameter(description = "Emplacement final", example = "smb://drive.univ-ville.fr/forms-archive/") String targetUrl,
+                       @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json) {
+        if(json == null) {
+            json = false;
+        }
         if(createByEppn == null && StringUtils.hasText(eppn)) {
             createByEppn = eppn;
         }
         if(createByEppn == null) {
             throw new EsupSignatureRuntimeException("Required request parameter 'createByEppn' for method parameter type String is not present");
         }
-        if(recipientsEmails == null && recipientEmails.size() > 0) {
+        if(recipientsEmails == null && !recipientEmails.isEmpty()) {
             recipientsEmails = recipientEmails;
         }
         if(recipientsEmails != null) {
             try {
                 Map<SignBook, String> signBookStringMap = signBookService.sendSignRequest(title, multipartFiles, SignType.valueOf(signType), allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, createByEppn, createByEppn, true, forceAllSign, targetUrl);
-                return signBookStringMap.keySet().stream().map(sb -> sb.getSignRequests().stream().map(signRequest -> signRequest.getId().toString()).collect(Collectors.joining(","))).collect(Collectors.joining(","));
+                List<String> signRequestIds = signBookStringMap.keySet().stream().flatMap(sb -> sb.getSignRequests().stream().map(signRequest -> signRequest.getId().toString())).toList();
+                if(json) {
+                    return ResponseEntity.ok(signRequestIds);
+                } else {
+                    return ResponseEntity.ok(String.join(",", signRequestIds));
+                }
             } catch (EsupSignatureRuntimeException e) {
                 logger.error(e.getMessage(), e);
-                return "-1";
+                return ResponseEntity.ok("-1");
             }
         }
-        return "-1";
+        return ResponseEntity.ok("-1");
     }
 
     @CrossOrigin
@@ -115,7 +122,7 @@ public class SignRequestWsController {
         } else {
             signRequestService.deleteDefinitive(id);
         }
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
     @CrossOrigin
@@ -128,7 +135,7 @@ public class SignRequestWsController {
         } else {
             signRequestService.delete(id, "system");
         }
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
     @CrossOrigin
@@ -137,7 +144,7 @@ public class SignRequestWsController {
     public ResponseEntity<String> deleteSignBook(@PathVariable Long id) {
         SignRequest signRequest = signRequestService.getById(id);
         signBookService.deleteDefinitive(signRequest.getParentSignBook().getId(), "system");
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping(value = "/get-last-file/{id}")
@@ -146,11 +153,11 @@ public class SignRequestWsController {
     public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
             signRequestService.getToSignFileResponse(id, "attachment", httpServletResponse);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.internalServerError().build();
     }
 
     @GetMapping(value = "/print-with-code/{id}")
@@ -159,10 +166,10 @@ public class SignRequestWsController {
     public ResponseEntity<Void> printWithCode(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
             signRequestService.getToSignFileResponseWithCode(id, httpServletResponse);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.internalServerError().build();
     }
 }
