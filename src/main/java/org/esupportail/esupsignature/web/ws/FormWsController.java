@@ -20,6 +20,7 @@ import org.esupportail.esupsignature.web.ws.json.JsonDtoWorkflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -56,22 +57,26 @@ public class FormWsController {
     @CrossOrigin
     @PostMapping(value = "/{id}/new")
     @Operation(description = "Création d'une nouvelle instance d'un formulaire")
-    public Long start(@PathVariable Long id,
-                      @RequestParam(required = false) @Parameter(description = "Eppn du propriétaire du futur document (ancien nom)") String eppn,
-                      @RequestParam(required = false) @Parameter(description = "Eppn du propriétaire du futur document : eppn ou createByEppn requis") String createByEppn,
-                      @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape (ancien nom)", example = "[stepNumber*email] ou [stepNumber*email*phone]") List<String> recipientEmails,
-                      @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*email] ou [stepNumber*email*phone]") List<String> recipientsEmails,
-                      @RequestParam(required = false) @Parameter(description = "Liste des personnes en copie (emails). Ne prend pas en charge les groupes")  List<String> recipientsCCEmails,
-                      @RequestParam(required = false) @Parameter(description = "Liste des types de signature pour chaque étape", example = "[stepNumber*signTypes]") List<String> signTypes,
-                      @RequestParam(required = false) @Parameter(description = "Lites des numéros d'étape pour lesquelles tous les participants doivent signer", example = "[stepNumber]") List<String> allSignToCompletes,
-                      @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
-                      @RequestParam(required = false) @Parameter(description = "Paramètres de signature", example = "[{\"xPos\":100, \"yPos\":100, \"signPageNumber\":1}, {\"xPos\":200, \"yPos\":200, \"signPageNumber\":1}]") String signRequestParamsJsonString,
-                      @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls,
-                      @RequestParam(required = false) @Parameter(description = "Données par défaut à remplir dans le formulaire", example = "{'field1' : 'toto, 'field2' : 'tata'}") String formDatas,
-                      @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title,
-                      @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Envoyer une alerte mail") Boolean sendEmailAlert
+    public ResponseEntity<?> start(@PathVariable Long id,
+                                   @RequestParam(required = false) @Parameter(description = "Eppn du propriétaire du futur document (ancien nom)") String eppn,
+                                   @RequestParam(required = false) @Parameter(description = "Eppn du propriétaire du futur document : eppn ou createByEppn requis") String createByEppn,
+                                   @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape (ancien nom)", example = "[stepNumber*email] ou [stepNumber*email*phone]") List<String> recipientEmails,
+                                   @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*email] ou [stepNumber*email*phone]") List<String> recipientsEmails,
+                                   @RequestParam(required = false) @Parameter(description = "Liste des personnes en copie (emails). Ne prend pas en charge les groupes")  List<String> recipientsCCEmails,
+                                   @RequestParam(required = false) @Parameter(description = "Liste des types de signature pour chaque étape", example = "[stepNumber*signTypes]") List<String> signTypes,
+                                   @RequestParam(required = false) @Parameter(description = "Lites des numéros d'étape pour lesquelles tous les participants doivent signer", example = "[stepNumber]") List<String> allSignToCompletes,
+                                   @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
+                                   @RequestParam(required = false) @Parameter(description = "Paramètres de signature", example = "[{\"xPos\":100, \"yPos\":100, \"signPageNumber\":1}, {\"xPos\":200, \"yPos\":200, \"signPageNumber\":1}]") String signRequestParamsJsonString,
+                                   @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls,
+                                   @RequestParam(required = false) @Parameter(description = "Données par défaut à remplir dans le formulaire", example = "{'field1' : 'toto, 'field2' : 'tata'}") String formDatas,
+                                   @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title,
+                                   @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Envoyer une alerte mail") Boolean sendEmailAlert,
+                                   @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json
     ) {
         logger.debug("init new form instance : " + id);
+        if(json == null) {
+            json = false;
+        }
         if(recipientEmails == null && recipientsEmails != null && !recipientsEmails.isEmpty()) {
             recipientEmails = recipientsEmails;
         }
@@ -90,10 +95,14 @@ public class FormWsController {
             }
             SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, signTypes, allSignToCompletes, null, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, signRequestParamsJsonString, title, sendEmailAlert);
             signBookService.addViewers(signBook.getId(), recipientsCCEmails);
-            return signBook.getSignRequests().get(0).getId();
+            if(json) {
+                return ResponseEntity.ok(signBook.getSignRequests().get(0).getId());
+            } else {
+                return ResponseEntity.ok(signBook.getSignRequests().get(0).getId().toString());
+            }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return -1L;
+            return ResponseEntity.ok("-1");
         }
     }
 
@@ -107,7 +116,7 @@ public class FormWsController {
     @CrossOrigin
     @PostMapping(value = "/{id}/new-doc")
     @Operation(description = "Création d'une nouvelle instance d'un formulaire")
-    public Long startWithDoc(@PathVariable Long id,
+    public ResponseEntity<?> startWithDoc(@PathVariable Long id,
                              @RequestParam @Parameter(description = "Multipart stream du fichier à signer") MultipartFile[] multipartFiles,
                              @RequestParam @Parameter(description = "Eppn du propriétaire du futur document") String createByEppn,
                              @RequestParam(required = false) @Parameter(description = "Multipart stream des pièces jointes") MultipartFile[] attachementMultipartFiles,
@@ -120,8 +129,12 @@ public class FormWsController {
                              @RequestParam(required = false) @Parameter(description = "Paramètres de signature", example = "[{\"xPos\":100, \"yPos\":100, \"signPageNumber\":1}, {\"xPos\":200, \"yPos\":200, \"signPageNumber\":1}]") String signRequestParamsJsonString,
                              @RequestParam(required = false) @Parameter(description = "Données par défaut à remplir dans le formulaire", example = "{'field1' : 'toto, 'field2' : 'tata'}") String formDatas,
                              @RequestParam(required = false) @Parameter(description = "Titre") String title,
-                             @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Envoyer une alerte mail") Boolean sendEmailAlert
+                             @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Envoyer une alerte mail") Boolean sendEmailAlert,
+                             @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json
     ) {
+        if(json == null) {
+            json = false;
+        }
         if(recipientEmails == null && !recipientsEmails.isEmpty()) {
             recipientEmails = recipientsEmails;
         }
@@ -134,10 +147,14 @@ public class FormWsController {
             }
             SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, signTypes, allSignToCompletes, null, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), signRequestParamsJsonString, title, sendEmailAlert);
             signRequestService.addAttachement(attachementMultipartFiles, null, signBook.getSignRequests().get(0).getId(), createByEppn);
-            return signBook.getSignRequests().get(0).getId();
+            if(json) {
+                return ResponseEntity.ok(signBook.getSignRequests().get(0).getId());
+            } else {
+                return ResponseEntity.ok(signBook.getSignRequests().get(0).getId().toString());
+            }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return -1L;
+            return ResponseEntity.ok("-1");
         }
     }
 
