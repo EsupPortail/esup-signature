@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.entity.AuditTrail;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -74,14 +75,14 @@ public class SignRequestWsController {
         }
         if(recipientsEmails != null) {
             try {
-                Map<SignBook, String> signBookStringMap = signBookService.sendSignRequest(title, multipartFiles, SignType.valueOf(signType), allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, createByEppn, createByEppn, true, forceAllSign, targetUrl);
+                Map<SignBook, String> signBookStringMap = signBookService.sendSignRequest(title, multipartFiles, SignType.valueOf(signType), allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, createByEppn, true, forceAllSign, targetUrl);
                 List<String> signRequestIds = signBookStringMap.keySet().stream().flatMap(sb -> sb.getSignRequests().stream().map(signRequest -> signRequest.getId().toString())).toList();
                 if(json) {
                     return ResponseEntity.ok(signRequestIds);
                 } else {
                     return ResponseEntity.ok(String.join(",", signRequestIds));
                 }
-            } catch (EsupSignatureRuntimeException e) {
+            } catch (EsupSignatureException e) {
                 logger.error(e.getMessage(), e);
                 return ResponseEntity.ok("-1");
             }

@@ -1,6 +1,6 @@
 <html th:remove="tag" lang="fr" xmlns:th="http://www.thymeleaf.org">
 <th:block th:each="signBook : ${signBooks}">
-    <tr th:if="${statusFilter != 'empty' && signBook.signRequests.size() > 0}" th:with="signRequest = ${signBook.signRequests.get(0)}" th:data-href="'/user/signbooks/' + ${signBook.id}" data-bs-toggle="tooltip" th:title="${signBook.description}">
+    <tr th:if="${statusFilter != 'empty' && signBook.signRequests.size() > 0}" th:with="signRequest = ${signBook.signRequests.get(0)}" th:data-href="'/user/signbooks/' + ${signBook.id}" data-bs-toggle="tooltip" th:title="${signBook.subject}">
         <td class="w-20 d-none d-lg-table-cell">
             <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"
                 th:data-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"
@@ -18,7 +18,7 @@
             </ul>
         </td>
         <td class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/user/signrequests/' + ${signRequest.id}" th:text="${signBook.workflowName}"></td>
-        <td th:if="${signBook.signRequests.size() == 1}" class="clickable-td text-break overflow-hidden" th:text="${signBook.subject}"></td>
+        <td th:if="${signBook.signRequests.size() == 1}" class="clickable-td" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px;" th:text="${signBook.subject}"></td>
         <td th:if="${signBook.signRequests.size() > 1}" class="d-none d-xl-table-cell">
             <div class="dropdown">
                 <button th:if="${signRequest.originalDocuments.size() > 0}" th:title="${signBook.subject}" style="max-width: 200px; overflow: clip;" onclick="event.stopPropagation();" class="btn btn-sm multi-doc-font dropdown-toggle" type="button" th:id="'dropdownFilesButton-' + ${signBook.id}" data-bs-toggle="dropdown">
@@ -38,7 +38,7 @@
             </div>
             </div>
         </td>
-        <td class="clickable-td d-none d-xxl-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
+        <td class="clickable-td d-none d-xxl-table-cell text-nowrap" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
         <td class="clickable-td d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
         </td>
         <td class="d-none d-xl-table-cell">

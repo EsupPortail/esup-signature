@@ -42,20 +42,24 @@ public class ChartsService {
         BarDataset countCertDataset = new BarDataset().setStack("1").setLabel("Nombre de signatures avec certificat par année").addBackgroundColor(new Color(255, 206, 86));
         BarDataset countSignsDataset = new BarDataset().setStack("1").setLabel("Nombre de signatures sans certificat par année").addBackgroundColor(new Color(54, 162, 235));
         BarDataset countRefusedDataset = new BarDataset().setStack("2").setLabel("Nombre de signatures refusées par année").addBackgroundColor(new Color(255, 99, 132));
-        List<BarDataset> datasets = new ArrayList<>();
-        for(String label: labels) {
-            countDocsDataset.addData(Integer.parseInt(signsByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYears::getCount).findFirst().orElse("0")));
-            countCertDataset.addData(Integer.parseInt(signaturesCertByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYears::getCount).findFirst().orElse("0")));
-            countSignsDataset.addData(Integer.parseInt(signaturesByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYears::getCount).findFirst().orElse("0")) - Integer.parseInt(signaturesCertByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYears::getCount).findFirst().orElse("0")));
-            countRefusedDataset.addData(Integer.parseInt(refusedByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYears::getCount).findFirst().orElse("0")));
+        if(!labels.isEmpty()) {
+            List<BarDataset> datasets = new ArrayList<>();
+            for (String label : labels) {
+                countDocsDataset.addData(Integer.parseInt(signsByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYears::getCount).findFirst().orElse("0")));
+                countCertDataset.addData(Integer.parseInt(signaturesCertByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYears::getCount).findFirst().orElse("0")));
+                countSignsDataset.addData(Integer.parseInt(signaturesByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYears::getCount).findFirst().orElse("0")) - Integer.parseInt(signaturesCertByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYears::getCount).findFirst().orElse("0")));
+                countRefusedDataset.addData(Integer.parseInt(refusedByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYears::getCount).findFirst().orElse("0")));
+            }
+            datasets.add(countDocsDataset);
+            datasets.add(countCertDataset);
+            datasets.add(countSignsDataset);
+            datasets.add(countRefusedDataset);
+            BarOptions options = new BarOptions().setResponsive(true).setPlugins(new Plugins().setLegend(new Legend().setPosition(Legend.Position.RIGHT).setDisplay(true)));
+            BarData data = new BarData().setLabels(labels).setDatasets(datasets);
+            return new BarChart(data, options).toJson();
+        } else {
+            return "";
         }
-        datasets.add(countDocsDataset);
-        datasets.add(countCertDataset);
-        datasets.add(countSignsDataset);
-        datasets.add(countRefusedDataset);
-        BarOptions options = new BarOptions().setResponsive(true).setPlugins(new Plugins().setLegend(new Legend().setPosition(Legend.Position.RIGHT).setDisplay(true)));
-        BarData data = new BarData().setLabels(labels).setDatasets(datasets);
-        return new BarChart(data, options).toJson();
     }
 
 }
