@@ -648,8 +648,8 @@ public class SignBookService {
             signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
             signRequestParamsRepository.saveAll(signRequestParamses);
         }
-        User user = userService.getByEppn(userEppn);
-        User authUser = userService.getByEppn(authUserEppn);
+        User user = userService.createUserWithEppn(userEppn);
+        User authUser = userService.createUserWithEppn(authUserEppn);
         Data data = dataService.getById(dataId);
         if (recipientsEmails == null) {
             recipientsEmails = new ArrayList<>();
@@ -1211,7 +1211,7 @@ public class SignBookService {
             signRequestParamsRepository.saveAll(signRequestParamses);
         }
         Workflow workflow = workflowService.getById(id);
-        User user = userService.getByEppn(createByEppn);
+        User user = userService.createUserWithEppn(createByEppn);
         SignBook signBook = createSignBook(title, workflow, "", user.getEppn(), true);
         signBook.getLiveWorkflow().setWorkflow(workflow);
         for(MultipartFile multipartFile : multipartFiles) {
