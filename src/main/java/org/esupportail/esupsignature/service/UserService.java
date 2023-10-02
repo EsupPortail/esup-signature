@@ -211,6 +211,9 @@ public class UserService {
 
     @Transactional
     public User createUserWithEppn(String eppn) throws EsupSignatureUserException {
+        if(eppn.equals("system")) {
+            return getSystemUser();
+        }
         User user = getByEppn(eppn);
         if (user != null && !user.getEppn().equals(getSystemUser().getEppn())) {
             return user;
@@ -303,7 +306,7 @@ public class UserService {
                 }
                 logger.debug("ldap attributs found : " + eppn + ", " + name + ", " + firstName + ", " + mail);
             } else if (!StringUtils.hasText(eppn)) {
-                if (personLdaps.size() == 0) {
+                if (personLdaps.isEmpty()) {
                     logger.debug("no result on ldap search for " + authName);
                 } else {
                     logger.debug("more than one result on ldap search for " + authName);
@@ -340,7 +343,7 @@ public class UserService {
             if (auth != null) {
                 logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
                 Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
-                if (authorities.size() > 0) {
+                if (!authorities.isEmpty()) {
                     user.getRoles().clear();
                     for (GrantedAuthority authority : authorities) {
                         if(authority.getAuthority().startsWith("ROLE_")) {
@@ -350,7 +353,7 @@ public class UserService {
                 }
             }
         }
-        if(userType.equals(UserType.shib) && globalProperties.getShibUsersDomainWhiteList() != null && globalProperties.getShibUsersDomainWhiteList().size() > 0 && !globalProperties.getShibUsersDomainWhiteList().contains(user.getEppn().split("@")[1])) {
+        if(userType.equals(UserType.shib) && globalProperties.getShibUsersDomainWhiteList() != null && !globalProperties.getShibUsersDomainWhiteList().isEmpty() && !globalProperties.getShibUsersDomainWhiteList().contains(user.getEppn().split("@")[1])) {
             user.getRoles().remove("ROLE_USER");
             user.getRoles().add("ROLE_OTP");
         }
