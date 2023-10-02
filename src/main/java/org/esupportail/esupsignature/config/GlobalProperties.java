@@ -235,6 +235,8 @@ public class GlobalProperties {
      */
     private Integer bouncycastelMaxMrTests = 0;
 
+    private String fileNameSpacesReplaceBy = "_";
+
     public String getRootUrl() {
         return rootUrl;
     }
@@ -609,5 +611,13 @@ public class GlobalProperties {
 
     public void setBouncycastelMaxMrTests(Integer bouncycastelMaxMrTests) {
         this.bouncycastelMaxMrTests = bouncycastelMaxMrTests;
+    }
+
+    public String getFileNameSpacesReplaceBy() {
+        return fileNameSpacesReplaceBy;
+    }
+
+    public void setFileNameSpacesReplaceBy(String fileNameSpacesReplaceBy) {
+        this.fileNameSpacesReplaceBy = fileNameSpacesReplaceBy;
     }
 }

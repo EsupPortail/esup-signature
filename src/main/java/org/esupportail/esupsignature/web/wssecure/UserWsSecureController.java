@@ -108,7 +108,7 @@ public class UserWsSecureController {
 
 
     private ResponseEntity<Void> getDocumentResponseEntity(HttpServletResponse response, byte[] bytes, String fileName, String contentType) throws IOException {
-        response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString()));
+        response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20"));
         response.setContentType(contentType);
         IOUtils.copy(new ByteArrayInputStream(bytes), response.getOutputStream());
         return new ResponseEntity<>(HttpStatus.OK);
