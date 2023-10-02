@@ -766,8 +766,11 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignBook addDocsInNewSignBookSeparated(String title, String workflowName, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
-        User authUser = userService.getByEppn(authUserEppn);
+    public SignBook addDocsInNewSignBookSeparated(String title, String workflowName, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureException {
+        User authUser = userService.createUserWithEppn(authUserEppn);
+        if(authUser == null) {
+            throw new EsupSignatureException("user not found");
+        }
         Workflow workflow = workflowRepository.findByName(workflowName);
         SignBook signBook;
         if (workflow == null) {
@@ -795,7 +798,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public Map<SignBook, String> sendSignRequest(String title, MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, String userEppn, String authUserEppn, boolean forceSendEmail, Boolean forceAllSign, String targetUrl) throws EsupSignatureRuntimeException, EsupSignatureIOException, EsupSignatureFsException {
+    public Map<SignBook, String> sendSignRequest(String title, MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, String createByEppn, boolean forceSendEmail, Boolean forceAllSign, String targetUrl) throws EsupSignatureException {
         if(forceAllSign == null) forceAllSign = false;
         if(title == null || title.isEmpty()) {
             if(multipartFiles.length == 1) {
@@ -808,13 +811,13 @@ public class SignBookService {
             }
         }
         logger.info(title);
-        SignBook signBook = addDocsInNewSignBookSeparated(title, "Demande simple", multipartFiles, userEppn);
+        SignBook signBook = addDocsInNewSignBookSeparated(title, "Demande simple", multipartFiles, createByEppn);
         signBook.setForceAllDocsSign(forceAllSign);
         addViewers(signBook.getId(), recipientsCCEmails);
         if(targetUrl != null && !targetUrl.isEmpty()) {
             signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
         }
-        return sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, userEppn, authUserEppn, forceSendEmail);
+        return sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, createByEppn, createByEppn, forceSendEmail);
     }
 
     @Transactional
