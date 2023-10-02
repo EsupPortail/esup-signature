@@ -274,6 +274,9 @@ export class SignRequestParams extends EventFactory {
             if(localStorage.getItem("zoom") != null) {
                 this.signScale = parseFloat(localStorage.getItem("zoom"));
             }
+            if(localStorage.getItem("addWatermark") == null) {
+                this.toggleWatermark()
+            }
         }
         if(this.isVisa || this.isSign) {
             this.signHeight = 0;
@@ -300,7 +303,6 @@ export class SignRequestParams extends EventFactory {
                 this.toggleImage();
                 this.extraOnTop = false;
                 this.toggleExtraOnTop();
-
             }
         }
         if(this.restore && this.isSign) {
