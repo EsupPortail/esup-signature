@@ -82,7 +82,7 @@ public class SignRequestAdminController {
 	public String list(
 			@RequestParam(value = "statusFilter", required = false) String statusFilter,
 			@RequestParam(value = "signBookId", required = false) Long signBookId,
-			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
+			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 12) Pageable pageable, Model model) {
 		Page<SignBook> signBooks;
 		if(statusFilter == null || statusFilter.isEmpty() || statusFilter.equals("all")) {
 			signBooks = signBookRepository.findAll(pageable);
