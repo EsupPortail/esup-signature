@@ -73,6 +73,7 @@ public class WizardController {
             if (workflowId != null && workflowId != 0) {
                 signBookService.initSignBook(signBookId, workflowId, userEppn);
                 model.addAttribute("isTempUsers", signRequestService.isTempUsers(signBook.getSignRequests().get(0).getId()));
+                model.addAttribute("workflowId", workflowId);
                 return "user/wizard/wiz-setup-workflow";
             }
         }

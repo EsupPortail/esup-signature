@@ -114,6 +114,9 @@ export class WizUi {
         this.input = $("#multipartFiles_" + this.workflowId);
         if(!this.workflowId) this.input = $("#multipartFiles_0");
         this.fileInput = new FilesInput(this.input, this.maxSize, this.csrf, this.workflowName, null, false);
+        this.input.on("fileuploaded", function(event, data, previewId, index, fileId) {
+            self.signBookId = data.response;
+        });
         this.input.on("filebatchuploadcomplete", function(event, data, previewId, index, fileId) {
             self.gotoStep2(data.response);
         });
@@ -157,7 +160,6 @@ export class WizUi {
         });
         let forceAllSign = $('input[name="forceAllSign2"]').is(":checked");
         this.div.html("");
-        this.signBookId = e;
         $.ajax({
             type: "GET",
             url: '/user/wizard/wiz-init-steps?workflowId=' + id + "&recipientsCCEmailsWiz=" + recipientsCCEmailsWiz + "&forceAllSign=" + forceAllSign + "&comment=" + encodeURIComponent(comment.val()) + "&title=" + title.val(),
