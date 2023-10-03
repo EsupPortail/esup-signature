@@ -49,8 +49,11 @@
                     </th:block>
                 </div>
                 <div th:if="${step.changeable == true}" class="form-group mb-1">
-                    <label><span th:text="'Merci de saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span></label>
-                    <select  th:id="'recipientEmailsWizSelect_' + ${iterator.index + 1}" multiple="multiple" name="recipientEmails" required="required">
+                    <label>
+                        <span th:text="'Merci de saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span>
+                        <span th:if="${step.maxRecipients < 99}" th:text="'(maximum ' + ${step.maxRecipients} + ')'" ></span>
+                    </label>
+                    <select th:data-es-max-recipient="${step.maxRecipients}" th:id="'recipientEmailsWizSelect_' + ${iterator.index + 1}" multiple="multiple" name="recipientEmails" required="required">
                         <option data-placeholder="true"></option>
                         <th:block th:each="user : ${step.users}">
                             <option th:if="${user.email != null}" selected="selected"
