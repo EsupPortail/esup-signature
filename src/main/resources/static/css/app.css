@@ -1079,7 +1079,7 @@ height: 100%;
     position: absolute;
     opacity: 0.6;
     cursor: pointer;
-    z-index: 2;
+    z-index: 3;
     color: #1e7e34;
 }
 .spot:hover {
