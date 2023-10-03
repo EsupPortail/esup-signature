@@ -69,6 +69,7 @@ export default class SelectUser {
                 searchHighlight: false,
                 hideSelectedOption: true,
                 closeOnSelect: true,
+                maxSelected: self.limit,
             },
             events: {
                 afterChange: e => this.displayTempUsers(e),

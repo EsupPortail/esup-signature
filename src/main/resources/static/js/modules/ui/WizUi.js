@@ -174,7 +174,8 @@ export class WizUi {
             new SelectUser("recipientsEmailsWiz", null, null, this.csrf);
         }
         $('[id^="recipientEmailsWizSelect_"]').each(function (){
-            new SelectUser($(this).attr('id'), null, null, self.csrf);
+            let maxRecipient = $(this).attr('data-es-max-recipient');
+            new SelectUser($(this).attr('id'), maxRecipient, null, self.csrf);
         });
         if($("#targetEmailsSelect").length) {
             new SelectUser("targetEmailsSelect", null, null, this.csrf);

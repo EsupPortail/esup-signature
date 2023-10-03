@@ -39,11 +39,10 @@ public class ExceptionHandlerControllerAdvice {
         logger.warn(exc.getMessage());
         if(exc.getMessage().contains("SPRING_SESSION_ATTRIBUTES")) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Une erreur est survenue lors de la réouverture de votre session. Vous êtes redirigé vers la page d'accueil."));
-            return "redirect:/user";
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", exc.getMessage()));
-            return "redirect:/user";
         }
+        return "redirect:/user";
     }
 
 }
