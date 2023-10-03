@@ -1043,6 +1043,13 @@ public class SignRequestService {
 		SignRequest signRequest = getById(id);
 		int signOrderNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
 		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
+			if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAllSignToComplete()) {
+				for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
+					if (!signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none)) {
+						return toUserSignRequestParams;
+					}
+				}
+			}
 			List<SignRequestParams> signRequestParamsForCurrentStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().stream().filter(signRequestParams -> signRequestParams.getSignDocumentNumber().equals(signOrderNumber)).collect(Collectors.toList());
 			for(SignRequestParams signRequestParams : signRequestParamsForCurrentStep) {
 				if(signRequest.getSignRequestParams().contains(signRequestParams)
