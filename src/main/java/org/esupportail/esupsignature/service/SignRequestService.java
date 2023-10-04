@@ -1045,7 +1045,7 @@ public class SignRequestService {
 		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
 			if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAllSignToComplete()) {
 				for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
-					if (!signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none)) {
+					if (!signRequest.getRecipientHasSigned().isEmpty() && signRequest.getRecipientHasSigned().get(recipient) != null && !signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none)) {
 						return toUserSignRequestParams;
 					}
 				}
