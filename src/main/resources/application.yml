@@ -63,6 +63,8 @@ spring:
         jdbc-url: ${spring.datasource.url}
         hikari:
             auto-commit: false
+        tomcat:
+            validation-query: SELECT 1;
     jpa:
         hibernate:
             ddl-auto: update
