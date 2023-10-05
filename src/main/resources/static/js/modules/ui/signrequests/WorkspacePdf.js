@@ -71,7 +71,6 @@ export class WorkspacePdf {
         this.secondTools = $("#second-tools");
         this.addSignButton = $("#addSignButton")
         if (signType === "form" || (formId == null && !workflow) || currentSignRequestParamses.length === 0) {
-            this.addSignButton.toggleClass("d-none d-block");
             if(this.wsTabs.length) {
                 this.autocollapse();
                 let self = this;

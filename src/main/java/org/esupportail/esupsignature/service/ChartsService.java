@@ -13,6 +13,7 @@ import software.xdev.chartjs.model.options.Legend;
 import software.xdev.chartjs.model.options.Plugins;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,7 +45,7 @@ public class ChartsService {
         BarDataset countRefusedDataset = new BarDataset().setStack("2").setLabel("Nombre de signatures refusées par année").addBackgroundColor(new Color(255, 99, 132));
         if(!labels.isEmpty()) {
             List<BarDataset> datasets = new ArrayList<>();
-            for (String label : labels) {
+            for (String label : labels.stream().sorted(Comparator.comparingInt(Integer::parseInt)).toList()) {
                 countDocsDataset.addData(Integer.parseInt(signsByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYears::getCount).findFirst().orElse("0")));
                 countCertDataset.addData(Integer.parseInt(signaturesCertByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYears::getCount).findFirst().orElse("0")));
                 countSignsDataset.addData(Integer.parseInt(signaturesByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYears::getCount).findFirst().orElse("0")) - Integer.parseInt(signaturesCertByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYears::getCount).findFirst().orElse("0")));
@@ -55,7 +56,7 @@ public class ChartsService {
             datasets.add(countSignsDataset);
             datasets.add(countRefusedDataset);
             BarOptions options = new BarOptions().setResponsive(true).setPlugins(new Plugins().setLegend(new Legend().setPosition(Legend.Position.RIGHT).setDisplay(true)));
-            BarData data = new BarData().setLabels(labels).setDatasets(datasets);
+            BarData data = new BarData().setLabels(labels.stream().sorted(Comparator.comparingInt(Integer::parseInt)).toList()).setDatasets(datasets);
             return new BarChart(data, options).toJson();
         } else {
             return "";

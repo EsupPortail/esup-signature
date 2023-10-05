@@ -146,7 +146,8 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "left join sb.signRequests sr " +
             "left join sr.recipientHasSigned rhs " +
             "where (key(rhs).user = :user or sb.createBy = :user) " +
-            "and (sb.hidedBy) is empty")
+            "and (sb.hidedBy) is empty " +
+            "and sb.status <> 'deleted' ")
     List<String> findWorkflowNames(User user);
 
     @Query("select distinct sb.workflowName from SignBook sb where sb.hidedBy is empty and sb.workflowName != ''")
@@ -156,7 +157,8 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "left join sb.signRequests sr " +
             "left join sr.recipientHasSigned rhs " +
             "where (key(rhs).user = :user or sb.createBy = :user) " +
-            "and (sb.hidedBy) is empty")
+            "and (sb.hidedBy) is empty " +
+            "and sb.status <> 'deleted' ")
     List<String> findSubjects(User user);
 
     Page<SignBook> findAll(Pageable pageable);
