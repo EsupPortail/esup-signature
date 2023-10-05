@@ -96,6 +96,7 @@ public class NexuProcessController implements Serializable {
 											 @ModelAttribute("id") Long id, HttpSession httpSession) throws EsupSignatureRuntimeException {
 		AbstractSignatureForm abstractSignatureForm = (AbstractSignatureForm) httpSession.getAttribute("abstractSignatureForm");
 		abstractSignatureForm.setBase64SignatureValue(signatureValue.getSignatureValue());
+		SignDocumentResponse responseJson = signService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn, authUserEppn);
 		signRequestService.updateStatus(id, SignRequestStatus.signed, "Signature", "SUCCESS", userEppn, authUserEppn);
 		StepStatus stepStatus = signRequestService.applyEndOfSignRules(id, userEppn, authUserEppn, SignType.nexuSign, "");
 		if(stepStatus.equals(StepStatus.last_end)) {
@@ -104,7 +105,7 @@ public class NexuProcessController implements Serializable {
 			signBookService.pendingSignRequest(id, null, userEppn, authUserEppn, false);
 		}
 		httpSession.removeAttribute("abstractSignatureForm");
-		return signService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn, authUserEppn);
+		return responseJson;
 	}
 
 }

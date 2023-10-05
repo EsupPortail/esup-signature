@@ -96,12 +96,12 @@
 				signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign
 				}"
 						id="addSignButton"
-						class="btn btn-light btn-outline-primary d-none">
+						class="btn btn-light btn-outline-primary">
 					<i class="fas fa-plus"></i> <span class="d-none d-md-inline">Insérer une signature</span>
 				</button>
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
 						id="addSignButton"
-						class="btn btn-light btn-outline-primary d-none">
+						class="btn btn-light btn-outline-primary">
 					<i class="fas fa-plus"></i> <span class="d-none d-md-inline">Insérer un visa</span>
 				</button>
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
