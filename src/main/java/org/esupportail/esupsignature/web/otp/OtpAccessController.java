@@ -181,5 +181,4 @@ public class OtpAccessController {
         model.addAttribute("authUser", user);
     }
 
-
 }
