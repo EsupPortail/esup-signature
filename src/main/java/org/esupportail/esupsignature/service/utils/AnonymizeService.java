@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.utils;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.UserShare;
@@ -9,7 +10,6 @@ import org.esupportail.esupsignature.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
 import java.util.List;
 
 @Service
@@ -54,6 +54,9 @@ public class AnonymizeService {
     @Resource
     private SignRequestService signRequestService;
 
+    @Resource
+    private MessageService messageService;
+
     @Transactional
     public void anonymize(Long id, Boolean force) throws EsupSignatureUserException {
         User user = userService.getById(id);
@@ -80,6 +83,7 @@ public class AnonymizeService {
         logService.anonymize(user.getEppn());
         userPropertieService.deleteAll(user.getEppn());
         userShareService.deleteAll(user.getEppn());
+        messageService.anonymize(user);
         List<UserShare> userShares = userShareService.getUserSharesToUser(user.getEppn());
         for(UserShare userShare : userShares) {
             userShareService.delete(userShare);

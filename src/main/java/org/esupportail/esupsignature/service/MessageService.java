@@ -23,15 +23,15 @@ public class MessageService {
     @Resource
     private UserService userService;
 
-    public Message createMessage(String endDate, String text) throws ParseException {
+    public void createMessage(String endDate, String text) throws ParseException {
         Message message = new Message();
         Date date = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
         message.setEndDate(date);
         message.setText(text);
         messageRepository.save(message);
-        return message;
     }
 
+    @Transactional
     public void deleteMessage(Long id) {
         messageRepository.deleteById(id);
     }
@@ -40,8 +40,12 @@ public class MessageService {
         return messageRepository.findAll(pageable);
     }
 
-    public List<Message> getByUser(User user) {
+    public List<Message> getByUserNeverRead(User user) {
         return messageRepository.findByUsersNotContainsAndEndDateAfter(user, new Date());
+    }
+
+    public List<Message> getByUserAlreadyRead(User user) {
+        return messageRepository.findByUsersContains(user);
     }
 
     @Transactional
@@ -49,6 +53,13 @@ public class MessageService {
         User authUser = userService.getByEppn(authUserEppn);
         Message message = messageRepository.findById(id).get();
         message.getUsers().add(authUser);
+    }
+
+    @Transactional
+    public void anonymize(User user) {
+        for(Message message : getByUserAlreadyRead(user)) {
+            message.getUsers().remove(user);
+        }
     }
 
 }
