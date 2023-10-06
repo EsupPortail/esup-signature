@@ -19,7 +19,8 @@
             <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
         </div>
         <div id="alertNexu" class="alert alert-danger border-dark" style="display: none;">
-            L'application NexU n'a pas été détectée. Merci de lancer l’application sur votre poste puis d'actualiser la page.
+            L'application Esup-DSS-Client n’a pas été détectée. Cette application est necessaire pour le niveau de signature eIDas qui vous est demandé.
+            Merci de lancer l’application sur votre poste puis d’actualiser la page.
         </div>
         <th:block th:if="${toSignDocument.contentType == 'application/pdf'}">
             <div id="commentHelp" th:unless="${signRequest.comments.size() > 0}" class="alert alert-warning border-dark d-none" style="width: 100%">
