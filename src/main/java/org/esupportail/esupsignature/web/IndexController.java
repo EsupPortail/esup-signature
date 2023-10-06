@@ -135,7 +135,7 @@ public class IndexController {
 					if (signRequest != null) {
 						User suUser = preAuthorizeService.checkShareForSignRequest(signRequest, authUser.getEppn());
 						if (suUser != null) {
-							httpSession.setAttribute("suEppn", suUser);
+							httpSession.setAttribute("suEppn", suUser.getEppn());
 							redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation activée : " + suUser.getEppn()));
 							return "redirect:" + forwardUri;
 						}

@@ -15,8 +15,6 @@ public class Message {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-    
-
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy - HH:mm")
     private Date endDate;
@@ -34,10 +32,6 @@ public class Message {
     public void setId(Long id) {
         this.id = id;
     }
-
-    
-
-    
 
     public Date getEndDate() {
         return endDate;
