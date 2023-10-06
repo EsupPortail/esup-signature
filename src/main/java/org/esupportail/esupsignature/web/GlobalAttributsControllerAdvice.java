@@ -83,6 +83,10 @@ public class GlobalAttributsControllerAdvice {
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
             User user = userService.getFullUserByEppn(userEppn);
+            if(user == null) {
+                logger.error("user " + userEppn + " not found");
+                return;
+            }
             userService.parseRoles(userEppn, myGlobalProperties);
             model.addAttribute("securityServiceName", httpServletRequest.getSession().getAttribute("securityServiceName"));
             model.addAttribute("user", user);
