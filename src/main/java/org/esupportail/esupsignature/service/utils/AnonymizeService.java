@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service.utils;
 
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
@@ -79,6 +80,10 @@ public class AnonymizeService {
         logService.anonymize(user.getEppn());
         userPropertieService.deleteAll(user.getEppn());
         userShareService.deleteAll(user.getEppn());
+        List<UserShare> userShares = userShareService.getUserSharesToUser(user.getEppn());
+        for(UserShare userShare : userShares) {
+            userShareService.delete(userShare);
+        }
         fieldPropertieService.deleteAll(user.getEppn());
 
         userService.anonymize(id);
