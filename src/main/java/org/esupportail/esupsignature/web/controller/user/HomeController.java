@@ -96,7 +96,7 @@ public class HomeController {
                 splashMessage.setId(0L);
                 model.addAttribute("splashMessage", splashMessage);
             } else if (!authUserEppn.equals("system") && userEppn.equals(authUserEppn)) {
-                messages.addAll(messageService.getByUser(authUser));
+                messages.addAll(messageService.getByUserNeverRead(authUser));
             }
             model.addAttribute("messageNews", messages);
             List<SignBook> signBooksToSign = signBookService.getSignBooks(userEppn, authUserEppn, "toSign", null, null, null, null, null, pageable).toList();

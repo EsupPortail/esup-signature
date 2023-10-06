@@ -13,5 +13,6 @@ import java.util.List;
 public interface MessageRepository extends CrudRepository<Message, Long>, PagingAndSortingRepository<Message, Long> {
     Page<Message> findAll(Pageable pageable);
     List<Message> findByUsersNotContainsAndEndDateAfter(User user, Date now);
+    List<Message> findByUsersContains(User user);
     Long countByUsersNotContainsAndEndDateAfter(User user, Date now);
 }
