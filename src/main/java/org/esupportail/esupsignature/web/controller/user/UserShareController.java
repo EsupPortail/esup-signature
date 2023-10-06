@@ -26,6 +26,11 @@ import java.util.List;
 @ConditionalOnExpression("${global.share-mode} > 0")
 public class UserShareController {
 
+    @ModelAttribute("paramMenu")
+    public String getActiveMenu() {
+        return "bg-secondary";
+    }
+
     @Resource
     private UserShareService userShareService;
 
