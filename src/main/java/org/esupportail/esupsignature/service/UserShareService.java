@@ -34,9 +34,6 @@ public class UserShareService {
     @Resource
     private UserShareRepository userShareRepository;
 
-    @Resource
-    private RecipientService recipientService;
-
     private static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm";
 
     @Resource
@@ -291,4 +288,7 @@ public class UserShareService {
     }
 
 
+    public List<UserShare> getUserSharesToUser(String eppn) {
+        return userShareRepository.findByToUsersEppnIn(Collections.singletonList(eppn));
+    }
 }

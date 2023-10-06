@@ -14,7 +14,7 @@ export class Nexu {
         this.detectedPort = "";
         this.successDiv = $("#success");
         this.successDiv.hide();
-        $("#warning-text").html("NexU n'a pas été détecté sur le poste !");
+        $("#warning-text").html("Esup-DSS-Client n'a pas été détecté sur le poste !");
         $("#nexu_missing_alert").show();
         let self = this;
         $(document).ready(function() {
@@ -29,7 +29,7 @@ export class Nexu {
                     self.loadScript();
                 }
             }).catch(function(e){
-                console.info("nexu not detected on client");
+                console.info("esup-dss-client not detected on client");
                 if(currentSignType === 'nexuSign') {
                     $("#alertNexu").show();
                     $("#signLaunchButton").hide();
@@ -56,7 +56,7 @@ export class Nexu {
             let encryptionAlgorithm = certificateData.response.encryptionAlgorithm;
             Nexu.tokenId = certificateData.response.tokenId.id;
             Nexu.keyId = certificateData.response.keyId;
-            console.info("NexU version : " + Nexu.version);
+            console.info("esup-dss-client version : " + Nexu.version);
             console.log("init tokenId : " + this.tokenId + "," + this.keyId);
             let url = "/user/nexu-sign/get-data-to-sign";
             let toSend = { signingCertificate: signingCertificate, certificateChain: certificateChain, encryptionAlgorithm: encryptionAlgorithm };
@@ -128,7 +128,7 @@ export class Nexu {
 
     checkNexuClient() {
         return new Promise((resolve, reject) => {
-            console.log("Start checking NexU");
+            console.log("Start checking Esup-DSS-Client");
             let ports = this.bindingPorts.split(",");
             let detectNexu = false;
             let self = this;
@@ -149,7 +149,7 @@ export class Nexu {
                     cache: false,
                 }).done(function (data) {
                     i++;
-                    console.info("nexu detected on " + url);
+                    console.info("esup-dss-client detected on " + url);
                     detectNexu = true;
                     self.detectedPort = port.trim();
                     self.checkNexu(data);
@@ -177,13 +177,13 @@ export class Nexu {
         } else {
             // need update
             $("#nexu_version_alert").show();
-            console.log("Bad NexU version : " + data.version);
+            console.log("bad esup-dss-client version : " + data.version);
         }
     }
 
     loadScript() {
         let url = "http://127.0.0.1:" + this.detectedPort + "/nexu.js";
-        console.info("loading nexu script : " + url);
+        console.info("loading esup-dss-client script : " + url);
         $.getScript(url, function() {
             nexu_get_certificates(Nexu.getDataToSign, Nexu.error);
         });

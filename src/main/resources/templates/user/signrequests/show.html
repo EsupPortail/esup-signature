@@ -250,15 +250,22 @@
                     </div>
                 </div>
                 <div id="noOptions" class="alert alert-danger mt-1" style="display: none;">
-                    Votre profil ne possède pas les prérequis nécessaires pour signer cette demande. Si vous en avez la possibilité, merci de contrôler vos paramètres de signature, d’importer un certificat ou de démarrer NexU.
+                    Votre profil ne possède pas les prérequis nécessaires pour signer cette demande. Si vous en avez la possibilité, merci de contrôler vos paramètres de signature, d’importer un certificat ou de démarrer Esup-DSS-Client.
                     <br>
                     Sinon merci de contacter la personne ou le service émetteur de cette demande de signature.
                 </div>
                 <div id="noSeal" th:if="${!sealCertOK}" class="alert alert-danger mt-1" style="display: none;">
                     La signature par certificat cachet d’établissement est temporairement indisponible pour des raisons de maintenance. Merci refaire un essai ultérieurement.
                 </div>
-                <div id="selectTypeDiv" class="alert alert-success mt-1" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                    <label for="certType">Merci de sélectionner le type de signature que vous souhaitez utiliser parmi les types disponibles</label>
+                <div id="nexu_ready_alert" style="display: none;">
+                    <div class="alert alert-success mt-1 mb-1 col-12">
+                        L’application Esup-DSS-Client est fonctionnelle
+                        <br/>
+                        <small>Vous allez être redirigé vers le système de signature qui permet d’utiliser une clé matérielle</small>
+                    </div>
+                </div>
+                <div id="selectTypeDiv" class="alert alert-secondary mt-1" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                    <label for="certType">Si besoin, merci de sélectionner le type de signature que vous souhaitez utiliser parmi ceux disponibles</label>
                     <select id="certType" name="certType" class="form-select mt-2" required>
                         <th:block th:each="signWith : ${signWiths}">
                             <th:block th:if="${signWith.name != 'sealCert'}">
@@ -288,21 +295,14 @@
                     </div>
                     <div id="nexu_missing_alert" class="mt-1" style="display: none;">
                         <div class="alert alert-warning text-center">
-                            <p class="text-left">L'application NexU n'a pas été détectée</p>
-                            <p  class="text-left">Si vous souhaitez signer à l'aide d'un certificat présent sur votre poste ou sur clé USB, merci de lancer l’application NexU sur votre poste puis d'actualiser la page.<br/>
-                                Pour plus d'informations sur l'utilisation de NexU merci de consulter la documentation à cette adresse :
-                                <a target="_blank" href="https://www.esup-portail.org/wiki/display/SIGN/Application+NexU">https://www.esup-portail.org/wiki/display/SIGN/Application+NexU</a>
+                            <p class="text-left">L'application Esup-DSS-Client n’a pas été détectée</p>
+                            <p  class="text-left">Si vous souhaitez signer à l’aide d’un certificat présent sur votre poste ou sur clé USB, merci de lancer l’application Esup-DSS-Client sur votre poste puis d’actualiser la page.<br/>
+                                Pour plus d’informations sur l’utilisation de Esup-DSS-Client merci de consulter la documentation à cette adresse :
+                                <a target="_blank" href="https://www.esup-portail.org/wiki/display/SIGN/Esup-DSS-Client">https://www.esup-portail.org/wiki/display/SIGN/Esup-DSS-Client</a>
                             </p>
                             <button onclick="location.reload();" class="mt-2 mx-auto btn btn-warning align-self-center">
-                                <i class="fas fa-sync-alt fa-2x"></i><br> Cliquez ici après le lancement de NexU
+                                <i class="fas fa-sync-alt fa-2x"></i><br> Cliquez ici après le lancement de Esup-DSS-Client
                             </button>
-                        </div>
-                    </div>
-                    <div id="nexu_ready_alert" style="display: none;">
-                        <div class="alert alert-success mt-1 mb-1 col-12">
-                            L’application NexU est fonctionnelle
-                            <br/>
-                            <small>Vous allez être redirigé vers le système NexU qui permet d’utiliser une clé matérielle</small>
                         </div>
                     </div>
                 </div>
