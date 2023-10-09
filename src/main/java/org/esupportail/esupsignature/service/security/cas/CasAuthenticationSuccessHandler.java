@@ -1,5 +1,8 @@
 package org.esupportail.esupsignature.service.security.cas;
 
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.service.UserService;
@@ -17,10 +20,6 @@ import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,13 +36,13 @@ public class CasAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
 
 	@Override
 	@Transactional
-	public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
+	public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException {
 		logger.info("authentication success for " + authentication.getName());
 		String name = httpServletRequest.getHeader("sn");
 		String firstname = httpServletRequest.getHeader("givenName");
 		String email = httpServletRequest.getHeader("mail");
         User user = userService.createUserWithAuthentication(null, name, firstname, email, authentication, UserType.ldap);
-		if(user.getManagersRoles().size() > 0) {
+		if(!user.getManagersRoles().isEmpty()) {
 			CasAuthenticationToken auth = (CasAuthenticationToken) authentication;
 			List<GrantedAuthority> updatedAuthorities = new ArrayList<>(auth.getAuthorities());
 			updatedAuthorities.add(new SimpleGrantedAuthority("ROLE_MANAGER"));
