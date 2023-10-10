@@ -176,12 +176,12 @@ public class GlobalProperties {
     public Boolean exportAttachements = true;
 
     /**
-     *  Type de certificat cachet (PKCS11, PKCS12)
+     *  Type de certificat cachet (PKCS11, PKCS12, OPENSC)
      */
     private String sealCertificatType;
 
     /**
-     *  Emplacement du certificat cachet PKCS12
+     *  Emplacement du certificat cachet (actif pour PKCS12)
      */
     private String sealCertificatFile;
 

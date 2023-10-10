@@ -26,6 +26,7 @@ import eu.europa.esig.dss.validation.reports.Reports;
 import eu.europa.esig.dss.validation.timestamp.TimestampToken;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
+import jakarta.annotation.Resource;
 import org.apache.commons.codec.binary.Base64;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.dss.DssUtils;
@@ -54,7 +55,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.annotation.Resource;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -148,6 +148,8 @@ public class SignService {
 		SignatureForm signatureForm;
 		List<Document> toSignDocuments = new ArrayList<>(getToSignDocuments(signRequest.getId()));
 		AbstractKeyStoreTokenConnection abstractKeyStoreTokenConnection = null;
+		CertificateToken certificateToken = null;
+		CertificateToken[] certificateTokenChain = null;
 		try {
 			if(signWith.equals(SignWith.userCert)) {
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
@@ -160,6 +162,8 @@ public class SignService {
 			} else if ((signWith.equals(SignWith.sealCert) && (user.getRoles().contains("ROLE_SEAL")) || userEppn.equals("system"))) {
 				try {
 					abstractKeyStoreTokenConnection = certificatService.getSealToken();
+//					certificateToken = certificatService.getKey();
+//					certificateTokenChain = certificatService.getCrtificateChain();
 				} catch (Exception e) {
 					throw new EsupSignatureRuntimeException("unable to open seal token", e);
 				}
@@ -168,9 +172,10 @@ public class SignService {
 			} else {
 				throw new EsupSignatureRuntimeException("Aucun certificat disponible pour signer le document");
 			}
-
-			CertificateToken certificateToken = userKeystoreService.getCertificateToken(abstractKeyStoreTokenConnection);
-			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(abstractKeyStoreTokenConnection);
+			if(abstractKeyStoreTokenConnection != null) {
+				certificateToken = userKeystoreService.getCertificateToken(abstractKeyStoreTokenConnection);
+				certificateTokenChain = userKeystoreService.getCertificateTokenChain(abstractKeyStoreTokenConnection);
+			}
 			AbstractSignatureForm signatureDocumentForm = getSignatureDocumentForm(toSignDocuments, signRequest, user, new Date());
 			signatureForm = signatureDocumentForm.getSignatureForm();
 			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);

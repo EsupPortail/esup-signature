@@ -46,7 +46,7 @@ public class SignWithService {
         if(globalProperties.getSealCertificatDriver() == null || !user.getRoles().contains("ROLE_SEAL")) {
             signWiths.remove(SignWith.sealCert);
         }
-        if(certificatService.getCertificatByUser(user.getEppn()).size() == 0) {
+        if(certificatService.getCertificatByUser(user.getEppn()).isEmpty()) {
             signWiths.remove(SignWith.groupCert);
         }
         if(globalProperties.getOpenXPKIServerUrl() == null) {
@@ -65,7 +65,7 @@ public class SignWithService {
     public boolean checkSealCertificat(String userEppn) {
         User user = userService.getByEppn(userEppn);
         if(globalProperties.getSealCertificatDriver() != null && user.getRoles().contains("ROLE_SEAL")) {
-            if(certificatService.getSealCertificats().size() > 0) {
+            if(!certificatService.getSealCertificats().isEmpty()) {
                 return true;
             } else {
                 return false;
