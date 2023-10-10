@@ -192,7 +192,7 @@ public class SignRequestWsSecureController {
     @DeleteMapping(value = "/delete-comment/{id}/{commentId}")
     public ResponseEntity<Void> deleteComments(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("commentId") Long commentId,  RedirectAttributes redirectAttributes) {
         commentService.deleteComment(commentId, null);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Le commentaire à bien été supprimé"));
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Le commentaire a bien été supprimé"));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

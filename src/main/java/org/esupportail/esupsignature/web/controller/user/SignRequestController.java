@@ -201,7 +201,7 @@ public class SignRequestController {
     @PostMapping(value = "/refuse/{id}")
     public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, @RequestParam(value = "redirect") String redirect, RedirectAttributes redirectAttributes) throws EsupSignatureMailException, EsupSignatureRuntimeException {
         signBookService.refuse(id, comment, userEppn, authUserEppn);
-        redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
+        redirectAttributes.addFlashAttribute("messageInfos", "La demandes a bien été refusée");
         if(redirect.equals("end")) {
             return "redirect:/user/signbooks";
         } else {
@@ -261,7 +261,7 @@ public class SignRequestController {
                                  RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         logger.info("start add attachment");
         if(signRequestService.addAttachement(multipartFiles, link, id, authUserEppn)) {
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La piece jointe à bien été ajoutée"));
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La piece jointe a bien été ajoutée"));
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucune pièce jointe n'a été ajoutée. Merci de contrôle la validité du document"));
         }
@@ -333,7 +333,7 @@ public class SignRequestController {
             if(comment != null && !comment.isEmpty()) {
                 signRequestService.addPostit(id, comment, userEppn, authUserEppn);
             }
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été transmise"));
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande a bien été transmise"));
         } catch (EsupSignatureRuntimeException e) {
             logger.error(e.getMessage(), e);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
