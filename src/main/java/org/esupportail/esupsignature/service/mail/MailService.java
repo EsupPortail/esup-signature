@@ -133,7 +133,7 @@ public class MailService {
                 MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
                 String htmlContent = templateEngine.process("mail/email-completed.html", ctx);
                 addInLineImages(mimeMessage, htmlContent);
-                mimeMessage.setSubject("Votre demande signature est terminée");
+                mimeMessage.setSubject("Votre demande de signature est terminée");
                 mimeMessage.setFrom(mailConfig.getMailFrom());
                 mimeMessage.setTo(toEmails.toArray(String[]::new));
                 logger.info("send email completed to : " + StringUtils.join(toEmails.toArray(String[]::new), ";"));
@@ -192,10 +192,10 @@ public class MailService {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-completed-cc.html", ctx);
             addInLineImages(mimeMessage, htmlContent);
-            mimeMessage.setSubject("Une demande signature que vous suivez est terminée");
+            mimeMessage.setSubject("Une demande de signature que vous suivez est terminée");
             mimeMessage.setFrom(mailConfig.getMailFrom());
             List<User> viewersArray = getViewers(signBook);
-            if (viewersArray.size() > 0) {
+            if (!viewersArray.isEmpty()) {
                 String[] to = new String[viewersArray.size()];
                 int i = 0;
                 for (User userTo : viewersArray) {
@@ -231,7 +231,7 @@ public class MailService {
                 }
             }
         }
-        if(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() > 0) {
+        if(!signBook.getLiveWorkflow().getLiveWorkflowSteps().isEmpty()) {
             viewersArray.remove(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() - 1).getRecipients().stream().filter(Recipient::getSigned).map(Recipient::getUser).findAny().get());
             return viewersArray;
         } else {

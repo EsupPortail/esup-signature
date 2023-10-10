@@ -168,7 +168,7 @@ public class OtpSignRequestController {
     @PostMapping(value = "/refuse/{id}")
     public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes) throws EsupSignatureMailException, EsupSignatureRuntimeException {
         signBookService.refuse(id, comment, userEppn, authUserEppn);
-        redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
+        redirectAttributes.addFlashAttribute("messageInfos", "La demandes a bien été refusée");
         return "redirect:/otp/signrequests/" + id;
     }
 
@@ -180,7 +180,7 @@ public class OtpSignRequestController {
                                  RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         logger.info("start add attachment");
         signRequestService.addAttachement(multipartFiles, link, id, authUserEppn);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La piece jointe à bien été ajoutée"));
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La piece jointe a bien été ajoutée"));
         return "redirect:/otp/signrequests/" + id;
     }
 
