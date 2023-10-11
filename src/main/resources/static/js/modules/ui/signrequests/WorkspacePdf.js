@@ -412,8 +412,9 @@ export class WorkspacePdf {
 
     pointIt2(e) {
         let target = e.target;
-        let page = $(target).parent().parent().parent();
-        $('#commentPageNumber').val(page.attr("page-num"));
+        let page = $(target).parent().parent();
+        let pageNumber = page.attr("page-num");
+        $('#commentPageNumber').val(pageNumber);
         let offset = 0;
         if(page.attr("page-num") !== undefined) {
             offset = $("#page_" + page.attr("page-num")).offset().top;
