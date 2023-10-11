@@ -173,4 +173,16 @@ public class SignRequestWsController {
         }
         return ResponseEntity.internalServerError().build();
     }
+
+    @GetMapping(value = "/all")
+    @ResponseBody
+    @Operation(description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
+    public ResponseEntity<?> getAllSignRequests() {
+        try {
+            return ResponseEntity.ok(signRequestService.getAll());
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return ResponseEntity.internalServerError().build();
+    }
 }
