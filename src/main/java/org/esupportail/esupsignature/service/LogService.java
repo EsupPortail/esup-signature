@@ -91,6 +91,18 @@ public class LogService {
         return logs;
     }
 
+    @Transactional
+    public List<Log> getFullByToken(String token) {
+        List<Log> logs = logRepository.findBySignRequestToken(token);
+        for (Log log : logs) {
+            if(log.getEppn() != null) {
+                User user = userService.getByEppn(log.getEppn());
+                log.setUser(user);
+            }
+        }
+        return logs;
+    }
+
     public Log create(Long id, String status, String action, String returnCode, String comment, String userEppn,  String authUserEppn) {
         Log log = new Log();
         log.setSignRequestId(id);

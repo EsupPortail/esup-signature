@@ -1,10 +1,11 @@
 package org.esupportail.esupsignature.web;
 
 import eu.europa.esig.dss.validation.reports.Reports;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.FileUtils;
 import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.entity.AuditTrail;
-import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
@@ -23,8 +24,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -63,28 +62,30 @@ public class PublicController {
 
     @GetMapping(value = "/control/{token}")
     public String control(@PathVariable String token, Model model) throws EsupSignatureFsException, IOException {
-        Optional<SignRequest> signRequest = signRequestService.getSignRequestByToken(token);
-        if(signRequest.isEmpty()) {
+        AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(token);
+        if(auditTrail == null) {
             return "error";
         }
-        AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(token);
-        Document signedDocument = signRequestService.getLastSignedFile(signRequest.get().getId());
-        model.addAttribute("size", FileUtils.byteCountToDisplaySize(signedDocument.getSize()));
+        model.addAttribute("auditTrailChecked", false);
+        model.addAttribute("size", auditTrail.getDocumentSize());
         model.addAttribute("auditTrail", auditTrail);
-        if(auditTrail != null && auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
-            Reports reports = signRequestService.validate(signRequest.get().getId());
-            if(reports != null) {
-                model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
-            } else {
+        Optional<SignRequest> signRequest = signRequestService.getSignRequestByToken(token);
+        if(signRequest.isPresent()) {
+            if (auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
+                Reports reports = signRequestService.validate(signRequest.get().getId());
+                if (reports != null) {
+                    model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
+                } else {
+                    model.addAttribute("signRequest", signRequest.get());
+                }
+            } else{
                 model.addAttribute("signRequest", signRequest.get());
             }
-        } else {
-            model.addAttribute("signRequest", signRequest.get());
         }
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && !auth.getName().equals("anonymousUser")) {
             String eppn = userService.tryGetEppnFromLdap(auth);
-            if(eppn != null && userService.getByEppn(eppn) != null && auditTrail != null) {
+            if(eppn != null && userService.getByEppn(eppn) != null) {
                 model.addAttribute("signRequest", signRequest.get());
                 setControlValues(model, signRequest.get(), auditTrail, eppn);
             }
@@ -93,6 +94,8 @@ public class PublicController {
             model.addAttribute("version", buildProperties.getVersion());
         }
         model.addAttribute("token", token);
+        List<Log> logs = logService.getFullByToken(token);
+        model.addAttribute("logs", logs);
         return "public/control";
     }
 
@@ -102,9 +105,12 @@ public class PublicController {
         String checksum = fileService.getFileChecksum(multipartFile.getInputStream());
         AuditTrail auditTrail = auditTrailService.getAuditTrailFromCheksum(checksum);
         if(auditTrail != null && auditTrail.getToken().equals(token)) {
+            model.addAttribute("auditTrailChecked", true);
+            List<Log> logs = logService.getFullByToken(token);
+            model.addAttribute("logs", logs);
             Optional<SignRequest> signRequest = signRequestService.getSignRequestByToken(token);
-            if(signRequest.isEmpty()) {
-                model.addAttribute("signRequest", signRequest);
+            if(signRequest.isPresent()) {
+                model.addAttribute("signRequest", signRequest.get());
             }
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String eppn = null;
@@ -133,8 +139,6 @@ public class PublicController {
     }
 
     private void setControlValues(Model model, SignRequest signRequest, AuditTrail auditTrail, String eppn) {
-        List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
-        model.addAttribute("logs", logs);
         model.addAttribute("usersHasSigned", auditTrailService.checkUserResponseSigned(signRequest));
         model.addAttribute("usersHasRefused", auditTrailService.checkUserResponseRefused(signRequest));
         model.addAttribute("signRequest", signRequest);
