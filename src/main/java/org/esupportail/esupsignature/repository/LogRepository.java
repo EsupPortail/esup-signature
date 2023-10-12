@@ -14,6 +14,7 @@ public interface LogRepository extends CrudRepository<Log, Long>  {
     List<Log> findByEppn(String eppn);
     List<Log> findBySignRequestIdAndFinalStatus(Long signResquestId, String finalStatus);
     List<Log> findBySignRequestId(Long signResquestId);
+    List<Log> findBySignRequestToken(String token);
     List<Log> findBySignRequestIdAndPageNumberIsNotNullAndStepNumberIsNullAndCommentIsNotNull(Long signResquestId);
     @Query(nativeQuery = true, value = "select cast(date_part('Year', log_date) as integer) as year, count(*) as count from log where initial_status = 'completed' and final_status = 'completed' group by date_part('Year', log_date) order by date_part('Year', log_date) desc")
     List<CountByYears> countAllByYears();
