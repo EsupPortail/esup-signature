@@ -43,7 +43,7 @@ public class SignWithService {
         if(globalProperties.getDisableCertStorage() || user.getKeystore() == null) {
             signWiths.remove(SignWith.userCert);
         }
-        if(globalProperties.getSealCertificatDriver() == null || !user.getRoles().contains("ROLE_SEAL")) {
+        if((globalProperties.getSealCertificatDriver() == null && !globalProperties.getSealCertificatType().equals("OPENSC")) || !user.getRoles().contains("ROLE_SEAL")) {
             signWiths.remove(SignWith.sealCert);
         }
         if(certificatService.getCertificatByUser(user.getEppn()).isEmpty()) {
