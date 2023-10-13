@@ -2,11 +2,12 @@ package org.esupportail.esupsignature.service;
 
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
-import eu.europa.esig.dss.token.KSPrivateKeyEntry;
+import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import eu.europa.esig.dss.validation.CertificateValidator;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.reports.CertificateReports;
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.slf4j.Logger;
@@ -14,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
 import java.io.InputStream;
 import java.security.KeyStore.PasswordProtection;
 import java.security.cert.X509Certificate;
@@ -50,7 +50,7 @@ public class UserKeystoreService {
 
 	public CertificateToken getCertificateToken(AbstractKeyStoreTokenConnection token) throws EsupSignatureKeystoreException {
 		try {
-			KSPrivateKeyEntry ksPrivateKeyEntry = (KSPrivateKeyEntry) token.getKeys().get(0);
+			DSSPrivateKeyEntry ksPrivateKeyEntry = token.getKeys().get(0);
 			return ksPrivateKeyEntry.getCertificate();
 		} catch (Exception e) {
 			logger.warn("open keystore fail : " + e.getMessage());
@@ -59,7 +59,7 @@ public class UserKeystoreService {
 	}
 
 	public CertificateToken[] getCertificateTokenChain(AbstractKeyStoreTokenConnection token) {
-			KSPrivateKeyEntry ksPrivateKeyEntry = (KSPrivateKeyEntry) token.getKeys().get(0);
+			DSSPrivateKeyEntry ksPrivateKeyEntry = token.getKeys().get(0);
 			CertificateToken[] certificateTokens = ksPrivateKeyEntry.getCertificateChain();
 			return certificateTokens;
 	}
