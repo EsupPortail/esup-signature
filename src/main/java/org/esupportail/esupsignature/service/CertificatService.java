@@ -143,12 +143,10 @@ public class CertificatService {
     }
 
     public AbstractKeyStoreTokenConnection getSealToken() {
-        if (globalProperties.getSealCertificatDriver() != null) {
-            if(globalProperties.getSealCertificatType().equals("PKCS11") || globalProperties.getSealCertificatType().equals("PKCS12")) {
-               return getSealTokenPKCS();
-            } else if(globalProperties.getSealCertificatType().equals("OPENSC")){
+        if(globalProperties.getSealCertificatDriver() != null && (globalProperties.getSealCertificatType().equals("PKCS11") || globalProperties.getSealCertificatType().equals("PKCS12"))) {
+           return getSealTokenPKCS();
+        } else if(globalProperties.getSealCertificatType().equals("OPENSC")){
             return getSealTokenOpenSC();
-            }
         }
         return null;
     }
@@ -258,12 +256,10 @@ public class CertificatService {
     public List<DSSPrivateKeyEntry> getSealCertificats() {
         List<DSSPrivateKeyEntry> dssPrivateKeyEntries = new ArrayList<>();
         try {
-            if (globalProperties.getSealCertificatDriver() != null) {
-                if (globalProperties.getSealCertificatType().equals("PKCS11") || globalProperties.getSealCertificatType().equals("PKCS12")) {
-                    dssPrivateKeyEntries = getSealTokenPKCS().getKeys();
-                } else if (globalProperties.getSealCertificatType().equals("OPENSC")) {
-                    dssPrivateKeyEntries = getSealTokenOpenSC().getKeys();
-                }
+            if (globalProperties.getSealCertificatDriver() != null && (globalProperties.getSealCertificatType().equals("PKCS11") || globalProperties.getSealCertificatType().equals("PKCS12"))) {
+                dssPrivateKeyEntries = getSealTokenPKCS().getKeys();
+            } else if (globalProperties.getSealCertificatType().equals("OPENSC")) {
+                dssPrivateKeyEntries = getSealTokenOpenSC().getKeys();
             }
         } catch (Exception e) {
             logger.debug("no seal certificat found", e);

@@ -68,7 +68,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @EnableConfigurationProperties(SignProperties.class)
@@ -162,8 +161,6 @@ public class SignService {
 			} else if ((signWith.equals(SignWith.sealCert) && (user.getRoles().contains("ROLE_SEAL")) || userEppn.equals("system"))) {
 				try {
 					abstractKeyStoreTokenConnection = certificatService.getSealToken();
-//					certificateToken = certificatService.getKey();
-//					certificateTokenChain = certificatService.getCrtificateChain();
 				} catch (Exception e) {
 					throw new EsupSignatureRuntimeException("unable to open seal token", e);
 				}
@@ -198,8 +195,8 @@ public class SignService {
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else {
 				List<SignRequestParams> signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
-				List<SignRequestParams> signRequestParamsesForSign = signRequestParamses.stream().filter(srp -> srp.getSignImageNumber() >= 0 && srp.getTextPart() == null).collect(Collectors.toList());
-				if((abstractKeyStoreTokenConnection instanceof Pkcs11SignatureToken || abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken) && signRequestParamsesForSign.size() == 1) {
+				List<SignRequestParams> signRequestParamsesForSign = signRequestParamses.stream().filter(srp -> srp.getSignImageNumber() >= 0 && srp.getTextPart() == null).toList();
+				if((abstractKeyStoreTokenConnection instanceof OpenSCSignatureToken || abstractKeyStoreTokenConnection instanceof Pkcs11SignatureToken || abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken) && signRequestParamsesForSign.size() == 1) {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequestParamsesForSign.get(0) , new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), new Color(214, 0, 128), user, signatureDocumentForm.getSigningDate());
 				} else {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, user);
