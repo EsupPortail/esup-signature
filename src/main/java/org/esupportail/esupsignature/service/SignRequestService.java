@@ -1075,8 +1075,9 @@ public class SignRequestService {
 		}
 	}
 
-	public List<SignRequest> getAll() {
-		return (List<SignRequest>) signRequestRepository.findAll();
+	@Transactional
+	public String getAllToJSon() throws JsonProcessingException {
+		return objectMapper.writeValueAsString(signRequestRepository.findAll());
 	}
 
 	public boolean isAttachmentAlert(SignRequest signRequest) {
