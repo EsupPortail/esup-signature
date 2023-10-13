@@ -174,12 +174,12 @@ public class SignRequestWsController {
         return ResponseEntity.internalServerError().build();
     }
 
-    @GetMapping(value = "/all")
+    @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @Operation(description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
-    public ResponseEntity<?> getAllSignRequests() {
+    @Operation(description = "Récupérer toutes les demandes", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = List.class), mediaType = "application/pdf")))
+    public ResponseEntity<String> getAllSignRequests() {
         try {
-            return ResponseEntity.ok(signRequestService.getAll());
+            return ResponseEntity.ok(signRequestService.getAllToJSon());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
