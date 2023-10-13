@@ -92,10 +92,6 @@ public class SignBook {
         this.id = id;
     }
 
-    
-
-    
-
     public String getSubject() {
         return subject;
     }
