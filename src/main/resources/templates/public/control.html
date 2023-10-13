@@ -18,8 +18,8 @@
                 <li>Soit, le document a été modifié depuis qu’il a été signé</li>
             </ul>
         </div>
-        <th:block th:if="${(auditTrailChecked != null && auditTrailChecked) || (viewAccess != null && viewAccess) || signRequest != null}">
-            <th:block th:if="${auditTrail.getDocumentCheckSum() != null}">
+        <th:block th:if="${auditTrail != null && (auditTrailChecked != null && auditTrailChecked) || (viewAccess != null && viewAccess) || signRequest != null}">
+            <th:block th:if="${auditTrail != null && auditTrail.getDocumentCheckSum() != null}">
                 <div class="alert alert-success mb-1 text-center">
                     <h5>Le document est conforme</h5>
                 </div>
@@ -99,7 +99,7 @@
                     <h5>Le document a bien été signé sur cette plateforme</h5>
                 </div>
             </th:block>
-            <th:block th:if="${auditTrail.getDocumentCheckSum() == null}">
+            <th:block th:if="${auditTrail == null || auditTrail.getDocumentCheckSum() == null}">
                 <div class="alert alert-warning mb-1">
                     <h5>Le document est en cours de signature</h5>
                 </div>
@@ -139,7 +139,7 @@
                     </tbody>
                 </table>
             </div>
-            <th:block th:if="${auditTrail.getDocumentCheckSum() == null}">
+            <th:block th:if="${auditTrail != null || auditTrail.getDocumentCheckSum() == null}">
                 <div class="alert alert-danger mb-1">
                     <h5>Le document a été refusé</h5>
                     <ul th:each="userHasRefused : ${usersHasRefused}">
@@ -148,7 +148,7 @@
                 </div>
             </th:block>
         </th:block>
-        <th:block th:unless="${(auditTrailChecked != null && auditTrailChecked) || (viewAccess != null && viewAccess) || signRequest != null}">
+        <th:block th:unless="${auditTrail != null && (auditTrailChecked != null && auditTrailChecked) || (viewAccess != null && viewAccess) || signRequest != null}">
             <div class="alert alert-success mx-auto mt-1 mb-1" th:if="${auditTrail != null}">
                 <h4>Le document est bien référencé comme signé sur cette plateforme</h4>
                 <dl class="row border-bottom m-0">
