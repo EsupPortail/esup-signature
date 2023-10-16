@@ -193,7 +193,10 @@ public class SignService {
 			} else {
 				List<SignRequestParams> signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
 				List<SignRequestParams> signRequestParamsesForSign = signRequestParamses.stream().filter(srp -> srp.getSignImageNumber() >= 0 && srp.getTextPart() == null).toList();
-				if((abstractKeyStoreTokenConnection instanceof OpenSCSignatureToken || abstractKeyStoreTokenConnection instanceof Pkcs11SignatureToken || abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken) && signRequestParamsesForSign.size() == 1) {
+				if((abstractKeyStoreTokenConnection instanceof OpenSCSignatureToken
+						|| abstractKeyStoreTokenConnection instanceof Pkcs11SignatureToken
+						|| abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken)
+					&& signRequestParamsesForSign.size() == 1 && !user.getEppn().equals("system")) {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequestParamsesForSign.get(0) , new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), new Color(214, 0, 128), user, signatureDocumentForm.getSigningDate());
 				} else {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, user);
