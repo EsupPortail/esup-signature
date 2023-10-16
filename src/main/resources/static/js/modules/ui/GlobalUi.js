@@ -500,7 +500,7 @@ export class GlobalUi {
         }, this.maxInactiveInterval * 1000);
         $("#timeoutModal").on('hidden.bs.modal', function(){
             if(window.location.pathname.includes("otp")) {
-                window.location.href = "/otp-access/expired";
+                window.location.href = "/otp-access/session-expired";
             } else {
                 window.location.href = "/user";
             }
