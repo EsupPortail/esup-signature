@@ -147,8 +147,6 @@ public class SignService {
 		SignatureForm signatureForm;
 		List<Document> toSignDocuments = new ArrayList<>(getToSignDocuments(signRequest.getId()));
 		AbstractKeyStoreTokenConnection abstractKeyStoreTokenConnection = null;
-		CertificateToken certificateToken = null;
-		CertificateToken[] certificateTokenChain = null;
 		try {
 			if(signWith.equals(SignWith.userCert)) {
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
@@ -166,13 +164,12 @@ public class SignService {
 				}
 			} else if (signWith.equals(SignWith.openPkiCert)) {
 				abstractKeyStoreTokenConnection = openXPKICertificatGenerationService.generateTokenForUser(user);
-			} else {
+			}
+			if(abstractKeyStoreTokenConnection == null) {
 				throw new EsupSignatureRuntimeException("Aucun certificat disponible pour signer le document");
 			}
-			if(abstractKeyStoreTokenConnection != null) {
-				certificateToken = userKeystoreService.getCertificateToken(abstractKeyStoreTokenConnection);
-				certificateTokenChain = userKeystoreService.getCertificateTokenChain(abstractKeyStoreTokenConnection);
-			}
+			CertificateToken certificateToken = userKeystoreService.getCertificateToken(abstractKeyStoreTokenConnection);
+			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(abstractKeyStoreTokenConnection);
 			AbstractSignatureForm signatureDocumentForm = getSignatureDocumentForm(toSignDocuments, signRequest, user, new Date());
 			signatureForm = signatureDocumentForm.getSignatureForm();
 			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
@@ -182,7 +179,7 @@ public class SignService {
 				base64CertificateChain.add(Base64.encodeBase64String(token.getEncoded()));
 			}
 			signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
-			AbstractSignatureParameters parameters;
+			AbstractSignatureParameters<?> parameters;
 			if(signatureForm.equals(SignatureForm.CAdES)) {
 				ASiCWithCAdESSignatureParameters aSiCWithCAdESSignatureParameters = new ASiCWithCAdESSignatureParameters();
 				aSiCWithCAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
