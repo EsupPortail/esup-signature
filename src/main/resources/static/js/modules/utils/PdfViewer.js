@@ -202,8 +202,9 @@ export class PdfViewer extends EventFactory {
         let self = this;
         let page = $("#page_" + num);
         if(page.length) {
+            let scrollTo = page.offset().top - self.initialOffset;
             $([document.documentElement, document.body]).animate({
-                scrollTop: page.offset().top - self.initialOffset
+                scrollTop: scrollTo
             }, 500);
         }
     }
