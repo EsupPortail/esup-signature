@@ -499,7 +499,11 @@ export class GlobalUi {
             $("#timeoutModal").modal("show");
         }, this.maxInactiveInterval * 1000);
         $("#timeoutModal").on('hidden.bs.modal', function(){
-            window.location.href = "/user";
+            if(window.location.pathname.includes("otp")) {
+                window.location.href = "/otp-access/expired";
+            } else {
+                window.location.href = "/user";
+            }
         });
     }
 

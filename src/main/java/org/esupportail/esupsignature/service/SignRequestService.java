@@ -331,9 +331,9 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void seal(Long signRequestId, String userEppn) {
+	public void seal(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
-		Document document = signService.certSign(signRequest, userEppn, "", SignWith.sealCert);
+		Document document = signService.certSign(signRequest, "system", "", SignWith.sealCert);
 		if(signRequest.getSignedDocuments().size() > 1) {
 			signRequest.getSignedDocuments().remove(signRequest.getSignedDocuments().size() - 1);
 		}

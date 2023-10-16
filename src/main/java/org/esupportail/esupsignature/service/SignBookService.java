@@ -990,12 +990,10 @@ public class SignBookService {
     }
 
     @Transactional
-    public void sealAllDocs(Long id, String userEppn) throws EsupSignatureRuntimeException {
+    public void sealAllDocs(Long id) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(id);
-        if(signBook.getStatus().equals(SignRequestStatus.completed)) {
-            for(SignRequest signRequest : signBook.getSignRequests()) {
-                signRequestService.seal(signRequest.getId(), userEppn);
-            }
+        for(SignRequest signRequest : signBook.getSignRequests()) {
+            signRequestService.seal(signRequest.getId());
         }
     }
 
@@ -1077,10 +1075,10 @@ public class SignBookService {
             StepStatus stepStatus = signRequestService.sign(signRequest, password, signWith, signRequestParamses, formDataMap, userEppn, authUserEppn, userShareId, comment);
             if(stepStatus.equals(StepStatus.last_end)) {
                 try {
-                    completeSignBook(signRequest.getParentSignBook().getId(), authUserEppn, "Tous les documents sont signés");
                     if(globalProperties.getSealAllDocs()) {
-                        sealAllDocs(signRequest.getParentSignBook().getId(), userEppn);
+                        sealAllDocs(signRequest.getParentSignBook().getId());
                     }
+                    completeSignBook(signRequest.getParentSignBook().getId(), authUserEppn, "Tous les documents sont signés");
                     Document signedDocument = signRequest.getLastSignedDocument();
                     auditTrailService.closeAuditTrail(signRequest.getToken(), signedDocument, signedDocument.getInputStream());
                } catch(IOException e) {
