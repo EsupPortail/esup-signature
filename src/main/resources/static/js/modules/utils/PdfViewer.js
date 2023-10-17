@@ -260,6 +260,7 @@ export class PdfViewer extends EventFactory {
                 container.style.width = Math.round(pdfPageView.viewport.width) + "px";
                 container.style.height = Math.round(pdfPageView.viewport.height) + "px";
                 resolve("ok");
+                self.postRender(page);
             });
             pdfPageView.draw();
         });
