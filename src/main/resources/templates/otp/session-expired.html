@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head-lite :: head-lite}"></head>
+<body>
+<header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
+<main role="main">
+    <div class="wrapper">
+        <div id="content" class="content">
+            <h1>Signature OTP</h1>
+            <div class="alert alert-danger w-75">
+                <p>Votre session a expiré.</p>
+                <p>Si votre demande n’est pas encore signée, merci d’utiliser de nouveau le lien que vous avez reçu par mail.</p>
+            </p>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/footer-light :: footer}"></footer>
+</body>
+</html>
