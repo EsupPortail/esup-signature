@@ -127,7 +127,7 @@ public class OpenSCSignatureToken extends AbstractKeyStoreTokenConnection {
         }
     }
 
-    public byte[] launchProcess(String command) throws DSSException {
+    public synchronized byte[] launchProcess(String command) throws DSSException {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder();
             if(SystemUtils.IS_OS_WINDOWS) {
