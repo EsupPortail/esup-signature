@@ -254,17 +254,18 @@ export class PdfViewer extends EventFactory {
             });
             pdfPageView.setPdfPage(page);
             pdfPageView.eventBus.on("annotationlayerrendered", function () {
+                self.postRender(page);
+            });
+            pdfPageView.eventBus.on("pagerendered", function () {
                 container.style.width = Math.round(pdfPageView.viewport.width) + "px";
                 container.style.height = Math.round(pdfPageView.viewport.height) + "px";
-                self.postRender(i, page);
                 resolve("ok");
             });
             pdfPageView.draw();
         });
     }
 
-    postRender(i, page) {
-        let self = this;
+    postRender(page) {
         this.promiseRenderForm(false, page).then(e => this.promiseRestoreValue());
         console.groupEnd();
         this.restoreScrolling();
