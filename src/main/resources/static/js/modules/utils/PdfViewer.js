@@ -198,6 +198,9 @@ export class PdfViewer extends EventFactory {
                 self.initialOffset = parseInt($("#page_1").offset().top);
                 self.fireEvent('renderFinished', ['ok']);
                 $(document).trigger("renderFinished");
+                if(self.pages.length === self.numPages) {
+                    self.postRenderAll();
+                }
             }
         }));
     }
@@ -260,18 +263,14 @@ export class PdfViewer extends EventFactory {
                 container.style.width = Math.round(pdfPageView.viewport.width) + "px";
                 container.style.height = Math.round(pdfPageView.viewport.height) + "px";
                 self.pages.push(page);
-                if(self.pages.length === self.numPages) {
-                    self.postRenderAll();
-                }
                 resolve("ok");
-
             });
             pdfPageView.draw();
         });
     }
 
     postRenderAll() {
-        for(let i = 0; i < this.numPages + 1; i++) {
+        for(let i = 0; i < this.numPages; i++) {
             this.postRender(this.pages[i]);
         }
     }

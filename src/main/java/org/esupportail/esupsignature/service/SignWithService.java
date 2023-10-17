@@ -1,17 +1,22 @@
 package org.esupportail.esupsignature.service;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignWith;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @EnableConfigurationProperties({GlobalProperties.class, SignProperties.class})
@@ -32,8 +37,16 @@ public class SignWithService {
     @Resource
     private final GlobalProperties globalProperties;
 
+    private static LoadingCache<String, Boolean> sealCertOKCache;
+
     public SignWithService(GlobalProperties globalProperties) {
         this.globalProperties = globalProperties;
+        sealCertOKCache = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<>() {
+            @Override
+            public @NotNull Boolean load(@NotNull String s) {
+                return false;
+            }
+        });
     }
 
     @Transactional
@@ -43,7 +56,7 @@ public class SignWithService {
         if(globalProperties.getDisableCertStorage() || user.getKeystore() == null) {
             signWiths.remove(SignWith.userCert);
         }
-        if((globalProperties.getSealCertificatDriver() == null && !globalProperties.getSealCertificatType().equals("OPENSC")) || !user.getRoles().contains("ROLE_SEAL")) {
+        if(!checkSealCertificat(userEppn, false)) {
             signWiths.remove(SignWith.sealCert);
         }
         if(certificatService.getCertificatByUser(user.getEppn()).isEmpty()) {
@@ -62,16 +75,28 @@ public class SignWithService {
         return signWiths;
     }
 
-    public boolean checkSealCertificat(String userEppn) {
+    public boolean checkSealCertificat(String userEppn, boolean force) {
+        if(Boolean.TRUE.equals(sealCertOKCache.getIfPresent("sealOK"))) return true;
         User user = userService.getByEppn(userEppn);
-        if(globalProperties.getSealCertificatDriver() != null && user.getRoles().contains("ROLE_SEAL")) {
+        if(user.getRoles().contains("ROLE_SEAL") &&
+                globalProperties.getSealCertificatPin() != null &&
+                (
+                    (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals("PKCS11") && globalProperties.getSealCertificatDriver() != null)
+                    ||
+                    (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals("OPENSC"))
+                    ||
+                    (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals("PKCS12") && globalProperties.getSealCertificatFile() != null)
+                )
+        ) {
+            if(!force) return true;
             if(!certificatService.getSealCertificats().isEmpty()) {
+                sealCertOKCache.put("sealOK", true);
                 return true;
             } else {
                 return false;
             }
         } else {
-            return true;
+            return false;
         }
     }
 }
