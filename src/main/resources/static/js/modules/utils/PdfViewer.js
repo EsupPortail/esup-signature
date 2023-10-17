@@ -9,6 +9,8 @@ export class PdfViewer extends EventFactory {
         console.info("Starting PDF Viewer, signable : " + signable);
         this.url= url;
         this.initialOffset = 0;
+        this.pages = [];
+        this.annotationRendered = 0;
         this.signable = signable;
         this.editable = editable;
         this.currentStepNumber = currentStepNumber;
@@ -179,6 +181,8 @@ export class PdfViewer extends EventFactory {
         this.numPages = this.pdfDoc.numPages;
         document.getElementById('page_count').textContent = this.pdfDoc.numPages;
         this.renderedPages = 0;
+        this.annotationRendered = 0;
+        this.pages = [];
         this.render();
         this.refreshTools();
         this.fireEvent("ready", ['ok']);
@@ -235,7 +239,6 @@ export class PdfViewer extends EventFactory {
             });
             this.page = page;
             let self = this;
-            let scale = this.scale;
             localStorage.setItem('scale', this.scale.toPrecision(2) + "");
             let viewport = page.getViewport({scale: this.scale, rotation: this.rotation});
             let dispatchToDOM = false;
@@ -254,16 +257,23 @@ export class PdfViewer extends EventFactory {
             });
             pdfPageView.setPdfPage(page);
             pdfPageView.eventBus.on("annotationlayerrendered", function () {
-                self.postRender(page);
-            });
-            pdfPageView.eventBus.on("pagerendered", function () {
                 container.style.width = Math.round(pdfPageView.viewport.width) + "px";
                 container.style.height = Math.round(pdfPageView.viewport.height) + "px";
+                self.pages.push(page);
+                if(self.pages.length === self.numPages) {
+                    self.postRenderAll();
+                }
                 resolve("ok");
-                self.postRender(page);
+
             });
             pdfPageView.draw();
         });
+    }
+
+    postRenderAll() {
+        for(let i = 0; i < this.numPages + 1; i++) {
+            this.postRender(this.pages[i]);
+        }
     }
 
     postRender(page) {
@@ -482,7 +492,7 @@ export class PdfViewer extends EventFactory {
                         success: response => this.autocomplete(response, sendField)
                     });
                 }
-                if (this.isFieldEnable(dataField)) {
+                if (dataField.editable) {
                     inputField.val(items[i].fieldValue);
                     if (dataField.defaultValue != null) {
                         // inputField.attr("es-data", dataField.defaultValue);
@@ -630,7 +640,7 @@ export class PdfViewer extends EventFactory {
                 inputField.removeAttr("hidden");
                 inputField.attr('name', inputName);
                 inputField.attr('id', inputName);
-                if (this.isFieldEnable(dataField)) {
+                if (dataField.editable) {
                     inputField.val(dataField.defaultValue);
                     this.enableInputField(inputField, dataField)
                 }
@@ -648,13 +658,16 @@ export class PdfViewer extends EventFactory {
     }
 
     enableInputField(inputField, dataField) {
-        inputField.prop('disabled', false);
-        inputField.removeClass('disabled-field disable-selection');
-        inputField.prop('required', false);
-        inputField.removeClass('required-field');
-        if (dataField.required) {
+        if (!dataField.required) {
+            inputField.prop('required', false);
+            inputField.removeClass('required-field');
+        } else {
             inputField.prop('required', true);
             inputField.addClass('required-field');
+        }
+        if (!dataField.readOnly) {
+            inputField.prop('disabled', false);
+            inputField.removeClass('disabled-field disable-selection');
         }
         inputField.attr('title', dataField.description);
     }
