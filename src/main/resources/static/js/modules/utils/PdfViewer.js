@@ -253,7 +253,7 @@ export class PdfViewer extends EventFactory {
                 renderer: "canvas",
             });
             pdfPageView.setPdfPage(page);
-            pdfPageView.eventBus.on("pagerendered", function () {
+            pdfPageView.eventBus.on("annotationlayerrendered", function () {
                 container.style.width = Math.round(pdfPageView.viewport.width) + "px";
                 container.style.height = Math.round(pdfPageView.viewport.height) + "px";
                 self.postRender(i, page);
