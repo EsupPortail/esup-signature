@@ -163,7 +163,7 @@ public class SignRequestController {
             }
         }
         model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest));
-        model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn));
+        model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn, true));
         model.addAttribute("allSignWiths", SignWith.values());
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
