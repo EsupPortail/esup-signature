@@ -99,10 +99,8 @@ export class WorkspacePdf {
             $("#showComments").on('click', e => this.enableCommentMode());
             // this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
             // this.signPosition.addEventListener("stopDrag", e => this.showAllPostits());
-            this.pdfViewer.addEventListener('ready', e => this.initWorkspace());
+            this.pdfViewer.addEventListener('renderFinished', e => this.initWorkspace());
             this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
-            this.pdfViewer.addEventListener('renderFinished', e => this.refreshAfterPageChange());
-            this.pdfViewer.addEventListener('renderFinished', e => this.initForm());
             this.pdfViewer.addEventListener('change', e => this.saveData(localStorage.getItem('disableFormAlert') === "true"));
             this.pdfViewer.pdfDiv.on('click', e => this.clickAction(e));
 
@@ -243,6 +241,8 @@ export class WorkspacePdf {
                 this.enableCommentMode();
             }
         }
+        this.refreshAfterPageChange();
+        this.initForm();
     }
 
     initForm() {
@@ -794,6 +794,7 @@ export class WorkspacePdf {
         $('#signLaunchButton').removeClass('d-none');
         $('#refuseLaunchButton').removeClass('d-none');
         $('#trashLaunchButton').removeClass('d-none');
+        this.refreshAfterPageChange();
     }
 
     disableAllModes() {
@@ -965,16 +966,18 @@ export class WorkspacePdf {
     }
 
     changeMode(e) {
-        let mode = e[0].value;
-        console.info("change mode to : " + mode);
-        if (mode === "sign" && this.signable) {
-            this.enableSignMode();
-        }
-        if (mode === "comment" && this.mode !== "comment") {
-            this.enableCommentMode();
-        }
-        if (mode === "read") {
-            this.enableReadMode();
+        if(this.ready) {
+            let mode = e[0].value;
+            console.info("change mode to : " + mode);
+            if (mode === "sign" && this.signable) {
+                this.enableSignMode();
+            }
+            if (mode === "comment" && this.mode !== "comment") {
+                this.enableCommentMode();
+            }
+            if (mode === "read") {
+                this.enableReadMode();
+            }
         }
     }
 

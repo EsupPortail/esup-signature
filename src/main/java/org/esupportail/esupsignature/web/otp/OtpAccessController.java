@@ -108,6 +108,11 @@ public class OtpAccessController {
         return "otp/expired";
     }
 
+    @GetMapping(value = "/session-expired")
+    public String sessionExpired() {
+        return "otp/session-expired";
+    }
+
     @PostMapping(value = "/phone")
     public String phone(@RequestParam String urlId, @RequestParam String phone, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureUserException {
         model.addAttribute("urlId", urlId);
