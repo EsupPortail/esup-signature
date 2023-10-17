@@ -196,7 +196,7 @@ public class SignService {
 				if((abstractKeyStoreTokenConnection instanceof OpenSCSignatureToken
 						|| abstractKeyStoreTokenConnection instanceof Pkcs11SignatureToken
 						|| abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken)
-					&& signRequestParamsesForSign.size() == 1 && !user.getEppn().equals("system")) {
+					&& !signRequestParamsesForSign.isEmpty() && !user.getEppn().equals("system")) {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequestParamsesForSign.get(0) , new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), new Color(214, 0, 128), user, signatureDocumentForm.getSigningDate());
 				} else {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, user);

@@ -794,6 +794,7 @@ export class WorkspacePdf {
         $('#signLaunchButton').removeClass('d-none');
         $('#refuseLaunchButton').removeClass('d-none');
         $('#trashLaunchButton').removeClass('d-none');
+        this.refreshAfterPageChange();
     }
 
     disableAllModes() {
