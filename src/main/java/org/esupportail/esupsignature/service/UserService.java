@@ -220,7 +220,7 @@ public class UserService {
         }
         if (ldapPersonService != null) {
             List<PersonLdap> personLdaps = ldapPersonService.getPersonLdapByEppn(eppn);
-            if (personLdaps.size() > 0) {
+            if (!personLdaps.isEmpty()) {
                 String name = personLdaps.get(0).getSn();
                 String firstName = personLdaps.get(0).getGivenName();
                 String mail = personLdaps.get(0).getMail();
