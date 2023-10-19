@@ -164,11 +164,11 @@ public class WebSecurityConfig {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers("/").permitAll());
+		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(new AntPathRequestMatcher("/")).permitAll());
 		devSecurityFilters.forEach(devSecurityFilter -> http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class));
 		http.exceptionHandling(exceptionHandling -> exceptionHandling.defaultAuthenticationEntryPointFor(new IndexEntryPoint("/"), new AntPathRequestMatcher("/")));
 		for(SecurityService securityService : securityServices) {
-			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(securityService.getLoginUrl()).authenticated());
+			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(new AntPathRequestMatcher(securityService.getLoginUrl())).authenticated());
 			http.exceptionHandling(exceptionHandling -> exceptionHandling.defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), new AntPathRequestMatcher(securityService.getLoginUrl())));
 			if(securityService.getClass().equals(OAuthSecurityServiceImpl.class)) {
 				http.oauth2Login(oauth2Login -> oauth2Login.loginPage("/"))
@@ -199,15 +199,14 @@ public class WebSecurityConfig {
 						));
 		http.logout(logout -> logout.addLogoutHandler(logoutHandler())
 				.logoutSuccessUrl("/login").permitAll());
-		http.csrf(csrf -> csrf.ignoringRequestMatchers("/resources/**")
-				.ignoringRequestMatchers("/webjars/**")
-				.ignoringRequestMatchers("/ws/**")
-				.ignoringRequestMatchers("/user/nexu-sign/**")
-				.ignoringRequestMatchers("/otp-access/**")
-				.ignoringRequestMatchers("/log/**")
-				.ignoringRequestMatchers("/actuator/**")
-				.ignoringRequestMatchers("/h2-console/**"))
-				;
+		http.csrf(csrf -> csrf.ignoringRequestMatchers(new AntPathRequestMatcher("/resources/**"))
+				.ignoringRequestMatchers(new AntPathRequestMatcher("/webjars/**"))
+				.ignoringRequestMatchers(new AntPathRequestMatcher("/ws/**"))
+				.ignoringRequestMatchers(new AntPathRequestMatcher("/user/nexu-sign/**"))
+				.ignoringRequestMatchers(new AntPathRequestMatcher("/otp-access/**"))
+				.ignoringRequestMatchers(new AntPathRequestMatcher("/log/**"))
+				.ignoringRequestMatchers(new AntPathRequestMatcher("/actuator/**"))
+				.ignoringRequestMatchers(new AntPathRequestMatcher("/h2-console/**")))				;
 		http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 		setAuthorizeRequests(http);
 		return http.build();
@@ -256,20 +255,21 @@ public class WebSecurityConfig {
 				}
 			}
 			String finalHasIpAddresses = hasIpAddresses;
-			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers("/ws/**").access(new WebExpressionAuthorizationManager(finalHasIpAddresses)));
-			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers("/actuator/**").access(new WebExpressionAuthorizationManager(finalHasIpAddresses)));
+			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(new AntPathRequestMatcher("/ws/**")).access(new WebExpressionAuthorizationManager(finalHasIpAddresses)));
+			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(new AntPathRequestMatcher("/actuator/**")).access(new WebExpressionAuthorizationManager(finalHasIpAddresses)));
 //			http.authorizeRequests().requestMatchers("/ws/**").access("hasRole('WS')").and().addFilter(apiKeyFilter());
 		} else {
-			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers("/ws/**").denyAll());
-			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers("/actuator/**").denyAll());
+			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(new AntPathRequestMatcher("/ws/**")).denyAll());
+			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(new AntPathRequestMatcher("/actuator/**")).denyAll());
 		}
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
-				.requestMatchers("/api-docs/", "/api-docs/**").hasAnyRole("ADMIN")
-				.requestMatchers("/swagger-ui.html", "/swagger-ui/", "/swagger-ui/**").hasAnyRole("ADMIN")
-				.requestMatchers("/admin/", "/admin/**").hasAnyRole("ADMIN", "MANAGER")
-				.requestMatchers("/user/", "/user/**").hasAnyRole("USER")
-				.requestMatchers("/otp/", "/otp/**").hasAnyRole("OTP", "FRANCECONNECT")
-				.requestMatchers("/ws-secure/", "/ws-secure/**").hasAnyRole("USER", "OTP", "FRANCECONNECT")
+				.requestMatchers(new AntPathRequestMatcher("/api-docs/", "/api-docs/**")).hasAnyRole("ADMIN")
+				.requestMatchers(new AntPathRequestMatcher("/swagger-ui/", "/swagger-ui/**")).hasAnyRole("ADMIN")
+				.requestMatchers(new AntPathRequestMatcher("/swagger-ui.html")).hasAnyRole("ADMIN")
+				.requestMatchers(new AntPathRequestMatcher("/admin/", "/admin/**")).hasAnyRole("ADMIN", "MANAGER")
+				.requestMatchers(new AntPathRequestMatcher("/user/", "/user/**")).hasAnyRole("USER")
+				.requestMatchers(new AntPathRequestMatcher("/otp/", "/otp/**")).hasAnyRole("OTP", "FRANCECONNECT")
+				.requestMatchers(new AntPathRequestMatcher("/ws-secure/", "/ws-secure/**")).hasAnyRole("USER", "OTP", "FRANCECONNECT")
 				.anyRequest().permitAll());
 	}
 
