@@ -21,17 +21,9 @@ public class GlobalProperties {
      */
     private Boolean enableScheduledCleanup = false;
     /**
-     * Chemin d’écoute de NexU
+     * Chemin d’écoute d’Esup-DSS-Client
      */
     private String nexuUrl = "http://localhost:9795";
-    /**
-     * Version nécessaire de NexU
-     */
-    private String nexuVersion;
-    /**
-     * Chemin de téléchargement de NexU
-     */
-    private String nexuDownloadUrl;
     /**
      * Masquer la tuile Créer une demande personnalisée
      */
@@ -277,22 +269,6 @@ public class GlobalProperties {
 
     public void setNexuUrl(String nexuUrl) {
         this.nexuUrl = nexuUrl;
-    }
-
-    public String getNexuVersion() {
-        return nexuVersion;
-    }
-
-    public void setNexuVersion(String nexuVersion) {
-        this.nexuVersion = nexuVersion;
-    }
-
-    public String getNexuDownloadUrl() {
-        return nexuDownloadUrl;
-    }
-
-    public void setNexuDownloadUrl(String nexuDownloadUrl) {
-        this.nexuDownloadUrl = nexuDownloadUrl;
     }
 
     public Boolean getHideWizard() {
