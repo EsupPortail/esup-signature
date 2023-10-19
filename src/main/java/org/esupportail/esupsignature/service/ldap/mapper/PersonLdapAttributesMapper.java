@@ -68,7 +68,6 @@ public class PersonLdapAttributesMapper implements AttributesMapper<PersonLdap> 
         person.setSupannAutreMail(getStringAttribute(attributes, "supannAutreMail"));
         person.setMailuserquota(getLongAttribute(attributes, "mailuserquota"));
         person.setTitle(getStringAttribute(attributes, "title"));
-
         return person;
     }
 
