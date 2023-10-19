@@ -155,7 +155,7 @@ public class UserService {
 
     @Transactional
     public User getUserByEmail(String email) {
-        if(EmailValidator.getInstance().isValid(email)) {
+        if(EmailValidator.getInstance().isValid(email) || email.equals("system") || email.equals("creator") || email.equals("scheduler") || email.equals("generic")) {
             Optional<User> optionalUser = userRepository.findByEmail(email);
             return optionalUser.orElseGet(() -> createUserWithEmail(email));
         }

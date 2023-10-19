@@ -1,12 +1,14 @@
 package org.esupportail.esupsignature.service.utils;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.io.IOUtils;
-import org.springframework.stereotype.Service;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.QuoteMode;
+import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.config.GlobalProperties;
+import org.springframework.stereotype.Service;
+
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -18,8 +20,11 @@ public class WebUtilsService {
 
     private final HttpServletRequest request;
 
-    public WebUtilsService(HttpServletRequest request) {
+    private final GlobalProperties globalProperties;
+
+    public WebUtilsService(HttpServletRequest request, GlobalProperties globalProperties) {
         this.request = request;
+        this.globalProperties = globalProperties;
     }
 
 
@@ -48,7 +53,14 @@ public class WebUtilsService {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         OutputStreamWriter out = new OutputStreamWriter(outputStream);
         String[] headers = list.stream().flatMap(map -> map.keySet().stream()).distinct().toArray(String[]::new);
-        CSVPrinter printer = new CSVPrinter(out, CSVFormat.Builder.create(CSVFormat.EXCEL).setHeader(headers).build());
+        CSVFormat.Builder csvFormat = CSVFormat.Builder.create(CSVFormat.EXCEL).setHeader(headers).setQuoteMode(QuoteMode.ALL);
+        if (globalProperties.getCsvSeparator() != null) {
+            csvFormat.setDelimiter(globalProperties.getCsvSeparator());
+        }
+        if (globalProperties.getCsvQuote() != null) {
+            csvFormat.setQuote(globalProperties.getCsvQuote());
+        }
+        CSVPrinter printer = new CSVPrinter(out, csvFormat.build());
         for (Map<String, String> map : list) {
             printer.printRecord(map.values());
         }

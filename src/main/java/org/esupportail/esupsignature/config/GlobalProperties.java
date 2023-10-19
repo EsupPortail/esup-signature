@@ -235,6 +235,16 @@ public class GlobalProperties {
      */
     private Integer bouncycastelMaxMrTests = 0;
 
+    /**
+     *  Séparateur CSV
+     */
+    private String csvSeparator = null;
+
+    /**
+     *  Quote CSV
+     */
+    private Character csvQuote = null;
+
     private String fileNameSpacesReplaceBy = "_";
 
     public String getRootUrl() {
@@ -619,5 +629,21 @@ public class GlobalProperties {
 
     public void setFileNameSpacesReplaceBy(String fileNameSpacesReplaceBy) {
         this.fileNameSpacesReplaceBy = fileNameSpacesReplaceBy;
+    }
+
+    public String getCsvSeparator() {
+        return csvSeparator;
+    }
+
+    public void setCsvSeparator(String csvSeparator) {
+        this.csvSeparator = csvSeparator;
+    }
+
+    public Character getCsvQuote() {
+        return csvQuote;
+    }
+
+    public void setCsvQuote(Character csvQuote) {
+        this.csvQuote = csvQuote;
     }
 }
