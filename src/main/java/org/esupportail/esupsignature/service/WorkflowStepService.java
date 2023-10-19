@@ -65,7 +65,7 @@ public class WorkflowStepService {
         recipientsEmail = Arrays.stream(recipientsEmail).distinct().toArray(String[]::new);
         for (String recipientEmail : recipientsEmail) {
             List<String> groupList = userListService.getUsersEmailFromList(recipientEmail);
-            if(groupList.size() == 0) {
+            if(groupList.isEmpty() || recipientEmail.equals("creator")) {
                 User recipientUser = userService.getUserByEmail(recipientEmail);
                 if (workflowStep.getId() != null) {
                     for (User user : workflowStep.getUsers()) {
