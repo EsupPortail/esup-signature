@@ -19,7 +19,7 @@ export class Nexu {
         let self = this;
         $(document).ready(function() {
             self.checkNexuClient().then(function(e) {
-                console.info("NexU detected !");
+                console.info("Esup-DSS-Client est lancé !");
                 $("#warning-text").html("");
                 $("#nexu_missing_alert").hide();
                 $("#alertNexu").remove();
@@ -29,7 +29,7 @@ export class Nexu {
                     self.loadScript();
                 }
             }).catch(function(e){
-                console.info("esup-dss-client not detected on client");
+                console.info("Esup-DSS-Client non lancé !");
                 if(currentSignType === 'nexuSign') {
                     $("#alertNexu").show();
                     $("#signLaunchButton").hide();
@@ -149,7 +149,7 @@ export class Nexu {
                     cache: false,
                 }).done(function (data) {
                     i++;
-                    console.info("esup-dss-client detected on " + url);
+                    console.info("Esup-DSS-Client detected on " + url);
                     detectNexu = true;
                     self.detectedPort = port.trim();
                     self.checkNexu(data);
@@ -170,7 +170,7 @@ export class Nexu {
     }
 
     checkNexu(data) {
-        console.log("Check NexU");
+        console.log("Contrôle de l'application Esup-DSS-Client");
         if(data.version.startsWith("1.0") || data.version.startsWith("1.24") || data.version.startsWith("1.23") || data.version.startsWith("1.22") || data.version.startsWith("1.8")) {
             $("#nexu_ready_alert").show();
             $("#submit-button").prop('disabled', false);

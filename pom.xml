@@ -20,7 +20,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dss.framework.version>5.12.1</dss.framework.version>
 		<dss.framework.safeVersion>5.4.3</dss.framework.safeVersion>
-		<nexu.version>1.23</nexu.version>
 	</properties>
 	<repositories>
 		<repository>
