@@ -2,8 +2,6 @@ global:
     root-url: https://esup-signature.univ-ville.fr
     domain: univ-ville.fr
     nexu-url: http://localhost:9795
-    nexu-version: 1.22, 1.23 ou Esup-DSS-Client 1.0
-    nexu-download-url: /downloads/nexu-bundle.zip
     hide-wizard: false
     hide-auto-sign: false
     hide-send-sign-request: false
