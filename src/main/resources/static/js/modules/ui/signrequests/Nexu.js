@@ -111,6 +111,9 @@ export class Nexu {
             } else if (jsonResp.message !=null){
                 $("#errorcontent").html(jsonResp.message);
             } else if (jsonResp.errorMessage !=null){
+                if(jsonResp.errorMessage.startsWith("The user has cancelled the operation")) {
+                    $("#errorText").html("Opération annulée par l'utilisateur");
+                }
                 $("#errorcontent").html(jsonResp.errorMessage);
             } else if (jsonResp.error != null){
                 $("#errorcontent").html(jsonResp.error);
@@ -118,6 +121,14 @@ export class Nexu {
         }
         $("#error").show();
         $("#success").hide();
+        $.ajax({
+            type: "POST",
+            url: Nexu.rootUrl + "/user/nexu-sign/error?id=" + Nexu.id,
+            crossDomain: true,
+            dataType: "json",
+            async: true,
+            cache: false,
+        });
     }
 
     static updateProgressBar(action, percent) {

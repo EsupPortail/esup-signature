@@ -1,8 +1,12 @@
 package org.esupportail.esupsignature.dss.model;
 
-import eu.europa.esig.dss.enumerations.*;
-
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.enumerations.EncryptionAlgorithm;
+import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.ws.dto.TimestampDTO;
 import jakarta.validation.constraints.NotNull;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -10,7 +14,7 @@ import java.util.List;
 public abstract class AbstractSignatureForm implements Serializable {
 
 	// @AssertTrue(message = "{error.nexu.not.found}")
-	private boolean nexuDetected = true;
+	private boolean nexuDetected;
 
 	private Date signingDate;
 
@@ -27,36 +31,16 @@ public abstract class AbstractSignatureForm implements Serializable {
 	@NotNull(message = "{error.digest.algo.mandatory}")
 	private DigestAlgorithm digestAlgorithm;
 
-	private String base64Certificate;
+	private byte[] certificate;
 
-	private List<String> base64CertificateChain;
+	private List<byte[]> certificateChain;
 
 	private EncryptionAlgorithm encryptionAlgorithm;
 
-	private String base64SignatureValue;
+	private byte[] signatureValue;
 
 	private TimestampDTO contentTimestamp;
 
-	private ASiCContainerType containerType;
-	
-	private SignaturePackaging signaturePackaging;
-	
-	public SignaturePackaging getSignaturePackaging() {
-		return signaturePackaging;
-	}
-
-	public void setSignaturePackaging(SignaturePackaging signaturePackaging) {
-		this.signaturePackaging = signaturePackaging;
-	}
-	
-	public ASiCContainerType getContainerType() {
-		return containerType;
-	}
-
-	public void setContainerType(ASiCContainerType containerType) {
-		this.containerType = containerType;
-	}
-	
 	public boolean isNexuDetected() {
 		return nexuDetected;
 	}
@@ -113,20 +97,20 @@ public abstract class AbstractSignatureForm implements Serializable {
 		this.digestAlgorithm = digestAlgorithm;
 	}
 
-	public String getBase64Certificate() {
-		return base64Certificate;
+	public byte[] getCertificate() {
+		return certificate;
 	}
 
-	public void setBase64Certificate(String base64Certificate) {
-		this.base64Certificate = base64Certificate;
+	public void setCertificate(byte[] certificate) {
+		this.certificate = certificate;
 	}
 
-	public List<String> getBase64CertificateChain() {
-		return base64CertificateChain;
+	public List<byte[]> getCertificateChain() {
+		return certificateChain;
 	}
 
-	public void setBase64CertificateChain(List<String> base64CertificateChain) {
-		this.base64CertificateChain = base64CertificateChain;
+	public void setCertificateChain(List<byte[]> certificateChain) {
+		this.certificateChain = certificateChain;
 	}
 
 	public EncryptionAlgorithm getEncryptionAlgorithm() {
@@ -137,12 +121,12 @@ public abstract class AbstractSignatureForm implements Serializable {
 		this.encryptionAlgorithm = encryptionAlgorithm;
 	}
 
-	public String getBase64SignatureValue() {
-		return base64SignatureValue;
+	public byte[] getSignatureValue() {
+		return signatureValue;
 	}
 
-	public void setBase64SignatureValue(String base64SignatureValue) {
-		this.base64SignatureValue = base64SignatureValue;
+	public void setSignatureValue(byte[] signatureValue) {
+		this.signatureValue = signatureValue;
 	}
 
 	public TimestampDTO getContentTimestamp() {

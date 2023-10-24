@@ -2,6 +2,9 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.ToBeSigned;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.esupportail.esupsignature.dss.DssUtils;
 import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.SignRequest;
@@ -20,10 +23,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
-import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.io.Serializable;
 
@@ -70,8 +69,8 @@ public class NexuProcessController implements Serializable {
 											   @ModelAttribute("id") Long id, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
 		logger.info("get data to sign for signRequest: " + id);
 		AbstractSignatureForm abstractSignatureForm = signService.getAbstractSignatureForm(id, userEppn);
-		abstractSignatureForm.setBase64Certificate(params.getSigningCertificate());
-		abstractSignatureForm.setBase64CertificateChain(params.getCertificateChain());
+		abstractSignatureForm.setCertificate(params.getSigningCertificate());
+		abstractSignatureForm.setCertificateChain(params.getCertificateChain());
 		abstractSignatureForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
 		if (abstractSignatureForm.isAddContentTimestamp()) {
 			abstractSignatureForm.setContentTimestamp(DssUtils.fromTimestampToken(signService.getContentTimestamp((SignatureDocumentForm) abstractSignatureForm)));
@@ -80,7 +79,7 @@ public class NexuProcessController implements Serializable {
 		GetDataToSignResponse responseJson = new GetDataToSignResponse();
 		try {
 			ToBeSigned dataToSign = signService.getDataToSign(id, userEppn, (SignatureDocumentForm) abstractSignatureForm);
-			responseJson.setDataToSign(DatatypeConverter.printBase64Binary(dataToSign.getBytes()));
+			responseJson.setDataToSign(dataToSign.getBytes());
 			return responseJson;
 		} catch (DSSException e) {
 			throw new EsupSignatureRuntimeException(e.getMessage());
@@ -92,10 +91,10 @@ public class NexuProcessController implements Serializable {
 	@PostMapping(value = "/sign-document")
 	@ResponseBody
 	public SignDocumentResponse signDocument(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
-											 @RequestBody @Valid SignatureValueAsString signatureValue,
+											 @RequestBody @Valid SignResponse signatureValue,
 											 @ModelAttribute("id") Long id, HttpSession httpSession) throws EsupSignatureRuntimeException {
 		AbstractSignatureForm abstractSignatureForm = (AbstractSignatureForm) httpSession.getAttribute("abstractSignatureForm");
-		abstractSignatureForm.setBase64SignatureValue(signatureValue.getSignatureValue());
+		abstractSignatureForm.setSignatureValue(signatureValue.getSignatureValue());
 		SignDocumentResponse responseJson = signService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn, authUserEppn);
 		signRequestService.updateStatus(id, SignRequestStatus.signed, "Signature", "SUCCESS", userEppn, authUserEppn);
 		StepStatus stepStatus = signRequestService.applyEndOfSignRules(id, userEppn, authUserEppn, SignType.nexuSign, "");
@@ -106,6 +105,14 @@ public class NexuProcessController implements Serializable {
 		}
 		httpSession.removeAttribute("abstractSignatureForm");
 		return responseJson;
+	}
+
+	@Scope(value = "session")
+	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
+	@PostMapping(value = "/error")
+	@ResponseBody
+	public void error(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @ModelAttribute("id") Long id, HttpSession httpSession) throws EsupSignatureRuntimeException {
+		httpSession.removeAttribute("abstractSignatureForm");
 	}
 
 }

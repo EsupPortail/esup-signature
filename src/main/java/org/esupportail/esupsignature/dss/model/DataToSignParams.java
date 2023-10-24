@@ -10,28 +10,28 @@ import java.util.List;
 public class DataToSignParams implements Serializable {
 
 	@NotNull
-	private String signingCertificate;
+	private byte[] signingCertificate;
 	@NotNull
-	private List<String> certificateChain;
+	private List<byte[]> certificateChain;
 	@NotNull
 	private EncryptionAlgorithm encryptionAlgorithm;
 
 	public DataToSignParams() {
 	}
 
-	public String getSigningCertificate() {
+	public byte[] getSigningCertificate() {
 		return signingCertificate;
 	}
 
-	public void setSigningCertificate(String signingCertificate) {
+	public void setSigningCertificate(byte[] signingCertificate) {
 		this.signingCertificate = signingCertificate;
 	}
 
-	public List<String> getCertificateChain() {
+	public List<byte[]> getCertificateChain() {
 		return certificateChain;
 	}
 
-	public void setCertificateChain(List<String> certificateChain) {
+	public void setCertificateChain(List<byte[]> certificateChain) {
 		this.certificateChain = certificateChain;
 	}
 

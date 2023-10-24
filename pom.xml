@@ -422,6 +422,11 @@
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+			<artifactId>dss-signature-dto</artifactId>
+			<version>${dss.framework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-pades-pdfbox</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
@@ -801,7 +806,11 @@
 			<artifactId>maven-antrun-plugin</artifactId>
 			<version>3.1.0</version>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+        </dependency>
+    </dependencies>
 	<build>
 		<finalName>esup-signature</finalName>
 		<plugins>
