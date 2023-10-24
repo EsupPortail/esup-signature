@@ -70,6 +70,7 @@ export default class SelectUser {
                 hideSelectedOption: true,
                 closeOnSelect: true,
                 maxSelected: self.limit,
+                maxValuesShown: 40,
             },
             events: {
                 afterChange: e => this.displayTempUsers(e),
