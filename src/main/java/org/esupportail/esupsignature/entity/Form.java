@@ -71,7 +71,7 @@ public class Form {
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private Document document = new Document();
 
-	@ManyToMany(cascade = CascadeType.REMOVE)
+	@ManyToMany
 	@OrderColumn
 	private List<Field> fields = new ArrayList<>();
 
@@ -124,10 +124,6 @@ public class Form {
 	public void setMessage(String message) {
 		this.message = message;
 	}
-
-	
-
-	
 
 	@Deprecated
 	public Set<String> getManagers() {
