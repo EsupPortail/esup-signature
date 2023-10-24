@@ -1675,7 +1675,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 .sign-field:hover {
-    background-color: rgba(189, 255, 189, 0.0) !important;
+    background-color: rgb(220, 250, 220) !important;
     border: 1px solid green !important;
 }
 
