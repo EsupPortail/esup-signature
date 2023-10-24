@@ -512,10 +512,13 @@ public class FormService {
 		Form form = getById(formId);
 		SignRequestParams signRequestParams = signRequestParamsService.getById(signRequestParamsId);
 		form.getSignRequestParams().remove(signRequestParams);
+		long nbLiveWorkflowStepContainingParams = 0;
 		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
 			workflowStep.getSignRequestParams().remove(signRequestParams);
+			List<LiveWorkflowStep> liveWorkflowSteps = liveWorkflowStepRepository.findByWorkflowStep(workflowStep);
+			nbLiveWorkflowStepContainingParams += liveWorkflowSteps.stream().filter(liveWorkflowStep -> liveWorkflowStep.getSignRequestParams().contains(signRequestParams)).count();
 		}
-		if(liveWorkflowStepRepository.countBySignRequestParamsContains(signRequestParams) == 0) {
+		if(nbLiveWorkflowStepContainingParams == 0) {
 			signRequestParamsService.delete(signRequestParamsId);
 		}
 	}
