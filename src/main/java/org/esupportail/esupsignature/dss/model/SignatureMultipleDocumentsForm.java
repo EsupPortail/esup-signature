@@ -1,20 +1,21 @@
 package org.esupportail.esupsignature.dss.model;
 
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
-import eu.europa.esig.dss.utils.Utils;
-import org.springframework.web.multipart.MultipartFile;
-
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
+import org.esupportail.esupsignature.dss.DssUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
-public class SignatureMultipleDocumentsForm extends AbstractSignatureForm {
+public class SignatureMultipleDocumentsForm extends AbstractSignatureForm implements ContainerDocumentForm {
 
 	@NotNull(message = "{error.container.type.mandatory}")
 	private ASiCContainerType containerType;
 
 	private List<MultipartFile> documentsToSign;
 
+	@Override
 	public ASiCContainerType getContainerType() {
 		return containerType;
 	}
@@ -33,7 +34,7 @@ public class SignatureMultipleDocumentsForm extends AbstractSignatureForm {
 
 	@AssertTrue(message = "{error.to.sign.files.mandatory}")
 	public boolean isDocumentsToSign() {
-		return Utils.isCollectionNotEmpty(documentsToSign);
+		return DssUtils.isCollectionNotEmpty(documentsToSign);
 	}
 
 }

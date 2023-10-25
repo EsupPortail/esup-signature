@@ -15,6 +15,7 @@ import org.esupportail.esupsignature.entity.Certificat;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
+import org.esupportail.esupsignature.exception.EsupSignatureOpenSCException;
 import org.esupportail.esupsignature.repository.CertificatRepository;
 import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.esupportail.esupsignature.service.utils.sign.OpenSCSignatureToken;
@@ -172,13 +173,23 @@ public class CertificatService {
     }
 
     public CertificateToken getKey() throws DSSException {
-        byte[] cert = launchProcess("pkcs11-tool -r --id 0001 --type cert");
-        return DSSUtils.loadCertificate(cert);
+        try {
+            byte[] cert = launchProcess("pkcs11-tool -r --id 0001 --type cert");
+            return DSSUtils.loadCertificate(cert);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+        return null;
     }
 
     public CertificateToken[] getCertificateChain() {
-        byte[] cert = launchProcess("pkcs11-tool -r --id 0001 --type cert");
-        return new CertificateToken[]{DSSUtils.loadCertificate(cert)};
+        try {
+            byte[] cert = launchProcess("pkcs11-tool -r --id 0001 --type cert");
+            return new CertificateToken[]{DSSUtils.loadCertificate(cert)};
+        } catch (EsupSignatureOpenSCException e) {
+            logger.error(e.getMessage());
+        }
+        return null;
     }
 
     public byte[] launchProcess(String command) throws DSSException {

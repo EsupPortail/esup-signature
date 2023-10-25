@@ -9,6 +9,8 @@ import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.esupportail.esupsignature.dss.DssUtils;
+import org.esupportail.esupsignature.dss.model.DssMultipartFile;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 @Service
 public class ValidationService {
@@ -34,6 +37,9 @@ public class ValidationService {
     }
 
     @Resource
+    protected FileService fileService;
+
+    @Resource
     protected SignaturePolicyProvider signaturePolicyProvider;
 
     @Resource
@@ -44,11 +50,11 @@ public class ValidationService {
             List<DSSDocument> detachedContents = new ArrayList<>();
             SignedDocumentValidator documentValidator;
             if(signInputStream != null && signInputStream.available() > 0) {
-                detachedContents.add(DssUtils.toDSSDocument(docInputStream));
-                documentValidator = SignedDocumentValidator.fromDocument(DssUtils.toDSSDocument(signInputStream));
+                detachedContents.add(DssUtils.toDSSDocument(new DssMultipartFile(docInputStream.readAllBytes())));
+                documentValidator = SignedDocumentValidator.fromDocument(Objects.requireNonNull(DssUtils.toDSSDocument(new DssMultipartFile(signInputStream.readAllBytes()))));
                 documentValidator.setDetachedContents(detachedContents);
             } else {
-                DSSDocument dssDocument = DssUtils.toDSSDocument(docInputStream);
+                DSSDocument dssDocument = DssUtils.toDSSDocument(new DssMultipartFile(docInputStream.readAllBytes()));
                 if(dssDocument != null) {
                     documentValidator = SignedDocumentValidator.fromDocument(dssDocument);
                 } else {

@@ -10,7 +10,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -43,15 +42,6 @@ public class FileService {
 			e.printStackTrace();
 		}
 		return baos;
-	}
-
-	public MockMultipartFile toMultipartFile(InputStream file, String name, String mimeType) {
-		try {
-			return new MockMultipartFile(name, name, mimeType, file);
-		} catch (IOException e) {
-			logger.error("unable to convert to multipartfile", e);
-		}
-		return null;
 	}
 
 	public InputStream fromBase64Image(String base64Image) {
