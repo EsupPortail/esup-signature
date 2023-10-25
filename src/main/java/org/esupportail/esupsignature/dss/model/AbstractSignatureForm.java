@@ -13,14 +13,11 @@ import java.util.List;
 
 public abstract class AbstractSignatureForm implements Serializable {
 
-	// @AssertTrue(message = "{error.nexu.not.found}")
-	private boolean nexuDetected;
-
 	private Date signingDate;
 
 	private boolean signWithExpiredCertificate;
 
-	private boolean addContentTimestamp;
+	private boolean addContentTimestamp = false;
 
 	@NotNull(message = "{error.signature.form.mandatory}")
 	private SignatureForm signatureForm;
@@ -40,14 +37,6 @@ public abstract class AbstractSignatureForm implements Serializable {
 	private byte[] signatureValue;
 
 	private TimestampDTO contentTimestamp;
-
-	public boolean isNexuDetected() {
-		return nexuDetected;
-	}
-
-	public void setNexuDetected(boolean nexuDetected) {
-		this.nexuDetected = nexuDetected;
-	}
 
 	public Date getSigningDate() {
 		return signingDate;

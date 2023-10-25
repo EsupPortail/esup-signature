@@ -206,7 +206,7 @@ public class SignService {
 			parameters.setSigningCertificate(certificateToken);
 			parameters.setCertificateChain(certificateTokenChain);
 			parameters.setSignatureLevel(signatureDocumentForm.getSignatureLevel());
-			parameters.bLevel().setSigningDate(signatureDocumentForm.getSigningDate());
+//			parameters.bLevel().setSigningDate(signatureDocumentForm.getSigningDate());
 			// not needed with baseline_t
 //			signatureDocumentForm.setContentTimestamp(DssUtils.fromTimestampToken(getContentTimestamp((SignatureDocumentForm) signatureDocumentForm)));
 //			signatureDocumentForm.setAddContentTimestamp(true);
@@ -285,28 +285,23 @@ public class SignService {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public TimestampToken getContentTimestamp(SignatureDocumentForm form) {
+	public TimestampToken getContentTimestamp(SignatureDocumentForm form, AbstractSignatureParameters<?> parameters) {
 		logger.info("Start getContentTimestamp with one document");
-
 		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
-		AbstractSignatureParameters parameters = getParameters(form);
 		DSSDocument toSignDocument = DssUtils.toDSSDocument(form.getDocumentToSign());
-
+		if(parameters == null) {
+			parameters = getSignatureParameters(form.getContainerType(), form.getSignatureForm());
+		}
 		TimestampToken contentTimestamp = service.getContentTimestamp(toSignDocument, parameters);
-
 		logger.info("End getContentTimestamp with one document");
 		return contentTimestamp;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public TimestampToken getContentTimestamp(SignatureMultipleDocumentsForm form) {
+	public TimestampToken getContentTimestamp(SignatureMultipleDocumentsForm form, AbstractSignatureParameters<?> parameters) {
 		logger.info("Start getContentTimestamp with multiple documents");
-
 		MultipleDocumentsSignatureService service = getASiCSignatureService(form.getSignatureForm());
-		AbstractSignatureParameters parameters = fillCommonsParameters(form);
-
 		TimestampToken contentTimestamp = service.getContentTimestamp(DssUtils.toDSSDocuments(form.getDocumentsToSign()), parameters);
-
 		logger.info("End getContentTimestamp with  multiple documents");
 		return contentTimestamp;
 	}
@@ -317,8 +312,8 @@ public class SignService {
 		return finalParameters;
 	}
 
-	public AbstractSignatureParameters getParameters(SignatureDocumentForm form) {
-		AbstractSignatureParameters parameters = getSignatureParameters(form.getContainerType(), form.getSignatureForm());
+	public AbstractSignatureParameters<?> getParameters(SignatureDocumentForm form) {
+		AbstractSignatureParameters<?> parameters = getSignatureParameters(form.getContainerType(), form.getSignatureForm());
 		parameters.setSignaturePackaging(form.getSignaturePackaging());
 		fillCommonsParameters(parameters, form);
 		return parameters;
@@ -440,14 +435,22 @@ public class SignService {
 	private void fillCommonsParameters(AbstractSignatureParameters<?> parameters, AbstractSignatureForm form) {
 		parameters.setSignatureLevel(form.getSignatureLevel());
 		parameters.setDigestAlgorithm(form.getDigestAlgorithm());
-		//parameters.setEncryptionAlgorithm(form.getEncryptionAlgorithm()); retrieved from certificate
-		parameters.bLevel().setSigningDate(form.getSigningDate());
 		parameters.setSignWithExpiredCertificate(form.isSignWithExpiredCertificate());
-
-		if (form.getContentTimestamp() != null) {
-			parameters.setContentTimestamps(List.of(DssUtils.toTimestampToken(form.getContentTimestamp())));
+		if(form.isAddContentTimestamp()) {
+			TimestampToken contentTimestamp;
+			if (form instanceof SignatureDocumentForm signatureDocumentForm) {
+				contentTimestamp = getContentTimestamp(signatureDocumentForm, parameters);
+			} else {
+				contentTimestamp = getContentTimestamp((SignatureMultipleDocumentsForm) form, parameters);
+			}
+			if (contentTimestamp != null) {
+				parameters.setContentTimestamps(List.of(contentTimestamp));
+				parameters.bLevel().setSigningDate(contentTimestamp.getCreationDate());
+				form.setSigningDate(contentTimestamp.getCreationDate());
+			}
+		} else {
+			form.setAddContentTimestamp(true);
 		}
-
 		CertificateToken signingCertificate = DSSUtils.loadCertificate(form.getCertificate());
 		parameters.setSigningCertificate(signingCertificate);
 			List<CertificateToken> certificateChain = new LinkedList<>();
@@ -531,14 +534,15 @@ public class SignService {
 			abstractSignatureForm.setSignatureLevel(signProperties.getXadesSignatureLevel());
 			abstractSignatureForm.setDigestAlgorithm(signProperties.getXadesDigestAlgorithm());
 		}
-		abstractSignatureForm.setSigningDate(date);
+//		abstractSignatureForm.setSigningDate(date);
+		abstractSignatureForm.setAddContentTimestamp(true);
 		return abstractSignatureForm;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument certSignDocument(SignatureDocumentForm signatureDocumentForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) throws IOException {
 		DocumentSignatureService service = getSignatureService(signatureDocumentForm.getContainerType(), signatureDocumentForm.getSignatureForm());
-		fillCommonsParameters(parameters, signatureDocumentForm);
+//		fillCommonsParameters(parameters, signatureDocumentForm);
 		DSSDocument toSignDocument = new InMemoryDocument(new ByteArrayInputStream(signatureDocumentForm.getDocumentToSign().getBytes()));
 		ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
 		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
@@ -610,8 +614,8 @@ public class SignService {
 		return service;
 	}
 
-	private AbstractSignatureParameters getSignatureParameters(ASiCContainerType containerType, SignatureForm signatureForm) {
-		AbstractSignatureParameters parameters = null;
+	private AbstractSignatureParameters<?> getSignatureParameters(ASiCContainerType containerType, SignatureForm signatureForm) {
+		AbstractSignatureParameters<?> parameters = null;
 		if (containerType != null) {
 			parameters = getASiCSignatureParameters(containerType, signatureForm);
 		} else {
@@ -634,9 +638,8 @@ public class SignService {
 		return parameters;
 	}
 
-	@SuppressWarnings("rawtypes")
-	private MultipleDocumentsSignatureService getASiCSignatureService(SignatureForm signatureForm) {
-		MultipleDocumentsSignatureService service = null;
+	private MultipleDocumentsSignatureService<?, ?> getASiCSignatureService(SignatureForm signatureForm) {
+		MultipleDocumentsSignatureService<?, ?> service = null;
 		switch (signatureForm) {
 		case CAdES:
 			service = asicWithCAdESService;

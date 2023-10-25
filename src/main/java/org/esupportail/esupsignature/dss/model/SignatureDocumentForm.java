@@ -12,7 +12,7 @@ public class SignatureDocumentForm extends AbstractSignatureForm implements Cont
 
 	private MultipartFile documentToSign;
 
-	@NotNull(message = "{error.signature.packaging.mandatory}")
+	@NotNull
 	private SignaturePackaging signaturePackaging;
 
 	private ASiCContainerType containerType;
