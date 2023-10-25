@@ -156,14 +156,14 @@ public class UserService {
     @Transactional
     public User getUserByEmail(String email) {
         if(EmailValidator.getInstance().isValid(email) || email.equals("system") || email.equals("creator") || email.equals("scheduler") || email.equals("generic")) {
-            Optional<User> optionalUser = userRepository.findByEmail(email);
+            Optional<User> optionalUser = userRepository.findByEmailIgnoreCase(email);
             return optionalUser.orElseGet(() -> createUserWithEmail(email));
         }
         return null;
     }
 
     public User isUserByEmailExist(String email) {
-        return userRepository.findByEmail(email).orElse(null);
+        return userRepository.findByEmailIgnoreCase(email).orElse(null);
     }
 
     @Transactional
@@ -324,7 +324,7 @@ public class UserService {
         if (optionalUser.isPresent()) {
             user = optionalUser.get();
         } else {
-            optionalUser = userRepository.findByEmail(email);
+            optionalUser = userRepository.findByEmailIgnoreCase(email);
             if (optionalUser.isPresent()) {
                 user = optionalUser.get();
             } else {
@@ -336,7 +336,7 @@ public class UserService {
         user.setName(name);
         user.setFirstname(firstName);
         user.setEppn(eppn);
-        user.setEmail(email);
+        user.setEmail(email.toLowerCase());
         user.setUserType(userType);
         if(updateCurrentUserRoles) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -613,7 +613,7 @@ public class UserService {
                 if (recipientEmail.contains("*")) {
                     recipientEmail = recipientEmail.split("\\*")[1];
                 }
-                Optional<User> optionalUser = userRepository.findByEmail(recipientEmail);
+                Optional<User> optionalUser = userRepository.findByEmailIgnoreCase(recipientEmail);
                 if(optionalUser.isPresent() && optionalUser.get().getUserType().equals(UserType.external)) {
                     tempUsers.add(optionalUser.get());
                 } else {
