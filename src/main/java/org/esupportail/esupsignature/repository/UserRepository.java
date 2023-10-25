@@ -15,7 +15,7 @@ public interface UserRepository extends CrudRepository<User, Long>  {
     Page<User> findAll(Pageable pageable);
     @Query("select distinct u.name as name, u.firstname as firstname, u.eppn as eppn, u.email as email from User u")
     List<UserDto> findAllUsersDto();
-    Optional<User> findByEmail(String email);
+    Optional<User> findByEmailIgnoreCase(String email);
     List<User> findByReplaceByUser(User user);
     List<User> findByEmailAndUserType(String email, UserType userType);
     List<User> findByUserType(UserType userType);
