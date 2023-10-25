@@ -14,6 +14,7 @@ import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.SystemUtils;
+import org.esupportail.esupsignature.exception.EsupSignatureOpenSCException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +48,7 @@ public class OpenSCSignatureToken extends AbstractKeyStoreTokenConnection {
     }
 
     @Override
-    public SignatureValue sign(ToBeSigned toBeSigned, DigestAlgorithm digestAlgorithm, DSSPrivateKeyEntry dssPrivateKeyEntry) throws DSSException {
+    public SignatureValue sign(ToBeSigned toBeSigned, DigestAlgorithm digestAlgorithm, DSSPrivateKeyEntry dssPrivateKeyEntry) throws EsupSignatureOpenSCException {
         final InputStream inputStream = new ByteArrayInputStream(toBeSigned.getBytes());
         final EncryptionAlgorithm encryptionAlgo = dssPrivateKeyEntry.getEncryptionAlgorithm();
         final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.getAlgorithm(encryptionAlgo, digestAlgorithm);
@@ -69,7 +70,7 @@ public class OpenSCSignatureToken extends AbstractKeyStoreTokenConnection {
             signedFile.delete();
             return value;
         } catch (IOException e) {
-            throw new DSSException(e);
+            throw new EsupSignatureOpenSCException(e.getMessage(), e);
         } finally {
             tmpDir.delete();
         }
@@ -111,23 +112,23 @@ public class OpenSCSignatureToken extends AbstractKeyStoreTokenConnection {
     }
 
     @Override
-    public List<DSSPrivateKeyEntry> getKeys() throws DSSException {
+    public List<DSSPrivateKeyEntry> getKeys() throws EsupSignatureOpenSCException {
         final List<DSSPrivateKeyEntry> list = new ArrayList<>();
         list.add(getKey());
         return list;
     }
 
-    public DSSPrivateKeyEntry getKey() throws DSSException {
+    public DSSPrivateKeyEntry getKey() throws EsupSignatureOpenSCException {
         byte[] cert = launchProcess("pkcs11-tool -r --id 0001 --type cert");
         CertificateToken certificateToken = DSSUtils.loadCertificate(cert);
         try {
             return new OpenSCPrivateKeyEntry(certificateToken.getCertificate().getEncoded());
         } catch (CertificateEncodingException e) {
-            throw new DSSException(e);
+            throw new EsupSignatureOpenSCException(e.getMessage(), e);
         }
     }
 
-    public synchronized byte[] launchProcess(String command) throws DSSException {
+    public synchronized byte[] launchProcess(String command) throws EsupSignatureOpenSCException {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder();
             if(SystemUtils.IS_OS_WINDOWS) {
@@ -156,10 +157,10 @@ public class OpenSCSignatureToken extends AbstractKeyStoreTokenConnection {
                     output.append(line).append("\n");
                 }
                 LOG.error(output.toString());
-                throw new DSSException(output.toString());
+                throw new EsupSignatureOpenSCException(output.toString());
             }
         } catch (InterruptedException | IOException e) {
-            throw new DSSException(e);
+            throw new EsupSignatureOpenSCException(e.getMessage(), e);
 
         }
     }

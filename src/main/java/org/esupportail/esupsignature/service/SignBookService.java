@@ -6,6 +6,7 @@ import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dss.model.DssMultipartFile;
 import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
@@ -675,7 +676,7 @@ public class SignBookService {
         } catch(IOException e) {
             throw new EsupSignatureRuntimeException("Ce formulaire ne peut pas être instancié car il ne possède pas de modèle");
         }
-        if(computedWorkflow.getWorkflowSteps().size() == 0) {
+        if(computedWorkflow.getWorkflowSteps().isEmpty()) {
             try {
                 inputStream = pdfService.convertGS(inputStream);
             } catch (IOException e) {
@@ -683,7 +684,7 @@ public class SignBookService {
             }
         }
         String fileName = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
-        MultipartFile multipartFile = fileService.toMultipartFile(new ByteArrayInputStream(inputStream), fileName + ".pdf", "application/pdf");
+        MultipartFile multipartFile = new DssMultipartFile(inputStream);
         signRequestService.addDocsToSignRequest(signRequest, true, 0, form.getSignRequestParams(), multipartFile);
         workflowService.importWorkflow(signBook, computedWorkflow, externalUsersInfos);
         signRequestService.nextWorkFlowStep(signBook);
@@ -1284,7 +1285,7 @@ public class SignBookService {
                         if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
                             user = userService.getByEppn(fsFile.getCreateBy());
                         }
-                        signRequestService.addDocsToSignRequest(signRequest, true, j, new ArrayList<>(), fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
+                        signRequestService.addDocsToSignRequest(signRequest, true, j, new ArrayList<>(), new DssMultipartFile(baos.toByteArray()));
                         fsAccessService.remove(fsFile);
                         j++;
                         if (workflow.getScanPdfMetadatas()) {

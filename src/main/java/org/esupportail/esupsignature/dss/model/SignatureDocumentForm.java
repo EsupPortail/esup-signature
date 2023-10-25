@@ -2,25 +2,26 @@ package org.esupportail.esupsignature.dss.model;
 
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
-
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.io.Serializable;
 
-public class SignatureDocumentForm extends AbstractSignatureForm implements Serializable {
+public class SignatureDocumentForm extends AbstractSignatureForm implements ContainerDocumentForm, Serializable {
 
-	private byte[] documentToSign;
+	private MultipartFile documentToSign;
 
-	@NotNull(message = "{error.signature.packaging.mandatory}")
+	@NotNull
 	private SignaturePackaging signaturePackaging;
 
 	private ASiCContainerType containerType;
 
-	public byte[] getDocumentToSign() {
+	public MultipartFile getDocumentToSign() {
 		return documentToSign;
 	}
 
-	public void setDocumentToSign(byte[] documentToSign) {
+	public void setDocumentToSign(MultipartFile documentToSign) {
 		this.documentToSign = documentToSign;
 	}
 
@@ -32,6 +33,7 @@ public class SignatureDocumentForm extends AbstractSignatureForm implements Seri
 		this.signaturePackaging = signaturePackaging;
 	}
 
+	@Override
 	public ASiCContainerType getContainerType() {
 		return containerType;
 	}
@@ -42,7 +44,7 @@ public class SignatureDocumentForm extends AbstractSignatureForm implements Seri
 
 	@AssertTrue(message = "{error.to.sign.file.mandatory}")
 	public boolean isDocumentToSign() {
-		return documentToSign != null && documentToSign.length > 0;
+		return (documentToSign != null) && (!documentToSign.isEmpty());
 	}
 
 }

@@ -17,6 +17,10 @@ public class DSSProperties {
     private String lotlUrl;
     private String lotlCountryCode;
     private String ojUrl;
+    private String country;
+    private String stateOrProvince;
+    private String postalCode;
+    private String locality;
 
     public String getCacheUsername() {
         return cacheUsername;
@@ -114,4 +118,35 @@ public class DSSProperties {
         this.ojUrl = ojUrl;
     }
 
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getStateOrProvince() {
+        return stateOrProvince;
+    }
+
+    public void setStateOrProvince(String stateOrProvince) {
+        this.stateOrProvince = stateOrProvince;
+    }
+
+    public String getPostalCode() {
+        return postalCode;
+    }
+
+    public void setPostalCode(String postalCode) {
+        this.postalCode = postalCode;
+    }
+
+    public String getLocality() {
+        return locality;
+    }
+
+    public void setLocality(String locality) {
+        this.locality = locality;
+    }
 }

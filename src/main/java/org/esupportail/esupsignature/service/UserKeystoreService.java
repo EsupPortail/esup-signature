@@ -54,7 +54,7 @@ public class UserKeystoreService {
 			return ksPrivateKeyEntry.getCertificate();
 		} catch (Exception e) {
 			logger.warn("open keystore fail : " + e.getMessage());
-			throw new EsupSignatureKeystoreException("get certificat token fail", e);
+			throw new EsupSignatureKeystoreException("Impossible d'obtenir le certificat", e);
 		}
 	}
 

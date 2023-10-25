@@ -53,7 +53,7 @@ public class PreAuthorizeService {
     public boolean isManager(String userEppn) {
         if(userEppn != null) {
             User user = userService.getByEppn(userEppn);
-            return user.getManagersRoles().size() > 0;
+            return !user.getManagersRoles().isEmpty();
         }
         return false;
     }

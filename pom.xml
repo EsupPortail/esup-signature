@@ -20,7 +20,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dss.framework.version>5.12.1</dss.framework.version>
 		<dss.framework.safeVersion>5.4.3</dss.framework.safeVersion>
-		<nexu.version>1.23</nexu.version>
 	</properties>
 	<repositories>
 		<repository>
@@ -423,6 +422,11 @@
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+			<artifactId>dss-signature-dto</artifactId>
+			<version>${dss.framework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-pades-pdfbox</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
@@ -802,7 +806,11 @@
 			<artifactId>maven-antrun-plugin</artifactId>
 			<version>3.1.0</version>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+        </dependency>
+    </dependencies>
 	<build>
 		<finalName>esup-signature</finalName>
 		<plugins>
