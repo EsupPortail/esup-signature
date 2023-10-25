@@ -29,6 +29,7 @@ import eu.europa.esig.dss.xades.signature.XAdESService;
 import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.dss.DssUtils;
+import org.esupportail.esupsignature.dss.config.DSSProperties;
 import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -52,6 +53,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
@@ -120,6 +122,9 @@ public class SignService {
 	@Resource
 	private ValidationService validationService;
 
+	@Resource
+	private DSSProperties dssProperties;
+
 	private final OpenXPKICertificatGenerationService openXPKICertificatGenerationService;
 
 	public SignService(@Autowired(required = false) OpenXPKICertificatGenerationService openXPKICertificatGenerationService, SignProperties signProperties) {
@@ -173,7 +178,7 @@ public class SignService {
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(abstractKeyStoreTokenConnection);
 			AbstractSignatureForm signatureDocumentForm = getSignatureDocumentForm(toSignDocuments, signRequest);
 			signatureForm = signatureDocumentForm.getSignatureForm();
-			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
+			signatureDocumentForm.setEncryptionAlgorithm(certificateToken.getSignatureAlgorithm().getEncryptionAlgorithm());
 			signatureDocumentForm.setCertificate(certificateToken.getEncoded());
 			List<byte[]> base64CertificateChain = new ArrayList<>();
 			for (CertificateToken token : certificateTokenChain) {
@@ -423,7 +428,16 @@ public class SignService {
 		parameters.setDigestAlgorithm(form.getDigestAlgorithm());
 		parameters.setSignWithExpiredCertificate(form.isSignWithExpiredCertificate());
 		parameters.bLevel().setSigningDate(form.getSigningDate());
-		CertificateToken signingCertificate = DSSUtils.loadCertificate(form.getCertificate());
+		parameters.bLevel().setClaimedSignerRoles(List.of("Manager"));
+		if(StringUtils.hasText(dssProperties.getCountry())) {
+			SignerLocation signerLocation = new SignerLocation();
+			signerLocation.setCountry(dssProperties.getCountry());
+			signerLocation.setStateOrProvince(dssProperties.getStateOrProvince());
+			signerLocation.setPostalCode(dssProperties.getPostalCode());
+			signerLocation.setLocality(dssProperties.getLocality());
+			parameters.bLevel().setSignerLocation(signerLocation);
+		}
+        CertificateToken signingCertificate = DSSUtils.loadCertificate(form.getCertificate());
 		parameters.setSigningCertificate(signingCertificate);
 		List<CertificateToken> certificateChain = new LinkedList<>();
 		for (byte[] base64Certificate : form.getCertificateChain()) {

@@ -51,9 +51,9 @@ public class NexuProcessController implements Serializable {
 	@GetMapping(value = "/{id}", produces = "text/html")
 	public String showSignatureParameters(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 										  @PathVariable("id") Long id, HttpSession httpSession, Model model) {
+		logger.info("init nexu sign by : " + userEppn + " for signRequest : " + id);
 		httpSession.removeAttribute("abstractSignatureForm_" + id);
 		SignRequest signRequest = signRequestService.getById(id);
-		logger.info("init nexu sign by : " + userEppn + " for signRequest : " + id);
 		model.addAttribute("id", signRequest.getId());
 		return "user/signrequests/nexu-signature-process";
 	}
@@ -64,13 +64,13 @@ public class NexuProcessController implements Serializable {
 	@ResponseBody
 	public GetDataToSignResponse getDataToSign(@ModelAttribute("userEppn") String userEppn,
 											   @ModelAttribute("authUserEppn") String authUserEppn,
-											   @RequestBody @Valid DataToSignParams params,
+											   @RequestBody @Valid DataToSignParams dataToSignParams,
 											   @ModelAttribute("id") Long id, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
 		logger.info("get data to sign for signRequest: " + id);
 		AbstractSignatureForm abstractSignatureForm = signService.getAbstractSignatureForm(id);
-		abstractSignatureForm.setCertificate(params.getSigningCertificate());
-		abstractSignatureForm.setCertificateChain(params.getCertificateChain());
-		abstractSignatureForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
+		abstractSignatureForm.setCertificate(dataToSignParams.getSigningCertificate());
+		abstractSignatureForm.setCertificateChain(dataToSignParams.getCertificateChain());
+		abstractSignatureForm.setEncryptionAlgorithm(dataToSignParams.getEncryptionAlgorithm());
 		httpSession.setAttribute("abstractSignatureForm_" + id, abstractSignatureForm);
 		GetDataToSignResponse responseJson = new GetDataToSignResponse();
 		try {
@@ -99,7 +99,7 @@ public class NexuProcessController implements Serializable {
 		} else if (stepStatus.equals(StepStatus.completed)){
 			signBookService.pendingSignRequest(id, null, userEppn, authUserEppn, false);
 		}
-		httpSession.removeAttribute("abstractSignatureForm");
+		httpSession.removeAttribute("abstractSignatureForm_" + id);
 		return responseJson;
 	}
 
