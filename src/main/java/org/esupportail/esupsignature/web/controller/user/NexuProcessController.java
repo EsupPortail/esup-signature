@@ -67,14 +67,10 @@ public class NexuProcessController implements Serializable {
 											   @RequestBody @Valid DataToSignParams params,
 											   @ModelAttribute("id") Long id, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
 		logger.info("get data to sign for signRequest: " + id);
-		AbstractSignatureForm abstractSignatureForm = signService.getAbstractSignatureForm(id, userEppn);
+		AbstractSignatureForm abstractSignatureForm = signService.getAbstractSignatureForm(id);
 		abstractSignatureForm.setCertificate(params.getSigningCertificate());
 		abstractSignatureForm.setCertificateChain(params.getCertificateChain());
 		abstractSignatureForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
-//		if (abstractSignatureForm.isAddContentTimestamp()) {
-//			abstractSignatureForm.setContentTimestamp(DssUtils.fromTimestampToken(signService.getContentTimestamp((SignatureDocumentForm) abstractSignatureForm, null)));
-//			abstractSignatureForm.setAddContentTimestamp(false);
-//		}
 		httpSession.setAttribute("abstractSignatureForm_" + id, abstractSignatureForm);
 		GetDataToSignResponse responseJson = new GetDataToSignResponse();
 		try {
