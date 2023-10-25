@@ -17,15 +17,13 @@ public abstract class AbstractSignatureForm implements Serializable {
 
 	private boolean signWithExpiredCertificate;
 
-	private boolean addContentTimestamp = false;
-
-	@NotNull(message = "{error.signature.form.mandatory}")
+	@NotNull
 	private SignatureForm signatureForm;
 
-	@NotNull(message = "{error.signature.level.mandatory}")
+	@NotNull
 	private SignatureLevel signatureLevel;
 
-	@NotNull(message = "{error.digest.algo.mandatory}")
+	@NotNull
 	private DigestAlgorithm digestAlgorithm;
 
 	private byte[] certificate;
@@ -52,14 +50,6 @@ public abstract class AbstractSignatureForm implements Serializable {
 
 	public void setSignWithExpiredCertificate(boolean signWithExpiredCertificate) {
 		this.signWithExpiredCertificate = signWithExpiredCertificate;
-	}
-
-	public boolean isAddContentTimestamp() {
-		return addContentTimestamp;
-	}
-
-	public void setAddContentTimestamp(boolean addContentTimestamp) {
-		this.addContentTimestamp = addContentTimestamp;
 	}
 
 	public SignatureForm getSignatureForm() {

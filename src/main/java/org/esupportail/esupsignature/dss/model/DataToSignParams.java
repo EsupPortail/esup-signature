@@ -6,13 +6,14 @@ import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
 
-@SuppressWarnings("serial")
 public class DataToSignParams implements Serializable {
 
 	@NotNull
 	private byte[] signingCertificate;
+
 	@NotNull
 	private List<byte[]> certificateChain;
+
 	@NotNull
 	private EncryptionAlgorithm encryptionAlgorithm;
 
