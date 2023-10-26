@@ -116,10 +116,9 @@ export class Nexu {
                     $("#errorText").html("Le code pin est incorrect");
                 }
             } else if (jsonResp.message !=null){
-                alert(jsonResp.message);
                 $("#errorcontent").html(jsonResp.message);
             } else if (jsonResp.errorMessage !=null){
-                if(jsonResp.errorMessage.startsWith("The user has cancelled the operation")) {
+                if(jsonResp.errorMessage.includes("The user has cancelled the operation")) {
                     $("#errorText").html("Opération annulée par l'utilisateur");
                 }
                 $("#errorcontent").html(jsonResp.errorMessage);
