@@ -50,11 +50,11 @@ public class ValidationService {
             List<DSSDocument> detachedContents = new ArrayList<>();
             SignedDocumentValidator documentValidator;
             if(signInputStream != null && signInputStream.available() > 0) {
-                detachedContents.add(DssUtils.toDSSDocument(new DssMultipartFile(docInputStream.readAllBytes())));
-                documentValidator = SignedDocumentValidator.fromDocument(Objects.requireNonNull(DssUtils.toDSSDocument(new DssMultipartFile(signInputStream.readAllBytes()))));
+                detachedContents.add(DssUtils.toDSSDocument(new DssMultipartFile("doc", "doc", null, docInputStream.readAllBytes())));
+                documentValidator = SignedDocumentValidator.fromDocument(Objects.requireNonNull(DssUtils.toDSSDocument(new DssMultipartFile("sign", "sign", null, signInputStream.readAllBytes()))));
                 documentValidator.setDetachedContents(detachedContents);
             } else {
-                DSSDocument dssDocument = DssUtils.toDSSDocument(new DssMultipartFile(docInputStream.readAllBytes()));
+                DSSDocument dssDocument = DssUtils.toDSSDocument(new DssMultipartFile("doc", "doc", null, docInputStream.readAllBytes()));
                 if(dssDocument != null) {
                     documentValidator = SignedDocumentValidator.fromDocument(dssDocument);
                 } else {
