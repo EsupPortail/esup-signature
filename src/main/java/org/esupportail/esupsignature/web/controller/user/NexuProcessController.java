@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.web.controller.user;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.ToBeSigned;
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.NexuSignature;
@@ -109,7 +108,7 @@ public class NexuProcessController implements Serializable {
 	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
 	@PostMapping(value = "/error")
 	@ResponseBody
-	public void error(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @ModelAttribute("id") Long id, HttpSession httpSession) throws EsupSignatureRuntimeException {
+	public void error(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @ModelAttribute("id") Long id) throws EsupSignatureRuntimeException {
 		nexuService.deleteNexuSignature(id);
 	}
 
