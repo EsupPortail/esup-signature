@@ -3,17 +3,16 @@ package org.esupportail.esupsignature.dss.model;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
-import org.springframework.web.multipart.MultipartFile;
-
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
+
 import java.util.List;
 
 public class ExtensionForm {
 
-	private MultipartFile signedFile;
+	private DssMultipartFile signedFile;
 
-	private List<MultipartFile> originalFiles;
+	private List<DssMultipartFile> originalFiles;
 
 	private ASiCContainerType containerType;
 
@@ -23,19 +22,19 @@ public class ExtensionForm {
 	@NotNull(message = "{error.signature.level.mandatory}")
 	private SignatureLevel signatureLevel;
 
-	public MultipartFile getSignedFile() {
+	public DssMultipartFile getSignedFile() {
 		return signedFile;
 	}
 
-	public void setSignedFile(MultipartFile signedFile) {
+	public void setSignedFile(DssMultipartFile signedFile) {
 		this.signedFile = signedFile;
 	}
 
-	public List<MultipartFile> getOriginalFiles() {
+	public List<DssMultipartFile> getOriginalFiles() {
 		return originalFiles;
 	}
 
-	public void setOriginalFiles(List<MultipartFile> originalFiles) {
+	public void setOriginalFiles(List<DssMultipartFile> originalFiles) {
 		this.originalFiles = originalFiles;
 	}
 

@@ -13,6 +13,7 @@ import eu.europa.esig.dss.validation.timestamp.TimestampToken;
 import eu.europa.esig.dss.ws.dto.TimestampDTO;
 import eu.europa.esig.dss.ws.signature.common.TimestampTokenConverter;
 import org.esupportail.esupsignature.dss.config.MultipartResolverProvider;
+import org.esupportail.esupsignature.dss.model.DssMultipartFile;
 import org.esupportail.esupsignature.dss.model.OriginalFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +45,7 @@ public final class DssUtils {
 		return null;
 	}
 
-	public static List<DSSDocument> toDSSDocuments(List<MultipartFile> documentsToSign) {
+	public static List<DSSDocument> toDSSDocuments(List<DssMultipartFile> documentsToSign) {
 		List<DSSDocument> dssDocuments = new ArrayList<>();
 		if (Utils.isCollectionNotEmpty(documentsToSign)) {
 			for (MultipartFile multipartFile : documentsToSign) {
@@ -86,7 +87,7 @@ public final class DssUtils {
 		return dssDocuments;
 	}
 
-	public static boolean isCollectionNotEmpty(List<MultipartFile> documents) {
+	public static boolean isCollectionNotEmpty(List<DssMultipartFile> documents) {
 		if (Utils.isCollectionNotEmpty(documents)) {
 			for (MultipartFile multipartFile : documents) {
 				if (multipartFile != null && !multipartFile.isEmpty()) {
