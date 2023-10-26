@@ -16,7 +16,6 @@ import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.esupportail.esupsignature.service.utils.sign.NexuService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -46,7 +45,6 @@ public class NexuProcessController implements Serializable {
 	@Resource
 	private SignRequestService signRequestService;
 
-	@Scope(value = "session")
 	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
 	@GetMapping(value = "/{id}", produces = "text/html")
 	public String showSignatureParameters(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
@@ -58,7 +56,6 @@ public class NexuProcessController implements Serializable {
 		return "user/signrequests/nexu-signature-process";
 	}
 
-	@Scope(value = "session")
 	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
 	@PostMapping(value = "/get-data-to-sign")
 	@ResponseBody
@@ -82,7 +79,6 @@ public class NexuProcessController implements Serializable {
 		}
 	}
 
-	@Scope(value = "session")
 	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
 	@PostMapping(value = "/sign-document")
 	@ResponseBody
@@ -104,7 +100,6 @@ public class NexuProcessController implements Serializable {
 		return responseJson;
 	}
 
-	@Scope(value = "session")
 	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
 	@PostMapping(value = "/error")
 	@ResponseBody
