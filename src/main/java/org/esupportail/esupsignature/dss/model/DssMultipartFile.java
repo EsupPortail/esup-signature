@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.dss.model;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -64,17 +65,17 @@ public class DssMultipartFile implements MultipartFile, Serializable {
     }
 
     @Override
-    public byte[] getBytes() throws IOException {
+    public byte @NotNull [] getBytes() throws IOException {
         return this.content;
     }
 
     @Override
-    public InputStream getInputStream() throws IOException {
+    public @NotNull InputStream getInputStream() throws IOException {
         return new ByteArrayInputStream(this.content);
     }
 
     @Override
-    public void transferTo(File dest) throws IOException, IllegalStateException {
+    public void transferTo(@NotNull File dest) throws IOException, IllegalStateException {
         FileCopyUtils.copy(this.content, dest);
     }
 }

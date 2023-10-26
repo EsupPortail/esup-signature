@@ -467,7 +467,7 @@ public class SignService {
 			SignatureMultipleDocumentsForm signatureMultipleDocumentsForm = new SignatureMultipleDocumentsForm();
 			List<MultipartFile> multipartFiles = new ArrayList<>();
 			for(Document toSignFile : documents) {
-				multipartFiles.add(new DssMultipartFile(toSignFile.getFileName(), toSignFile.getFileName(), toSignFile.getContentType(), toSignFile.getInputStream().readAllBytes()));
+				multipartFiles.add(new DssMultipartFile(toSignFile.getFileName(), toSignFile.getFileName(), toSignFile.getContentType(), toSignFile.getInputStream()));
 			}
 			signatureMultipleDocumentsForm.setDocumentsToSign(multipartFiles);
 			signatureMultipleDocumentsForm.setContainerType(signProperties.getContainerType());

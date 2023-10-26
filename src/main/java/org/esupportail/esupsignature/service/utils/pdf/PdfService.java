@@ -462,7 +462,7 @@ public class PdfService {
         return inputStream;
     }
 
-    public byte[] convertGS(byte[] originalBytes) throws IOException, EsupSignatureRuntimeException {
+    public byte[] convertGS(byte[] originalBytes) throws EsupSignatureRuntimeException {
         if (!isPdfAComplient(originalBytes) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             String params = pdfConfig.getPdfProperties().getGsCommandParams();
             if(!pdfConfig.getPdfProperties().isAutoRotate()) {
@@ -502,7 +502,7 @@ public class PdfService {
                     process.destroy();
                     return originalBytes;
                 }
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 logger.error("GhostScript launch error : check installation or path", e);
                 throw new EsupSignatureSignException("GhostScript launch error");
             }
