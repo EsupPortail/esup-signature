@@ -4,7 +4,6 @@ import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import org.esupportail.esupsignature.dss.DssUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -13,7 +12,7 @@ public class SignatureMultipleDocumentsForm extends AbstractSignatureForm implem
 	@NotNull(message = "{error.container.type.mandatory}")
 	private ASiCContainerType containerType;
 
-	private List<MultipartFile> documentsToSign;
+	private List<DssMultipartFile> documentsToSign;
 
 	@Override
 	public ASiCContainerType getContainerType() {
@@ -24,11 +23,11 @@ public class SignatureMultipleDocumentsForm extends AbstractSignatureForm implem
 		this.containerType = containerType;
 	}
 
-	public List<MultipartFile> getDocumentsToSign() {
+	public List<DssMultipartFile> getDocumentsToSign() {
 		return documentsToSign;
 	}
 
-	public void setDocumentsToSign(List<MultipartFile> documentsToSign) {
+	public void setDocumentsToSign(List<DssMultipartFile> documentsToSign) {
 		this.documentsToSign = documentsToSign;
 	}
 

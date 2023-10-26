@@ -34,13 +34,11 @@
                     </div>
                 </div>
                 <div id="error" style="display: none" class="text-center mt-2">
-                    <div class="alert alert-danger" role="danger">
+                    <div class="alert alert-danger" role="alert">
                         <h3 id="errorText">Une erreur s’est produite lors de la signature</h3>
-                        <p class="mt-2">
-                            <button class="btn btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseError" aria-expanded="false" aria-controls="collapseError">
-                                Voir le detail de l’erreur
-                            </button>
-                        </p>
+                        <button class="btn btn-transparent text-dark mb-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapseError" aria-expanded="false" aria-controls="collapseError">
+                            <i class="fas fa-chevron-down"></i> Détails de l’erreur
+                        </button>
                         <div class="collapse" id="collapseError">
                             <textarea class="form-control mb-2" id="errorcontent"></textarea>
                         </div>
@@ -54,7 +52,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="alert alert-success text-center mt-2" role="danger" id="success">
+                <div class="alert alert-success text-center mt-2" role="alert" id="success">
                     <strong>Signature effectuée</strong>
                     <br/>
                     <a th:href="'/user/signrequests/' + ${id}" class="btn btn-success" id="return2">
