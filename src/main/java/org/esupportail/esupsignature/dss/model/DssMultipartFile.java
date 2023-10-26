@@ -1,59 +1,80 @@
 package org.esupportail.esupsignature.dss.model;
 
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class DssMultipartFile implements MultipartFile, Serializable {
 
-    private byte[] input;
+    private final String name;
 
-    public DssMultipartFile(byte[] input) {
-        this.input = input;
+    private final String originalFilename;
+
+    @Nullable
+    private final String contentType;
+
+    private final byte[] content;
+
+    public DssMultipartFile(
+            String name, @Nullable String originalFilename, @Nullable String contentType, @Nullable byte[] content) {
+
+        Assert.hasLength(name, "Name must not be empty");
+        this.name = name;
+        this.originalFilename = (originalFilename != null ? originalFilename : "");
+        this.contentType = contentType;
+        this.content = (content != null ? content : new byte[0]);
+    }
+
+    public DssMultipartFile(
+            String name, @Nullable String originalFilename, @Nullable String contentType, InputStream contentStream)
+            throws IOException {
+
+        this(name, originalFilename, contentType, FileCopyUtils.copyToByteArray(contentStream));
     }
 
     @Override
     public String getName() {
-        return null;
+        return this.name;
     }
 
     @Override
+    @NonNull
     public String getOriginalFilename() {
-        return null;
+        return this.originalFilename;
     }
 
     @Override
+    @Nullable
     public String getContentType() {
-        return null;
+        return this.contentType;
     }
 
-    //previous methods
     @Override
     public boolean isEmpty() {
-        return input == null || input.length == 0;
+        return (this.content.length == 0);
     }
 
     @Override
     public long getSize() {
-        return input.length;
+        return this.content.length;
     }
 
     @Override
     public byte[] getBytes() throws IOException {
-        return input;
+        return this.content;
     }
 
     @Override
     public InputStream getInputStream() throws IOException {
-        return new ByteArrayInputStream(input);
+        return new ByteArrayInputStream(this.content);
     }
 
     @Override
-    public void transferTo(File destination) throws IOException, IllegalStateException {
-        Path path = Paths.get(destination.getPath());
-        Files.write(path, input);
+    public void transferTo(File dest) throws IOException, IllegalStateException {
+        FileCopyUtils.copy(this.content, dest);
     }
 }
