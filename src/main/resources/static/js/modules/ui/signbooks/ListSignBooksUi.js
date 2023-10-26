@@ -59,7 +59,7 @@ export class ListSignBooksUi {
         document.addEventListener("massSign", e => this.updateWaitModal(e));
         document.addEventListener("sign", e => this.updateErrorWaitModal(e));
         $("#more-sign-request").on("click", e => this.addToPage());
-        $('#new-scroll').on('mousewheel DOMMouseScroll', e => this.activeHorizontalScrolling(e));
+        $('#new-scroll').on('wheel', e => this.activeHorizontalScrolling(e));
     }
 
     refreshListeners() {

@@ -38,7 +38,7 @@ export class HomeUi {
 
     initListeners() {
         $('#toggle-new-grid').on('click', e => this.toggleNewMenu());
-        $('#new-scroll').on('mousewheel DOMMouseScroll', e => this.activeHorizontalScrolling(e));
+        $('#new-scroll').on('wheel', e => this.activeHorizontalScrolling(e));
         this.noFilterButton.on('click', e => this.showAll(e));
         this.workflowFilterButton.on('click', e => this.filterWorkflows(e));
         this.globalFilterButton.on('click', e => this.filterGlobal(e));

@@ -6,7 +6,7 @@
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <!--/*@thymesVar id="keystoreFileName" type="java.lang.String"*/-->
 <header id="header" th:fragment="nav" class="fixed-top" th:with="isUserOnSu = ${userEppn != authUserEppn}">
-    <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm" th:classappend="|${(isUserOnSu && user.name != null) ? 'bg-striped' : ''} ${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')') ? 'bg-danger' : 'bg-dark'}">
+    <nav id="navbar" data-bs-theme="dark" class="nav nav-pills navbar navbar-expand-sm" th:classappend="|${(isUserOnSu && user.name != null) ? 'bg-striped' : ''} ${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')') ? 'bg-danger' : 'bg-dark'}">
         <button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse"
                 class="btn btn-lg text-white float-start position-fixed">
             <i class="fas fa-bars"></i>
