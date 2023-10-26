@@ -106,9 +106,17 @@ export class Nexu {
         $('#bar').removeClass('progress-bar-success active').addClass('progress-bar-danger');
         if (error!= null && error.responseJSON !=null) {
             let jsonResp = error.responseJSON;
-            if (jsonResp.trace != null) {
-                $("#errorcontent").html(jsonResp.trace.split('\n')[0]);
+            if (jsonResp.feedback.stacktrace != null) {
+                $("#errorcontent").html(jsonResp.feedback.stacktrace);
+                if(jsonResp.feedback.stacktrace.includes("No slots")) {
+                    $("#errorText").html("Aucune clé n'a été détecté");
+                } else if (jsonResp.feedback.stacktrace.includes("keystore password was incorrect")) {
+                    $("#errorText").html("Le mot de passe du keystore est incorrect");
+                } else if (jsonResp.feedback.stacktrace.includes("CKR_PIN_INCORRECT")) {
+                    $("#errorText").html("Le code pin est incorrect");
+                }
             } else if (jsonResp.message !=null){
+                alert(jsonResp.message);
                 $("#errorcontent").html(jsonResp.message);
             } else if (jsonResp.errorMessage !=null){
                 if(jsonResp.errorMessage.startsWith("The user has cancelled the operation")) {
