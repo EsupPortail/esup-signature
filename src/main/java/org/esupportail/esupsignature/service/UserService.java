@@ -445,8 +445,8 @@ public class UserService {
         users.addAll(userRepository.findByEmailStartingWith(searchString));
         if (ldapPersonLightService != null && !searchString.trim().isEmpty() && searchString.length() > 2) {
             List<PersonLightLdap> ldapSearchList = ldapPersonLightService.searchLight(searchString);
-            if (ldapSearchList.size() > 0) {
-                List<PersonLightLdap> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLightLdap::getCn)).collect(Collectors.toList());
+            if (!ldapSearchList.isEmpty()) {
+                List<PersonLightLdap> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLightLdap::getCn)).toList();
                 for (PersonLightLdap personLdapList : ldapList) {
                     if (personLdapList.getMail() != null) {
                         if (personLightLdaps.stream().noneMatch(personLdap -> personLdap != null &&  personLdap.getMail() != null && personLdap.getMail().equals(personLdapList.getMail()))) {
@@ -457,10 +457,13 @@ public class UserService {
             }
         }
         List<PersonLightLdap> personLightLdapsToRemove = new ArrayList<>();
+        List<User> personLightLdapsToAdd = new ArrayList<>();
         for(PersonLightLdap personLightLdap : personLightLdaps) {
             User user = isUserByEmailExist(personLightLdap.getMail());
             if(user != null && user.getReplaceByUser() != null) {
                 personLightLdapsToRemove.add(personLightLdap);
+                personLightLdapsToAdd.add(user);
+                //TODO
             }
         }
         personLightLdaps.removeAll(personLightLdapsToRemove);
@@ -468,12 +471,17 @@ public class UserService {
             if(user.getEppn().equals("creator")) {
                 personLightLdaps.add(getPersonLdapLightFromUser(user));
             }
-            if(personLightLdaps.size() > 0 && personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && user.getEmail().equals(personLightLdap.getMail()))) {
+            if(!personLightLdaps.isEmpty() && personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && user.getEmail().equals(personLightLdap.getMail()))) {
                 PersonLightLdap personLightLdap = getPersonLdapLightFromUser(user);
                 if(user.getUserType().equals(UserType.group)) {
                     personLightLdap.setDisplayName(personLightLdap.getDisplayName());
                 }
                 personLightLdaps.add(personLightLdap);
+            }
+        }
+        for(User userToAdd : personLightLdapsToAdd) {
+            if(personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap.getEduPersonPrincipalName().equals(userToAdd.getEppn()))) {
+                personLightLdaps.add(getPersonLdapLightFromUser(userToAdd));
             }
         }
         for(Map.Entry<String,String> string : userListService.getListsNames(searchString).entrySet()) {
@@ -495,7 +503,7 @@ public class UserService {
         }
         User user = getByEppn(authUserEppn);
         if(user.getRoles().contains("ROLE_ADMIN")) {
-            return personLightLdaps;
+            return personLightLdaps.stream().toList();
         } else {
             return personLightLdaps.stream().filter(personLightLdap -> !webSecurityProperties.getExcludedEmails().contains(personLightLdap.getMail())).collect(Collectors.toList());
         }
@@ -534,7 +542,7 @@ public class UserService {
         PersonLightLdap personLdap = null;
         if (ldapPersonLightService != null) {
             List<PersonLightLdap> personLdaps =  ldapPersonLightService.getPersonLdapLightByEppn(user.getEppn());
-            if (personLdaps.size() > 0) {
+            if (!personLdaps.isEmpty()) {
                 personLdap = personLdaps.get(0);
             }
         } else {
@@ -547,7 +555,7 @@ public class UserService {
         PersonLdap personLdap = null;
         if (ldapPersonService != null) {
             List<PersonLdap> personLdaps =  ldapPersonService.getPersonLdapByEppn(user.getEppn());
-            if (personLdaps.size() > 0) {
+            if (!personLdaps.isEmpty()) {
                 personLdap = personLdaps.get(0);
             }
         } else {
