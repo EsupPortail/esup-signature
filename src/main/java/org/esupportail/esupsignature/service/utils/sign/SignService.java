@@ -467,7 +467,7 @@ public class SignService {
 			SignatureMultipleDocumentsForm signatureMultipleDocumentsForm = new SignatureMultipleDocumentsForm();
 			List<MultipartFile> multipartFiles = new ArrayList<>();
 			for(Document toSignFile : documents) {
-				multipartFiles.add(new DssMultipartFile(toSignFile.getInputStream().readAllBytes()));
+				multipartFiles.add(new DssMultipartFile(toSignFile.getFileName(), toSignFile.getFileName(), toSignFile.getContentType(), toSignFile.getInputStream().readAllBytes()));
 			}
 			signatureMultipleDocumentsForm.setDocumentsToSign(multipartFiles);
 			signatureMultipleDocumentsForm.setContainerType(signProperties.getContainerType());
@@ -492,7 +492,7 @@ public class SignService {
 				bytes = toSignFile.getInputStream().readAllBytes();
 			}
 			SignatureDocumentForm signatureDocumentForm = new SignatureDocumentForm();
-			signatureDocumentForm.setDocumentToSign(new DssMultipartFile(bytes));
+			signatureDocumentForm.setDocumentToSign(new DssMultipartFile(toSignFile.getFileName(), toSignFile.getFileName(), "application/pdf", bytes));
 			if(!signatureForm.equals(SignatureForm.PAdES)) {
 				signatureDocumentForm.setContainerType(signProperties.getContainerType());
 			}

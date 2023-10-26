@@ -3,6 +3,11 @@ package org.esupportail.esupsignature.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.validation.reports.Reports;
+import jakarta.annotation.Resource;
+import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -47,11 +52,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.annotation.Resource;
-import jakarta.mail.MessagingException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -684,7 +684,7 @@ public class SignBookService {
             }
         }
         String fileName = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
-        MultipartFile multipartFile = new DssMultipartFile(inputStream);
+        MultipartFile multipartFile = new DssMultipartFile(fileName, fileName, "application/pdf", inputStream);
         signRequestService.addDocsToSignRequest(signRequest, true, 0, form.getSignRequestParams(), multipartFile);
         workflowService.importWorkflow(signBook, computedWorkflow, externalUsersInfos);
         signRequestService.nextWorkFlowStep(signBook);
@@ -1269,7 +1269,7 @@ public class SignBookService {
                 fsAccessService.open();
                 fsAccessService.createURITree(workflow.getDocumentsSourceUri());
                 List<FsFile> fsFiles = new ArrayList<>(fsAccessService.listFiles(workflow.getDocumentsSourceUri() + "/"));
-                if (fsFiles.size() > 0) {
+                if (!fsFiles.isEmpty()) {
                     int j = 0;
                     for (FsFile fsFile : fsFiles) {
                         logger.info("adding file : " + fsFile.getName());
@@ -1285,7 +1285,7 @@ public class SignBookService {
                         if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
                             user = userService.getByEppn(fsFile.getCreateBy());
                         }
-                        signRequestService.addDocsToSignRequest(signRequest, true, j, new ArrayList<>(), new DssMultipartFile(baos.toByteArray()));
+                        signRequestService.addDocsToSignRequest(signRequest, true, j, new ArrayList<>(), new DssMultipartFile(fsFile.getName(), fsFile.getName(), fsFile.getContentType(), baos.toByteArray()));
                         fsAccessService.remove(fsFile);
                         j++;
                         if (workflow.getScanPdfMetadatas()) {
