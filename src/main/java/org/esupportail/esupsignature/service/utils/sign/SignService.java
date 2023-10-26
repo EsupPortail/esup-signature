@@ -297,48 +297,7 @@ public class SignService {
 		fillCommonsParameters(pAdESSignatureParameters, signatureDocumentForm);
 		return pAdESSignatureParameters;
 	}
-	
-	public static BufferedImage scaleWithPadding(BufferedImage img, int newWidth, int newHeight) {
-        int currentWidth = img.getWidth();
-        int currentHeight = img.getHeight();
- 
-        int scaledWidth;
-        int scaledHeight;
-        if (currentWidth == 0 || currentHeight == 0
-            || (currentWidth == newWidth && currentHeight == newHeight)) {
-                return img;
-        } else if (currentWidth == currentHeight) {
-                scaledWidth = newWidth;
-                scaledHeight = newHeight;
-        } else if (currentWidth >= currentHeight) {
-                scaledWidth = newWidth;
-                double scale = (double) newWidth / (double) currentWidth;
-                scaledHeight = (int) Math.round(currentHeight * scale);
-        } else {
-                scaledHeight = newHeight;
-                double scale = (double) newHeight / (double) currentHeight;
-                scaledWidth = (int) Math.round(currentWidth * scale);
-        }
- 
-        int x = (newWidth - scaledWidth) / 2;
-        int y = (newHeight - scaledHeight) / 2;
- 
-        /*
-         * This is _very_ painful. I've tried a large number of different permutations here trying to
-         * get the white image background to be transparent without success. We've tried different
-         * fills, composite types, image types, etc.. I'm moving on now.
-         */
-        BufferedImage newImg = new BufferedImage(newWidth, newHeight, img.getType());
-        Graphics2D g = newImg.createGraphics();
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, newWidth, newHeight);
-        g.drawImage(img, x, y, x + scaledWidth, y + scaledHeight, 0, 0, currentWidth, currentHeight,
-                    Color.WHITE, null);
-        g.dispose();
- 
-        return newImg;
-}
-	
+
 	public void fillCommonsParameters(AbstractSignatureParameters<?> parameters, AbstractSignatureForm form) {
 		parameters.setSignatureLevel(form.getSignatureLevel());
 		parameters.setDigestAlgorithm(form.getDigestAlgorithm());
