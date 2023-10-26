@@ -1496,6 +1496,7 @@ public class SignBookService {
     public void saveWorkflow(Long signBookId, String title, String description, User user) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(signBookId);
         Workflow workflow = workflowService.createWorkflow(title, description, user);
+        workflow.getViewers().addAll(signBook.getViewers());
         for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
             List<String> recipientsEmails = new ArrayList<>();
             for (Recipient recipient : liveWorkflowStep.getRecipients()) {

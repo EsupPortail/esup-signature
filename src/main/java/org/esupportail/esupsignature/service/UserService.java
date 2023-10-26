@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.Resource;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
@@ -22,6 +23,7 @@ import org.esupportail.esupsignature.service.ldap.entry.AliasLdap;
 import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLdap;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
+import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.hibernate.LazyInitializationException;
@@ -37,7 +39,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -71,6 +72,8 @@ public class UserService {
 
     private final SmsService smsService;
 
+    private final ShibSecurityServiceImpl shibSecurityService;
+
     @Resource
     private ObjectMapper objectMapper;
 
@@ -81,7 +84,8 @@ public class UserService {
                        @Autowired(required = false) LdapAliasService ldapAliasService,
                        @Autowired(required = false) LdapGroupService ldapGroupService,
                        @Autowired(required = false) LdapOrganizationalUnitService ldapOrganizationalUnitService,
-                       @Autowired(required = false) SmsService smsService) {
+                       @Autowired(required = false) SmsService smsService,
+                       @Autowired(required = false) ShibSecurityServiceImpl shibSecurityService) {
         this.globalProperties = globalProperties;
         this.webSecurityProperties = webSecurityProperties;
         this.ldapPersonService = ldapPersonService;
@@ -90,6 +94,7 @@ public class UserService {
         this.ldapGroupService = ldapGroupService;
         this.ldapOrganizationalUnitService = ldapOrganizationalUnitService;
         this.smsService = smsService;
+        this.shibSecurityService = shibSecurityService;
     }
 
     @Resource
@@ -264,7 +269,12 @@ public class UserService {
             logger.info("ldap user not found : " + mail + ". Creating temp account");
             return createUser(UUID.randomUUID().toString(), "", "", mail, UserType.external, false);
         } else if (userType.equals(UserType.shib)) {
-            return createUser(mail, mail, "Nouvel utilisateur fédération", mail, UserType.shib, false);
+            if(shibSecurityService != null) {
+                return createUser(mail, mail, "Nouvel utilisateur fédération", mail, UserType.shib, false);
+            } else {
+                logger.warn("no shib service available");
+                throw new EsupSignatureRuntimeException("Impossible d'ajouter un utilisateur de la fédération car le service Shibboleth n'est pas activé");
+            }
         }
         logger.error("user not found with mail : " + mail);
         return null;
@@ -435,8 +445,8 @@ public class UserService {
         users.addAll(userRepository.findByEmailStartingWith(searchString));
         if (ldapPersonLightService != null && !searchString.trim().isEmpty() && searchString.length() > 2) {
             List<PersonLightLdap> ldapSearchList = ldapPersonLightService.searchLight(searchString);
-            if (ldapSearchList.size() > 0) {
-                List<PersonLightLdap> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLightLdap::getCn)).collect(Collectors.toList());
+            if (!ldapSearchList.isEmpty()) {
+                List<PersonLightLdap> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLightLdap::getCn)).toList();
                 for (PersonLightLdap personLdapList : ldapList) {
                     if (personLdapList.getMail() != null) {
                         if (personLightLdaps.stream().noneMatch(personLdap -> personLdap != null &&  personLdap.getMail() != null && personLdap.getMail().equals(personLdapList.getMail()))) {
@@ -447,10 +457,13 @@ public class UserService {
             }
         }
         List<PersonLightLdap> personLightLdapsToRemove = new ArrayList<>();
+        List<User> personLightLdapsToAdd = new ArrayList<>();
         for(PersonLightLdap personLightLdap : personLightLdaps) {
             User user = isUserByEmailExist(personLightLdap.getMail());
             if(user != null && user.getReplaceByUser() != null) {
                 personLightLdapsToRemove.add(personLightLdap);
+                personLightLdapsToAdd.add(user);
+                //TODO
             }
         }
         personLightLdaps.removeAll(personLightLdapsToRemove);
@@ -458,12 +471,17 @@ public class UserService {
             if(user.getEppn().equals("creator")) {
                 personLightLdaps.add(getPersonLdapLightFromUser(user));
             }
-            if(personLightLdaps.size() > 0 && personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && user.getEmail().equals(personLightLdap.getMail()))) {
+            if(!personLightLdaps.isEmpty() && personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && user.getEmail().equals(personLightLdap.getMail()))) {
                 PersonLightLdap personLightLdap = getPersonLdapLightFromUser(user);
                 if(user.getUserType().equals(UserType.group)) {
                     personLightLdap.setDisplayName(personLightLdap.getDisplayName());
                 }
                 personLightLdaps.add(personLightLdap);
+            }
+        }
+        for(User userToAdd : personLightLdapsToAdd) {
+            if(personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap.getEduPersonPrincipalName().equals(userToAdd.getEppn()))) {
+                personLightLdaps.add(getPersonLdapLightFromUser(userToAdd));
             }
         }
         for(Map.Entry<String,String> string : userListService.getListsNames(searchString).entrySet()) {
@@ -485,7 +503,7 @@ public class UserService {
         }
         User user = getByEppn(authUserEppn);
         if(user.getRoles().contains("ROLE_ADMIN")) {
-            return personLightLdaps;
+            return personLightLdaps.stream().toList();
         } else {
             return personLightLdaps.stream().filter(personLightLdap -> !webSecurityProperties.getExcludedEmails().contains(personLightLdap.getMail())).collect(Collectors.toList());
         }
@@ -524,7 +542,7 @@ public class UserService {
         PersonLightLdap personLdap = null;
         if (ldapPersonLightService != null) {
             List<PersonLightLdap> personLdaps =  ldapPersonLightService.getPersonLdapLightByEppn(user.getEppn());
-            if (personLdaps.size() > 0) {
+            if (!personLdaps.isEmpty()) {
                 personLdap = personLdaps.get(0);
             }
         } else {
@@ -537,7 +555,7 @@ public class UserService {
         PersonLdap personLdap = null;
         if (ldapPersonService != null) {
             List<PersonLdap> personLdaps =  ldapPersonService.getPersonLdapByEppn(user.getEppn());
-            if (personLdaps.size() > 0) {
+            if (!personLdaps.isEmpty()) {
                 personLdap = personLdaps.get(0);
             }
         } else {
@@ -565,9 +583,9 @@ public class UserService {
             String domain = emailSplit[1];
             if (domain.equals(globalProperties.getDomain()) && ldapPersonService != null) {
                 return UserType.ldap;
-            } else if(domain.equals(globalProperties.getDomain())) {
+            } else if(domain.equals(globalProperties.getDomain()) && shibSecurityService != null) {
                 return UserType.shib;
-            } else if(shibProperties.getDomainsWhiteListUrl() != null) {
+            } else if(shibProperties.getDomainsWhiteListUrl() != null && shibSecurityService != null) {
                 InputStream whiteListFile = getDomainsWhiteList();
                 if (fileService.isFileContainsText(whiteListFile, domain)) {
                     return UserType.shib;
