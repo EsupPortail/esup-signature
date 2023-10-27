@@ -133,8 +133,7 @@
             <div th:replace="~{user/signrequests/includes/tools :: tools}"></div>
             <div style="position: absolute;top: 200px;">
                 <th:block th:each="postit, iterate : ${postits}">
-                    <div class="postit-global d-none"
-                         th:style="'background-color: ' + ${postit.postitColor} + ';position: fixed; left: ' + ${275 + (iterate.index * 10)} + 'px; top : ' + ${220 + (iterate.index * 70)} + 'px;'">
+                    <div class="postit-global d-none" th:style="'background-color: ' + ${postit.postitColor} + ';position: fixed; left: ' + ${275 + (iterate.index * 10)} + 'px; top : ' + ${220 + (iterate.index * 70)} + 'px;'">
                         <button type="button" class="postit-global-close close">
                             <i class="fas fa-eye"></i>
                         </button>
@@ -249,34 +248,26 @@
                         <p th:utext="'Le niveau de signature minimum demandé pour signer ce document est : <br><center><b>' + #{'signbook.signtype.' + ${signType}} + '</b></center>'"></p>
                     </div>
                 </div>
-                <div id="noOptions" class="alert alert-danger mt-1" style="display: none;">
-                    Votre profil ne possède pas les prérequis nécessaires pour signer cette demande. Si vous en avez la possibilité, merci de contrôler vos paramètres de signature, d’importer un certificat ou de démarrer Esup-DSS-Client.
-                    <br>
-                    Sinon merci de contacter la personne ou le service émetteur de cette demande de signature.
-                </div>
+
                 <div id="noSeal" th:if="${!sealCertOK}" class="alert alert-danger mt-1" style="display: none;">
                     La signature par certificat cachet d’établissement est temporairement indisponible pour des raisons de maintenance. Merci refaire un essai ultérieurement.
                 </div>
-                <div id="nexu_ready_alert" style="display: none;">
-                    <div class="alert alert-success mt-1 mb-1 col-12">
-                        L’application Esup-DSS-Client est fonctionnelle
-                        <br/>
-                        <small>Vous allez être redirigé vers le système de signature qui permet d’utiliser une clé matérielle</small>
-                    </div>
-                </div>
                 <div id="selectTypeDiv" class="alert alert-secondary mt-1" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                     <label for="certType">Si besoin, merci de sélectionner le type de signature que vous souhaitez utiliser parmi ceux disponibles</label>
-                    <select id="certType" name="certType" class="form-select mt-2" required>
-                        <th:block th:each="signWith : ${signWiths}">
-                            <th:block th:if="${signWith.name != 'sealCert'}">
-                                <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                    <div class="input-group mt-2">
+                        <select id="certType" name="certType" class="form-control form-select" required>
+                            <th:block th:each="signWith : ${signWiths}">
+                                <th:block th:if="${signWith.name != 'sealCert'}">
+                                    <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                                </th:block>
+                                <th:block th:if="${signWith.name == 'sealCert'}">
+                                    <option th:if="${sealCertOK}" th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                                    <option th:unless="${sealCertOK}" value="" th:text="#{'signwith.' + ${signWith}}" disabled></option>
+                                </th:block>
                             </th:block>
-                            <th:block th:if="${signWith.name == 'sealCert'}">
-                                <option th:if="${sealCertOK}" th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
-                                <option th:unless="${sealCertOK}" value="" th:text="#{'signwith.' + ${signWith}}" disabled></option>
-                            </th:block>
-                        </th:block>
-                    </select>
+                        </select>
+                        <button id="refresh-certType" type="button" class="btn btn-outline-secondary" title="Actualiser la liste"><i class="fa-solid fa-arrows-rotate"></i></button>
+                    </div>
                     <input class="form-control mt-2 mb-1" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" />
                 </div>
                 <div id="signCommentDiv">
@@ -293,16 +284,25 @@
                             </button>
                         </div>
                     </div>
+                    <div id="noOptions" class="alert alert-danger mt-1" style="display: none;">
+                        <p>Votre profil ne possède pas les prérequis nécessaires pour signer cette demande.</p>
+                        <p>Si vous en avez la possibilité, merci de contrôler vos paramètres de signature, d’importer un certificat ou de démarrer Esup-DSS-Client.</p>
+                        <p>Sinon merci de contacter la personne ou le service émetteur de cette demande de signature.</p>
+                    </div>
+                    <div id="nexu_ready_alert" style="display: none;">
+                        <div class="alert alert-success mt-1 mb-1 col-12">
+                            L’application Esup-DSS-Client est fonctionnelle
+                            <br/>
+                            <small>Vous pouvez sélectionner la signature par certificat USB</small>
+                        </div>
+                    </div>
                     <div id="nexu_missing_alert" class="mt-1" style="display: none;">
                         <div class="alert alert-warning text-center">
-                            <p class="text-left">L'application Esup-DSS-Client n’a pas été détectée</p>
-                            <p  class="text-left">Si vous souhaitez signer à l’aide d’un certificat présent sur votre poste ou sur clé USB, merci de lancer l’application Esup-DSS-Client sur votre poste puis d’actualiser la page.<br/>
+                            <p class="text-left">L’application Esup-DSS-Client n’a pas été détectée</p>
+                            <p  class="text-left">Si vous devez signer à l’aide d’un certificat présent sur votre poste ou sur clé USB, merci de lancer l’application Esup-DSS-Client sur votre poste puis de cliquer sur le bouton "Actualiser".<br/>
                                 Pour plus d’informations sur l’utilisation de Esup-DSS-Client merci de consulter la documentation à cette adresse :
                                 <a target="_blank" href="https://www.esup-portail.org/wiki/display/SIGN/Esup-DSS-Client">https://www.esup-portail.org/wiki/display/SIGN/Esup-DSS-Client</a>
                             </p>
-                            <button onclick="location.reload();" class="mt-2 mx-auto btn btn-warning align-self-center">
-                                <i class="fas fa-sync-alt fa-2x"></i><br> Cliquez ici après le lancement de Esup-DSS-Client
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -842,7 +842,6 @@
 </div>
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 <script th:inline="javascript" type="module">
-    import {Nexu} from '/js/modules/ui/signrequests/Nexu.js?version=[[${versionApp}]]';
     import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=[[${versionApp}]]';
     import {SignRequestHelp} from '/js/modules/help/SignRequestHelp.js?version=[[${versionApp}]]';
     let help = new SignRequestHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]], [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]);
@@ -902,11 +901,7 @@
         [[${user.phone}]],
         [[${user.returnToHomeAfterSign}]]
     );
-    $(document).ready(function () {
-        if (signable) {
-            new Nexu(null, null, currentSignType);
-        }
-    });
+
 </script>
 </body>
 </html>

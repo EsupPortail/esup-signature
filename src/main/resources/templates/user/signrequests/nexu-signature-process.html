@@ -5,7 +5,10 @@
 <script th:inline="javascript" type="module">
     import {Nexu} from '/js/modules/ui/signrequests/Nexu.js?version=[[${versionApp}]]';
     $(document).ready(function() {
-        new Nexu([[${addExtra}]], [[${id}]]);
+        new Nexu([[${addExtra}]], [[${id}]], 'nexuSign');
+    });
+    $("#refresh-certType2").on('click', function (e) {
+        new Nexu([[${addExtra}]], [[${id}]], 'nexuSign');
     });
 </script>
 <body>
@@ -13,7 +16,7 @@
 <main role="main">
     <nav th:replace="~{fragments/sides/side :: side}"></nav>
     <div id="content" class="content">
-        <div class="alert alert-secondary col-10 mb-2 mx-auto">
+        <div class="alert alert-secondary col-10 mb-1 mx-auto">
             <h3>Signature eIDas en cours</h3>
             <p>
                 L’application Esup-DSS-Client va s’ouvrir.
@@ -23,6 +26,16 @@
                 Il est possible que vous deviez saisir votre mot de passe / code pin plusieurs fois pendant la
                 procédure
             </p>
+        </div>
+        <div id="alertNexu" class="alert alert-danger col-10 mb-1 mx-auto text-center" style="display: none;">
+            L'application Esup-DSS-Client n’a pas été détectée. Cette application est nécessaire pour le niveau de signature eIDas qui vous est demandé.
+            <br>
+            <a th:href="'/user/signrequests/' + ${id}" class="btn btn-secondary">
+                <i class="fas fa-door-open fa-2x"></i><br/>Annuler la signature et retourner à la demande
+            </a>
+            <button id="refresh-certType2" class="mx-auto btn btn-primary align-self-center">
+                <i class="fas fa-sync-alt fa-2x"></i><br> Cliquez ici après le lancement de Esup-DSS-Client
+            </button>
         </div>
         <div class="card col-10 mx-auto">
             <div class="card-body">
@@ -40,7 +53,7 @@
                             <i class="fas fa-chevron-down"></i> Détails de l’erreur
                         </button>
                         <div class="collapse" id="collapseError">
-                            <textarea class="form-control mb-2" id="errorcontent"></textarea>
+                            <textarea class="form-control mb-1" id="errorcontent"></textarea>
                         </div>
                         <div class="inline-flex">
                             <a th:href="'/user/signrequests/' + ${id}" class="btn btn-secondary">
