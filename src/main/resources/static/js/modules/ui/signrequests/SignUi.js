@@ -1,6 +1,7 @@
 import {WorkspacePdf} from "./WorkspacePdf.js?version=@version@";
 import {CsrfToken} from "../../../prototypes/CsrfToken.js?version=@version@";
 import {Step} from "../../../prototypes/Step.js?version=@version@";
+import {Nexu} from "./Nexu.js?version=@version@";
 
 export class SignUi {
 
@@ -9,6 +10,7 @@ export class SignUi {
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.returnToHome = returnToHome;
         this.signRequestId = id;
+        this.signable = signable;
         this.percent = 0;
         this.isOtp = isOtp;
         this.wait = $('#wait');
@@ -37,6 +39,7 @@ export class SignUi {
             this.initReportModal();
         }
         this.togglePasswordField();
+        this.checkSignOptions();
     }
 
     initListeners() {
@@ -44,6 +47,8 @@ export class SignUi {
         $("#checkValidateSignButtonNext").on('click', e => this.launchSign(true));
         $("#launchInfiniteSignButton").on('click', e => this.insertStep());
         $("#launchNoInfiniteSignButton").on('click', e => this.launchNoInfiniteSign());
+        $("#refresh-certType").on('click', e => this.checkSignOptions());
+        $("#refresh-certType2").on('click', e => this.checkSignOptions());
         let self = this;
         $("#password").on('keyup', function (e) {
             if (e.keyCode === 13) {
@@ -187,27 +192,11 @@ export class SignUi {
     }
 
     checkSignOptions() {
-        this.certTypeSelect.children().each(function (e) {
-            let nbOptions = $("#certType option:not([disabled])").length;
-            if (nbOptions === 0) {
-                $("#nexuCheck").removeClass("d-none");
-                $("#noOptions").show();
-                $("#signCommentDiv").hide();
-                $("#selectTypeDiv").hide();
-                $("#checkValidateSignButtonEnd").hide();
-                $("#checkValidateSignButtonNext").hide();
-            } else {
-                $("#nexuCheck").addClass("d-none");
-                $("#noOptions").hide();
-                $("#signCommentDiv").show();
-                $("#selectTypeDiv").show();
-                $("#checkValidateSignButtonEnd").show();
-                $("#checkValidateSignButtonNext").show();
-            }
-            if($("#certType > option[value='imageStamp']").attr('selected')) {
-                $("#noSeal").show();
-            }
-        });
+        console.info("check sign options");
+        if (this.signable) {
+            new Nexu(null, null, this.currentSignType);
+        }
+
     }
 
     checkAttachement() {
