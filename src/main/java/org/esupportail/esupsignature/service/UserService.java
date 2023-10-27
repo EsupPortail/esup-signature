@@ -23,7 +23,6 @@ import org.esupportail.esupsignature.service.ldap.entry.AliasLdap;
 import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLdap;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
-import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.hibernate.LazyInitializationException;
@@ -72,8 +71,6 @@ public class UserService {
 
     private final SmsService smsService;
 
-    private final ShibSecurityServiceImpl shibSecurityService;
-
     @Resource
     private ObjectMapper objectMapper;
 
@@ -84,8 +81,7 @@ public class UserService {
                        @Autowired(required = false) LdapAliasService ldapAliasService,
                        @Autowired(required = false) LdapGroupService ldapGroupService,
                        @Autowired(required = false) LdapOrganizationalUnitService ldapOrganizationalUnitService,
-                       @Autowired(required = false) SmsService smsService,
-                       @Autowired(required = false) ShibSecurityServiceImpl shibSecurityService) {
+                       @Autowired(required = false) SmsService smsService) {
         this.globalProperties = globalProperties;
         this.webSecurityProperties = webSecurityProperties;
         this.ldapPersonService = ldapPersonService;
@@ -94,7 +90,6 @@ public class UserService {
         this.ldapGroupService = ldapGroupService;
         this.ldapOrganizationalUnitService = ldapOrganizationalUnitService;
         this.smsService = smsService;
-        this.shibSecurityService = shibSecurityService;
     }
 
     @Resource
@@ -269,7 +264,7 @@ public class UserService {
             logger.info("ldap user not found : " + mail + ". Creating temp account");
             return createUser(UUID.randomUUID().toString(), "", "", mail, UserType.external, false);
         } else if (userType.equals(UserType.shib)) {
-            if(shibSecurityService != null) {
+            if(StringUtils.hasText(shibProperties.getPrincipalRequestHeader())) {
                 return createUser(mail, mail, "Nouvel utilisateur fédération", mail, UserType.shib, false);
             } else {
                 logger.warn("no shib service available");
@@ -583,9 +578,9 @@ public class UserService {
             String domain = emailSplit[1];
             if (domain.equals(globalProperties.getDomain()) && ldapPersonService != null) {
                 return UserType.ldap;
-            } else if(domain.equals(globalProperties.getDomain()) && shibSecurityService != null) {
+            } else if(domain.equals(globalProperties.getDomain()) && StringUtils.hasText(shibProperties.getPrincipalRequestHeader())) {
                 return UserType.shib;
-            } else if(shibProperties.getDomainsWhiteListUrl() != null && shibSecurityService != null) {
+            } else if(StringUtils.hasText(shibProperties.getDomainsWhiteListUrl()) && StringUtils.hasText(shibProperties.getPrincipalRequestHeader())) {
                 InputStream whiteListFile = getDomainsWhiteList();
                 if (fileService.isFileContainsText(whiteListFile, domain)) {
                     return UserType.shib;
