@@ -264,6 +264,7 @@ public class WebSecurityConfig {
 			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/actuator/**")).denyAll());
 		}
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
+				.requestMatchers(antMatcher("/error/**")).permitAll()
 				.requestMatchers(antMatcher("/api-docs/**")).hasAnyRole("ADMIN")
 				.requestMatchers(antMatcher("/swagger-ui/**")).hasAnyRole("ADMIN")
 				.requestMatchers(antMatcher("/swagger-ui.html")).hasAnyRole("ADMIN")

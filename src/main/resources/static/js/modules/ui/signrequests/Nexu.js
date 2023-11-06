@@ -10,35 +10,71 @@ export class Nexu {
         Nexu.version;
         this.tokenId = null;
         this.keyId = null;
-        this.bindingPorts = "9795, 9886, 9887, 9888";
+        this.bindingPorts = "9795";
         this.detectedPort = "";
         this.successDiv = $("#success");
         this.successDiv.hide();
-        $("#warning-text").html("Esup-DSS-Client n'a pas été détecté sur le poste !");
-        $("#nexu_missing_alert").show();
         let self = this;
         $(document).ready(function() {
             self.checkNexuClient().then(function(e) {
                 console.info("Esup-DSS-Client est lancé !");
-                $("#warning-text").html("");
                 $("#nexu_missing_alert").hide();
-                $("#alertNexu").remove();
                 $("#noOptions").hide();
                 $("#selectTypeDiv").show();
                 if(id != null) {
                     self.loadScript();
                 }
+                $("#certType > option[value='nexuCert']").removeAttr('disabled');
+                if(currentSignType === 'nexuSign') {
+                    $("#certType").val("nexuCert");
+                    $("#nexu_ready_alert").show();
+                    $("#alertNexu").hide();
+                    $("#signLaunchButton").show();
+                    let secondTools = $("#second-tools");
+                    secondTools.addClass("d-flex");
+                    secondTools.show();
+                }
+                self.updateSignModal();
             }).catch(function(e){
                 console.info("Esup-DSS-Client non lancé !");
+                $("#nexu_ready_alert").hide();
                 if(currentSignType === 'nexuSign') {
                     $("#alertNexu").show();
+                    $("#nexu_missing_alert").show();
                     $("#signLaunchButton").hide();
                     let secondTools = $("#second-tools");
                     secondTools.removeClass("d-flex");
                     secondTools.hide();
+                    $("#certType > option[value='nexuCert']").attr('disabled', 'disabled');
+                    $("#certType").val("");
+                    alert("Esup-DSS-Client n'a pas été détecté sur le poste !");
                 }
-                $("#certType > option[value='nexuCert']").attr('disabled', 'disabled');
+                self.updateSignModal()
             });
+        });
+    }
+
+    updateSignModal() {
+        $("#certType").children().each(function (e) {
+            let nbOptions = $("#certType option:not([disabled])").length;
+            if (nbOptions === 0) {
+                // $("#nexuCheck").removeClass("d-none");
+                $("#noOptions").show();
+                $("#signCommentDiv").hide();
+                // $("#selectTypeDiv").hide();
+                $("#checkValidateSignButtonEnd").hide();
+                $("#checkValidateSignButtonNext").hide();
+            } else {
+                // $("#nexuCheck").addClass("d-none");
+                $("#noOptions").hide();
+                $("#signCommentDiv").show();
+                // $("#selectTypeDiv").show();
+                $("#checkValidateSignButtonEnd").show();
+                $("#checkValidateSignButtonNext").show();
+            }
+            if($("#certType > option[value='imageStamp']").attr('selected')) {
+                $("#noSeal").show();
+            }
         });
     }
 
@@ -106,12 +142,19 @@ export class Nexu {
         $('#bar').removeClass('progress-bar-success active').addClass('progress-bar-danger');
         if (error!= null && error.responseJSON !=null) {
             let jsonResp = error.responseJSON;
-            if (jsonResp.trace != null) {
-                $("#errorcontent").html(jsonResp.trace.split('\n')[0]);
+            if (jsonResp.feedback.stacktrace != null) {
+                $("#errorcontent").html(jsonResp.feedback.stacktrace);
+                if(jsonResp.feedback.stacktrace.includes("No slots")) {
+                    $("#errorText").html("Aucune clé n'a été détecté");
+                } else if (jsonResp.feedback.stacktrace.includes("keystore password was incorrect")) {
+                    $("#errorText").html("Le mot de passe du keystore est incorrect");
+                } else if (jsonResp.feedback.stacktrace.includes("CKR_PIN_INCORRECT")) {
+                    $("#errorText").html("Le code pin est incorrect");
+                }
             } else if (jsonResp.message !=null){
                 $("#errorcontent").html(jsonResp.message);
             } else if (jsonResp.errorMessage !=null){
-                if(jsonResp.errorMessage.startsWith("The user has cancelled the operation")) {
+                if(jsonResp.errorMessage.includes("The user has cancelled the operation")) {
                     $("#errorText").html("Opération annulée par l'utilisateur");
                 }
                 $("#errorcontent").html(jsonResp.errorMessage);

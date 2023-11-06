@@ -670,21 +670,17 @@ public class SignBookService {
             addUserInTeam(systemUser.getId(), signBook.getId());
         }
         signRequest.getSignRequestParams().addAll(signRequestParamses);
-        byte[] inputStream;
+        byte[] toAddFile;
         try {
-            inputStream = dataService.generateFile(data, formReplaceInputStream);
+            toAddFile = dataService.generateFile(data, formReplaceInputStream);
         } catch(IOException e) {
             throw new EsupSignatureRuntimeException("Ce formulaire ne peut pas être instancié car il ne possède pas de modèle");
         }
         if(computedWorkflow.getWorkflowSteps().isEmpty()) {
-            try {
-                inputStream = pdfService.convertGS(inputStream);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            toAddFile = pdfService.convertGS(toAddFile);
         }
         String fileName = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
-        MultipartFile multipartFile = new DssMultipartFile(fileName, fileName, "application/pdf", inputStream);
+        MultipartFile multipartFile = new DssMultipartFile(fileName, fileName, "application/pdf", toAddFile);
         signRequestService.addDocsToSignRequest(signRequest, true, 0, form.getSignRequestParams(), multipartFile);
         workflowService.importWorkflow(signBook, computedWorkflow, externalUsersInfos);
         signRequestService.nextWorkFlowStep(signBook);

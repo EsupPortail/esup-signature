@@ -27,11 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * Product adapter for {@link OpenSC}.
- *
- * @author David Lemaignent (david.lemaignent@univ-rouen.fr)
- */
 public class OpenSCSignatureToken extends AbstractKeyStoreTokenConnection {
 
     private static final Logger LOG = LoggerFactory.getLogger(OpenSCSignatureToken.class);
@@ -83,7 +78,7 @@ public class OpenSCSignatureToken extends AbstractKeyStoreTokenConnection {
 
     @Override
     public SignatureValue sign(ToBeSigned toBeSigned, SignatureAlgorithm signatureAlgorithm, DSSPrivateKeyEntry dssPrivateKeyEntry) throws DSSException {
-        return sign(toBeSigned, signatureAlgorithm, dssPrivateKeyEntry);
+        return sign(toBeSigned, signatureAlgorithm.getDigestAlgorithm(), dssPrivateKeyEntry);
     }
 
     @Override
