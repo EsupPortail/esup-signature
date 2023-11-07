@@ -441,11 +441,11 @@ public class UserService {
         if (ldapPersonLightService != null && !searchString.trim().isEmpty() && searchString.length() > 2) {
             List<PersonLightLdap> ldapSearchList = ldapPersonLightService.searchLight(searchString);
             if (!ldapSearchList.isEmpty()) {
-                List<PersonLightLdap> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLightLdap::getCn)).toList();
-                for (PersonLightLdap personLdapList : ldapList) {
-                    if (personLdapList.getMail() != null) {
-                        if (personLightLdaps.stream().noneMatch(personLdap -> personLdap != null &&  personLdap.getMail() != null && personLdap.getMail().equals(personLdapList.getMail()))) {
-                            personLightLdaps.add(personLdapList);
+                List<PersonLightLdap> personLdapListResult = ldapSearchList.stream().sorted(Comparator.comparing(PersonLightLdap::getCn)).toList();
+                for (PersonLightLdap personLightLdap : personLdapListResult) {
+                    if (personLightLdap.getMail() != null) {
+                        if (personLightLdaps.stream().noneMatch(personLdap -> personLdap != null &&  personLdap.getMail() != null && personLdap.getMail().equalsIgnoreCase(personLightLdap.getMail()))) {
+                            personLightLdaps.add(personLightLdap);
                         }
                     }
                 }
@@ -458,7 +458,6 @@ public class UserService {
             if(user != null && user.getReplaceByUser() != null) {
                 personLightLdapsToRemove.add(personLightLdap);
                 personLightLdapsToAdd.add(user);
-                //TODO
             }
         }
         personLightLdaps.removeAll(personLightLdapsToRemove);
@@ -466,7 +465,7 @@ public class UserService {
             if(user.getEppn().equals("creator")) {
                 personLightLdaps.add(getPersonLdapLightFromUser(user));
             }
-            if(!personLightLdaps.isEmpty() && personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && user.getEmail().equals(personLightLdap.getMail()))) {
+            if(!personLightLdaps.isEmpty() && personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && user.getEmail().equalsIgnoreCase(personLightLdap.getMail()))) {
                 PersonLightLdap personLightLdap = getPersonLdapLightFromUser(user);
                 if(user.getUserType().equals(UserType.group)) {
                     personLightLdap.setDisplayName(personLightLdap.getDisplayName());
