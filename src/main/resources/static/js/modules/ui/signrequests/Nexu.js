@@ -38,6 +38,7 @@ export class Nexu {
             }).catch(function(e){
                 console.info("Esup-DSS-Client non lancé !");
                 $("#nexu_ready_alert").hide();
+                $("#certType > option[value='nexuCert']").attr('disabled', 'disabled');
                 if(currentSignType === 'nexuSign') {
                     $("#alertNexu").show();
                     $("#nexu_missing_alert").show();
@@ -45,7 +46,6 @@ export class Nexu {
                     let secondTools = $("#second-tools");
                     secondTools.removeClass("d-flex");
                     secondTools.hide();
-                    $("#certType > option[value='nexuCert']").attr('disabled', 'disabled');
                     $("#certType").val("");
                     alert("Esup-DSS-Client n'a pas été détecté sur le poste !");
                 }
