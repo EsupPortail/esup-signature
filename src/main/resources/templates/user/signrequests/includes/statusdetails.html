@@ -28,8 +28,8 @@
 		<div class="card card-body mb-1">
 			<span>
 				<span title="Étape en cours" class="bs-stepper-circle bg-warning">
-					<!--<i class="fas fa-spinner fa-pulse"></i>-->
-					<i class="fas fa-hourglass-half"></i>
+					<!--<i class="fa-solid fa-spinner fa-pulse"></i>-->
+					<i class="fa-solid fa-hourglass-half"></i>
 				</span>
 				Le document est en cours de signature par :
 			</span>
@@ -39,8 +39,8 @@
 					<td width="100%" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
 					<td align="center">
 						<div th:switch="${recipient.signed}">
-							<i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
-							<i title="En attente de signature" th:case="false" class="fas fa-clock text-warning"></i>
+							<i title="a signé le document" th:case="true" class="fa-solid fa-check-circle text-success"></i>
+							<i title="En attente de signature" th:case="false" class="fa-solid fa-clock text-warning"></i>
 						</div>
 					</td>
 				</tr>
@@ -73,7 +73,7 @@
 	<div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}">
 		<div class="alert alert-dark mb-1">
 			<p>Le document signé a été exporté vers son emplacement définitif :</p>
-			<button id="copyButton" title="Copier le lien" class="btn btn-light btn-sm"><i class="fas fa-copy"></i> Copier le lien</button>
+			<button id="copyButton" title="Copier le lien" class="btn btn-light btn-sm"><i class="fa-solid fa-copy"></i> Copier le lien</button>
 		</div>
 	</div>
 </div>

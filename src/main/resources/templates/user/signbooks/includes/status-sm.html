@@ -5,38 +5,38 @@
 <div th:fragment="status(signBook)">
 	<div th:switch="${signBook.status}" class="text-center mb-1 mt-1">
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).uploading}" class="badge rounded-0 bg-secondary" th:title="#{'signbook.status.' + ${signBook.status}}">
-			<i class="fas fa-upload" th:title="#{'signbook.status.' + ${signBook.status}}"></i>
+			<i class="fa-solid fa-upload" th:title="#{'signbook.status.' + ${signBook.status}}"></i>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" class="badge rounded-0 bg-secondary" th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fab fa-firstdraft" th:title="#{'signbook.status.' + ${signBook.status}}"></i>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge rounded-0 bg-warning text-dark" th:title="#{'signbook.status.' + ${signBook.status}}">
-			<i class="fas fa-clock"></i>
+			<i class="fa-solid fa-clock"></i>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}" class="badge rounded-0 bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
-			<i class="fas fa-file-signature"></i>
+			<i class="fa-solid fa-file-signature"></i>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge rounded-0 bg-danger">
-			<i class="fas fa-ban"></i>
+			<i class="fa-solid fa-ban"></i>
 			<br>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked}" class="badge rounded-0 bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
-			<i class="fas fa-check-circle"></i>
+			<i class="fa-solid fa-check-circle"></i>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="badge rounded-0 bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
-			<i class="fas fa-file-export"></i>
+			<i class="fa-solid fa-file-export"></i>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}" class="badge rounded-0 bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
-			<i class="fas fa-archive"></i>
+			<i class="fa-solid fa-archive"></i>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}" class="badge rounded-0 bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
-			<i class="fas fa-archive"></i>
+			<i class="fa-solid fa-archive"></i>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}" class="badge rounded-0 bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
-			<i class="fas fa-flag-checkered"></i>
+			<i class="fa-solid fa-flag-checkered"></i>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="badge rounded-0 bg-danger" th:title="#{'signbook.status.' + ${signBook.status}}">
-			<i class="fas fa-trash"></i>
+			<i class="fa-solid fa-trash"></i>
 		</div>
 		<div th:case="*">
 			<span th:text="${signBook.status}"></span>

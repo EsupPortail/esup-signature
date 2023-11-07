@@ -13,8 +13,6 @@ public class Recipient {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-    
-
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
@@ -27,10 +25,6 @@ public class Recipient {
     public void setId(Long id) {
         this.id = id;
     }
-
-    
-
-    
 
     public User getUser() {
         return user;
