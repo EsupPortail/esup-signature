@@ -11,7 +11,7 @@
                                 <div class="step-trigger">
                                     <span class="bs-stepper-circle bg-primary" th:text="${iterator.index + 1}"></span>
                                     <div class="bs-stepper-label">
-                                        <span  th:text="#{'signbook.signtype.' + ${workflowStep.getSignType()}}"></span> <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}"><i class="fas fa-users"></i></span>
+                                        <span  th:text="#{'signbook.signtype.' + ${workflowStep.getSignType()}}"></span> <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}"><i class="fa-solid fa-users"></i></span>
                                         <br/>
                                         <span th:if="${workflowStep.name != null}" th:text="${workflowStep.name}"></span>
                                         <ul>
@@ -31,7 +31,7 @@
                             <div class="bs-stepper-line"></div>
                             <div class="step">
                                 <div class="step-trigger">
-                                    <div th:classappend="${signRequest.exportedDocumentURI != null} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></div>
+                                    <div th:classappend="${signRequest.exportedDocumentURI != null} ? 'bg-success'" class="bs-stepper-circle"><i class="fa-solid fa-file-export"></i></div>
                                     <div class="bs-stepper-label text-break" th:text="${workflow.documentsTargetUri}"></div>
                                 </div>
                             </div>

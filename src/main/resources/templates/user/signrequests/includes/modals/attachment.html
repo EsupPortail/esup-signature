@@ -26,7 +26,7 @@
                             <td th:text="${attachment.fileName}"></td>
                             <td><span th:if="${attachment.createBy != null}" th:text="${attachment.createBy.firstname} + ' ' + ${attachment.createBy.name}"></span></td>
                             <td>
-                                <a th:href="'/user/signrequests/get-attachment/' + ${signRequest.id} + '/' + ${attachment.id}" target="_blank" class="btn btn-primary"><i class="fas fa-download"></i></a>
+                                <a th:href="'/user/signrequests/get-attachment/' + ${signRequest.id} + '/' + ${attachment.id}" target="_blank" class="btn btn-primary"><i class="fa-solid fa-download"></i></a>
                             </td>
                             <td th:if="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn) || signRequest.createBy.eppn == userEppn}">
                                 <form th:action="'/user/signrequests/remove-attachment/' + ${signRequest.id} + '/' + ${attachment.id}" th:method="delete">

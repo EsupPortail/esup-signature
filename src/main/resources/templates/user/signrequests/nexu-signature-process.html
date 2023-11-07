@@ -31,10 +31,10 @@
             L'application Esup-DSS-Client n’a pas été détectée. Cette application est nécessaire pour le niveau de signature eIDas qui vous est demandé.
             <br>
             <a th:href="'/user/signrequests/' + ${id}" class="btn btn-secondary">
-                <i class="fas fa-door-open fa-2x"></i><br/>Annuler la signature et retourner à la demande
+                <i class="fa-solid fa-door-open fa-2x"></i><br/>Annuler la signature et retourner à la demande
             </a>
             <button id="refresh-certType2" class="mx-auto btn btn-primary align-self-center">
-                <i class="fas fa-sync-alt fa-2x"></i><br> Cliquez ici après le lancement de Esup-DSS-Client
+                <i class="fa-solid fa-sync-alt fa-2x"></i><br> Cliquez ici après le lancement de Esup-DSS-Client
             </button>
         </div>
         <div class="card col-10 mx-auto">
@@ -50,17 +50,17 @@
                     <div class="alert alert-danger" role="alert">
                         <h3 id="errorText">Une erreur s’est produite lors de la signature</h3>
                         <button class="btn btn-transparent text-dark mb-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapseError" aria-expanded="false" aria-controls="collapseError">
-                            <i class="fas fa-chevron-down"></i> Détails de l’erreur
+                            <i class="fa-solid fa-chevron-down"></i> Détails de l’erreur
                         </button>
                         <div class="collapse" id="collapseError">
                             <textarea class="form-control mb-1" id="errorcontent"></textarea>
                         </div>
                         <div class="inline-flex">
                             <a th:href="'/user/signrequests/' + ${id}" class="btn btn-secondary">
-                                <i class="fas fa-door-open fa-2x"></i><br/>Annuler la signature et retourner à la demande
+                                <i class="fa-solid fa-door-open fa-2x"></i><br/>Annuler la signature et retourner à la demande
                             </a>
                             <a onclick="location.reload();" class="btn btn-primary">
-                                <i class="fas fa-sync-alt fa-2x"></i><br/>Relancer la procédure de signature
+                                <i class="fa-solid fa-sync-alt fa-2x"></i><br/>Relancer la procédure de signature
                             </a>
                         </div>
                     </div>
@@ -69,7 +69,7 @@
                     <strong>Signature effectuée</strong>
                     <br/>
                     <a th:href="'/user/signrequests/' + ${id}" class="btn btn-success" id="return2">
-                        <i class="fas fa-flag-checkered fa-2x"></i><br/> Retour
+                        <i class="fa-solid fa-flag-checkered fa-2x"></i><br/> Retour
                     </a>
                 </div>
             </div>

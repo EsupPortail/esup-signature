@@ -3,13 +3,13 @@
 <div th:fragment="details">
     <div class="col-12 text-center">
         <a class="btn btn-floating bg-primary waves-effect m-1" th:href="'/ws-secure/signrequests/get-last-file-report/' + ${signRequest.id}" target="_blank" title="Télécharger le dossier ">
-            <i class="fas fa-file-contract"></i>
+            <i class="fa-solid fa-file-contract"></i>
         </a>
         <a title="Export SEDA" class="btn btn-floating bg-primary waves-effect m-1" th:href="'/ws-secure/signrequests/get-seda/' + ${signRequest.id}">
-            <i class="fas fa-archive"></i>
+            <i class="fa-solid fa-archive"></i>
         </a>
         <a th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="btn btn-floating bg-primary waves-effect m-1" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
-            <i class="fas fa-shield-alt"></i>
+            <i class="fa-solid fa-shield-alt"></i>
         </a>
     </div>
     <div th:insert="~{public/control :: control}"></div>

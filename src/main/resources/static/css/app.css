@@ -1303,7 +1303,7 @@ textarea:placeholder-shown.required-field {
     z-index: 6 !important;
     display: inline-block;
     padding: 0;
-    margin: 0px;
+    margin: 0;
     overflow: hidden;
     vertical-align: middle;
     cursor: pointer;
@@ -1327,13 +1327,19 @@ textarea:placeholder-shown.required-field {
 }
 
 .btn-floating.btn-small i {
-    font-size: 1rem;
-    line-height: 38px;
+    /*font-size: 1rem;*/
+    /*line-height: 38px;*/
 }
 
 .btn-floating.btn-lg {
-    width: 61.1px;
-    height: 61.1px;
+    width: 62px;
+    height: 62px;
+}
+
+.btn-floating.btn-lg i {
+    margin-top: 14px;
+    /*font-size: 1.625rem;*/
+    /*line-height: 61.1px;*/
 }
 
 .btn-floating i {
@@ -1341,14 +1347,14 @@ textarea:placeholder-shown.required-field {
     width: inherit;
     color: #fff;
     text-align: center;
-    font-size: 1rem;
-    line-height: 2.8rem;
+    /*font-size: 1rem;*/
+    /*line-height: 2.8rem;*/
 }
 
 .fixed-action-simple-btn {
     position: fixed;
-    right: 50px;
-    bottom: 80px;
+    right: 25px;
+    bottom: 40px;
     z-index: 8;
     overflow: hidden;
     display: -webkit-box;
@@ -1357,7 +1363,7 @@ textarea:placeholder-shown.required-field {
     -webkit-box-align: end;
     -ms-flex-align: end;
     align-items: flex-end;
-    padding: 15px;
+    padding: 20px;
 }
 
 .fixed-action-btn {
@@ -1374,22 +1380,6 @@ textarea:placeholder-shown.required-field {
     -ms-flex-align: end;
     align-items: flex-end;
     padding: 20px;
-}
-
-.fixed-action-btn-simple {
-    position: fixed;
-    right: 50px;
-    bottom: 80px;
-    z-index: 8;
-    overflow: hidden;
-    height: 100px;
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-align: end;
-    -ms-flex-align: end;
-    align-items: flex-end;
-    padding: 15px;
 }
 
 .fixed-action-btn ul {
@@ -1475,11 +1465,6 @@ textarea:placeholder-shown.required-field {
     margin-right: auto;
     margin-bottom: 15px;
     margin-left: auto;
-}
-
-.btn-floating.btn-lg i {
-    font-size: 1.625rem;
-    line-height: 61.1px;
 }
 
 .list-unstyled {

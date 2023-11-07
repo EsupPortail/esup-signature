@@ -30,13 +30,13 @@
 <!--        <button data-bs-toggle="modal" data-bs-target="#signAllModal"-->
 <!--                class="btn btn-light col-3 col-md-12 mb-1 text-left d-none"-->
 <!--                th:classappend="${signable != 'ok' || nbSignRequestInSignBookParent < 2} ? 'd-none' ">-->
-<!--            <i class="fas fa-bolt"></i> <span class="sidebar-label">Tout signer</span>-->
+<!--            <i class="fa-solid fa-bolt"></i> <span class="sidebar-label">Tout signer</span>-->
 <!--        </button>-->
 <!--        <button id="signModeButton" class="btn btn-light col-12 mb-1 text-left" th:if="${signRequest != null && signable}">-->
-<!--            <i style="font-size: 0.6rem;" class="fas fa-signature"></i><i class="fas fa-pen"></i> <span class="sidebar-label">Remplir et signer</span>-->
+<!--            <i style="font-size: 0.6rem;" class="fa-solid fa-signature"></i><i class="fa-solid fa-pen"></i> <span class="sidebar-label">Remplir et signer</span>-->
 <!--        </button>-->
 <!--        <button th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}" id="commentModeButton" class="btn btn-light col-12 mb-1 text-left">-->
-<!--            <i class="ms-1 fas fa-comment"></i><i class="me-2"></i> <span class="sidebar-label">Annoter</span>-->
+<!--            <i class="ms-1 fa-solid fa-comment"></i><i class="me-2"></i> <span class="sidebar-label">Annoter</span>-->
 <!--            <span th:if="${signRequest.comments.size() > 0}" class="float-end badge bg-warning mt-1" ><span th:text="${signRequest.comments.size()}"></span></span>-->
 <!--        </button>-->
 
