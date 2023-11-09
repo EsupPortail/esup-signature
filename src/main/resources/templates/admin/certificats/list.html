@@ -39,8 +39,8 @@
                 </div>
             </div>
 
-            <div id="addButton" class="fixed-action-btn-simple" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
-                <a title="Ajouter un certificat" data-bs-toggle="modal" data-bs-target="#newCertificat" class="btn-floating btn-lg bg-primary waves-effect"><i class="fas fa-plus"></i></a>
+            <div id="addButton" class="fixed-action-simple-btn" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+                <a title="Ajouter un certificat" data-bs-toggle="modal" data-bs-target="#newCertificat" class="btn-floating btn-lg bg-primary waves-effect"><i class="fa-solid fa-plus fa-2x"></i></a>
             </div>
             <div class="card mb-1 col-lg-10 mx-auto">
                 <div class="card-body">
@@ -62,7 +62,7 @@
                                 <td><span th:text="${certificat.roles}"></span></td>
                                 <td>
                                     <a class="btn btn-danger" th:href="'#modal-warning'" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning'">
-                                        <i class="fas fa-trash-alt"></i>
+                                        <i class="fa-solid fa-trash-alt"></i>
                                     </a>
                                     <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning'">
                                         <div class="modal-dialog">

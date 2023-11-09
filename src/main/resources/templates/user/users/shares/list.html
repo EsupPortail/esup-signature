@@ -21,7 +21,7 @@
             <div class="fixed-action-btn">
                 <a title="Ajouter une nouvelle délégation" data-bs-toggle="modal" data-bs-target="#newShareModal" type="button"
                    class="btn-floating btn-lg bg-primary wave-effect">
-                    <i class="fas fa-plus"></i>
+                    <i class="fa-solid fa-plus fa-2x"></i>
                 </a>
             </div>
             <div class="card col-lg-10 mx-auto">
@@ -80,13 +80,13 @@
                                 <td>
                                     <a type="button" title="Modifier" th:href="'/user/users/shares/update/' + ${userShare.id}"
                                             class="btn btn-warning me-2">
-                                        <i class="fas fa-pencil-alt text-white"></i>
+                                        <i class="fa-solid fa-pencil-alt text-white"></i>
                                     </a>
                                     <button type="button" title="Supprimer"
                                             data-bs-toggle="modal" data-bs-target="#modal-warning"
                                             th:attr="data-bs-target='#modal-warning'+${userShare.id }"
                                             class="btn btn-danger">
-                                        <i class="fas fa-trash"></i>
+                                        <i class="fa-solid fa-trash"></i>
                                     </button>
                                     <div data-bs-focus="false" class="modal modal-warning fade in"
                                          th:id="modal-warning+${userShare.id}">

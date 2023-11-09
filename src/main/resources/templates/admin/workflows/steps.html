@@ -26,18 +26,12 @@
                 <ul id="buttonList" class="list-unstyled">
                     <li>
                         <a th:if="${workflow.fromCode == null || !workflow.fromCode}" role="button" title="Ajouter une étape" class="btn-floating btn-lg bg-primary waves-effect" data-bs-toggle="modal" data-bs-target="#addStep">
-                        <span class="fa-stack">
-                            <i class="fas fa-shoe-prints fa-stack-1x me-1 text-white-50"></i>
-                            <i class="fas fa-plus fa-stack-1x ms-3 mt-1 text-white"></i>
-                        </span>
+                            <i class="fa-solid fa-plus fa-2x"></i>
                         </a>
                     </li>
                     <li>
                         <a th:if="${workflow.fromCode == null || !workflow.fromCode}" role="button" title="Ajouter une étape automatique" class="btn-floating btn-lg bg-primary waves-effect" data-bs-toggle="modal" data-bs-target="#addAutoStep">
-                        <span class="fa-stack">
-                            <i class="fas fa-shoe-prints fa-stack-1x me-1 text-white-50"></i>
-                            <i class="fas fa-robot fa-stack-1x ms-2 mt-1 text-white"></i>
-                        </span>
+                            <i class="fa-solid fa-robot fa-2x"></i>
                         </a>
                     </li>
                 </ul>
@@ -88,7 +82,7 @@
                                     <label for="allSignToComplete">
                                         <strong> Tous les participants doivent-ils signer ? </strong>
                                         <button data-bs-target="#collapseHelpAllSign" data-bs-toggle="collapse" type="button" class="btn btn-sm btn-transparent">
-                                            <span class="fas fa-info-circle text-info"></span>
+                                            <span class="fa-solid fa-info-circle text-info"></span>
                                         </button>
                                         <div class="collapse" id="collapseHelpAllSign">
                                             <div class="alert alert-info">
@@ -117,7 +111,7 @@
                                         <button data-bs-target="#collapseHelpSignType"
                                                 data-bs-toggle="collapse" type="button"
                                                 class="btn btn-sm btn-transparent">
-                                            <i class="fas fa-info-circle text-info"></i>
+                                            <i class="fa-solid fa-info-circle text-info"></i>
                                         </button>
                                     </strong>
                                         <div class="collapse" id="collapseHelpSignType">

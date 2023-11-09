@@ -10,7 +10,7 @@
         <div id="pdf" class="mx-auto" style="position: relative !important;">
             <th:block th:each="spot : ${srpMap.entrySet()}">
                 <div class="spot" th:id="'inDocSpot_' + ${spot.value}" style=" opacity: 1; z-index: 999999" title="Cliquer pour supprimer l'emplacement de signature">
-                    <i class="fas fa-map-marker-alt fa-3x"></i>
+                    <i class="fa-solid fa-map-marker-alt fa-3x"></i>
                     <div th:id="'inDocSign_' + ${spot.value}" style="width: 200px; height: 150px; margin-left: 18px;color: #000;" class="sign-field">
                         <b>Signature de l’étape: <span th:text="${spot.key}"></span></b>
                         <br>
@@ -27,7 +27,7 @@
                     title="Supprimer la signature"
                     class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
-                <i class="far fa-trash-alt"></i>
+                <i class="fa-regular fa-trash-alt"></i>
             </button>
             <button type="button" id="textReduce_x"
                     title="Agrandir le text"
@@ -44,39 +44,39 @@
             <button type="button" id="signUndo_x"
                     class="btn btn-sm btn-transparent text-white d-none"
                     style="z-index: 3;">
-                <i class="fas fa-sync"></i>
+                <i class="fa-solid fa-sync"></i>
             </button>
             <button type="button" id="signPrevImage_x"
                     title="Signature précédente"
                     class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
-                <i class="fas fa-chevron-up"></i>
+                <i class="fa-solid fa-chevron-up"></i>
             </button>
             <button type="button" id="signNextImage_x"
                     title="Signature suivante"
                     class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
-                <i class="fas fa-chevron-down"></i>
+                <i class="fa-solid fa-chevron-down"></i>
             </button>
             <button type="button" id="hideMoreTools_x"
                     title="Moins d'outils"
                     class="btn btn-sm btn-transparent text-white d-none"
                     style="z-index: 3;">
-                <i style="line-height: 1.8em;" class="fas fa-arrow-left"></i>
+                <i style="line-height: 1.8em;" class="fa-solid fa-arrow-left"></i>
             </button>
             <button type="button" id="signExtraOnTop_x"
                     title="Texte au dessus/texte sur la droite"
                     class="btn btn-sm btn-transparent text-white"
                     disabled
                     style="z-index: 3;">
-                <i class="fas fa-retweet"></i>
+                <i class="fa-solid fa-retweet"></i>
             </button>
             <input id="signColorPicker_x" value='#000000'/>
             <button type="button" id="displayMoreTools_x"
                     title="Plus d'outils"
                     class="btn btn-sm btn-transparent text-white d-none"
                     style="z-index: 3;">
-                <i class="fas fa-ellipsis-v"></i>
+                <i class="fa-solid fa-ellipsis-v"></i>
             </button>
         </div>
         <div id="extraTools_x" class="d-none" >
@@ -127,10 +127,10 @@
                         </div>
                         <input id="spotComment" name="comment" type="hidden">
                         <button id="hideSpotButton" type="button" class="btn btn-sm btn-dark float-start" data-bs-dismiss="modal">
-                            <i class="fas fa-times"></i>
+                            <i class="fa-solid fa-times"></i>
                         </button>
                         <button id="saveSpotButton" th:data-es-signrequest-id="${form.id}" type="button" class="btn btn-sm btn-dark float-end">
-                            <i class="fas fa-save"></i>
+                            <i class="fa-solid fa-save fa-2x"></i>
                         </button>
                     </form>
                 </div>

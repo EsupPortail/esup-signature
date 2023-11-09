@@ -21,10 +21,10 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div id="floatButtons" class="fixed-action-btn-simple">
+            <div id="floatButtons" class="fixed-action-simple-btn">
                 <a id="saveButton"
                    class="btn-floating btn-lg bg-success wave-effect">
-                    <i class="fas fa-save"></i>
+                    <i class="fa-solid fa-save fa-2x"></i>
                 </a>
             </div>
             <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
@@ -62,12 +62,12 @@
                                                 </td>
                                                 <td>
                                                     <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/' + ${iterator.index}" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == iterator.index} ? 'text-warning' : 'text-secondary'">
-                                                        <i class="fas fa-star"></i>
+                                                        <i class="fa-solid fa-star"></i>
                                                     </a>
                                                 </td>
                                                 <td>
                                                     <a th:id="'deleteSign_' + ${signImageId}" th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/delete-sign/' + ${signImageId}" role="button" class="btn btn-sm btn-danger text-white">
-                                                        <i class="fas fa-trash-alt"></i>
+                                                        <i class="fa-solid fa-trash-alt"></i>
                                                     </a>
                                                 </td>
                                             </tr>
@@ -81,7 +81,7 @@
                                         <button data-bs-target="#collapseHelpSignImage" data-bs-toggle="collapse"
                                                 type="button"
                                                 class="btn btn-sm btn-transparent">
-                                            <i class="fas fa-info-circle text-info"></i>
+                                            <i class="fa-solid fa-info-circle text-info"></i>
                                         </button>
                                         <div class="collapse" id="collapseHelpSignImage">
                                             <div class="alert alert-info">
@@ -113,7 +113,7 @@
                                                 Valider la signature
                                             </button>
                                             <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
-                                                <i class="fas fa-trash"></i>
+                                                <i class="fa-solid fa-trash"></i>
                                             </button>
                                             <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
                                                 Réinitialiser
@@ -127,17 +127,17 @@
                                             <button type="button" id="zoomout"
                                                     class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
                                                 <i
-                                                        class="fas fa-search-minus"></i></button>
+                                                        class="fa-solid fa-search-minus"></i></button>
                                             <button type="button" id="zoomin"
                                                     class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
                                                 <i
-                                                        class="fas fa-search-plus"></i></button>
+                                                        class="fa-solid fa-search-plus"></i></button>
                                             <button type="button"
                                                     class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
-                                                    data-deg="90"><i class="fas fa-undo"></i></button>
+                                                    data-deg="90"><i class="fa-solid fa-undo"></i></button>
                                             <button type="button"
                                                     class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
-                                                    data-deg="-90"><i class="fas fa-redo"></i></button>
+                                                    data-deg="-90"><i class="fa-solid fa-redo"></i></button>
                                         </div>
                                         <div id="vanilla-crop" class="mt-2"></div>
                                     </div>
@@ -172,7 +172,7 @@
                             <label class="col-form-label"><strong>Magasin de certificats</strong>
                                 <button data-bs-target="#collapseHelpKeyStore" data-bs-toggle="collapse" type="button"
                                         class="btn btn-sm btn-transparent">
-                            <span class="fas fa-info-circle text-info"> <!-- -->
+                            <span class="fa-solid fa-info-circle text-info"> <!-- -->
                             </span>
                                 </button>
                                 <div class="collapse collapse" id="collapseHelpKeyStore">
@@ -192,12 +192,12 @@
                                 <button type="button"
                                         class="btn btn-sm btn-primary text-left" data-bs-toggle="modal"
                                         data-bs-target="#testKeystore">
-                                    <i class="fas fa-certificate"></i> Tester mon certificat
+                                    <i class="fa-solid fa-certificate"></i> Tester mon certificat
                                 </button>
                                 <button type="button"
                                         class="btn btn-sm btn-danger text-left" data-bs-toggle="modal"
                                         data-bs-target="#removeKeystore">
-                                    <i class="fas fa-trash-alt"></i> Supprimer mon certificat
+                                    <i class="fa-solid fa-trash-alt"></i> Supprimer mon certificat
                                 </button>
                             </div>
                             <div class="form-group mb-3">
@@ -222,7 +222,7 @@
                                 d'alerte</strong>
                                 <button data-bs-target="#collapseHelpEmailAlertFrequency" data-bs-toggle="collapse"
                                         type="button" class="btn btn-sm btn-transparent">
-									<span class="fas fa-info-circle text-info"> <!--  -->
+									<span class="fa-solid fa-info-circle text-info"> <!--  -->
 									</span>
                                 </button>
                                 <div class="collapse" id="collapseHelpEmailAlertFrequency">

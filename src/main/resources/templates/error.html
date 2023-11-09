@@ -16,7 +16,7 @@
             <p><a th:href="'mailto:' + ${applicationEmail}" th:text="${applicationEmail}" target="_blank"></a></p>
             <a th:if="${userEppn != null}" class="btn btn-success" href="javascript:window.history.back();">Retour</a>
             <button th:if="${userEppn != null}" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#collapseError">
-                <i class="fas fa-chevron-down"></i> Détails de l’erreur
+                <i class="fa-solid fa-chevron-down"></i> Détails de l’erreur
             </button>
             <div id="collapseError" class="collapse mt-2" th:if="${userEppn != null}">
                 <table class="table table-striped">
