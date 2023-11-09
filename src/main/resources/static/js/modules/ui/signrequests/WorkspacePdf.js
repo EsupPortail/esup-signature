@@ -139,7 +139,7 @@ export class WorkspacePdf {
         $("#addCheck").on("click", e => this.signPosition.addCheckImage(this.pdfViewer.pageNum));
         $("#addTimes").on("click", e => this.signPosition.addTimesImage(this.pdfViewer.pageNum));
         $("#addCircle").on("click", e => this.signPosition.addCircleImage(this.pdfViewer.pageNum));
-        $("#addText").on("click", e => this.signPosition.addText(this.pdfViewer.pageNum));
+        $("#addText").on("click ", e => this.signPosition.addText(this.pdfViewer.pageNum));
 
         let signImageBtn = $("#signImage");
         signImageBtn.unbind();
@@ -599,6 +599,15 @@ export class WorkspacePdf {
                         signRequestParams.xPos = signSpaceDiv.attr("data-es-pos-x");
                         signRequestParams.yPos = signSpaceDiv.attr("data-es-pos-y");
                         signRequestParams.applyCurrentSignRequestParams(offset);
+                        let ui = { size: { width: 0, height: 0 }};
+                        ui.size.width = parseInt(signSpaceDiv.css("width"));
+                        let width = parseInt(cross.css("width"));
+                        let height = parseInt(cross.css("height"));
+                        ui.size.height = height * (ui.size.width / width);
+                        signRequestParams.resize(ui);
+                        cross.css("width", signRequestParams.signWidth);
+                        cross.css("background-size", signRequestParams.signWidth);
+                        cross.css("height", signRequestParams.signHeight);
                         signRequestParams.dropped = true;
                         console.log("real place : " + signRequestParams.xPos +", " + signRequestParams.yPos + " - offset " + offset);
                     }

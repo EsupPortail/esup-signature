@@ -109,7 +109,7 @@ export class SignPosition extends EventFactory {
         if (signImageNumber < 0) {
             $("#signImage_" + id).addClass("d-none");
         }
-        this.signRequestParamses.get(id).simulateDrop();
+        this.signRequestParamses.get(id).addEventListener("sizeChanged", e => this.signRequestParamses.get(id).simulateDrop());
         let srp = this.signRequestParamses.get(id);
         this.id++;
         return srp;

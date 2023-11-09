@@ -100,7 +100,7 @@
                                     </div>
                                 </div>
                                 <button type="submit" class="btn btn-success float-end ms-2 mb-2">
-                                    <i class="fa-solid fa-save fa-2x"></i></button>
+                                    <i class="fa-solid fa-save"></i></button>
                             </form>
                             <form th:id="'del_' + ${iterator.index}"
                                   th:action="${fromAdmin == true ? '/admin/workflows/remove-step/' + workflow.id + '/' + iterator.index : '/user/workflows/remove-step/' + workflow.id + '/' + iterator.index}"
@@ -120,7 +120,7 @@
                                         <button type="button" title="Ajouter un destinataire"
                                                 class="btn btn-sm btn-primary" data-bs-toggle="modal"
                                                 th:data-bs-target="'#reSendModal' + ${workflowStep.id}">
-                                            <i class="fa-solid fa-plus fa-2x" aria-hidden="true"></i>
+                                            <i class="fa-solid fa-plus" aria-hidden="true"></i>
                                         </button>
                                     </th>
                                 </tr>

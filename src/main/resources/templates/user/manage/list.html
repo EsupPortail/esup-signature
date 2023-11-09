@@ -29,8 +29,8 @@
                         <th:block th:each="workflow : ${managedWorkflows}">
                             <tr>
                                 <td>
-                                    <i th:unless="${managedForms.contains(workflow)}" class="fa-solid fa-project-diagram project-diagram-color fa-2x"></i>
-                                    <i th:if="${managedForms.contains(workflow)}" class="fa-solid fa-file-alt file-alt-color fa-2x"></i>
+                                    <i th:unless="${managedForms.contains(workflow)}" class="fa-solid fa-project-diagram project-diagram-color fa-2xl"></i>
+                                    <i th:if="${managedForms.contains(workflow)}" class="fa-solid fa-file-alt file-alt-color fa-2xl"></i>
                                 </td>
                                 <td th:text="${workflow.description}"></td>
                                 <td>

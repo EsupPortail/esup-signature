@@ -98,19 +98,19 @@ export default class FilesInput extends EventFactory {
             preferIconicPreview: true,
             allowedFileTypes : [],
             previewFileIconSettings: {
-                'pdf': '<i class="fas fa-file-pdf text-danger fa-2x"></i>',
-                'doc': '<i class="fas fa-file-word text-primary fa-2x"></i>',
-                'xls': '<i class="fas fa-file-excel text-success fa-2x"></i>',
-                'ppt': '<i class="fas fa-file-powerpoint text-danger fa-2x"></i>',
-                'zip': '<i class="fas fa-file-archive text-muted fa-2x"></i>',
-                'htm': '<i class="fas fa-file-code text-info fa-2x"></i>',
-                'txt': '<i class="fas fa-file-alt text-info fa-2x"></i>',
-                'mov': '<i class="fas fa-file-video text-warning fa-2x"></i>',
-                'mp3': '<i class="fas fa-file-audio text-warning fa-2x"></i>',
-                'jpg': '<i class="fas fa-file-image text-danger fa-2x"></i>',
-                'gif': '<i class="fas fa-file-image text-muted fa-2x"></i>',
-                'png': '<i class="fas fa-file-image text-primary fa-2x"></i>',
-                'other': '<i class="fas fa-file text-muted fa-2x"></i>'
+                'pdf': '<i class="fas fa-file-pdf text-danger fa-2xl"></i>',
+                'doc': '<i class="fas fa-file-word text-primary fa-2xl"></i>',
+                'xls': '<i class="fas fa-file-excel text-success fa-2xl"></i>',
+                'ppt': '<i class="fas fa-file-powerpoint text-danger fa-2xl"></i>',
+                'zip': '<i class="fas fa-file-archive text-muted fa-2xl"></i>',
+                'htm': '<i class="fas fa-file-code text-info fa-2xl"></i>',
+                'txt': '<i class="fas fa-file-alt text-info fa-2xl"></i>',
+                'mov': '<i class="fas fa-file-video text-warning fa-2xl"></i>',
+                'mp3': '<i class="fas fa-file-audio text-warning fa-2xl"></i>',
+                'jpg': '<i class="fas fa-file-image text-danger fa-2xl"></i>',
+                'gif': '<i class="fas fa-file-image text-muted fa-2xl"></i>',
+                'png': '<i class="fas fa-file-image text-primary fa-2xl"></i>',
+                'other': '<i class="fas fa-file text-muted fa-2xl"></i>'
             },
             previewFileExtSettings: {
                 'other': function() {

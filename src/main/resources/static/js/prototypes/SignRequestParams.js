@@ -210,50 +210,16 @@ export class SignRequestParams extends EventFactory {
             aspectRatio: true,
             resize: function(event, ui) {
                 if(self.textareaPart != null) {
-                    self.signScale = self.getNewScale(self, ui);
+                    self.signScale = self.getNewScale(ui);
                     self.resizeText();
                     self.signWidth = parseInt(self.textareaPart.css("width")) / self.currentScale;
-                    self.extraWidth = self.extraWidth / self.signScale * newScale;
+                    self.extraWidth = self.extraWidth / self.signScale;
                 } else {
-                    let maxWidth = ((self.originalWidth + self.extraWidth / self.signScale) * 2 * self.currentScale);
-                    let maxHeight = ((self.originalHeight + self.extraHeight / self.signScale) * 2 * self.currentScale);
-                    let minWidth = ((self.originalWidth + self.extraWidth / self.signScale) * .5 * self.currentScale);
-                    let minHeight = ((self.originalHeight + self.extraHeight / self.signScale) * .5 * self.currentScale);
-                    if (ui.size.width >= maxWidth
-                        ||
-                        ui.size.height >= maxHeight
-                    ) {
-                        ui.size.width = maxWidth;
-                        ui.size.height = maxHeight;
-                    } else if (ui.size.width <= minWidth
-                        ||
-                        ui.size.height <= minHeight) {
-                        ui.size.width = minWidth;
-                        ui.size.height = minHeight;
-                    }
-                    let newScale = self.getNewScale(self, ui);
-                    self.signWidth = self.signWidth / self.signScale * newScale;
-                    self.signHeight = self.signHeight / self.signScale * newScale;
-                    self.extraWidth = self.extraWidth / self.signScale * newScale;
-                    if (self.addExtra) {
-                        if (!self.extraOnTop) {
-                            self.divExtra.css('width', Math.round(self.extraWidth * self.currentScale) + "px");
-                        } else {
-                            self.divExtra.css('width', Math.round(self.originalWidth * self.signScale * self.currentScale) + "px");
-                        }
-                    }
-                    self.extraHeight = self.extraHeight / self.signScale * newScale;
-                    self.signScale = newScale;
-                    if(self.addImage) {
-                        self.cross.css('background-size', Math.round(ui.size.width - self.extraWidth * self.currentScale) + "px");
-                    }
-                    if (self.addExtra) {
-                        self.refreshExtraDiv();
-                    }
+                    self.resize(ui);
                 }
             },
             stop: function(event, ui) {
-                self.signScale = self.getNewScale(self, ui);
+                self.signScale = self.getNewScale(ui);
                 if(self.isSign) {
                     localStorage.setItem("zoom", self.signScale);
                 }
@@ -359,6 +325,44 @@ export class SignRequestParams extends EventFactory {
         this.cross.attr("page", this.signPageNumber);
     }
 
+    resize(ui) {
+        let maxWidth = ((this.originalWidth + this.extraWidth / this.signScale) * 2 * this.currentScale);
+        let maxHeight = ((this.originalHeight + this.extraHeight / this.signScale) * 2 * this.currentScale);
+        let minWidth = ((this.originalWidth + this.extraWidth / this.signScale) * .5 * this.currentScale);
+        let minHeight = ((this.originalHeight + this.extraHeight / this.signScale) * .5 * this.currentScale);
+        if (ui.size.width >= maxWidth
+            ||
+            ui.size.height >= maxHeight
+        ) {
+            ui.size.width = maxWidth;
+            ui.size.height = maxHeight;
+        } else if (ui.size.width <= minWidth
+            ||
+            ui.size.height <= minHeight) {
+            ui.size.width = minWidth;
+            ui.size.height = minHeight;
+        }
+        let newScale = this.getNewScale(ui);
+        this.signWidth = this.signWidth / this.signScale * newScale;
+        this.signHeight = this.signHeight / this.signScale * newScale;
+        this.extraWidth = this.extraWidth / this.signScale * newScale;
+        if (this.addExtra) {
+            if (!this.extraOnTop) {
+                this.divExtra.css('width', Math.round(this.extraWidth * this.currentScale) + "px");
+            } else {
+                this.divExtra.css('width', Math.round(this.originalWidth * this.signScale * this.currentScale) + "px");
+            }
+        }
+        this.extraHeight = this.extraHeight / this.signScale * newScale;
+        this.signScale = newScale;
+        if (this.addImage) {
+            this.cross.css('background-size', Math.round(ui.size.width - this.extraWidth * this.currentScale) + "px");
+        }
+        if (this.addExtra) {
+            this.refreshExtraDiv();
+        }
+    }
+
     createCross() {
         let divName = "cross_" + this.id;
         let div = "<div id='" + divName + "' class='cross'></div>";
@@ -445,11 +449,11 @@ export class SignRequestParams extends EventFactory {
         }
     }
 
-    getNewScale(self, ui) {
-        if (!self.addExtra || self.extraOnTop) {
-            return Math.round((ui.size.width / self.currentScale) / (self.originalWidth) * 100) / 100;
+    getNewScale(ui) {
+        if (!this.addExtra || this.extraOnTop) {
+            return Math.round((ui.size.width / this.currentScale) / (this.originalWidth) * 100) / 100;
         } else {
-            return Math.round((ui.size.height / self.currentScale) / (self.originalHeight) * 100) / 100;
+            return Math.round((ui.size.height / this.currentScale) / (this.originalHeight) * 100) / 100;
         }
     }
 
@@ -596,6 +600,7 @@ export class SignRequestParams extends EventFactory {
             this.signWidth = Math.round(parseInt(this.cross.css("width")) / this.currentScale);
             this.signHeight = Math.round(parseInt(this.cross.css("height")) / this.currentScale);
         }
+        this.fireEvent("sizeChanged", ['ok']);
     }
 
     show() {
@@ -735,7 +740,6 @@ export class SignRequestParams extends EventFactory {
         }
 
     }
-
 
     toggleExtra() {
         this.addExtra = !this.addExtra;
