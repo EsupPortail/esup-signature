@@ -30,8 +30,6 @@ public class BigFile {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-    
-
     @Lob
     @Basic(fetch = FetchType.LAZY)
     private Blob binaryFile;

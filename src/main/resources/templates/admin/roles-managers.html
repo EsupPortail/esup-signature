@@ -14,7 +14,7 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div class="fixed-action-btn-simple" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+            <div class="fixed-action-simple-btn" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
                 <a title="Ajouter un gestionnaire pour un rôle" data-bs-toggle="modal" data-bs-target="#newManagersRoles" type="button"
                    class="btn-floating btn-lg bg-primary wave-effect">
                     <i class="fa-solid fa-plus fa-2x"></i>
