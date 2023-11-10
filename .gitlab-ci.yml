@@ -4,7 +4,7 @@ build:
     - mvn clean package -Dspring.config.location=/opt/esup-signature-test-work/application.yml -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp
     - sudo systemctl stop esup-signature-test.service
     - rm -f /opt/esup-signature-test-work/esup-signature.war
-    - cp /home/gitlab-ci/esup-signature.war /opt/esup-signature-test-work/
+    - cp target/esup-signature.war /opt/esup-signature-test-work/
     - sudo systemctl restart esup-signature-test.service
   only:
     - test
