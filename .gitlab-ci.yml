@@ -1,14 +1,13 @@
 build:
   stage: deploy
   script: 
-    - export JAVA_HOME='/opt/jdk-17.0.2/'
-    - mvn clean package -Dspring.config.location=/opt/esup-signature/application.yml
+    - mvn clean package -Dspring.config.location=/opt/esup-signature-test-work/application.yml
     - sshpass -V
     - export SSHPASS=$CI_USER_PASS
     - sshpass -e scp -o StrictHostKeyChecking=no target/esup-signature.war gitlab-ci@runan:/home/gitlab-ci
     - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@runan sudo systemctl stop esup-signature-test.service
-    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@runan rm -f /opt/esup-signature/esup-signature.war
-    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@runan cp /home/gitlab-ci/esup-signature.war /opt/esup-signature/
+    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@runan rm -f /opt/esup-signature-test-work/esup-signature.war
+    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@runan cp /home/gitlab-ci/esup-signature.war /opt/esup-signature-test-work/
     - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@runan sudo systemctl restart esup-signature-test.service
   only:
     - test
