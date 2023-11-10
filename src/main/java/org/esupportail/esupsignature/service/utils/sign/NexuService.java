@@ -147,7 +147,8 @@ public class NexuService {
 					break;
 				case PAdES:
 					PAdESSignatureParameters padesParams = new PAdESSignatureParameters();
-					padesParams.setContentSize(9472 * 2); // double reserved space for signature
+					//signature size 32767 is max for PDF/A-2B
+					padesParams.setContentSize(32767);
 					parameters = padesParams;
 					break;
 				case XAdES:
