@@ -1,7 +1,7 @@
 build:
   stage: deploy
   script: 
-    - mvn clean package -Dspring.config.location=/opt/esup-signature-test-work/application.yml
+    - mvn clean package -Dspring.config.location=/opt/esup-signature-test-work/application.yml -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp
     - sshpass -V
     - export SSHPASS=$CI_USER_PASS
     - sshpass -e scp -o StrictHostKeyChecking=no target/esup-signature.war gitlab-ci@runan:/home/gitlab-ci
