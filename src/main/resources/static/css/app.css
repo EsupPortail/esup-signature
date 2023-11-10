@@ -1336,19 +1336,16 @@ textarea:placeholder-shown.required-field {
     height: 62px;
 }
 
-.btn-floating.btn-lg i {
-    margin-top: 14px;
-    /*font-size: 1.625rem;*/
-    /*line-height: 61.1px;*/
-}
-
 .btn-floating i {
     display: inline-block;
     width: inherit;
     color: #fff;
     text-align: center;
-    /*font-size: 1rem;*/
-    /*line-height: 2.8rem;*/
+    margin-top: 22px;
+}
+
+.btn-floating.btn-lg i {
+    margin-top: 32px;
 }
 
 .fixed-action-simple-btn {

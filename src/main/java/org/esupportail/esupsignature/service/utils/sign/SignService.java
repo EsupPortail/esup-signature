@@ -208,6 +208,7 @@ public class SignService {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, user);
 				}
 			}
+			((PAdESSignatureParameters) parameters).setReason("Signé par " + user.getFirstname() + " " + user.getName() + ", " + user.getEmail());
 			parameters.setSigningCertificate(certificateToken);
 			parameters.setCertificateChain(certificateTokenChain);
 			DSSDocument dssDocument;
