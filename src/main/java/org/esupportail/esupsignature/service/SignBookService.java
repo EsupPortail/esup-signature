@@ -956,12 +956,14 @@ public class SignBookService {
         }
         updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber(), "SUCCESS", signBook.getComment(), userEppn, authUserEppn);
         logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());
-        for (Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
-            if (recipient.getUser().getUserType().equals(UserType.external)) {
-                try {
-                    otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), null);
-                } catch (EsupSignatureMailException e) {
-                    throw new EsupSignatureRuntimeException(e.getMessage());
+        if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getCurrentStep() != null) {
+            for (Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
+                if (recipient.getUser().getUserType().equals(UserType.external)) {
+                    try {
+                        otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), null);
+                    } catch (EsupSignatureMailException e) {
+                        throw new EsupSignatureRuntimeException(e.getMessage());
+                    }
                 }
             }
         }
