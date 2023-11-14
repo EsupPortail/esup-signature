@@ -139,8 +139,8 @@
                     </tbody>
                 </table>
             </div>
-            <th:block th:if="${auditTrail != null && auditTrail.getDocumentCheckSum() == null}">
-                <div class="alert alert-danger mb-1">
+            <th:block th:if="${auditTrail != null && auditTrail.getDocumentCheckSum() == null && !usersHasRefused.isEmpty()}">
+                <div class="alert alert-danger mb-1 mt-1">
                     <h5>Le document a été refusé</h5>
                     <ul th:each="userHasRefused : ${usersHasRefused}">
                         <li th:text="${userHasRefused.firstname} + ' ' + ${userHasRefused.name}"></li>
