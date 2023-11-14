@@ -1,15 +1,11 @@
 build:
   stage: deploy
   script: 
-    - export JAVA_HOME='/opt/jdk-17.0.2/'
-    - mvn clean package -Dspring.config.location=/opt/esup-signature/application.yml
-    - sshpass -V
-    - export SSHPASS=$CI_USER_PASS
-    - sshpass -e scp -o StrictHostKeyChecking=no target/esup-signature.war gitlab-ci@runan:/home/gitlab-ci
-    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@runan sudo systemctl stop esup-signature-test.service
-    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@runan rm -f /opt/esup-signature/esup-signature.war
-    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@runan cp /home/gitlab-ci/esup-signature.war /opt/esup-signature/
-    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@runan sudo systemctl restart esup-signature-test.service
+    - mvn clean package -Dspring.config.location=/opt/esup-signature-test-work/application.yml -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp
+    - sudo systemctl stop esup-signature-test.service
+    - rm -f /opt/esup-signature-test-work/esup-signature.war
+    - cp target/esup-signature.war /opt/esup-signature-test-work/
+    - sudo systemctl restart esup-signature-test.service
   only:
     - test
   tags:
@@ -19,13 +15,10 @@ build3:
   stage: deploy
   script: 
     - mvn clean package -DskipTests -Dspring.config.location=/opt/esup-signature/application.yml
-    - sshpass -V
-    - export SSHPASS=$CI_USER_PASS
-    - sshpass -e scp -o StrictHostKeyChecking=no target/esup-signature.war gitlab-ci@signes:/home/gitlab-ci
-    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@signes sudo systemctl stop esup-signature.service
-    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@signes rm /opt/esup-signature/esup-signature.war
-    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@signes cp /home/gitlab-ci/esup-signature.war /opt/esup-signature/
-    - sshpass -e ssh -tt -o StrictHostKeyChecking=no gitlab-ci@signes sudo systemctl restart esup-signature.service
+    - sudo systemctl stop esup-signature.service
+    - rm -f /opt/esup-signature/esup-signature.war
+    - cp /target/esup-signature.war /opt/esup-signature/
+    - sudo systemctl restart esup-signature.service
   only:
     - tags
   except:
