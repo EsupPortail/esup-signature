@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
+import org.esupportail.esupsignature.service.security.SessionService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,9 @@ public class GlobalAttributsControllerAdvice {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private SessionService sessionService;
 
     @Resource
     private ReportService reportService;
@@ -83,6 +87,9 @@ public class GlobalAttributsControllerAdvice {
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
             User user = userService.getFullUserByEppn(userEppn);
+            if(user.getRoles().contains("ROLE_ADMIN")) {
+                model.addAttribute("nbSessions", sessionService.countSessions());
+            }
             if(user == null) {
                 logger.error("user " + userEppn + " not found");
                 return;
