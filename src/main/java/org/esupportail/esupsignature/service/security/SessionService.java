@@ -31,7 +31,7 @@ public class SessionService {
     private EntityManager entityManager;
 
     public int countSessions() {
-        return entityManager.createNativeQuery("select session_id from spring_session where last_access_time < spring_session.expiry_time").getResultList().size();
+        return entityManager.createNativeQuery("select session_id from spring_session where last_access_time < expiry_time and principal_name is not null").getResultList().size();
     }
 
     public List<String> getSessionIds() {
