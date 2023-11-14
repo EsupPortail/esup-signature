@@ -50,7 +50,7 @@
         <div class="hr"><i class="fa-solid fa-tools me-1"></i><span class="sidebar-label"> Outils</span></div>
         <a th:classappend="${activeMenu == 'currentSessions'} ? 'btn-secondary' : 'btn-light'"
            title="Sessions courantes" href="/admin/currentsessions" class="btn col-12 mb-1 text-left">
-            <i class="fa-solid fa-users"></i> <span class="sidebar-label">Sessions courantes</span>
+            <i class="fa-solid fa-users"></i> <span class="sidebar-label">Sessions courantes</span> <span th:text="${nbSessions}" class="badge bg-primary ms-4"></span>
         </a>
         <a th:if="${globalProperties.enableSu}" th:classappend="${activeMenu == 'su'} ? 'btn-secondary' : 'btn-light'"
            title="Switch user" href="/admin/su" class="btn col-12 mb-1 text-left">

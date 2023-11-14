@@ -55,7 +55,9 @@
                     <h5>Outils</h5>
                     <div class="row mt-4 mb-4">
                         <a title="Sessions courantes" href="/admin/currentsessions" class="btn text-center col-2">
-                            <i class="fa-solid fa-users fa-2xl"></i><br><span>Sessions courantes</span>
+                            <i class="fa-solid fa-users fa-2xl"></i>
+                            <br>
+                            <span>Sessions courantes</span> <span th:text="${nbSessions}" class="badge bg-primary"></span>
                         </a>
                         <a title="Switch user" href="/admin/su" class="btn text-center col-2">
                             <i class="fa-solid fa-user-secret fa-2xl"></i><br><span>Switch user</span>
