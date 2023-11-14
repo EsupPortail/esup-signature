@@ -100,14 +100,14 @@
                                     </div>
                                 </div>
                                 <button type="submit" class="btn btn-success float-end ms-2 mb-2">
-                                    <i class="fas fa-save"></i></button>
+                                    <i class="fa-solid fa-save"></i></button>
                             </form>
                             <form th:id="'del_' + ${iterator.index}"
                                   th:action="${fromAdmin == true ? '/admin/workflows/remove-step/' + workflow.id + '/' + iterator.index : '/user/workflows/remove-step/' + workflow.id + '/' + iterator.index}"
                                   th:method="delete">
                                 <button th:id="${iterator.index}" type="button" title="Supprimer l'étape"
                                         class="btn btn-danger float-end del-step-btn">
-                                    <i class="fas fa-trash-alt"></i>
+                                    <i class="fa-solid fa-trash-alt"></i>
                                 </button>
                             </form>
                             <br><br>
@@ -120,7 +120,7 @@
                                         <button type="button" title="Ajouter un destinataire"
                                                 class="btn btn-sm btn-primary" data-bs-toggle="modal"
                                                 th:data-bs-target="'#reSendModal' + ${workflowStep.id}">
-                                            <i class="fas fa-plus" aria-hidden="true"></i>
+                                            <i class="fa-solid fa-plus" aria-hidden="true"></i>
                                         </button>
                                     </th>
                                 </tr>
@@ -136,7 +136,7 @@
                                                 <button title="Supprimer le destinataire"
                                                     onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');"
                                                     type="submit" class="btn btn-danger btn-sm"><i
-                                                    class="fas fa-minus-circle"></i></button>
+                                                    class="fa-solid fa-minus-circle"></i></button>
                                             </form>
                                         </td>
                                     </tr>

@@ -3,17 +3,17 @@
 <div id="stepper1" class="bs-stepper linear">
     <div class="bs-stepper-header" role="tablist">
         <div class="step active" data-bs-target="#test-l-3">
-            <span class="bs-stepper-circle"><i class="fas fa-project-diagram"></i></span>
+            <span class="bs-stepper-circle"><i class="fa-solid fa-project-diagram"></i></span>
             <span class="bs-stepper-label">Création du circuit</span>
         </div>
         <div class="bs-stepper-line"></div>
         <div class="step" data-bs-target="#test-l-3">
-            <span class="bs-stepper-circle"><i class="fas fa-save"></i></span>
+            <span class="bs-stepper-circle"><i class="fa-solid fa-save"></i></span>
             <span class="bs-stepper-label">Sauvegarde</span>
         </div>
         <div class="bs-stepper-line"></div>
         <div class="step" data-bs-target="#test-l-3">
-            <span class="bs-stepper-circle"><i class="fas fa-flag-checkered"></i></span>
+            <span class="bs-stepper-circle"><i class="fa-solid fa-flag-checkered"></i></span>
             <span class="bs-stepper-label">Fin</span>
         </div>
     </div>
@@ -25,10 +25,10 @@
             <th:block th:if="${workflow.workflowSteps.size() > 0}" th:each="workflowStep,iterator : ${workflow.workflowSteps}">
                 <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-dark bg-white rounded p-1" th:name="'step_' + ${iterator.index}">
             <span title="Étape à venir" class="bs-stepper-circle">
-                <i class="fas fa-clock"></i>
+                <i class="fa-solid fa-clock"></i>
             </span>
-                    <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}" class="text-danger float-end"><i class="fas fa-users"></i></span>
-                    <span title="Une signature suffit" th:unless="${workflowStep.allSignToComplete}" class="float-end"><i class="fas fa-user"></i></span>
+                    <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}" class="text-danger float-end"><i class="fa-solid fa-users"></i></span>
+                    <span title="Une signature suffit" th:unless="${workflowStep.allSignToComplete}" class="float-end"><i class="fa-solid fa-user"></i></span>
                     <div class="bs-stepper-label">
                         <th:block th:if="${workflowStep != null && workflowStep.description != null && workflowStep.description != ''}">
                             <span th:text="${workflowStep.description}"></span>
@@ -41,7 +41,7 @@
                                 <tr>
                                     <td th:title="${user.email}" th:text="${user.firstname + ' ' + user.name}"></td>
                                     <td class="text-right">
-                                        <i title="N'a pas signé le document" class="fas fa-minus-circle text-secondary"></i>
+                                        <i title="N'a pas signé le document" class="fa-solid fa-minus-circle text-secondary"></i>
                                     </td>
                                 </tr>
                             </th:block>
@@ -85,10 +85,10 @@
 </div>
 <hr>
 <button type="submit" id="addNew" class="btn btn-primary" style="position: absolute;right: 10px;bottom: 10px;">
-    <i class="fas fa-save"></i> Enregistrer l'étape
+    <i class="fa-solid fa-save fa-2xl"></i> Enregistrer l'étape
 </button>
 <button formnovalidate id="exitWiz" name="exitWiz" value="true" th:if="${workflow != null && workflow.workflowSteps.size() > 0}" style="position: absolute;right: 200px;bottom: 10px;" type="button" class="btn btn-success">
-    <i class="fas fa-flag-checkered"></i> Terminer
+    <i class="fa-solid fa-flag-checkered"></i> Terminer
 </button>
 </form>
 <form id="wiz4Form" th:if="${workflow != null}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="delete">

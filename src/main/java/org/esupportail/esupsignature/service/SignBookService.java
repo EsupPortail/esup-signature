@@ -3,9 +3,15 @@ package org.esupportail.esupsignature.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.validation.reports.Reports;
+import jakarta.annotation.Resource;
+import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dss.model.DssMultipartFile;
 import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
@@ -46,11 +52,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.annotation.Resource;
-import jakarta.mail.MessagingException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -669,21 +670,17 @@ public class SignBookService {
             addUserInTeam(systemUser.getId(), signBook.getId());
         }
         signRequest.getSignRequestParams().addAll(signRequestParamses);
-        byte[] inputStream;
+        byte[] toAddFile;
         try {
-            inputStream = dataService.generateFile(data, formReplaceInputStream);
+            toAddFile = dataService.generateFile(data, formReplaceInputStream);
         } catch(IOException e) {
             throw new EsupSignatureRuntimeException("Ce formulaire ne peut pas être instancié car il ne possède pas de modèle");
         }
-        if(computedWorkflow.getWorkflowSteps().size() == 0) {
-            try {
-                inputStream = pdfService.convertGS(inputStream);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        if(computedWorkflow.getWorkflowSteps().isEmpty()) {
+            toAddFile = pdfService.convertGS(toAddFile);
         }
         String fileName = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
-        MultipartFile multipartFile = fileService.toMultipartFile(new ByteArrayInputStream(inputStream), fileName + ".pdf", "application/pdf");
+        MultipartFile multipartFile = new DssMultipartFile(fileName, fileName, "application/pdf", toAddFile);
         signRequestService.addDocsToSignRequest(signRequest, true, 0, form.getSignRequestParams(), multipartFile);
         workflowService.importWorkflow(signBook, computedWorkflow, externalUsersInfos);
         signRequestService.nextWorkFlowStep(signBook);
@@ -959,12 +956,14 @@ public class SignBookService {
         }
         updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber(), "SUCCESS", signBook.getComment(), userEppn, authUserEppn);
         logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());
-        for (Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
-            if (recipient.getUser().getUserType().equals(UserType.external)) {
-                try {
-                    otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), null);
-                } catch (EsupSignatureMailException e) {
-                    throw new EsupSignatureRuntimeException(e.getMessage());
+        if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getCurrentStep() != null) {
+            for (Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
+                if (recipient.getUser().getUserType().equals(UserType.external)) {
+                    try {
+                        otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), null);
+                    } catch (EsupSignatureMailException e) {
+                        throw new EsupSignatureRuntimeException(e.getMessage());
+                    }
                 }
             }
         }
@@ -1268,7 +1267,7 @@ public class SignBookService {
                 fsAccessService.open();
                 fsAccessService.createURITree(workflow.getDocumentsSourceUri());
                 List<FsFile> fsFiles = new ArrayList<>(fsAccessService.listFiles(workflow.getDocumentsSourceUri() + "/"));
-                if (fsFiles.size() > 0) {
+                if (!fsFiles.isEmpty()) {
                     int j = 0;
                     for (FsFile fsFile : fsFiles) {
                         logger.info("adding file : " + fsFile.getName());
@@ -1284,7 +1283,7 @@ public class SignBookService {
                         if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
                             user = userService.getByEppn(fsFile.getCreateBy());
                         }
-                        signRequestService.addDocsToSignRequest(signRequest, true, j, new ArrayList<>(), fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
+                        signRequestService.addDocsToSignRequest(signRequest, true, j, new ArrayList<>(), new DssMultipartFile(fsFile.getName(), fsFile.getName(), fsFile.getContentType(), baos.toByteArray()));
                         fsAccessService.remove(fsFile);
                         j++;
                         if (workflow.getScanPdfMetadatas()) {
@@ -1495,6 +1494,7 @@ public class SignBookService {
     public void saveWorkflow(Long signBookId, String title, String description, User user) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(signBookId);
         Workflow workflow = workflowService.createWorkflow(title, description, user);
+        workflow.getViewers().addAll(signBook.getViewers());
         for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
             List<String> recipientsEmails = new ArrayList<>();
             for (Recipient recipient : liveWorkflowStep.getRecipients()) {

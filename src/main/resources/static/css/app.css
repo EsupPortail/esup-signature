@@ -407,11 +407,19 @@ code {
     -o-user-select: none;
 }
 
-.div-scrollable {
-    overflow-y: auto;
-    height: calc(100vh - 420px);
+#new-div {
+    height: 267px;
+    margin-bottom: 4px;
 }
 
+#new-fragment {
+    height: 100%;
+}
+
+.div-scrollable {
+    overflow-y: auto;
+    height: calc(100vh - 405px);
+}
 
 .static-border {
     position: absolute;
@@ -703,7 +711,8 @@ input:checked + .slider:before {
     /*width: calc(100vw - 275px);*/
     margin-top: 86px;
     margin-left: 260px;
-    padding-left: 5px;
+    padding-left: 6px;
+    padding-right: 4px;
 }
 
 .content-full {
@@ -720,7 +729,7 @@ input:checked + .slider:before {
 }
 
 .new-height {
-    height: calc(100vh - 120px);
+    height: calc(100vh - 120px) !important;
     overflow: auto;
 }
 
@@ -765,6 +774,7 @@ input:checked + .slider:before {
     z-index: 1028;
     position: fixed;
     padding-left: 10px;
+    overflow-x: auto;
 }
 
 .tools-admin {
@@ -1293,7 +1303,7 @@ textarea:placeholder-shown.required-field {
     z-index: 6 !important;
     display: inline-block;
     padding: 0;
-    margin: 0px;
+    margin: 0;
     overflow: hidden;
     vertical-align: middle;
     cursor: pointer;
@@ -1317,13 +1327,13 @@ textarea:placeholder-shown.required-field {
 }
 
 .btn-floating.btn-small i {
-    font-size: 1rem;
-    line-height: 38px;
+    /*font-size: 1rem;*/
+    /*line-height: 38px;*/
 }
 
 .btn-floating.btn-lg {
-    width: 61.1px;
-    height: 61.1px;
+    width: 62px;
+    height: 62px;
 }
 
 .btn-floating i {
@@ -1331,14 +1341,17 @@ textarea:placeholder-shown.required-field {
     width: inherit;
     color: #fff;
     text-align: center;
-    font-size: 1rem;
-    line-height: 2.8rem;
+    margin-top: 22px;
+}
+
+.btn-floating.btn-lg i {
+    margin-top: 32px;
 }
 
 .fixed-action-simple-btn {
     position: fixed;
-    right: 50px;
-    bottom: 80px;
+    right: 25px;
+    bottom: 40px;
     z-index: 8;
     overflow: hidden;
     display: -webkit-box;
@@ -1347,7 +1360,7 @@ textarea:placeholder-shown.required-field {
     -webkit-box-align: end;
     -ms-flex-align: end;
     align-items: flex-end;
-    padding: 15px;
+    padding: 20px;
 }
 
 .fixed-action-btn {
@@ -1364,22 +1377,6 @@ textarea:placeholder-shown.required-field {
     -ms-flex-align: end;
     align-items: flex-end;
     padding: 20px;
-}
-
-.fixed-action-btn-simple {
-    position: fixed;
-    right: 50px;
-    bottom: 80px;
-    z-index: 8;
-    overflow: hidden;
-    height: 100px;
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-align: end;
-    -ms-flex-align: end;
-    align-items: flex-end;
-    padding: 15px;
 }
 
 .fixed-action-btn ul {
@@ -1465,11 +1462,6 @@ textarea:placeholder-shown.required-field {
     margin-right: auto;
     margin-bottom: 15px;
     margin-left: auto;
-}
-
-.btn-floating.btn-lg i {
-    font-size: 1.625rem;
-    line-height: 61.1px;
 }
 
 .list-unstyled {
@@ -1665,7 +1657,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 .sign-field:hover {
-    background-color: rgba(189, 255, 189, 0.0) !important;
+    background-color: rgb(220, 250, 220) !important;
     border: 1px solid green !important;
 }
 
@@ -1757,6 +1749,10 @@ input:focus, textarea:focus, select:focus {
         margin-left: 5px;
     }
 
+    .new-width-full {
+        width: calc(100vw);
+    }
+
     #breadcrumb {
         width: 100vw;
         margin: 0;
@@ -1800,7 +1796,7 @@ input:focus, textarea:focus, select:focus {
 
     .fixed-action-btns {
         bottom: 25px;
-        right: 30px;
+        right: -5px;
     }
 
     .sign-menu {

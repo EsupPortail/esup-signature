@@ -132,7 +132,7 @@ public class WizardController {
 
 
     @GetMapping(value = "/wiz-init-steps-workflow")
-    public String wizWorkflow(@ModelAttribute("userEppn") String userEppn, Model model) {
+    public String wizWorkflow(@ModelAttribute("userEppn") String userEppn) {
         return "user/wizard/wiz-init-steps-workflow";
     }
 
@@ -148,7 +148,7 @@ public class WizardController {
             Workflow workflow = workflowService.addStepToWorkflow(jsonWorkflowStep.getWorkflowId(), SignType.valueOf(jsonWorkflowStep.getSignType()), jsonWorkflowStep.getAllSignToComplete(), jsonWorkflowStep.getChangeable(), recipientsEmailsArray, user);
             model.addAttribute("workflow", workflow);
             if(end != null && end) {
-                if(workflow.getWorkflowSteps().size() >  0) {
+                if(!workflow.getWorkflowSteps().isEmpty()) {
                     return "user/wizard/wiz-save-workflow";
                 }else {
                     return "user/wizard/wizend";

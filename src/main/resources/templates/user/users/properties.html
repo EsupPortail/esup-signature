@@ -37,7 +37,7 @@
                                     </td>
                                     <td>
                                         <form th:action="'/user/users/delete-user-propertie/' + ${userPropertie.key.id}" th:method="'delete'">
-                                            <button type="submit" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
+                                            <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash-alt"></i></button>
                                         </form>
                                     </td>
                                 </tr>
@@ -70,7 +70,7 @@
                                         <td>
                                             <form th:action="'/user/users/delete-field-propertie/' + ${fieldPropertie.id}" th:method="'delete'">
                                                 <input type="hidden" name="key" th:value="${favorite.key}">
-                                                <button type="submit" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
+                                                <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash-alt"></i></button>
                                             </form>
                                         </td>
                                     </tr>

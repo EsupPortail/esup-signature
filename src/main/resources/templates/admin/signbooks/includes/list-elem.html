@@ -15,7 +15,7 @@
             <div th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0 && signBook.liveWorkflow.currentStepNumber > 0}">
                 <div class="dropdown">
                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" th:id="'dropdownMenuButton-' + ${signBook.id}" data-bs-toggle="dropdown">
-                        <i class="fas fa-list"></i> Liste des participants
+                        <i class="fa-solid fa-list"></i> Liste des participants
                     </button>
                     <ul class="dropdown-menu" th:aria-labelledby="'dropdownMenuButton-' + ${signBook.id}">
                         <th:block th:each="liveWorkflowStep : ${signBook.liveWorkflow.liveWorkflowSteps}">
@@ -24,12 +24,12 @@
                                    <span class="me-1" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
                                     <div th:switch="${recipient.signed}">
                                         <th:block th:case="true">
-                                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" title="A signé le document" class="fas fa-check-circle text-success"></i>
-                                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}"  title="A refusé le document" class="fas fa-times-circle text-danger"></i>
+                                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" title="A signé le document" class="fa-solid fa-check-circle text-success"></i>
+                                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}"  title="A refusé le document" class="fa-solid fa-times-circle text-danger"></i>
                                         </th:block>
                                         <th:block th:case="false">
-                                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="En attente de signature" class="fas fa-clock text-warning"></i>
-                                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="N'a pas signé le document" class="fas fa-minus-circle text-secondary"></i>
+                                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="En attente de signature" class="fa-solid fa-clock text-warning"></i>
+                                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="N'a pas signé le document" class="fa-solid fa-minus-circle text-secondary"></i>
                                         </th:block>
                                     </div>
                                 </li>
@@ -50,22 +50,22 @@
         <td>
             <div class="dropdown position-relative">
                 <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="dropdown">
-                    <i class="fas fa-ellipsis-v"></i>
+                    <i class="fa-solid fa-ellipsis-v"></i>
                 </button>
                 <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signBook.id}">
                     <li>
                         <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/admin/signrequests/' + ${signRequest.id}">
-                            <i class="fas fa-eye pr-2"></i> Consulter
+                            <i class="fa-solid fa-eye pr-2"></i> Consulter
                         </a>
                     </li>
                     <li>
                         <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && signBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'/admin/signrequests/restore/' + ${signRequest.id}" role="button" title="Restaurer">
-                            <i class="fas fa-trash-restore pr-2"></i> Restaurer
+                            <i class="fa-solid fa-trash-restore pr-2"></i> Restaurer
                         </a>
                     </li>
                     <li>
                         <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
-                            <i class="fas fa-trash-alt text-danger pr-2"></i> <span th:text="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
+                            <i class="fa-solid fa-trash-alt text-danger pr-2"></i> <span th:text="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
                         </a>
                     </li>
                 </ul>
@@ -108,7 +108,7 @@
             <div th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0 && signBook.liveWorkflow.currentStepNumber > 0}">
                 <div class="dropdown">
                     <button class="btn btn-sm btn-light btn-outline-light dropdown-toggle" type="button" th:id="'dropdownMenuButton-' + ${signBook.id}" data-bs-toggle="dropdown">
-                        <i class="fas fa-users"></i> Liste des participants
+                        <i class="fa-solid fa-users"></i> Liste des participants
                     </button>
                     <ul class="dropdown-menu" th:aria-labelledby="'dropdownMenuButton-' + ${signBook.id}">
                         <th:block th:each="liveWorkflowStep : ${signBook.liveWorkflow.liveWorkflowSteps}">
@@ -130,12 +130,12 @@
         <td>
             <div class="dropdown position-relative">
                 <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark" th:title="'Actions ' + ${signBook.subject}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="dropdown">
-                    <i class="fas fa-ellipsis-v"></i>
+                    <i class="fa-solid fa-ellipsis-v"></i>
                 </button>
                 <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signBook.id}">
                     <li>
                         <a th:if="${signBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
-                            <i class="fas fa-trash-alt pr-2"></i> <span th:text="${signBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
+                            <i class="fa-solid fa-trash-alt pr-2"></i> <span th:text="${signBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
                         </a>
                     </li>
                 </ul>

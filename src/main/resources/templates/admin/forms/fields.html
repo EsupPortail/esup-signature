@@ -25,10 +25,10 @@
             <div class="fixed-action-btns active" >
                 <ul class="list-unstyled">
                     <li>
-                        <a th:if="${form.document == null}" title="Ajouter un champ" data-bs-toggle="modal" data-bs-target="#newManualForm" class="btn-floating btn-lg text-dark bg-primary waves-effect"><i class="fas fa-plus"></i></a></li>
+                        <a th:if="${form.document == null}" title="Ajouter un champ" data-bs-toggle="modal" data-bs-target="#newManualForm" class="btn-floating btn-lg text-dark bg-primary waves-effect"><i class="fa-solid fa-plus fa-2xl"></i></a></li>
                     <li>
                         <a id="saveButton" title="Enregistrer les modifications" type="button" class="btn-floating btn-lg bg-success">
-                            <i class="fas fa-save"></i>
+                            <i class="fa-solid fa-save fa-2xl"></i>
                         </a>
                     </li>
                 </ul>
@@ -126,7 +126,7 @@
                             </form>
                             <td>
                                 <button type="button" data-bs-toggle="modal" data-bs-target="#modal-warning" th:attr="data-bs-target='#modal-warning' + ${field.id}" class="btn btn-danger">
-                                    <i class="fas fa-trash-alt"></i>
+                                    <i class="fa-solid fa-trash-alt"></i>
                                 </button>
                                 <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning' + ${field.id}">
                                     <div class="modal-dialog">
@@ -195,7 +195,7 @@
                                 </th:block>
                             </select>
                             <button id="btn-add-field" type="button" class="btn btn-success">
-                                <span class="fas fa-plus" aria-hidden="true"></span>
+                                <span class="fa-solid fa-plus fa-2xl" aria-hidden="true"></span>
                             </button>
                         </div>
                     </div>

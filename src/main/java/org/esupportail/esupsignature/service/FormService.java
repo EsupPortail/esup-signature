@@ -82,6 +82,7 @@ public class FormService {
 		return formRepository.findById(formId).orElseThrow();
 	}
 
+	@Transactional
 	public List<Form> getFormsByUser(String userEppn, String authUserEppn){
 		User user = userService.getByEppn(userEppn);
 		Set<Form> forms = new HashSet<>();
@@ -130,7 +131,7 @@ public class FormService {
 
 	public List<Form> getAuthorizedToShareForms() {
 		List<Form> forms = formRepository.findDistinctByAuthorizedShareTypesIsNotNullAndDeletedIsNullOrDeletedIsFalse();
-		forms = forms.stream().filter(form -> form.getAuthorizedShareTypes().size() > 0).collect(Collectors.toList());
+		forms = forms.stream().filter(form -> !form.getAuthorizedShareTypes().isEmpty()).collect(Collectors.toList());
 		return forms;
 	}
 
@@ -429,7 +430,7 @@ public class FormService {
 		List<Form> managerForms = new ArrayList<>();
 		for(Workflow workflow : workflows) {
 			List<Form> form = formRepository.findByWorkflowIdEquals(workflow.getId());
-			if(form != null && form.size() > 0) {
+			if(form != null && !form.isEmpty()) {
 				managerForms.add(form.get(0));
 			}
 		}
@@ -512,10 +513,13 @@ public class FormService {
 		Form form = getById(formId);
 		SignRequestParams signRequestParams = signRequestParamsService.getById(signRequestParamsId);
 		form.getSignRequestParams().remove(signRequestParams);
+		long nbLiveWorkflowStepContainingParams = 0;
 		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
 			workflowStep.getSignRequestParams().remove(signRequestParams);
+			List<LiveWorkflowStep> liveWorkflowSteps = liveWorkflowStepRepository.findByWorkflowStep(workflowStep);
+			nbLiveWorkflowStepContainingParams += liveWorkflowSteps.stream().filter(liveWorkflowStep -> liveWorkflowStep.getSignRequestParams().contains(signRequestParams)).count();
 		}
-		if(liveWorkflowStepRepository.countBySignRequestParamsContains(signRequestParams) == 0) {
+		if(nbLiveWorkflowStepContainingParams == 0) {
 			signRequestParamsService.delete(signRequestParamsId);
 		}
 	}
@@ -538,7 +542,7 @@ public class FormService {
 				Field fieldSetup = optFieldSetup.get();
 				List<Long> workflowStepsIds = new ArrayList<>();
 				for(WorkflowStep workflowStep : fieldSetup.getWorkflowSteps()) {
-					workflowStepsIds.add(form.getWorkflow().getWorkflowSteps().get(formSetup.getWorkflow().getWorkflowSteps().stream().map(WorkflowStep::getId).collect(Collectors.toList()).indexOf(workflowStep.getId())).getId());
+					workflowStepsIds.add(form.getWorkflow().getWorkflowSteps().get(formSetup.getWorkflow().getWorkflowSteps().stream().map(WorkflowStep::getId).toList().indexOf(workflowStep.getId())).getId());
 				}
 				fieldService.updateField(field.getId(), fieldSetup.getDescription(), fieldSetup.getType(), fieldSetup.getFavorisable(), fieldSetup.getRequired(), fieldSetup.getReadOnly(), fieldSetup.getExtValueServiceName(), fieldSetup.getExtValueType(), fieldSetup.getExtValueReturn(), fieldSetup.getSearchServiceName(), fieldSetup.getSearchType(), fieldSetup.getSearchReturn(), fieldSetup.getStepZero(), workflowStepsIds);
 			}
@@ -546,7 +550,7 @@ public class FormService {
 		formSetup.setName(form.getName());
 		formSetup.setTitle(form.getTitle());
 		formSetup.setWorkflow(null);
-		updateForm(id, formSetup, formSetup.getAuthorizedShareTypes().stream().map(Enum::name).collect(Collectors.toList()).toArray(String[]::new), false);
+		updateForm(id, formSetup, formSetup.getAuthorizedShareTypes().stream().map(Enum::name).toList().toArray(String[]::new), false);
 	}
 
 	public void nullifyForm(Form form) {
@@ -572,13 +576,13 @@ public class FormService {
 		Form form = getById(id);
 		int step = 1;
 		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
-			if(workflowStep.getSignRequestParams().size() > 0) {
+			if(!workflowStep.getSignRequestParams().isEmpty()) {
 				SignRequestParams signRequestParams = workflowStep.getSignRequestParams().get(0);
 				spots.add(new Spot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
 			}
 			step++;
 		}
-		if(spots.size() == 0) {
+		if(spots.isEmpty()) {
 			for(SignRequestParams signRequestParams : form.getSignRequestParams()) {
 				spots.add(new Spot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
 			}
@@ -594,7 +598,7 @@ public class FormService {
 				srpMap.put(form.getWorkflow().getWorkflowSteps().indexOf(workflowStep) + 1, signRequestParams.getId());
 			}
 		}
-		if(srpMap.size() == 0) {
+		if(srpMap.isEmpty()) {
 			int i = 1;
 			for(SignRequestParams signRequestParams : form.getSignRequestParams()) {
 				srpMap.put(i, signRequestParams.getId());

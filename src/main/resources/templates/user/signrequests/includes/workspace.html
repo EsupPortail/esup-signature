@@ -18,9 +18,12 @@
             </span>
             <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
         </div>
-        <div id="alertNexu" class="alert alert-danger border-dark" style="display: none;">
-            L'application Esup-DSS-Client n’a pas été détectée. Cette application est necessaire pour le niveau de signature eIDas qui vous est demandé.
-            Merci de lancer l’application sur votre poste puis d’actualiser la page.
+        <div id="alertNexu" class="alert alert-danger border-dark text-center" style="display: none;">
+            L'application Esup-DSS-Client n’a pas été détectée. Cette application est nécessaire pour le niveau de signature eIDas qui vous est demandé.
+            <br>
+            <button id="refresh-certType2" class="mt-2 mx-auto btn btn-secondary align-self-center">
+                <i class="fa-solid fa-sync-alt fa-2xl"></i><br> Cliquez ici après le lancement de Esup-DSS-Client
+            </button>
         </div>
         <th:block th:if="${toSignDocument.contentType == 'application/pdf'}">
             <div id="commentHelp" th:unless="${signRequest.comments.size() > 0}" class="alert alert-warning border-dark d-none" style="width: 100%">
@@ -43,20 +46,20 @@
                     class="circle" th:id="'inDocComment_' + ${comment.id}"
                     th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'" title="Cliquer pour supprimer l'annotation">
-                    <i class="fas fa-comment fa-3x"></i>
+                    <i class="fa-solid fa-comment fa-3x"></i>
                 </div>
                 <div th:unless="${signRequest.createBy.eppn == user.eppn && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
                     class="circle" th:id="'inDocComment_' + ${comment.id}"
                     th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'">
-                    <i class="fas fa-comment fa-3x"></i>
+                    <i class="fa-solid fa-comment fa-3x"></i>
                 </div>
             </th:block>
             <th:block th:each="spot, iterator : ${spots}" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                 <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}" title="Cliquer pour supprimer l'emplacement de signature"
                     th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').removeClass(\'circle-border\');'">
-                    <i class="fas fa-map-marker-alt fa-3x" title="Cliquer pour supprimer l'emplacement de signature"></i>
+                    <i class="fa-solid fa-map-marker-alt fa-3x" title="Cliquer pour supprimer l'emplacement de signature"></i>
                     <div th:id="'inDocSign_' + ${spot.id}" style="width: 200px; height: 150px; margin-left: 18px;color: #000;" class="sign-field">
                         Cliquer pour supprimer l’emplacement de signature
                     </div>
@@ -71,10 +74,10 @@
                     <input id="addSignParams" name="addSignParams" type="hidden"/>
                     <textarea id="postitComment" name="comment" class="form-control postitarea float-start mb-2" placeholder="Saisir un commentaire" required></textarea>
                     <button id="hideCommentButton" type="button" class="btn btn-sm btn-dark float-start">
-                        <i class="fas fa-times"></i>
+                        <i class="fa-solid fa-times"></i>
                     </button>
                     <button id="saveCommentButton" type="button" class="btn btn-sm btn-dark float-end">
-                        <i class="fas fa-save"></i>
+                        <i class="fa-solid fa-save fa-2xl"></i>
                     </button>
                 </form>
             </div>
@@ -88,7 +91,7 @@
                     title="Supprimer la signature"
                     class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
-                <i class="far fa-trash-alt"></i>
+                <i class="fa-regular fa-trash-alt"></i>
             </button>
             <button type="button" id="textReduce_x"
                     title="Agrandir le text"
@@ -105,44 +108,44 @@
             <button type="button" id="signUndo_x"
                     class="btn btn-sm btn-transparent text-white d-none"
                     style="z-index: 3;">
-                <i class="fas fa-sync"></i>
+                <i class="fa-solid fa-sync"></i>
             </button>
             <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signImage_x"
                     title="Ajouter une image de votre signature"
                     class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
-                <i class="fas fa-signature"></i>
+                <i class="fa-solid fa-signature"></i>
             </button>
             <button type="button" id="signPrevImage_x"
                     title="Signature précédente"
                     class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
-                <i class="fas fa-chevron-up"></i>
+                <i class="fa-solid fa-chevron-up"></i>
             </button>
             <button type="button" id="signNextImage_x"
                     title="Signature suivante"
                     class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
-                <i class="fas fa-chevron-down"></i>
+                <i class="fa-solid fa-chevron-down"></i>
             </button>
             <button type="button" id="hideMoreTools_x"
                     title="Moins d'outils"
                     class="btn btn-sm btn-transparent text-white d-none"
                     style="z-index: 3;">
-                <i style="line-height: 1.8em;" class="fas fa-arrow-left"></i>
+                <i style="line-height: 1.8em;" class="fa-solid fa-arrow-left"></i>
             </button>
             <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signExtra_x"
                     title="Ajouter les informations complémentaires (nom, date et heure...)"
                     class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
-                <i class="fas fa-receipt"></i>
+                <i class="fa-solid fa-receipt"></i>
             </button>
             <button type="button" id="signExtraOnTop_x"
                     title="Texte au dessus/texte sur la droite"
                     class="btn btn-sm btn-transparent text-white"
                     disabled
                     style="z-index: 3;">
-                <i class="fas fa-retweet"></i>
+                <i class="fa-solid fa-retweet"></i>
             </button>
             <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="watermark_x"
                     title="Filigrane"
@@ -154,14 +157,14 @@
                     title="Répéter sur toutes les pages"
                     class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
-                <i class="fas fa-reply-all"></i>
+                <i class="fa-solid fa-reply-all"></i>
             </button>
             <input id="signColorPicker_x" value='#000000'/>
             <button type="button" id="displayMoreTools_x"
                     title="Plus d'outils"
                     class="btn btn-sm btn-transparent text-white d-none"
                     style="z-index: 3;">
-                <i class="fas fa-ellipsis-v"></i>
+                <i class="fa-solid fa-ellipsis-v"></i>
             </button>
         </div>
         <div id="extraTools_x" class="d-none" >
@@ -228,10 +231,10 @@
                         </div>
                         <textarea id="spotComment" name="comment" class="form-control postitarea float-start mb-2" placeholder="Saisir un commentaire" required></textarea>
                         <button id="hideSpotButton" type="button" class="btn btn-sm btn-dark float-start" data-bs-dismiss="modal">
-                            <i class="fas fa-times"></i>
+                            <i class="fa-solid fa-times"></i>
                         </button>
                         <button id="saveSpotButton" th:data-es-signrequest-id="${signRequest.id}" type="button" class="btn btn-sm btn-dark float-end">
-                            <i class="fas fa-save"></i>
+                            <i class="fa-solid fa-save"></i>
                         </button>
                     </form>
                 </div>

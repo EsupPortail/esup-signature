@@ -25,7 +25,7 @@
                 <ul class="list-unstyled">
                     <li th:if="${form.document != null && form.signRequestParams != null}">
                         <a id="addSignRequestParams" title="Modifier les champs signature" type="button" data-bs-toggle="modal" data-bs-target="#updateSignsModal" class="btn-floating btn-lg bg-warning">
-                            <i class="fas fa-pencil"></i>
+                            <i class="fa-solid fa-pencil fa-2xl"></i>
                         </a>
                     </li>
                 </ul>
@@ -111,7 +111,7 @@
                                 </td>
                                 <td>
                                     <a class="btn btn-danger" th:href="'#modal-warning-' + ${signRequestParams.id}" role="button" title="Supprimer" data-bs-toggle="modal">
-                                        <i class="fas fa-trash-alt pr-2"></i>
+                                        <i class="fa-solid fa-trash-alt pr-2"></i>
                                     </a>
                                 </td>
                             </tr>

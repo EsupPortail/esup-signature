@@ -10,37 +10,37 @@
 		</div>
 		<div th:case="T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending" class="alert alert-primary text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
 			<small>
-			<i class="fas fa-clock"></i>
+			<i class="fa-solid fa-clock"></i>
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
 			</small>
 		</div>
 		<div th:case="T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed" class="alert alert-success text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
 			<small>
-			<i class="fas fa-file-signature"></i>
+			<i class="fa-solid fa-file-signature"></i>
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
 			</small>
 		</div>
 		<div th:case="T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused" class="alert alert-danger text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
 			<small>
-			<i class="fas fa-ban"></i>
+			<i class="fa-solid fa-ban"></i>
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
 			</small>
 		</div>
 		<div th:case="T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked" class="alert alert-success text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
 			<small>
-			<i class="fas fa-check-circle"></i>
+			<i class="fa-solid fa-check-circle"></i>
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
 			</small>
 		</div>
 		<div th:case="T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported" class="alert alert-warning text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
 			<small>
-			<i class="fas fa-file-export"></i>
+			<i class="fa-solid fa-file-export"></i>
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
 			</small>
 		</div>
 		<div th:case="T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed" class="alert alert-warning text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
 			<small>	
-			<i class="fas fa-flag-checkered"></i>
+			<i class="fa-solid fa-flag-checkered"></i>
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
 			</small>
 		</div>

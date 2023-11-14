@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,13 +80,13 @@ public class SignWithService {
         if(Boolean.TRUE.equals(sealCertOKCache.getIfPresent("sealOK"))) return true;
         User user = userService.getByEppn(userEppn);
         if(user.getRoles().contains("ROLE_SEAL") &&
-                globalProperties.getSealCertificatPin() != null &&
+                StringUtils.hasText(globalProperties.getSealCertificatPin()) &&
                 (
-                    (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals("PKCS11") && globalProperties.getSealCertificatDriver() != null)
+                    (StringUtils.hasText(globalProperties.getSealCertificatType()) && globalProperties.getSealCertificatType().equals("PKCS11") && StringUtils.hasText(globalProperties.getSealCertificatDriver()))
                     ||
-                    (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals("OPENSC"))
+                    (StringUtils.hasText(globalProperties.getSealCertificatType()) && globalProperties.getSealCertificatType().equals("OPENSC"))
                     ||
-                    (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals("PKCS12") && globalProperties.getSealCertificatFile() != null)
+                    (StringUtils.hasText(globalProperties.getSealCertificatType()) && globalProperties.getSealCertificatType().equals("PKCS12") && StringUtils.hasText(globalProperties.getSealCertificatFile()))
                 )
         ) {
             if(!force) return true;
@@ -96,7 +97,7 @@ public class SignWithService {
                 return false;
             }
         } else {
-            return false;
+            return force;
         }
     }
 }

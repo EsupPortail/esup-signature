@@ -5,67 +5,67 @@
 <nav th:fragment="side-admin" id="sidebar" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
     <div class="ms-1 mt-2">
         <h5 class="text-center sidebar-label"><b>Administration</b></h5>
-        <div class="hr"><i class="fas fa-eye me-1"></i><span class="sidebar-label"> Supervision</span></div>
+        <div class="hr"><i class="fa-solid fa-eye me-1"></i><span class="sidebar-label"> Supervision</span></div>
         <a th:classappend="${activeMenu == 'adminsignrequests'} ? 'btn-secondary' : 'btn-light'"
            title="Toutes les demandes" type="button" href="/admin/signbooks" class="mb-1 col-12 btn text-left">
-            <i class="fas fa-paste"></i> <span class="sidebar-label">Demandes</span>
+            <i class="fa-solid fa-paste"></i> <span class="sidebar-label">Demandes</span>
         </a>
         <a th:classappend="${activeMenu == 'logs'} ? 'btn-secondary' : 'btn-light'"
            title="Tous les logs" type="button" href="/admin/logs" class="mb-1 col-12 btn text-left">
-            <i class="fas fa-clipboard-list"></i> <span class="sidebar-label">Logs</span>
+            <i class="fa-solid fa-clipboard-list"></i> <span class="sidebar-label">Logs</span>
         </a>
         <a th:classappend="${activeMenu == 'users'} ? 'btn-secondary' : 'btn-light'"
            title="Gestion des utilisateurs" type="button" href="/admin/users" class="mb-1 col-12 btn text-left">
-            <i class="fas fa-users"></i> <span class="sidebar-label">Utilisateurs</span>
+            <i class="fa-solid fa-users"></i> <span class="sidebar-label">Utilisateurs</span>
         </a>
         <a th:classappend="${activeMenu == 'charts'} ? 'btn-secondary' : 'btn-light'"
            title="Statistiques" type="button" href="/admin/charts" class="mb-1 col-12 btn text-left">
-            <i class="fas fa-chart-column"></i> <span class="sidebar-label">Statistiques</span>
+            <i class="fa-solid fa-chart-column"></i> <span class="sidebar-label">Statistiques</span>
         </a>
         <a th:classappend="${activeMenu == 'export'} ? 'btn-secondary' : 'btn-light'"
            title="Exports" type="button" href="/admin/export" class="mb-1 col-12 btn text-left">
-            <i class="fas fa-file-export"></i> <span class="sidebar-label">Exports</span>
+            <i class="fa-solid fa-file-export"></i> <span class="sidebar-label">Exports</span>
         </a>
-        <div class="hr"><i class="fas fa-cog me-1"></i><span class="sidebar-label"> Configuration</span></div>
+        <div class="hr"><i class="fa-solid fa-cog me-1"></i><span class="sidebar-label"> Configuration</span></div>
         <a th:classappend="${activeMenu == 'workflows'} ? 'btn-secondary' : 'btn-light'"
            title="Circuits de signature" href="/admin/workflows" class="btn col-12 mb-1 text-left">
-            <i class="fas fa-project-diagram project-diagram-color"></i> <span class="sidebar-label">Circuits</span>
+            <i class="fa-solid fa-project-diagram project-diagram-color"></i> <span class="sidebar-label">Circuits</span>
         </a>
         <a th:classappend="${activeMenu == 'forms'} ? 'btn-secondary' : 'btn-light'"
            title="Formulaires" href="/admin/forms" class="btn col-12 mb-1 text-left">
-            <i class="fas fa-file-alt file-alt-color"></i> <span class="sidebar-label">Formulaires</span>
+            <i class="fa-solid fa-file-alt file-alt-color"></i> <span class="sidebar-label">Formulaires</span>
         </a>
         <a th:classappend="${activeMenu == 'messages'} ? 'btn-secondary' : 'btn-light'"
            title="Messages" href="/admin/messages" class="btn col-12 mb-1 text-left">
-            <i class="fas fa-envelope"></i> <span class="sidebar-label">Messages</span>
+            <i class="fa-solid fa-envelope"></i> <span class="sidebar-label">Messages</span>
         </a>
         <a th:classappend="${activeMenu == 'rolesManagers'} ? 'btn-secondary' : 'btn-light'"
            title="Gestionnaires de rôles" href="/admin/roles-managers" class="btn col-12 mb-1 text-left">
-            <i class="fas fa-user-tie"></i> <span class="sidebar-label">Gestionnaires de rôles</span>
+            <i class="fa-solid fa-user-tie"></i> <span class="sidebar-label">Gestionnaires de rôles</span>
         </a>
         <a th:classappend="${activeMenu == 'certificats'} ? 'btn-secondary' : 'btn-light'" th:if="${validationToolsEnabled}"
            title="Gestion des certificats" type="button" href="/admin/certificats" class="mb-1 col-12 btn text-left">
-            <i class="fas fa-certificate"></i> <span class="sidebar-label">Gestion des certificats</span>
+            <i class="fa-solid fa-certificate"></i> <span class="sidebar-label">Gestion des certificats</span>
         </a>
-        <div class="hr"><i class="fas fa-tools me-1"></i><span class="sidebar-label"> Outils</span></div>
+        <div class="hr"><i class="fa-solid fa-tools me-1"></i><span class="sidebar-label"> Outils</span></div>
         <a th:classappend="${activeMenu == 'currentSessions'} ? 'btn-secondary' : 'btn-light'"
            title="Sessions courantes" href="/admin/currentsessions" class="btn col-12 mb-1 text-left">
-            <i class="fas fa-users"></i> <span class="sidebar-label">Sessions courantes</span>
+            <i class="fa-solid fa-users"></i> <span class="sidebar-label">Sessions courantes</span> <span th:text="${nbSessions}" class="badge bg-primary ms-4"></span>
         </a>
         <a th:if="${globalProperties.enableSu}" th:classappend="${activeMenu == 'su'} ? 'btn-secondary' : 'btn-light'"
            title="Switch user" href="/admin/su" class="btn col-12 mb-1 text-left">
-            <i class="fas fa-user-secret"></i> <span class="sidebar-label">Switch user</span>
+            <i class="fa-solid fa-user-secret"></i> <span class="sidebar-label">Switch user</span>
         </a>
         <a th:classappend="${activeMenu == 'tasks'} ? 'btn-secondary' : 'btn-light'"
            title="Sessions courantes" href="/admin/tasks" class="btn col-12 mb-1 text-left">
-            <i class="fas fa-tasks"></i> <span class="sidebar-label">Tâches planifiées</span>
+            <i class="fa-solid fa-tasks"></i> <span class="sidebar-label">Tâches planifiées</span>
         </a>
         <a th:classappend="${activeMenu == 'dss'} ? 'btn-secondary' : 'btn-light'" th:if="${validationToolsEnabled}"
            title="Statut DSS" type="button" href="/admin/dss" class="mb-1 col-12 btn text-left">
-            <i class="fas fa-shield-heart" th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : 'text-success'"></i> <span class="sidebar-label">Statut DSS</span>
+            <i class="fa-solid fa-shield-heart" th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : 'text-success'"></i> <span class="sidebar-label">Statut DSS</span>
         </a>
         <a title="Doc des APIs" target="_blank" type="button" href="/swagger-ui.html" class="mb-1 col-12 btn btn-light text-left">
-            <i class="fas fa-code"></i> <span class="sidebar-label">APIs Doc</span>
+            <i class="fa-solid fa-code"></i> <span class="sidebar-label">APIs Doc</span>
         </a>
 
     </div>

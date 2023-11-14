@@ -23,7 +23,7 @@
             <div class="fixed-action-btn" >
                 <a id="saveButton" th:if="${workflow.fromCode == null || !workflow.fromCode}" role="button" title="Enregistrer" class="btn-floating btn-lg bg-success wave-effect"
                         onclick="document.getElementById('updateSignBook').submit();">
-                    <i class="fas fa-save"></i>
+                    <i class="fa-solid fa-save fa-2xl"></i>
                 </a>
             </div>
             <ul class="nav nav-tabs">
@@ -54,7 +54,7 @@
                                 <strong>Modèle de nommage</strong>
                                 <button class="btn btn-sm btn-transparent" data-bs-target="#help-naming-template" data-bs-toggle="collapse"
                                         type="button">
-                                    <span class="fas fa-info-circle text-info"></span>
+                                    <span class="fa-solid fa-info-circle text-info"></span>
                                 </button>
                             </label>
                             <div class="collapse" id="help-naming-template">
@@ -109,7 +109,7 @@
                             <label for="managersSelect"><strong>Superviseur(s) du circuit</strong>
                                 <button class="btn btn-sm btn-transparent" data-bs-target="#collapseHelp1" data-bs-toggle="collapse"
                                         type="button">
-                                    <span class="fas fa-info-circle text-info"></span>
+                                    <span class="fa-solid fa-info-circle text-info"></span>
                                 </button>
                             </label>
                             <div class="collapse" id="collapseHelp1">
@@ -128,7 +128,7 @@
                             <label for="viewersSelect"><strong>Observateurs par défaut</strong>
                                 <button class="btn btn-sm btn-transparent" data-bs-target="#collapseHelp2" data-bs-toggle="collapse"
                                         type="button">
-                                    <span class="fas fa-info-circle text-info"></span>
+                                    <span class="fa-solid fa-info-circle text-info"></span>
                                 </button>
                             </label>
                             <div class="collapse" id="collapseHelp2">
@@ -152,7 +152,7 @@
                             <label for="scanPdfMetadatas" class="form-check-label">Construction du circuit à partir des métadonnées des pdf importés</label>
                             <button class="btn btn-sm btn-transparent" data-bs-target="#help-scan-meta" data-bs-toggle="collapse"
                                     type="button">
-                                <span class="fas fa-info-circle text-info"></span>
+                                <span class="fa-solid fa-info-circle text-info"></span>
                             </button>
                             </label>
                             <div class="collapse" id="help-scan-meta">
@@ -188,7 +188,7 @@
                                     </th>
                                     <th>
                                         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTarget">
-                                            <i class="fas fa-plus"></i>
+                                            <i class="fa-solid fa-plus fa-2xl"></i>
                                         </button>
                                     </th>
                                 </tr>
@@ -200,7 +200,7 @@
                                         </td>
                                         <td>
                                             <a th:id="'deleteSign_' + ${signImageId}" th:href="'/admin/workflows/delete-target/' + ${workflow.id} + '/' + ${target.id}" role="button" class="btn btn-sm btn-danger text-white">
-                                                <i class="fas fa-trash-alt"></i>
+                                                <i class="fa-solid fa-trash-alt"></i>
                                             </a>
                                         </td>
                                         <td></td>

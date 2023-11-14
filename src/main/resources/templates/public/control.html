@@ -60,7 +60,7 @@
                                     <tbody>
                                     <th:block th:each="auditStep, iterator : ${auditTrail.auditSteps}">
                                         <tr data-bs-toggle="collapse" data-bs-target="#collapseExample" style="cursor: pointer;" title="Cliquez ici pour afficher le detail">
-                                            <td><i class="fas fa-plus"></i></td>
+                                            <td><i class="fa-solid fa-plus fa-2xl"></i></td>
                                             <td class="text-left"><span
                                                     th:text="${#dates.format(auditStep.timeStampDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
                                             <td class="text-left"><span th:text="${auditStep.firstname} + ' ' + ${auditStep.name}"></span></td>
@@ -139,8 +139,8 @@
                     </tbody>
                 </table>
             </div>
-            <th:block th:if="${auditTrail != null && auditTrail.getDocumentCheckSum() == null}">
-                <div class="alert alert-danger mb-1">
+            <th:block th:if="${auditTrail != null && auditTrail.getDocumentCheckSum() == null && !usersHasRefused.isEmpty()}">
+                <div class="alert alert-danger mb-1 mt-1">
                     <h5>Le document a été refusé</h5>
                     <ul th:each="userHasRefused : ${usersHasRefused}">
                         <li th:text="${userHasRefused.firstname} + ' ' + ${userHasRefused.name}"></li>

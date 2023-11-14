@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -100,11 +102,13 @@ public class DocumentService {
 
 	public String archiveDocument(Document signedFile, String path, String subPath, String name) throws EsupSignatureFsException {
 		try {
-			return exportDocument(fsAccessFactoryService.getPathIOType(path), path + subPath, signedFile, name);
-		} catch (EsupSignatureRuntimeException e) {
+			URI baseURI = new URI(path);
+			URI resolvedURI = baseURI.resolve(subPath);
+			return exportDocument(fsAccessFactoryService.getPathIOType(path), resolvedURI.toString(), signedFile, name);
+		} catch (EsupSignatureRuntimeException | URISyntaxException e) {
 			logger.error(e.getMessage());
 		}
-		return null;
+        return null;
 	}
 
 	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile, String name) throws EsupSignatureRuntimeException, EsupSignatureFsException {

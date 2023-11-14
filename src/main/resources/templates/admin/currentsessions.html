@@ -17,13 +17,13 @@
             <div class="card col-lg-10 mx-auto mb-1">
                 <div class="card-body">
                     <h5 class="text-center"><b>Utilisateurs connectés</b></h5>
-                    <span th:text="${currentSessions.size()} + ' utilisateurs(s) connectés(s)'"></span>, poids totale des sessions : <span th:text="${sessionSize}"></span>
+                    <span th:text="${currentSessions.size()} + ' utilisateur(s) connecté(s)'"></span>, poids totale des sessions : <span th:text="${sessionSize}"></span>
                 </div>
             </div>
             <th:block th:each="currentSession : ${currentSessions}">
                 <div class="card mb-1 col-10 mx-auto">
                     <div class="card-body">
-                        <h5><i class="fas fa-user"></i>
+                        <h5><i class="fa-solid fa-user"></i>
                             <a data-bs-toggle="collapse" th:href="'#sess-' + ${currentSession.hashCode()}" role="button"
                                aria-expanded="false"
                                th:aria-controls="'sess-' + ${currentSession.hashCode()}">
@@ -50,7 +50,7 @@
                                         <td th:text="${(#dates.createNow().toInstant().toEpochMilli() - userSession.lastAccessedTime.toEpochMilli()) / 1000 / 60 + ' mins'}"></td>
                                         <td th:text="${userSession.maxInactiveInterval.toMinutes()} + ' mins'"></td>
                                         <td>
-                                            <i th:class="${userSession.expired} ? 'text-danger fas fa-times-circle' : 'text-success fas fa-check-circle'"></i>
+                                            <i th:class="${userSession.expired} ? 'text-danger fa-solid fa-times-circle' : 'text-success fa-solid fa-check-circle'"></i>
                                         </td>
                                         <td>
                                             <ul>
@@ -75,7 +75,7 @@
                                             <form th:action="'/admin/currentsessions'" th:method="'delete'">
                                                 <input type="hidden" name="sessionId" th:value="${userSession.id}"/>
                                                 <button type="submit" class="btn btn-sm btn-danger"><i
-                                                        class="fas fa-trash-alt"></i></button>
+                                                        class="fa-solid fa-trash-alt"></i></button>
                                             </form>
                                         </td>
                                     </tr>

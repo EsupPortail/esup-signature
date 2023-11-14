@@ -28,27 +28,26 @@
                 </div>
                 <div id="listSignRequestTable" class="div-scrollable scrollbar-style">
                 <div id="to-sign-list" class="d-flex col-12">
-                    <div class="col-12 col-lg-10 card mb-2 mx-auto">
+                    <div class="col-12 card mt-1 mb-2 mx-auto">
                         <div class="card-body">
                             <h5 class="text-center"><b>Demandes à signer</b></h5>
-                            <table th:if="${signBooksToSign.size() > 0}"
-                                   class="table table-sm table-borderless table-hover">
+                            <table th:if="${signBooksToSign.size() > 0}" class="table table-sm table-borderless table-hover">
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksToSign}">
                                     <tr th:if="${signBook.signRequests.size() > 0}" th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}">
                                         <td class="text-break d-none d-md-table-cell">
-                                            <a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fas fa-plus"></i></a>
+                                            <a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fa-solid fa-plus"></i></a>
                                         </td>
                                         <td class="text-break w-5 d-none d-md-table-cell">
-                                            <i th:if="${signBook.signRequests.size() > 1}" class="fas fa-folder-open p-2"></i>
-                                            <i th:unless="${signBook.signRequests.size() > 1}" class="fas fa-file-alt p-2"></i>
+                                            <i th:if="${signBook.signRequests.size() > 1}" class="fa-solid fa-folder-open p-2"></i>
+                                            <i th:unless="${signBook.signRequests.size() > 1}" class="fa-solid fa-file-alt p-2"></i>
                                         </td>
                                         <td class="text-break d-none d-xxl-table-cell" th:text="${signBook.workflowName}">
                                         </td>
                                         <td class="text-break w-30">
                                             <span th:if="${signBook.signRequests.size() > 1}">
                                                 <span th:text="${signBook.signRequests.get(0).getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
-                                                <i class="fas fa-caret-down"></i>
+                                                <i class="fa-solid fa-caret-down"></i>
                                             </span>
                                             <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>
                                         </td>
@@ -66,13 +65,13 @@
                                                     <th:block th:each="signRequest : ${signBook.signRequests}">
                                                         <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
                                                             <td>
-                                                                <i class="fas fa-file-alt"></i>
+                                                                <i class="fa-solid fa-file-alt"></i>
                                                             </td>
                                                             <td th:text="${signRequest.title}"></td>
                                                             <td>
-                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge bg-warning"><i class="fas fa-clock"></i> À signer</span>
-                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-danger"><i class="fas fa-clock"></i> Refusé</span></span>
-                                                                <span th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-success"><i class="fas fa-check-circle"></i> Terminé</span></span>
+                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge bg-warning"><i class="fa-solid fa-clock"></i> À signer</span>
+                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-danger"><i class="fa-solid fa-clock"></i> Refusé</span></span>
+                                                                <span th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-success"><i class="fa-solid fa-check-circle"></i> Terminé</span></span>
                                                             </td>
                                                         </tr>
                                                     </th:block>
@@ -91,7 +90,7 @@
                     </div>
                 </div>
                 <div id="pendingList" class="d-flex col-12" th:if="${userEppn == authUserEppn}">
-                    <div class="col-12 col-lg-10 card mb-2 mx-auto">
+                    <div class="col-12 card mb-2 mx-auto">
                         <div class="card-body">
                             <h5 class="text-center"><b>Demandes en attente de signature</b></h5>
                             <table th:if="${signBooksPending.size() > 0}"
@@ -99,17 +98,17 @@
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksPending}">
                                     <tr th:title="${signBook.description}" th:data-href="'/user/signbooks/' + ${signBook.id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}">
-                                        <td class="text-break w-5 d-none d-md-table-cell"><a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fas fa-plus"></i></a></td>
+                                        <td class="text-break w-5 d-none d-md-table-cell"><a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fa-solid fa-plus fa-2xl"></i></a></td>
                                         <td class="text-break w-5 d-none d-md-table-cell">
-                                            <i th:if="${signBook.signRequests.size() > 1}" class="fas fa-folder-open p-2"></i>
-                                            <i th:unless="${signBook.signRequests.size() > 1}" class="fas fa-file-alt p-2"></i>
+                                            <i th:if="${signBook.signRequests.size() > 1}" class="fa-solid fa-folder-open p-2"></i>
+                                            <i th:unless="${signBook.signRequests.size() > 1}" class="fa-solid fa-file-alt p-2"></i>
                                         </td>
                                         <td class="text-break d-none d-xxl-table-cell" th:text="${signBook.workflowName}">
                                         </td>
                                         <td class="text-break w-30">
                                             <span th:if="${signBook.signRequests.size() > 1}">
                                                 <span th:text="${signBook.signRequests.get(0).getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
-                                                <i class="fas fa-caret-down"></i>
+                                                <i class="fa-solid fa-caret-down"></i>
                                             </span>
                                             <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>
                                         </td>
@@ -127,13 +126,13 @@
                                                     <th:block th:each="signRequest : ${signBook.signRequests}">
                                                         <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
                                                             <td>
-                                                                <i class="fas fa-file-alt"></i>
+                                                                <i class="fa-solid fa-file-alt"></i>
                                                             </td>
                                                             <td th:text="${signRequest.title}"></td>
                                                             <td>
-                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge bg-warning"><i class="fas fa-clock"></i> À signer</span>
-                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-danger"><i class="fas fa-clock"></i> Refusé</span></span>
-                                                                <span th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-success"><i class="fas fa-check-circle"></i> Terminé</span></span>
+                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge bg-warning"><i class="fa-solid fa-clock"></i> À signer</span>
+                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-danger"><i class="fa-solid fa-clock"></i> Refusé</span></span>
+                                                                <span th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-success"><i class="fa-solid fa-check-circle"></i> Terminé</span></span>
                                                             </td>
                                                         </tr>
                                                     </th:block>
@@ -163,7 +162,7 @@
                     <!--                                        <td class="text-center w-10">-->
                     <!--                                            <a title="Voir" th:href="'/user/datas/' + ${data.id} + '/update'"-->
                     <!--                                               class="btn btn-warning">-->
-                    <!--                                                <i class="fas fa-pencil-alt"></i>-->
+                    <!--                                                <i class="fa-solid fa-pencil-alt"></i>-->
                     <!--                                            </a>-->
                     <!--                                        </td>-->
                     <!--                                    </tr>-->
@@ -196,7 +195,7 @@
                 </ul>
             </div>
             <div class="modal-footer">
-                <button id="warningReaded" type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-eye-slash"></i> Marquer comme lu</button>
+                <button id="warningReaded" type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fa-solid fa-eye-slash"></i> Marquer comme lu</button>
             </div>
         </div>
     </div>

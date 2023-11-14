@@ -23,23 +23,23 @@
                 <ul id="collapseExample" class="list-unstyled">
                     <li>
                         <a th:if="${workflow.documentsSourceUri != null}" title="Scanner la source" type="button" th:href="'/user/workflows/get-files-from-source/' + ${workflow.id}" class="btn-lg btn-floating bg-success waves-effect">
-                            <i class="fas fa-binoculars"></i>
+                            <i class="fa-solid fa-binoculars"></i>
                         </a>
                     </li>
                     <li>
                         <a id="saveButton" onclick="$('#params').submit();" class="btn-floating btn-lg bg-success waves-effect" title="Enregistrer">
-                            <i class="fas fa-save"></i>
+                            <i class="fa-solid fa-save fa-2xl"></i>
                         </a>
                     </li>
                     <li>
                         <a role="button" title="Ajouter une étape" class="btn-lg btn-floating bg-dark waves-effect" data-bs-toggle="modal" data-bs-target="#addStep">
-                            <i class="fas fa-shoe-prints"></i>
+                            <i class="fa-solid fa-shoe-prints"></i>
                         </a>
                     </li>
                     <li>
                         <form id="delete" th:action="'/user/workflows/' + ${workflow.id}" th:method="delete">
                             <a id="delete-button" role="button" title="Supprimer" class="btn-lg btn-floating bg-danger waves-effect">
-                                <i class="fas fa-trash-alt"></i>
+                                <i class="fa-solid fa-trash-alt"></i>
                             </a>
                         </form>
                     </li>
@@ -63,7 +63,7 @@
                                 </th:block>
                             </select>
                         </div>
-                        <button title="Enregistrer" type="submit" class="btn btn-success mt-2 float-end"><i class="fas fa-save"></i></button>
+                        <button title="Enregistrer" type="submit" class="btn btn-success mt-2 float-end"><i class="fa-solid fa-save fa-2xl"></i></button>
                     </form>
                 </div>
             </div>
@@ -96,7 +96,7 @@
                                     <label>
                                         <strong>L'utilisateur peut modifier les participants</strong>
                                         <button data-bs-target="#collapseHelpChangeable" data-bs-toggle="collapse" type="button" class="btn btn-sm btn-transparent">
-                                            <span class="fas fa-info-circle text-info"></span>
+                                            <span class="fa-solid fa-info-circle text-info"></span>
                                         </button>
                                         <div class="collapse" id="collapseChangeable">
                                             <div class="alert alert-info">
@@ -118,7 +118,7 @@
                                     <label for="allSignToComplete">
                                         <strong> Tous les participants doivent-ils signer ? </strong>
                                         <button data-bs-target="#collapseHelpAllSign" data-bs-toggle="collapse" type="button" class="btn btn-sm btn-transparent">
-                                            <span class="fas fa-info-circle text-info"></span>
+                                            <span class="fa-solid fa-info-circle text-info"></span>
                                         </button>
                                         <div class="collapse" id="collapseHelpAllSign">
                                             <div class="alert alert-info">
@@ -147,7 +147,7 @@
                                         <button data-bs-target="#collapseHelpSignType"
                                                 data-bs-toggle="collapse" type="button"
                                                 class="btn btn-sm btn-transparent">
-                                            <i class="fas fa-info-circle text-info"></i>
+                                            <i class="fa-solid fa-info-circle text-info"></i>
                                         </button>
                                     </strong>
                                         <div class="collapse" id="collapseHelpSignType">

@@ -15,12 +15,12 @@
         <div id="content" class="content">
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
-                    <form th:action="@{/admin/su-login}" method="POST" class="form-signin">
-                        <h5 class="text-center"><b>Changer d’utilisateur</b></h5>
-                        <br/>
-                        <input type="text" id="username" name="username" th:placeholder="Identifiant"
-                               class="form-control"/> <br/>
-                        <input class="btn btn-lg btn-primary btn-block" type="submit" value="Login"/>
+                    <h5 class="text-center mb-4"><b>Changer d’utilisateur</b></h5>
+                    <form th:action="@{/admin/su-login}" method="POST" class="form-signin mb-4">
+                        <div class="input-group">
+                            <input type="text" id="username" name="username" th:placeholder="Identifiant"class="form-control"/> <br/>
+                            <input class="btn btn-lg btn-primary btn-block input-group-append" type="submit" value="Login"/>
+                        </div>
                     </form>
                 </div>
             </div>

@@ -245,17 +245,17 @@ public class WebSecurityConfig {
 		AccessDeniedHandlerImpl accessDeniedHandlerImpl = new AccessDeniedHandlerImpl();
 		accessDeniedHandlerImpl.setErrorPage("/denied");
 		http.exceptionHandling(exceptionHandling -> exceptionHandling.accessDeniedHandler(accessDeniedHandlerImpl));
-		String hasIpAddresses = "";
+		StringBuilder hasIpAddresses = new StringBuilder();
 		int nbIps = 0;
 		if(webSecurityProperties.getWsAccessAuthorizeIps() != null) {
 			for (String ip : webSecurityProperties.getWsAccessAuthorizeIps()) {
 				nbIps++;
-				hasIpAddresses += "hasIpAddress('"+ ip +"')";
+				hasIpAddresses.append("hasIpAddress('").append(ip).append("')");
 				if(nbIps < webSecurityProperties.getWsAccessAuthorizeIps().length) {
-					hasIpAddresses += " or ";
+					hasIpAddresses.append(" or ");
 				}
 			}
-			String finalHasIpAddresses = hasIpAddresses;
+			String finalHasIpAddresses = hasIpAddresses.toString();
 			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/ws/**")).access(new WebExpressionAuthorizationManager(finalHasIpAddresses)));
 			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/actuator/**")).access(new WebExpressionAuthorizationManager(finalHasIpAddresses)));
 //			http.authorizeRequests().requestMatchers("/ws/**").access("hasRole('WS')").and().addFilter(apiKeyFilter());
@@ -264,6 +264,7 @@ public class WebSecurityConfig {
 			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/actuator/**")).denyAll());
 		}
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
+				.requestMatchers(antMatcher("/error/**")).permitAll()
 				.requestMatchers(antMatcher("/api-docs/**")).hasAnyRole("ADMIN")
 				.requestMatchers(antMatcher("/swagger-ui/**")).hasAnyRole("ADMIN")
 				.requestMatchers(antMatcher("/swagger-ui.html")).hasAnyRole("ADMIN")

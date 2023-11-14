@@ -17,8 +17,6 @@ public class LiveWorkflowStep {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-    
-
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     private List<Recipient> recipients = new ArrayList<>();
 

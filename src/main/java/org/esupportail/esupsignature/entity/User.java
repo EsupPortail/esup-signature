@@ -13,8 +13,8 @@ import java.util.*;
 
 @Entity
 @Table(name = "user_account", indexes = {
-        @Index(name="user_eppn", columnList = "eppn"),
-        @Index(name="user_email", columnList = "email")
+        @Index(name="user_eppn", columnList = "eppn", unique = true),
+        @Index(name="user_email", columnList = "email", unique = true),
 })
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
@@ -117,10 +117,6 @@ public class User {
 	public void setId(Long id) {
         this.id = id;
     }
-
-    
-
-    
 
 	public String getName() {
         return this.name;

@@ -23,8 +23,6 @@ public class SignBook {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-	
-
     @Column(columnDefinition = "TEXT")
     private String subject;
 

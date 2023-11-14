@@ -3,22 +3,22 @@
 <div id="stepper1" class="bs-stepper linear">
     <div class="bs-stepper-header" role="tablist">
         <div class="step" data-bs-target="#test-l-2">
-            <span class="bs-stepper-circle bg-success"><i class="fas fa-copy"></i></span>
+            <span class="bs-stepper-circle bg-success"><i class="fa-solid fa-copy"></i></span>
             <span class="bs-stepper-label">Dépôt des fichiers</span>
         </div>
         <div class="bs-stepper-line"></div>
         <div class="step active" data-bs-target="#test-l-3">
-            <span class="bs-stepper-circle"><i class="fas fa-project-diagram"></i></span>
+            <span class="bs-stepper-circle"><i class="fa-solid fa-project-diagram"></i></span>
             <span class="bs-stepper-label">Création du circuit</span>
         </div>
         <div class="bs-stepper-line"></div>
         <div class="step" data-bs-target="#test-l-3">
-            <span class="bs-stepper-circle"><i class="fas fa-save"></i></span>
+            <span class="bs-stepper-circle"><i class="fa-solid fa-save fa-2xl"></i></span>
             <span class="bs-stepper-label">Sauvegarde</span>
         </div>
         <div class="bs-stepper-line"></div>
         <div class="step" data-bs-target="#test-l-3">
-            <span class="bs-stepper-circle"><i class="fas fa-flag-checkered"></i></span>
+            <span class="bs-stepper-circle"><i class="fa-solid fa-flag-checkered"></i></span>
             <span class="bs-stepper-label">Fin</span>
         </div>
     </div>
@@ -29,10 +29,10 @@
     <th:block th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" th:each="liveWorkflowStep,iterator : ${signBook.liveWorkflow.liveWorkflowSteps}">
             <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-dark bg-white rounded p-1" th:name="'step_' + ${iterator.index}">
             <span title="Étape à venir" class="bs-stepper-circle">
-                <i class="fas fa-clock"></i>
+                <i class="fa-solid fa-clock"></i>
             </span>
-                <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="text-danger float-end"><i class="fas fa-users"></i></span>
-                <span title="Une signature suffit" th:unless="${liveWorkflowStep.allSignToComplete}" class="float-end"><i class="fas fa-user"></i></span>
+                <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="text-danger float-end"><i class="fa-solid fa-users"></i></span>
+                <span title="Une signature suffit" th:unless="${liveWorkflowStep.allSignToComplete}" class="float-end"><i class="fa-solid fa-user"></i></span>
                 <div class="bs-stepper-label">
                     <th:block th:if="${liveWorkflowStep.workflowStep != null && liveWorkflowStep.workflowStep.description != null && liveWorkflowStep.workflowStep.description != ''}">
                         <span th:text="${liveWorkflowStep.workflowStep.description}"></span>
@@ -45,7 +45,7 @@
                             <tr>
                                 <td th:title="${recipient.user.email}" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
                                 <td class="text-right">
-                                    <i title="N'a pas signé le document" class="fas fa-minus-circle text-secondary"></i>
+                                    <i title="N'a pas signé le document" class="fa-solid fa-minus-circle text-secondary"></i>
                                 </td>
                             </tr>
                         </th:block>
@@ -88,10 +88,10 @@
 <hr>
 <div class="inline-flex">
     <button type="submit" id="addNew" value="true" class="btn btn-primary float-end m-1">
-        <i class="fas fa-save"></i> Enregistrer cette étape
+        <i class="fa-solid fa-save"></i> Enregistrer cette étape
     </button>
     <button formnovalidate id="endStart" name="endStart" value="true" th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" type="submit" class="btn btn-success float-end m-1">
-        <i class="fas fa-paper-plane"></i> Envoyer la demande sans ajouter d’étape supplémentaire
+        <i class="fa-solid fa-paper-plane"></i> Envoyer la demande sans ajouter d’étape supplémentaire
     </button>
 </div>
 </form>

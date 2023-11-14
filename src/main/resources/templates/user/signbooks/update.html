@@ -19,12 +19,12 @@
                 <ul id="buttonList" class="list-unstyled">
                     <li>
                         <a id="saveButton" onclick="$('#params').submit();" class="btn-floating btn-lg bg-success waves-effect" title="Enregistrer">
-                            <i class="fas fa-save"></i>
+                            <i class="fa-solid fa-save fa-2xl"></i>
                         </a>
                     </li>
                     <li>
                         <a id="cancelButton" th:href="'/user/signbooks/' + ${signBook.id}" class="btn-floating btn-lg bg-secondary waves-effect" title="Retour au parapheur">
-                            <i class="fas fa-door-open"></i>
+                            <i class="fa-solid fa-door-open"></i>
                         </a>
                     </li>
                 </ul>
@@ -73,12 +73,12 @@
                                     <td class="">
                                         <div class="dropdown position-relative">
                                             <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-bs-toggle="dropdown">
-                                                <i class="fas fa-ellipsis-v"></i>
+                                                <i class="fa-solid fa-ellipsis-v"></i>
                                             </button>
                                             <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signRequest.id}">
                                                 <li>
                                                     <a th:if="${signRequest.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-bs-toggle="modal" data-bs-target="#modal-warning" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
-                                                        <i class="fas fa-trash-alt pr-2"></i> Supprimer
+                                                        <i class="fa-solid fa-trash-alt pr-2"></i> Supprimer
                                                     </a>
                                                 </li>
                                             </ul>
@@ -112,7 +112,7 @@
                     <div th:unless="${#lists.size(signBook.signRequests) > 0}" class="alert alert-secondary">
                         Aucun document à signer pour le moment
                     </div>
-                    <a title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn-floating text-dark bg-primary waves-effect float-end m-3"><i class="fas fa-file-medical"></i></a>
+                    <a title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn-floating text-dark bg-primary waves-effect float-end m-3"><i class="fa-solid fa-file-medical"></i></a>
 
                 </div>
             </div>
