@@ -152,17 +152,6 @@ public class WebSecurityConfig {
 		return devClientRequestFilter;
 	}
 
-//	@Bean
-//	public WebSecurityCustomizer webSecurityCustomizer() {
-//		return (web) -> web.ignoring().requestMatchers("/resources/**", "/webjars/**")
-//				.requestMatchers("/logged-out")
-//				.requestMatchers("/webjars", "/webjars/**")
-//				.requestMatchers("/css", "/css/**")
-//				.requestMatchers("/images", "/images/**")
-//				.requestMatchers("/js", "/js/**")
-//				.requestMatchers("/fonts", "/fonts/**");
-//	}
-
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/")).permitAll());
@@ -264,7 +253,6 @@ public class WebSecurityConfig {
 			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/actuator/**")).denyAll());
 		}
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
-				.requestMatchers(antMatcher("/error/**")).permitAll()
 				.requestMatchers(antMatcher("/api-docs/**")).hasAnyRole("ADMIN")
 				.requestMatchers(antMatcher("/swagger-ui/**")).hasAnyRole("ADMIN")
 				.requestMatchers(antMatcher("/swagger-ui.html")).hasAnyRole("ADMIN")

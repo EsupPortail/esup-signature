@@ -191,6 +191,10 @@ public class FormAdminController {
 		String[] stringStringMap = objectMapper.readValue(values.get("srpMap"), String[].class);
 		Map<Long, Integer> signRequestParamsSteps = new HashMap<>();
 		for (int i = 0; i < stringStringMap.length; i = i + 2) {
+			if(signRequestParamsSteps.containsValue(Integer.valueOf(stringStringMap[i + 1]))) {
+				logger.warn("step " + stringStringMap[i + 1] + " already affected");
+				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+			}
 			signRequestParamsSteps.put(Long.valueOf(stringStringMap[i]), Integer.valueOf(stringStringMap[i + 1]));
 		}
 		formService.setSignRequestParamsSteps(id, signRequestParamsSteps);

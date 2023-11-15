@@ -17,7 +17,7 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
-                <li class="breadcrumb-item active" th:text="'Liste des champs du formulaire : ' + ${form.name}"></li>
+                <li class="breadcrumb-item active" th:text="'Liste des champs signatures du formulaire : ' + ${form.name}"></li>
             </ol>
         </nav>
         <div id="content" class="content">
@@ -42,6 +42,9 @@
                 </li>
             </ul>
             <div th:replace="~{admin/forms/includes/tools :: tools}"></div>
+            <div style="position: fixed; z-index: 999;">
+            <div th:insert="~{admin/workflows/cards/stepscard-light :: stepscard-light}"></div>
+            </div>
             <div th:replace="~{admin/forms/includes/workspace :: workspace}"></div>
         </div>
     </div>

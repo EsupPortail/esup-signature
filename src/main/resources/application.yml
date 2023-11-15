@@ -117,12 +117,12 @@ spring:
 #            max-file-size: 1280KB
 #            max-request-size: 1280KB
 #            resolve-lazily: true
-#    thymeleaf:
-#        cache: false
-#        encoding: UTF-8
-#        mode: HTML
-#        servlet:
-#            produce-partial-output-while-processing: false
+    thymeleaf:
+        cache: false
+        encoding: UTF-8
+        mode: HTML
+        servlet:
+            produce-partial-output-while-processing: false
 #    web:
 #        resources:
 #            cache:
