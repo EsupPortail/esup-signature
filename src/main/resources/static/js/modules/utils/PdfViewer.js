@@ -473,6 +473,7 @@ export class PdfViewer extends EventFactory {
             if (inputField.length) {
                 inputField.addClass("field-type-text");
                 inputField.on('input', e => this.fireEvent('change', ['checked']));
+                inputField.removeAttr("hidden");
                 if(dataField == null) continue;
                 this.disableInput(inputField, dataField, items[i].readOnly);
                 if(this.disableAllFields) continue;
@@ -480,7 +481,6 @@ export class PdfViewer extends EventFactory {
                 inputField.attr('name', inputName);
                 inputField.attr('placeholder', " ");
                 inputField.removeAttr("maxlength");
-                inputField.removeAttr("hidden");
                 inputField.attr('id', inputName);
                 inputField.attr('title', dataField.description);
                 if (dataField.favorisable && !$("#div_" + inputField.attr('id')).length) {
@@ -606,6 +606,7 @@ export class PdfViewer extends EventFactory {
             if (inputField.length) {
                 inputField.addClass("field-type-textarea");
                 inputField.on('input', e => this.fireEvent('change', ['checked']));
+                inputField.removeAttr("hidden");
                 if(dataField == null) continue;
                 this.disableInput(inputField, dataField, items[i].readOnly);
                 if(this.disableAllFields) continue;
@@ -620,7 +621,6 @@ export class PdfViewer extends EventFactory {
                 inputField.attr('name', inputName);
                 inputField.attr('placeholder', " ");
                 inputField.removeAttr("maxlength");
-                inputField.removeAttr("hidden");
                 inputField.attr('id', inputName);
                 if (this.isFieldEnable(dataField)) {
                     inputField.val(dataField.defaultValue);
@@ -634,9 +634,9 @@ export class PdfViewer extends EventFactory {
                 inputField.on('change', e => this.fireEvent('change', ['checked']));
                 if(dataField == null) continue;
                 this.disableInput(inputField, dataField, items[i].readOnly);
+                inputField.removeAttr("hidden");
                 if(this.disableAllFields) continue;
                 inputField.removeAttr('size');
-                inputField.removeAttr("hidden");
                 inputField.attr('name', inputName);
                 inputField.attr('id', inputName);
                 if (dataField.editable) {
