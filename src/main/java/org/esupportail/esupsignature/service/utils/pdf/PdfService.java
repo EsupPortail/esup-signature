@@ -161,7 +161,7 @@ public class PdfService {
             }
             if (signRequestParams.getAddWatermark()) {
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, outputStream, new Color(137, 137, 137), signRequestParams.getExtraOnTop());
+                fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, outputStream, signRequestParams.getExtraOnTop());
                 signImage = new ByteArrayInputStream(outputStream.toByteArray());
             }
         }
