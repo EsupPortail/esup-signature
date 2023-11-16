@@ -3,7 +3,10 @@ package org.esupportail.esupsignature.service.utils.sign;
 import eu.europa.esig.dss.enumerations.TokenExtractionStrategy;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
+import eu.europa.esig.dss.model.x509.CertificateToken;
+import eu.europa.esig.dss.spi.x509.revocation.RevocationToken;
 import eu.europa.esig.dss.validation.CertificateVerifier;
+import eu.europa.esig.dss.validation.RevocationDataVerifier;
 import eu.europa.esig.dss.validation.SignaturePolicyProvider;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
@@ -14,7 +17,6 @@ import org.esupportail.esupsignature.dss.model.DssMultipartFile;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -29,12 +31,9 @@ public class ValidationService {
 
     private static final Logger logger = LoggerFactory.getLogger(ValidationService.class);
 
-    private CertificateVerifier certificateVerifier;
+    private final CertificateVerifier certificateVerifier;
 
-    @Autowired(required = false)
-    public void setCertificateVerifier(CertificateVerifier certificateVerifier) {
-        this.certificateVerifier = certificateVerifier;
-    }
+    private final RevocationDataVerifier revocationDataVerifier;
 
     @Resource
     protected FileService fileService;
@@ -44,6 +43,11 @@ public class ValidationService {
 
     @Resource
     private org.springframework.core.io.Resource defaultPolicy;
+
+    public ValidationService(CertificateVerifier certificateVerifier, RevocationDataVerifier revocationDataVerifier) {
+        this.certificateVerifier = certificateVerifier;
+        this.revocationDataVerifier = revocationDataVerifier;
+    }
 
     public Reports validate(InputStream docInputStream, InputStream signInputStream) {
         try {
@@ -85,6 +89,11 @@ public class ValidationService {
             logger.warn("Unable to read document : " + e.getMessage());
         }
         return null;
+    }
+
+    public boolean checkRevocation(CertificateToken certificateToken) {
+        RevocationToken revocationToken = certificateVerifier.getOcspSource().getRevocationToken(certificateToken, certificateToken);
+        return revocationDataVerifier.isAcceptable(revocationToken);
     }
 
 }

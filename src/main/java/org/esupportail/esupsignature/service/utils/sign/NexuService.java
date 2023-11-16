@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -233,7 +232,7 @@ public class NexuService {
 		} else if(abstractSignatureForm instanceof SignatureDocumentForm signatureDocumentForm) {
 			if(abstractSignatureForm.getSignatureForm().equals(SignatureForm.PAdES)) {
 				if(!signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty()) {
-					parameters = signService.fillVisibleParameters(signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), documentsToSign.get(0).getInputStream(), new Color(61, 170, 231), user, abstractSignatureForm.getSigningDate());
+					parameters = signService.fillVisibleParameters(signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), documentsToSign.get(0).getInputStream(), user, abstractSignatureForm.getSigningDate());
 				} else {
 					parameters = signService.fillVisibleParameters(signatureDocumentForm, user);
 				}

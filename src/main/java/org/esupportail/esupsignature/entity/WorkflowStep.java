@@ -18,8 +18,6 @@ public class WorkflowStep {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-    
-
     private String name;
 
     private String description;

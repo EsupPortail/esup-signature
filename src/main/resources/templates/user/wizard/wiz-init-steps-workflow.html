@@ -22,7 +22,7 @@
 <div id="stepper2" class="bs-stepper linear">
     <div class="bs-stepper-header" role="tablist">
         <th:block th:if="${workflow != null}">
-            <th:block th:if="${workflow.workflowSteps.size() > 0}" th:each="workflowStep,iterator : ${workflow.workflowSteps}">
+            <th:block th:if="${workflow.workflowSteps.size() > 0}" th:each="workflowStep, iterator : ${workflow.workflowSteps}">
                 <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-dark bg-white rounded p-1" th:name="'step_' + ${iterator.index}">
             <span title="Étape à venir" class="bs-stepper-circle">
                 <i class="fa-solid fa-clock"></i>
@@ -85,7 +85,7 @@
 </div>
 <hr>
 <button type="submit" id="addNew" class="btn btn-primary" style="position: absolute;right: 10px;bottom: 10px;">
-    <i class="fa-solid fa-save fa-2xl"></i> Enregistrer l'étape
+    <i class="fa-solid fa-save"></i> Enregistrer l'étape
 </button>
 <button formnovalidate id="exitWiz" name="exitWiz" value="true" th:if="${workflow != null && workflow.workflowSteps.size() > 0}" style="position: absolute;right: 200px;bottom: 10px;" type="button" class="btn btn-success">
     <i class="fa-solid fa-flag-checkered"></i> Terminer

@@ -49,7 +49,7 @@
                                 <td class="clickable-td" th:text="${workflow.createBy.eppn}"></td>
                                 <td th:if="${workflow.workflowSteps.size() > 0}">
                                     <ul class="list-group">
-                                    <th:block th:each="workflowStep,iterator : ${workflow.workflowSteps}">
+                                    <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
                                         <li class="list-group-item py-1">
                                             <span th:text="${iterator.index + 1}" class="d-inline"></span>
                                             <th:block th:each="user : ${workflowStep.users}">

@@ -117,12 +117,12 @@ spring:
 #            max-file-size: 1280KB
 #            max-request-size: 1280KB
 #            resolve-lazily: true
-#    thymeleaf:
-#        cache: false
-#        encoding: UTF-8
-#        mode: HTML
-#        servlet:
-#            produce-partial-output-while-processing: false
+    thymeleaf:
+        cache: false
+        encoding: UTF-8
+        mode: HTML
+        servlet:
+            produce-partial-output-while-processing: false
 #    web:
 #        resources:
 #            cache:
@@ -233,15 +233,15 @@ server:
 sign:
     aes-key : "0000000000000000"
     cades-digest-algorithm: SHA256
-    cades-signature-level: CAdES_BASELINE_T
+    cades-signature-level: CAdES_BASELINE_LT
     container-type: ASiC_E
     default-signature-form: XAdES
     pades-digest-algorithm: SHA256
-    pades-signature-level: PAdES_BASELINE_T
+    pades-signature-level: PAdES_BASELINE_LT
     password-timeout: 60000
     signature-packaging: ENVELOPED
     xades-digest-algorithm: SHA256
-    xades-signature-level: XAdES_BASELINE_T
+    xades-signature-level: XAdES_BASELINE_LT
 
 logging:
     file.name: logs/esup-signature.log

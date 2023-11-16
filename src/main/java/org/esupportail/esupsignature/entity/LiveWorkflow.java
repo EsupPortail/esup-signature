@@ -17,8 +17,6 @@ public class LiveWorkflow {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-    
-
     private String title;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
