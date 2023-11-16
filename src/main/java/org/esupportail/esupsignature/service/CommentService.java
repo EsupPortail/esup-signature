@@ -1,10 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import jakarta.annotation.Resource;
-import org.esupportail.esupsignature.entity.Comment;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.SignRequestParams;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.CommentRepository;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
@@ -69,7 +66,10 @@ public class CommentService {
             if (comment.get().getStepNumber() != null && comment.get().getStepNumber() > 0 && signRequest.getSignRequestParams().size() > comment.get().getStepNumber() - 1) {
                 if(signRequest.getSignRequestParams().size() > comment.get().getStepNumber() - 1) {
                     SignRequestParams signRequestParams = signRequest.getSignRequestParams().get(comment.get().getStepNumber() - 1);
-                    signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(comment.get().getStepNumber() - 1).getSignRequestParams().remove(signRequestParams);
+                    if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size() > comment.get().getStepNumber() - 1) {
+                        LiveWorkflowStep liveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(comment.get().getStepNumber() - 1);
+                        liveWorkflowStep.getSignRequestParams().remove(signRequestParams);
+                    }
                     signRequest.getSignRequestParams().remove(signRequestParams);
                     signRequestParamsRepository.delete(signRequestParams);
                 }
