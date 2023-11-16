@@ -144,14 +144,14 @@ public class OpenSCSignatureToken extends AbstractKeyStoreTokenConnection {
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 transferTo(process.getErrorStream(), outputStream);
                 byte[] result = outputStream.toByteArray();
-                LOG.error("OpenSc command fail");
+                LOG.warn("OpenSc command fail");
                 StringBuilder output = new StringBuilder();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(result)));
                 String line;
                 while ((line = reader.readLine()) != null) {
                     output.append(line).append("\n");
                 }
-                LOG.error(output.toString());
+                LOG.warn(output.toString());
                 throw new EsupSignatureOpenSCException(output.toString());
             }
         } catch (InterruptedException | IOException e) {

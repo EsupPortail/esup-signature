@@ -24,7 +24,7 @@
                     </li>
                     <li>
                         <a id="cancelButton" th:href="'/user/signbooks/' + ${signBook.id}" class="btn-floating btn-lg bg-secondary waves-effect" title="Retour au parapheur">
-                            <i class="fa-solid fa-door-open"></i>
+                            <i class="fa-solid fa-door-open fa-2xl"></i>
                         </a>
                     </li>
                 </ul>
@@ -112,7 +112,9 @@
                     <div th:unless="${#lists.size(signBook.signRequests) > 0}" class="alert alert-secondary">
                         Aucun document à signer pour le moment
                     </div>
-                    <a title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn-floating text-dark bg-primary waves-effect float-end m-3"><i class="fa-solid fa-file-medical"></i></a>
+                    <a title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn-floating btn-lg text-dark bg-primary waves-effect float-end m-3">
+                        <i class="fa-solid fa-file-medical fa-2xl"></i>
+                    </a>
 
                 </div>
             </div>

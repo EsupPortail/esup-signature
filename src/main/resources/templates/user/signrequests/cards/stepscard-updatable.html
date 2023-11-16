@@ -8,7 +8,7 @@
             <th:block th:if="${signBook.liveWorkflow.liveWorkflowSteps != null}">
                 <div id="stepper" class="bs-stepper">
                     <div class="bs-stepper-header container" role="tablist">
-                        <th:block th:each="liveWorkflowStep,iterator : ${signBook.liveWorkflow.liveWorkflowSteps}">
+                        <th:block th:each="liveWorkflowStep, iterator : ${signBook.liveWorkflow.liveWorkflowSteps}">
                             <div class="step" th:name="'step_' + ${iterator.index}" th:data-bs-target="'#step_' + ${iterator.index}">
                                 <div class="step-trigger" th:aria-controls="'step_' + ${iterator.index}" role="tab" aria-selected="false" style="border: 1px solid #555555;">
                                     <span title="Etape en cours" th:if="${iterator.index + 1 == signBook.liveWorkflow.currentStepNumber}" class="bs-stepper-circle bg-warning"><i class="fa-solid fa-hourglass-half"></i></span>
@@ -54,7 +54,9 @@
                     </div>
                 </div>
             </th:block>
-            <a title="Ajouter une étape au circuit" role="button" data-bs-toggle="modal" data-bs-target="#addStep" class="btn-floating bg-primary waves-effect float-end m-2"><i class="fa-solid fa-shoe-prints"></i></a>
+            <a title="Ajouter une étape au circuit" role="button" data-bs-toggle="modal" data-bs-target="#addStep" class="btn-floating btn-lg bg-primary waves-effect float-end m-2">
+                <i class="fa-solid fa-shoe-prints fa-2xl"></i>
+            </a>
         </div>
     </div>
 </div>

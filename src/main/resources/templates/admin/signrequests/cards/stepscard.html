@@ -8,7 +8,7 @@
             <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps != null}">
                 <div id="stepper" class="bs-stepper vertical">
                     <div class="bs-stepper-header" role="tablist">
-                        <th:block th:each="liveWorkflowStep,iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
+                        <th:block th:each="liveWorkflowStep, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
                             <div class="step border border-dark bg-white rounded" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber} ? 'div-disable'">
                                 <th:block th:if="${iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
                                 <span title="Étape en cours" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="bs-stepper-circle bg-warning">

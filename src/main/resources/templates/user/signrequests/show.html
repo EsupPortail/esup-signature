@@ -210,7 +210,7 @@
                         <span class="sr-only">En cours...</span>
                     </div>
                 </div>
-                <div id="signError" class="alert alert-danger" role="alert">
+                <div id="signError" class="alert alert-danger text-break" role="alert">
                     Erreur du système de signature
                 </div>
             </div>
@@ -532,7 +532,7 @@
                             <p>
                                 La procédure comporte une étape
                             </p>
-                            <th:block th:each="liveWorkflowStep,iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
+                            <th:block th:each="liveWorkflowStep, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
                                 <!--                            <div class="form-group mb-3">-->
                                 <!--                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${liveWorkflowStep.description}"></span>-->
                                 <!--                            </div>-->
@@ -754,7 +754,7 @@
         <input type="hidden" name="id" th:value="${authUser.id}"/>
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Ajout d'une image de signature</h5>
+                <h5 class="modal-title">Ajout d’une image de signature</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -834,7 +834,7 @@
             <div class="modal-footer">
                 <a id="saveButton"
                    class="btn btn-success">
-                    <i class="fa-solid fa-save fa-2xl"></i> Enregistrer la signature
+                    <i class="fa-solid fa-save"></i> Enregistrer la signature
                 </a>
             </div>
         </div>

@@ -439,14 +439,9 @@ public class SignBookService {
             deleteDefinitive(signBookId, userEppn);
             return true;
         }
-        List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
+        List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).toList();
         for(Long signRequestId : signRequestsIds) {
             signRequestService.deleteSignRequest(signRequestId, userEppn);
-        }
-        for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
-            if(liveWorkflowStep.getSignRequestParams() != null) {
-                liveWorkflowStep.getSignRequestParams().clear();
-            }
         }
         signBook.setStatus(SignRequestStatus.deleted);
         signBook.setUpdateDate(new Date());
@@ -461,12 +456,12 @@ public class SignBookService {
         SignBook signBook = getById(signBookId);
         if(signBook != null && (signBook.getCreateBy().equals(user) || userService.getSystemUser().equals(user) || user.getRoles().contains("ROLE_ADMIN"))) {
             signBook.getLiveWorkflow().setCurrentStep(null);
-            List<Long> liveWorkflowStepIds = signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getId).collect(Collectors.toList());
+            List<Long> liveWorkflowStepIds = signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getId).toList();
             signBook.getLiveWorkflow().getLiveWorkflowSteps().clear();
             for (Long liveWorkflowStepId : liveWorkflowStepIds) {
                 liveWorkflowStepService.delete(liveWorkflowStepId);
             }
-            List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
+            List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).toList();
             for (Long signRequestId : signRequestsIds) {
                 signRequestService.deleteDefinitive(signRequestId);
             }

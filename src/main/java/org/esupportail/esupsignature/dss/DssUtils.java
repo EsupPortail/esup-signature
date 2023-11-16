@@ -99,24 +99,24 @@ public final class DssUtils {
 		return false;
 	}
 
-	public static CertificateToken toCertificateToken(MultipartFile certificateFile) {
+	public static CertificateToken toCertificateToken(byte[] certificate) {
 		try {
-			if (certificateFile != null && !certificateFile.isEmpty()) {
-				return DSSUtils.loadCertificate(certificateFile.getBytes());
+			if (certificate != null && certificate.length > 0) {
+				return DSSUtils.loadCertificate(certificate);
 			}
-		} catch (DSSException | IOException e) {
+		} catch (DSSException e) {
 			LOG.warn("Cannot convert file to X509 Certificate", e);
 			throw new DSSException("Unsupported certificate or file format!");
 		}
 		return null;
 	}
 
-	public static CertificateSource toCertificateSource(List<MultipartFile> certificateFiles) {
+	public static CertificateSource toCertificateSource(List<MultipartFile> certificateFiles) throws IOException {
 		CertificateSource certSource = null;
 		if (Utils.isCollectionNotEmpty(certificateFiles)) {
 			certSource = new CommonCertificateSource();
 			for (MultipartFile file : certificateFiles) {
-				CertificateToken certificateChainItem = DssUtils.toCertificateToken(file);
+				CertificateToken certificateChainItem = DssUtils.toCertificateToken(file.getBytes());
 				if (certificateChainItem != null) {
 					certSource.addCertificate(certificateChainItem);
 				}
