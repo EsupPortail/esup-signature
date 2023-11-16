@@ -14,8 +14,6 @@ public class Comment {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-    
-
     @ManyToOne
     @JsonIgnore
     private User createBy;
@@ -46,10 +44,6 @@ public class Comment {
     public void setId(Long id) {
         this.id = id;
     }
-
-    
-
-    
 
     public User getCreateBy() {
         return createBy;

@@ -292,12 +292,12 @@ public class FormAdminController {
 	@GetMapping(value = "/{name}/datas/csv", produces="text/csv")
 	public ResponseEntity<Void> getFormDatasCsv(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String name, HttpServletResponse response) {
 		List<Form> forms = formService.getFormByName(name);
-		if (forms.size() > 0) {
+		if (!forms.isEmpty()) {
 			User user = userService.getByEppn(authUserEppn);
 			if(preAuthorizeService.formManager(forms.get(0).getId(), authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
 				try {
 					response.setContentType("text/csv; charset=utf-8");
-					response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(forms.get(0).getName(), StandardCharsets.UTF_8.toString()) + ".csv");
+					response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(forms.get(0).getName(), StandardCharsets.UTF_8) + ".csv");
 					InputStream csvInputStream = dataExportService.getCsvDatasFromForms(forms.stream().map(Form::getWorkflow).collect(Collectors.toList()));
 					IOUtils.copy(csvInputStream, response.getOutputStream());
 					return new ResponseEntity<>(HttpStatus.OK);
@@ -353,7 +353,7 @@ public class FormAdminController {
 
 	@DeleteMapping("{formId}/fields/{id}/delete")
 	@PreAuthorize("@preAuthorizeService.formManager(#formId, #authUserEppn) || hasRole('ROLE_ADMIN')")
-	public String updateField(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("formId") Long formId, @PathVariable("id") Long id) {
+	public String deleteField(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("formId") Long formId, @PathVariable("id") Long id) {
 		fieldService.deleteField(id, formId);
 		return "redirect:/admin/forms/" + formId + "/fields";
 	}

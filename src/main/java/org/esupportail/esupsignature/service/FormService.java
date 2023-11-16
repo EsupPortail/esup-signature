@@ -190,7 +190,6 @@ public class FormService {
 				updateSignRequestParams(id, new ByteArrayInputStream(tempDocument));
 				Document newModel = documentService.createDocument(pdfService.removeSignField(new ByteArrayInputStream(tempDocument)), userService.getSystemUser(), multipartModel.getOriginalFilename(), multipartModel.getContentType());
 				form.setDocument(newModel);
-
 			} catch (IOException | EsupSignatureIOException e) {
 				logger.error("unable to modif model", e);
 			}
@@ -474,15 +473,16 @@ public class FormService {
 	public void updateSignRequestParams(Long formId, InputStream inputStream) {
 		Form form = getById(formId);
 		List<SignRequestParams> findedSignRequestParams = signRequestParamsService.scanSignatureFields(inputStream, 0);
-		form.getSignRequestParams().clear();
-		int i = 0;
-		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
-			workflowStep.getSignRequestParams().clear();
-			workflowStep.getSignRequestParams().add(findedSignRequestParams.get(i));
-			form.getSignRequestParams().add(findedSignRequestParams.get(i));
-			i++;
+		if(!findedSignRequestParams.isEmpty()) {
+			form.getSignRequestParams().clear();
+			int i = 0;
+			for (WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
+				workflowStep.getSignRequestParams().clear();
+				workflowStep.getSignRequestParams().add(findedSignRequestParams.get(i));
+				form.getSignRequestParams().add(findedSignRequestParams.get(i));
+				i++;
+			}
 		}
-
 	}
 
 	@Transactional

@@ -1,16 +1,17 @@
 package org.esupportail.esupsignature.service;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.Comment;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.CommentRepository;
+import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
 import java.util.Date;
 import java.util.Optional;
 
@@ -22,6 +23,9 @@ public class CommentService {
 
     @Resource
     private SignRequestRepository signRequestRepository;
+
+    @Resource
+    private SignRequestParamsRepository signRequestParamsRepository;
 
     @Resource
     private UserService userService;
@@ -63,9 +67,12 @@ public class CommentService {
                 signRequest = signRequestRepository.findSignRequestByCommentsContains(comment.get());
             }
             if (comment.get().getStepNumber() != null && comment.get().getStepNumber() > 0 && signRequest.getSignRequestParams().size() > comment.get().getStepNumber() - 1) {
-                SignRequestParams signRequestParams = signRequest.getSignRequestParams().get(comment.get().getStepNumber() - 1);
-                signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(comment.get().getStepNumber() - 1).getSignRequestParams().remove(signRequestParams);
-                signRequest.getSignRequestParams().remove(signRequestParams);
+                if(signRequest.getSignRequestParams().size() > comment.get().getStepNumber() - 1) {
+                    SignRequestParams signRequestParams = signRequest.getSignRequestParams().get(comment.get().getStepNumber() - 1);
+                    signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(comment.get().getStepNumber() - 1).getSignRequestParams().remove(signRequestParams);
+                    signRequest.getSignRequestParams().remove(signRequestParams);
+                    signRequestParamsRepository.delete(signRequestParams);
+                }
             }
             signRequest.getComments().remove(comment.get());
             commentRepository.delete(comment.get());
