@@ -57,7 +57,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -203,16 +202,27 @@ public class SignService {
 						|| abstractKeyStoreTokenConnection instanceof Pkcs11SignatureToken
 						|| abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken)
 					&& !signRequestParamsesForSign.isEmpty() && !user.getEppn().equals("system")) {
-					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequestParamsesForSign.get(0) , new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign().getBytes()), new Color(214, 0, 128), user, signatureDocumentForm.getSigningDate());
+					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequestParamsesForSign.get(0) , new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign().getBytes()), user, signatureDocumentForm.getSigningDate());
 				} else {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, user);
 				}
 			}
-			((PAdESSignatureParameters) parameters).setReason("Signé par " + user.getFirstname() + " " + user.getName() + ", " + user.getEmail());
+			if(parameters instanceof PAdESSignatureParameters pAdESSignatureParameters) {
+				pAdESSignatureParameters.setReason("Signé par " + user.getFirstname() + " " + user.getName() + ", " + user.getEmail());
+			}
 			parameters.setSigningCertificate(certificateToken);
 			parameters.setCertificateChain(certificateTokenChain);
+			boolean revocationValid = validationService.checkRevocation(certificateToken);
+			if(!revocationValid) {
+				logger.info("LT or LTA signature level not supported, switching to T level");
+				if(parameters.getSignatureLevel().name().contains("_LT") || parameters.getSignatureLevel().name().contains("_LTA")) {
+					String newLevel = parameters.getSignatureLevel().name().replace("_LTA", "_T");
+					newLevel = newLevel.replace("_LT", "_T");
+					parameters.setSignatureLevel(SignatureLevel.valueOf(newLevel));
+				}
+			}
 			DSSDocument dssDocument;
-			if(signatureDocumentForm instanceof SignatureMultipleDocumentsForm) {
+			if (signatureDocumentForm instanceof SignatureMultipleDocumentsForm) {
 				dssDocument = certSignDocument((SignatureMultipleDocumentsForm) signatureDocumentForm, parameters, abstractKeyStoreTokenConnection);
 			} else {
 				dssDocument = certSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters, abstractKeyStoreTokenConnection);
@@ -241,7 +251,7 @@ public class SignService {
 		return pAdESSignatureParameters;
 	}
 
-	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm signatureDocumentForm, SignRequestParams signRequestParams, InputStream toSignFile, Color color, User user, Date date) throws IOException {
+	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm signatureDocumentForm, SignRequestParams signRequestParams, InputStream toSignFile, User user, Date date) throws IOException {
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
@@ -255,7 +265,7 @@ public class SignService {
 			InputStream signImage = fileService.addTextToImage(inputStream, signRequestParams, SignType.nexuSign, user, date, fixFactor);
 			if(signRequestParams.getAddWatermark()) {
 				ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-				fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, outputStream, color, signRequestParams.getExtraOnTop());
+				fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, outputStream, signRequestParams.getExtraOnTop());
 				signImage = new ByteArrayInputStream(outputStream.toByteArray());
 			}
 			BufferedImage bufferedSignImage = ImageIO.read(signImage);
@@ -340,16 +350,16 @@ public class SignService {
 		AbstractSignatureForm abstractSignatureForm;
 		if(documents.size() > 1) {
 			signatureForm = signProperties.getDefaultSignatureForm();
-			SignatureMultipleDocumentsForm signatureMultipleDocumentsForm = new SignatureMultipleDocumentsForm();
+			abstractSignatureForm = new SignatureMultipleDocumentsForm();
 			if(includeDocuments) {
 				List<DssMultipartFile> multipartFiles = new ArrayList<>();
 				for (Document toSignFile : documents) {
 					multipartFiles.add(new DssMultipartFile(toSignFile.getFileName(), toSignFile.getFileName(), toSignFile.getContentType(), toSignFile.getInputStream()));
 				}
-				signatureMultipleDocumentsForm.setDocumentsToSign(multipartFiles);
+				((SignatureMultipleDocumentsForm) abstractSignatureForm).setDocumentsToSign(multipartFiles);
 			}
-			signatureMultipleDocumentsForm.setContainerType(signProperties.getContainerType());
-			abstractSignatureForm = signatureMultipleDocumentsForm;
+			((SignatureMultipleDocumentsForm) abstractSignatureForm).setContainerType(signProperties.getContainerType());
+//			abstractSignatureForm = signatureMultipleDocumentsForm;
 		} else {
 			InputStream inputStream;
 			byte[] bytes;
@@ -369,16 +379,15 @@ public class SignService {
 				signatureForm = signProperties.getDefaultSignatureForm();
 				bytes = toSignFile.getInputStream().readAllBytes();
 			}
-			SignatureDocumentForm signatureDocumentForm = new SignatureDocumentForm();
+			abstractSignatureForm = new SignatureDocumentForm();
 			if(includeDocuments) {
-				signatureDocumentForm.setDocumentToSign(new DssMultipartFile(toSignFile.getFileName(), toSignFile.getFileName(), toSignFile.getContentType(), bytes));
+				((SignatureDocumentForm) abstractSignatureForm).setDocumentToSign(new DssMultipartFile(toSignFile.getFileName(), toSignFile.getFileName(), toSignFile.getContentType(), bytes));
 			} else {
 				signRequest.getSignedDocuments().add(documentService.createDocument(new ByteArrayInputStream(bytes), userService.getSystemUser(), toSignFile.getFileName(), toSignFile.getContentType()));
 			}
 			if(!signatureForm.equals(SignatureForm.PAdES)) {
-				signatureDocumentForm.setContainerType(signProperties.getContainerType());
+				((SignatureDocumentForm) abstractSignatureForm).setContainerType(signProperties.getContainerType());
 			}
-			abstractSignatureForm = signatureDocumentForm;
 		}
 		if(signProperties.getSignWithExpiredCertificate() || (environment.getActiveProfiles().length > 0 && environment.getActiveProfiles()[0].equals("dev"))) {
 			abstractSignatureForm.setSignWithExpiredCertificate(true);

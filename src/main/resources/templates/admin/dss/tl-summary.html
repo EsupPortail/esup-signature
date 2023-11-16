@@ -15,41 +15,31 @@
         <div id="content" class="content">
             <div class="p-2">
 
-                <div class="card">
-                    <div class="card-header">
-					<span class="badge bg-secondary pull-right">
-						<span th:text="${#lists.size(keystoreCertificates)}"></span>&nbsp;
-						<span th:text="#{label.eu.oj.certificates.page}"></span>
-					</span>
-                        <span th:text="#{label.trusted.certificates.from.OJ}"></span>
-                        <div class="eu-official-journal">
-                            <p><span th:text="#{label.keystore.synchronized.with}"></span>&nbsp;<a th:href="${currentOjUrl}" th:text="#{label.eu.oj.page}" target="_blank"></a></p>
-                            <p th:if="${actualOjUrl == null}" class="text-danger" th:text="#{label.eu.oj.unable.retrieve}"></p>
-                            <p th:if="${actualOjUrl != null && actualOjUrl != currentOjUrl}" class="text-danger">
-                                <span th:text="#{label.eu.oj.keystore.outdated}"></span>&nbsp;
-                                <a th:href="${actualOjUrl}" target="_blank" th:title="#{label.eu.oj.page}">link</a>
-                            </p>
-                        </div>
+                <div class="alert alert-secondary">
+                    <div class="eu-official-journal">
+                        <p><span th:text="#{label.keystore.synchronized.with}"></span>&nbsp;<a th:href="${currentOjUrl}" th:text="#{label.eu.oj.page}" target="_blank"></a></p>
+                        <p th:if="${actualOjUrl == null}" class="text-danger" th:text="#{label.eu.oj.unable.retrieve}"></p>
+                        <p th:if="${actualOjUrl != null && actualOjUrl != currentOjUrl}" class="text-danger">
+                            <span th:text="#{label.eu.oj.keystore.outdated}"></span>&nbsp;
+                            <a th:href="${actualOjUrl}" target="_blank" th:title="#{label.eu.oj.page}">link</a>
+                        </p>
                     </div>
+                    <span class="badge bg-secondary pull-right">
+                        <span th:text="${#lists.size(keystoreCertificates)}"></span>&nbsp<span th:text="#{label.trusted.certificates.from.OJ}"></span>
+                    </span>
                 </div>
 
                 <p th:if="${summary == null}" th:text="#{label.summary.tl.info.empty}"></p>
 
                 <th:block th:if="${summary != null}">
                     <div layout:fragment="content">
-
                         <p th:if="${summary == null}" th:text="#{label.summary.tl.info.empty}"></p>
-
                         <th:block th:if="${summary != null}">
-                            <div class="lotl" th:each="lotl,iterLOTL : ${summary.getLOTLInfos()}" th:with="downloadResult=${lotl.downloadCacheInfo},
-							parsingResult=${lotl.parsingCacheInfo},
-							validationResult=${lotl.validationCacheInfo}">
-
+                            <div class="lotl" th:each="lotl,iterLOTL : ${summary.getLOTLInfos()}" th:with="downloadResult=${lotl.downloadCacheInfo}, parsingResult=${lotl.parsingCacheInfo}, validationResult=${lotl.validationCacheInfo}">
                                 <!-- LOTL -->
                                 <h2>
                                     <a th:href="@{/admin/dss/lotl/} + ${lotl.getDSSId().asXmlId()}">
-							<span th:if="${parsingResult != null and parsingResult.resultExist and parsingResult.territory != null}"
-                                  th:class="${'lotl-flag small_flag mt-2 flag_' + parsingResult.territory}" th:title="${parsingResult.territory}"></span>
+                                        <span th:if="${parsingResult != null and parsingResult.resultExist and parsingResult.territory != null}" th:class="${'lotl-flag small_flag mt-2 flag_' + parsingResult.territory}" th:title="${parsingResult.territory}"></span>
                                     </a>
                                     <span th:text="#{label.summary.lotl.number(${iterLOTL.count})}"></span>
                                     <a class="h4" th:if="${parsingResult.TSLType != null}" th:text="'(' + (${parsingResult.TSLType.label != null ? parsingResult.TSLType.label : parsingResult.TSLType.uri}) + ')'" th:href="${parsingResult.TSLType.uri}" target="_blank"></a>
@@ -60,7 +50,8 @@
                                 <div th:replace="~{fragments/lotl-info-fragments :: lotl-info-summary(downloadResult=${downloadResult}, parsingResult=${parsingResult}, validationResult=${validationResult}, parsingResult=${parsingResult}, validationResult=${validationResult})}"></div>
 
                                 <!-- Pivots -->
-                                <div class="table-container row" th:if="${not #lists.isEmpty(lotl.pivotInfos)}">
+                                <div class="alert alert-light mb-2">
+                                    <div class="table-container row" th:if="${not #lists.isEmpty(lotl.pivotInfos)}">
                                     <h4>
                                         <span th:text=#{label.summary.pivot.loaded.header}></span>&nbsp;
                                         <a class="h6 font-weight-bold" th:href="@{/admin/dss/pivot-changes/} + ${lotl.getDSSId().asXmlId()}"
@@ -109,9 +100,10 @@
                                         </tbody>
                                     </table>
                                 </div>
-
+                                </div>
                                 <!-- TL summary -->
-                                <div class="table-container row" th:if="${not #lists.isEmpty(lotl.getTLInfos())}">
+                                <div class="alert alert-light mb-2">
+                                    <div class="table-container row" th:if="${not #lists.isEmpty(lotl.getTLInfos())}">
                                     <h4 th:text="#{label.summary.tl.info.header}"></h4>
                                     <table class="tl-summary summary-table table accordion">
                                         <thead th:replace="~{fragments/tl-info :: tl-info-header()}"></thead>
@@ -130,6 +122,7 @@
                                         </tbody>
 
                                     </table>
+                                </div>
                                 </div>
                             </div>
 

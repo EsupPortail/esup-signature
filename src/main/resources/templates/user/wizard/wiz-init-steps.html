@@ -13,7 +13,7 @@
         </div>
         <div class="bs-stepper-line"></div>
         <div class="step" data-bs-target="#test-l-3">
-            <span class="bs-stepper-circle"><i class="fa-solid fa-save fa-2xl"></i></span>
+            <span class="bs-stepper-circle"><i class="fa-solid fa-save"></i></span>
             <span class="bs-stepper-label">Sauvegarde</span>
         </div>
         <div class="bs-stepper-line"></div>
@@ -26,7 +26,7 @@
 <hr>
 <div id="stepper2" class="bs-stepper linear">
     <div class="bs-stepper-header" role="tablist">
-    <th:block th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" th:each="liveWorkflowStep,iterator : ${signBook.liveWorkflow.liveWorkflowSteps}">
+    <th:block th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" th:each="liveWorkflowStep, iterator : ${signBook.liveWorkflow.liveWorkflowSteps}">
             <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-dark bg-white rounded p-1" th:name="'step_' + ${iterator.index}">
             <span title="Étape à venir" class="bs-stepper-circle">
                 <i class="fa-solid fa-clock"></i>

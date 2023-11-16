@@ -109,11 +109,7 @@ public class FormService {
 		byte[] bytes = multipartFile.getInputStream().readAllBytes();
 		Document document = documentService.createDocument(new ByteArrayInputStream(bytes), userService.getSystemUser(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
 		Form form = createForm(document, name, title, workflowId, prefillType, roleNames, publicUsage, null, null);
-		try {
-			updateSignRequestParams(form.getId(), new ByteArrayInputStream(bytes));
-		} catch (EsupSignatureIOException e) {
-			logger.error(e.getMessage(), e);
-		}
+		updateSignRequestParams(form.getId(), new ByteArrayInputStream(bytes));
 		return form;
 	}
 
@@ -194,7 +190,6 @@ public class FormService {
 				updateSignRequestParams(id, new ByteArrayInputStream(tempDocument));
 				Document newModel = documentService.createDocument(pdfService.removeSignField(new ByteArrayInputStream(tempDocument)), userService.getSystemUser(), multipartModel.getOriginalFilename(), multipartModel.getContentType());
 				form.setDocument(newModel);
-
 			} catch (IOException | EsupSignatureIOException e) {
 				logger.error("unable to modif model", e);
 			}
@@ -475,15 +470,17 @@ public class FormService {
 	}
 
 	@Transactional
-	public void updateSignRequestParams(Long formId, InputStream inputStream) throws EsupSignatureIOException {
+	public void updateSignRequestParams(Long formId, InputStream inputStream) {
 		Form form = getById(formId);
 		List<SignRequestParams> findedSignRequestParams = signRequestParamsService.scanSignatureFields(inputStream, 0);
-
-		form.getSignRequestParams().removeIf(signRequestParams -> findedSignRequestParams.stream().noneMatch(s -> s.getSignPageNumber().equals(signRequestParams.getSignPageNumber()) && s.getxPos().equals(signRequestParams.getxPos()) && s.getyPos().equals(signRequestParams.getyPos())));
-
-		for(SignRequestParams signRequestParams : findedSignRequestParams) {
-			if(form.getSignRequestParams().stream().noneMatch(s -> s.getSignPageNumber().equals(signRequestParams.getSignPageNumber()) && s.getxPos().equals(signRequestParams.getxPos()) && s.getyPos().equals(signRequestParams.getyPos()))) {
-				form.getSignRequestParams().add(signRequestParams);
+		if(!findedSignRequestParams.isEmpty()) {
+			form.getSignRequestParams().clear();
+			int i = 0;
+			for (WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
+				workflowStep.getSignRequestParams().clear();
+				workflowStep.getSignRequestParams().add(findedSignRequestParams.get(i));
+				form.getSignRequestParams().add(findedSignRequestParams.get(i));
+				i++;
 			}
 		}
 	}

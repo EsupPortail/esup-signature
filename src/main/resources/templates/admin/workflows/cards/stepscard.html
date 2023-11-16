@@ -5,7 +5,7 @@
 <div th:fragment="stepscard" th:if="${workflow.workflowSteps != null}">
     <div class="bs-stepper vertical linear">
         <div class="bs-stepper-header mx-auto" role="tablist">
-            <th:block th:each="workflowStep,iterator : ${workflow.workflowSteps}">
+            <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
                 <div class="step" th:name="${workflowStep.id}" th:id="${workflowStep.id}">
                     <div class="step-trigger" th:aria-controls="'step_' + ${iterator.index}" role="tab"
                          aria-selected="false" style="border: 1px solid #555555;">

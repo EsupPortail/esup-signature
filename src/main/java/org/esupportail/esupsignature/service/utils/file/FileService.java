@@ -267,12 +267,10 @@ public class FileService {
 		graphics2D.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 	}
 
-	public void addImageWatermark(InputStream watermarkImageFile, InputStream sourceImageFile, ByteArrayOutputStream destImageFile, Color color, boolean extraOnTop) {
+	public void addImageWatermark(InputStream watermarkImageFile, InputStream sourceImageFile, ByteArrayOutputStream destImageFile, boolean extraOnTop) {
 		try {
 			BufferedImage sourceImage = ImageIO.read(sourceImageFile);
 			BufferedImage watermarkImage = ImageIO.read(watermarkImageFile);
-//			changeColor(watermarkImage, 255, 255, 255, 0, 0, 0);
-//			changeColor(watermarkImage, 0, 0, 0, color.getRed(), color.getGreen(), color.getBlue());
 			Graphics2D g2d = (Graphics2D) sourceImage.getGraphics();
 			AlphaComposite alphaChannel = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.2f);
 			g2d.setComposite(alphaChannel);
