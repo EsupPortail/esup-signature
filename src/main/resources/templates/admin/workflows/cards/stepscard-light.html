@@ -6,8 +6,8 @@
         <h5>Etapes du circuit</h5>
                 <div id="stepper" class="bs-stepper vertical">
                     <div class="bs-stepper-header" role="tablist">
-                        <th:block th:each="workflowStep,iterator : ${workflow.workflowSteps}">
-                            <div class="step" th:name="'step_' + ${iterator.index}">
+                        <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
+                            <div class="step border border-dark bg-white rounded p-1" th:id="'step-' + ${iterator.index}">
                                 <div class="step-trigger">
                                     <span class="bs-stepper-circle bg-primary" th:text="${iterator.index + 1}"></span>
                                     <div class="bs-stepper-label">
@@ -15,30 +15,30 @@
                                         <br/>
                                         <span th:if="${workflowStep.name != null}" th:text="${workflowStep.name}"></span>
                                         <ul>
-                                        <th:block th:each="recipient : ${workflowStep.recipients}">
+                                        <th:block th:each="user : ${workflowStep.users}">
                                             <li>
-                                                <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                                <span th:text="${user.firstname + ' ' + user.name}"></span>
                                             </li>
                                         </th:block>
                                         </ul>
-                                        </table>
                                     </div>
                                 </div>
                             </div>
                             <div th:if="${workflow.workflowSteps.size() > iterator.index + 1}" class="line"></div>
                         </th:block>
-                        <th:block th:if="${workflow.documentsTargetUri != null}">
+                        <th:block th:each="target : ${workflow.targets}">
                             <div class="bs-stepper-line"></div>
                             <div class="step">
                                 <div class="step-trigger">
-                                    <div th:classappend="${signRequest.exportedDocumentURI != null} ? 'bg-success'" class="bs-stepper-circle"><i class="fa-solid fa-file-export"></i></div>
-                                    <div class="bs-stepper-label text-break" th:text="${workflow.documentsTargetUri}"></div>
+                                    <div class="bs-stepper-circle"><i class="fa-solid fa-file-export"></i></div>
+                                    <div class="bs-stepper-label text-break" th:text="${target}"></div>
                                 </div>
                             </div>
                         </th:block>
                     </div>
                 </div>
-
+            </div>
+        </div>
     </div>
 </div>
 </html>

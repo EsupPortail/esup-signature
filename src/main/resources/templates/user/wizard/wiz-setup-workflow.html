@@ -31,7 +31,7 @@
                     th:text="${signBook.liveWorkflow.workflow.workflowSteps.size()}"></span> étape<span th:if="${signBook.liveWorkflow.workflow.workflowSteps.size()} > 1">s</span>
             </p>
             <ul class="list-group">
-            <th:block th:each="step,iterator : ${signBook.liveWorkflow.workflow.workflowSteps}">
+            <th:block th:each="step, iterator : ${signBook.liveWorkflow.workflow.workflowSteps}">
                 <li class="list-group-item">
                 <div class="form-group mb-1">
                     <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span>

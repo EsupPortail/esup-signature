@@ -213,14 +213,14 @@ public class CertificatService {
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 transferTo(process.getErrorStream(), outputStream);
                 byte[] result = outputStream.toByteArray();
-                logger.error("OpenSc command fail");
+                logger.warn("OpenSc command fail");
                 StringBuilder output = new StringBuilder();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(result)));
                 String line;
                 while ((line = reader.readLine()) != null) {
                     output.append(line).append("\n");
                 }
-                logger.error(output.toString());
+                logger.warn(output.toString());
                 throw new DSSException(output.toString());
             }
         } catch (InterruptedException | IOException e) {
