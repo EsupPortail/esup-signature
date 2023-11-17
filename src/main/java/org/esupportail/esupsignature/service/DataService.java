@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.DataRepository;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import jakarta.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -123,7 +123,7 @@ public class DataService {
         if(inputStream != null && inputStream.available() > 0) {
             return pdfService.fill(inputStream, data.getDatas(), false, true);
         } else  if(form.getDocument() != null) {
-            return pdfService.fill(form.getDocument().getInputStream(), data.getDatas(), false, true);
+            return pdfService.fill(pdfService.removeSignField(form.getDocument().getInputStream()), data.getDatas(), false, true);
         } else {
             logger.error("no pdf model");
         }
