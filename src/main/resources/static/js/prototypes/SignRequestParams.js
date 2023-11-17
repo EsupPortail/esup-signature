@@ -5,7 +5,11 @@ export class SignRequestParams extends EventFactory {
 
     constructor(signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone, light, signImages, scrollTop, csrf, signType) {
         super();
+        this.signWidth = 150;
+        this.signHeight = 75;
         Object.assign(this, signRequestParamsModel);
+        this.originalWidth = this.signWidth;
+        this.originalHeight = this.signHeight;
         this.id = id;
         this.userUI = null;
         this.faImages = ["check-solid", "times-solid", "circle-regular", "minus-solid"];
@@ -37,10 +41,6 @@ export class SignRequestParams extends EventFactory {
         this.restoreExtraOnTop = false;
         this.allPages = false;
         this.signImageNumber = 0;
-        this.originalWidth = 150;
-        this.originalHeight = 75;
-        this.signWidth = 150;
-        this.signHeight = 75;
         this.extraWidth = 0;
         this.extraHeight = 0;
         this.savedText = "";

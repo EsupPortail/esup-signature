@@ -10,10 +10,7 @@
         <div id="pdf" class="mx-auto" style="position: relative !important;">
             <th:block th:each="spot, iterator : ${srpMap.entrySet()}">
                 <div class="spot" th:id="'inDocSpot_' + ${spot.value}" style="z-index: 999" title="Cliquer pour supprimer l'emplacement de signature">
-                    <i class="fa-solid fa-map-marker-alt fa-3x"></i>
-                    <div th:id="'inDocSign_' + ${spot.value}" style="width: 200px; height: 150px; margin-left: 18px;color: #000;" class="sign-field"
-                         th:onmouseover="'$(\'#step-' + ${iterator.index} + '\').addClass(\'circle-border\');'"
-                         th:onmouseout="'$(\'#step-' + ${iterator.index} + '\').removeClass(\'circle-border\');'">
+                    <div th:data-es-width="${spots.get(iterator.index).width}" th:data-es-height="${spots.get(iterator.index).height}" th:id="'inDocSign_' + ${spot.value}" th:style="'width: '+ ${spots.get(iterator.index).width} +'px; height: ' + ${spots.get(iterator.index).height} + 'px;color: #000;'" class="sign-field" th:onmouseover="'$(\'#step-' + ${iterator.index} + '\').addClass(\'circle-border\');'" th:onmouseout="'$(\'#step-' + ${iterator.index} + '\').removeClass(\'circle-border\');'">
                         <b>Signature de l’étape : <span th:text="${spot.key}"></span></b>
                         <br>
                         Cliquer pour supprimer l’emplacement de signature

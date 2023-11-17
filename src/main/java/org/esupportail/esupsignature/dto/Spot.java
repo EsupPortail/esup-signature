@@ -7,13 +7,17 @@ public class Spot {
     Integer pageNumber;
     Integer posX;
     Integer posY;
+    Integer width;
+    Integer height;
 
-    public Spot(Long id, Integer stepNumber, Integer pageNumber, Integer posX, Integer posY) {
+    public Spot(Long id, Integer stepNumber, Integer pageNumber, Integer posX, Integer posY, Integer width, Integer height) {
         this.id = id;
         this.stepNumber = stepNumber;
         this.pageNumber = pageNumber;
         this.posX = posX;
         this.posY = posY;
+        this.width = width;
+        this.height = height;
     }
 
     public Long getId() {
@@ -54,5 +58,21 @@ public class Spot {
 
     public void setPosY(Integer posY) {
         this.posY = posY;
+    }
+
+    public Integer getWidth() {
+        return width;
+    }
+
+    public void setWidth(Integer width) {
+        this.width = width;
+    }
+
+    public Integer getHeight() {
+        return height;
+    }
+
+    public void setHeight(Integer height) {
+        this.height = height;
     }
 }
