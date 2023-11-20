@@ -478,8 +478,12 @@ public class FormService {
 			int i = 0;
 			for (WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
 				workflowStep.getSignRequestParams().clear();
-				workflowStep.getSignRequestParams().add(findedSignRequestParams.get(i));
-				form.getSignRequestParams().add(findedSignRequestParams.get(i));
+				if(findedSignRequestParams.size() > i) {
+					workflowStep.getSignRequestParams().add(findedSignRequestParams.get(i));
+					form.getSignRequestParams().add(findedSignRequestParams.get(i));
+				} else {
+					break;
+				}
 				i++;
 			}
 		}
