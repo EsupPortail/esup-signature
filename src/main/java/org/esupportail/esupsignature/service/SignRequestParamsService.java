@@ -51,8 +51,8 @@ public class SignRequestParamsService {
         signRequestParams.setxPos(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX() / fixFactor));
         signRequestParams.setyPos(Math.round((pdPage.getBBox().getHeight() - pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - pdSignatureField.getWidgets().get(0).getRectangle().getHeight()) / fixFactor));
         signRequestParams.setSignPageNumber(signPageNumber);
-        signRequestParams.setSignWidth(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getWidth()));
-        signRequestParams.setSignHeight(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getHeight()));
+        signRequestParams.setSignWidth(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getWidth() / fixFactor));
+        signRequestParams.setSignHeight(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getHeight() / fixFactor));
         signRequestParamsRepository.save(signRequestParams);
         return signRequestParams;
     }
@@ -130,7 +130,7 @@ public class SignRequestParamsService {
         List<SignRequestParams> liveWfSignRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
         for (int i = 0 ; i < signRequestParamses.size() ; i++) {
             if (liveWfSignRequestParams.size() < i + 1) {
-                SignRequestParams signRequestParams = createSignRequestParams(signRequestParamses.get(i).getSignPageNumber(), signRequestParamses.get(i).getxPos(), signRequestParamses.get(i).getyPos());
+                SignRequestParams signRequestParams = createSignRequestParams(signRequestParamses.get(i).getSignPageNumber(), signRequestParamses.get(i).getxPos(), signRequestParamses.get(i).getyPos(), signRequestParamses.get(i).getSignWidth(), signRequestParamses.get(i).getSignHeight());
                 signRequestParams.setSignImageNumber(signRequestParamses.get(i).getSignImageNumber());
                 signRequestParams.setSignPageNumber(signRequestParamses.get(i).getSignPageNumber());
                 signRequestParams.setSignScale(signRequestParamses.get(i).getSignScale());
@@ -172,11 +172,13 @@ public class SignRequestParamsService {
         }
     }
 
-    public SignRequestParams createSignRequestParams(Integer signPageNumber, Integer xPos, Integer yPos) {
+    public SignRequestParams createSignRequestParams(Integer signPageNumber, Integer xPos, Integer yPos, Integer width, Integer height) {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignPageNumber(signPageNumber);
         signRequestParams.setxPos(xPos);
         signRequestParams.setyPos(yPos);
+        signRequestParams.setSignWidth(width);
+        signRequestParams.setSignHeight(height);
         signRequestParamsRepository.save(signRequestParams);
         return signRequestParams;
     }

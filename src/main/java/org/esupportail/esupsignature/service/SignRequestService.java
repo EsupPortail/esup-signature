@@ -462,7 +462,7 @@ public class SignRequestService {
 							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), docNumber);
 						} else {
 							for (SignRequestParams signRequestParams : signRequestParamses) {
-								toAddSignRequestParams.add(signRequestParamsService.createSignRequestParams(signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
+								toAddSignRequestParams.add(signRequestParamsService.createSignRequestParams(signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequestParams.getSignWidth(), signRequestParams.getSignHeight()));
 							}
 						}
 						signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
@@ -901,7 +901,7 @@ public class SignRequestService {
 		SignRequest signRequest = getById(id);
 		if(spotStepNumber == null || userEppn.equals(signRequest.getCreateBy().getEppn())) {
 			if (spotStepNumber != null && spotStepNumber > 0) {
-				SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
+				SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY, 150, 75);
 				int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
 				signRequestParams.setSignDocumentNumber(docNumber);
 				signRequestParams.setComment(commentText);
