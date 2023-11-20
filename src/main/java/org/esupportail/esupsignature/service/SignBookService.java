@@ -2020,12 +2020,13 @@ public class SignBookService {
     @Transactional
     public boolean checkUserViewRights(String userEppn, String authUserEppn, Long signBookId) {
         SignBook signBook = getById(signBookId);
+        if(signBook == null) return false;
         User user = userService.getByEppn(userEppn);
         List<Recipient> recipients = new ArrayList<>();
         for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
             recipients.addAll(liveWorkflowStep.getRecipients());
         }
-        if(signBook.getSignRequests().size() > 0 && checkAllShareTypesForSignRequest(userEppn, authUserEppn, signBook.getId())
+        if(!signBook.getSignRequests().isEmpty() && checkAllShareTypesForSignRequest(userEppn, authUserEppn, signBook.getId())
                 || signBook.getViewers().stream().anyMatch(u -> u.getEppn().equals(authUserEppn))
                 || signBook.getCreateBy().getEppn().equals(authUserEppn)
                 || recipientService.recipientsContainsUser(recipients, authUserEppn) > 0
