@@ -79,7 +79,7 @@ public class OtpService {
             }
             otp.setEmail(extUser.getEmail());
             otp.setSignBookId(signBook.getId());
-            otp.setForceSms(extUser.getForceSms());
+            otp.setForceSms(extUser.getForceSms() != null && extUser.getForceSms());
             String urlId = UUID.randomUUID().toString();
             mailService.sendOtp(otp, urlId, signBook);
             signBook.setLastOtp(urlId);
