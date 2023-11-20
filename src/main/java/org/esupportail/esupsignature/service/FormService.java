@@ -188,7 +188,7 @@ public class FormService {
 					}
 				}
 				updateSignRequestParams(id, new ByteArrayInputStream(tempDocument));
-				Document newModel = documentService.createDocument(pdfService.removeSignField(new ByteArrayInputStream(tempDocument)), userService.getSystemUser(), multipartModel.getOriginalFilename(), multipartModel.getContentType());
+				Document newModel = documentService.createDocument(new ByteArrayInputStream(tempDocument), userService.getSystemUser(), multipartModel.getOriginalFilename(), multipartModel.getContentType());
 				form.setDocument(newModel);
 			} catch (IOException | EsupSignatureIOException e) {
 				logger.error("unable to modif model", e);
@@ -500,7 +500,7 @@ public class FormService {
 	@Transactional
 	public void addSignRequestParamsSteps(Long formId, Integer step, Integer signPageNumber, Integer xPos, Integer yPos) {
 		Form form = getById(formId);
-		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(signPageNumber, xPos, yPos);
+		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(signPageNumber, xPos, yPos, 150, 75);
 		form.getSignRequestParams().add(signRequestParams);
 		form.getWorkflow().getWorkflowSteps().get(step - 1).getSignRequestParams().add(signRequestParams);
 	}
@@ -575,13 +575,13 @@ public class FormService {
 		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
 			if(!workflowStep.getSignRequestParams().isEmpty()) {
 				SignRequestParams signRequestParams = workflowStep.getSignRequestParams().get(0);
-				spots.add(new Spot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
+				spots.add(new Spot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequestParams.getSignWidth(), signRequestParams.getSignHeight()));
 			}
 			step++;
 		}
 		if(spots.isEmpty()) {
 			for(SignRequestParams signRequestParams : form.getSignRequestParams()) {
-				spots.add(new Spot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
+				spots.add(new Spot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequestParams.getSignWidth(), signRequestParams.getSignHeight()));
 			}
 		}
 		return spots;
