@@ -21,7 +21,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.thymeleaf.dialect.springdata.SpringDataDialect;
 import org.thymeleaf.extras.springsecurity6.dialect.SpringSecurityDialect;
 
-@Configuration 
+@Configuration
 @ComponentScan
 @EnableAsync
 @EnableAutoConfiguration
@@ -35,19 +35,19 @@ public class WebAppConfig implements WebMvcConfigurer {
 	}
 
 	@Bean
-    public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
-        return new HiddenHttpMethodFilter();
-    }
+	public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
+		return new HiddenHttpMethodFilter();
+	}
 
-    @Bean
-    public SpringDataDialect springDataDialect() {
-        return new SpringDataDialect();
-    }
-    
-    @Bean
-    public SpringSecurityDialect springSecurityDialect() {
-        return new SpringSecurityDialect();
-    }
+	@Bean
+	public SpringDataDialect springDataDialect() {
+		return new SpringDataDialect();
+	}
+
+	@Bean
+	public SpringSecurityDialect springSecurityDialect() {
+		return new SpringSecurityDialect();
+	}
 
 	@Bean
 	public MultipartConfigElement multipartConfigElement() {
