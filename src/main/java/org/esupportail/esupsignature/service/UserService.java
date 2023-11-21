@@ -465,7 +465,7 @@ public class UserService {
             if(user.getEppn().equals("creator")) {
                 personLightLdaps.add(getPersonLdapLightFromUser(user));
             }
-            if(!personLightLdaps.isEmpty() && personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && user.getEmail().equalsIgnoreCase(personLightLdap.getMail()))) {
+            if(!personLightLdaps.isEmpty() && personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && personLightLdap.getMail().equalsIgnoreCase(user.getEmail()))) {
                 PersonLightLdap personLightLdap = getPersonLdapLightFromUser(user);
                 if(user.getUserType().equals(UserType.group)) {
                     personLightLdap.setDisplayName(personLightLdap.getDisplayName());
