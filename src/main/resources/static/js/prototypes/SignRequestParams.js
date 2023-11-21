@@ -791,9 +791,6 @@ export class SignRequestParams extends EventFactory {
             this.signHeight -= this.extraHeight;
             this.extraHeight = 0;
         }
-        // this.toggleType();
-        // this.toggleName();
-        // this.toggleText();
         this.updateSize();
         if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('addExtra', this.addExtra);

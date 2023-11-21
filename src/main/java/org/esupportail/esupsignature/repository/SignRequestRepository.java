@@ -15,7 +15,7 @@ import java.util.Optional;
 
 public interface SignRequestRepository extends CrudRepository<SignRequest, Long>, PagingAndSortingRepository<SignRequest, Long> {
 
-    @Query("select count(distinct  s) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and s.parentSignBook.hidedBy is empty and r.user.eppn = :recipientUserEppn")
+    @Query("select count(distinct  s.parentSignBook) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and s.parentSignBook.hidedBy is empty and r.user.eppn = :recipientUserEppn")
     Long countByRecipientUserToSign(String recipientUserEppn);
 
     @Query("select distinct s from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and s.parentSignBook.hidedBy is empty and r.user.eppn = :recipientUserEppn")
@@ -33,6 +33,7 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
 
     List<SignRequest> findByCreateByEppnAndStatus(String createByEppn, SignRequestStatus status);
 
+    @Query("select count(distinct s.parentSignBook) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = :status and s.parentSignBook.createBy.eppn = :createByEppn")
     Long countByCreateByEppnAndStatus(String createByEppn, SignRequestStatus status);
 
     Page<SignRequest> findById(Long id, Pageable pageable);
