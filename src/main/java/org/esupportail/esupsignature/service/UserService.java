@@ -465,7 +465,7 @@ public class UserService {
             if(user.getEppn().equals("creator")) {
                 personLightLdaps.add(getPersonLdapLightFromUser(user));
             }
-            if(!personLightLdaps.isEmpty() && personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && user.getEmail().equalsIgnoreCase(personLightLdap.getMail()))) {
+            if(!personLightLdaps.isEmpty() && personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && personLightLdap.getMail().equalsIgnoreCase(user.getEmail()))) {
                 PersonLightLdap personLightLdap = getPersonLdapLightFromUser(user);
                 if(user.getUserType().equals(UserType.group)) {
                     personLightLdap.setDisplayName(personLightLdap.getDisplayName());
@@ -879,7 +879,7 @@ public class UserService {
     @Transactional
     public String getDefaultImage(String eppn) throws IOException {
         User user = getByEppn(eppn);
-        return fileService.getBase64Image(fileService.getDefaultImage(user.getName(), user.getFirstname(), 1), "default");
+        return fileService.getBase64Image(fileService.getDefaultImage(user.getName(), user.getFirstname(), false), "default");
     }
 
     @Transactional

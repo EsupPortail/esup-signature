@@ -7,15 +7,17 @@ import com.google.common.cache.LoadingCache;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import org.bouncycastle.util.encoders.Hex;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.entity.Data;
+import org.esupportail.esupsignature.entity.Otp;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
+import org.esupportail.esupsignature.repository.OtpRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.mail.MailService;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +25,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import jakarta.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
@@ -38,29 +40,29 @@ public class OtpService {
 
     private static final Logger logger = LoggerFactory.getLogger(OtpService.class);
 
-    private static final Integer EXPIRE_MINS = 10;
+    private final SignBookRepository signBookRepository;
 
-    private static LoadingCache<String, Otp> otpCache;
+    private final OtpRepository otpRepository;
 
-    @Resource
-    private SignBookRepository signBookRepository;
+    private final MailService mailService;
 
-    @Resource
-    private MailService mailService;
-
-    @Resource
-    private UserService userService;
+    private final UserService userService;
 
     private final GlobalProperties globalProperties;
 
     private final SmsService smsService;
 
+    private static LoadingCache<String, Otp> otpCache;
 
-    public OtpService(GlobalProperties globalProperties, @Autowired(required = false) SmsService smsService) {
+    public OtpService(SignBookRepository signBookRepository, OtpRepository otpRepository, MailService mailService, UserService userService, GlobalProperties globalProperties, @Autowired(required = false) SmsService smsService) {
+        this.signBookRepository = signBookRepository;
+        this.otpRepository = otpRepository;
+        this.mailService = mailService;
+        this.userService = userService;
         this.globalProperties = globalProperties;
         this.smsService = smsService;
-        otpCache = CacheBuilder.newBuilder().expireAfterWrite(EXPIRE_MINS, TimeUnit.MINUTES).build(new CacheLoader<>() {
-            public Otp load(String urlId) {
+        otpCache = CacheBuilder.newBuilder().expireAfterWrite(globalProperties.getOtpValidity(), TimeUnit.MINUTES).build(new CacheLoader<>() {
+            public Otp load(@NotNull String key) {
                 return null;
             }
         });
@@ -70,18 +72,19 @@ public class OtpService {
     public boolean generateOtpForSignRequest(Long id, Long extUserId, String phone) throws EsupSignatureMailException {
         User extUser = userService.getById(extUserId);
         if(extUser.getUserType().equals(UserType.external) && (!globalProperties.getSmsRequired() || smsService != null)) {
-
             SignBook signBook = signBookRepository.findById(id).get();
             Otp otp = new Otp();
-            otp.setCreateDate(new Data());
+            otp.setCreateDate(new Date());
             if(StringUtils.hasText(phone)) {
                 otp.setPhoneNumber(phone);
+            } else {
+                otp.setPhoneNumber(extUser.getPhone());
             }
-            otp.setEmail(extUser.getEmail());
-            otp.setSignBookId(signBook.getId());
+            otp.setUser(extUser);
+            otp.setSignBook(signBook);
             otp.setForceSms(extUser.getForceSms() != null && extUser.getForceSms());
             String urlId = UUID.randomUUID().toString();
-            mailService.sendOtp(otp, urlId, signBook);
+            otp.setUrlId(urlId);
             signBook.setLastOtp(urlId);
             removeOtpFromCache(extUser.getEppn());
             removeOtpFromCache(extUser.getEmail());
@@ -89,6 +92,8 @@ public class OtpService {
             if(StringUtils.hasText(phone)) {
                 extUser.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(phone));
             }
+            otpRepository.save(otp);
+            mailService.sendOtp(otp, urlId, signBook);
             logger.info("new url for otp : " + urlId);
             return true;
         } else {
@@ -98,7 +103,7 @@ public class OtpService {
 
     public void removeOtpFromCache(String searchString) {
         for (Map.Entry<String, Otp> otpEntry : otpCache.asMap().entrySet()) {
-            if(otpEntry.getValue().getEmail().equals(searchString) || (otpEntry.getValue().getPhoneNumber() != null && otpEntry.getValue().getPhoneNumber().equals(searchString))) {
+            if(otpEntry.getValue().getUser().getEmail().equals(searchString) || (otpEntry.getValue().getPhoneNumber() != null && otpEntry.getValue().getPhoneNumber().equals(searchString))) {
                 clearOTP(otpEntry.getKey());
             }
         }
@@ -106,23 +111,42 @@ public class OtpService {
 
     public void deleteOtpBySignRequestId(Long id) {
         for (Map.Entry<String, Otp> otpEntry : otpCache.asMap().entrySet()) {
-            if(otpEntry.getValue().getSignBookId().equals(id)) {
+            if(otpEntry.getValue().getSignBook().getId().equals(id)) {
                 clearOTP(otpEntry.getKey());
             }
         }
     }
 
     public String generateOtpPassword(String urlId) {
-        Otp otp = getOtp(urlId);
-        String password = randomOtpPassword(6);
+        Otp otp = getOtpFromDatabase(urlId);
+        String password = randomOtpPassword();
         otp.setPassword(hashPassword(password));
+        otpCache.put(urlId, otp);
         logger.info("new password for otp " + urlId + " : " + password);
         return password;
     }
 
-    public Otp getOtp(String urlId){
+    public Otp getAndCheckOtpFromCache(String urlId){
+        try{
+            return otpCache.get(urlId);
+        }catch (Exception e){
+            logger.warn("error on get otp : " + e.getMessage());
+        }
+        return null;
+    }
+
+    public Otp getOtpFromCache(String urlId){
         try{
             return otpCache.getUnchecked(urlId);
+        }catch (Exception e){
+            logger.warn("error on get otp : " + e.getMessage());
+        }
+        return null;
+    }
+
+    public Otp getOtpFromDatabase(String urlId){
+        try{
+            return otpRepository.findByUrlId(urlId);
         }catch (Exception e){
             logger.warn("error on get otp : " + e.getMessage());
         }
@@ -135,7 +159,7 @@ public class OtpService {
     }
 
     public Boolean checkOtp(String urlId, String password) {
-        Otp otp = getOtp(urlId);
+        Otp otp = getOtpFromCache(urlId);
         if(otp != null) {
             if (otp.getPassword().equals(hashPassword(password))) {
                 return true;
@@ -153,18 +177,18 @@ public class OtpService {
         return null;
     }
 
-    private String randomOtpPassword(int size) {
+    private String randomOtpPassword() {
         try {
             SecureRandom randomGenerator = SecureRandom.getInstance("SHA1PRNG");
             HashSet<Integer> set = new HashSet<>();
-            while(set.size() < size - 3) {
+            while(set.size() < 6 - 3) {
                 set.add(randomGenerator.nextInt(9));
             }
             StringBuilder builder = new StringBuilder();
             for (Integer i : set) {
                 builder.append(i);
             }
-            return builder.toString() + Strings.padStart((1000 - randomGenerator.nextInt(999)) + "", 3, '0');
+            return builder + Strings.padStart((1000 - randomGenerator.nextInt(999)) + "", 3, '0');
         } catch (NoSuchAlgorithmException e) {
             logger.error(e.getMessage());
         }

@@ -260,9 +260,9 @@ public class SignService {
 			if(user.getSignImages().size() > signRequestParams.getSignImageNumber() && signRequestParams.getAddImage()) {
 				inputStream = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
 			} else {
-				inputStream = fileService.getDefaultImage(user.getName(), user.getFirstname(), 2);
+				inputStream = fileService.getDefaultImage(user.getName(), user.getFirstname(), true);
 			}
-			InputStream signImage = fileService.addTextToImage(inputStream, signRequestParams, SignType.nexuSign, user, date, fixFactor);
+			InputStream signImage = fileService.addTextToImage(inputStream, signRequestParams, SignType.nexuSign, user, date);
 			if(signRequestParams.getAddWatermark()) {
 				ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 				fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, outputStream, signRequestParams.getExtraOnTop());
