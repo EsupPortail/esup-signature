@@ -34,12 +34,14 @@ public class FileService {
 
 	private final String[] faImages = {"check-solid", "times-solid", "circle-regular", "minus-solid"};
 
+	private final float fixFactor = .75f;
+
 	public ByteArrayOutputStream copyInputStream(InputStream inputStream) {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
 			inputStream.transferTo(baos);
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error("unable to copy input stream", e);
 		}
 		return baos;
 	}
@@ -171,7 +173,7 @@ public class FileService {
 	    }
 	}
 
-	public InputStream addTextToImage(InputStream imageStream, SignRequestParams signRequestParams, SignType signType, User user, Date date, double fixFactor) throws IOException {
+	public InputStream addTextToImage(InputStream imageStream, SignRequestParams signRequestParams, SignType signType, User user, Date date) throws IOException {
 		InputStream textAddedInputStream = imageStream;
 		String[] arr = signRequestParams.getExtraText().split("\\s*\n\\s*");
 		List<String> text = Arrays.asList(arr);
@@ -196,62 +198,60 @@ public class FileService {
 			Map<TextAttribute, Object> attributes = new Hashtable<>();
 			int fontSize = (int) (12 * qualityFactor * signRequestParams.getSignScale() * fixFactor);
 			setQualityParams(graphics2D);
-			Font font = null;
 			try {
-				font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.PLAIN).deriveFont((float) fontSize);
-			} catch (FontFormatException e) {
-				e.printStackTrace();
-			}
-			font = font.deriveFont(attributes);
-			graphics2D.setFont(font);
-			graphics2D.setPaint(Color.black);
-			FontMetrics fm = graphics2D.getFontMetrics();
-			int lineHeight = Math.round(fontSize + fontSize * .5f);
-			if(signRequestParams.getExtraType()) {
-				String typeSign = "Signature calligraphique";
-				if(signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) typeSign = "Visa";
-				if(signType.equals(SignType.certSign) || signType.equals(SignType.nexuSign)) typeSign = "Signature électronique";
-				if(user.getRoles().contains("ROLE_OTP")) {
-					if(user.getPhone() != null) {
-						typeSign = "Signature OTP : " + user.getPhone();
-					} else {
-						typeSign = "Signature OTP";
+				Font font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.PLAIN).deriveFont((float) fontSize);
+				font = font.deriveFont(attributes);
+				graphics2D.setFont(font);
+				graphics2D.setPaint(Color.black);
+				FontMetrics fm = graphics2D.getFontMetrics();
+				int lineHeight = Math.round(fontSize + fontSize * .5f);
+				if(signRequestParams.getExtraType()) {
+					String typeSign = "Signature calligraphique";
+					if(signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) typeSign = "Visa";
+					if(signType.equals(SignType.certSign) || signType.equals(SignType.nexuSign)) typeSign = "Signature électronique";
+					if(user.getRoles().contains("ROLE_OTP")) {
+						if(user.getPhone() != null) {
+							typeSign = "Signature OTP : " + user.getPhone();
+						} else {
+							typeSign = "Signature OTP";
+						}
 					}
+					graphics2D.drawString(typeSign, widthOffset, fm.getHeight());
+					lineCount++;
 				}
-				graphics2D.drawString(typeSign, widthOffset, fm.getHeight());
-				lineCount++;
-			}
-			if(signRequestParams.getExtraName()) {
-				if(lineCount == 0) {
-					graphics2D.drawString(user.getFirstname() + " " + user.getName(), widthOffset, fm.getHeight());
-				} else {
-					graphics2D.drawString(user.getFirstname() + " " + user.getName(), widthOffset, fm.getHeight() + lineHeight * lineCount);
-				}
+				if(signRequestParams.getExtraName()) {
+					if(lineCount == 0) {
+						graphics2D.drawString(user.getFirstname() + " " + user.getName(), widthOffset, fm.getHeight());
+					} else {
+						graphics2D.drawString(user.getFirstname() + " " + user.getName(), widthOffset, fm.getHeight() + lineHeight * lineCount);
+					}
 
-				lineCount++;
-			}
-			if(signRequestParams.getExtraDate()) {
-				DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss XXX", Locale.FRENCH);
-				if(lineCount == 0) {
-					graphics2D.drawString("le " + dateFormat.format(date), widthOffset, fm.getHeight());
-				} else {
-					graphics2D.drawString("le " + dateFormat.format(date), widthOffset, fm.getHeight() + lineHeight * lineCount);
+					lineCount++;
 				}
-				lineCount++;
-			}
-			for (String line : text) {
-				if(lineCount == 0) {
-					graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), widthOffset, fm.getHeight());
-				} else {
-					graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), widthOffset, fm.getHeight() + lineHeight * lineCount);
+				if(signRequestParams.getExtraDate()) {
+					DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss XXX", Locale.FRENCH);
+					if(lineCount == 0) {
+						graphics2D.drawString("le " + dateFormat.format(date), widthOffset, fm.getHeight());
+					} else {
+						graphics2D.drawString("le " + dateFormat.format(date), widthOffset, fm.getHeight() + lineHeight * lineCount);
+					}
+					lineCount++;
 				}
-				lineCount++;
+				for (String line : text) {
+					if(lineCount == 0) {
+						graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), widthOffset, fm.getHeight());
+					} else {
+						graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), widthOffset, fm.getHeight() + lineHeight * lineCount);
+					}
+					lineCount++;
+				}
+				graphics2D.dispose();
+				ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+				ImageIO.write(image, "png", outputStream);
+				textAddedInputStream = new ByteArrayInputStream(outputStream.toByteArray());
+			} catch (FontFormatException e) {
+				logger.error("unable to get font", e);
 			}
-//			graphics2D.drawString("", 0, fm.getHeight() * lineCount + 1);
-			graphics2D.dispose();
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-			ImageIO.write(image, "png", outputStream);
-			textAddedInputStream = new ByteArrayInputStream(outputStream.toByteArray());
 		}
 		return textAddedInputStream;
 	}
@@ -325,13 +325,17 @@ public class FileService {
 		imgBuf.setRGB(0, 0, w, h, rgb, 0, w);
 	}
 
-	public InputStream getDefaultImage(String name, String firstname, int factor) throws IOException {
-		BufferedImage bufferedImage = new BufferedImage(600 * factor, 300 * factor, BufferedImage.TYPE_INT_ARGB);
+	public InputStream getDefaultImage(String name, String firstname, boolean forPrint) throws IOException {
+		float factor = 1f;
+		if(forPrint) {
+			factor = fixFactor;
+		}
+		BufferedImage bufferedImage = new BufferedImage(Math.round(600 / factor), Math.round(300 / factor), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics2D = bufferedImage.createGraphics();
 		graphics2D.setColor(new Color(0f,0f,0f,0f ));
 		Rectangle rect = new Rectangle();
-		rect.setRect(0, 0, 600 * factor, 300 * factor);
-		graphics2D.fillRect(0, 0, 600 * factor, 300 * factor);
+		rect.setRect(0, 0, 600 / factor, 300 / factor);
+		graphics2D.fillRect(0, 0, Math.round(600 / factor), Math.round(300 / factor));
 		setQualityParams(graphics2D);
 		String word;
 		if (name.length() >= firstname.length()) {
@@ -341,15 +345,15 @@ public class FileService {
 		}
 		try {
 			Font font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/Signature.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(12f);
-			int fontSize = findFontSize(word, 250 * factor, font);
+			int fontSize = findFontSize(word, Math.round(250 / factor), font);
 			font = font.deriveFont((float) fontSize);
 			graphics2D.setFont(font);
 			graphics2D.setColor(Color.BLACK);
 			FontMetrics fm = graphics2D.getFontMetrics();
 			int y = rect.y + ((rect.height - fm.getHeight()) / 2) + fm.getAscent();
 			int lineHeight = Math.round((float) fontSize / 1.5f);
-			graphics2D.drawString(StringUtils.capitalize(firstname), 250 * factor, y - lineHeight);
-			graphics2D.drawString(StringUtils.capitalize(name), 250 * factor, y + lineHeight);
+			graphics2D.drawString(StringUtils.capitalize(firstname), 250 / factor, y - lineHeight);
+			graphics2D.drawString(StringUtils.capitalize(name), 250 / factor, y + lineHeight);
 			graphics2D.dispose();
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			ImageIO.write(bufferedImage, "png", outputStream);
