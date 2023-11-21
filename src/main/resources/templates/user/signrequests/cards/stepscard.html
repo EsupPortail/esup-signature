@@ -44,19 +44,22 @@
                                 </th:block>
                                 <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="text-danger float-end"><i class="fa-solid fa-users"></i></span>
                                 <span title="Une signature suffit" th:unless="${liveWorkflowStep.allSignToComplete}" class="float-end d-none"><i class="fa-solid fa-user"></i></span>
-                                <div class="bs-stepper-label">
+                                <span style="font-size: 10pt; font-weight: bold;" th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></span>
+                                <div>
                                     <th:block th:if="${liveWorkflowStep.workflowStep != null && liveWorkflowStep.workflowStep.description != null && liveWorkflowStep.workflowStep.description != ''}">
                                         <span th:text="${liveWorkflowStep.workflowStep.description}"></span>
                                         <br/>
                                     </th:block>
-                                    <span  th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></span>
-                                    <br/>
                                     <table class="table table-sm table-hover table-borderless">
                                     <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
                                         <tr>
-                                            <td th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
+                                            <td th:title="${recipient.user.email}">
+                                                <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                                <br/>
+                                                <small th:if="${signRequest.recipientHasSigned.get(recipient) != null}" th:text="'Le ' + ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}"></small>
+                                            </td>
                                             <td class="text-right">
-                                                <i title="A signé le document" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" class="fa-solid fa-check-circle text-success"></i>
+                                                <i th:title="'A signé le document le ' + ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" class="fa-solid fa-check-circle text-success"></i>
                                                 <i title="En attente de signature" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none'}" class="fa-solid fa-clock text-warning"></i>
                                                 <i title="A refusé le document" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'refused'}" class="fa-solid fa-times-circle text-danger"></i>
                                             </td>
@@ -68,9 +71,8 @@
                                                     <i class="fa-solid fa-key"></i></button>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td colspan="3">
-                                                <small th:if="${signRequest.recipientHasSigned.get(recipient) != null}" th:text="${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}"></small>
+                                        <tr style="height: 10px;">
+                                            <td colspan="3" style="text-align: end;">
                                             </td>
                                         </tr>
                                         <div th:if="${userEppn == signRequest.createBy.eppn && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" data-bs-focus="false" class="modal " th:id="'menu-' + ${recipient.id}">
