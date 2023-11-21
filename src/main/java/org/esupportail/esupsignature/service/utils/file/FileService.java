@@ -348,8 +348,8 @@ public class FileService {
 			FontMetrics fm = graphics2D.getFontMetrics();
 			int y = rect.y + ((rect.height - fm.getHeight()) / 2) + fm.getAscent();
 			int lineHeight = Math.round((float) fontSize / 1.5f);
-			graphics2D.drawString(StringUtils.capitalize(firstname), 300 * factor, y - lineHeight);
-			graphics2D.drawString(StringUtils.capitalize(name), 300 * factor, y + lineHeight);
+			graphics2D.drawString(StringUtils.capitalize(firstname), 250 * factor, y - lineHeight);
+			graphics2D.drawString(StringUtils.capitalize(name), 250 * factor, y + lineHeight);
 			graphics2D.dispose();
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			ImageIO.write(bufferedImage, "png", outputStream);
@@ -361,7 +361,7 @@ public class FileService {
 	}
 
 	private int findFontSize(String word, int maxWidth, Font font) {
-		int maxSize = 1000;
+		int maxSize = 80;
 		Graphics graphics = createGraphics();
 		FontMetrics metrics = graphics.getFontMetrics(font);
 		while (font.getSize() < maxSize) {
