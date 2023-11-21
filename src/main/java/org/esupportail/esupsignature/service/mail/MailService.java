@@ -12,7 +12,7 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLdap;
-import org.esupportail.esupsignature.service.security.otp.Otp;
+import org.esupportail.esupsignature.entity.Otp;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -418,8 +418,8 @@ public class MailService {
             addInLineImages(mimeMessage, htmlContent);
             mimeMessage.setSubject("Vous avez un document à signer émanant de " + messageSource.getMessage("application.footer", null, Locale.FRENCH));
             mimeMessage.setFrom(mailConfig.getMailFrom());
-            mimeMessage.setTo(otp.getEmail());
-            logger.info("send email alert for " + otp.getEmail());
+            mimeMessage.setTo(otp.getUser().getEmail());
+            logger.info("send email alert for " + otp.getUser().getEmail());
             mailSender.send(mimeMessage.getMimeMessage());
         } catch (MessagingException e) {
             logger.error("unable to send OTP email", e);

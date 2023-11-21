@@ -11,7 +11,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
-import org.esupportail.esupsignature.service.security.otp.Otp;
+import org.esupportail.esupsignature.entity.Otp;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
@@ -62,20 +62,15 @@ public class OtpAccessController {
     public OtpAccessController(@Autowired(required = false) SmsService smsService) {
         this.smsService = smsService;
     }
-//
-//    @GetMapping
-//    public String signin() {
-//        return "otp/end";
-//    }
 
     @GetMapping(value = "/first/{urlId}")
     public String signin(@PathVariable String urlId, Model model, HttpServletRequest httpServletRequest) {
         model.addAttribute("urlId", urlId);
-        Otp otp = otpService.getOtp(urlId);
+        Otp otp = otpService.getOtpFromDatabase(urlId);
         if(otp != null) {
-            User user = userService.getUserByEmail(otp.getEmail());
+            User user = otp.getUser();
             if(globalProperties.getSmsRequired() || otp.isForceSms()) {
-                if (!otp.isSmsSended() && smsService != null) {
+                if (!otp.getSmsSended() && smsService != null) {
                     if (user.getPhone() != null && !user.getPhone().isEmpty()) {
                         Pattern pattern = Pattern.compile("^(\\d{2}[- .]?){5}$");
                         Matcher matcher = pattern.matcher(user.getPhone());
@@ -94,13 +89,18 @@ public class OtpAccessController {
                     return "otp/enter-phonenumber";
                 }
             } else if(!globalProperties.getSmsRequired() && !otp.isForceSms()) {
-                authOtp(model, httpServletRequest, user);
-                return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBookId();
+                Otp cachedOtp =  otpService.getAndCheckOtpFromCache(urlId);
+                if(cachedOtp != null && urlId.equals(cachedOtp.getUrlId())) {
+                    authOtp(model, httpServletRequest, user);
+                    return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
+                }
             }
-        } else {
-            signBookService.renewOtp(urlId);
         }
-        return "redirect:/otp-access/expired";
+        if(signBookService.renewOtp(urlId)) {
+            return "redirect:/otp-access/expired";
+        } else {
+            return "redirect:/otp-access/error";
+        }
     }
 
     @GetMapping(value = "/expired")
@@ -108,20 +108,20 @@ public class OtpAccessController {
         return "otp/expired";
     }
 
-    @GetMapping(value = "/session-expired")
-    public String sessionExpired() {
-        return "otp/session-expired";
+    @GetMapping(value = "/error")
+    public String error() {
+        return "otp/error";
     }
 
     @PostMapping(value = "/phone")
     public String phone(@RequestParam String urlId, @RequestParam String phone, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureUserException {
         model.addAttribute("urlId", urlId);
-        Otp otp = otpService.getOtp(urlId);
+        Otp otp = otpService.getOtpFromDatabase(urlId);
         if(otp != null) {
-            User user = userService.getUserByEmail(otp.getEmail());
+            User user = otp.getUser();
             User userTest = userService.getUserByPhone(phone);
             if (userTest == null || user.getEppn().equals(userTest.getEppn())) {
-                if(!otp.isSmsSended() && smsService != null) {
+                if(!otp.getSmsSended() && smsService != null) {
                     Pattern pattern = Pattern.compile("^(\\d{2}[- .]?){5}$");
                     Matcher matcher = pattern.matcher(phone);
                     if(matcher.matches()) {
@@ -155,15 +155,15 @@ public class OtpAccessController {
         Boolean testOtp = otpService.checkOtp(urlId, password);
         if(testOtp != null) {
             if (testOtp) {
-                Otp otp = otpService.getOtp(urlId);
+                Otp otp = otpService.getOtpFromCache(urlId);
                 otp.setSmsSended(true);
                 logger.info("otp success for : " + urlId);
-                User user = userService.getUserByEmail(otp.getEmail());
+                User user = otp.getUser();
                 if(StringUtils.hasText(otp.getPhoneNumber())) {
                     userService.updatePhone(user.getEppn(), PhoneNumberUtil.normalizeDiallableCharsOnly(otp.getPhoneNumber()));
                 }
                 authOtp(model, httpServletRequest, user);
-                return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBookId();
+                return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
             } else {
                 model.addAttribute("result", "KO");
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Mauvais code SMS, un nouveau code vous à été envoyé"));
