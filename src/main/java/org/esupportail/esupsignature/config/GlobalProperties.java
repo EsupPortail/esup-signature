@@ -237,7 +237,15 @@ public class GlobalProperties {
      */
     private Character csvQuote = null;
 
+    /**
+     *  Remplacer les espaces dans les noms de fichiers par le caractère suivant
+     */
     private String fileNameSpacesReplaceBy = "_";
+
+    /**
+     * Durée de validité des liens de OTP en minutes
+     */
+    private Integer otpValidity = 10;
 
     public String getRootUrl() {
         return rootUrl;
@@ -621,5 +629,17 @@ public class GlobalProperties {
 
     public void setCsvQuote(Character csvQuote) {
         this.csvQuote = csvQuote;
+    }
+
+    public void setExportAttachements(Boolean exportAttachements) {
+        this.exportAttachements = exportAttachements;
+    }
+
+    public Integer getOtpValidity() {
+        return otpValidity;
+    }
+
+    public void setOtpValidity(Integer otpValidity) {
+        this.otpValidity = otpValidity;
     }
 }

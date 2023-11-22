@@ -2053,21 +2053,26 @@ public class SignBookService {
 
 
     @Transactional
-    public void renewOtp(String urlId) {
-        SignBook signBook = getByLastOtp(urlId);
-        if(signBook != null) {
-            SignRequest signRequest = signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending)).findFirst().orElse(null);
-            if(signRequest != null) {
-                List<Recipient> recipients = signRequest.getRecipientHasSigned().keySet().stream().filter(r -> r.getUser().getUserType().equals(UserType.external)).collect(Collectors.toList());
-                for (Recipient recipient : recipients) {
-                    try {
-                        otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), recipient.getUser().getPhone());
-                    } catch (EsupSignatureMailException e) {
-                        logger.error(e.getMessage());
+    public boolean renewOtp(String urlId) {
+        Otp otp = otpService.getOtpFromDatabase(urlId);
+        if(otp != null) {
+            SignBook signBook = otp.getSignBook();
+            if (signBook != null) {
+                SignRequest signRequest = signBook.getSignRequests().stream().filter(s -> !s.getStatus().equals(SignRequestStatus.cleaned) || !s.getStatus().equals(SignRequestStatus.deleted)).findFirst().orElse(null);
+                if (signRequest != null) {
+                    List<Recipient> recipients = signRequest.getRecipientHasSigned().keySet().stream().filter(r -> r.getUser().getUserType().equals(UserType.external)).toList();
+                    for (Recipient recipient : recipients) {
+                        try {
+                            otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), recipient.getUser().getPhone());
+                            return true;
+                        } catch (EsupSignatureMailException e) {
+                            logger.error(e.getMessage());
+                        }
                     }
                 }
             }
         }
+        return false;
     }
 
     @Transactional

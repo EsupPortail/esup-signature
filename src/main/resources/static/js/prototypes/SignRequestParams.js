@@ -616,23 +616,24 @@ export class SignRequestParams extends EventFactory {
     }
 
     simulateDrop() {
-        let x = Math.round(this.xPos * this.currentScale);
-        let y = Math.round(this.yPos * this.currentScale + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top + (10 * (parseInt(this.signPageNumber))));
-        let self = this;
-        this.cross.on("dragstop", function(){
-            let test = self.scrollTop + $(window).height();
-            if(y > test) {
-                window.scrollTo(0, y);
-            }
-            $(this).unbind("dragstop");
-        });
-        this.cross.simulate("drag", {
-            handle: "corner",
-            moves: 1,
-            dx: x,
-            dy: y
-        });
-
+        if(this.firstLaunch) {
+            let x = Math.round(this.xPos * this.currentScale);
+            let y = Math.round(this.yPos * this.currentScale + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top + (10 * (parseInt(this.signPageNumber))));
+            let self = this;
+            this.cross.on("dragstop", function () {
+                let test = self.scrollTop + $(window).height();
+                if (y > test) {
+                    window.scrollTo(0, y);
+                }
+                $(this).unbind("dragstop");
+            });
+            this.cross.simulate("drag", {
+                handle: "corner",
+                moves: 1,
+                dx: x,
+                dy: y
+            });
+        }
     }
 
     displayMoreTools() {
@@ -757,7 +758,7 @@ export class SignRequestParams extends EventFactory {
                 this.divExtra = $("#divExtra_" + this.id);
                 this.divExtra.append("<span id='extraTypeDiv_"+ this.id +"' >" + this.typeSign + "<br/></span>");
                 this.divExtra.append("<span id='extraNameDiv_"+ this.id +"' >" + this.userName + "<br/></span>");
-                this.divExtra.append("<span id='extraDateDiv_"+ this.id +"'>le " + moment().format('DD/MM/YYYY HH:mm:ssZZ') + "<br/></span>");
+                this.divExtra.append("<span id='extraDateDiv_"+ this.id +"'>le " + moment().format('DD/MM/YYYY HH:mm:ss Z') + "<br/></span>");
                 setInterval(function() {
                     self.refreshDate();
                 }, 1000);
@@ -791,9 +792,6 @@ export class SignRequestParams extends EventFactory {
             this.signHeight -= this.extraHeight;
             this.extraHeight = 0;
         }
-        // this.toggleType();
-        // this.toggleName();
-        // this.toggleText();
         this.updateSize();
         if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('addExtra', this.addExtra);
@@ -847,7 +845,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     refreshDate() {
-        $("#extraDateDiv_" + this.id).html("le " + moment().format('DD/MM/YYYY HH:mm:ssZZ') + "<br/>");
+        $("#extraDateDiv_" + this.id).html("le " + moment().format('DD/MM/YYYY HH:mm:ss Z') + "<br/>");
     }
 
     toggleType() {
