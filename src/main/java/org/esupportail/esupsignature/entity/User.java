@@ -8,6 +8,8 @@ import org.esupportail.esupsignature.entity.enums.UserType;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.persistence.*;
+import org.springframework.util.StringUtils;
+
 import java.time.DayOfWeek;
 import java.util.*;
 
@@ -106,6 +108,9 @@ public class User {
     @OneToOne
     private SignRequestParams favoriteSignRequestParams;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<Otp> otps = new HashSet<>();
+
     private Boolean returnToHomeAfterSign = true;
 
     private Boolean forceSms = false;
@@ -123,7 +128,7 @@ public class User {
     }
 
 	public void setName(String name) {
-        this.name = name;
+        this.name = StringUtils.capitalize(name);
     }
 
 	public String getFirstname() {
@@ -131,7 +136,7 @@ public class User {
     }
 
 	public void setFirstname(String firstname) {
-        this.firstname = firstname;
+        this.firstname = StringUtils.capitalize(firstname);
     }
 
 	public String getEppn() {
