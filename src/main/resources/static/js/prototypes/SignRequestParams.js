@@ -616,23 +616,24 @@ export class SignRequestParams extends EventFactory {
     }
 
     simulateDrop() {
-        let x = Math.round(this.xPos * this.currentScale);
-        let y = Math.round(this.yPos * this.currentScale + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top + (10 * (parseInt(this.signPageNumber))));
-        let self = this;
-        this.cross.on("dragstop", function(){
-            let test = self.scrollTop + $(window).height();
-            if(y > test) {
-                window.scrollTo(0, y);
-            }
-            $(this).unbind("dragstop");
-        });
-        this.cross.simulate("drag", {
-            handle: "corner",
-            moves: 1,
-            dx: x,
-            dy: y
-        });
-
+        if(this.firstLaunch) {
+            let x = Math.round(this.xPos * this.currentScale);
+            let y = Math.round(this.yPos * this.currentScale + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top + (10 * (parseInt(this.signPageNumber))));
+            let self = this;
+            this.cross.on("dragstop", function () {
+                let test = self.scrollTop + $(window).height();
+                if (y > test) {
+                    window.scrollTo(0, y);
+                }
+                $(this).unbind("dragstop");
+            });
+            this.cross.simulate("drag", {
+                handle: "corner",
+                moves: 1,
+                dx: x,
+                dy: y
+            });
+        }
     }
 
     displayMoreTools() {
