@@ -168,7 +168,7 @@ public class OtpSignRequestController {
     @PostMapping(value = "/refuse/{id}")
     public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes) throws EsupSignatureMailException, EsupSignatureRuntimeException {
         signBookService.refuse(id, comment, userEppn, authUserEppn);
-        redirectAttributes.addFlashAttribute("messageInfos", "La demandes a bien été refusée");
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La demandes a bien été refusée"));
         return "redirect:/otp/signrequests/" + id;
     }
 
