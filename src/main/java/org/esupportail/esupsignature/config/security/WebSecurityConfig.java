@@ -196,7 +196,7 @@ public class WebSecurityConfig {
 				.ignoringRequestMatchers(antMatcher("/otp-access/**"))
 				.ignoringRequestMatchers(antMatcher("/log/**"))
 				.ignoringRequestMatchers(antMatcher("/actuator/**"))
-				.ignoringRequestMatchers(antMatcher("/h2-console/**")))				;
+				.ignoringRequestMatchers(antMatcher("/h2-console/**")));
 		http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 		setAuthorizeRequests(http);
 		return http.build();

@@ -208,7 +208,7 @@ public class SignBookController {
             return "redirect:/user/signbooks";
 
         } else {
-            redirectAttributes.addFlashAttribute("warn", new JsonMessage("info", "Le document ne peut pas être supprimé définitivement"));
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Le document ne peut pas être supprimé définitivement"));
             return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 
         }
