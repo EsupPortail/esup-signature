@@ -56,11 +56,12 @@
                                             <td th:title="${recipient.user.email}">
                                                 <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
                                                 <br/>
-                                                <small th:if="${signRequest.recipientHasSigned.get(recipient) != null}" th:text="'Le ' + ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}"></small>
+                                                <small th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" th:text="'Le ' + ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}"></small>
                                             </td>
                                             <td class="text-right">
                                                 <i th:title="'A signé le document le ' + ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" class="fa-solid fa-check-circle text-success"></i>
-                                                <i title="En attente de signature" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none'}" class="fa-solid fa-clock text-warning"></i>
+                                                <i title="En attente de signature" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fa-solid fa-clock text-warning"></i>
+                                                <i title="" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none' && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fa-solid fa-minus-circle text-secondary"></i>
                                                 <i title="A refusé le document" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'refused'}" class="fa-solid fa-times-circle text-danger"></i>
                                             </td>
                                             <td>
@@ -69,10 +70,6 @@
                                                         th:onclick="'$(\'#menu-' + ${recipient.id} + '\').toggle();'"
                                                         th:if="${userEppn == signRequest.createBy.eppn && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                                                     <i class="fa-solid fa-key"></i></button>
-                                            </td>
-                                        </tr>
-                                        <tr style="height: 10px;">
-                                            <td colspan="3" style="text-align: end;">
                                             </td>
                                         </tr>
                                         <div th:if="${userEppn == signRequest.createBy.eppn && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" data-bs-focus="false" class="modal " th:id="'menu-' + ${recipient.id}">
