@@ -25,6 +25,23 @@
             </ol>
         </nav>
         <div id="content" class="content">
+            <div id="signButtons" class="fixed-action-btns active">
+                <ul id="buttonList" class="list-unstyled">
+                    <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}">
+                        <a th:href="'/admin/signrequests/restore/' + ${signRequest.id}" role="button" class="btn-floating btn-lg bg-primary waves-effect" title="Restaurer">
+                            <i class="fa-solid fa-trash-restore fa-2xl"></i>
+                        </a>
+                    </li>
+                    <li th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}">
+                        <a id="trashLaunchButton" role="button" class="btn-floating btn-lg bg-danger waves-effect"
+                           th:title="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
+                           data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
+                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-dumpster fa-2xl"></i>
+                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-trash-alt fa-2xl"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
             <div class="card col-lg-10 mx-auto">
                 <div id="collapseOriginals">
                     <div class="card-body">
@@ -103,6 +120,30 @@
         </div>
     </div>
 </main>
+<div th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}"
+     data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="command" th:action="'/admin/signbooks/'+ ${signRequest.parentSignBook.id}" th:method="delete">
+                <div class="modal-header">
+                    <h2>Attention</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
+                    <div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
+                    <button type="submit" class="btn btn-danger">Oui</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>
