@@ -1023,7 +1023,7 @@ public class SignBookService {
 
     @Transactional
     public StepStatus initSign(Long signRequestId, String signRequestParamsJsonString, String comment, String formData, String password, String signWith, Long userShareId, String userEppn, String authUserEppn) throws IOException, EsupSignatureRuntimeException {
-        if(globalProperties.getAuthorizedSignTypes().stream().noneMatch(s -> s.getValue() <= SignWith.valueOf(signWith).getValue())) {
+        if(signWith != null && globalProperties.getAuthorizedSignTypes().stream().noneMatch(s -> s.getValue() <= SignWith.valueOf(signWith).getValue())) {
             throw new EsupSignatureRuntimeException("Le type de signature " + signWith + " n'est pas autorisé");
         }
         SignRequest signRequest = getSignRequestFullById(signRequestId, userEppn, authUserEppn);
