@@ -242,7 +242,7 @@ public class SignRequestWsSecureController {
     @PostMapping(value = "/create-sign-book")
     public ResponseEntity<Long> createSignFastRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) {
         SignBook signBook = signBookService.createSignBook(null, null, "Auto signature", userEppn, false);
-        signBookService.initSignBookWorkflow(signBook.getId(), SignType.pdfImageStamp, userEppn);
+        signBookService.initSignBookWorkflow(signBook.getId(), userEppn);
         model.addAttribute("signBookId", signBook.getId());
         return new ResponseEntity<>(signBook.getId(), HttpStatus.OK);
     }
