@@ -279,8 +279,11 @@ public class SignRequestService {
 			reports = validationService.validate(signedDocument.getInputStream(), null);
 			diagnosticData = reports.getDiagnosticData();
 			String certificat = new ArrayList<>(diagnosticData.getAllSignatures()).get(diagnosticData.getAllSignatures().size() - 1).getSigningCertificate().toString();
-			String timestamp = diagnosticData.getTimestampList().get(0).getSigningCertificate().toString();
-			if(!signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty()) {
+			String timestamp = "no timestamp found";
+			if(!diagnosticData.getTimestampList().isEmpty()) {
+				timestamp = diagnosticData.getTimestampList().get(0).getSigningCertificate().toString();
+			}
+			if (!signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty()) {
 				SignRequestParams signRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0);
 				auditTrailService.addAuditStep(signRequest.getToken(), userEppn, certificat, timestamp, reports.getSimpleReport().getValidationTime(), null, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
 			} else {

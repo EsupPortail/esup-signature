@@ -251,7 +251,7 @@ public class GlobalProperties {
     /**
      * Liste des types de signature autorisés
      */
-    private List<SignType> authorizedSignTypes = new ArrayList<>(List.of(SignType.values()));
+    private List<SignType> authorizedSignTypes = List.of(SignType.values());
 
     public String getRootUrl() {
         return rootUrl;
