@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
@@ -17,9 +18,9 @@ public class SignTypeService {
         this.globalProperties = globalProperties;
     }
 
-    public List<SignType> getAuthorizedSignTypes() {
+    public List<SignType> getAuthorizedSignTypes(User user) {
         List<SignType> signTypes = globalProperties.getAuthorizedSignTypes();
-        if(globalProperties.getDisableCertStorage() && (globalProperties.getOpenXPKIServerUrl() == null || globalProperties.getOpenXPKIServerUrl().isEmpty())) {
+        if(!user.getRoles().contains("ROLE_SEAL") &&  globalProperties.getDisableCertStorage() && (globalProperties.getOpenXPKIServerUrl() == null || globalProperties.getOpenXPKIServerUrl().isEmpty())) {
             signTypes.remove(SignType.certSign);
         }
         return signTypes;
