@@ -38,7 +38,7 @@ export class SignUi {
         if(status !== "exported" && currentSignType !== "form") {
             this.initReportModal();
         }
-        this.togglePasswordField();
+        this.checkAfterChangeSignType();
         this.checkSignOptions();
     }
 
@@ -60,7 +60,7 @@ export class SignUi {
                 }
             }
         });
-        $("#certType").on("change", e => this.togglePasswordField());
+        $("#certType").on("change", e => this.checkAfterChangeSignType());
         $("#copyButton").on('click', e => this.copy());
         $("#send").on('submit', function (e) {
             e.preventDefault();
@@ -256,8 +256,9 @@ export class SignUi {
         signModal.modal('show');
     }
 
-    togglePasswordField() {
+    checkAfterChangeSignType() {
         let value = this.certTypeSelect.val();
+        $("#alert-sign-present").hide();
         if(value === "userCert") {
             $("#password").show();
         } else {
@@ -267,6 +268,9 @@ export class SignUi {
             $("#nexuCheck").removeClass('d-none');
         } else {
             $("#nexuCheck").addClass('d-none');
+        }
+        if(value === "imageStamp") {
+            $("#alert-sign-present").show();
         }
     }
 

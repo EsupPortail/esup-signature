@@ -99,15 +99,20 @@ public class SignRequestAdminController {
 
 	@GetMapping(value = "/{id}")
 	@Transactional
-	public String show(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
+	public String show(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
 		SignRequest signRequest = signRequestService.getById(id);
-		List<Log> logs = logService.getBySignRequestId(signRequest.getId());
-		model.addAttribute("logs", logs);
-		model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
-		model.addAttribute("signRequest", signRequest);
-		model.addAttribute("originalDocuments", signRequest.getOriginalDocuments());
-		model.addAttribute("signedDocuments", signRequest.getSignedDocuments());
-		return "admin/signrequests/show";
+		if(signRequest != null) {
+			List<Log> logs = logService.getBySignRequestId(signRequest.getId());
+			model.addAttribute("logs", logs);
+			model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
+			model.addAttribute("signRequest", signRequest);
+			model.addAttribute("originalDocuments", signRequest.getOriginalDocuments());
+			model.addAttribute("signedDocuments", signRequest.getSignedDocuments());
+			return "admin/signrequests/show";
+		} else {
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "La demande de signature n'existe pas"));
+			return "redirect:/admin/signrequests";
+		}
 	}
 
 	@GetMapping(value = "/getfile/{id}")
@@ -124,7 +129,7 @@ public class SignRequestAdminController {
 		if(signBookService.deleteDefinitive(id, authUserEppn)) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été supprimé définitivement"));
 		} else {
-			redirectAttributes.addFlashAttribute("warn", new JsonMessage("info", "Le document ne peut pas être supprimé définitivement"));
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document ne peut pas être supprimé définitivement"));
 		}
 		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
@@ -149,7 +154,7 @@ public class SignRequestAdminController {
 	public String restore(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		signRequestService.restore(id, authUserEppn);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Restauration effectuée"));
-		return "redirect:/user/signrequests/" + id;
+		return "redirect:/admin/signrequests/" + id;
 	}
 
 }
