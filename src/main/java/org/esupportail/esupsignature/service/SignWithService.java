@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -72,6 +74,7 @@ public class SignWithService {
         if(dataService.getBySignBook(signRequest.getParentSignBook()) != null && signRequestService.isMoreWorkflowStep(signRequest.getParentSignBook())) {
             signWiths.removeIf(signWith -> signWith.getValue() > 2);
         }
+        signWiths.removeIf(signWith -> signWith.getValue() < globalProperties.getAuthorizedSignTypes().stream().sorted(Comparator.comparing(SignType::getValue)).findFirst().get().getValue());
         signWiths.remove(SignWith.autoCert);
         return signWiths;
     }

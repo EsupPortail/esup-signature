@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.config;
 
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
@@ -246,6 +247,11 @@ public class GlobalProperties {
      * Durée de validité des liens de OTP en minutes
      */
     private Integer otpValidity = 10;
+
+    /**
+     * Liste des types de signature autorisés
+     */
+    private List<SignType> authorizedSignTypes = List.of(SignType.values());
 
     public String getRootUrl() {
         return rootUrl;
@@ -641,5 +647,13 @@ public class GlobalProperties {
 
     public void setOtpValidity(Integer otpValidity) {
         this.otpValidity = otpValidity;
+    }
+
+    public List<SignType> getAuthorizedSignTypes() {
+        return authorizedSignTypes;
+    }
+
+    public void setAuthorizedSignTypes(List<SignType> authorizedSignTypes) {
+        this.authorizedSignTypes = authorizedSignTypes;
     }
 }
