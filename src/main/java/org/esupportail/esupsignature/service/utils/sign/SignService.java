@@ -333,15 +333,28 @@ public class SignService {
 	}
 
 	@Transactional
-	public boolean isNotSigned(SignRequest signRequest) throws IOException {
-		List<Document> documents = getToSignDocuments(signRequest.getId());
-		if(!documents.isEmpty() && (signRequest.getParentSignBook().getLiveWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign) || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.nexuSign)))) {
-			byte[] bytes = getToSignDocuments(signRequest.getId()).get(0).getInputStream().readAllBytes();
-			Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
-			return signRequest.getSignedDocuments().isEmpty() && reports != null && reports.getSimpleReport().getSignatureIdList().isEmpty();
-		} else {
-			return true;
+	public boolean isSigned(SignRequest signRequest) {
+		try {
+			List<Document> documents = getToSignDocuments(signRequest.getId());
+			if (!documents.isEmpty() && (signRequest.getParentSignBook().getLiveWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null)) {
+				byte[] bytes = getToSignDocuments(signRequest.getId()).get(0).getInputStream().readAllBytes();
+				Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
+				return !signRequest.getSignedDocuments().isEmpty() || (reports != null && !reports.getSimpleReport().getSignatureIdList().isEmpty());
+			}
+		} catch (Exception e) {
+			logger.error("error while checking if signRequest is signed", e);
 		}
+		return false;
+	}
+
+	@Transactional
+	public boolean isSigned(SignBook signBook) {
+		for (SignRequest signRequest : signBook.getSignRequests()) {
+			if (isSigned(signRequest)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Transactional
@@ -372,7 +385,7 @@ public class SignService {
 					inputStream = toSignFile.getInputStream();
 				}
 				bytes = inputStream.readAllBytes();
-				if(isNotSigned(signRequest) && !pdfService.isPdfAComplient(bytes)) {
+				if(!isSigned(signRequest) && !pdfService.isPdfAComplient(bytes)) {
 					bytes = pdfService.convertGS(pdfService.writeMetadatas(bytes, toSignFile.getFileName(), signRequest, new ArrayList<>()));
 				}
 			} else {

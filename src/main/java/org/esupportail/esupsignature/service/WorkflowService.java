@@ -101,7 +101,7 @@ public class WorkflowService {
             workflow.setCreateBy(userService.getSystemUser());
             WorkflowStep workflowStep = null;
             try {
-                workflowStep = workflowStepService.createWorkflowStep("Ma signature", false, SignType.pdfImageStamp, false, creator.getEmail());
+                workflowStep = workflowStepService.createWorkflowStep("Ma signature", false, null, false, creator.getEmail());
             } catch (EsupSignatureRuntimeException e) {
                 logger.warn(e.getMessage());
             }
@@ -475,6 +475,7 @@ public class WorkflowService {
         return workflowToUpdate;
     }
 
+    @Transactional
     public List<WorkflowStep> getWorkflowStepsFromSignRequest(SignRequest signRequest, String userEppn) throws EsupSignatureRuntimeException {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
