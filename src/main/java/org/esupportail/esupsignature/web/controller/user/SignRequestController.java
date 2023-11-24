@@ -168,7 +168,7 @@ public class SignRequestController {
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("editable", signRequest.getEditable());
-        model.addAttribute("isNotSigned", signService.isNotSigned(signRequest));
+        model.addAttribute("isNotSigned", !signService.isSigned(signRequest));
         model.addAttribute("isTempUsers", signRequestService.isTempUsers(id));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
             model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, userEppn));
