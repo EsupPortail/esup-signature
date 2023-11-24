@@ -120,7 +120,7 @@ public class GlobalAttributsControllerAdvice {
             } else {
                 model.addAttribute("versionApp", "dev");
             }
-            model.addAttribute("signTypes", signTypeService.getAuthorizedSignTypes());
+            model.addAttribute("signTypes", signTypeService.getAuthorizedSignTypes(user));
             model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
             model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
             model.addAttribute("nbToSign", signRequestService.nbToSignSignRequests(userEppn));
