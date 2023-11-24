@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.util.ArrayList;
 import java.util.List;
 
+//@Configuration
 @ConfigurationProperties(prefix="global")
 public class GlobalProperties {
 
