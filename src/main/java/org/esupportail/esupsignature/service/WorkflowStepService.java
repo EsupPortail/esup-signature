@@ -32,6 +32,10 @@ public class WorkflowStepService {
     @Resource
     private LiveWorkflowStepService liveWorkflowStepService;
 
+
+    @Resource
+    private SignTypeService signTypeService;
+
     @Resource
     private CertificatService certificatService;
 
@@ -52,7 +56,11 @@ public class WorkflowStepService {
         } else {
             workflowStep.setAllSignToComplete(allSignToComplete);
         }
-        workflowStep.setSignType(signType);
+        if(signType == null) {
+            workflowStep.setSignType(signTypeService.getLessSignType(2));
+        } else {
+            workflowStep.setSignType(signType);
+        }
         workflowStep.setChangeable(changeable);
         workflowStepRepository.save(workflowStep);
         if (recipientEmails != null && recipientEmails.length > 0) {

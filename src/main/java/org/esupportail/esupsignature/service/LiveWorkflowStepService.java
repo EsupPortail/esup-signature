@@ -1,11 +1,13 @@
 package org.esupportail.esupsignature.service;
 
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import jakarta.annotation.Resource;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,10 +33,16 @@ public class LiveWorkflowStepService {
     private UserService userService;
 
     @Resource
+    private SignTypeService signTypeService;
+
+    @Resource
     private UserPropertieService userPropertieService;
 
     @Resource
     private SignBookRepository signBookRepository;
+
+    @Resource
+    private SignService signService;
 
     public LiveWorkflowStep createLiveWorkflowStep(SignBook signBook, WorkflowStep workflowStep, Boolean repeatable, SignType repeatableSignType, Boolean multiSign, Boolean autoSign, Boolean allSignToComplete, SignType signType, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos) {
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
@@ -63,7 +70,15 @@ public class LiveWorkflowStepService {
         } else {
             liveWorkflowStep.setAllSignToComplete(allSignToComplete);
         }
-        liveWorkflowStep.setSignType(signType);
+        if(signType == null) {
+            int minLevel = 2;
+            if(signService.isSigned(signBook)) {
+                minLevel = 3;
+            }
+            liveWorkflowStep.setSignType(signTypeService.getLessSignType(minLevel));
+        } else {
+            liveWorkflowStep.setSignType(signType);
+        }
         liveWorkflowStep.setRepeatableSignType(repeatableSignType);
         addRecipientsToWorkflowStep(signBook, liveWorkflowStep, recipientsEmails, externalUsersInfos);
         liveWorkflowStepRepository.save(liveWorkflowStep);

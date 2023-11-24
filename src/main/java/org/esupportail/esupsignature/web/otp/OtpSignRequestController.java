@@ -135,7 +135,7 @@ public class OtpSignRequestController {
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("editable", false);
-        model.addAttribute("isNotSigned", signService.isNotSigned(signRequest));
+        model.addAttribute("isNotSigned", !signService.isSigned(signRequest));
         model.addAttribute("isTempUsers", false);
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
             model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, userEppn));

@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -24,6 +25,11 @@ public class SignTypeService {
             signTypes.remove(SignType.certSign);
         }
         return signTypes;
+    }
+
+    public SignType getLessSignType(int minLevel) {
+        List<SignType> signTypes = globalProperties.getAuthorizedSignTypes();
+        return signTypes.stream().filter(s -> s.getValue() >= minLevel).min(Comparator.comparing(SignType::getValue)).orElse(null);
     }
 
 }

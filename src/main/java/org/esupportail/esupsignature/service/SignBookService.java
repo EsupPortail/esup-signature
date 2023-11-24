@@ -312,11 +312,9 @@ public class SignBookService {
 
     @Transactional
     public void initSignBookWorkflow(Long signBookId, String userEppn) {
-        List<SignType> signTypes = globalProperties.getAuthorizedSignTypes();
-        SignType signType = signTypes.stream().sorted(Comparator.comparing(SignType::getValue)).filter(s -> s.getValue() > 1).findFirst().orElse(null);
         User user = userService.getByEppn(userEppn);
         SignBook signBook = getById(signBookId);
-        signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(signBook, null,false, null,true, false, false, signType, Collections.singletonList(user.getEmail()), null));
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(signBook, null,false, null,true, false, false, null, Collections.singletonList(user.getEmail()), null));
         signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
         workflowService.dispatchSignRequestParams(signBook);
         signBook.setStatus(SignRequestStatus.draft);
@@ -823,7 +821,7 @@ public class SignBookService {
             allSignToComplete = false;
         }
         if(userSignFirst != null && userSignFirst) {
-            signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(signBook, null,false, null, true, false,false, SignType.pdfImageStamp, Collections.singletonList(user.getEmail()), null));
+            signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(signBook, null,false, null, true, false,false, null, Collections.singletonList(user.getEmail()), null));
         }
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(signBook, null,false, null, true, false, allSignToComplete, signType, recipientsEmails, externalUsersInfos));
         signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
