@@ -311,7 +311,9 @@ public class SignBookService {
     }
 
     @Transactional
-    public void initSignBookWorkflow(Long signBookId, SignType signType, String userEppn) {
+    public void initSignBookWorkflow(Long signBookId, String userEppn) {
+        List<SignType> signTypes = globalProperties.getAuthorizedSignTypes();
+        SignType signType = signTypes.stream().sorted(Comparator.comparing(SignType::getValue)).filter(s -> s.getValue() > 1).findFirst().orElse(null);
         User user = userService.getByEppn(userEppn);
         SignBook signBook = getById(signBookId);
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(signBook, null,false, null,true, false, false, signType, Collections.singletonList(user.getEmail()), null));
