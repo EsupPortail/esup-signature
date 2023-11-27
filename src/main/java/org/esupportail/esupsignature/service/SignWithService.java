@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -74,7 +73,14 @@ public class SignWithService {
         if(dataService.getBySignBook(signRequest.getParentSignBook()) != null && signRequestService.isMoreWorkflowStep(signRequest.getParentSignBook())) {
             signWiths.removeIf(signWith -> signWith.getValue() > 2);
         }
-        signWiths.removeIf(signWith -> signWith.getValue() < globalProperties.getAuthorizedSignTypes().stream().sorted(Comparator.comparing(SignType::getValue)).findFirst().get().getValue());
+        List<SignWith> toRemoveSignWiths = new ArrayList<>();
+        for (SignWith signWith : signWiths) {
+            List<SignType> signTypes = globalProperties.getAuthorizedSignTypes().stream().filter(s -> s.getValue() >= signWith.getValue()).toList();
+            if(signTypes.isEmpty()) {
+                toRemoveSignWiths.add(signWith);
+            }
+        }
+        signWiths.removeAll(toRemoveSignWiths);
         signWiths.remove(SignWith.autoCert);
         return signWiths;
     }
