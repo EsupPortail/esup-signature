@@ -49,7 +49,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
@@ -1616,7 +1615,7 @@ public class SignBookService {
     @Transactional
     public void sendSignRequestsToTarget(Long id, String authUserEppn) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(id);
-        if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
+        if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets() != null && !signBook.getLiveWorkflow().getTargets().isEmpty()) {
             List<SignRequest> signRequests = signBook.getSignRequests();
             String title = signBook.getSubject();
             Set<Target> targets = signBook.getLiveWorkflow().getTargets();
@@ -1629,13 +1628,12 @@ public class SignBookService {
                         if (!documentIOType.equals(DocumentIOType.mail)) {
                             for (SignRequest signRequest : signRequests) {
                                 if (fsAccessFactoryService.getPathIOType(target.getTargetUri()).equals(DocumentIOType.rest)) {
-                                    RestTemplate restTemplate = new RestTemplate();
                                     SignRequestStatus status = SignRequestStatus.completed;
                                     if (signRequest.getRecipientHasSigned().values().stream().anyMatch(action -> action.getActionType().equals(ActionType.refused))) {
                                         status = SignRequestStatus.refused;
                                     }
                                     try {
-                                        ResponseEntity<String> response = restTemplate.getForEntity(target.getTargetUri() + "?signRequestId=" + signRequest.getId() + "&status=" + status.name(), String.class);
+                                        ResponseEntity<String> response = targetService.sendRest(target.getTargetUri(), signRequest.getId().toString(), status.name(), "end");
                                         if (response.getStatusCode().equals(HttpStatus.OK)) {
                                             target.setTargetOk(true);
                                             signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
@@ -1650,7 +1648,7 @@ public class SignBookService {
                                 } else {
                                     try {
                                         Document signedFile = signRequest.getLastSignedDocument();
-                                        if (signRequest.getAttachments().size() > 0 && globalProperties.getExportAttachements()) {
+                                        if (!signRequest.getAttachments().isEmpty() && globalProperties.getExportAttachements()) {
                                             if (!targetUrl.endsWith("/")) {
                                                 targetUrl += "/";
                                             }
