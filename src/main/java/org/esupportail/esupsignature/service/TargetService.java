@@ -1,15 +1,19 @@
 package org.esupportail.esupsignature.service;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.Target;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.repository.TargetRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import jakarta.annotation.Resource;
 import java.util.List;
 
 @Service
@@ -33,7 +37,17 @@ public class TargetService {
         return target;
     }
 
+    public ResponseEntity<String> sendRest(String target, String signRequestId, String status, String step) throws EsupSignatureFsException {
+        RestTemplate restTemplate = new RestTemplate();
+        UriComponents targetUri = UriComponentsBuilder.fromUriString(target)
+                .queryParam("signRequestId", signRequestId)
+                .queryParam("status", status)
+                .queryParam("step", step)
+                .build();
+        return restTemplate.getForEntity(targetUri.toUri(), String.class);
+    }
 
+    @Transactional
     public void copyTargets(List<Target> targets, SignBook signBook, List<String> targetEmails) throws EsupSignatureFsException {
         signBook.getLiveWorkflow().getTargets().clear();
         for(Target target : targets) {
@@ -44,6 +58,7 @@ public class TargetService {
         signBook.getLiveWorkflow().getTargets().add(addTargetEmails(targetEmails, targets));
     }
 
+    @Transactional
     public Target addTargetEmails(List<String> targetEmails, List<Target> targets) throws EsupSignatureFsException {
         StringBuilder targetEmailsToAdd = new StringBuilder();
         for(Target target1 : targets) {
