@@ -18,6 +18,7 @@ import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -28,7 +29,7 @@ import java.util.Date;
 import java.util.List;
 
 @EnableScheduling
-//@Profile("!dev")
+@Profile("!dev")
 @Component
 @EnableConfigurationProperties(GlobalProperties.class)
 public class ScheduledTaskService {
@@ -77,7 +78,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 30000)
+	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	public void scanAllSignbooksTargets() {
 		logger.debug("scan all signRequest to export");
 		List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
