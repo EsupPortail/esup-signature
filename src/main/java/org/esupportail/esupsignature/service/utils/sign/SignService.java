@@ -339,7 +339,9 @@ public class SignService {
 			if (!documents.isEmpty() && (signRequest.getParentSignBook().getLiveWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null)) {
 				byte[] bytes = getToSignDocuments(signRequest.getId()).get(0).getInputStream().readAllBytes();
 				Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
-				return !signRequest.getSignedDocuments().isEmpty() || (reports != null && !reports.getSimpleReport().getSignatureIdList().isEmpty());
+				return (reports != null
+						&&
+						!reports.getSimpleReport().getSignatureIdList().isEmpty());
 			}
 		} catch (Exception e) {
 			logger.error("error while checking if signRequest is signed", e);
