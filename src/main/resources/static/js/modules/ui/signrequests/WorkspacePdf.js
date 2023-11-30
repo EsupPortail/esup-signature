@@ -173,7 +173,11 @@ export class WorkspacePdf {
                 signSpaceDiv = $("#signSpace_" + i);
                 signSpaceDiv.on("click", e => this.addSign(i));
                 if(currentSignRequestParams.ready == null || !currentSignRequestParams.ready) {
-                    signSpaceDiv.html("Cliquez ici pour ajouter votre signature<br>" + currentSignRequestParams.comment);
+                    if(this.signType === "pdfImageStamp") {
+                        signSpaceDiv.html("Cliquez ici pour insérer votre signature<br>" + currentSignRequestParams.comment);
+                    } else if(this.signType === "visa") {
+                        signSpaceDiv.html("Cliquez ici pour insérer votre visa<br>" + currentSignRequestParams.comment);
+                    }
                 }
                 if (currentSignRequestParams.ready) {
                     signSpaceDiv.removeClass("sign-field");
