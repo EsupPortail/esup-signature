@@ -9,7 +9,7 @@
                 <div class="step" th:name="${workflowStep.id}" th:id="${workflowStep.id}">
                     <div class="step-trigger" th:aria-controls="'step_' + ${iterator.index}" role="tab"
                          aria-selected="false" style="border: 1px solid #555555;">
-                        <div class="bs-stepper-label">
+                        <div class="bs-stepper-label" style="width: 100%;">
                             <h5>Étape : <span class="bs-stepper-circle bg-primary"
                                               th:text="${iterator.index + 1}"></span></h5>
 
@@ -39,13 +39,13 @@
                                 </div>
                                 <div th:id="'cert_' + ${workflowStep.id}" th:classappend="${!workflowStep.autoSign ? 'd-none' : ''}">
                                     <div class="form-group mb-3">
-                                        <label th:for="'certificatId_' + ${workflowStep.id}"l>Auto signature avec le certificat :</label>
+                                        <label th:for="'certificatId_' + ${workflowStep.id}" >Auto signature avec le certificat :</label>
                                         <br>
-                                        <select class="slim-select-simple" name="certificatId" th:id="'certificatId_' + ${workflowStep.id}" data-placeholder="Choix du certificat">
+                                        <select class="slim-select-simple" th:name="'certificatId_' + ${workflowStep.id}" th:id="'certificatId_' + ${workflowStep.id}" data-placeholder="Choix du certificat">
                                             <option data-placeholder="true"></option>
-                                            <option value="" th:if="${globalProperties.sealCertificatDriver != null}" th:checked="${workflowStep.certificat == null}">Certificat cachet de l’établissement</option>
+                                            <option class="text-break" style="word-break: break-all;" value="" th:if="${globalProperties.sealCertificatDriver != null}" th:checked="${workflowStep.certificat == null}">Certificat cachet de l’établissement</option>
                                             <th:block th:each="certificat : ${certificats}">
-                                                <option th:text="${certificat.keystore.fileName}" th:value="${certificat.id}" th:selected="${workflowStep.certificat != null && workflowStep.certificat.id == certificat.id}"></option>
+                                                <option th:text="${certificat.keystore.fileName.substring(0, 50)}" th:value="${certificat.id}" th:selected="${workflowStep.certificat != null && workflowStep.certificat.id == certificat.id}"></option>
                                             </th:block>
                                         </select>
                                     </div>
