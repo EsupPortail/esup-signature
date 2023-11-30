@@ -482,7 +482,7 @@ public class MailService {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("unable to set template", e);
         }
     }
 

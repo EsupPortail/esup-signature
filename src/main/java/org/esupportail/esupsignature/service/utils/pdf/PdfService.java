@@ -166,7 +166,7 @@ public class PdfService {
 
         float tx = 0;
         float ty = 0;
-        Float fixFactor = .75f;
+        Float fixFactor = globalProperties.getFixFactor();
         float xAdjusted = signRequestParams.getxPos() * fixFactor;
         float yAdjusted;
 
