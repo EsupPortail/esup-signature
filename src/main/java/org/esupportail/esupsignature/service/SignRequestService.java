@@ -374,7 +374,7 @@ public class SignRequestService {
 			try {
 				formattedDate = formatter.parse(dateFilter);
 			} catch (ParseException e) {
-				e.printStackTrace();
+				logger.error("error on parsing date", e);
 			}
 			LocalDateTime nowLocalDateTime = formattedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 			LocalDateTime startLocalDateTime = nowLocalDateTime.with(LocalTime.of(0, 0, 0));
