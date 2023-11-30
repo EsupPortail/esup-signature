@@ -8,6 +8,7 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageTree;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
@@ -27,8 +28,6 @@ import java.util.stream.Collectors;
 @Service
 public class SignRequestParamsService {
 
-    Float fixFactor = .75f;
-
     private static final Logger logger = LoggerFactory.getLogger(SignRequestParamsService.class);
 
     @Resource
@@ -37,6 +36,9 @@ public class SignRequestParamsService {
     @Resource
     private PdfService pdfService;
 
+    @Resource
+    private GlobalProperties globalProperties;
+    
     @Resource
     private ObjectMapper objectMapper;
 
@@ -48,11 +50,11 @@ public class SignRequestParamsService {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignImageNumber(0);
         signRequestParams.setPdSignatureFieldName(pdSignatureField.getPartialName());
-        signRequestParams.setxPos(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX() / fixFactor));
-        signRequestParams.setyPos(Math.round((pdPage.getBBox().getHeight() - pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - pdSignatureField.getWidgets().get(0).getRectangle().getHeight()) / fixFactor));
+        signRequestParams.setxPos(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX() / globalProperties.getFixFactor()));
+        signRequestParams.setyPos(Math.round((pdPage.getBBox().getHeight() - pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - pdSignatureField.getWidgets().get(0).getRectangle().getHeight()) / globalProperties.getFixFactor()));
         signRequestParams.setSignPageNumber(signPageNumber);
-        signRequestParams.setSignWidth(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getWidth() / fixFactor));
-        signRequestParams.setSignHeight(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getHeight() / fixFactor));
+        signRequestParams.setSignWidth(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getWidth() / globalProperties.getFixFactor()));
+        signRequestParams.setSignHeight(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getHeight() / globalProperties.getFixFactor()));
         signRequestParamsRepository.save(signRequestParams);
         return signRequestParams;
     }

@@ -212,7 +212,7 @@ public class SignBookService {
             try {
                 formattedDate = formatter.parse(dateFilter);
             } catch (ParseException e) {
-                e.printStackTrace();
+                logger.error("unable to parse date : " + dateFilter);
             }
             LocalDateTime nowLocalDateTime = formattedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
             LocalDateTime startLocalDateTime = nowLocalDateTime.with(LocalTime.of(0, 0, 0));
@@ -275,7 +275,7 @@ public class SignBookService {
                 startDateFilter = Timestamp.valueOf(startLocalDateTime);
                 endDateFilter = Timestamp.valueOf(endLocalDateTime);
             } catch (ParseException e) {
-                e.printStackTrace();
+                logger.error("unable to parse date : " + dateFilter);
             }
         }
         User creatorFilterUser = null;
@@ -1919,7 +1919,7 @@ public class SignBookService {
             try {
                 formattedDate = formatter.parse(dateFilter);
             } catch (ParseException e) {
-                e.printStackTrace();
+                logger.error("unable to parse date : " + dateFilter);
             }
             LocalDateTime nowLocalDateTime = formattedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
             LocalDateTime startLocalDateTime = nowLocalDateTime.with(LocalTime.of(0, 0, 0));
