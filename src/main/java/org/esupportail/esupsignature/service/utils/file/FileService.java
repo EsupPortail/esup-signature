@@ -1,7 +1,9 @@
 package org.esupportail.esupsignature.service.utils.file;
 
+import jakarta.annotation.Resource;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
@@ -34,7 +36,8 @@ public class FileService {
 
 	private final String[] faImages = {"check-solid", "times-solid", "circle-regular", "minus-solid"};
 
-	private final float fixFactor = .75f;
+	@Resource
+	private GlobalProperties globalProperties;
 
 	public ByteArrayOutputStream copyInputStream(InputStream inputStream) {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -175,15 +178,13 @@ public class FileService {
 
 	public InputStream addTextToImage(InputStream imageStream, SignRequestParams signRequestParams, SignType signType, User user, Date date) throws IOException {
 		InputStream textAddedInputStream = imageStream;
-		String[] arr = signRequestParams.getExtraText().split("\\s*\n\\s*");
-		List<String> text = Arrays.asList(arr);
 		if(signRequestParams.getAddExtra()) {
-			int qualityFactor = 3;
+			int qualityFactor = globalProperties.getSignatureImageDpi() / 100;
 			final BufferedImage signImage = ImageIO.read(imageStream);
-			int widthOffset = (int) (signRequestParams.getExtraWidth() * qualityFactor * fixFactor);
-			int heightOffset = (int) (signRequestParams.getExtraHeight() * qualityFactor * fixFactor);
-			int width = (int) (signRequestParams.getSignWidth() * qualityFactor * fixFactor);
-			int height = (int) (signRequestParams.getSignHeight() * qualityFactor * fixFactor);
+			int widthOffset = (int) (signRequestParams.getExtraWidth() * qualityFactor * globalProperties.getFixFactor());
+			int heightOffset = (int) (signRequestParams.getExtraHeight() * qualityFactor * globalProperties.getFixFactor());
+			int width = (int) (signRequestParams.getSignWidth() * qualityFactor * globalProperties.getFixFactor());
+			int height = (int) (signRequestParams.getSignHeight() * qualityFactor * globalProperties.getFixFactor());
 
 			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 			changeColor(signImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
@@ -196,7 +197,7 @@ public class FileService {
 			graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 			int lineCount = 0;
 			Map<TextAttribute, Object> attributes = new Hashtable<>();
-			int fontSize = (int) (12 * qualityFactor * signRequestParams.getSignScale() * fixFactor);
+			int fontSize = (int) (12 * qualityFactor * signRequestParams.getSignScale() * globalProperties.getFixFactor());
 			setQualityParams(graphics2D);
 			try {
 				Font font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.PLAIN).deriveFont((float) fontSize);
@@ -237,6 +238,7 @@ public class FileService {
 					}
 					lineCount++;
 				}
+				List<String> text = List.of(signRequestParams.getExtraText().split("\\s*\n\\s*"));
 				for (String line : text) {
 					if(lineCount == 0) {
 						graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), widthOffset, fm.getHeight());
@@ -328,7 +330,7 @@ public class FileService {
 	public InputStream getDefaultImage(String name, String firstname, boolean forPrint) throws IOException {
 		float factor = 1f;
 		if(forPrint) {
-			factor = fixFactor;
+			factor = globalProperties.getFixFactor();
 		}
 		BufferedImage bufferedImage = new BufferedImage(Math.round(600 / factor), Math.round(300 / factor), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics2D = bufferedImage.createGraphics();

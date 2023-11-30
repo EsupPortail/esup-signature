@@ -355,7 +355,7 @@ public class SignBookController {
         try {
             signBookService.getMultipleSignedDocuments(ids, httpServletResponse);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error while downloading multiple documents", e);
         }
         httpServletResponse.flushBuffer();
     }
@@ -385,7 +385,7 @@ public class SignBookController {
         try {
             signBookService.getMultipleSignedDocumentsWithReport(ids, httpServletRequest, httpServletResponse);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error while downloading multiple documents", e);
         }
         httpServletResponse.flushBuffer();
     }
