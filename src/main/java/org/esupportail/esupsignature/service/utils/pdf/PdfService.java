@@ -5,7 +5,12 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
+import eu.europa.esig.dss.pades.SignatureFieldParameters;
+import eu.europa.esig.dss.pades.exception.ProtectedDocumentException;
+import eu.europa.esig.dss.pdf.PdfPermissionsChecker;
+import eu.europa.esig.dss.pdf.pdfbox.PdfBoxDocumentReader;
 import eu.europa.esig.dss.validation.reports.Reports;
+import jakarta.annotation.Resource;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -59,6 +64,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import org.verapdf.gf.foundry.VeraGreenfieldFoundryProvider;
 import org.verapdf.pdfa.Foundries;
 import org.verapdf.pdfa.PDFAParser;
@@ -66,7 +72,6 @@ import org.verapdf.pdfa.PDFAValidator;
 import org.verapdf.pdfa.results.TestAssertion;
 import org.verapdf.pdfa.results.ValidationResult;
 
-import jakarta.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.xml.transform.TransformerException;
 import java.awt.*;
@@ -880,6 +885,20 @@ public class PdfService {
             return true;
         }
         return false;
+    }
+
+    public void checkPdfPermitions(MultipartFile multipartFile) throws EsupSignatureRuntimeException {
+        try {
+            PdfPermissionsChecker pdfPermissionsChecker = new PdfPermissionsChecker();
+            pdfPermissionsChecker.checkSignatureRestrictionDictionaries(new PdfBoxDocumentReader(PDDocument.load(multipartFile.getBytes())), new SignatureFieldParameters());
+            pdfPermissionsChecker.checkDocumentPermissions(new PdfBoxDocumentReader(PDDocument.load(multipartFile.getBytes())), new SignatureFieldParameters());
+        } catch (IOException e) {
+            logger.error("error on check pdf permitions", e);
+            throw new EsupSignatureRuntimeException("error on check pdf permitions", e);
+        } catch (ProtectedDocumentException e) {
+            logger.warn(multipartFile.getOriginalFilename() + " : " + e.getMessage());
+            throw new EsupSignatureRuntimeException("La création de nouvelles signatures n'est pas autorisée dans le document actuel. Raison : Le dictionnaire des autorisations PDF n'autorise pas la modification ou la création de champs de formulaire interactifs, y compris les champs de signature, lorsque le document est ouvert avec un accès utilisateur.");
+        }
     }
 
 //    public InputStream convertDocToPDF(InputStream doc) {
