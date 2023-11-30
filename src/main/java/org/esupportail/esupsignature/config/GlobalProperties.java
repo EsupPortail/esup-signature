@@ -254,6 +254,16 @@ public class GlobalProperties {
      */
     private List<SignType> authorizedSignTypes = List.of(SignType.values());
 
+    /**
+     *  Resolution de l’image de signature
+     */
+    private Integer signatureImageDpi = 600;
+
+    /**
+     *  Facteur d’échelle entre pdfBox et pdfJs
+     */
+    private Float fixFactor = .75f;
+
     public String getRootUrl() {
         return rootUrl;
     }
@@ -656,5 +666,21 @@ public class GlobalProperties {
 
     public void setAuthorizedSignTypes(List<SignType> authorizedSignTypes) {
         this.authorizedSignTypes = authorizedSignTypes;
+    }
+
+    public Integer getSignatureImageDpi() {
+        return signatureImageDpi;
+    }
+
+    public void setSignatureImageDpi(Integer signatureImageDpi) {
+        this.signatureImageDpi = signatureImageDpi;
+    }
+
+    public Float getFixFactor() {
+        return fixFactor;
+    }
+
+    public void setFixFactor(Float fixFactor) {
+        this.fixFactor = fixFactor;
     }
 }

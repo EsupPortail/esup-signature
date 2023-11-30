@@ -24,6 +24,7 @@ import eu.europa.esig.dss.validation.reports.Reports;
 import eu.europa.esig.dss.validation.timestamp.TimestampToken;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 import jakarta.annotation.Resource;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.dss.DssUtils;
 import org.esupportail.esupsignature.dss.config.DSSProperties;
@@ -73,8 +74,6 @@ import java.util.List;
 @EnableConfigurationProperties(SignProperties.class)
 public class SignService {
 
-	Float fixFactor = .75f;
-
 	private static final Logger logger = LoggerFactory.getLogger(SignService.class);
 
 	final private SignProperties signProperties;
@@ -123,6 +122,10 @@ public class SignService {
 
 	@Resource
 	private DSSProperties dssProperties;
+
+	@Resource
+	private GlobalProperties globalProperties;
+
 
 	private final OpenXPKICertificatGenerationService openXPKICertificatGenerationService;
 
@@ -279,23 +282,23 @@ public class SignService {
 			imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
 			PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile, signRequestParams.getSignPageNumber());
 
-			int widthAdjusted = Math.round(signRequestParams.getSignWidth() * fixFactor);
-			int heightAdjusted = Math.round(signRequestParams.getSignHeight() * fixFactor);
+			int widthAdjusted = Math.round(signRequestParams.getSignWidth() * globalProperties.getFixFactor());
+			int heightAdjusted = Math.round(signRequestParams.getSignHeight() * globalProperties.getFixFactor());
 
 			if(pdfParameters.getRotation() == 0) {
 				signatureFieldParameters.setWidth(widthAdjusted);
 				signatureFieldParameters.setHeight(heightAdjusted);
-				signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() * fixFactor));
+				signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() * globalProperties.getFixFactor()));
 			} else {
 				signatureFieldParameters.setWidth(heightAdjusted);
 				signatureFieldParameters.setHeight(widthAdjusted);
-				signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() - 50 * fixFactor));
+				signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() - 50 * globalProperties.getFixFactor()));
 			}
-			int yPos = Math.round(signRequestParams.getyPos() * fixFactor);
+			int yPos = Math.round(signRequestParams.getyPos() * globalProperties.getFixFactor());
 			if(yPos < 0) yPos = 0;
 			signatureFieldParameters.setOriginY(yPos);
 			imageParameters.setFieldParameters(signatureFieldParameters);
-			imageParameters.setDpi(300);
+			imageParameters.setDpi(globalProperties.getSignatureImageDpi());
 			imageParameters.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.LEFT);
 			imageParameters.setAlignmentVertical(VisualSignatureAlignmentVertical.TOP);
 			pAdESSignatureParameters.setImageParameters(imageParameters);

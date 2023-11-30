@@ -236,7 +236,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			}
 
 		} catch (URISyntaxException e) {
-			e.printStackTrace();
+			logger.error("unable to create uri tree", e);
 		}
 	}
 
