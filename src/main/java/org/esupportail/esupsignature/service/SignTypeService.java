@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class SignTypeService {
     }
 
     public List<SignType> getAuthorizedSignTypes(User user) {
-        List<SignType> signTypes = globalProperties.getAuthorizedSignTypes();
+        List<SignType> signTypes = new ArrayList<>(globalProperties.getAuthorizedSignTypes());
         if(!user.getRoles().contains("ROLE_SEAL") &&  globalProperties.getDisableCertStorage() && (globalProperties.getOpenXPKIServerUrl() == null || globalProperties.getOpenXPKIServerUrl().isEmpty())) {
             signTypes.remove(SignType.certSign);
         }
