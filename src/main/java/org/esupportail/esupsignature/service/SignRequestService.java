@@ -537,6 +537,10 @@ public class SignRequestService {
 		return signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >= signBook.getLiveWorkflow().getCurrentStepNumber() + 1 && signBook.getLiveWorkflow().getCurrentStepNumber() > -1;
 	}
 
+	public boolean isMoreWorkflowStepAndNotAutoSign(SignBook signBook) {
+		return signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >= signBook.getLiveWorkflow().getCurrentStepNumber() + 1 && signBook.getLiveWorkflow().getCurrentStepNumber() > -1 && !signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getCurrentStepNumber()).getAutoSign();
+	}
+
 	public boolean isStepAllSignDone(SignBook signBook) {
 		LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
 		return (!liveWorkflowStep.getAllSignToComplete() || isWorkflowStepFullSigned(liveWorkflowStep)) && !isMoreWorkflowStep(signBook);
