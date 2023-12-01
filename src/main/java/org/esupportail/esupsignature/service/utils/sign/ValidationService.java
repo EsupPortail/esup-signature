@@ -4,6 +4,7 @@ import eu.europa.esig.dss.enumerations.TokenExtractionStrategy;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.x509.CertificateToken;
+import eu.europa.esig.dss.model.x509.revocation.ocsp.OCSP;
 import eu.europa.esig.dss.spi.x509.revocation.RevocationToken;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.RevocationDataVerifier;
@@ -92,8 +93,8 @@ public class ValidationService {
     }
 
     public boolean checkRevocation(CertificateToken certificateToken) {
-        RevocationToken revocationToken = certificateVerifier.getOcspSource().getRevocationToken(certificateToken, certificateToken);
-        return revocationDataVerifier.isAcceptable(revocationToken);
+        RevocationToken<OCSP> revocationToken = certificateVerifier.getOcspSource().getRevocationToken(certificateToken, certificateToken);
+        return revocationToken != null && revocationDataVerifier.isAcceptable(revocationToken);
     }
 
 }
