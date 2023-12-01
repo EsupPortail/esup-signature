@@ -888,6 +888,9 @@ public class PdfService {
     }
 
     public void checkPdfPermitions(MultipartFile multipartFile) throws EsupSignatureRuntimeException {
+        if(!Objects.equals(multipartFile.getContentType(), "application/pdf")) {
+            return;
+        }
         try {
             PdfPermissionsChecker pdfPermissionsChecker = new PdfPermissionsChecker();
             pdfPermissionsChecker.checkSignatureRestrictionDictionaries(new PdfBoxDocumentReader(PDDocument.load(multipartFile.getBytes())), new SignatureFieldParameters());
