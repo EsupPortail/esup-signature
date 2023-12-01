@@ -950,4 +950,9 @@ public class UserService {
         User user = userRepository.findById(id).orElseThrow();
         userRepository.delete(user);
     }
+
+    public List<String> getRoles(String userEppn) {
+        User user = getByEppn(userEppn);
+        return new ArrayList<>(user.getRoles());
+    }
 }
