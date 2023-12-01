@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -81,18 +82,19 @@ public class GlobalAttributsControllerAdvice {
     }
 
     @ModelAttribute
+    @Transactional
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) throws JsonProcessingException {
         HttpSession httpSession = httpServletRequest.getSession();
         if(userEppn != null) {
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
             User user = userService.getFullUserByEppn(userEppn);
-            if(user.getRoles().contains("ROLE_ADMIN")) {
-                model.addAttribute("nbSessions", sessionService.countSessions());
-            }
             if(user == null) {
                 logger.error("user " + userEppn + " not found");
                 return;
+            }
+            if(user.getRoles().contains("ROLE_ADMIN")) {
+                model.addAttribute("nbSessions", sessionService.countSessions());
             }
             userService.parseRoles(userEppn, myGlobalProperties);
             model.addAttribute("securityServiceName", httpServletRequest.getSession().getAttribute("securityServiceName"));
