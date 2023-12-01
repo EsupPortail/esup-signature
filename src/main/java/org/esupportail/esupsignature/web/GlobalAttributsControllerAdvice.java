@@ -87,12 +87,12 @@ public class GlobalAttributsControllerAdvice {
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
             User user = userService.getFullUserByEppn(userEppn);
-            if(user.getRoles().contains("ROLE_ADMIN")) {
-                model.addAttribute("nbSessions", sessionService.countSessions());
-            }
             if(user == null) {
                 logger.error("user " + userEppn + " not found");
                 return;
+            }
+            if(userService.getRoles(userEppn).contains("ROLE_ADMIN")) {
+                model.addAttribute("nbSessions", sessionService.countSessions());
             }
             userService.parseRoles(userEppn, myGlobalProperties);
             model.addAttribute("securityServiceName", httpServletRequest.getSession().getAttribute("securityServiceName"));
