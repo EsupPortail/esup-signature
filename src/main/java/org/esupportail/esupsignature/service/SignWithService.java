@@ -70,7 +70,7 @@ public class SignWithService {
         if(signRequest.getCurrentSignType() != null) {
             signWiths.removeIf(signWith -> signWith.getValue() < signRequest.getCurrentSignType().getValue());
         }
-        if(dataService.getBySignBook(signRequest.getParentSignBook()) != null && signRequestService.isMoreWorkflowStep(signRequest.getParentSignBook())) {
+        if(dataService.getBySignBook(signRequest.getParentSignBook()) != null && signRequestService.isMoreWorkflowStepAndNotAutoSign(signRequest.getParentSignBook())) {
             signWiths.removeIf(signWith -> signWith.getValue() > 2);
         }
         List<SignWith> toRemoveSignWiths = new ArrayList<>();

@@ -100,6 +100,7 @@ public class CertificatService {
             certificat.setKeystore(documentService.createDocument(new ByteArrayInputStream(keystoreBytes), userService.getSystemUser(), certificateToken.getSubject().getPrincipal().getName("CANONICAL"), keystore.getContentType()));
             certificat.setRoles(roles);
             certificat.setPassword(encryptPassword(password));
+            certificat.setCreateDate(certificateToken.getCreationDate());
             certificat.setExpireDate(certificateToken.getNotAfter());
             certificatRepository.save(certificat);
         } else {
