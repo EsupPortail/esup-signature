@@ -633,6 +633,7 @@ public class SignRequestService {
 		}
 	}
 
+	@Transactional
 	public void completeSignRequests(List<SignRequest> signRequests, String authUserEppn) {
 		for(SignRequest signRequest : signRequests) {
 			if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
