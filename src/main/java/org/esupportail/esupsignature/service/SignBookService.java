@@ -734,10 +734,11 @@ public class SignBookService {
     }
 
     @Transactional
-    public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
+    public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureException {
         int i = 0;
         SignBook signBook = getById(signBookId);
         for (MultipartFile multipartFile : multipartFiles) {
+            pdfService.checkPdfPermitions(multipartFile);
             SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, authUserEppn, authUserEppn);
             try {
                 signRequestService.addDocsToSignRequest(signRequest, true, i, new ArrayList<>(), multipartFile);

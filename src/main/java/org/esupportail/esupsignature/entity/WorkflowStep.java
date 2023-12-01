@@ -45,7 +45,7 @@ public class WorkflowStep {
 
     private Boolean autoSign = false;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     private Certificat certificat;
 
     @Enumerated(EnumType.STRING)

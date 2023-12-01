@@ -29,7 +29,7 @@
                         <tbody>
                         <th:block th:each="certificat : ${sealCertificats}">
                             <tr>
-                                <td th:text="${certificat.certificate.subject.principal}"></td>
+                                <td style="width: 600px; word-break: break-all" th:text="${certificat.certificate.subject.principal}"></td>
                                 <td th:text="${#dates.format(certificat.certificate.creationDate, 'dd/MM/yyyy HH:mm')}"></td>
                                 <td th:text="${#dates.format(certificat.certificate.notAfter, 'dd/MM/yyyy HH:mm')}"></td>
                             </tr>
@@ -49,7 +49,8 @@
                         <thead class="table-secondary">
                         <tr>
                             <th>Nom</th>
-                            <th>Date d’expiration</th>
+                            <th>Date de création</th>
+                            <th>Date de fin</th>
                             <th>Roles</th>
                             <th>Actions</th>
                         </tr>
@@ -57,9 +58,10 @@
                         <tbody>
                         <th:block th:each="certificat : ${certificats}">
                             <tr>
-                                <td><span th:text="${certificat.keystore.fileName}"></span></td>
-                                <td><span th:text="${#dates.format(certificat.expireDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                                <td><span th:text="${certificat.roles}"></span></td>
+                                <td style="width: 600px; word-break: break-all" th:text="${certificat.keystore.fileName}"></td>
+                                <td th:text="${#dates.format(certificat.createDate, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td th:text="${#dates.format(certificat.expireDate, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td th:text="${certificat.roles}"></td>
                                 <td>
                                     <a class="btn btn-danger" th:href="'#modal-warning'" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning'">
                                         <i class="fa-solid fa-trash-alt"></i>

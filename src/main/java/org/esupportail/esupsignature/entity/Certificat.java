@@ -25,6 +25,10 @@ public class Certificat {
 
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
+    private Date createDate = new Date();
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date expireDate;
 
     @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
@@ -48,6 +52,14 @@ public class Certificat {
 
     public String getPassword() {
         return password;
+    }
+
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
     }
 
     public Date getExpireDate() {
