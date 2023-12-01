@@ -922,7 +922,7 @@ public class SignBookService {
                                 }
                                 try {
                                     signRequestService.sign(signRequest1, "", "autoCert", signRequestParamses, null, "system", "system", null, "");
-                                } catch (IOException | EsupSignatureMailException e) {
+                                                                    } catch (IOException | EsupSignatureMailException e) {
                                     refuse(signRequest1.getId(), "Signature refusée par le système automatique", "system", "system");
                                     logger.error("auto sign fail", e);
                                     throw new EsupSignatureRuntimeException("Erreur lors de la signature automatique : " + e.getMessage());
@@ -936,6 +936,14 @@ public class SignBookService {
                                     throw new EsupSignatureRuntimeException("Erreur lors de la signature automatique : " + e.getMessage());
                                 }
                             }
+
+                        }
+                        if(signRequestService.isMoreWorkflowStep(signBook)) {
+                            pendingSignBook(signBookId, data, userEppn, authUserEppn, forceSendEmail, sendEmailAlert);
+                        } else {
+                            completeSignBook(signBook.getId(), userEppn, "Tous les documents sont signés");
+                            logger.info("Circuit " + signBook.getId() + " terminé");
+                            return;
                         }
                     } else {
                         if(signBook.getLiveWorkflow().getWorkflow() == null) {
@@ -945,7 +953,7 @@ public class SignBookService {
                 } else {
                     completeSignBook(signBook.getId(), userEppn, "Tous les documents sont signés");
                     logger.info("Circuit " + signBook.getId() + " terminé car ne contient pas d'étape");
-                    break;
+                    return;
                 }
             }
         }
@@ -964,6 +972,7 @@ public class SignBookService {
         }
     }
 
+    @Transactional
     public void completeSignBook(Long signBookId, String userEppn, String message) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(signBookId);
         if (!signBook.getCreateBy().equals(userService.getSchedulerUser())) {
