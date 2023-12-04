@@ -146,6 +146,7 @@ public class WorkflowService {
                             toUdateWorkflowStep.setDescription(generatedWorkflowStep.getDescription());
                             toUdateWorkflowStep.getUsers().clear();
                             toUdateWorkflowStep.getUsers().addAll(generatedWorkflowStep.getUsers());
+                            toUdateWorkflowStep.setSignType(generatedWorkflowStep.getSignType());
                         } else {
                             WorkflowStep newWorkflowStep = workflowStepService.createWorkflowStep(generatedWorkflowStep.getName(), generatedWorkflowStep.getAllSignToComplete(), generatedWorkflowStep.getSignType(), generatedWorkflowStep.getChangeable());
                             for (User user : generatedWorkflowStep.getUsers()) {
@@ -263,7 +264,7 @@ public class WorkflowService {
 
     public List<Workflow> getAuthorizedToShareWorkflows() {
         List<Workflow> workflows = workflowRepository.findDistinctByAuthorizedShareTypesIsNotNull();
-        workflows = workflows.stream().filter(workflow -> workflow.getAuthorizedShareTypes().size() > 0).collect(Collectors.toList());
+        workflows = workflows.stream().filter(workflow -> !workflow.getAuthorizedShareTypes().isEmpty()).collect(Collectors.toList());
         return workflows;
     }
 

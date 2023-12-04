@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.validation.constraints.NotNull;
 import org.esupportail.esupsignature.entity.enums.SignType;
 
 import jakarta.persistence.*;
@@ -31,10 +32,12 @@ public class LiveWorkflowStep {
 
     private Boolean autoSign = false;
 
+    @NotNull
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private SignType signType;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
     @ManyToOne

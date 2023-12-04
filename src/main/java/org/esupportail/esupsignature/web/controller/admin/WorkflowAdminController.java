@@ -1,7 +1,9 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.Certificat;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
@@ -25,9 +27,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
@@ -87,8 +86,7 @@ public class WorkflowAdminController {
 			model.addAttribute("fromAdmin", true);
 			Workflow workflow = workflowService.getById(id);
 			model.addAttribute("workflow", workflow);
-			List<Certificat> certificats = certificatService.getAllCertificats();
-			model.addAttribute("certificats", certificats);
+			model.addAttribute("certificats", certificatService.getAllCertificats());
 			return "admin/workflows/steps";
 		}
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));

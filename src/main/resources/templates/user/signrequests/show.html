@@ -253,7 +253,7 @@
                 <div id="noSeal" th:if="${!sealCertOK}" class="alert alert-warning mt-1" style="display: none;">
                     La signature par certificat cachet d’établissement est temporairement indisponible pour des raisons de maintenance. Si possible, vous pouvez utiliser un autre type de signature sinon merci de refaire un essai ultérieurement.
                 </div>
-                <div id="selectTypeDiv" class="alert alert-secondary mt-1" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                <div id="selectTypeDiv" class="alert alert-secondary mt-1" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() > 0}">
                     <label for="certType">Si besoin, merci de sélectionner le type de signature que vous souhaitez utiliser parmi ceux disponibles</label>
                     <div class="input-group mt-2">
                         <select id="certType" name="certType" class="form-control form-select border-secondary-subtle" required>
@@ -270,6 +270,9 @@
                         <button id="refresh-certType" type="button" class="btn border-secondary-subtle" title="Actualiser la liste des types de signature"><i class="fa-solid fa-arrows-rotate"></i></button>
                     </div>
                     <input class="form-control mt-2 mb-1" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" />
+                </div>
+                <div id="warningSelectDiv" class="alert alert-danger mt-1" th:unless="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() > 0}">
+                    Aucun type de signature n’est disponible pour signer ce document.
                 </div>
                 <div id="signCommentDiv">
                     <label for="signComment">Commentaire (facultatif)</label>
@@ -310,17 +313,19 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button id="checkValidateSignButtonEnd" th:if="${signBook.signRequests.size() == 1 || nextSignBook == null}"
-                        class="btn btn-success me-1" title="Signer" th:value="${signRequest.id}" autofocus>
-                    <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer</span>
-                    <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>
-                </button>
-                <button id="checkValidateSignButtonNext" th:if="${nextSignBook != null && otp == null}"
-                        class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
-                    <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer et aller à la suivante </span>
-                    <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser et aller à la suivante </span>
-                    <i class="fa-solid fa-arrow-alt-circle-right"></i>
-                </button>
+                <div th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() > 0}">
+                    <button id="checkValidateSignButtonEnd" th:if="${signBook.signRequests.size() == 1 || nextSignBook == null}"
+                            class="btn btn-success me-1" title="Signer" th:value="${signRequest.id}" autofocus>
+                        <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer</span>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>
+                    </button>
+                    <button id="checkValidateSignButtonNext" th:if="${nextSignBook != null && otp == null}"
+                            class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
+                        <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer et aller à la suivante </span>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser et aller à la suivante </span>
+                        <i class="fa-solid fa-arrow-alt-circle-right"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
