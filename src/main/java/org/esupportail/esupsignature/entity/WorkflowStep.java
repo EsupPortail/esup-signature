@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
+import jakarta.validation.constraints.NotNull;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -32,6 +33,7 @@ public class WorkflowStep {
 
     private Boolean repeatable = false;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     private SignType repeatableSignType;
 
@@ -48,6 +50,7 @@ public class WorkflowStep {
     @ManyToOne
     private Certificat certificat;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     private SignType signType;
 
