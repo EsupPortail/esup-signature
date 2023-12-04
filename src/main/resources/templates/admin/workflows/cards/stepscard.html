@@ -41,9 +41,9 @@
                                     <div class="form-group mb-3">
                                         <label th:for="'certificatId_' + ${workflowStep.id}" >Auto signature avec le certificat :</label>
                                         <br>
-                                        <select class="slim-select-simple" th:name="'certificatId_' + ${workflowStep.id}" th:id="'certificatId_' + ${workflowStep.id}" data-placeholder="Choix du certificat">
-                                            <option data-placeholder="true"></option>
-                                            <option class="text-break" style="word-break: break-all;" value="" th:if="${globalProperties.sealCertificatDriver != null}" th:checked="${workflowStep.certificat == null}">Certificat cachet de l’établissement</option>
+                                        <select class="form-select" name="certificatId" th:id="'certificatId_' + ${workflowStep.id}" data-placeholder="Choix du certificat">
+                                            <option data-placeholder="true" disabled>Choisir un certificat</option>
+                                            <option class="text-break" style="word-break: break-all;" value="" th:if="${globalProperties.sealCertificatType != null}" th:selected="${workflowStep.certificat == null}">Certificat cachet de l’établissement</option>
                                             <th:block th:each="certificat : ${certificats}">
                                                 <option th:text="${certificat.keystore.fileName.substring(0, 50)}" th:value="${certificat.id}" th:selected="${workflowStep.certificat != null && workflowStep.certificat.id == certificat.id}"></option>
                                             </th:block>

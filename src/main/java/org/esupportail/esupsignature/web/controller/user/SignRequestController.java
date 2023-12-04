@@ -98,7 +98,7 @@ public class SignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
-        SignRequest signRequest = signBookService.getSignRequestFullById(id, userEppn, authUserEppn);
+        SignRequest signRequest = signRequestService.getById(id);
         boolean displayNotif = false;
         if (signRequest.getLastNotifDate() == null && Duration.between(signRequest.getCreateDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()) {
             displayNotif = true;
@@ -162,12 +162,13 @@ public class SignRequestController {
                 }
             }
         }
+        boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
         model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest));
         model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn, true));
         model.addAttribute("allSignWiths", SignWith.values());
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
-        model.addAttribute("signable", signRequest.getSignable());
-        model.addAttribute("editable", signRequest.getEditable());
+        model.addAttribute("signable", signable);
+        model.addAttribute("editable", signRequestService.isEditable(id, userEppn));
         model.addAttribute("isNotSigned", !signService.isSigned(signRequest));
         model.addAttribute("isTempUsers", signRequestService.isTempUsers(id));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
@@ -180,7 +181,7 @@ public class SignRequestController {
             model.addAttribute("action", signRequest.getData().getForm().getAction());
             model.addAttribute("supervisors", signRequest.getData().getForm().getWorkflow().getManagers());
         }
-        if(signRequest.getSignable()
+        if(signable
                 && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && userService.getUiParams(authUserEppn) != null
                 && (userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert) == null || !Arrays.asList(userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert).split(",")).contains(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId().toString()))
                 && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
