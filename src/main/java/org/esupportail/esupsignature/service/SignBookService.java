@@ -1580,7 +1580,7 @@ public class SignBookService {
     public List<String> getSignImagesForSignRequest(Long id, String userEppn, String authUserEppn, Long userShareId) throws EsupSignatureUserException, IOException {
         SignRequest signRequest = signRequestService.getById(id);
         LinkedList<String> signImages = new LinkedList<>();
-        if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
+        if (!signRequest.getSignedDocuments().isEmpty() || !signRequest.getOriginalDocuments().isEmpty()) {
             List<Document> toSignDocuments = signService.getToSignDocuments(signRequest.getId());
             if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
                 if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
@@ -1595,7 +1595,7 @@ public class SignBookService {
                             logger.warn("unable to get shared user");
                         }
                     }
-                    if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
+                    if (!user.getSignImages().isEmpty() && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
                         for (Document signImage : user.getSignImages()) {
                             signImages.add(fileService.getBase64Image(signImage));
                         }
