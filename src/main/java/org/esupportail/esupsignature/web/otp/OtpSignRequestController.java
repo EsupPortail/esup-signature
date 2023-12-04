@@ -82,7 +82,7 @@ public class OtpSignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
-        SignRequest signRequest = signBookService.getSignRequestFullById(id, userEppn, authUserEppn);
+        SignRequest signRequest = signRequestService.getById(id);
         model.addAttribute("displayNotif", false);
         model.addAttribute("notifTime", 0);
         model.addAttribute("signRequest", signRequest);
@@ -133,7 +133,8 @@ public class OtpSignRequestController {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
         }
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
-        model.addAttribute("signable", signRequest.getSignable());
+        boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
+        model.addAttribute("signable", signable);
         model.addAttribute("editable", false);
         model.addAttribute("isNotSigned", !signService.isSigned(signRequest));
         model.addAttribute("isTempUsers", false);
@@ -148,7 +149,7 @@ public class OtpSignRequestController {
         }
         List<Log> logs = logService.getBySignRequest(signRequest.getId());
         logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
-        if(signRequest.getSignable()
+        if(signable
                 && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && userService.getUiParams(authUserEppn) != null
                 && (userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert) == null || !Arrays.asList(userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert).split(",")).contains(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId().toString()))
                 && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {

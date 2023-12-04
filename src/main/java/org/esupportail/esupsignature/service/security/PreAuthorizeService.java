@@ -26,6 +26,9 @@ public class PreAuthorizeService {
     private SignBookService signBookService;
 
     @Resource
+    private SignRequestService signRequestService;
+
+    @Resource
     private DocumentService documentService;
 
     @Resource
@@ -109,7 +112,7 @@ public class PreAuthorizeService {
         if(userEppn != null) {
             SignRequest signRequest = signRequestRepository.findById(id).get();
             return (signRequest.getStatus().equals(SignRequestStatus.pending) &&
-                    (signBookService.isUserInRecipients(signRequest, userEppn) || signRequest.getCreateBy().getEppn().equals(userEppn)))
+                    (signRequestService.isUserInRecipients(signRequest, userEppn) || signRequest.getCreateBy().getEppn().equals(userEppn)))
                     || (signRequest.getStatus().equals(SignRequestStatus.draft) && signRequest.getCreateBy().getEppn().equals(userEppn));
         }
         return false;
@@ -119,7 +122,7 @@ public class PreAuthorizeService {
         if(userEppn != null) {
             SignRequest signRequest = signRequestRepository.findById(id).get();
             return (signRequest.getStatus().equals(SignRequestStatus.pending) &&
-                    (signBookService.isUserInRecipients(signRequest, userEppn) || signRequest.getParentSignBook().getViewers().stream().anyMatch(u -> u.getEppn().equals(userEppn)) || signRequest.getCreateBy().getEppn().equals(userEppn)))
+                    (signRequestService.isUserInRecipients(signRequest, userEppn) || signRequest.getParentSignBook().getViewers().stream().anyMatch(u -> u.getEppn().equals(userEppn)) || signRequest.getCreateBy().getEppn().equals(userEppn)))
                     || (signRequest.getStatus().equals(SignRequestStatus.draft) && signRequest.getCreateBy().getEppn().equals(userEppn));
         }
         return false;

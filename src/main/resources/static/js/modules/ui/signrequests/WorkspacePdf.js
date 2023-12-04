@@ -102,7 +102,6 @@ export class WorkspacePdf {
             this.pdfViewer.addEventListener('renderFinished', e => this.initWorkspace());
             this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
             this.pdfViewer.addEventListener('change', e => this.saveData(localStorage.getItem('disableFormAlert') === "true"));
-            this.pdfViewer.pdfDiv.on('click', e => this.clickAction(e));
 
             $(".postit-global-close").on('click', function () {
                 $(this).parent().toggleClass("postit-small");
@@ -173,9 +172,9 @@ export class WorkspacePdf {
                 signSpaceDiv = $("#signSpace_" + i);
                 signSpaceDiv.on("click", e => this.addSign(i));
                 if(currentSignRequestParams.ready == null || !currentSignRequestParams.ready) {
-                    if(this.signType === "pdfImageStamp") {
+                    if(this.signType !== "visa") {
                         signSpaceDiv.html("Cliquez ici pour insérer votre signature<br>" + currentSignRequestParams.comment);
-                    } else if(this.signType === "visa") {
+                    } else {
                         signSpaceDiv.html("Cliquez ici pour insérer votre visa<br>" + currentSignRequestParams.comment);
                     }
                 }
@@ -247,6 +246,8 @@ export class WorkspacePdf {
         }
         this.refreshAfterPageChange();
         this.initForm();
+        this.pdfViewer.pdfDiv.on('click', e => this.clickAction(e));
+
     }
 
     initForm() {
