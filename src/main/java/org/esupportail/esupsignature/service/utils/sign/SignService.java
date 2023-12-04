@@ -162,7 +162,7 @@ public class SignService {
 			} else if(signWith.equals(SignWith.groupCert)){
 				Certificat certificat = certificatService.getCertificatByUser(userEppn).get(0);
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
-			} else if ((signWith.equals(SignWith.sealCert) && (user.getRoles().contains("ROLE_SEAL")) || userEppn.equals("system"))) {
+			} else if ((signWith.equals(SignWith.sealCert) && (userService.getRoles(userEppn).contains("ROLE_SEAL")) || userEppn.equals("system"))) {
 				try {
 					if(!userEppn.equals("system") || certificatService.getKey() != null) {
 						abstractKeyStoreTokenConnection = certificatService.getSealToken();
@@ -265,7 +265,7 @@ public class SignService {
 			} else {
 				inputStream = fileService.getDefaultImage(user.getName(), user.getFirstname(), true);
 			}
-			InputStream signImage = fileService.addTextToImage(inputStream, signRequestParams, SignType.nexuSign, user, date);
+			InputStream signImage = fileService.addTextToImage(inputStream, signRequestParams, SignType.nexuSign, user, date, userService.getRoles(user.getEppn()).contains("ROLE_OTP"));
 			if(signRequestParams.getAddWatermark()) {
 				ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 				fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, outputStream, signRequestParams.getExtraOnTop());

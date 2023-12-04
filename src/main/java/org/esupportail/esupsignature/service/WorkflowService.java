@@ -225,10 +225,9 @@ public class WorkflowService {
     }
 
     public Set<Workflow> getWorkflowsByUser(String userEppn, String authUserEppn) {
-        User user = userService.getByEppn(userEppn);
         User authUser = userService.getByEppn(authUserEppn);
         Set<Workflow> authorizedWorkflows = new HashSet<>();
-        for (String role : user.getRoles()) {
+        for (String role : userService.getRoles(userEppn)) {
             authorizedWorkflows.addAll(workflowRepository.findAuthorizedForms(role));
         }
         Set<Workflow> workflows = new HashSet<>();

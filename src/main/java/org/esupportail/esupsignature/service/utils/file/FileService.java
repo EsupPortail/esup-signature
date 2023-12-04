@@ -176,7 +176,7 @@ public class FileService {
 	    }
 	}
 
-	public InputStream addTextToImage(InputStream imageStream, SignRequestParams signRequestParams, SignType signType, User user, Date date) throws IOException {
+	public InputStream addTextToImage(InputStream imageStream, SignRequestParams signRequestParams, SignType signType, User user, Date date, Boolean otp) throws IOException {
 		InputStream textAddedInputStream = imageStream;
 		if(signRequestParams.getAddExtra()) {
 			int qualityFactor = globalProperties.getSignatureImageDpi() / 100;
@@ -210,7 +210,7 @@ public class FileService {
 					String typeSign = "Signature calligraphique";
 					if(signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) typeSign = "Visa";
 					if(signType.equals(SignType.certSign) || signType.equals(SignType.nexuSign)) typeSign = "Signature électronique";
-					if(user.getRoles().contains("ROLE_OTP")) {
+					if(otp!= null && otp) {
 						if(user.getPhone() != null) {
 							typeSign = "Signature OTP : " + user.getPhone();
 						} else {

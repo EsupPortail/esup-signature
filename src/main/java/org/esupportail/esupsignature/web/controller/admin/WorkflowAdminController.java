@@ -68,8 +68,7 @@ public class WorkflowAdminController {
 
 	@GetMapping
 	public String list(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(name = "displayWorkflowType", required = false) DisplayWorkflowType displayWorkflowType, Model model) {
-		User user = userService.getByEppn(authUserEppn);
-		if(user.getRoles().contains("ROLE_ADMIN")) {
+		if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 			if (displayWorkflowType == null) {
 				displayWorkflowType = DisplayWorkflowType.system;
 			}
@@ -84,8 +83,7 @@ public class WorkflowAdminController {
 
 	@GetMapping(value = "/steps/{id}")
 	public String show(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-		User user = userService.getByEppn(authUserEppn);
-		if(preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+		if(preAuthorizeService.workflowManager(id, authUserEppn) || userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 			model.addAttribute("fromAdmin", true);
 			Workflow workflow = workflowService.getById(id);
 			model.addAttribute("workflow", workflow);
@@ -102,13 +100,12 @@ public class WorkflowAdminController {
 						 @RequestParam(name = "title") String title,
 						 @RequestParam(name = "description") String description,
 						 @RequestParam(name = "managerRole", required = false) String managerRole, RedirectAttributes redirectAttributes) {
-		User user = userService.getByEppn(authUserEppn);
 		if(title == null) {
 			title = description;
 		}
 		Workflow workflow;
 		try {
-			if(user.getRoles().contains("ROLE_ADMIN")) {
+			if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 				workflow = workflowService.createWorkflow(title, description, userService.getSystemUser());
 			} else {
 				workflow = workflowService.createWorkflow(title, description, userService.getByEppn(authUserEppn));
@@ -123,8 +120,7 @@ public class WorkflowAdminController {
 
     @GetMapping(value = "/update/{id}")
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-		User user = userService.getByEppn(authUserEppn);
-		if(preAuthorizeService.workflowManager(id, authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+		if(preAuthorizeService.workflowManager(id, authUserEppn) || userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 			Workflow workflow = workflowService.getById(id);
 			model.addAttribute("workflow", workflow);
 			model.addAttribute("nbWorkflowSignRequests", signBookService.countSignBooksByWorkflow(id));
@@ -145,7 +141,7 @@ public class WorkflowAdminController {
 						 @RequestParam(required = false) List<String> viewersEmails,
 						 @RequestParam(required = false) Set<String> managers, RedirectAttributes redirectAttributes) {
 		User user = userService.getByEppn(authUserEppn);
-		if(preAuthorizeService.workflowManager(workflow.getId(), authUserEppn) || user.getRoles().contains("ROLE_ADMIN")) {
+		if(preAuthorizeService.workflowManager(workflow.getId(), authUserEppn) || userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 			Workflow updateWorkflow = workflowService.update(workflow, user, types, managers);
 			workflowService.addViewers(updateWorkflow.getId(), viewersEmails);
 			return "redirect:/admin/workflows/update/" + updateWorkflow.getId();
