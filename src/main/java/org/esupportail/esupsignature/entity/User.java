@@ -294,7 +294,7 @@ public class User {
         if(defaultSignImageNumber != null) {
             return defaultSignImageNumber;
         } else {
-            if(getSignImages().size() > 0) {
+            if(!getSignImages().isEmpty()) {
                 return getSignImages().size() - 1;
             }
         }
