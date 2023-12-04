@@ -246,8 +246,8 @@ public class SignRequestService {
 				for (Field field : form.getFields()) {
 					if ("default".equals(field.getExtValueServiceName()) && "system".equals(field.getExtValueType())) {
 						if (field.getExtValueReturn().equals("id")) {
-							data.getDatas().put(field.getName(), "" + signRequest.getToken());
-							formDataMap.put(field.getName(), "" + signRequest.getToken());
+							data.getDatas().put(field.getName(), signRequest.getToken());
+							formDataMap.put(field.getName(), signRequest.getToken());
 						}
 					}
 				}
@@ -334,7 +334,7 @@ public class SignRequestService {
 	@Transactional
 	public StepStatus applyEndOfSignRules(Long signRequestId, String userEppn, String authUserEppn, SignType signType, String comment) throws EsupSignatureRuntimeException {
 		SignRequest signRequest = getById(signRequestId);
-		if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) ) {
+		if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) {
 			if(comment != null && !comment.isEmpty()) {
 				commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, null, userEppn);
 				updateStatus(signRequest.getId(), SignRequestStatus.checked, "Visa",  "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn);
