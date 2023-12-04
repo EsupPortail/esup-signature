@@ -951,6 +951,7 @@ public class UserService {
         userRepository.delete(user);
     }
 
+    @Transactional
     public List<String> getRoles(String userEppn) {
         User user = getByEppn(userEppn);
         return new ArrayList<>(user.getRoles());
