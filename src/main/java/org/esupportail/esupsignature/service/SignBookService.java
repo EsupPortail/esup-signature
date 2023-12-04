@@ -1034,8 +1034,11 @@ public class SignBookService {
     @Transactional
     public StepStatus initSign(Long signRequestId, String signRequestParamsJsonString, String comment, String formData, String password, String signWith, Long userShareId, String userEppn, String authUserEppn) throws IOException, EsupSignatureRuntimeException {
         SignRequest signRequest = signRequestService.getById(signRequestId);
+        SignType signType = signRequest.getCurrentSignType();
+        if(signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) && signWith == null) signWith = "imageStamp";
+        String finalSignWith = signWith;
         if(signWith == null ||
-                (globalProperties.getAuthorizedSignTypes().stream().noneMatch(s -> s.getValue() <= SignWith.valueOf(signWith).getValue())
+                (globalProperties.getAuthorizedSignTypes().stream().noneMatch(s -> s.getValue() <= SignWith.valueOf(finalSignWith).getValue())
                 && !signWithService.getAuthorizedSignWiths(userEppn, signRequest).contains(SignWith.valueOf(signWith)))) {
             throw new EsupSignatureRuntimeException("Le type de signature " + signWith + " n'est pas autorisé");
         }
