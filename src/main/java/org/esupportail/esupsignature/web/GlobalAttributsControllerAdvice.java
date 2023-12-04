@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import java.io.IOException;
+import java.util.List;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller", "org.esupportail.esupsignature.web.otp"})
 @EnableConfigurationProperties(GlobalProperties.class)
@@ -91,7 +92,8 @@ public class GlobalAttributsControllerAdvice {
                 logger.error("user " + userEppn + " not found");
                 return;
             }
-            if(userService.getRoles(userEppn).contains("ROLE_ADMIN")) {
+            List<String> roles = userService.getRoles(userEppn);
+            if(roles.contains("ROLE_ADMIN")) {
                 model.addAttribute("nbSessions", sessionService.countSessions());
             }
             userService.parseRoles(userEppn, myGlobalProperties);
@@ -120,7 +122,7 @@ public class GlobalAttributsControllerAdvice {
             } else {
                 model.addAttribute("versionApp", "dev");
             }
-            model.addAttribute("signTypes", signTypeService.getAuthorizedSignTypes(user));
+            model.addAttribute("signTypes", signTypeService.getAuthorizedSignTypes(roles));
             model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
             model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
             model.addAttribute("nbToSign", signRequestService.nbToSignSignRequests(userEppn));
