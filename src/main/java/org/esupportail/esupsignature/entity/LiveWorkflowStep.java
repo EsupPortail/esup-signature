@@ -25,7 +25,6 @@ public class LiveWorkflowStep {
 
     private Boolean repeatable = false;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
     private SignType repeatableSignType;
 
@@ -37,7 +36,7 @@ public class LiveWorkflowStep {
     @Enumerated(EnumType.STRING)
     private SignType signType;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
     @ManyToOne
