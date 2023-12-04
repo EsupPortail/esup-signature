@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.validation.constraints.NotNull;
 import org.esupportail.esupsignature.entity.enums.SignType;
 
 import jakarta.persistence.*;
@@ -24,6 +25,7 @@ public class LiveWorkflowStep {
 
     private Boolean repeatable = false;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     private SignType repeatableSignType;
 
@@ -31,6 +33,7 @@ public class LiveWorkflowStep {
 
     private Boolean autoSign = false;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     private SignType signType;
 
