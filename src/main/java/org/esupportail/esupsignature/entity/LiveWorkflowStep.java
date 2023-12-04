@@ -33,7 +33,6 @@ public class LiveWorkflowStep {
     private Boolean autoSign = false;
 
     @NotNull
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private SignType signType;
 
