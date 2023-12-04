@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <div id="stepscard" th:fragment="stepscard" class="d-none d-lg-block">
-    <div class="hr">Etapes du circuit</div>
+    <div class="hr">Étapes du circuit</div>
     <div class="card card-body bg-light mb-1">
             <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps != null}">
                 <div id="stepper" class="bs-stepper vertical">
@@ -64,6 +64,13 @@
                                                 <i title="En attente de signature" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fa-solid fa-clock text-warning"></i>
                                                 <i title="" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none' && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fa-solid fa-minus-circle text-secondary"></i>
                                                 <i title="A refusé le document" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'refused'}" class="fa-solid fa-times-circle text-danger"></i>
+                                            </td>
+                                            <td>
+                                                <a class="btn btn-sm btn-outline-primary"
+                                                       th:href="@{'/ws-secure/signrequests/get-file/' + ${signRequest.signedDocuments.get(iterator.index).id}}"
+                                                    title="Récupérer le document signé à cette étape"
+                                                    th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}">
+                                                    <i class="fa-solid fa-download"></i></a>
                                             </td>
                                             <td>
                                                 <button class="btn btn-sm"
