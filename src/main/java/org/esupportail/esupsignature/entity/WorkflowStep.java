@@ -33,7 +33,6 @@ public class WorkflowStep {
 
     private Boolean repeatable = false;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
     private SignType repeatableSignType;
 
