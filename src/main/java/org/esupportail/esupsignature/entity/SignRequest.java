@@ -273,7 +273,7 @@ public class SignRequest {
     }
 
     public SignType getCurrentSignType() {
-        if(this.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps() != null) {
+        if(this.getParentSignBook().getLiveWorkflow() != null && this.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
             return this.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
         } else {
             return null;
