@@ -64,9 +64,6 @@ public class SignBookAdminController {
 	private SignBookService signBookService;
 
 	@Resource
-	private SignRequestService signRequestService;
-
-	@Resource
 	private SignBookRepository signBookRepository;
 
 	@Resource
