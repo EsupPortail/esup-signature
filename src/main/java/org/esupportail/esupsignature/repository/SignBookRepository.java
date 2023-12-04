@@ -40,6 +40,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "and (:workflowFilter is null or sb.workflowName = :workflowFilter) " +
             "and (:docTitleFilter is null or sb.subject = :docTitleFilter) " +
             "and (:creatorFilter is null or sb.createBy = :creatorFilter)" +
+            "and (sb.createBy = :user or sb.status <> 'draft')" +
             "and size(sb.signRequests) > 0 " +
             "and (sb.hidedBy) is empty " +
             "and sb.status <> 'deleted' " +
@@ -60,6 +61,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "and (:docTitleFilter is null or sb.subject = :docTitleFilter) " +
             "and (:recipientUser is null or key(rhs).user = :recipientUser or :recipientUser in (u)) " +
             "and (:creatorFilter is null or sb.createBy = :creatorFilter) " +
+            "and (sb.createBy = :user or sb.status <> 'draft')" +
             "and size(sb.signRequests) > 0 " +
             "and (sb.hidedBy) is empty " +
             "and sb.status <> 'deleted' " +
