@@ -190,6 +190,36 @@ public class SignRequestService {
 		return signRequestRepository.findByToken(token);
 	}
 
+
+	@Transactional
+	public boolean isEditable(long id, String userEppn) {
+		SignRequest signRequest = getById(id);
+		User user = userService.getByEppn(userEppn);
+		SignBook signBook = signRequest.getParentSignBook();
+		if ((signRequest.getStatus().equals(SignRequestStatus.pending)
+				&& (isUserInRecipients(signRequest, userEppn)
+				|| signRequest.getCreateBy().getEppn().equals(userEppn)
+				|| signBook.getViewers().contains(user)))
+				|| (signRequest.getStatus().equals(SignRequestStatus.draft)
+				&& signRequest.getCreateBy().getEppn().equals(user.getEppn()))
+		) {
+			return true;
+		}
+		return false;
+	}
+
+	public boolean isUserInRecipients(SignRequest signRequest, String userEppn) {
+		boolean isInRecipients = false;
+		Set<Recipient> recipients = signRequest.getRecipientHasSigned().keySet();
+		for(Recipient recipient : recipients) {
+			if (recipient.getUser().getEppn().equals(userEppn)) {
+				isInRecipients = true;
+				break;
+			}
+		}
+		return isInRecipients;
+	}
+
 	@Transactional
 	public StepStatus sign(SignRequest signRequest, String password, String signWith, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String userEppn, String authUserEppn, Long userShareId, String comment) throws EsupSignatureRuntimeException, IOException {
 		StepStatus stepStatus;

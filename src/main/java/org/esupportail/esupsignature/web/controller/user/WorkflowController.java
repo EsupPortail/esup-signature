@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import org.esupportail.esupsignature.entity.Certificat;
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -15,7 +15,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.annotation.Resource;
 import java.util.List;
 
 @Controller
@@ -37,8 +36,7 @@ public class WorkflowController {
         model.addAttribute("fromAdmin", false);
         Workflow workflow = workflowService.getById(id);
         model.addAttribute("workflow", workflow);
-        List<Certificat> certificats = certificatService.getAllCertificats();
-        model.addAttribute("certificats", certificats);
+        model.addAttribute("certificats", certificatService.getAllCertificats());
         return "user/workflows/show";
     }
 

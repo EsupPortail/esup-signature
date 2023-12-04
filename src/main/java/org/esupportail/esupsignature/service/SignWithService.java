@@ -58,7 +58,7 @@ public class SignWithService {
         if(globalProperties.getDisableCertStorage() || user.getKeystore() == null) {
             signWiths.remove(SignWith.userCert);
         }
-        if(!checkSealCertificat(userEppn, false)) {
+        if(!checkSealCertificat(userEppn, false) || !userService.getRoles(userEppn).contains("ROLE_SEAL")) {
             signWiths.remove(SignWith.sealCert);
         }
         if(certificatService.getCertificatByUser(user.getEppn()).isEmpty()) {

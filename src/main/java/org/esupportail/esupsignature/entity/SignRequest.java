@@ -85,14 +85,6 @@ public class SignRequest {
 
     @JsonIgnore
     @Transient
-    transient Boolean signable = false;
-
-    @JsonIgnore
-    @Transient
-    transient Boolean editable = false;
-
-    @JsonIgnore
-    @Transient
     transient Data data;
 
     public Long getId() {
@@ -215,22 +207,6 @@ public class SignRequest {
         this.comments = comments;
     }
 
-    public Boolean getSignable() {
-        return signable;
-    }
-
-    public void setSignable(Boolean signable) {
-        this.signable = signable;
-    }
-
-    public Boolean getEditable() {
-        return editable;
-    }
-
-    public void setEditable(Boolean editable) {
-        this.editable = editable;
-    }
-
     public Data getData() {
         return data;
     }
@@ -279,7 +255,7 @@ public class SignRequest {
 
     @JsonIgnore
     public Document getLastSignedDocument() {
-        if(this.getSignedDocuments().size() > 0) {
+        if(!this.getSignedDocuments().isEmpty()) {
             return this.getSignedDocuments().get(this.getSignedDocuments().size() - 1);
         } else {
             return getLastOriginalDocument();
@@ -297,7 +273,7 @@ public class SignRequest {
     }
 
     public SignType getCurrentSignType() {
-        if(this.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps() != null && this.getSignable()) {
+        if(this.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps() != null) {
             return this.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
         } else {
             return null;

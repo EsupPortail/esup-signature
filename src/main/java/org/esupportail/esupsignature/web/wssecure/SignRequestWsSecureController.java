@@ -126,8 +126,9 @@ public class SignRequestWsSecureController {
     }
 
 
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/get-last-file-inline/{id}")
-    public ResponseEntity<Void> getLastFileFromSignRequestInLine(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
+    public ResponseEntity<Void> getLastFileFromSignRequestInLine(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
             signRequestService.getToSignFileResponse(id, "inline", httpServletResponse);
             return new ResponseEntity<>(HttpStatus.OK);
