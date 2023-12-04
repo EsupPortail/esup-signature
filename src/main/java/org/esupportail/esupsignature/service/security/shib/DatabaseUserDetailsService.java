@@ -50,7 +50,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 
     public UserDetails loadUserByUser(User targetUser) throws UsernameNotFoundException {
         List<GrantedAuthority> authorities = new ArrayList<>();
-        for(String role : targetUser.getRoles()) {
+        for(String role : userService.getRoles(targetUser.getEppn())) {
             authorities.add(new SimpleGrantedAuthority(role));
         }
         return new org.springframework.security.core.userdetails.User(targetUser.getEppn(), "dummy",

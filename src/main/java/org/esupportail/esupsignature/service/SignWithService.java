@@ -87,8 +87,7 @@ public class SignWithService {
 
     public boolean checkSealCertificat(String userEppn, boolean force) {
         if(Boolean.TRUE.equals(sealCertOKCache.getIfPresent("sealOK"))) return true;
-        User user = userService.getByEppn(userEppn);
-        if(user.getRoles().contains("ROLE_SEAL") &&
+        if(userService.getRoles(userEppn).contains("ROLE_SEAL") &&
                 StringUtils.hasText(globalProperties.getSealCertificatPin()) &&
                 (
                     (StringUtils.hasText(globalProperties.getSealCertificatType()) && globalProperties.getSealCertificatType().equals("PKCS11") && StringUtils.hasText(globalProperties.getSealCertificatDriver()))

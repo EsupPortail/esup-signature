@@ -107,7 +107,7 @@ public class PdfService {
         this.globalProperties = globalProperties;
     }
 
-    public byte[] stampImage(byte[] inputStream, SignRequest signRequest, SignRequestParams signRequestParams, int j, User user, Date date) {
+    public byte[] stampImage(byte[] inputStream, SignRequest signRequest, SignRequestParams signRequestParams, int j, User user, Date date, Boolean otp) {
         SignType signType = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
         PdfParameters pdfParameters;
         try {
@@ -118,14 +118,14 @@ public class PdfService {
                 int i = 1;
                 for(PDPage pdPage : pdDocument.getPages()) {
                     if(i != signRequestParams.getSignPageNumber() || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp)) {
-                        stampImageToPage(signRequest, signRequestParams, user, signType, pdfParameters, pdDocument, pdPage, i, date);
+                        stampImageToPage(signRequest, signRequestParams, user, signType, pdfParameters, pdDocument, pdPage, i, date, otp);
                     }
                     i++;
                 }
             } else {
                 if(j > 0) {
                     PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
-                    stampImageToPage(signRequest, signRequestParams, user, signType, pdfParameters, pdDocument, pdPage, signRequestParams.getSignPageNumber(), date);
+                    stampImageToPage(signRequest, signRequestParams, user, signType, pdfParameters, pdDocument, pdPage, signRequestParams.getSignPageNumber(), date, otp);
                 }
             }
 
@@ -140,7 +140,7 @@ public class PdfService {
         return null;
     }
 
-    private void stampImageToPage(SignRequest signRequest, SignRequestParams signRequestParams, User user, SignType signType, PdfParameters pdfParameters, PDDocument pdDocument, PDPage pdPage, int pageNumber, Date newDate) throws IOException {
+    private void stampImageToPage(SignRequest signRequest, SignRequestParams signRequestParams, User user, SignType signType, PdfParameters pdfParameters, PDDocument pdDocument, PDPage pdPage, int pageNumber, Date newDate, Boolean otp) throws IOException {
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
         InputStream signImage = null;
         if (signRequestParams.getSignImageNumber() < 0) {
@@ -148,18 +148,18 @@ public class PdfService {
         } else {
             if ((signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) || !signRequestParams.getAddImage())
                     && (!StringUtils.hasText(signRequestParams.getTextPart()) || signRequestParams.getAddExtra()) ) {
-                signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), true), signRequestParams, signType, user, newDate);
+                signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), true), signRequestParams, signType, user, newDate, otp);
             } else if (signRequestParams.getAddExtra()) {
                 if(signRequestParams.getSignImageNumber() == null || signRequestParams.getSignImageNumber() >= user.getSignImages().size()) {
-                    signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), true), signRequestParams, signType, user, newDate);
+                    signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), true), signRequestParams, signType, user, newDate, otp);
                 } else {
-                    signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType, user, newDate);
+                    signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType, user, newDate, otp);
                 }
             } else if (signRequestParams.getTextPart() == null) {
                 if(user.getSignImages().size() >= signRequestParams.getSignImageNumber() + 1) {
                     signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
                 } else {
-                    signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), true), signRequestParams, signType, user, newDate);
+                    signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), true), signRequestParams, signType, user, newDate, otp);
                 }
             }
             if (signRequestParams.getAddWatermark()) {
