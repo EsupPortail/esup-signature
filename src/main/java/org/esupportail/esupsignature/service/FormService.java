@@ -84,10 +84,9 @@ public class FormService {
 
 	@Transactional
 	public List<Form> getFormsByUser(String userEppn, String authUserEppn){
-		User user = userService.getByEppn(userEppn);
 		Set<Form> forms = new HashSet<>();
 		if(userEppn.equals(authUserEppn)) {
-			for(String role : user.getRoles()) {
+			for(String role : userService.getRoles(userEppn)) {
 				forms.addAll(formRepository.findAuthorizedForms(role));
 			}
 		} else {

@@ -1,17 +1,16 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @RequestMapping("/admin/roles-managers")
 @Controller
@@ -34,9 +33,9 @@ public class RolesManagersController {
     public String getRoles(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
         Map<String, List<User>> roleManagers = new HashMap<>();
         User authUser = userService.getByEppn(authUserEppn);
-        if(authUser.getRoles().contains("ROLE_ADMIN")) {
+        if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
             List<User> users = userService.getByManagersRolesUsers();
-            for (String role : users.stream().flatMap(user -> user.getManagersRoles().stream().map(String::new)).collect(Collectors.toList())) {
+            for (String role : users.stream().flatMap(user -> user.getManagersRoles().stream().map(String::new)).toList()) {
                 roleManagers.put(role, userService.getByManagersRoles(role));
             }
             model.addAttribute("roles", userService.getAllRoles());
@@ -55,9 +54,7 @@ public class RolesManagersController {
         if(rolesManagers != null) {
             for (String mail : rolesManagers) {
                 User user = userService.getUserByEmail(mail);
-                if (!user.getManagersRoles().contains(role)) {
-                    user.getManagersRoles().add(role);
-                }
+                user.getManagersRoles().add(role);
             }
         } else {
             for (User user : userService.getByManagersRoles(role)) {
@@ -77,9 +74,7 @@ public class RolesManagersController {
             }
             for (String mail : rolesManagers) {
                 User user = userService.getUserByEmail(mail);
-                if (!user.getManagersRoles().contains(role)) {
-                    user.getManagersRoles().add(role);
-                }
+                user.getManagersRoles().add(role);
             }
         } else {
             for (User user : userService.getByManagersRoles(role)) {
