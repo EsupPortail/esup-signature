@@ -1230,11 +1230,12 @@ public class SignBookService {
             SignRequest signRequest = signRequestService.createSignRequest(multipartFile.getOriginalFilename(), signBook, createByEppn, createByEppn);
             signRequest.getSignRequestParams().addAll(signRequestParamses);
             signRequestService.addDocsToSignRequest(signRequest, scanSignatureFields, 0, new ArrayList<>(), multipartFile);
-            if (targetUrls != null) {
-                for (String targetUrl : targetUrls) {
-                    if (signBook.getLiveWorkflow().getTargets().stream().noneMatch(target -> target != null && target.getTargetUri().equals(targetUrl))) {
-                        signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
-                    }
+        }
+        if (targetUrls != null) {
+            for (String targetUrl : targetUrls) {
+                if (signBook.getLiveWorkflow().getTargets().stream().noneMatch(t -> t != null && t.getTargetUri().equals(targetUrl))) {
+                    Target target = targetService.createTarget(targetUrl);
+                    signBook.getLiveWorkflow().getTargets().add(target);
                 }
             }
         }

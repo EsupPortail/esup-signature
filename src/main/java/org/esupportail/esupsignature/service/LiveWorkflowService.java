@@ -6,6 +6,8 @@ import org.esupportail.esupsignature.repository.LiveWorkflowRepository;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Service
@@ -14,6 +16,7 @@ public class LiveWorkflowService {
     @Resource
     LiveWorkflowRepository liveWorkflowRepository;
 
+    @Transactional
     public LiveWorkflow create(String title, Workflow workflow) {
         LiveWorkflow liveWorkflow = new LiveWorkflow();
         liveWorkflow.setTitle(title);
