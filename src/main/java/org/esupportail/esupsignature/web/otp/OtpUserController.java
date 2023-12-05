@@ -6,7 +6,7 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.web.ws.json.JsonMessage;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -53,7 +53,7 @@ public class OtpUserController {
                          @RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
                          @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
         userService.updateUser(authUserEppn, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, null, false);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Vos paramètres ont été enregistrés"));
+        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Vos paramètres ont été enregistrés"));
         String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
         return "redirect:" + referer;
     }
@@ -61,7 +61,7 @@ public class OtpUserController {
     @GetMapping("/delete-sign/{id}")
     public String deleteSign(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes) {
         userService.deleteSign(authUserEppn, id);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Signature supprimée"));
+        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Signature supprimée"));
         return "redirect:/otp/users";
     }
 

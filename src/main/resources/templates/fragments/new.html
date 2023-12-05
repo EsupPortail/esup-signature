@@ -10,29 +10,31 @@
             <div id="new-scroll" class="text-center text-nowrap col-12 text-wrap scrollbar-lite scrollbar-style">
                 <div id="newContainer" class="d-inline">
                     <h5 class="newToggled d-none">Outils de signature</h5>
-                    <a id="newfastSign" th:if="${userEppn == authUserEppn}" th:unless="${globalProperties.hideAutoSign}" role="button" data-bs-dismiss="modal" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0" data-bs-toggle="modal"
-                       data-bs-target="#fastSignRequestModal" style="width: 120px; height: 170px;"
-                       title="Vous devez signer un document présent sur votre poste de travail">
+                    <a id="new-self-sign" th:if="${userEppn == authUserEppn}" th:unless="${globalProperties.hideAutoSign}" role="button" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0" style="width: 120px; height: 170px;"
+                        data-bs-toggle="modal"
+                        data-bs-target="#wiz-self-sign-modal"
+                        title="Vous devez signer un document présent sur votre poste de travail">
                         <div class="crop">
                             <i class="fa-solid fa-signature fa-3x"></i>
                         </div>
                         <h7>Auto signature</h7>
                     </a>
 
-                    <a id="newSignDemand" th:if="${!isUserOnSu}" th:unless="${globalProperties.hideSendSignRequest}" role="button" data-bs-dismiss="modal" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0" data-bs-toggle="modal"
-                       data-bs-target="#sendSignRequestModal" style="width: 120px; height: 170px;"
-                       title="Demander la signature d'un document présent sur votre poste de travail">
+                    <a id="new-fast-sign" th:if="${!isUserOnSu}" th:unless="${globalProperties.hideSendSignRequest}" role="button" data-bs-dismiss="modal" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0" style="width: 120px; height: 170px;"
+                        data-bs-toggle="modal"
+                        data-bs-target="#wiz-fast-sign-modal"
+                        title="Demander la signature d'un document présent sur votre poste de travail">
                         <div class="crop">
                             <i class="fa-solid fa-paper-plane fa-3x"></i>
                         </div>
                         <h7>Demander une signature</h7>
                     </a>
 
-                    <a id="startWizardCustomButton" th:if="${!isUserOnSu}"
-                       th:unless="${globalProperties.hideWizard}"
-                       role="button" class="globalButton btn btn-material btn-light text-center me-2 mb-2 overflow-hidden p-0" data-bs-toggle="modal"
-                       data-bs-target="#wizModalCustom" style="width: 120px; height: 170px;"
-                       title="Créer une nouvelle demande à l'aide de l'assistant">
+                    <a id="start-wizard-custom-button" th:if="${!isUserOnSu}"
+                        th:unless="${globalProperties.hideWizard}"
+                        role="button" class="globalButton btn btn-material btn-light text-center me-2 mb-2 overflow-hidden p-0" data-bs-toggle="modal"
+                        data-bs-target="#wiz-custom-sign-modal" style="width: 120px; height: 170px;"
+                        title="Créer une nouvelle demande à l'aide de l'assistant">
                         <div class="crop">
                             <span class="fa-stack fa-2xl">
                                 <i class="fa-solid fa-paper-plane fa-stack-1x me-3"></i>
@@ -43,49 +45,53 @@
                     </a>
                     <hr class="newHr d-none">
                     <h5 class="newToggled d-none">Circuits</h5>
-                    <a th:unless="${globalProperties.hideWizardWorkflow}" id="start-wizard-button2" role="button" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden align-bottom p-0 workflow-button" data-bs-toggle="modal"
-                        data-bs-target="#wizModal" style="width: 120px; height: 170px;"
+                    <a th:unless="${globalProperties.hideWizardWorkflow}" id="start-wizard-button" role="button" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden align-bottom p-0 workflow-button" data-bs-toggle="modal"
+                        data-bs-target="#wiz-modal" style="width: 120px; height: 170px;"
                         title="Créer un circuit personnel à l'aide de l'assistant" >
                         <div class="crop">
                             <i class="fa-solid fa-magic fa-3x "></i>
                         </div>
                         <h7>Assistant de création de circuit</h7>
                     </a>
-                    <div class="d-inline-block" id="newWorkflow">
+                    <div class="d-inline-flex" id="newWorkflow">
                         <th:block th:each="workflow : ${workflows}">
-                            <a role="button" class="start-wizard-workflow-button btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0 workflow-button"
-                                style="width: 120px; height: 170px;display: inline-flex; flex-direction: column;"
-                               th:title="${workflow.description}"
-                                th:attr="data-workflow-id=${workflow.id}, data-workflow-name=${workflow.name} "
+                            <div>
+                            <a role="button" class="workflow-btn start-wizard-workflow-button btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0 workflow-button"
+                                data-bs-toggle="modal"
+                                data-bs-target="#wiz-workflow-sign-modal"
+                                style="width: 120px; display: inline-flex; flex-direction: column;"
+                                th:title="${workflow.description}"
+                                th:data-es-workflow-id="${workflow.id}"
                                 th:alt="'Circuit : ' + ${workflow.description}">
                                 <div class="crop">
                                     <i class="fa-solid fa-project-diagram fa-3x project-diagram-color"></i>
                                 </div>
                                 <h7 th:text="'Circuit : ' + ${workflow.description}"></h7>
-                                <br>
-                                <button class="btn btn-light btn-sm text-dark toggle-mini-menu rounded-0"
-                                        th:if="${workflow.createBy.eppn == userEppn}" type="button" th:id="'menu-toggle_' + ${workflow.id}"
-                                        style="margin-top: auto;" th:data-bs-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-bs-toggle="collapse">
-                                    <i class="fa-solid fa-ellipsis-h" style="float: right;"></i>
-                                </button>
-                                <div style="" data-bs-backdrop="false" class="collapse rounded-0 border-0" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
-                                    <div class="inline-flex">
-                                        <form th:id="${'deleteWorkflow_' + workflow.id}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'">
-                                        </form>
-                                        <button  class="btn btn-sm workflow-button workflow-update-button" title="Modifier" th:data-id="${workflow.id}" type="button">
-                                            <i class="fa-solid fa-cog"></i>
-                                        </button>
-                                        <button role="button" class="btn btn-sm workflow-button workflow-delete-button" title="Supprimer" type="button" th:data-id="${workflow.id}">
-                                            <i class="fa-solid fa-trash-alt"></i>
-                                        </button>
-                                    </div>
-                                </div>
                             </a>
+                            <button class="btn btn-transparent btn-sm text-dark toggle-mini-menu rounded-0"
+                                    style="position : fixed; margin-top: 150px; margin-left: -40px;"
+                                    th:if="${workflow.createBy.eppn == userEppn}" type="button" th:id="'menu-toggle_' + ${workflow.id}"
+                                    th:data-bs-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-bs-toggle="collapse">
+                                <i class="fa-solid fa-ellipsis-h" style="float: right;"></i>
+                            </button>
+                            <div style="margin-top: -40px;" data-bs-backdrop="false" class="collapse rounded-0 border-0" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
+                                <div class="inline-flex">
+                                    <form th:id="${'deleteWorkflow_' + workflow.id}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'">
+                                    </form>
+                                    <button  class="btn btn-sm workflow-button workflow-update-button" title="Modifier" th:data-id="${workflow.id}" type="button">
+                                        <i class="fa-solid fa-cog"></i>
+                                    </button>
+                                    <button role="button" class="btn btn-sm workflow-button workflow-delete-button" title="Supprimer" type="button" th:data-id="${workflow.id}">
+                                        <i class="fa-solid fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            </div>
                         </th:block>
                     </div>
                     <th:block th:if="${workflows != null && workflows.size() == 0}">
                         <a role="button" class="btn btn-material btn-light text-center pt-3 me-2 overflow-hidden p-0 noWorkflow d-none"
-                           style="width: 120px; height: 170px;">
+                            style="width: 120px; height: 170px;">
                             <div class="crop">
                             </div>
                             <h7>Aucun circuit</h7>
@@ -96,9 +102,9 @@
                     <div class="d-inline-block" id="newForm">
                         <th:block th:each="form : ${forms}">
                             <a role="button" class="btn btn-material btn-light text-center pt-3 me-2 overflow-hidden p-0 form-button"
-                               style="width: 120px; height: 170px;"
-                               th:title="${form.title}"
-                               data-bs-toggle="modal" th:data-bs-target="'#sendModal_' + ${form.id}" >
+                                style="width: 120px; height: 170px;"
+                                th:title="${form.title}"
+                                data-bs-toggle="modal" th:data-bs-target="'#sendModal_' + ${form.id}" >
                                 <div class="crop">
                                     <i class="fa-solid fa-file-alt fa-3x file-alt-color"></i>
 <!--                                    <img th:src="'/user/datas/forms/' + ${form.id} + '/get-image/'" height="150px"/>-->
@@ -109,7 +115,7 @@
                     </div>
                     <th:block th:if="${forms != null && forms.size() == 0}">
                         <a role="button" class="btn btn-material btn-light text-center me-2 overflow-hidden p-0 noForm d-none"
-                           style="width: 120px; height: 170px;">
+                            style="width: 120px; height: 170px;">
                             <div class="crop">
                             </div>
                             <h7>Aucun formulaire</h7>

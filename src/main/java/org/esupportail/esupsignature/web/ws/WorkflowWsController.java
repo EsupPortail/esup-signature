@@ -3,15 +3,20 @@ package org.esupportail.esupsignature.web.ws;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.annotation.Resource;
-import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.dto.RecipientWsDto;
+import org.esupportail.esupsignature.dto.WorkflowDto;
+import org.esupportail.esupsignature.dto.WorkflowStepDto;
+import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
+import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestParamsService;
 import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.web.ws.json.JsonDtoWorkflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -19,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -33,14 +39,21 @@ public class WorkflowWsController {
     @Resource
     private SignBookService signBookService;
 
+    @Resource
+    private SignRequestParamsService signRequestParamsService;
+
+    @Resource
+    private RecipientService recipientService;
+
     @CrossOrigin
-    @PostMapping(value = "/{id}/new")
+    @PostMapping(value = "/{id}/new", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @Operation(description = "Dépôt d'un document dans une nouvelle instance d'un circuit")
     public ResponseEntity<?> start(@PathVariable Long id,
-                      @Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
+                      @RequestParam @Parameter(description = "Multipart stream du fichier à signer") MultipartFile[] multipartFiles,
                       @RequestParam @Parameter(description = "Eppn du propriétaire du futur document") String createByEppn,
                       @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title,
                       @RequestParam(required = false, defaultValue = "false") @Parameter(description = "Scanner les champs signature (false par défaut)") Boolean scanSignatureFields,
+                      @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape (objet json)", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RecipientWsDto.class)))) String recipientsJsonString,
                       @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*email] ou [stepNumber*email*phone]") List<String> recipientsEmails,
                       @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape (ancien nom)", example = "[stepNumber*email] ou [stepNumber*email*phone]") List<String> recipientEmails,
                       @RequestParam(required = false) @Parameter(description = "Lites des numéros d'étape pour lesquelles tous les participants doivent signer", example = "[stepNumber]") List<String> allSignToCompletes,
@@ -59,13 +72,25 @@ public class WorkflowWsController {
         if(recipientEmails == null && recipientsEmails != null && !recipientsEmails.isEmpty()) {
             recipientEmails = recipientsEmails;
         }
+        List<WorkflowStepDto> steps;
+        if(recipientsJsonString == null && recipientEmails != null) {
+            steps = recipientService.convertRecipientEmailsToRecipientWsDto(recipientEmails);
+        } else {
+            steps = recipientService.convertRecipientJsonStringToRecipientWsDto(recipientsJsonString);
+        }
+        List<SignRequestParams> signRequestParamses = new ArrayList<>();
+        if (signRequestParamsJsonString != null) {
+            signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
+        }
+        for(WorkflowStepDto step : steps) {
+            step.setAllSignToComplete(Boolean.valueOf(allSignToCompletes.get(step.getStepNumber() - 1)));
+        }
         try {
-            SignBook signBook = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, recipientEmails, allSignToCompletes, targetEmails, targetUrls, signRequestParamsJsonString, scanSignatureFields, sendEmailAlert);
-            List<String> signRequestIds = signBook.getSignRequests().stream().map(signRequest -> signRequest.getId().toString()).toList();
+            List<Long> signRequestIds = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, steps, targetEmails, targetUrls, signRequestParamses, scanSignatureFields, sendEmailAlert);
             if(json) {
                 return ResponseEntity.ok(signRequestIds);
             } else {
-                return ResponseEntity.ok(String.join(",", signRequestIds));
+                return ResponseEntity.ok(String.join(",", signRequestIds.toString()));
             }
         } catch (EsupSignatureRuntimeException e) {
             logger.error(e.getMessage(), e);
@@ -75,7 +100,7 @@ public class WorkflowWsController {
 
     @CrossOrigin
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(description = "Récupération d'un circuit", responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = JsonDtoWorkflow.class))))
+    @Operation(description = "Récupération d'un circuit", responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = WorkflowDto.class))))
     public String get(@PathVariable Long id) throws JsonProcessingException {
         return workflowService.getByIdJson(id);
     }

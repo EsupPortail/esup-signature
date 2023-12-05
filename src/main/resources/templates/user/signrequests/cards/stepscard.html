@@ -67,7 +67,7 @@
                                             </td>
                                             <td>
                                                 <a class="btn btn-sm btn-outline-primary"
-                                                       th:href="@{'/ws-secure/signrequests/get-file/' + ${signRequest.signedDocuments.get(iterator.index).id}}"
+                                                       th:href="@{'/ws-secure/global/get-file/' + ${signRequest.signedDocuments.get(iterator.index).id}}"
                                                     title="Récupérer le document signé à cette étape"
                                                     th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}">
                                                     <i class="fa-solid fa-download"></i></a>

@@ -47,7 +47,7 @@ export class WorkspacePdf {
             if(currentSignType === "form") {
                 this.pdfViewer = new PdfViewer('/admin/forms/get-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, true);
             } else {
-                this.pdfViewer = new PdfViewer('/ws-secure/signrequests/get-last-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, false);
+                this.pdfViewer = new PdfViewer('/ws-secure/global/get-last-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, false);
             }
         }
         this.signPosition = new SignPosition(
@@ -503,7 +503,7 @@ export class WorkspacePdf {
                                 if (result) {
                                     $.ajax({
                                         method: 'DELETE',
-                                        url: "/ws-secure/signrequests/delete-comment/" + self.signRequestId + "/" + comment.id + "?" + self.csrf.parameterName + "=" + self.csrf.token,
+                                        url: "/ws-secure/global/delete-comment/" + self.signRequestId + "/" + comment.id + "?" + self.csrf.parameterName + "=" + self.csrf.token,
                                         success: function () {
                                             document.location.reload();
                                         }
@@ -547,7 +547,7 @@ export class WorkspacePdf {
                         e.stopPropagation();
                         bootbox.confirm("Supprimer cet emplacement de signature ?", function (result) {
                             if (result) {
-                                let url = "/ws-secure/signrequests/delete-comment/" + self.signRequestId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
+                                let url = "/ws-secure/global/delete-comment/" + self.signRequestId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
                                 if(self.currentSignType === "form") {
                                     url = "/admin/forms/delete-spot/" + self.formId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
                                 }

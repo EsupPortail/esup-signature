@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<div class="modal-header">
+    <h3 class="modal-title" th:text="${modalTile}"></h3>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <div id="stepper1" class="bs-stepper linear">
+        <div class="bs-stepper-header" role="tablist">
+            <div class="step active" data-bs-target="#test-l-2">
+                <span class="bs-stepper-circle"><i class="fa-solid fa-copy"></i></span>
+                <span class="bs-stepper-label">Dépôt des fichiers</span>
+            </div>
+            <div class="bs-stepper-line"></div>
+            <div class="step" data-bs-target="#test-l-3">
+                <span class="bs-stepper-circle"><i class="fa-solid fa-project-diagram"></i></span>
+                <span class="bs-stepper-label">Création du circuit</span>
+            </div>
+            <div class="bs-stepper-line"></div>
+            <div class="step" data-bs-target="#test-l-3">
+                <span class="bs-stepper-circle"><i class="fa-solid fa-save"></i></span>
+                <span class="bs-stepper-label">Sauvegarde</span>
+            </div>
+            <div class="bs-stepper-line"></div>
+            <div class="step" data-bs-target="#test-l-3">
+                <span class="bs-stepper-circle"><i class="fa-solid fa-flag-checkered"></i></span>
+                <span class="bs-stepper-label">Fin</span>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <h4 class="d-flex justify-content-center mt-4">Dépôt des fichiers</h4>
+    <div class="col-lg-12">
+        <form id="start-workflow-form">
+            <input type="submit" id="workflow-form-submit" class="d-none">
+            <div class="form-group mb-3">
+                <label class="form-label" for="title-wiz">Titre <span th:if="${workflow != null}">(Facultatif)</span><span th:unless="${workflow != null}">(Obligatoire)</span></label>
+                <input th:required="${workflow == null}" type="text" placeholder="Vous pouvez saisir un titre pour retrouver votre demande" id="title-wiz" name="title" class="form-control">
+            </div>
+            <div class="form-group mb-3">
+                <div class="file-loading">
+                    <input required th:id="'multipartFiles_' + ${workflow != null ? workflow.id : '0'}" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''">
+                </div>
+            </div>
+            <div class="form-group mb-3">
+                <div class="form-check form-switch form-switch-md d-none">
+                    <input class="form-check-input" type="checkbox" name="forceAllSign" id="forceAllSign">
+                    <label for="forceAllSign" class="form-check-label">Forcer la signature de tous les documents</label>
+                </div>
+                <div>
+                    <label class="form-label" for="comment">Commentaire (facultatif)</label>
+                    <textarea type="text" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."  onfocus="this.placeholder = ''" id="comment" name="comment" class="form-control"></textarea>
+                </div>
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label" for="recipientsCCEmails">Choisir les observateurs en copie (facultatif)</label>
+                <select class="select-users" data-es-check-cert="true" name="recipientsCCEmails" id="recipientsCCEmails" multiple="multiple">
+                    <option data-placeholder="true"></option>
+                    <th:block th:if="${workflow != null}">
+                        <option th:each="viewer : ${workflow.viewers}" selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
+                    </th:block>
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" id="wiz-start-button" class="btn btn-success float-end m-1">
+        Suivant <i class="fa-solid fa-angle-right"></i>
+    </button>
+</div>
+</html>

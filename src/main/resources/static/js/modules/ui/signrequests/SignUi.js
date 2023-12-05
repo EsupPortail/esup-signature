@@ -2,6 +2,7 @@ import {WorkspacePdf} from "./WorkspacePdf.js?version=@version@";
 import {CsrfToken} from "../../../prototypes/CsrfToken.js?version=@version@";
 import {Step} from "../../../prototypes/Step.js?version=@version@";
 import {Nexu} from "./Nexu.js?version=@version@";
+import {ExternalUserInfos} from "../../../prototypes/ExternalUserInfos.js?version=@version@";
 
 export class SignUi {
 
@@ -374,7 +375,7 @@ export class SignUi {
         console.log("start sign");
         console.log(self.signRequestId);
         $.ajax({
-            url: "/ws-secure/signrequests/sign/" + this.signRequestId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
+            url: "/ws-secure/global/sign/" + this.signRequestId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
             type: 'POST',
             data: signRequestUrlParams,
             success: function(data, textStatus, xhr) {
@@ -441,14 +442,27 @@ export class SignUi {
         let signRequestId = this.signRequestId;
         let csrf = this.csrf;
         let step = new Step();
-        let selectedRecipients = $('#recipientsEmailsInfinite').find(`[data-es-check-cert='true']`).prevObject[0].slim.getSelected();
-        if(selectedRecipients.length === 0 ) {
+        let recipientsEmails = $('#recipientsEmailsInfinite').find(`[data-es-check-cert='true']`).prevObject[0].slim.getSelected();
+        if(recipientsEmails.length === 0 ) {
             $("#infiniteFormSubmit").click();
             return;
         }
+        recipientsEmails.each(function() {
+            let externalUserInfos = new ExternalUserInfos();
+            externalUserInfos.email = $(this).find("#emails").val();
+            step.recipients.push(externalUserInfos);
+        });
+        $("div[id^='externalUserInfos_']").each(function() {
+            let externalUserInfos = new ExternalUserInfos();
+            externalUserInfos.email = $(this).find("#emails").val();
+            externalUserInfos.name = $(this).find("#names").val();
+            externalUserInfos.firstName = $(this).find("#firstnames").val();
+            externalUserInfos.phone = $(this).find("#phones").val();
+            externalUserInfos.forceSms = $(this).find("#forcesmses").val();
+            step.recipients.push(externalUserInfos);
+        });
         let self = this;
         this.signComment = $("#signCommentInfinite");
-        step.recipientsEmails = selectedRecipients;
         step.stepNumber = this.currentStepNumber;
         step.allSignToComplete = $('#allSignToCompleteInfinite').is(':checked');
         step.multiSign = $('#multiSign').is(':checked');

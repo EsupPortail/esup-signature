@@ -1,8 +1,8 @@
-package org.esupportail.esupsignature.web.ws.json;
+package org.esupportail.esupsignature.dto.js;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class JsonClientSideError {
+public class JsError {
 
     String msg;
     String url;

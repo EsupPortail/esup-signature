@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.service;
 
+import org.esupportail.esupsignature.dto.RecipientWsDto;
+import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.repository.UserPropertieRepository;
@@ -24,9 +26,9 @@ public class UserPropertieService {
     }
 
     @Transactional
-    public void createUserPropertieFromMails(User user, List<String> recipientEmails) {
-	        for (String recipientEmail : recipientEmails) {
-            User favoriteUser = userService.getUserByEmail(recipientEmail);
+    public void createUserPropertieFromMails(User user, List<WorkflowStepDto> steps) {
+	        for (RecipientWsDto recipient : steps.stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).toList()) {
+            User favoriteUser = userService.getUserByEmail(recipient.getEmail());
             if(favoriteUser!= null) {
                 createUserProperty(user, favoriteUser);
             }
@@ -36,7 +38,7 @@ public class UserPropertieService {
     @Transactional
     public void createUserProperty(User user, User favoriteUser) {
         List<UserPropertie> userProperties = getUserProperties(user.getEppn());
-        if (userProperties == null || userProperties.size() == 0) {
+        if (userProperties == null || userProperties.isEmpty()) {
             addProperty(user, favoriteUser);
         } else {
             for(UserPropertie userPropertie : userProperties) {

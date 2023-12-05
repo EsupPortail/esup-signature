@@ -5,18 +5,18 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import org.esupportail.esupsignature.dto.RecipientWsDto;
+import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.service.DataService;
-import org.esupportail.esupsignature.service.FormService;
-import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
-import org.esupportail.esupsignature.web.ws.json.JsonDtoWorkflow;
+import org.esupportail.esupsignature.dto.WorkflowDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -43,6 +43,9 @@ public class FormWsController {
     private FormService formService;
 
     @Resource
+    private RecipientService recipientService;
+
+    @Resource
     private SignBookService signBookService;
 
     @Resource
@@ -60,6 +63,7 @@ public class FormWsController {
     public ResponseEntity<?> start(@PathVariable Long id,
                                    @RequestParam(required = false) @Parameter(description = "Eppn du propriétaire du futur document (ancien nom)") String eppn,
                                    @RequestParam(required = false) @Parameter(description = "Eppn du propriétaire du futur document : eppn ou createByEppn requis") String createByEppn,
+                                   @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape (objet json)", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = WorkflowStepDto.class)))) List<WorkflowStepDto> steps,
                                    @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape (ancien nom)", example = "[stepNumber*email] ou [stepNumber*email*phone]") List<String> recipientEmails,
                                    @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*email] ou [stepNumber*email*phone]") List<String> recipientsEmails,
                                    @RequestParam(required = false) @Parameter(description = "Liste des personnes en copie (emails). Ne prend pas en charge les groupes")  List<String> recipientsCCEmails,
@@ -80,6 +84,9 @@ public class FormWsController {
         if(recipientEmails == null && recipientsEmails != null && !recipientsEmails.isEmpty()) {
             recipientEmails = recipientsEmails;
         }
+        if(steps == null && recipientEmails != null) {
+            steps = recipientService.convertRecipientEmailsToRecipientWsDto(recipientEmails);
+        }
         if(createByEppn == null && eppn != null && !eppn.isEmpty()) {
             createByEppn = eppn;
         }
@@ -93,7 +100,7 @@ public class FormWsController {
             if(formDatas != null) {
                 datas = objectMapper.readValue(formDatas, type);
             }
-            SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, signTypes, allSignToCompletes, null, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, signRequestParamsJsonString, title, sendEmailAlert);
+            SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, signRequestParamsJsonString, title, sendEmailAlert);
             signBookService.addViewers(signBook.getId(), recipientsCCEmails);
             if(json) {
                 return ResponseEntity.ok(signBook.getSignRequests().get(0).getId());
@@ -108,7 +115,7 @@ public class FormWsController {
 
     @CrossOrigin
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(description = "Récupération d'un circuit", responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = JsonDtoWorkflow.class))))
+    @Operation(description = "Récupération d'un circuit", responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = WorkflowDto.class))))
     public String get(@PathVariable Long id) throws JsonProcessingException {
         return formService.getByIdJson(id);
     }
@@ -120,6 +127,7 @@ public class FormWsController {
                              @RequestParam @Parameter(description = "Multipart stream du fichier à signer") MultipartFile[] multipartFiles,
                              @RequestParam @Parameter(description = "Eppn du propriétaire du futur document") String createByEppn,
                              @RequestParam(required = false) @Parameter(description = "Multipart stream des pièces jointes") MultipartFile[] attachementMultipartFiles,
+                             @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape (objet json)", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RecipientWsDto.class)))) List<WorkflowStepDto> steps,
                              @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape (ancien nom)", example = "[stepNumber*email]") List<String> recipientEmails,
                              @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*email]") List<String> recipientsEmails,
                              @RequestParam(required = false) @Parameter(description = "Liste des types de signature pour chaque étape", example = "[stepNumber*signTypes]") List<String> signTypes,
@@ -138,6 +146,9 @@ public class FormWsController {
         if(recipientEmails == null && !recipientsEmails.isEmpty()) {
             recipientEmails = recipientsEmails;
         }
+        if(steps == null && recipientEmails != null) {
+            steps = recipientService.convertRecipientEmailsToRecipientWsDto(recipientEmails);
+        }
         Data data = dataService.addData(id, createByEppn);
         try {
             TypeReference<Map<String, String>> type = new TypeReference<>(){};
@@ -145,7 +156,7 @@ public class FormWsController {
             if(formDatas != null) {
                 datas.putAll(objectMapper.readValue(formDatas, type));
             }
-            SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, signTypes, allSignToCompletes, null, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), signRequestParamsJsonString, title, sendEmailAlert);
+            SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), signRequestParamsJsonString, title, sendEmailAlert);
             signRequestService.addAttachement(attachementMultipartFiles, null, signBook.getSignRequests().get(0).getId(), createByEppn);
             if(json) {
                 return ResponseEntity.ok(signBook.getSignRequests().get(0).getId());
