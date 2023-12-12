@@ -317,7 +317,7 @@ public class SignBookService {
         workflowStepDto.setAutoSign(false);
         workflowStepDto.setAllSignToComplete(false);
         workflowStepDto.setSignType(null);
-        workflowStepDto.getRecipients().add(new RecipientWsDto(user.getEmail()));
+        recipientService.addRecipientInStep(workflowStepDto, user.getEmail());
         workflowService.importWorkflowFromWorkflowStepDto(signBook, Collections.singletonList(workflowStepDto), userEppn);
         signBook.setStatus(SignRequestStatus.draft);
         pendingSignBook(signBookId, null, userEppn, userEppn, false, true);
@@ -358,7 +358,7 @@ public class SignBookService {
         signBook.setStatus(SignRequestStatus.uploading);
         signBook.setWorkflowName(workflowName);
         signBook.setCreateBy(user);
-        signBook.getTeam().add(user);
+        addToTeam(signBook, user.getEppn());
         signBook.setCreateDate(new Date());
         signBook.setLiveWorkflow(liveWorkflowService.create(workflowName, workflow));
         signBook.setSubject(subject);
@@ -582,7 +582,7 @@ public class SignBookService {
                     User user = userService.getUserByEmail(recipientCCEmail);
                     if (!signBook.getViewers().contains(user) && !signBook.getCreateBy().equals(user)) {
                         signBook.getViewers().add(user);
-                        addUserInTeam(user.getId(), signBookId);
+                        addToTeam(signBook, user.getEppn());
                         if (globalProperties.getSendCreationMailToViewers() && !signBook.getStatus().equals(SignRequestStatus.draft) && !signBook.getStatus().equals(SignRequestStatus.uploading)) {
                             mailService.sendCCAlert(signBook, recipientsCCEmails);
                         }
@@ -671,7 +671,7 @@ public class SignBookService {
             User systemUser = userService.getSystemUser();
             signBook.setCreateBy(systemUser);
             signRequest.setCreateBy(systemUser);
-            addUserInTeam(systemUser.getId(), signBook.getId());
+            addToTeam(signBook, systemUser.getEppn());
         }
         signRequest.getSignRequestParams().addAll(signRequestParamses);
         byte[] toAddFile;
@@ -722,7 +722,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureException {
+    public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn) {
         int i = 0;
         SignBook signBook = getById(signBookId);
         for (MultipartFile multipartFile : multipartFiles) {
@@ -732,6 +732,7 @@ public class SignBookService {
                 signRequestService.addDocsToSignRequest(signRequest, true, i, new ArrayList<>(), multipartFile);
                 if (signBook.getStatus().equals(SignRequestStatus.pending)) {
                     signRequestService.pendingSignRequest(signRequest, authUserEppn);
+                    addToTeam(signBook, authUserEppn);
                 }
             } catch (EsupSignatureIOException e) {
                 logger.warn("revert signbook creation due to error : " + e.getMessage());
@@ -821,11 +822,12 @@ public class SignBookService {
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getCurrentStep() != null && signBook.getLiveWorkflow().getCurrentStep().getAutoSign()) {
                 signBook.getLiveWorkflow().getCurrentStep().setSignType(SignType.certSign);
-                signBook.getLiveWorkflow().getCurrentStep().getRecipients().add(recipientService.createRecipient(userService.getSystemUser()));
+                liveWorkflowStepService.addRecipient(liveWorkflowStep, recipientService.createRecipient(userService.getSystemUser()));
             }
             if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
                 if (liveWorkflowStep != null) {
                     signRequestService.pendingSignRequest(signRequest, userEppn);
+                    addToTeam(signBook, userEppn);
                     if (!emailSended && sendEmailAlert) {
                         try {
                             mailService.sendEmailAlerts(signRequest, userEppn, data, forceSendEmail);
@@ -1210,12 +1212,12 @@ public class SignBookService {
                             if (creator != null) {
                                 signRequest.setCreateBy(creator);
                                 signBook.setCreateBy(creator);
-                                addUserInTeam(creator.getId(), signBook.getId());
+                                addToTeam(signBook, creator.getEppn());
                             } else {
                                 User systemUser = userService.getSystemUser();
                                 signRequest.setCreateBy(systemUser);
                                 signBook.setCreateBy(systemUser);
-                                addUserInTeam(systemUser.getId(), signBook.getId());
+                                addToTeam(signBook, systemUser.getEppn());
                             }
                             int i = 0;
                             for (String metadataKey : metadatas.keySet()) {
@@ -1230,7 +1232,7 @@ public class SignBookService {
                                         if (workflow.getWorkflowSteps().size() > i) {
                                             workflowStep = workflow.getWorkflowSteps().get(i);
                                         }
-                                        WorkflowStepDto workflowStepDto = recipientService.convertRecipientEmailsToRecipientWsDto(recipientList).get(0);
+                                        WorkflowStepDto workflowStepDto = recipientService.convertRecipientEmailsToStep(recipientList).get(0);
                                         workflowStepDto.setSignType(SignType.valueOf(signType));
                                         LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, workflowStep, workflowStepDto);
                                         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
@@ -1566,7 +1568,7 @@ public class SignBookService {
                                     User user = userService.getUserByEmail(email);
                                     if (!signBook.getViewers().contains(user)) {
                                         signBook.getViewers().add(user);
-                                        addUserInTeam(user.getId(), signBook.getId());
+                                        addToTeam(signBook, user.getEppn());
                                     }
                                 }
                                 mailService.sendFile(title, signBook, targetUrl);
@@ -1812,13 +1814,6 @@ public class SignBookService {
         return new PageImpl<>(signBooks.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signBooks.size());
     }
 
-    @Transactional
-    public void addUserInTeam(Long userId, Long signBookId) {
-        User user = userService.getById(userId);
-        SignBook signBook = getById(signBookId);
-        signBook.getTeam().add(user);
-    }
-
     public List<SignBook> getSignBookForUsers(String userEppn) {
         User user = userService.getByEppn(userEppn);
         return signBookRepository.findByTeamContaining(user);
@@ -1857,7 +1852,7 @@ public class SignBookService {
     public void transfertSignRequest(Long signRequestId, User user, User replacedByUser) {
         SignRequest signRequest = signRequestService.getById(signRequestId);
         signRequest.getParentSignBook().getTeam().remove(user);
-        signRequest.getParentSignBook().getTeam().add(replacedByUser);
+        addToTeam(signRequest.getParentSignBook(), user.getEppn());
         for(LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
             for(Recipient recipient : liveWorkflowStep.getRecipients()) {
                 if(recipient.getUser().equals(user)) {
@@ -1949,5 +1944,12 @@ public class SignBookService {
     public void pendingSignRequest(Long id, Data data, String userEppn, String authUserEppn, boolean forceSendEmail) {
         SignRequest signRequest = signRequestService.getById(id);
         pendingSignBook(signRequest.getParentSignBook().getId(), data, userEppn, authUserEppn, forceSendEmail, true);
+    }
+
+    public void addToTeam(SignBook signBook, String userEppn) {
+        User user = userService.getByEppn(userEppn);
+        if(signBook.getTeam().stream().noneMatch(u -> u.getId().equals(user.getId()))) {
+            signBook.getTeam().add(user);
+        }
     }
 }

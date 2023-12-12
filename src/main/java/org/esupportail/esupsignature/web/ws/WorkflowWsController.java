@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.annotation.Resource;
-import org.esupportail.esupsignature.dto.RecipientWsDto;
 import org.esupportail.esupsignature.dto.WorkflowDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.SignRequestParams;
@@ -53,7 +52,7 @@ public class WorkflowWsController {
                       @RequestParam @Parameter(description = "Eppn du propriétaire du futur document") String createByEppn,
                       @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title,
                       @RequestParam(required = false, defaultValue = "false") @Parameter(description = "Scanner les champs signature (false par défaut)") Boolean scanSignatureFields,
-                      @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape (objet json)", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RecipientWsDto.class)))) String recipientsJsonString,
+                      @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape (objet json)", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = WorkflowStepDto[].class)))) String recipientsJsonString,
                       @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*email] ou [stepNumber*email*phone]") List<String> recipientsEmails,
                       @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape (ancien nom)", example = "[stepNumber*email] ou [stepNumber*email*phone]") List<String> recipientEmails,
                       @RequestParam(required = false) @Parameter(description = "Lites des numéros d'étape pour lesquelles tous les participants doivent signer", example = "[stepNumber]") List<String> allSignToCompletes,
@@ -74,16 +73,13 @@ public class WorkflowWsController {
         }
         List<WorkflowStepDto> steps;
         if(recipientsJsonString == null && recipientEmails != null) {
-            steps = recipientService.convertRecipientEmailsToRecipientWsDto(recipientEmails);
+            steps = recipientService.convertRecipientEmailsToStep(recipientEmails);
         } else {
             steps = recipientService.convertRecipientJsonStringToRecipientWsDto(recipientsJsonString);
         }
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
         if (signRequestParamsJsonString != null) {
             signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
-        }
-        for(WorkflowStepDto step : steps) {
-            step.setAllSignToComplete(Boolean.valueOf(allSignToCompletes.get(step.getStepNumber() - 1)));
         }
         try {
             List<Long> signRequestIds = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, steps, targetEmails, targetUrls, signRequestParamses, scanSignatureFields, sendEmailAlert);

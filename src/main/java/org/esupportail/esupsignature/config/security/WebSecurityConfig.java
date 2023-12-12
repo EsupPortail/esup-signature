@@ -47,7 +47,6 @@ import org.springframework.security.web.access.expression.WebExpressionAuthoriza
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
-import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.util.StringUtils;
 
@@ -164,11 +163,6 @@ public class WebSecurityConfig {
 	@Bean
 	public RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy() {
 		return new RegisterSessionAuthenticationStrategy(sessionRegistry());
-	}
-
-	@Bean
-	public ConcurrentSessionFilter concurrencyFilter() {
-		return new ConcurrentSessionFilter(sessionRegistry());
 	}
 
 	@Bean

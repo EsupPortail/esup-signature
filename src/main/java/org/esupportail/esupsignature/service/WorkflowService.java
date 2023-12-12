@@ -558,7 +558,10 @@ public class WorkflowService {
                 for(User user : workflowStepSetup.getUsers()) {
                     recipients.add(new RecipientWsDto(user.getEmail()));
                 }
+                WorkflowStepDto workflowStepDto = new WorkflowStepDto(workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), recipients, workflowStepSetup.getChangeable(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getAttachmentRequire());
+
                 WorkflowStep newWorkflowStep = workflowStepService.createWorkflowStep(workflowSetup.getName(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getSignType(), workflowStepSetup.getChangeable(), recipients.toArray(RecipientWsDto[]::new));
+
                 workflowStepService.updateStep(newWorkflowStep.getId(), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentAlert(), workflowStepSetup.getAttachmentRequire(), false, null);
                 workflow.getWorkflowSteps().add(newWorkflowStep);
             }
@@ -583,10 +586,9 @@ public class WorkflowService {
             }
             for (User user : workflowStep.getUsers()) {
                 if (user.equals(userService.getCreatorUser())) {
-                    step.getRecipients().add(new RecipientWsDto(signBook.getCreateBy().getEmail()));
-                } else {
-                    step.getRecipients().add(new RecipientWsDto(user.getEmail()));
+                    user = signBook.getCreateBy();
                 }
+                recipientService.addRecipientInStep(step, user.getEmail());
             }
             step.setRepeatable(workflowStep.getRepeatable());
             step.setRepeatableSignType(workflowStep.getRepeatableSignType());
@@ -609,7 +611,7 @@ public class WorkflowService {
         User user = userService.getByEppn(userEppn);
         if(steps.get(0).getUserSignFirst() != null && steps.get(0).getUserSignFirst()) {
             WorkflowStepDto workflowStepDto = new WorkflowStepDto();
-            workflowStepDto.getRecipients().add(new RecipientWsDto(user.getEmail()));
+            recipientService.addRecipientInStep(workflowStepDto, user.getEmail());
             workflowStepDto.setSignType(SignType.pdfImageStamp);
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(signBook, null, workflowStepDto));
         }

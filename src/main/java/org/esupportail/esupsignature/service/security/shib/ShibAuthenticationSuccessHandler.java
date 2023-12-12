@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -23,6 +24,9 @@ public class ShibAuthenticationSuccessHandler extends SavedRequestAwareAuthentic
 	@Resource
 	private UserService userService;
 
+	@Resource
+	private RegisterSessionAuthenticationStrategy registerSessionAuthenticationStrategy;
+
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) {
 		String eppn = authentication.getName();
@@ -37,6 +41,7 @@ public class ShibAuthenticationSuccessHandler extends SavedRequestAwareAuthentic
 		} else {
 			throw new EsupSignatureRuntimeException("At least one shib attribut is missing. Needed attributs are eppn, mail, sn and givenName");
 		}
+		registerSessionAuthenticationStrategy.onAuthentication(authentication, httpServletRequest, httpServletResponse);
 		httpServletRequest.getSession().setAttribute("securityServiceName", "ShibSecurityServiceImpl");
 	}
 	

@@ -95,11 +95,19 @@ public class LiveWorkflowStepService {
             }
             if(recipientUser != null) {
                 Recipient recipient = recipientService.createRecipient(recipientUser);
-                liveWorkflowStep.getRecipients().add(recipient);
-                signBook.getTeam().add(recipientUser);
+                addRecipient(liveWorkflowStep, recipient);
+                if(signBook.getTeam().stream().noneMatch(u -> u.getId().equals(recipientUser.getId()))) {
+                    signBook.getTeam().add(recipientUser);
+                }
             }
         }
         if(liveWorkflowStep.getRecipients().isEmpty() && !liveWorkflowStep.getAutoSign()) throw new EsupSignatureRuntimeException("recipients must not be empty");
+    }
+
+    public void addRecipient(LiveWorkflowStep liveWorkflowStep, Recipient recipient) {
+        if(liveWorkflowStep.getRecipients().stream().noneMatch(r -> r.getUser().getEmail().equals(recipient.getUser().getEmail()))) {
+            liveWorkflowStep.getRecipients().add(recipient);
+        }
     }
 
     @Transactional
@@ -112,16 +120,6 @@ public class LiveWorkflowStepService {
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
         userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(step));
     }
-
-//    public void addRecipients(LiveWorkflowStep liveWorkflowStep, String... recipientsEmail) {
-//        for (String recipientEmail : recipientsEmail) {
-//            User recipientUser = userService.getUserByEmail(recipientEmail);
-//            if (liveWorkflowStep.getRecipients().stream().anyMatch(r -> r.getUser().equals(recipientUser))) {
-//                Recipient recipient = recipientService.createRecipient(recipientUser);
-//                liveWorkflowStep.getRecipients().add(recipient);
-//            }
-//        }
-//    }
 
     public void delete(LiveWorkflowStep liveWorkflowStep) {
         liveWorkflowStepRepository.delete(liveWorkflowStep);

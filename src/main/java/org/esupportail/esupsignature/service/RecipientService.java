@@ -95,7 +95,7 @@ public class RecipientService {
     }
 
     @Transactional
-    public List<WorkflowStepDto> convertRecipientEmailsToRecipientWsDto(List<String> recipientEmails) {
+    public List<WorkflowStepDto> convertRecipientEmailsToStep(List<String> recipientEmails) {
         List<WorkflowStepDto> workflowStepDtos = new ArrayList<>();
         List<RecipientWsDto> recipientWsDtos = new ArrayList<>();
         if (recipientEmails != null && !recipientEmails.isEmpty()) {
@@ -121,10 +121,10 @@ public class RecipientService {
         for(RecipientWsDto recipient : recipientWsDtos) {
             if(workflowStepDtos.size() < recipient.getStep()) {
                 WorkflowStepDto workflowStepDto = new WorkflowStepDto();
-                workflowStepDto.getRecipients().add(recipient);
+                addRecipientInStep(workflowStepDto, recipient);
                 workflowStepDtos.add(workflowStepDto);
             } else {
-                workflowStepDtos.get(recipient.getStep()-1).getRecipients().add(recipient);
+                addRecipientInStep(workflowStepDtos.get(recipient.getStep()-1), recipient);
             }
         }
         return workflowStepDtos;
@@ -136,6 +136,28 @@ public class RecipientService {
         } catch (JsonProcessingException e) {
             logger.warn("error parsing recipientsJsonString : " + recipientsJsonString, e);
             throw new EsupSignatureRuntimeException("error parsing recipientsJsonString : " + recipientsJsonString);
+        }
+    }
+
+    public List<RecipientWsDto> convertRecipientEmailsToRecipientDto(List<String> recipientsEmails) {
+        List<RecipientWsDto> recipientWsDtos = new ArrayList<>();
+        if (recipientsEmails != null && !recipientsEmails.isEmpty()) {
+            for (String recipientEmail : recipientsEmails) {
+                recipientWsDtos.add(new RecipientWsDto(recipientEmail));
+            }
+        }
+        return recipientWsDtos;
+    }
+
+    public void addRecipientInStep(WorkflowStepDto workflowStepDto, String email) {
+        if(workflowStepDto.getRecipients().stream().noneMatch(r -> r.getEmail().equals(email))) {
+            workflowStepDto.getRecipients().add(new RecipientWsDto(email));
+        }
+    }
+
+    public void addRecipientInStep(WorkflowStepDto workflowStepDto, RecipientWsDto recipientWsDto) {
+        if(workflowStepDto.getRecipients().stream().noneMatch(r -> r.getEmail().equals(recipientWsDto.getEmail()))) {
+            workflowStepDto.getRecipients().add(recipientWsDto);
         }
     }
 }

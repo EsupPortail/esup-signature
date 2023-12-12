@@ -75,7 +75,7 @@ public class DataController {
 						   @RequestParam(value = "phones", required = false) List<String> phones,
 						   @RequestParam(value = "forcesmses", required = false) List<Boolean> forcesmses,
 						   @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
-		List<WorkflowStepDto> workflowStepDtos = recipientService.convertRecipientEmailsToRecipientWsDto(recipientEmails);
+		List<WorkflowStepDto> workflowStepDtos = recipientService.convertRecipientEmailsToStep(recipientEmails);
 
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			Data data = dataService.addData(id, userEppn);

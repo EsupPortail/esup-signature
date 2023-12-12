@@ -46,7 +46,7 @@ public class WorkflowController {
     @PostMapping(value = "/add-step/{id}")
     public String addStep(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
                           @RequestBody WorkflowStepDto step) throws EsupSignatureRuntimeException {
-        workflowStepService.addStep(id, step.getSignType(), step.getDescription(), step, step.getChangeable(), step.getAllSignToComplete(), step.getMaxRecipients(), userEppn, true, step.getAttachmentRequire(), false, null);
+        workflowStepService.addStep(id, step, userEppn, true, false, null);
         return "redirect:/user/workflows/" + id;
     }
 

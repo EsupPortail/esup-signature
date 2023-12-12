@@ -475,7 +475,6 @@ public class SignRequestService {
 	public void pendingSignRequest(SignRequest signRequest, String authUserEppn) {
 		for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
 			signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
-			signRequest.getParentSignBook().getTeam().add(recipient.getUser());
 			if (signService.isSigned(signRequest)) {
 				signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signTypeService.getLessSignType(3));
 			}

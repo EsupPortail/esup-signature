@@ -108,7 +108,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 	}
 
 	public AuthenticationManager casAuthenticationManager() {
-		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<AuthenticationProvider>();
+		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<>();
 		authenticatedAuthenticationProviders.add(casAuthenticationProvider());
 		return new ProviderManager(authenticatedAuthenticationProviders);
 	}

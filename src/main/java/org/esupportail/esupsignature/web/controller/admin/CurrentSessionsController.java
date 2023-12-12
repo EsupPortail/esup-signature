@@ -48,9 +48,6 @@ public class CurrentSessionsController {
 		this.sessionRegistry = sessionRegistry;
 	}
 
-	//	@Resource
-//	private SessionService sessionService;
-
 	@GetMapping
 	public String getCurrentSessions(Model model) {
 		List<SessionInformation> sessions = new ArrayList<>();

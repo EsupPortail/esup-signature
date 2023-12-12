@@ -85,7 +85,7 @@ public class FormWsController {
             recipientEmails = recipientsEmails;
         }
         if(steps == null && recipientEmails != null) {
-            steps = recipientService.convertRecipientEmailsToRecipientWsDto(recipientEmails);
+            steps = recipientService.convertRecipientEmailsToStep(recipientEmails);
         }
         if(createByEppn == null && eppn != null && !eppn.isEmpty()) {
             createByEppn = eppn;
@@ -147,7 +147,7 @@ public class FormWsController {
             recipientEmails = recipientsEmails;
         }
         if(steps == null && recipientEmails != null) {
-            steps = recipientService.convertRecipientEmailsToRecipientWsDto(recipientEmails);
+            steps = recipientService.convertRecipientEmailsToStep(recipientEmails);
         }
         Data data = dataService.addData(id, createByEppn);
         try {

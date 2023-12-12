@@ -51,10 +51,6 @@ public class LiveWorkflowStep {
         this.id = id;
     }
 
-    
-
-    
-
     public List<Recipient> getRecipients() {
         return recipients;
     }

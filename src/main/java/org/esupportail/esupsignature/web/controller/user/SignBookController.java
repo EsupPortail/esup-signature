@@ -262,7 +262,7 @@ public class SignBookController {
                           @RequestParam("signType") SignType signType,
                           RedirectAttributes redirectAttributes) {
         try {
-            WorkflowStepDto workflowStepDto = recipientService.convertRecipientEmailsToRecipientWsDto(recipientsEmails).get(0);
+            WorkflowStepDto workflowStepDto = recipientService.convertRecipientEmailsToStep(recipientsEmails).get(0);
             workflowStepDto.setAutoSign(autoSign);
             workflowStepDto.setAllSignToComplete(allSignToComplete);
             workflowStepDto.setSignType(signType);
@@ -330,7 +330,7 @@ public class SignBookController {
                                 @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
                                 @RequestParam(name = "signType") SignType signType,
                                 @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureRuntimeException {
-        signBookService.addStep(id, recipientService.convertRecipientEmailsToRecipientWsDto(recipientsEmails).get(0) , signType, allSignToComplete, authUserEppn);
+        signBookService.addStep(id, recipientService.convertRecipientEmailsToStep(recipientsEmails).get(0) , signType, allSignToComplete, authUserEppn);
         return "redirect:/user/signrequests/" + id + "?form";
     }
 

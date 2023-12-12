@@ -80,7 +80,7 @@ public class UserWsSecureController {
     @ResponseBody
     @PostMapping(value ="/check-temp-users")
     private List<User> checkTempUsers(@RequestBody(required = false) List<String> recipientEmails) {
-        return userService.checkTempUsers(recipientService.convertRecipientEmailsToRecipientWsDto(recipientEmails).stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).toList());
+        return userService.checkTempUsers(recipientService.convertRecipientEmailsToStep(recipientEmails).stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).toList());
     }
 
     @GetMapping(value = "/get-sign-image/{id}")

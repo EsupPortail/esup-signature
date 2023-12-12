@@ -79,7 +79,7 @@ public class SignRequestWsController {
         }
         List<WorkflowStepDto> workflowStepDtos;
         if(stepsJsonString == null && recipientEmails != null) {
-            workflowStepDtos = recipientService.convertRecipientEmailsToRecipientWsDto(recipientEmails);
+            workflowStepDtos = recipientService.convertRecipientEmailsToStep(recipientEmails);
             workflowStepDtos.forEach(workflowStepDto -> {
                 workflowStepDto.setSignType(SignType.valueOf(signType));
                 workflowStepDto.setAllSignToComplete(allSignToComplete);

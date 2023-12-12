@@ -274,40 +274,34 @@
                 <div id="warningSelectDiv" class="alert alert-danger mt-1" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}">
                     Aucun type de signature n’est disponible pour signer ce document.
                 </div>
-                <div id="signCommentDiv">
+                <div id="signCommentDiv" class="mb-1">
                     <label for="signComment">Commentaire (facultatif)</label>
                     <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
                 </div>
                 <div id="nexuCheck" th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign ? 'd-none' : ''}">
-                    <div id="nexu_version_alert" style="display: none;text-align: center;">
-                        <div class="alert alert-warning float-start">
-                            L'application Esup-DSS-Client n’a pas la bonne version">
-                            <br>
-                            <button onclick="location.reload();" class="mt-2 mx-auto btn btn-warning">
-                                <i class="fa-solid fa-sync-alt fa-2xl"></i><br> Cliquez ici après le lancement de Esup-DSS-Client
-                            </button>
-                        </div>
+                    <div id="nexu_version_alert" class="alert alert-warning mt-1 mb-1 col-12 text-center" style="display: none;">
+                        L'application Esup-DSS-Client n’a pas la bonne version
+                        <br>
+                        <button onclick="location.reload();" class="mt-2 mx-auto btn btn-warning">
+                            <i class="fa-solid fa-sync-alt fa-2xl"></i><br> Cliquez ici après le lancement de Esup-DSS-Client
+                        </button>
                     </div>
-                    <div id="noOptions" class="alert alert-danger mt-1" style="display: none;">
+                    <div id="no-options" class="alert alert-danger mt-1 mb-1 col-12 text-center" style="display: none;">
                         <p>Votre profil ne possède pas les prérequis nécessaires pour signer cette demande.</p>
                         <p>Si vous en avez la possibilité, merci de contrôler vos paramètres de signature, d’importer un certificat ou de démarrer Esup-DSS-Client.</p>
                         <p>Sinon merci de contacter la personne ou le service émetteur de cette demande de signature.</p>
                     </div>
-                    <div id="nexu_ready_alert" style="display: none;">
-                        <div class="alert alert-success mt-1 mb-1 col-12">
-                            L’application Esup-DSS-Client est fonctionnelle
-                            <br/>
-                            <small>Vous pouvez sélectionner la signature par certificat USB</small>
-                        </div>
+                    <div id="nexu_ready_alert" class="alert alert-success mt-1 mb-1 col-12 text-center" style="display: none;">
+                        L’application Esup-DSS-Client est fonctionnelle
+                        <br/>
+                        <small>Après validation, vous allez être redirigé vers le système signature eIDas</small>
                     </div>
-                    <div id="nexu_missing_alert" class="mt-1" style="display: none;">
-                        <div class="alert alert-warning text-center">
-                            <p class="text-left">L’application Esup-DSS-Client n’a pas été détectée</p>
-                            <p  class="text-left">Si vous devez signer à l’aide d’un certificat présent sur votre poste ou sur clé USB, merci de lancer l’application Esup-DSS-Client sur votre poste puis de cliquer sur le bouton "Actualiser".<br/>
-                                Pour plus d’informations sur l’utilisation de Esup-DSS-Client merci de consulter la documentation à cette adresse :
-                                <a target="_blank" href="https://www.esup-portail.org/wiki/display/SIGN/Esup-DSS-Client">https://www.esup-portail.org/wiki/display/SIGN/Esup-DSS-Client</a>
-                            </p>
-                        </div>
+                    <div id="nexu_missing_alert" class="alert alert-warning text-center mt-1" style="display: none;">
+                        <p>L’application Esup-DSS-Client n’a pas été détectée</p>
+                        <p  class="text-left">Si vous devez signer à l’aide d’un certificat présent sur votre poste ou sur clé USB, merci de lancer l’application Esup-DSS-Client sur votre poste puis de cliquer sur le bouton "Actualiser".<br/>
+                            Pour plus d’informations sur l’utilisation de Esup-DSS-Client merci de consulter la documentation à cette adresse :
+                            <a target="_blank" href="https://www.esup-portail.org/wiki/display/SIGN/Esup-DSS-Client">https://www.esup-portail.org/wiki/display/SIGN/Esup-DSS-Client</a>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -366,7 +360,7 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="stepRepeatableModalLabel">Étape supplémentaire ?</h5>
+                <h5 class="modal-title" id="stepRepeatableModalLabel">Étape supplémentaire ?</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -382,7 +376,7 @@
                         vous resterez le dernier destinataire de ce document
                     </span>
                     <span th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()}">
-                        le document sera envoyé pour l'étape :
+                        le document sera envoyé pour l’étape :
                         <span th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep != null}"
                               th:text="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description}">
 
@@ -403,18 +397,18 @@
                 </button>
                 <form id="infiniteForm" class="d-none">
                     <input type="submit" id="infiniteFormSubmit" class="d-none">
-                    <label for="recipientsEmailsInfinite">Choisir les participants</label>
+                    <label for="recipientsEmails">Choisir les participants</label>
                     <div class="form-group mb-3">
-                        <select class="select-users" data-check="true" name="recipientsEmails" id="recipientsEmailsInfinite" multiple="multiple" required="required">
+                        <select class="select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmails" multiple="multiple" required="required">
                             <option data-placeholder="true"></option>
                         </select>
                     </div>
-                    <div class="form-group mb-3" id="allSignToComplete-infinite">
-                        <label for="allSignToCompleteInfinite">
+                    <div class="form-group mb-3">
+                        <label for="allSignToComplete">
                             Tous les participants doivent-ils signer ?
                         </label>
                         <label class="switch">
-                            <input type="checkbox" class="form-check-input" name="allSignToComplete" id="allSignToCompleteInfinite"/>
+                            <input type="checkbox" class="form-check-input" name="allSignToComplete" id="allSignToComplete"/>
                             <span class="slider round"></span>
                         </label>
                     </div>
@@ -428,19 +422,19 @@
                         </label>
                     </div>
                     <div class="form-group mb-3" th:if="${signRequest.parentSignBook.liveWorkflow.currentStep.repeatableSignType == null}">
-                        <label for="signTypeInfinite">Choisir un type de signature</label>
-                        <select name="signType" id="signTypeInfinite" class="form-select">
+                        <label for="signType">Choisir un type de signature</label>
+                        <select name="signType" id="signType" class="form-select">
                             <th:block th:each="signType : ${signTypes}">
                                 <option th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType == 'pdfImageStamp'}"></option>
                             </th:block>
                         </select>
                     </div>
-                    <input th:if="${signRequest.parentSignBook.liveWorkflow.currentStep.repeatableSignType != null}" type="hidden" id="signTypeInfinite" name="signType" th:value="${signRequest.parentSignBook.liveWorkflow.currentStep.repeatableSignType}">
+                    <input th:if="${signRequest.parentSignBook.liveWorkflow.currentStep.repeatableSignType != null}" type="hidden" id="signType" name="signType" th:value="${signRequest.parentSignBook.liveWorkflow.currentStep.repeatableSignType}">
                     <div class="form-group mb-3">
-                        <textarea id="signCommentInfinite" class="form-control" name="comment" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."></textarea>
+                        <textarea id="signComment" class="form-control" name="comment" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."></textarea>
                     </div>
-                    <button type="button" id="launchInfiniteSignButton" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.parentSignBook.id}">
+                    <button type="button" id="launch-infinite-sign-button" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.parentSignBook.id}">
                     <span th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <i class="fa-solid fa-signature"></i> Confirmer la signature et l'ajout de l'étape
                     </span>
@@ -453,10 +447,10 @@
                 <button id="launchNoInfiniteSignButton" class="mt-1 col-12 btn btn-success" title="Signer"
                         th:value="${signRequest.parentSignBook.id}">
                     <span th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                        <i class="fa-solid fa-signature"></i> Signer le document sans ajout d'étape
+                        <i class="fa-solid fa-signature"></i> Signer le document sans ajout d’étape
                     </span>
                     <span th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                        <i class="fa-solid fa-check"></i> Viser le document sans ajout d'étape
+                        <i class="fa-solid fa-check"></i> Viser le document sans ajout d’étape
                     </span>
                 </button>
             </div>
