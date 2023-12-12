@@ -12,11 +12,11 @@ export class WizUi {
         this.div = div;
         this.csrf = csrf;
         this.maxSize = maxSize;
-        this.pending=false;
-        this.input;
-        this.fileInput;
-        this.recipientCCSelect;
-        this.form;
+        this.pending = false;
+        this.input = null;
+        this.fileInput = null;
+        this.recipientCCSelect = null;
+        this.form = null;
         this.close = false;
         this.end = false;
         this.start = false;

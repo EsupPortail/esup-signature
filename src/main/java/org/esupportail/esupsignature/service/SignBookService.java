@@ -763,7 +763,7 @@ public class SignBookService {
                 }
             }
         }
-        SignBook signBook = createSignBook(title, null, "Demande personnalisée", createByEppn, true);
+        SignBook signBook = createSignBook(title, null, "Demande générée", createByEppn, true);
         addDocumentsToSignBook(signBook.getId(), multipartFiles, createByEppn);
         signBook.setForceAllDocsSign(forceAllSign);
         addViewers(signBook.getId(), steps.stream().map(WorkflowStepDto::getRecipientsCCEmails).flatMap(List::stream).toList());

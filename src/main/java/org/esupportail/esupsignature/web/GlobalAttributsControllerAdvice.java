@@ -11,7 +11,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
-import org.esupportail.esupsignature.service.security.SessionService;
+//import org.esupportail.esupsignature.service.security.SessionService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,9 +46,9 @@ public class GlobalAttributsControllerAdvice {
 
     @Resource
     private UserService userService;
-
-    @Resource
-    private SessionService sessionService;
+//
+//    @Resource
+//    private SessionService sessionService;
 
     @Resource
     private ReportService reportService;
@@ -93,9 +93,9 @@ public class GlobalAttributsControllerAdvice {
                 return;
             }
             List<String> roles = userService.getRoles(userEppn);
-            if(roles.contains("ROLE_ADMIN")) {
-                model.addAttribute("nbSessions", sessionService.countSessions());
-            }
+//            if(roles.contains("ROLE_ADMIN")) {
+//                model.addAttribute("nbSessions", sessionService.countSessions());
+//            }
             userService.parseRoles(userEppn, myGlobalProperties);
             model.addAttribute("securityServiceName", httpServletRequest.getSession().getAttribute("securityServiceName"));
             model.addAttribute("user", user);

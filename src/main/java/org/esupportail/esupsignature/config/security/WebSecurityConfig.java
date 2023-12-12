@@ -45,7 +45,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
+import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
+import org.springframework.security.web.session.ConcurrentSessionFilter;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.util.StringUtils;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -154,7 +157,28 @@ public class WebSecurityConfig {
 	}
 
 	@Bean
+	public SessionRegistryImpl sessionRegistry() {
+		return new SessionRegistryImpl();
+	}
+
+	@Bean
+	public RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy() {
+		return new RegisterSessionAuthenticationStrategy(sessionRegistry());
+	}
+
+	@Bean
+	public ConcurrentSessionFilter concurrencyFilter() {
+		return new ConcurrentSessionFilter(sessionRegistry());
+	}
+
+	@Bean
+	HttpSessionEventPublisher sessionEventPublisher() {
+		return new HttpSessionEventPublisher();
+	}
+
+	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http.sessionManagement(sessionManagement -> sessionManagement.sessionAuthenticationStrategy(sessionAuthenticationStrategy()).maximumSessions(5).sessionRegistry(sessionRegistry()));
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/")).permitAll());
 		devSecurityFilters.forEach(devSecurityFilter -> http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class));
 		http.exceptionHandling(exceptionHandling -> exceptionHandling.defaultAuthenticationEntryPointFor(new IndexEntryPoint("/"), antMatcher("/")));
@@ -269,11 +293,6 @@ public class WebSecurityConfig {
 	@Bean
 	public LogoutHandlerImpl logoutHandler() {
 		return new LogoutHandlerImpl();
-	}
-
-	@Bean
-	public SessionRegistryImpl sessionRegistry() {
-		return new SessionRegistryImpl();
 	}
 
 	@Bean
