@@ -1,17 +1,17 @@
 export class Step {
-    externalUsersInfos;
 
-    constructor(signRequestParams) {
+    constructor() {
+        this.title;
         this.workflowId;
-        this.recipientsEmails;
         this.stepNumber;
         this.allSignToComplete;
         this.multiSign;
         this.autoSign;
         this.signType;
-        this.externalUsersInfos = [];
-        Object.assign(this, signRequestParams);
+        this.forceAllSign;
+        this.userSignFirst;
+        this.recipientsCCEmails;
+        this.changeable;
+        this.recipients = [];
     }
-
-
 }

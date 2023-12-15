@@ -10,7 +10,7 @@ import org.apache.pdfbox.pdmodel.interactive.action.PDAnnotationAdditionalAction
 import org.apache.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
-import org.esupportail.esupsignature.dto.Spot;
+import org.esupportail.esupsignature.dto.js.JsSpot;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -571,20 +571,20 @@ public class FormService {
 		return objectMapper.writeValueAsString(formRepository.getByIdJson(id));
 	}
 
-	public List<Spot> getSpots(Long id) {
-		List<Spot> spots = new ArrayList<>();
+	public List<JsSpot> getSpots(Long id) {
+		List<JsSpot> spots = new ArrayList<>();
 		Form form = getById(id);
 		int step = 1;
 		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
 			if(!workflowStep.getSignRequestParams().isEmpty()) {
 				SignRequestParams signRequestParams = workflowStep.getSignRequestParams().get(0);
-				spots.add(new Spot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequestParams.getSignWidth(), signRequestParams.getSignHeight()));
+				spots.add(new JsSpot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequestParams.getSignWidth(), signRequestParams.getSignHeight()));
 			}
 			step++;
 		}
 		if(spots.isEmpty()) {
 			for(SignRequestParams signRequestParams : form.getSignRequestParams()) {
-				spots.add(new Spot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequestParams.getSignWidth(), signRequestParams.getSignHeight()));
+				spots.add(new JsSpot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequestParams.getSignWidth(), signRequestParams.getSignHeight()));
 			}
 		}
 		return spots;

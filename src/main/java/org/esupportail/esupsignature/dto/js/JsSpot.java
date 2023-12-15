@@ -1,6 +1,6 @@
-package org.esupportail.esupsignature.dto;
+package org.esupportail.esupsignature.dto.js;
 
-public class Spot {
+public class JsSpot {
 
     Long id;
     Integer stepNumber;
@@ -10,7 +10,7 @@ public class Spot {
     Integer width;
     Integer height;
 
-    public Spot(Long id, Integer stepNumber, Integer pageNumber, Integer posX, Integer posY, Integer width, Integer height) {
+    public JsSpot(Long id, Integer stepNumber, Integer pageNumber, Integer posX, Integer posY, Integer width, Integer height) {
         this.id = id;
         this.stepNumber = stepNumber;
         this.pageNumber = pageNumber;

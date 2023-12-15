@@ -19,7 +19,7 @@ export class Nexu {
             self.checkNexuClient().then(function(e) {
                 console.info("Esup-DSS-Client est lancé !");
                 $("#nexu_missing_alert").hide();
-                $("#noOptions").hide();
+                $("#no-options").hide();
                 $("#selectTypeDiv").show();
                 if(id != null) {
                     self.loadScript();
@@ -59,14 +59,14 @@ export class Nexu {
             let nbOptions = $("#certType option:not([disabled])").length;
             if (nbOptions === 0) {
                 // $("#nexuCheck").removeClass("d-none");
-                $("#noOptions").show();
+                $("#no-options").show();
                 $("#signCommentDiv").hide();
                 // $("#selectTypeDiv").hide();
                 $("#checkValidateSignButtonEnd").hide();
                 $("#checkValidateSignButtonNext").hide();
             } else {
                 // $("#nexuCheck").addClass("d-none");
-                $("#noOptions").hide();
+                $("#no-options").hide();
                 $("#signCommentDiv").show();
                 // $("#selectTypeDiv").show();
                 $("#checkValidateSignButtonEnd").show();
@@ -209,7 +209,7 @@ export class Nexu {
                     self.checkNexu(data);
                     Nexu.version = data.version;
                     $("#nexu_missing_alert").hide();
-                    $("#noOptions").hide();
+                    $("#no-options").hide();
                     $("#selectTypeDiv").show();
                     breakOut = true;
                     resolve("detected");
@@ -229,7 +229,6 @@ export class Nexu {
             $("#nexu_ready_alert").show();
             $("#submit-button").prop('disabled', false);
         } else {
-            // need update
             $("#nexu_version_alert").show();
             console.log("bad esup-dss-client version : " + data.version);
         }

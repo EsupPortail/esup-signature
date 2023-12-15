@@ -1,11 +1,11 @@
 export class ExternalUserInfos {
 
-    constructor(externalUserInfos) {
+    constructor() {
         this.email;
         this.name;
-        this.firstname;
+        this.firstName;
         this.phone;
-        Object.assign(this, externalUserInfos);
+        this.forceSms
     }
 
 

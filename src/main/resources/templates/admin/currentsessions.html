@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="currentSessions" type="java.util.Map<String, java.util.List<org.springframework.session.MapSession>"*/-->
+<!--/*@thymesVar id="currentSessions" type="java.util.Map<org.springframework.security.core.session.SessionInformation>"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
@@ -17,69 +17,41 @@
             <div class="card col-lg-10 mx-auto mb-1">
                 <div class="card-body">
                     <h5 class="text-center"><b>Utilisateurs connectés</b></h5>
-                    <span th:text="${currentSessions.size()} + ' utilisateur(s) connecté(s)'"></span>, poids totale des sessions : <span th:text="${sessionSize}"></span>
+                    <span th:text="${currentSessions.size()} + ' utilisateur(s) connecté(s)'"></span>, poids total des sessions : <span th:text="${sessionSize}"></span>
                 </div>
             </div>
             <th:block th:each="currentSession : ${currentSessions}">
                 <div class="card mb-1 col-10 mx-auto">
                     <div class="card-body">
                         <h5><i class="fa-solid fa-user"></i>
-                            <a data-bs-toggle="collapse" th:href="'#sess-' + ${currentSession.hashCode()}" role="button"
+                            <a data-bs-toggle="collapse" th:href="'#sess-' + ${currentSession.sessionId}" role="button"
                                aria-expanded="false"
-                               th:aria-controls="'sess-' + ${currentSession.hashCode()}">
-                                <span th:text="${currentSession.key} + ' : ' + ${currentSession.value.size()} + ' session(s)'"></span></a>
+                               th:aria-controls="'sess-' + ${currentSession.sessionId}">
+                                <span th:text="${currentSession.principal.username}"></span></a>
                         </h5>
-                        <div class="collapse" th:id="'sess-' + ${currentSession.hashCode()}">
+                        <div class="collapse" th:id="'sess-' + ${currentSession.sessionId}">
                             <table class="table table-hover table-responsive">
                                 <tr class="table-secondary">
                                     <th>Session ID</th>
-                                    <th>Creation time</th>
                                     <th>Last access time</th>
-                                    <th>Inactive time</th>
-                                    <th>Max inactive time</th>
                                     <th>Alive</th>
-                                    <th>Attributs</th>
                                     <th>Delete</th>
                                 </tr>
-                                <th:block th:each="userSession : ${currentSession.value}">
-                                    <tr th:if="${userSession != null}">
-                                        <!--/*@thymesVar id="userSession" type="org.springframework.session.MapSession"*/-->
-                                        <td th:text="${userSession.id}"></td>
-                                        <td th:text="${#dates.format(userSession.creationTime, 'dd/MM/yyyy HH:mm:ss')}"></td>
-                                        <td th:text="${#dates.format(userSession.lastAccessedTime, 'dd/MM/yyyy HH:mm:ss')}"></td>
-                                        <td th:text="${(#dates.createNow().toInstant().toEpochMilli() - userSession.lastAccessedTime.toEpochMilli()) / 1000 / 60 + ' mins'}"></td>
-                                        <td th:text="${userSession.maxInactiveInterval.toMinutes()} + ' mins'"></td>
-                                        <td>
-                                            <i th:class="${userSession.expired} ? 'text-danger fa-solid fa-times-circle' : 'text-success fa-solid fa-check-circle'"></i>
-                                        </td>
-                                        <td>
-                                            <ul>
-                                                <th:block th:each="attributeName : ${userSession.attributeNames}">
-                                                    <li>
-                                                        <a data-bs-toggle="collapse"
-                                                           th:href="'#attr-' + ${currentSession.hashCode()} + '-' + ${#strings.replace(attributeName, '.','')}"
-                                                           role="button" aria-expanded="false"
-                                                           th:aria-controls="'attr-' + ${currentSession.hashCode()} + '-' + ${#strings.replace(attributeName, '.','')}"><span
-                                                                th:text="${attributeName}"></span></a>
-                                                        <br>
-                                                        <span th:text="${userSession.getAttribute(attributeName).toString().getBytes().length} + ' bytes'"></span>
-                                                        <div th:id="'attr-' + ${currentSession.hashCode()} + '-' + ${#strings.replace(attributeName, '.','')}"
-                                                             class="collapse">
-                                                            <span th:text="${userSession.getAttribute(attributeName)}"></span>
-                                                        </div>
-                                                    </li>
-                                                </th:block>
-                                            </ul>
-                                        </td>
-                                        <td>
-                                            <form th:action="'/admin/currentsessions'" th:method="'delete'">
-                                                <input type="hidden" name="sessionId" th:value="${userSession.id}"/>
-                                                <button type="submit" class="btn btn-sm btn-danger"><i
-                                                        class="fa-solid fa-trash-alt"></i></button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                </th:block>
+                                <tr th:if="${currentSession != null}">
+                                    <!--/*@thymesVar id="currentSession" type="org.springframework.session.MapSession"*/-->
+                                    <td th:text="${currentSession.sessionId}"></td>
+                                    <td th:text="${#dates.format(currentSession.lastRequest, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                                    <td>
+                                        <i th:class="${currentSession.expired} ? 'text-danger fa-solid fa-times-circle' : 'text-success fa-solid fa-check-circle'"></i>
+                                    </td>
+                                    <td>
+                                        <form th:action="'/admin/currentsessions'" th:method="'delete'">
+                                            <input type="hidden" name="sessionId" th:value="${currentSession.sessionId}"/>
+                                            <button type="submit" class="btn btn-sm btn-danger"><i
+                                                    class="fa-solid fa-trash-alt"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
                             </table>
                         </div>
                     </div>

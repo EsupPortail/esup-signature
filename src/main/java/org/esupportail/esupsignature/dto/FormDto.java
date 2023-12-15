@@ -1,11 +1,11 @@
-package org.esupportail.esupsignature.web.ws.json;
+package org.esupportail.esupsignature.dto;
 
 import org.esupportail.esupsignature.entity.Field;
 import org.esupportail.esupsignature.entity.Workflow;
 
 import java.util.List;
 
-public interface JsonDtoForm {
+public interface FormDto {
 
     Long getId();
 

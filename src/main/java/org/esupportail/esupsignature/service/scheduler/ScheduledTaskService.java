@@ -130,7 +130,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 1000, fixedRate = 86400000)
+	@Scheduled(cron="00 02 02 * * *")
 	public void cleanUploadingSignBooks() {
 		taskService.initCleanUploadingSignBooks();
 	}

@@ -348,7 +348,7 @@ public class MailService {
         if(recipientsCCEmails == null) {
             recipientsCCEmails = signBook.getViewers().stream().map(User::getEmail).toList();
         }
-        if (!checkMailSender() || recipientsCCEmails.size() == 0) {
+        if (!checkMailSender() || recipientsCCEmails.isEmpty()) {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);

@@ -42,9 +42,9 @@ export class HomeHelp {
             intro: "Vous pouvez accéder à votre profil pour insérer votre signature et modifier vos paramètres en cliquant sur votre nom en haut à droite, puis sur 'Modifier mes paramètres'.",
             position: 'left'
         });
-        if($.trim($("#newfastSign").html()) !== '') {
+        if($.trim($("#new-fast-sign").html()) !== '') {
             this.intro.addStep({
-                element: '#newfastSign',
+                element: '#new-fast-sign',
                 intro: "Ce bouton vous permet de signer un document présent sur votre poste de travail.",
                 position: 'right'
             });
@@ -56,9 +56,9 @@ export class HomeHelp {
                 position: 'right'
             });
         }
-        if($.trim($("#startWizardCustomButton").html()) !== '') {
+        if($.trim($("#start-wizard-custom-button").html()) !== '') {
             this.intro.addStep({
-                element: '#startWizardCustomButton',
+                element: '#start-wizard-custom-button',
                 intro: "La demande personnalisée permet de déposer des documents puis de configurer manuellement un circuit",
                 position: 'right'
             });

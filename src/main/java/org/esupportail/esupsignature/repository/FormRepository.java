@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.entity.Field;
 import org.esupportail.esupsignature.entity.Form;
-import org.esupportail.esupsignature.web.ws.json.JsonDtoForm;
+import org.esupportail.esupsignature.dto.FormDto;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
@@ -22,5 +22,5 @@ public interface FormRepository extends CrudRepository<Form, Long> {
 	List<Form> findByWorkflowIdEquals(Long workflowId);
 	List<Form> findByFieldsContaining(Field field);
 	@Query("select f from Form f where f.id = :id")
-	JsonDtoForm getByIdJson(Long id);
+    FormDto getByIdJson(Long id);
 }

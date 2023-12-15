@@ -10,15 +10,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.AuditTrail;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
+import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -40,12 +41,16 @@ public class SignRequestWsController {
     private SignRequestService signRequestService;
 
     @Resource
+    private RecipientService recipientService;
+
+    @Resource
     private SignBookService signBookService;
 
     @CrossOrigin
     @PostMapping("/new")
     @Operation(description = "Création d'une demande de signature")
     public ResponseEntity<?> create(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
+                       @RequestParam(required = false) @Parameter(description = "Liste des étape (objet json)", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = WorkflowStepDto[].class)))) String stepsJsonString,
                        @Parameter(description = "Liste des participants") @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
                        @Parameter(description = "Liste des participants (ancien nom)") @RequestParam(value = "recipientEmails", required = false) List<String> recipientEmails,
                        @Parameter(description = "Liste des personnes en copie (emails). Ne prend pas en charge les groupes") @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
@@ -54,7 +59,6 @@ public class SignRequestWsController {
                        @Parameter(description = "Envoyer la demande automatiquement") @RequestParam(value = "pending", required = false) Boolean pending,
                        @Parameter(description = "Forcer la signature de tous les documents") @RequestParam(value = "forceAllSign", required = false) Boolean forceAllSign,
                        @Parameter(description = "Commentaire") @RequestParam(value = "comment", required = false) String comment,
-                       @Parameter(description = "Infos pour les des signataires externes", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = JsonExternalUserInfo.class)))) @RequestParam(value = "externalUsersInfos", required = false) List<JsonExternalUserInfo> externalUsersInfos,
                        @Parameter(description = "Type de signature", schema = @Schema(allowableValues = {"visa", "pdfImageStamp", "certSign", "nexuSign"}), examples = {@ExampleObject(value = "visa"), @ExampleObject(value = "pdfImageStamp"), @ExampleObject(value = "certSign"), @ExampleObject(value = "nexuSign")}) @RequestParam("signType") String signType,
                        @Parameter(description = "EPPN du créateur/propriétaire de la demande (ancien nom)") @RequestParam(required = false) String eppn,
                        @Parameter(description = "EPPN du créateur/propriétaire de la demande") @RequestParam(required = false) String createByEppn,
@@ -70,12 +74,25 @@ public class SignRequestWsController {
         if(createByEppn == null) {
             throw new EsupSignatureRuntimeException("Required request parameter 'createByEppn' for method parameter type String is not present");
         }
-        if(recipientsEmails == null && !recipientEmails.isEmpty()) {
-            recipientsEmails = recipientEmails;
+        if(recipientEmails == null && recipientsEmails != null && !recipientsEmails.isEmpty()) {
+            recipientEmails = recipientsEmails;
         }
-        if(recipientsEmails != null) {
+        List<WorkflowStepDto> workflowStepDtos;
+        if(stepsJsonString == null && recipientEmails != null) {
+            workflowStepDtos = recipientService.convertRecipientEmailsToStep(recipientEmails);
+            workflowStepDtos.forEach(workflowStepDto -> {
+                workflowStepDto.setSignType(SignType.valueOf(signType));
+                workflowStepDto.setAllSignToComplete(allSignToComplete);
+                workflowStepDto.setUserSignFirst(userSignFirst);
+                workflowStepDto.setComment(comment);
+                workflowStepDto.setRecipientsCCEmails(recipientsCCEmails);
+            });
+        } else {
+            workflowStepDtos = recipientService.convertRecipientJsonStringToRecipientWsDto(stepsJsonString);
+        }
+        if(workflowStepDtos != null) {
             try {
-                Map<SignBook, String> signBookStringMap = signBookService.sendSignRequest(title, multipartFiles, SignType.valueOf(signType), allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, createByEppn, true, forceAllSign, targetUrl);
+                Map<SignBook, String> signBookStringMap = signBookService.createAndSendSignBook(title, multipartFiles, pending, workflowStepDtos, createByEppn, true, forceAllSign, targetUrl);
                 List<String> signRequestIds = signBookStringMap.keySet().stream().flatMap(sb -> sb.getSignRequests().stream().map(signRequest -> signRequest.getId().toString())).toList();
                 if(json) {
                     return ResponseEntity.ok(signRequestIds);

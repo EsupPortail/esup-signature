@@ -16,7 +16,7 @@ import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
-import org.esupportail.esupsignature.web.ws.json.JsonMessage;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -110,7 +110,7 @@ public class SignRequestAdminController {
 			model.addAttribute("signedDocuments", signRequest.getSignedDocuments());
 			return "admin/signrequests/show";
 		} else {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "La demande de signature n'existe pas"));
+			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "La demande de signature n'existe pas"));
 			return "redirect:/admin/signrequests";
 		}
 	}
@@ -127,9 +127,9 @@ public class SignRequestAdminController {
 	@DeleteMapping(value = "delete-definitive/{id}", produces = "text/html")
 	public String deleteDefinitive(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
 		if(signBookService.deleteDefinitive(id, authUserEppn)) {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été supprimé définitivement"));
+			redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le document a été supprimé définitivement"));
 		} else {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document ne peut pas être supprimé définitivement"));
+			redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le document ne peut pas être supprimé définitivement"));
 		}
 		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
@@ -153,7 +153,7 @@ public class SignRequestAdminController {
 	@GetMapping(value = "/restore/{id}", produces = "text/html")
 	public String restore(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		signRequestService.restore(id, authUserEppn);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Restauration effectuée"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Restauration effectuée"));
 		return "redirect:/admin/signrequests/" + id;
 	}
 

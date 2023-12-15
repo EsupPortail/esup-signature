@@ -4,7 +4,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.utils.AnonymizeService;
-import org.esupportail.esupsignature.web.ws.json.JsonMessage;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -56,9 +56,9 @@ public class UserAdminController {
     public String anonymize(@ModelAttribute("userEppn") String userEppn, @PathVariable Long id, @RequestParam(required = false) Boolean force, RedirectAttributes redirectAttributes) {
         try {
             anonymizeService.anonymize(id, force);
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Suppression effectuée"));
+            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Suppression effectuée"));
         } catch (EsupSignatureUserException e) {
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
         }
         return "redirect:/admin/users";
     }

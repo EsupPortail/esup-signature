@@ -59,10 +59,12 @@ public class SignRequestParamsService {
         return signRequestParams;
     }
 
+    @Transactional
     public List<SignRequestParams> getSignRequestParamsFromJson(String signRequestParamsJsonString) {
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
         try {
             signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
+            signRequestParamsRepository.saveAll(signRequestParamses);
         } catch (JsonProcessingException e) {
             logger.warn("no signRequestParams returned", e);
         }

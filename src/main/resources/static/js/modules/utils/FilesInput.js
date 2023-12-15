@@ -4,22 +4,20 @@ import {EventFactory} from "./EventFactory.js?version=@version@";
 
 export default class FilesInput extends EventFactory {
 
-    constructor(input, maxSize, csrf, name, documents, readOnly) {
+    constructor(input, maxSize, csrf, documents, readOnly, signBookId) {
         super();
+        this.first = true;
         this.input = input;
-        this.name = name;
+        this.signBookId = signBookId;
         this.maxSize = 1000000;
         if(maxSize != null) {
             this.maxSize = maxSize / 1000;
         }
-        if(this.name == null) {
-            this.name = "Demande personnalisée"
-        }
         console.info("Enable Bootstrap FileInput for : " + name);
         this.csrf = new CsrfToken(csrf);
-        this.uploadUrl = '/ws-secure/signrequests/add-docs?'+ this.csrf.parameterName + '=' + this.csrf.token;
+        // this.uploadUrl = '/ws-secure/global/add-docs?'+ this.csrf.parameterName + '=' + this.csrf.token;
         this.title = $("#title-wiz");
-        this.initFileInput(documents, readOnly);
+        this.fileInput = this.initFileInput(documents, readOnly);
         this.initListeners();
     }
 
@@ -30,18 +28,14 @@ export default class FilesInput extends EventFactory {
         this.input.on('fileclear', e => this.input.fileinput('unlock'));
     }
 
-    uploadFile() {
-        this.input.fileinput('upload');
-    }
-
     initFileInput(documents, readOnly) {
         let urls = [];
         let previews = [];
-        let csrf = this.csrf;
+        let self = this;
         if (documents != null) {
             documents.forEach(function (document) {
                 let type;
-                urls.push("/ws-secure/signrequests/get-file/" + document.id);
+                urls.push("/ws-secure/global/get-file/" + document.id);
                 switch (document.contentType.split('/')[1]) {
                     case "pdf" :
                         type = "pdf";
@@ -57,7 +51,7 @@ export default class FilesInput extends EventFactory {
                 }
                 let deleteUrl = "";
                 if(!readOnly) {
-                    deleteUrl = "/ws-secure/signrequests/remove-doc/" + document.id + "?" + csrf.parameterName + "=" + csrf.token;
+                    deleteUrl = "/ws-secure/global/remove-doc/" + document.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
                 }
                 let preview = new DocumentPreview(
                     type,
@@ -66,13 +60,13 @@ export default class FilesInput extends EventFactory {
                     document.fileName,
                     deleteUrl,
                     document.id,
-                    "/ws-secure/signrequests/get-file/" + document.id,
+                    "/ws-secure/global/get-file/" + document.id,
                     document.fileName
                     );
                 previews.push(preview);
             });
         }
-        this.input.fileinput({
+        let fileInput = this.input.fileinput({
             language: "fr",
             showCaption: false,
             minFileSize: 1,
@@ -85,7 +79,10 @@ export default class FilesInput extends EventFactory {
             showRemove: !readOnly,
             dropZoneEnabled: !readOnly,
             browseOnZoneClick: !readOnly,
-            uploadUrl: this.uploadUrl,
+            uploadUrl: function() {
+                return self.changeUploadUrl();
+            },
+            // enableResumableUpload: true,
             maxAjaxThreads: 1,
             uploadAsync: true,
             theme: 'explorer-fa6',
@@ -157,6 +154,7 @@ export default class FilesInput extends EventFactory {
                 $(this).removeAttr('style');
             });
         });
+        return fileInput;
     }
 
     checkUniqueFile() {
@@ -164,11 +162,12 @@ export default class FilesInput extends EventFactory {
         let compare = 1;
         if(nbFiles > compare) {
             $('#forceAllSign').removeClass('d-none');
-            $('#forceAllSign2').removeClass('d-none');
         } else {
             $('#forceAllSign').addClass('d-none');
-            $('#forceAllSign2').addClass('d-none');
         }
     }
 
+    changeUploadUrl() {
+        return "/ws-secure/global/add-docs/" + this.signBookId + "?" + this.csrf.parameterName + "=" + this.csrf.token
+    }
 }

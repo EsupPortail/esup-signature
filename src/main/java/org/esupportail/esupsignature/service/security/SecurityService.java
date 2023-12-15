@@ -11,4 +11,5 @@ public interface SecurityService {
 	AuthenticationEntryPoint getAuthenticationEntryPoint();
 	GenericFilterBean getAuthenticationProcessingFilter();
 	UserDetailsService getUserDetailsService();
+
 }

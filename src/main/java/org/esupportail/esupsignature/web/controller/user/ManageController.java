@@ -7,7 +7,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.export.WorkflowExportService;
-import org.esupportail.esupsignature.web.ws.json.JsonMessage;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -143,11 +143,11 @@ public class ManageController {
         Data data = dataService.addData(id, creator.getEppn());
         try {
             Map<String, String> datas = new HashMap<>();
-            signBookService.sendForSign(data.getId(), null, null, null, null, null, null, creator.getEppn(), creator.getEppn(), true, datas, null, null, null, true);
+            signBookService.sendForSign(data.getId(), null, null, null,  creator.getEppn(), creator.getEppn(), true, datas, null, null, null, true);
         } catch (EsupSignatureRuntimeException e) {
             logger.error("error on create form instance", e);
         }
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Nouveau formulaire envoyé"));
+        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Nouveau formulaire envoyé"));
         return "redirect:/user/manage";
     }
 

@@ -4,6 +4,8 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.dto.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
@@ -15,7 +17,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
-import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -49,6 +50,9 @@ public class WorkflowAdminController {
 
 	@Resource
 	private UserService userService;
+
+	@Resource
+	private RecipientService recipientService;
 
 	@Resource
 	private SignBookService signBookService;
@@ -89,7 +93,7 @@ public class WorkflowAdminController {
 			model.addAttribute("certificats", certificatService.getAllCertificats());
 			return "admin/workflows/steps";
 		}
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
 		return "redirect:/admin/workflows";
 	}
 
@@ -110,7 +114,7 @@ public class WorkflowAdminController {
 				workflow.setManagerRole(managerRole);
 			}
 		} catch (EsupSignatureRuntimeException e) {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit possède déjà ce préfixe"));
+			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Un circuit possède déjà ce préfixe"));
 			return "redirect:/admin/workflows";
 		}
 		return "redirect:/admin/workflows/update/" + workflow.getId();
@@ -128,7 +132,7 @@ public class WorkflowAdminController {
 			model.addAttribute("shareTypes", ShareType.values());
 			return "admin/workflows/update";
 		}
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
 		return "redirect:/user";
     }
 
@@ -144,33 +148,34 @@ public class WorkflowAdminController {
 			workflowService.addViewers(updateWorkflow.getId(), viewersEmails);
 			return "redirect:/admin/workflows/update/" + updateWorkflow.getId();
 		}
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
 		return "redirect:/user";
     }
 
     @DeleteMapping(value = "/{id}", produces = "text/html")
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		Workflow workflow = workflowService.getById(id);
 		try {
-			workflowService.delete(workflow);
+			workflowService.delete(id);
 		} catch (EsupSignatureRuntimeException e) {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
 		}
 		return "redirect:/admin/workflows";
     }
 
-	@PostMapping(value = "/add-step/{id}")
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
+	@PostMapping(value = "/add-step/{id}")
 	public String addStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 						  @RequestParam("signType") String signType,
 						  @RequestParam(name="description", required = false) String description,
-						  @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
+						  @RequestParam(name="recipientsEmails", required = false) String[] recipientsEmails,
 						  @RequestParam(name="changeable", required = false) Boolean changeable,
 						  @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
 						  @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) throws EsupSignatureRuntimeException {
-		workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, maxRecipients, authUserEppn, false, attachmentRequire, false, null);
+
+		WorkflowStepDto workflowStepDto = new WorkflowStepDto(SignType.valueOf(signType), description, recipientService.convertRecipientEmailsToRecipientDto(List.of(recipientsEmails)), changeable, maxRecipients, allSignToComplete, attachmentRequire);
+		workflowStepService.addStep(id, workflowStepDto, authUserEppn, false, false, null);
 		return "redirect:/admin/workflows/steps/" + id;
 	}
 
@@ -179,7 +184,8 @@ public class WorkflowAdminController {
 	public String addAutoStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 							  @RequestParam(name="description", required = false) String description,
 							  @RequestParam(name="certificatId", required = false) Long certificatId) throws EsupSignatureRuntimeException {
-		workflowStepService.addStep(id, SignType.certSign.name(), description, null, false, false, 1, authUserEppn, true, false, true, certificatId);
+		WorkflowStepDto workflowStepDto = new WorkflowStepDto(SignType.certSign, description, null, false, 1, false, false);
+		workflowStepService.addStep(id, workflowStepDto, authUserEppn, false, true, certificatId);
 		return "redirect:/admin/workflows/steps/" + id;
 	}
 
@@ -204,7 +210,7 @@ public class WorkflowAdminController {
 		try {
 			workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, autoSign, certificatId);
 		} catch (EsupSignatureRuntimeException e) {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
 		}
 		return "redirect:/admin/workflows/steps/" + id;
 	}
@@ -215,7 +221,7 @@ public class WorkflowAdminController {
 									  @PathVariable("workflowStepId") Long workflowStepId,
 									  @RequestParam(value = "userToRemoveEppn") String userToRemoveEppn, RedirectAttributes redirectAttributes) {
 		WorkflowStep workflowStep = workflowStepService.removeStepRecipient(workflowStepId, userToRemoveEppn);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant supprimé"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Participant supprimé"));
 		return "redirect:/admin/workflows/steps/" + id + "#" + workflowStep.getId();
 	}
 
@@ -224,9 +230,9 @@ public class WorkflowAdminController {
 	public String addStepRecipient(@ModelAttribute("authUserEppn") String authUserEppn,
 								   @PathVariable("id") Long id,
 								   @PathVariable("workflowStepId") Long workflowStepId,
-								   @RequestParam String[] recipientsEmails, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
-		WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientsEmails);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant ajouté"));
+								   @RequestParam WorkflowStepDto step, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
+		WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, step.getRecipients());
+		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Participant ajouté"));
 		return "redirect:/admin/workflows/steps/" + id + "#" + workflowStep.getId();
 	}
 
@@ -246,9 +252,9 @@ public class WorkflowAdminController {
 		User user = userService.getByEppn(authUserEppn);
 		int nbImportedFiles = signBookService.importFilesFromSource(id, user, user);
 		if (nbImportedFiles == 0) {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucun fichier à importer"));
+			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Aucun fichier à importer"));
 		} else {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", nbImportedFiles + " ficher(s) importé(s)"));
+			redirectAttributes.addFlashAttribute("message", new JsMessage("info", nbImportedFiles + " ficher(s) importé(s)"));
 		}
 		return "redirect:/admin/workflows/steps/" + id;
 	}
@@ -259,9 +265,9 @@ public class WorkflowAdminController {
 							@RequestParam("documentsTargetUri") String documentsTargetUri,
 							RedirectAttributes redirectAttributes) throws EsupSignatureFsException {
 		if (workflowService.addTarget(id, documentsTargetUri)) {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Destination ajoutée"));
+			redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Destination ajoutée"));
 		} else {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Une destination mail existe déjà"));
+			redirectAttributes.addFlashAttribute("message", new JsMessage("warn", "Une destination mail existe déjà"));
 		}
 		return "redirect:/admin/workflows/update/" + id;
 	}
@@ -272,7 +278,7 @@ public class WorkflowAdminController {
 							   @PathVariable("targetId") Long targetId,
 							   RedirectAttributes redirectAttributes) {
 		workflowService.deleteTarget(id, targetId);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Destination supprimée"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Destination supprimée"));
 		return "redirect:/admin/workflows/update/" + id;
 
 	}
@@ -303,7 +309,7 @@ public class WorkflowAdminController {
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage());
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
 		}
 		return "redirect:/admin/workflows/update/" + id;
 	}
