@@ -70,22 +70,10 @@
                         </a>
                         <div th:if="${managedWorkflowsSize > 0}" class="dropdown-divider"></div>
                         <a id="start-wizard-button" th:unless="${globalProperties.hideWizard}" role="button" class="btn text-white btn-transparent text-left m-1" data-bs-toggle="modal"
-                            data-bs-target="#wizModal"
+                            data-bs-target="#wiz-modal"
                             title="Créez un nouveau circuit à l'aide de l'assistant">
                                 <i class="fa-solid fa-magic"></i> Assistant de création de circuit
                         </a>
-<!--                        <a role="button" href class="btn text-white btn-transparent text-left m-1" style="width: 250px;"-->
-<!--                           data-bs-toggle="modal"-->
-<!--                           data-bs-target="#fastSignRequestModal"-->
-<!--                           title="Vous devez signer un document présent sur votre poste">-->
-<!--                            <i class="fa-solid fa-signature"></i><span class="nav-item-label d-none d-xl-inline"> Auto signature</span>-->
-<!--                        </a>-->
-<!--                        <a role="button" href class="btn text-white btn-transparent text-left m-1" style="width: 250px;"-->
-<!--                           data-bs-toggle="modal"-->
-<!--                           data-bs-target="#sendSignRequestModal"-->
-<!--                           title="Demander la signature d'un document présent sur votre poste">-->
-<!--                            <i class="fa-solid fa-paper-plane"></i><span class="nav-item-label d-none d-xl-inline"> Demander une signature</span>-->
-<!--                        </a>-->
                         <div th:unless="${globalProperties.hideWizard}" class="dropdown-divider"></div>
                         <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users'">
                             <i class="fa-solid fa-user-cog"></i> Modifier mes paramètres
@@ -100,9 +88,9 @@
                 </li>
                 <li class="nav-item dropdown" th:if="${userEppn == authUserEppn && globalProperties.shareMode > 0 && #authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a class="btn btn-transparent text-left text-white me-1 dropdown-toggle"
-                       th:classappend="${activeMenu == 'shares'} ? 'bg-secondary'"
-                       href="#" id="navbarShareDropdown"
-                       role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        th:classappend="${activeMenu == 'shares'} ? 'bg-secondary'"
+                        href="#" id="navbarShareDropdown"
+                        role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fa-solid fa-users-cog"></i> <span class="nav-item-label d-none d-lg-inline">Autorisations</span>
                     </a>
                     <div class="dropdown-menu bg-dark border-secondary align-items-center" aria-labelledby="navbarShareDropdown" >

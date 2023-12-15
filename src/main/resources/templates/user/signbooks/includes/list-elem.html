@@ -118,13 +118,13 @@
                     </li>
                     <li>
                         <a target="_blank" th:if="${signBook.signRequests.size() > 1 && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
-                           th:href="'/ws-secure/signrequests/get-last-files/' + ${signBook.id}">
+                           th:href="'/ws-secure/global/get-last-files/' + ${signBook.id}">
                             <i class="fa-solid fa-download pr-2"></i> Télécharger tout
                         </a>
                     </li>
                     <li>
                         <a target="_blank" th:if="${signBook.signRequests.size() == 1 && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
-                           th:href="'/ws-secure/signrequests/get-last-file/' + ${signRequest.id}">
+                           th:href="'/ws-secure/global/get-last-file/' + ${signRequest.id}">
                             <i class="fa-solid fa-download pr-2"></i> Télécharger
                         </a>
                     </li>

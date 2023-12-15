@@ -26,7 +26,7 @@ import org.esupportail.esupsignature.service.ldap.LdapPersonLightService;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.SecurityService;
-import org.esupportail.esupsignature.web.ws.json.JsonMessage;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -140,11 +140,11 @@ public class IndexController {
 						User suUser = preAuthorizeService.checkShareForSignRequest(signRequest, authUser.getEppn());
 						if (suUser != null) {
 							httpSession.setAttribute("suEppn", suUser.getEppn());
-							redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation activée : " + suUser.getEppn()));
+							redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Délégation activée : " + suUser.getEppn()));
 							return "redirect:" + forwardUri;
 						}
 					} else {
-						redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande non trouvée"));
+						redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non trouvée"));
 						return "redirect:/user";
 					}
 				} catch (Exception e) {

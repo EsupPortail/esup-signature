@@ -12,10 +12,10 @@ export default class SelectUser {
         this.valuePrefix = "";
         this.limit = 99;
         this.flag = false;
-        let selectNameSplit = selectName.split("_");
-        if(selectNameSplit.length === 2) {
-            this.valuePrefix = selectNameSplit[1] + "*";
-        }
+        // let selectNameSplit = selectName.split("_");
+        // if(selectNameSplit.length === 2) {
+        //     this.valuePrefix = selectNameSplit[1] + "*";
+        // }
         let defaultValues = [];
         $("#" + selectName + " > option").each(function() {
             if($(this).text() !== "") {
@@ -146,14 +146,14 @@ export default class SelectUser {
 
     displayTempUsers(e) {
         if(this.checkList !== "false") {
-            if (this.selectField.attr('id') === 'recipientsEmailsWiz') {
+            if (this.selectField.attr('id') === 'recipientsEmails') {
                 if (this.slimSelect.getSelected().length > 0) {
                     // $('#addNew').show();
-                    $('#endStart').hide();
+                    $('#end-workflow-sign').hide();
                     $('#end').hide();
                 } else {
                     // $('#addNew').hide();
-                    $('#endStart').show();
+                    $('#end-workflow-sign').show();
                     $('#end').show();
                 }
             }

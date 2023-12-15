@@ -139,4 +139,5 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 		return new User("anonymousUser", "N/A", false, false, false, false, grantedAuthorities);
 	}
 
+
 }

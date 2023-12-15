@@ -2,6 +2,7 @@ import {WorkspacePdf} from "./WorkspacePdf.js?version=@version@";
 import {CsrfToken} from "../../../prototypes/CsrfToken.js?version=@version@";
 import {Step} from "../../../prototypes/Step.js?version=@version@";
 import {Nexu} from "./Nexu.js?version=@version@";
+import {ExternalUserInfos} from "../../../prototypes/ExternalUserInfos.js?version=@version@";
 
 export class SignUi {
 
@@ -45,7 +46,7 @@ export class SignUi {
     initListeners() {
         $("#checkValidateSignButtonEnd").on('click', e => this.launchSign(false));
         $("#checkValidateSignButtonNext").on('click', e => this.launchSign(true));
-        $("#launchInfiniteSignButton").on('click', e => this.insertStep());
+        $("#launch-infinite-sign-button").on('click', e => this.insertStep());
         $("#launchNoInfiniteSignButton").on('click', e => this.launchNoInfiniteSign());
         $("#refresh-certType").on('click', e => this.checkSignOptions());
         $("#refresh-certType2").on('click', e => this.checkSignOptions());
@@ -157,7 +158,7 @@ export class SignUi {
                         self.certTypeSelect.children().each(function(e) {
                             if($(this).val() === "imageStamp" && (self.currentSignType === "pdfImageStamp" || self.currentSignType === "visa")) {
                                 $(this).removeAttr('disabled');
-                                $("#noOptions").hide();
+                                $("#no-options").hide();
                                 $("#selectTypeDiv").show();
                                 $("#checkValidateSignButtonEnd").show();
                                 $("#checkValidateSignButtonNext").show();
@@ -374,7 +375,7 @@ export class SignUi {
         console.log("start sign");
         console.log(self.signRequestId);
         $.ajax({
-            url: "/ws-secure/signrequests/sign/" + this.signRequestId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
+            url: "/ws-secure/global/sign/" + this.signRequestId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
             type: 'POST',
             data: signRequestUrlParams,
             success: function(data, textStatus, xhr) {
@@ -441,19 +442,32 @@ export class SignUi {
         let signRequestId = this.signRequestId;
         let csrf = this.csrf;
         let step = new Step();
-        let selectedRecipients = $('#recipientsEmailsInfinite').find(`[data-es-check-cert='true']`).prevObject[0].slim.getSelected();
-        if(selectedRecipients.length === 0 ) {
+        let recipientsEmails = $('#recipientsEmails').find(`[data-es-check-cert='true']`).prevObject[0].slim.getSelected();
+        if(recipientsEmails.length === 0 ) {
             $("#infiniteFormSubmit").click();
             return;
         }
+        recipientsEmails.forEach(function(email) {
+            let externalUserInfos = new ExternalUserInfos();
+            externalUserInfos.email = email;
+            step.recipients.push(externalUserInfos);
+        });
+        $("div[id^='externalUserInfos_']").each(function() {
+            let externalUserInfos = new ExternalUserInfos();
+            externalUserInfos.email = $(this).find("#emails").val();
+            externalUserInfos.name = $(this).find("#names").val();
+            externalUserInfos.firstName = $(this).find("#firstnames").val();
+            externalUserInfos.phone = $(this).find("#phones").val();
+            externalUserInfos.forceSms = $(this).find("#forcesmses").val();
+            step.recipients.push(externalUserInfos);
+        });
         let self = this;
-        this.signComment = $("#signCommentInfinite");
-        step.recipientsEmails = selectedRecipients;
+        this.signComment = $("#signComment");
         step.stepNumber = this.currentStepNumber;
-        step.allSignToComplete = $('#allSignToCompleteInfinite').is(':checked');
+        step.allSignToComplete = $('#allSignToComplete').is(':checked');
         step.multiSign = $('#multiSign').is(':checked');
         step.autoSign = $('#autoSign').is(':checked');
-        step.signType = $('#signTypeInfinite').val();
+        step.signType = $('#signType').val();
         $.ajax({
             url: "/user/signbooks/add-repeatable-step/" + signRequestId + "?" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',

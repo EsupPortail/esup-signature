@@ -88,7 +88,7 @@
                                                                                 <th:block th:each="user : ${step.users}">
                                                                                     <option th:if="${user.email != null && user.email != 'generic'}" selected="selected"
                                                                                             th:text="${user.email}"
-                                                                                            th:value="${iterator.index + 1} + '*' + ${user.email}"></option>
+                                                                                            th:value="${user.email}"></option>
                                                                                 </th:block>
                                                                             </select>
                                                                             <p class="small">

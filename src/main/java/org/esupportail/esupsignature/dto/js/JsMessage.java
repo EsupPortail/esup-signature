@@ -1,19 +1,19 @@
-package org.esupportail.esupsignature.web.ws.json;
+package org.esupportail.esupsignature.dto.js;
 
 import java.io.Serializable;
 
-public class JsonMessage implements Serializable {
+public class JsMessage implements Serializable {
 
     String type;
     String text;
     Object object;
 
-    public JsonMessage(String type, String text) {
+    public JsMessage(String type, String text) {
         this.type = type;
         this.text = text;
     }
 
-    public JsonMessage(String type, String text, Object object) {
+    public JsMessage(String type, String text, Object object) {
         this.type = type;
         this.text = text;
         this.object  = object;

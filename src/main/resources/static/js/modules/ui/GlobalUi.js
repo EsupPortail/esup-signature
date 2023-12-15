@@ -88,22 +88,40 @@ export class GlobalUi {
         window.addEventListener('resize', e => this.adjustUi());
         $(document).ready(e => this.onDocumentLoad());
         let self = this;
-        $("#startWizardCustomButton").on('click', function(e) {
-            let wizUi = new WizUi("", $("#wizFrameCustom"), "", self.csrf, self.maxSize);
-            wizUi.startByDocs();
+        $("#new-self-sign").on('click', function(e) {
+            let wizUi = new WizUi("", $("#wiz-self-sign-div"), self.csrf, self.maxSize);
+            wizUi.selfSignStart();
+        });
+
+        $("#new-fast-sign").on('click', function(e) {
+            let wizUi = new WizUi("", $("#wiz-fast-sign-div"), self.csrf, self.maxSize);
+            wizUi.fastStartSign();
+        });
+
+        $("#start-wizard-custom-button").on('click', function(e) {
+            let wizUi = new WizUi("", $("#wiz-custom-sign-div"), self.csrf, self.maxSize);
+            wizUi.workflowSignStart();
+        });
+
+        $("#start-wizard-button").on('click', function(e) {
+            let wizUi = new WizUi("", $("#wiz-div"), self.csrf, self.maxSize);
+            wizUi.wizardWorkflowStart();
         });
 
         $(".start-wizard-workflow-button").each(function() {
+            let menuToggle = $(this).children('button').first();
+            menuToggle.on("click", function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+            });
             $(this).on('click', function(e) {
-                let wizUi = new WizUi($(this).attr('data-workflow-id'), $("#wizFrameWorkflow"), $(this).attr('data-workflow-name'), self.csrf, self.maxSize);
-                wizUi.startByDocs();
-                $("#wizModalWorkflow").modal('show');
+                let wizUi = new WizUi($(this).attr('data-es-workflow-id'), $("#wiz-workflow-sign-div"), self.csrf, self.maxSize);
+                wizUi.workflowSignStart();
             });
         });
 
         $('.toggle-mini-menu').each(function(e) {
             $(this).on('click', function(e) {
-                // e.preventDefault();
                 e.stopPropagation();
             })
         });
@@ -131,14 +149,6 @@ export class GlobalUi {
             })
         });
 
-        $("#start-wizard-button").on('click', function(e) {
-            let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", self.csrf, self.maxSize);
-            wizUi.startByRecipients();
-        });
-        $("#start-wizard-button2").on('click', function(e) {
-            let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", self.csrf, self.maxSize);
-            wizUi.startByRecipients();
-        });
         $("#user-toggle").on("click", function (e){
             e.stopPropagation();
         });

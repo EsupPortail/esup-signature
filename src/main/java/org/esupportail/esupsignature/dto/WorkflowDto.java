@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.ws.json;
+package org.esupportail.esupsignature.dto;
 
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.WorkflowStep;
@@ -6,7 +6,7 @@ import org.esupportail.esupsignature.entity.WorkflowStep;
 import java.util.List;
 import java.util.Set;
 
-public interface JsonDtoWorkflow {
+public interface WorkflowDto {
 
     Long getId();
 

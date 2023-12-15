@@ -1,5 +1,8 @@
 package org.esupportail.esupsignature.service;
 
+import jakarta.annotation.Resource;
+import org.esupportail.esupsignature.dto.RecipientWsDto;
+import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -9,8 +12,7 @@ import org.esupportail.esupsignature.service.interfaces.listsearch.UserListServi
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -46,7 +48,7 @@ public class WorkflowStepService {
     private UserListService userListService;
 
     @Transactional
-    public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, Boolean changeable, String... recipientEmails) throws EsupSignatureRuntimeException {
+    public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, Boolean changeable, RecipientWsDto ...recipients) throws EsupSignatureRuntimeException {
         WorkflowStep workflowStep = new WorkflowStep();
         if (name != null) {
             workflowStep.setName(name);
@@ -63,18 +65,17 @@ public class WorkflowStepService {
         }
         workflowStep.setChangeable(changeable);
         workflowStepRepository.save(workflowStep);
-        if (recipientEmails != null && recipientEmails.length > 0) {
-            addRecipientsToWorkflowStep(workflowStep, recipientEmails);
+        if (recipients != null && recipients.length > 0) {
+            addRecipientsToWorkflowStep(workflowStep, recipients);
         }
         return workflowStep;
     }
 
-    public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, String... recipientsEmail) throws EsupSignatureRuntimeException {
-        recipientsEmail = Arrays.stream(recipientsEmail).distinct().toArray(String[]::new);
-        for (String recipientEmail : recipientsEmail) {
-            List<String> groupList = userListService.getUsersEmailFromList(recipientEmail);
-            if(groupList.isEmpty() || recipientEmail.equals("creator")) {
-                User recipientUser = userService.getUserByEmail(recipientEmail);
+    public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, RecipientWsDto[] recipients) throws EsupSignatureRuntimeException {
+        for (RecipientWsDto recipient : recipients) {
+            List<String> groupList = userListService.getUsersEmailFromList(recipient.getEmail());
+            if(groupList.isEmpty() || recipient.getEmail().equals("creator")) {
+                User recipientUser = userService.getUserByEmail(recipient.getEmail());
                 if (workflowStep.getId() != null) {
                     for (User user : workflowStep.getUsers()) {
                         if (user.equals(recipientUser)) {
@@ -84,7 +85,7 @@ public class WorkflowStepService {
                 }
                 workflowStep.getUsers().add(recipientUser);
             } else {
-                workflowStep.getUsers().add(userService.createGroupUserWithEmail(recipientEmail));
+                workflowStep.getUsers().add(userService.createGroupUserWithEmail(recipient.getEmail()));
             }
         }
     }
@@ -97,9 +98,9 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public WorkflowStep addStepRecipients(Long workflowStepId, String[] recipientsEmails) throws EsupSignatureRuntimeException {
+    public WorkflowStep addStepRecipients(Long workflowStepId, List<RecipientWsDto> recipients) throws EsupSignatureRuntimeException {
         WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
-        addRecipientsToWorkflowStep(workflowStep, recipientsEmails);
+        addRecipientsToWorkflowStep(workflowStep, recipients.toArray(new RecipientWsDto[0]));
         return workflowStep;
     }
 
@@ -144,25 +145,25 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void addStep(Long workflowId, String signType, String description, String[] recipientsEmails, Boolean changeable, Boolean allSignToComplete, Integer maxRecipients, String authUserEppn, boolean saveFavorite, Boolean attachmentRequire, Boolean autoSign, Long certificatId) throws EsupSignatureRuntimeException {
+    public void addStep(Long workflowId, WorkflowStepDto step, String authUserEppn, boolean saveFavorite, Boolean autoSign, Long certificatId) throws EsupSignatureRuntimeException {
         if(autoSign && certificatId == null) {
             throw new EsupSignatureRuntimeException("Certificat is empty");
         }
         Workflow workflow = workflowRepository.findById(workflowId).get();
-        WorkflowStep workflowStep = createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), changeable, recipientsEmails);
-        workflowStep.setDescription(description);
-        if(maxRecipients != null) {
-            workflowStep.setMaxRecipients(maxRecipients);
+        WorkflowStep workflowStep = createWorkflowStep("", step.getAllSignToComplete(), step.getSignType(), step.getChangeable(), step.getRecipients().toArray(RecipientWsDto[]::new));
+        workflowStep.setDescription(step.getDescription());
+        if(step.getMaxRecipients() != null) {
+            workflowStep.setMaxRecipients(step.getMaxRecipients());
         }
-        workflowStep.setAttachmentRequire(attachmentRequire);
+        workflowStep.setAttachmentRequire(step.getAttachmentRequire());
         workflowStep.setAutoSign(autoSign);
         if(autoSign) {
             Certificat certificat = certificatService.getById(certificatId);
             workflowStep.setCertificat(certificat);
         }
         workflow.getWorkflowSteps().add(workflowStep);
-        if(recipientsEmails != null && saveFavorite) {
-            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
+        if(saveFavorite) {
+            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(step));
         }
     }
 

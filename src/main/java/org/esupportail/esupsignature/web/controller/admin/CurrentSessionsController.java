@@ -17,17 +17,15 @@
  */
 package org.esupportail.esupsignature.web.controller.admin;
 
-import jakarta.annotation.Resource;
-import org.apache.commons.io.FileUtils;
-import org.esupportail.esupsignature.service.security.SessionService;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.session.Session;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @RequestMapping("/admin/currentsessions")
 @Controller
@@ -44,22 +42,27 @@ public class CurrentSessionsController {
 		return "currentSessions";
 	}
 
-	@Resource
-	private SessionService sessionService;
+	private final SessionRegistry sessionRegistry;
+
+	public CurrentSessionsController(SessionRegistry sessionRegistry) {
+		this.sessionRegistry = sessionRegistry;
+	}
 
 	@GetMapping
 	public String getCurrentSessions(Model model) {
-		Map<String, List<Session>> allSessions = sessionService.getAllSessionsListMap();
-		long sessionSize = sessionService.getSessionsSize(allSessions.values().stream().flatMap(List::stream).toList());
-		model.addAttribute("currentSessions", allSessions);
-		model.addAttribute("sessionSize", FileUtils.byteCountToDisplaySize(sessionSize));
+		List<SessionInformation> sessions = new ArrayList<>();
+		for(Object principal : sessionRegistry.getAllPrincipals()) {
+			sessions.addAll(sessionRegistry.getAllSessions(principal, false));
+		}
+		model.addAttribute("currentSessions", sessions);
+		model.addAttribute("sessionSize", 0);
 		model.addAttribute("active", "sessions");
 		return "admin/currentsessions";
 	}
 
 	@DeleteMapping
 	public String deleteSessions(@RequestParam String sessionId) {
-		sessionService.deleteSessionById(sessionId);
+		sessionRegistry.getSessionInformation(sessionId).expireNow();
 		return "redirect:/admin/currentsessions";
 	}
 

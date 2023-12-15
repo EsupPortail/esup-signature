@@ -20,7 +20,7 @@ import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
-import org.esupportail.esupsignature.web.ws.json.JsonMessage;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -115,7 +115,7 @@ public class FormAdminController {
 			return "redirect:/admin/forms/" + form.getId() + "/fields";
 		} catch (EsupSignatureRuntimeException e) {
 			logger.error(e.getMessage());
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
 			return "redirect:/admin/forms";
 		}
 	}
@@ -137,7 +137,7 @@ public class FormAdminController {
 			return "redirect:/admin/forms/" + form.getId() + "/fields";
 		} catch (EsupSignatureRuntimeException e) {
 			logger.error(e.getMessage());
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
 			return "redirect:/admin/forms";
 		}
 	}
@@ -158,7 +158,7 @@ public class FormAdminController {
 			model.addAttribute("document", form.getDocument());
 			return "admin/forms/fields";
 		}
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès non autorisé"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
 		return "redirect:/admin/forms";
 	}
 
@@ -202,7 +202,7 @@ public class FormAdminController {
 									   @PathVariable("signRequestParamsId") Long signRequestParamsId,
 									   RedirectAttributes redirectAttributes) {
 		formService.removeSignRequestParamsSteps(formId, signRequestParamsId);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Champ signature supprimé"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Champ signature supprimé"));
 		return "redirect:/admin/forms/" + formId + "/signs";
 	}
 
@@ -213,7 +213,7 @@ public class FormAdminController {
 										  @PathVariable("id") Long id,
 										  RedirectAttributes redirectAttributes) {
 		formService.removeSignRequestParamsSteps(formId, id);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Champ signature supprimé"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Champ signature supprimé"));
 	}
 
 	@PostMapping("/add-field/{id}")
@@ -251,10 +251,10 @@ public class FormAdminController {
 							 RedirectAttributes redirectAttributes) {
 		if(preAuthorizeService.formManager(updateForm.getId(), authUserEppn) || userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 			formService.updateForm(updateForm.getId(), updateForm, types, true);
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
+			redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Modifications enregistrées"));
 			return "redirect:/admin/forms/update/" + updateForm.getId();
 		}
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Accès non autorisé"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Accès non autorisé"));
 		return "redirect:/";
 	}
 
@@ -268,10 +268,10 @@ public class FormAdminController {
 			}
 		} catch (EsupSignatureRuntimeException e) {
 			logger.error(e.getMessage());
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
 			return "redirect:/admin/forms";
 		}
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Modifications enregistrées"));
 		return "redirect:/admin/forms/update/" + id;
 	}
 
@@ -279,7 +279,7 @@ public class FormAdminController {
 	@PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String deleteForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		formService.deleteForm(id);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le formulaire a bien été supprimé"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le formulaire a bien été supprimé"));
 		return "redirect:/admin/forms";
 	}
 
@@ -356,7 +356,7 @@ public class FormAdminController {
 	public void getFile(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes) throws IOException {
 		try {
 			if (!formService.getModel(id, httpServletResponse)) {
-				redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Modèle non trouvée ..."));
+				redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Modèle non trouvée ..."));
 				httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
 			}
 		} catch (Exception e) {
@@ -390,7 +390,7 @@ public class FormAdminController {
 			}
 		} catch (IOException e) {
 			logger.error(e.getMessage());
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
 		}
 		return "redirect:/admin/forms/update/" + id;
 	}

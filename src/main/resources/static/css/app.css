@@ -361,13 +361,6 @@ code {
      padding: 10px 10px !important;
  }
 
-.file-preview-frame {
-    width: 100%;
-    display: inline-flex;
-}
-.file-preview-frame * {
-    margin: 5px;
-}
 .file-details-cell {
     width: 100%;
     text-align: left;
@@ -395,6 +388,14 @@ code {
 
 .custom-file-input:lang(en) ~ .custom-file-label::after {
 	content: "Parcourir" !important;
+}
+
+.workflow-btn {
+    height: 170px;
+}
+
+.workflow-btn-perso {
+    height: 150px;
 }
 
 .cross-tools {
