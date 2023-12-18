@@ -162,9 +162,9 @@ export class GlobalUi {
     }
 
     sendForm(e) {
-        let spinner = $("#send-form-spinner");
-        spinner.removeClass("d-none");
         let formId = $(e.target).attr('data-es-form-id');
+        let spinner = $("#send-form-spinner-" + formId);
+        spinner.removeClass("d-none");
         let self = this;
         let steps = [];
         let i = 0;
