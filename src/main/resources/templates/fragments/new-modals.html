@@ -43,24 +43,6 @@
         </div>
     </div>
 
-<!--    <div id="sendPending" data-bs-focus="false" class="modal fade" >-->
-<!--        <div class="modal-dialog" role="document">-->
-<!--            <div class="modal-content">-->
-<!--                <div class="modal-header">-->
-<!--                    <h3 class="modal-title" id="exampleModalLabel">Envoyer immédiatement</h3>-->
-<!--                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>-->
-<!--                </div>-->
-<!--                <div class="modal-body">-->
-<!--                    <textarea placeholder="Vous pouvez saisir un commentaire" class="form-control" id="submitComment"></textarea>-->
-<!--                    <button type="button" id="submitSendPending" class="btn btn-success mt-2 pull-right">-->
-<!--                        Valider l'envoi-->
-<!--                    </button>-->
-<!--                </div>-->
-<!--                <div class="modal-header"></div>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-
     <th:block th:each="form : ${forms}">
         <div data-bs-focus="false" class="modal fade" th:id="'sendModal_' +  ${form.id}"  role="dialog" aria-hidden="true">
             <div th:if="${form.messageToDisplay != null}" class="toast toast-xl bg-white show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="999999999" style="z-index: 3;">
@@ -85,20 +67,19 @@
 
                         </button>
                     </div>
-                    <form th:action="'/user/datas/send-form/' + ${form.id}" method="post">
-                        <div class="modal-body">
-                            <p th:if="${form.workflow == null || form.workflow.workflowSteps.size() == 0}">Après la validation, vous pourrez télécharger le document</p>
-                            <div th:if="${form.workflow != null && form.workflow.workflowSteps.size() > 0}">
-                                <h5>
-                                    Le circuit associé à ce formulaire comporte <span
-                                        th:text="${form.workflow.workflowSteps.size()}"></span> étape<span th:if="${form.workflow.workflowSteps.size()} > 1">(s) : </span>
-                                </h5>
-                                <ul class="list-group striped-list">
-                                <th:block th:each="step, iterator : ${form.workflow.workflowSteps}">
+                    <div class="modal-body">
+                        <form id="send-form">
+                        <input type="submit" id="send-form-submit" class="d-none">
+                        <p th:if="${form.workflow == null || form.workflow.workflowSteps.size() == 0}">Après la validation, vous pourrez télécharger le document</p>
+                        <div th:if="${form.workflow != null && form.workflow.workflowSteps.size() > 0}">
+                            <h5>
+                                Le circuit associé à ce formulaire comporte <span
+                                    th:text="${form.workflow.workflowSteps.size()}"></span> étape<span th:if="${form.workflow.workflowSteps.size()} > 1">(s) : </span>
+                            </h5>
+                            <ul class="list-group striped-list">
+                            <th:block th:each="step, iterator : ${form.workflow.workflowSteps}">
+                                <div th:id="'step-form-' + ${iterator.index}">
                                     <li class="list-group-item border-secondary">
-                                    <!--                            <div class="form-group mb-3">-->
-                                    <!--                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>-->
-                                    <!--                            </div>-->
                                         <div class="form-group d-inline">
                                             <div>
                                                 <h3 class="d-inline">
@@ -117,7 +98,7 @@
                                         </div>
                                         <div th:if="${step.changeable == true}" class="form-group mb-3">
                                             <label><span th:text="'Merci de saisir le' + ${step.maxRecipients != null && step.maxRecipients > 1 ? '(s)' : ''} + ' participant' + ${step.maxRecipients != null && step.maxRecipients > 1 ? '(s)' : ''} + ' pour l\'étape ' + ${iterator.index + 1}"></span></label>
-                                            <select class="select-users" th:id="'recipientEmailsSelect-' + ${form.id} + '_' + ${iterator.index + 1}"
+                                            <select class="select-users" th:id="'recipientEmails-' + ${iterator.index + 1}"
                                                     multiple="multiple" name="recipientEmails" required="required" th:maxlength="${step.maxRecipients}">
                                                 <option data-placeholder="true"></option>
                                                 <th:block th:each="user : ${step.users}">
@@ -139,25 +120,30 @@
                                             </div>
                                         </div>
                                     </li>
-                                </th:block>
-                                </ul>
+                                </div>
+                            </th:block>
+                            </ul>
+                            <th:block th:each="target : ${form.workflow.targets}">
                                 <hr>
-                                <th:block th:each="target : ${form.workflow.targets}">
-                                    <div th:if="${target.targetUri.contains('mailto:')}" class="form-group mb-3">
-                                        <label>Étape finale : Envoi par mail à </label>
-                                        <select class="select-users" th:id="'targetEmailsSelect-' + ${form.id}" multiple="multiple" name="targetEmails">
-                                            <option data-placeholder="true"></option>
-                                            <option th:if="${target.targetUri != null && target.targetUri != ''}" th:value="${target.targetUri.split(':')[1]}" th:text="${target.targetUri.split(':')[1]}" selected></option>
-                                        </select>
-                                    </div>
-                                </th:block>
+                                <div th:if="${target.targetUri.contains('mailto:')}" class="form-group mb-3">
+                                    <label>Étape finale : Envoi par mail à </label>
+                                    <select class="select-users" th:id="'targetEmailsSelect-' + ${form.id}" multiple="multiple" name="targetEmails">
+                                        <option data-placeholder="true"></option>
+                                        <option th:if="${target.targetUri != null && target.targetUri != ''}" th:value="${target.targetUri.split(':')[1]}" th:text="${target.targetUri.split(':')[1]}" selected></option>
+                                    </select>
+                                </div>
+                            </th:block>
+                        </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
+                        <button id="send-form-button" th:data-es-form-id="${form.id}" type="button" class="btn btn-success">
+                            <div id="send-form-spinner" class="spinner-border d-none" style="width: 1rem; height: 1rem;">
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
-                            <button type="submit" class="btn btn-success">Valider</button>
-                        </div>
-                    </form>
+                            Valider
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

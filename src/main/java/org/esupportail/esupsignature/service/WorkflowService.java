@@ -316,29 +316,33 @@ public class WorkflowService {
                 List<RecipientWsDto> recipients = steps.stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).toList();
                 defaultWorkflow.fillWorkflowSteps(modelWorkflow, recipients);
             }
-            int step = 1;
+            int stepNumber = 1;
             for (WorkflowStep workflowStep : modelWorkflow.getWorkflowSteps()) {
                 entityManager.detach(workflowStep);
                 replaceStepSystemUsers(userEppn, workflowStep);
                 if (workflowStep.getChangeable() != null && workflowStep.getChangeable()) {
                     if(!computeForDisplay) {
-                        List<RecipientWsDto> recipients = steps.get(step - 1).getRecipients();
-                        List<User> users = this.getFavoriteRecipientEmail(step, recipients);
-                        if (!recipients.isEmpty()) {
-                            workflowStep.getUsers().clear();
-                            for (User oneUser : users) {
-                                workflowStep.getUsers().add(oneUser);
+                        int finalStep = stepNumber;
+                        Optional<WorkflowStepDto> step = steps.stream().filter(s -> s.getStepNumber() == finalStep).findFirst();
+                        if(step.isPresent()) {
+                            List<RecipientWsDto> recipients = step.get().getRecipients();
+                            List<User> users = this.getFavoriteRecipientEmail(stepNumber, recipients);
+                            if (!recipients.isEmpty()) {
+                                workflowStep.getUsers().clear();
+                                for (User oneUser : users) {
+                                    workflowStep.getUsers().add(oneUser);
+                                }
                             }
-                        }
-                        if (steps.get(step - 1).getAllSignToComplete()) {
-                            workflowStep.setAllSignToComplete(true);
-                        }
-                        if (steps.get(step - 1).getSignType() != null) {
-                            workflowStep.setSignType(steps.get(step - 1).getSignType());
+                            if (step.get().getAllSignToComplete()) {
+                                workflowStep.setAllSignToComplete(true);
+                            }
+                            if (step.get().getSignType() != null) {
+                                workflowStep.setSignType(step.get().getSignType());
+                            }
                         }
                     }
                 }
-                step++;
+                stepNumber++;
             }
             entityManager.detach(modelWorkflow);
             return modelWorkflow;
@@ -580,10 +584,11 @@ public class WorkflowService {
         logger.info("import workflow steps in signBook " + signBook.getSubject() + " - " + signBook.getId());
         int i = 0;
         for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
+            i++;
             WorkflowStepDto step = new WorkflowStepDto();
-            if(steps.size() > i) {
-                step = steps.get(i);
-            }
+            int finalI = i;
+            Optional<WorkflowStepDto> optionalStep = steps.stream().filter(s -> s.getStepNumber() == finalI).findFirst();
+            if(optionalStep.isPresent()) step = optionalStep.get();
             for (User user : workflowStep.getUsers()) {
                 if (user.equals(userService.getCreatorUser())) {
                     user = signBook.getCreateBy();
@@ -598,7 +603,6 @@ public class WorkflowService {
             step.setSignType(workflowStep.getSignType());
             LiveWorkflowStep newWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, workflowStep, step);
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(newWorkflowStep);
-            i++;
         }
         if(!(workflow instanceof DefaultWorkflow)) {
             signBook.getLiveWorkflow().setWorkflow(workflow);

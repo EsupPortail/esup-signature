@@ -58,32 +58,21 @@ public class DataController {
 	private UserService userService;
 
 	@Resource
-	private RecipientService recipientService;
-
-	@Resource
 	private ObjectMapper objectMapper;
 
 	@PostMapping("/send-form/{id}")
-	public String sendForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
-						   @RequestParam(required = false) List<String> recipientEmails,
-						   @RequestParam(required = false) List<String> signTypes,
-						   @RequestParam(required = false) List<String> allSignToCompletes,
+	@ResponseBody
+	public ResponseEntity<String> sendForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 						   @RequestParam(required = false) List<String> targetEmails,
-						   @RequestParam(value = "emails", required = false) List<String> emails,
-						   @RequestParam(value = "names", required = false) List<String> names,
-						   @RequestParam(value = "firstnames", required = false) List<String> firstnames,
-						   @RequestParam(value = "phones", required = false) List<String> phones,
-						   @RequestParam(value = "forcesmses", required = false) List<Boolean> forcesmses,
-						   @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
-		List<WorkflowStepDto> workflowStepDtos = recipientService.convertRecipientEmailsToStep(recipientEmails);
+						   @RequestBody List<WorkflowStepDto> steps,
+						   @PathVariable("id") Long id) throws EsupSignatureRuntimeException {
 
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			Data data = dataService.addData(id, userEppn);
-			SignBook signBook = signBookService.sendForSign(data.getId(), workflowStepDtos, targetEmails, null, userEppn, authUserEppn, false, null, null, null, null, true);
-			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
+			SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, null, userEppn, authUserEppn, false, null, null, null, null, true);
+			return ResponseEntity.ok().body(signBook.getId().toString());
 		} else {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Formulaire non autorisé"));
-			return "redirect:/user";
+			return ResponseEntity.internalServerError().body("Formulaire non autorisé");
 		}
 
 	}

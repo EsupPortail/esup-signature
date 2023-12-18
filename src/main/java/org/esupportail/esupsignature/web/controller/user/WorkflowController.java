@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.CertificatService;
+import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
 import org.esupportail.esupsignature.dto.js.JsMessage;
@@ -16,6 +17,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Collections;
 import java.util.List;
 
 @Controller
@@ -30,6 +32,9 @@ public class WorkflowController {
 
     @Resource
     private CertificatService certificatService;
+
+    @Resource
+    private RecipientService recipientService;
 
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @GetMapping(value = "/{id}", produces = "text/html")
@@ -89,11 +94,11 @@ public class WorkflowController {
     public String addStepRecipient(@ModelAttribute("userEppn") String userEppn,
                                    @PathVariable("id") Long id,
                                    @PathVariable("workflowStepId") Long workflowStepId,
-                                   @RequestBody WorkflowStepDto step, RedirectAttributes redirectAttributes) {
+                                   @RequestParam String recipientsEmails, RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowService.getById(id);
         WorkflowStep workflowStep = null;
         try {
-            workflowStep = workflowStepService.addStepRecipients(workflowStepId, step.getRecipients());
+            workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientService.convertRecipientEmailsToRecipientDto(Collections.singletonList(recipientsEmails)));
             redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Participant ajouté"));
         } catch (EsupSignatureRuntimeException e) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Participant non ajouté"));

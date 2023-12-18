@@ -226,7 +226,7 @@ export class WizUi {
         if($("#recipientsEmails").length) {
             new SelectUser("recipientsEmails", null, null, this.csrf);
         }
-        $('[id^="recipientEmailsWizSelect_"]').each(function (){
+        $('[id^="recipientEmails-"]').each(function (){
             let maxRecipient = $(this).attr('data-es-max-recipient');
             new SelectUser($(this).attr('id'), maxRecipient, null, self.csrf);
         });
@@ -307,7 +307,7 @@ export class WizUi {
             i++;
             let step = new Step();
             step.title = $('#title').val();
-            let recipientsSelect = $('#recipientEmailsWizSelect_' + i).find(`[data-es-check-cert='true']`).prevObject[0];
+            let recipientsSelect = $('#recipientEmails-' + i).find(`[data-es-check-cert='true']`).prevObject[0];
             if(!recipientsSelect) return;
             let recipientsEmails = recipientsSelect.slim.getSelected();
             recipientsEmails.forEach(function (email) {
