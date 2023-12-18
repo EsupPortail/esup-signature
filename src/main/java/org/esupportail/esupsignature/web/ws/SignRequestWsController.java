@@ -97,7 +97,7 @@ public class SignRequestWsController {
                 if(json) {
                     return ResponseEntity.ok(signRequestIds);
                 } else {
-                    return ResponseEntity.ok(String.join(",", signRequestIds));
+                    return ResponseEntity.ok(org.apache.commons.lang.StringUtils.join(signRequestIds, ","));
                 }
             } catch (EsupSignatureException e) {
                 logger.error(e.getMessage(), e);
