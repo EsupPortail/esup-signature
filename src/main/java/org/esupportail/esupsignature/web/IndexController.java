@@ -27,6 +27,7 @@ import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,6 +101,9 @@ public class IndexController {
 						model.addAttribute("redirect", defaultSavedRequest.getRequestURL() + "?" + defaultSavedRequest.getQueryString());
 					} else {
 						model.addAttribute("redirect", defaultSavedRequest.getRequestURL());
+					}
+					if(!defaultSavedRequest.getRequestURL().contains("/casentry") && securityServices.size() == 1 && securityServices.get(0) instanceof CasSecurityServiceImpl) {
+						return "redirect:/login/casentry?redirect=" + defaultSavedRequest.getRequestURL();
 					}
 				}
 				return "signin";
