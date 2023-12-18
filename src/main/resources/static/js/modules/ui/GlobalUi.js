@@ -110,7 +110,9 @@ export class GlobalUi {
             wizUi.wizardWorkflowStart();
         });
 
-        $("#send-form-button").on('click', e => this.sendForm(e));
+        $(".send-form-button").each(function(e){
+           $(this).on('click', e => self.sendForm(e));
+        });
 
         $(".start-wizard-workflow-button").each(function() {
             let menuToggle = $(this).children('button').first();
