@@ -86,7 +86,7 @@ public class WorkflowWsController {
             if(json) {
                 return ResponseEntity.ok(signRequestIds);
             } else {
-                return ResponseEntity.ok(String.join(",", signRequestIds.toString()));
+                return ResponseEntity.ok(org.apache.commons.lang.StringUtils.join(signRequestIds, ","));
             }
         } catch (EsupSignatureRuntimeException e) {
             logger.error(e.getMessage(), e);
