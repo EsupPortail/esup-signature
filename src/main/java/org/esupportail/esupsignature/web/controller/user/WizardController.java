@@ -113,7 +113,7 @@ public class WizardController {
             workflow = workflowService.getById(workflowId);
             name = workflow.getName();
         }
-        SignBook signBook = signBookService.createSignBook("", workflow, name, userEppn, true);
+        SignBook signBook = signBookService.createSignBook("", workflow, name, userEppn, false);
         return ResponseEntity.ok().body(signBook.getId());
     }
 
@@ -124,9 +124,11 @@ public class WizardController {
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
                        @RequestParam(value = "forceAllSign", required = false) Boolean forceAllSign,
                        @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
-                       @RequestParam(value = "comment", required = false) String comment,
+                                         @RequestParam(value = "title", required = false) String title,
+                                         @RequestParam(value = "comment", required = false) String comment,
                        Model model) {
         SignBook signBook = signBookService.getById(signBookId);
+        signBook.setSubject(title);
         signBookService.finishSignBookUpload(signBookId, userEppn);
         signBook.setDescription(comment);
         signBook.setForceAllDocsSign(forceAllSign);
