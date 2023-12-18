@@ -130,7 +130,7 @@ public class RecipientService {
         return workflowStepDtos;
     }
 
-    public List<WorkflowStepDto> convertRecipientJsonStringToRecipientWsDto(String recipientsJsonString) {
+    public List<WorkflowStepDto> convertRecipientJsonStringToWorkflowStepDtos(String recipientsJsonString) {
         try {
             return Arrays.asList(objectMapper.readValue(recipientsJsonString, WorkflowStepDto[].class));
         } catch (JsonProcessingException e) {

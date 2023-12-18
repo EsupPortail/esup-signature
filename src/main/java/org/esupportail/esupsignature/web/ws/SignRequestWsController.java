@@ -88,7 +88,7 @@ public class SignRequestWsController {
                 workflowStepDto.setRecipientsCCEmails(recipientsCCEmails);
             });
         } else {
-            workflowStepDtos = recipientService.convertRecipientJsonStringToRecipientWsDto(stepsJsonString);
+            workflowStepDtos = recipientService.convertRecipientJsonStringToWorkflowStepDtos(stepsJsonString);
         }
         if(workflowStepDtos != null) {
             try {

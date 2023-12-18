@@ -29,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -230,8 +231,8 @@ public class WorkflowAdminController {
 	public String addStepRecipient(@ModelAttribute("authUserEppn") String authUserEppn,
 								   @PathVariable("id") Long id,
 								   @PathVariable("workflowStepId") Long workflowStepId,
-								   @RequestParam WorkflowStepDto step, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
-		WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, step.getRecipients());
+								   @RequestParam String recipientsEmails, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
+		WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientService.convertRecipientEmailsToRecipientDto(Collections.singletonList(recipientsEmails)));
 		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Participant ajouté"));
 		return "redirect:/admin/workflows/steps/" + id + "#" + workflowStep.getId();
 	}

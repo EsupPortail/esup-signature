@@ -58,7 +58,7 @@
                             <span th:text="'Merci de saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span>
                             <span th:if="${step.maxRecipients < 99}" th:text="'(maximum ' + ${step.maxRecipients} + ')'" ></span>
                         </label>
-                        <select th:data-es-max-recipient="${step.maxRecipients}" th:id="'recipientEmailsWizSelect_' + ${iterator.index + 1}" multiple="multiple" name="recipientEmails" required="required">
+                        <select th:data-es-max-recipient="${step.maxRecipients}" th:id="'recipientEmails-' + ${iterator.index + 1}" multiple="multiple" name="recipientEmails" required="required">
                             <option data-placeholder="true"></option>
                             <th:block th:each="user : ${step.users}">
                                 <option th:if="${user.email != null}" selected="selected"
@@ -70,7 +70,7 @@
                             Les signataires sont pré-sélectionnés en fonction de vos précédentes saisies.
                         </p>
                     </div>
-                    <div th:id="'tempUsers-recipientEmailsWizSelect_' + ${iterator.index + 1}"></div>
+                    <div th:id="'tempUsers-recipientEmails-' + ${iterator.index + 1}"></div>
                     </li>
                 </div>
             </th:block>

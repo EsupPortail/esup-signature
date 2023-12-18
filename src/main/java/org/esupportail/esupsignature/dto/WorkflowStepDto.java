@@ -13,7 +13,7 @@ public class WorkflowStepDto {
 
 	private Long workflowId;
 
-	private Integer stepNumber;
+	private Integer stepNumber = 1;
 
 	private String description;
 

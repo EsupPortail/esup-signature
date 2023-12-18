@@ -219,7 +219,6 @@ public class GlobalWsSecureController {
         signBookService.deleteDefinitive(id, authUserEppn);
     }
 
-
     @DeleteMapping(value = "/silent-delete-workflow/{id}", produces = "text/html")
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @ResponseBody

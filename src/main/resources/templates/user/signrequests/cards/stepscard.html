@@ -56,7 +56,7 @@
                                     <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
                                         <tr>
                                             <td th:title="${recipient.user.email}">
-                                                <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                                <span style="word-break: break-all" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
                                                 <br/>
                                                 <small th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" th:text="'Le ' + ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}"></small>
                                             </td>

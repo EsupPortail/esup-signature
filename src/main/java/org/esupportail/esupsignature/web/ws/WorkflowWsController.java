@@ -75,7 +75,7 @@ public class WorkflowWsController {
         if(recipientsJsonString == null && recipientEmails != null) {
             steps = recipientService.convertRecipientEmailsToStep(recipientEmails);
         } else {
-            steps = recipientService.convertRecipientJsonStringToRecipientWsDto(recipientsJsonString);
+            steps = recipientService.convertRecipientJsonStringToWorkflowStepDtos(recipientsJsonString);
         }
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
         if (signRequestParamsJsonString != null) {
