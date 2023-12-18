@@ -171,7 +171,7 @@ export class GlobalUi {
             let step = new Step();
             step.stepNumber=i;
             step.title = $('#title').val();
-            let recipientsSelect = $('#recipientEmails-' + i).find(`[data-es-check-cert='true']`).prevObject[0];
+            let recipientsSelect = $('#recipientEmails-' + formId + '-' + i).find(`[data-es-check-cert='true']`).prevObject[0];
             if(!recipientsSelect) return;
             let recipientsEmails = recipientsSelect.slim.getSelected();
             recipientsEmails.forEach(function (email) {
