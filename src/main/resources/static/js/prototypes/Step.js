@@ -1,17 +1,19 @@
 export class Step {
 
-    constructor() {
-        this.title;
-        this.workflowId;
-        this.stepNumber;
-        this.allSignToComplete;
-        this.multiSign;
-        this.autoSign;
-        this.signType;
-        this.forceAllSign;
-        this.userSignFirst;
-        this.recipientsCCEmails;
-        this.changeable;
+    constructor(step) {
+        this.title = "";
+        this.comment = "";
+        this.workflowId = "";
+        this.stepNumber = "";
+        this.allSignToComplete = false;
+        this.multiSign = true;
+        this.autoSign = false;
+        this.signType = "pdfImageStamp";
+        this.forceAllSign = false;
+        this.userSignFirst = false;
+        this.changeable = false;
         this.recipients = [];
+        this.recipientsCCEmails = [];
+        Object.assign(this, step);
     }
 }

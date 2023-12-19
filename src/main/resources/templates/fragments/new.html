@@ -100,10 +100,11 @@
                     <h5 class="newToggled d-none">Formulaires</h5>
                     <div class="d-inline-block" id="newForm">
                         <th:block th:each="form : ${forms}">
-                            <a role="button" class="btn btn-material btn-light text-center pt-3 me-2 overflow-hidden p-0 form-button"
+                            <a role="button" class="btn btn-material btn-light text-center pt-3 me-2 overflow-hidden p-0 form-button start-form-button"
                                 style="width: 120px; height: 170px;"
                                 th:title="${form.title}"
-                                data-bs-toggle="modal" th:data-bs-target="'#sendModal_' + ${form.id}" >
+                                th:data-es-form-id="${form.id}"
+                                data-bs-toggle="modal" data-bs-target="#wiz-start-form-modal" >
                                 <div class="crop">
                                     <i class="fa-solid fa-file-alt fa-3x file-alt-color"></i>
 <!--                                    <img th:src="'/user/datas/forms/' + ${form.id} + '/get-image/'" height="150px"/>-->

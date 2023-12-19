@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -111,14 +110,14 @@ public class LiveWorkflowStepService {
     }
 
     @Transactional
-    public void addNewStepToSignBook(Long signBookId, SignType signType, Boolean allSignToComplete, WorkflowStepDto step, String authUserEppn) {
+    public void addNewStepToSignBook(Long signBookId, SignType signType, Boolean allSignToComplete, List<WorkflowStepDto> steps, String authUserEppn) {
         SignBook signBook = signBookRepository.findById(signBookId).get();
         logger.info("add new workflow step to signBook " + signBook.getSubject() + " - " + signBook.getId());
-        step.setAllSignToComplete(allSignToComplete);
-        step.setSignType(signType);
-        LiveWorkflowStep liveWorkflowStep = createLiveWorkflowStep(signBook, null, step);
+        steps.get(0).setAllSignToComplete(allSignToComplete);
+        steps.get(0).setSignType(signType);
+        LiveWorkflowStep liveWorkflowStep = createLiveWorkflowStep(signBook, null, steps.get(0));
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
-        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(step));
+        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), steps);
     }
 
     public void delete(LiveWorkflowStep liveWorkflowStep) {

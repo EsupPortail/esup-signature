@@ -164,7 +164,7 @@ export default class SelectUser {
                 recipientEmails = new Array(this.slimSelect.getSelected());
             }
             if(!this.selectField.attr('id').includes("CC")) {
-                $('[id^="allSignToComplete-"]').each(function () {
+                $('[id^="allSignToComplete-div"]').each(function () {
                     if (recipientEmails.length > 1) {
                         $(this).show();
                     } else {

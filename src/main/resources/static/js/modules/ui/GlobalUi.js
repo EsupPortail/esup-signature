@@ -110,8 +110,9 @@ export class GlobalUi {
             wizUi.wizardWorkflowStart();
         });
 
-        $(".send-form-button").each(function(e){
-           $(this).on('click', e => self.sendForm(e));
+        $(".start-form-button").on('click', function() {
+            let wizUi = new WizUi("", $("#wiz-start-form-div"), self.csrf, self.maxSize);
+            wizUi.wizardFormStart($(this).attr("data-es-form-id"));
         });
 
         $(".start-wizard-workflow-button").each(function() {
@@ -159,52 +160,6 @@ export class GlobalUi {
             e.stopPropagation();
         });
         this.bindKeyboardKeys();
-    }
-
-    sendForm(e) {
-        let formId = $(e.target).attr('data-es-form-id');
-        let spinner = $("#send-form-spinner-" + formId);
-        spinner.removeClass("d-none");
-        let self = this;
-        let steps = [];
-        let i = 0;
-        $("div[id^='step-form-']").each(function() {
-            i++;
-            let step = new Step();
-            step.stepNumber=i;
-            step.title = $('#title').val();
-            let recipientsSelect = $('#recipientEmails-' + formId + '-' + i).find(`[data-es-check-cert='true']`).prevObject[0];
-            if(!recipientsSelect) return;
-            let recipientsEmails = recipientsSelect.slim.getSelected();
-            recipientsEmails.forEach(function (email) {
-                let externalUserInfos = new ExternalUserInfos();
-                externalUserInfos.email = email;
-                let extInfos = $("div[id='externalUserInfos_" + email + "']");
-                externalUserInfos.step = i;
-                externalUserInfos.name = extInfos.find("#names").val();
-                externalUserInfos.firstName = extInfos.find("#firstnames").val();
-                externalUserInfos.phone = extInfos.find("#phones").val();
-                externalUserInfos.forceSms = extInfos.find("#forcesmses").val() === "1";
-                step.recipients.push(externalUserInfos);
-            });
-            step.allSignToComplete = $('#allSignToComplete').is(':checked');
-            step.changeable = false;
-            step.autoSign = false;
-            step.signType = $('#signTypeNew').val();
-            steps.push(step);
-        });
-        $.post({
-            url: '/user/datas/send-form/' + formId + '?' + self.csrf.parameterName + '=' + self.csrf.token + '&pending=' + self.pending,
-            contentType: "application/json",
-            data: JSON.stringify(steps),
-            success: function(e) {
-                location.href = "/user/signbooks/" + e;
-            },
-            error: function(e) {
-                $("#send-form-submit").click();
-                spinner.addClass("d-none");
-            }
-        });
     }
 
     initTooltips() {
@@ -450,20 +405,20 @@ export class GlobalUi {
         this.breadcrumb.addClass('breadcrumb-nav-full');
     }
 
-    checkSelectUser() {
-        let csrf = this.csrf;
-        $("select").each(function () {
-            if($(this).hasClass("select-users")) {
-                let selectId = $(this).attr('id');
-                console.info("auto enable select-user for : " + selectId);
-                let limit = null;
-                if ($(this).attr("maxLength") != null) {
-                    limit = parseInt($(this).attr("maxLength"));
-                }
-                new SelectUser(selectId, limit, $(this).attr('data-signrequest-id'), csrf);
-            }
-        });
-    }
+    // checkSelectUser() {
+    //     let csrf = this.csrf;
+    //     $("select").each(function () {
+    //         if($(this).hasClass("select-users")) {
+    //             let selectId = $(this).attr('id');
+    //             console.info("auto enable select-user for : " + selectId);
+    //             let limit = null;
+    //             if ($(this).attr("maxLength") != null) {
+    //                 limit = parseInt($(this).attr("maxLength"));
+    //             }
+    //             new SelectUser(selectId, limit, $(this).attr('data-signrequest-id'), csrf);
+    //         }
+    //     });
+    // }
 
     checkSlimSelect() {
         let self = this;
@@ -549,7 +504,7 @@ export class GlobalUi {
     onDocumentLoad() {
         console.info("global on load");
         $.fn.modal.Constructor.prototype.enforceFocus = function () {};
-        this.checkSelectUser();
+        // this.checkSelectUser();
         this.checkSlimSelect();
         this.enableSummerNote();
         this.adjustUi();

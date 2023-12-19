@@ -191,16 +191,6 @@ public class GlobalWsSecureController {
 
     @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
     @ResponseBody
-    @PostMapping(value = "/finish-signbook/{signBookId}")
-    public ResponseEntity<Long> initSignBook(@PathVariable("signBookId") Long signBookId, HttpSession session, @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn) {
-        logger.info("start add documents");
-        signBookService.finishSignBookUpload(signBookId, userEppn);
-        session.removeAttribute("signBookId");
-        return ResponseEntity.ok().body(signBookId);
-    }
-
-    @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
-    @ResponseBody
     @PostMapping(value = "/add-docs/{signBookId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> addDocumentToNewSignRequest(@PathVariable("signBookId") Long signBookId,  @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents");

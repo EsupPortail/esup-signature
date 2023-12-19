@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import jakarta.annotation.Resource;
 import jakarta.mail.MessagingException;
-import org.esupportail.esupsignature.dto.RecipientWsDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.SignBook;
@@ -32,6 +31,9 @@ public class WizardController {
 
     @Resource
     private WorkflowService workflowService;
+
+    @Resource
+    private FormService formService;
 
     @Resource
     private SignBookService signBookService;
@@ -69,6 +71,13 @@ public class WizardController {
     }
 
     @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
+    @GetMapping(value = "/wiz-start-form/{formId}", produces = "text/html")
+    public String wizStartForm(@PathVariable("formId") Long formId, @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) {
+        model.addAttribute("form", formService.getById(formId));
+        return "user/wizard/wiz-start-form";
+    }
+
+    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
     @ResponseBody
     @PostMapping(value = "/wiz-create-sign/{type}")
     public ResponseEntity<Long> wizCreateSign(@PathVariable String type, @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn) {
@@ -92,11 +101,11 @@ public class WizardController {
     @PostMapping(value = "/update-fast-sign/{signBookId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateFastSign(@PathVariable("signBookId") Long signBookId,
                                          @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
-                                         @RequestBody WorkflowStepDto step,
+                                         @RequestBody List<WorkflowStepDto> steps,
                                          @RequestParam(value = "pending", required = false) Boolean pending) throws EsupSignatureRuntimeException {
         if(pending == null) pending = false;
         try {
-            signBookService.startFastSignBook(signBookId, pending, step.getComment(), step, userEppn, authUserEppn, false);
+            signBookService.startFastSignBook(signBookId, pending, steps, userEppn, authUserEppn, false);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
@@ -118,21 +127,14 @@ public class WizardController {
     }
 
     @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
-    @GetMapping(value = "/wiz-new-step/{signBookId}")
+    @PostMapping(value = "/wiz-new-step/{signBookId}")
     public String wizWorkflowSignNewStep(@ModelAttribute("userEppn") String userEppn,
                        @PathVariable("signBookId") Long signBookId,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
-                       @RequestParam(value = "forceAllSign", required = false) Boolean forceAllSign,
-                       @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
-                                         @RequestParam(value = "title", required = false) String title,
-                                         @RequestParam(value = "comment", required = false) String comment,
+                       @RequestBody List<WorkflowStepDto> steps,
                        Model model) {
-        SignBook signBook = signBookService.getById(signBookId);
-        signBook.setSubject(title);
+        SignBook signBook = signBookService.updateSignBookWithStep(signBookId, steps);
         signBookService.finishSignBookUpload(signBookId, userEppn);
-        signBook.setDescription(comment);
-        signBook.setForceAllDocsSign(forceAllSign);
-        signBookService.addViewers(signBookId, recipientsCCEmails);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             model.addAttribute("signBook", signBook);
             if (workflowId != null && workflowId != 0) {
@@ -146,23 +148,20 @@ public class WizardController {
         return "user/wizard/wiz-new-step";
     }
 
+
     @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
     @PostMapping(value = "/wiz-add-step-signbook/{signBookId}", produces = "text/html")
     public String wizWorkflowSignAddStep(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                        @PathVariable("signBookId") Long signBookId,
-                       @RequestParam(name="userSignFirst", required = false) Boolean userSignFirst,
                        @RequestParam(name="end", required = false) Boolean end,
                        @RequestParam(name="close", required = false) Boolean close,
                        @RequestParam(name="start", required = false) Boolean start,
-                       @RequestBody WorkflowStepDto step,
+                       @RequestBody List<WorkflowStepDto> steps,
                        Model model) throws EsupSignatureRuntimeException {
         SignBook signBook = signBookService.getById(signBookId);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
-            if(!step.getRecipients().isEmpty()) {
-                if (userSignFirst) {
-                    liveWorkflowStepService.addNewStepToSignBook(signBookId, null, false, new WorkflowStepDto(new RecipientWsDto(userService.getByEppn(authUserEppn).getEmail())), authUserEppn);
-                }
-                liveWorkflowStepService.addNewStepToSignBook(signBookId, step.getSignType(), step.getAllSignToComplete(), step, authUserEppn);
+            if(!steps.get(0).getRecipients().isEmpty()) {
+                signBookService.importWorkflowFromWorkflowStepDto(signBookId, steps, userEppn);
             } else {
                 end = true;
             }
@@ -201,11 +200,11 @@ public class WizardController {
     public String wizXWorkflow(@PathVariable("workflowId") Long workflowId,
                                @ModelAttribute("userEppn") String userEppn,
                                @RequestParam(name="end", required = false) Boolean end,
-                               @RequestBody WorkflowStepDto step,
+                               @RequestBody List<WorkflowStepDto> steps,
                                Model model) {
         User user = (User) model.getAttribute("user");
         try {
-            Workflow workflow = workflowService.addStepToWorkflow(workflowId, step.getSignType(), step.getAllSignToComplete(), step.getChangeable(), step, user);
+            Workflow workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0).getSignType(), steps.get(0).getAllSignToComplete(), steps.get(0).getChangeable(), steps.get(0), user);
             model.addAttribute("workflow", workflow);
             if(end != null && end) {
                 if(!workflow.getWorkflowSteps().isEmpty()) {

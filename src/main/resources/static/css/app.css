@@ -285,6 +285,10 @@ td {
     line-height: 38px;
 }
 
+.wiz-transition {
+    transition: height 1s;
+}
+
 .mini-menu {
     width:200px;
     right: 10px;

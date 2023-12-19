@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <div class="modal-header">
-    <h3 class="modal-title" th:text="${modalTile}"></h3>
+    <h3 class="modal-title" th:text="${modalTitle}"></h3>
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <div class="modal-body">
@@ -42,11 +42,11 @@
                     <input required th:id="'multipartFiles_' + ${workflow != null ? workflow.id : '0'}" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''">
                 </div>
             </div>
+            <div id="forceAllSign" class="form-check form-switch form-switch-md">
+                <input class="form-check-input" type="checkbox" name="forceAllSign">
+                <label class="form-check-label">Forcer la signature de tous les documents</label>
+            </div>
             <div class="form-group mb-3">
-                <div class="form-check form-switch form-switch-md d-none">
-                    <input class="form-check-input" type="checkbox" name="forceAllSign" id="forceAllSign">
-                    <label for="forceAllSign" class="form-check-label">Forcer la signature de tous les documents</label>
-                </div>
                 <div>
                     <label class="form-label" for="comment">Commentaire (facultatif)</label>
                     <textarea type="text" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."  onfocus="this.placeholder = ''" id="comment" name="comment" class="form-control"></textarea>
