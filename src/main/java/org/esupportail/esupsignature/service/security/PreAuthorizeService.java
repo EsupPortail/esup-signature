@@ -96,12 +96,7 @@ public class PreAuthorizeService {
 
     public boolean signBookManage(Long id, String userEppn) {
         if(userEppn != null) {
-            SignBook signBook = signBookService.getById(id);
-            if (signBook != null) {
-                return signBookService.checkUserManageRights(userEppn, signBook);
-            } else {
-                return true;
-            }
+            return signBookService.checkUserManageRights(userEppn, id);
         }
         return false;
     }

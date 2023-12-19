@@ -600,7 +600,9 @@ public class SignBookService {
         }
     }
 
-    public boolean checkUserManageRights(String userEppn, SignBook signBook) {
+    @Transactional
+    public boolean checkUserManageRights(String userEppn, Long signBookId) {
+        SignBook signBook = getById(signBookId);
         if(signBook.getSignRequests().size() == 1) {
             User user = userService.getByEppn(userEppn);
             Data data = dataService.getBySignBook(signBook);
@@ -1394,20 +1396,6 @@ public class SignBookService {
         }
     }
 
-    public SignRequest getNextSignRequest(Long signRequestId, String userEppn) {
-        SignRequest currentSignRequest = signRequestService.getById(signRequestId);
-        Optional<SignRequest> inSameSignBookSignRequest = currentSignRequest.getParentSignBook().getSignRequests().stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.equals(currentSignRequest)).findAny();
-        if(inSameSignBookSignRequest.isPresent()) {
-            return inSameSignBookSignRequest.get();
-        }
-        List<SignRequest> signRequests = signRequestService.getToSignRequests(userEppn).stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getId().equals(signRequestId)).sorted(Comparator.comparingLong(SignRequest::getId)).collect(Collectors.toList());
-        if(!signRequests.isEmpty()) {
-            return signRequests.get(0);
-        } else {
-            return null;
-        }
-    }
-
     @Transactional
     public void getToSignFileReportResponse(Long signRequestId, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
         SignRequest signRequest = signRequestService.getById(signRequestId);
@@ -1465,7 +1453,7 @@ public class SignBookService {
     @Transactional
     public void getMultipleSignedDocuments(List<Long> ids, HttpServletResponse response) throws IOException, EsupSignatureFsException {
         response.setContentType("application/zip; charset=utf-8");
-        response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode("alldocs", StandardCharsets.UTF_8.toString()) + ".zip");
+        response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode("alldocs", StandardCharsets.UTF_8) + ".zip");
         List<FsFile> fsFiles = new ArrayList<>();
         for(Long id : ids) {
             SignBook signBook = getById(id);
@@ -1493,7 +1481,7 @@ public class SignBookService {
     @Transactional
     public void getMultipleSignedDocumentsWithReport(List<Long> ids, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
         httpServletResponse.setContentType("application/zip; charset=utf-8");
-        httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode("alldocs", StandardCharsets.UTF_8.toString()) + ".zip");
+        httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode("alldocs", StandardCharsets.UTF_8) + ".zip");
         Map<byte[], String> documents = new HashMap<>();
         for(Long id : ids) {
             SignBook signBook = getById(id);

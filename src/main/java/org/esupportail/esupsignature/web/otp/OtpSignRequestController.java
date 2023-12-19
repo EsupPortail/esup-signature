@@ -113,7 +113,7 @@ public class OtpSignRequestController {
         }
         model.addAttribute("attachments", signRequestService.getAttachments(id));
         model.addAttribute("nextSignBook", signBookService.getNextSignBook(signRequest.getId(), userEppn));
-        model.addAttribute("nextSignRequest", signBookService.getNextSignRequest(signRequest.getId(), userEppn));
+        model.addAttribute("nextSignRequest", signRequestService.getNextSignRequest(signRequest.getId(), userEppn));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
         model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest));
