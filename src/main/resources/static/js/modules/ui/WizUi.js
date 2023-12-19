@@ -280,6 +280,9 @@ export class WizUi {
                 } else {
                     location.href = "/user";
                 }
+            },
+            error: function() {
+                $("#save-workflow-submit").click();
             }
         });
     }

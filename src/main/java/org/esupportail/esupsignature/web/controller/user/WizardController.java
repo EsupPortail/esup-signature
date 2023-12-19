@@ -39,12 +39,6 @@ public class WizardController {
     private SignBookService signBookService;
 
     @Resource
-    private LiveWorkflowStepService liveWorkflowStepService;
-
-    @Resource
-    private UserService userService;
-
-    @Resource
     private SignRequestService signRequestService;
 
     @Resource
@@ -161,7 +155,10 @@ public class WizardController {
         SignBook signBook = signBookService.getById(signBookId);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             if(!steps.get(0).getRecipients().isEmpty()) {
-                signBookService.importWorkflowFromWorkflowStepDto(signBookId, steps, userEppn);
+                if(steps.get(0).getUserSignFirst() != null && steps.get(0).getUserSignFirst()) {
+                    signBookService.addUserSignFirstStep(signBookId, userEppn);
+                }
+                signBookService.addNewStepToSignBook(signBookId, steps, authUserEppn);
             } else {
                 end = true;
             }

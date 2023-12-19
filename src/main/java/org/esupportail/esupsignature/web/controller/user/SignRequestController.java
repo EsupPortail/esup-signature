@@ -53,6 +53,9 @@ public class SignRequestController {
     @Resource
     private SignWithService signWithService;
 
+    @Resource
+    private DataService dataService;
+
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
         return "signrequests";
@@ -193,7 +196,7 @@ public class SignRequestController {
             userService.setUiParams(authUserEppn, UiParams.workflowVisaAlert, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId().toString() + ",");
 
         }
-        Data data = signBookService.getBySignBook(signRequest.getParentSignBook());
+        Data data = dataService.getBySignBook(signRequest.getParentSignBook());
         if(data != null && data.getForm() != null) {
             model.addAttribute("form", data.getForm());
         }

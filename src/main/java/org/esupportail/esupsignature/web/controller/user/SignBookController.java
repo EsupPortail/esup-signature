@@ -330,7 +330,10 @@ public class SignBookController {
                                 @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
                                 @RequestParam(name = "signType") SignType signType,
                                 @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureRuntimeException {
-        signBookService.addStep(id, recipientService.convertRecipientEmailsToStep(recipientsEmails).get(0) , signType, allSignToComplete, authUserEppn);
+        WorkflowStepDto step = recipientService.convertRecipientEmailsToStep(recipientsEmails).get(0);
+        step.setSignType(signType);
+        step.setAllSignToComplete(allSignToComplete);
+        signBookService.addLiveStep(id, step, null, authUserEppn);
         return "redirect:/user/signrequests/" + id + "?form";
     }
 
