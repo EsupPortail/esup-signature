@@ -81,7 +81,7 @@ export class FormFieldsUi {
             let fd = new FormData($(this)[0]);
             console.log(fd.get("_csrf"));
             $.ajax({
-                type: "POST",
+                type: "PUT",
                 url: "/" + self.domain + "/forms/" + self.formId + "/fields/" + $(this).attr('id') + "/update?_csrf=" + fd.get("_csrf"),
                 data: fd,
                 processData: false,
