@@ -9,7 +9,10 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.FormService;
+import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -200,18 +203,14 @@ public class WizardController {
                                @RequestBody List<WorkflowStepDto> steps,
                                Model model) {
         User user = (User) model.getAttribute("user");
-        try {
-            Workflow workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0).getSignType(), steps.get(0).getAllSignToComplete(), steps.get(0).getChangeable(), steps.get(0), user);
-            model.addAttribute("workflow", workflow);
-            if(end != null && end) {
-                if(!workflow.getWorkflowSteps().isEmpty()) {
-                    return "user/wizard/wiz-save-workflow";
-                }else {
-                    return "user/wizard/wiz-end";
-                }
+        Workflow workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0).getSignType(), steps.get(0).getAllSignToComplete(), steps.get(0).getChangeable(), steps.get(0), user);
+        model.addAttribute("workflow", workflow);
+        if(end != null && end) {
+            if(!workflow.getWorkflowSteps().isEmpty()) {
+                return "user/wizard/wiz-save-workflow";
+            }else {
+                return "user/wizard/wiz-end";
             }
-        } catch (EsupSignatureRuntimeException e) {
-            logger.warn(e.getMessage());
         }
         return "user/wizard/wiz-new-workflow-step";
     }

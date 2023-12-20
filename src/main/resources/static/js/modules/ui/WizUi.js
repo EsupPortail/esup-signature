@@ -196,9 +196,6 @@ export class WizUi {
         console.info("Last workflow step");
         let self = this;
         this.div.html(html);
-        if($("#recipientsEmails-1").length) {
-            new SelectUser("recipientsEmails-1", null, null, this.csrf);
-        }
         $('[id^="recipientsEmails-"]').each(function (){
             let maxRecipient = $(this).attr('data-es-max-recipient');
             new SelectUser($(this).attr('id'), maxRecipient, null, self.csrf);
@@ -234,14 +231,13 @@ export class WizUi {
             mode = "signbook";
             elementId = this.newSignBookId;
         } else if (this.newWorkflowId !== "") {
-            elementId = this.workflowId;
+            elementId = this.newWorkflowId;
         }
         let successCallback = function(html) {
             self.workflowSignNextStepDisplay(html)
         };
         let errorCallback = function (data) {
-            console.error(data.responseJSON.message);
-            bootbox.alert("Une erreur s'est produite. Merci de vérifier votre saisie", function (){ });
+            $("#wiz-step-form-submit").click();
         };
         let url = '/user/wizard/wiz-add-step-' + mode +  '/' + elementId + '?end=' + self.end + '&start=' + self.start + '&close=' + self.close;
         this.sendSteps(url, $("#wiz-step-form"), successCallback, errorCallback);

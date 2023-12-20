@@ -199,6 +199,8 @@ public class WorkflowService {
                 WorkflowStep workflowStep = workflowStepService.createWorkflowStep("", allSignToComplete, signType, changeable, step.getRecipients().toArray(RecipientWsDto[]::new));
                 workflow.getWorkflowSteps().add(workflowStep);
                 userPropertieService.createUserPropertieFromMails(user, Collections.singletonList(step));
+            } else {
+                throw new EsupSignatureRuntimeException("recipient must not be empty");
             }
         }
         return workflow;

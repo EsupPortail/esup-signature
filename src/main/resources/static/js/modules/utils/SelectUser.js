@@ -5,7 +5,6 @@ export default class SelectUser {
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.slimSelect = null;
         this.selectField = $("#" + selectName);
-        this.selectField.attr("stepSelection", "true");
         this.checkList = this.selectField.attr("data-es-check-list");
         this.signRequestId = signRequestId;
         this.csrf = csrf;

@@ -73,7 +73,7 @@
                                         th:data-bs-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-bs-toggle="collapse">
                                     <i class="fa-solid fa-ellipsis-h" style="float: right;"></i>
                                 </button>
-                                <div style="margin-top: -60px;" data-bs-backdrop="false" class="collapse rounded-0 border-0" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
+                                <div style="margin-top: -62px;" data-bs-backdrop="false" class="collapse rounded-0 border-0" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
                                     <div class="inline-flex">
                                         <form th:id="${'deleteWorkflow_' + workflow.id}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'">
                                         </form>
