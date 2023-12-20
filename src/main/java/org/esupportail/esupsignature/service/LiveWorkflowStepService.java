@@ -5,19 +5,15 @@ import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dto.RecipientWsDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
-import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,7 +21,7 @@ import java.util.Optional;
 @Service
 public class LiveWorkflowStepService {
 
-    private static final Logger logger = LoggerFactory.getLogger(LiveWorkflowService.class);
+    private static final Logger logger = LoggerFactory.getLogger(LiveWorkflowStepService.class);
 
     @Resource
     private LiveWorkflowStepRepository liveWorkflowStepRepository;
@@ -38,12 +34,6 @@ public class LiveWorkflowStepService {
 
     @Resource
     private SignTypeService signTypeService;
-
-    @Resource
-    private UserPropertieService userPropertieService;
-
-    @Resource
-    private SignBookRepository signBookRepository;
 
     @Resource
     private SignService signService;
@@ -75,14 +65,14 @@ public class LiveWorkflowStepService {
         for (String recipientEmail : recipientsEmails) {
             User recipientUser = userService.getUserByEmail(recipientEmail);
             if(recipientUser != null && recipientUser.getUserType().equals(UserType.external) && recipients != null) {
-                Optional<RecipientWsDto> optionalRecipientWsDto = recipients.stream().filter(jsonExternalUserInfo1 -> jsonExternalUserInfo1.getEmail().equals(recipientEmail)).findFirst();
+                Optional<RecipientWsDto> optionalRecipientWsDto = recipients.stream().filter(recipientWsDto1 -> recipientWsDto1.getEmail().equals(recipientEmail)).findFirst();
                 if(optionalRecipientWsDto.isPresent()) {
-                    RecipientWsDto jsonExternalUserInfo = optionalRecipientWsDto.get();
-                    recipientUser.setName(jsonExternalUserInfo.getName());
-                    recipientUser.setFirstname(jsonExternalUserInfo.getFirstName());
-                    if(StringUtils.hasText(jsonExternalUserInfo.getPhone())) {
-                        recipientUser.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(jsonExternalUserInfo.getPhone()));
-                        recipientUser.setForceSms(jsonExternalUserInfo.getForceSms() != null && jsonExternalUserInfo.getForceSms());
+                    RecipientWsDto recipientWsDto = optionalRecipientWsDto.get();
+                    recipientUser.setName(recipientWsDto.getName());
+                    recipientUser.setFirstname(recipientWsDto.getFirstName());
+                    if(StringUtils.hasText(recipientWsDto.getPhone())) {
+                        recipientUser.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(recipientWsDto.getPhone()));
+                        recipientUser.setForceSms(recipientWsDto.getForceSms() != null && recipientWsDto.getForceSms());
                     }
                 }
             }
@@ -108,17 +98,6 @@ public class LiveWorkflowStepService {
         if(liveWorkflowStep.getRecipients().stream().noneMatch(r -> r.getUser().getEmail().equals(recipient.getUser().getEmail()))) {
             liveWorkflowStep.getRecipients().add(recipient);
         }
-    }
-
-    @Transactional
-    public void addNewStepToSignBook(Long signBookId, SignType signType, Boolean allSignToComplete, WorkflowStepDto step, String authUserEppn) {
-        SignBook signBook = signBookRepository.findById(signBookId).get();
-        logger.info("add new workflow step to signBook " + signBook.getSubject() + " - " + signBook.getId());
-        step.setAllSignToComplete(allSignToComplete);
-        step.setSignType(signType);
-        LiveWorkflowStep liveWorkflowStep = createLiveWorkflowStep(signBook, null, step);
-        signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
-        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(step));
     }
 
     public void delete(LiveWorkflowStep liveWorkflowStep) {

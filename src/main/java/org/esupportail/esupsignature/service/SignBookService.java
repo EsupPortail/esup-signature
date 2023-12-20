@@ -26,6 +26,7 @@ import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryServic
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
+import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.StepStatus;
@@ -318,7 +319,7 @@ public class SignBookService {
         workflowStepDto.setAllSignToComplete(false);
         workflowStepDto.setSignType(null);
         recipientService.addRecipientInStep(workflowStepDto, user.getEmail());
-        workflowService.importWorkflowFromWorkflowStepDto(signBook, Collections.singletonList(workflowStepDto), userEppn);
+        importWorkflowFromWorkflowStepDto(signBookId, Collections.singletonList(workflowStepDto), userEppn);
         signBook.setStatus(SignRequestStatus.draft);
         pendingSignBook(signBookId, null, userEppn, userEppn, false, true);
     }
@@ -327,7 +328,7 @@ public class SignBookService {
     public void finishSignBookUpload(Long signBookId, String userEppn) {
         User user = userService.getByEppn(userEppn);
         SignBook signBook = getById(signBookId);
-        if(signBook.getSubject().isEmpty()) {
+        if(!StringUtils.hasText(signBook.getSubject())) {
             signBook.setSubject(generateName(signBookId, null, user, false));
         }
         signBook.setStatus(SignRequestStatus.draft);
@@ -371,20 +372,20 @@ public class SignBookService {
     }
 
     @Transactional
-    public void startFastSignBook(Long id, Boolean pending, String comment, WorkflowStepDto step, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureRuntimeException {
+    public void startFastSignBook(Long id, Boolean pending, List<WorkflowStepDto> steps, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(id);
-        if(StringUtils.hasText(step.getTitle())) {
-            signBook.setSubject(step.getTitle());
+        if(StringUtils.hasText(steps.get(0).getTitle())) {
+            signBook.setSubject(steps.get(0).getTitle());
         }
-        signBook.setForceAllDocsSign(step.getAllSignToComplete());
-        sendSignBook(signBook, pending, comment, Collections.singletonList(step), userEppn, authUserEppn, forceSendEmail);
-        if(step.getRecipientsCCEmails() != null) {
-            addViewers(signBook.getId(), step.getRecipientsCCEmails());
+        signBook.setForceAllDocsSign(steps.get(0).getAllSignToComplete());
+        sendSignBook(signBook, pending, steps.get(0).getComment(), steps, userEppn, authUserEppn, forceSendEmail);
+        if(steps.get(0).getRecipientsCCEmails() != null) {
+            addViewers(signBook.getId(), steps.get(0).getRecipientsCCEmails());
         }
     }
 
     @Transactional
-    public void updateSignBook(Long id, String subject, String description, List<String> viewers) {
+    public SignBook updateSignBook(Long id, String subject, String description, List<String> viewers) {
         SignBook signBook = getById(id);
         if(StringUtils.hasText(subject)) {
             signBook.setSubject(subject);
@@ -393,6 +394,14 @@ public class SignBookService {
             signBook.setDescription(description);
         }
         addViewers(id, viewers);
+        return signBook;
+    }
+
+    @Transactional
+    public SignBook updateSignBookWithStep(Long signBookId, List<WorkflowStepDto> steps) {
+        SignBook signBook = updateSignBook(signBookId, steps.get(0).getTitle(), steps.get(0).getDescription(), steps.get(0).getRecipientsCCEmails());
+        signBook.setForceAllDocsSign(steps.get(0).getForceAllSign());
+        return signBook;
     }
 
     @Transactional
@@ -406,6 +415,114 @@ public class SignBookService {
                 signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetUri()));
             }
         }
+    }
+
+    public void importWorkflow(SignBook signBook, Workflow workflow, List<WorkflowStepDto> steps) {
+        logger.info("import workflow steps in signBook " + signBook.getSubject() + " - " + signBook.getId());
+        int i = 0;
+        for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
+            i++;
+            WorkflowStepDto step = new WorkflowStepDto();
+            int finalI = i;
+            Optional<WorkflowStepDto> optionalStep = steps.stream().filter(s -> s.getStepNumber() == finalI).findFirst();
+            if(optionalStep.isPresent()) step = optionalStep.get();
+            for (User user : workflowStep.getUsers()) {
+                if (user.equals(userService.getCreatorUser())) {
+                    user = signBook.getCreateBy();
+                }
+                recipientService.addRecipientInStep(step, user.getEmail());
+            }
+            step.setRepeatable(workflowStep.getRepeatable());
+            step.setRepeatableSignType(workflowStep.getRepeatableSignType());
+            step.setMultiSign(workflowStep.getMultiSign());
+            step.setAutoSign(workflowStep.getAutoSign());
+            step.setAllSignToComplete(workflowStep.getAllSignToComplete());
+            step.setSignType(workflowStep.getSignType());
+            LiveWorkflowStep newWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, workflowStep, step);
+            signBook.getLiveWorkflow().getLiveWorkflowSteps().add(newWorkflowStep);
+        }
+        if(!(workflow instanceof DefaultWorkflow)) {
+            signBook.getLiveWorkflow().setWorkflow(workflow);
+        }
+        dispatchSignRequestParams(signBook);
+    }
+
+    public void dispatchSignRequestParams(SignBook signBook) {
+        for(SignRequest signRequest : signBook.getSignRequests()) {
+            dispatchSignRequestParams(signRequest);
+        }
+    }
+
+    public void dispatchSignRequestParams(SignRequest signRequest) {
+        if(!signRequest.getSignRequestParams().isEmpty()) {
+            int i = 0;
+            for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
+                if (liveWorkflowStep.getWorkflowStep() != null) {
+                    WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
+                    if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
+                        if(!workflowStep.getSignRequestParams().isEmpty()) {
+                            for (SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
+                                for(SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
+                                    if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
+                                            && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
+                                            && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
+                                        liveWorkflowStep.getSignRequestParams().add(signRequestParams);
+                                    }
+                                }
+                            }
+                        } else {
+                            if(signRequest.getSignRequestParams().size() > i) {
+                                liveWorkflowStep.getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
+                            }
+                        }
+                    }
+                } else if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().allMatch(liveWorkflowStep1 -> liveWorkflowStep1.getSignRequestParams().isEmpty())){
+                    signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(0).getSignRequestParams().addAll(signRequest.getSignRequestParams());
+                }
+                i++;
+            }
+        } else {
+            for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
+                if(liveWorkflowStep.getWorkflowStep() != null) {
+                    WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
+                    liveWorkflowStep.getSignRequestParams().addAll(workflowStep.getSignRequestParams());
+                }
+            }
+        }
+    }
+
+    @Transactional
+    public void importWorkflowFromWorkflowStepDto(Long signBookId, List<WorkflowStepDto> steps, String userEppn) {
+        SignBook signBook = getById(signBookId);
+        logger.info("import workflow steps in signBook " + signBook.getSubject() + " - " + signBook.getId());
+        if(steps.get(0).getUserSignFirst() != null && steps.get(0).getUserSignFirst()) {
+            addUserSignFirstStep(signBookId, userEppn);
+        }
+        for (WorkflowStepDto step : steps) {
+            LiveWorkflowStep newWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, null, step);
+            signBook.getLiveWorkflow().getLiveWorkflowSteps().add(newWorkflowStep);
+        }
+        signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
+        dispatchSignRequestParams(signBook);
+    }
+
+    @Transactional
+    public void addUserSignFirstStep(Long signBookId, String userEppn) {
+        SignBook signBook = getById(signBookId);
+        User user = userService.getByEppn(userEppn);
+        WorkflowStepDto workflowStepDto = new WorkflowStepDto();
+        recipientService.addRecipientInStep(workflowStepDto, user.getEmail());
+        workflowStepDto.setSignType(SignType.pdfImageStamp);
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(signBook, null, workflowStepDto));
+    }
+
+    @Transactional
+    public void addNewStepToSignBook(Long signBookId, List<WorkflowStepDto> steps, String authUserEppn) {
+        SignBook signBook = signBookRepository.findById(signBookId).get();
+        logger.info("add new workflow step to signBook " + signBook.getSubject() + " - " + signBook.getId());
+        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, null, steps.get(0));
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
+        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), steps);
     }
 
     @Transactional
@@ -483,10 +600,12 @@ public class SignBookService {
         }
     }
 
-    public boolean checkUserManageRights(String userEppn, SignBook signBook) {
+    @Transactional
+    public boolean checkUserManageRights(String userEppn, Long signBookId) {
+        SignBook signBook = getById(signBookId);
         if(signBook.getSignRequests().size() == 1) {
             User user = userService.getByEppn(userEppn);
-            Data data = getBySignBook(signBook);
+            Data data = dataService.getBySignBook(signBook);
             if(data != null && data.getForm() != null && data.getForm().getWorkflow() != null && !data.getForm().getWorkflow().getManagers().isEmpty()) {
                 if (data.getForm().getWorkflow().getManagers().contains(user.getEmail())) {
                     return true;
@@ -592,14 +711,6 @@ public class SignBookService {
         }
     }
 
-    public Data getBySignRequest(SignRequest signRequest) {
-        return getBySignBook(signRequest.getParentSignBook());
-    }
-
-    public Data getBySignBook(SignBook signBook) {
-        return dataRepository.findBySignBook(signBook);
-    }
-
     public List<SignBook> getSharedSignBooks(String userEppn) {
         List<SignBook> sharedSignBook = new ArrayList<>();
         for(UserShare userShare : userShareService.getByToUsersEppnInAndShareTypesContains(Collections.singletonList(userEppn), ShareType.sign)) {
@@ -608,7 +719,7 @@ public class SignBookService {
             } else if(userShare.getForm() != null) {
                 List<SignRequest> signRequests = signRequestService.getToSignRequests(userShare.getUser().getEppn());
                 for (SignRequest signRequest : signRequests) {
-                    Data data = getBySignBook(signRequest.getParentSignBook());
+                    Data data = dataService.getBySignBook(signRequest.getParentSignBook());
                     if(data.getForm().equals(userShare.getForm())) {
                         sharedSignBook.add(signRequest.getParentSignBook());
                         break;
@@ -686,7 +797,7 @@ public class SignBookService {
         String fileName = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
         MultipartFile multipartFile = new DssMultipartFile(fileName, fileName, "application/pdf", toAddFile);
         signRequestService.addDocsToSignRequest(signRequest, true, 0, form.getSignRequestParams(), multipartFile);
-        workflowService.importWorkflow(signBook, computedWorkflow, steps);
+        importWorkflow(signBook, computedWorkflow, steps);
         signRequestService.nextWorkFlowStep(signBook);
         Workflow workflow = workflowService.getById(form.getWorkflow().getId());
         targetService.copyTargets(workflow.getTargets(), signBook, targetEmails);
@@ -777,7 +888,7 @@ public class SignBookService {
     @Transactional
     public Map<SignBook, String> sendSignBook(SignBook signBook, Boolean pending, String comment, List<WorkflowStepDto> steps, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureRuntimeException {
         logger.info(userEppn + " envoi d'une demande de signature à " + StringUtils.collectionToCommaDelimitedString(steps.stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).map(RecipientWsDto::getEmail).flatMap(String::lines).toList()));
-        workflowService.importWorkflowFromWorkflowStepDto(signBook, steps, userEppn);
+        importWorkflowFromWorkflowStepDto(signBook.getId(), steps, userEppn);
         String message = null;
         if (pending == null || pending) {
             pendingSignBook(signBook.getId(), null, userEppn, authUserEppn, forceSendEmail, true);
@@ -804,7 +915,7 @@ public class SignBookService {
         if(signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.uploading)) {
             List<Target> targets = new ArrayList<>(workflowService.getById(signBook.getLiveWorkflow().getWorkflow().getId()).getTargets());
             Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow().getId(), steps, userEppn, false);
-            workflowService.importWorkflow(signBook, workflow, steps);
+            importWorkflow(signBook, workflow, steps);
             signRequestService.nextWorkFlowStep(signBook);
             targetService.copyTargets(targets, signBook, targetEmails);
             userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), steps);
@@ -877,7 +988,7 @@ public class SignBookService {
                         }
                     } else {
                         if(signBook.getLiveWorkflow().getWorkflow() == null) {
-                            workflowService.dispatchSignRequestParams(signRequest);
+                            dispatchSignRequestParams(signRequest);
                         }
                     }
                 } else {
@@ -1118,13 +1229,6 @@ public class SignBookService {
     }
 
     @Transactional
-    public void addStep(Long id, WorkflowStepDto step, SignType signType, Boolean allSignToComplete, String authUserEppn) throws EsupSignatureRuntimeException {
-        step.setSignType(signType);
-        step.setAllSignToComplete(allSignToComplete);
-        addLiveStep(id, step, null, authUserEppn);
-    }
-
-    @Transactional
     public List<Long> startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String title, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, List<SignRequestParams> signRequestParamses, Boolean scanSignatureFields, Boolean sendEmailAlert) throws EsupSignatureRuntimeException {
         logger.info("starting workflow " + id + " by " + createByEppn);
         Workflow workflow = workflowService.getById(id);
@@ -1151,7 +1255,7 @@ public class SignBookService {
     @Transactional
     public void addWorkflowToSignBook(SignBook signBook, String authUserEppn, Long workflowSignBookId) throws EsupSignatureRuntimeException {
         Workflow workflow = workflowService.getById(workflowSignBookId);
-        workflowService.importWorkflow(signBook, workflow, null);
+        importWorkflow(signBook, workflow, null);
         signRequestService.nextWorkFlowStep(signBook);
         pendingSignBook(signBook.getId(), null, authUserEppn, authUserEppn, false, true);
     }
@@ -1180,7 +1284,7 @@ public class SignBookService {
     public int importFilesFromSource(Long workflowId, User user, User authUser) throws EsupSignatureRuntimeException {
         Workflow workflow = workflowService.getById(workflowId);
         int nbImportedFiles = 0;
-        if (workflow.getDocumentsSourceUri() != null && !workflow.getDocumentsSourceUri().equals("")) {
+        if (workflow.getDocumentsSourceUri() != null && StringUtils.hasText(workflow.getDocumentsSourceUri())) {
             logger.info("retrieve from " + workflow.getProtectedDocumentsSourceUri());
             FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(workflow.getDocumentsSourceUri());
             if (fsAccessService != null) {
@@ -1251,7 +1355,7 @@ public class SignBookService {
                             }
                         } else {
                             targetService.copyTargets(workflow.getTargets(), signBook, null);
-                            workflowService.importWorkflow(signBook, workflow, null);
+                            importWorkflow(signBook, workflow, null);
                         }
                         nextStepAndPending(signBook.getId(), null, user.getEppn(), authUser.getEppn());
                         nbImportedFiles++;
@@ -1287,20 +1391,6 @@ public class SignBookService {
                     }
                 }
             }
-        } else {
-            return null;
-        }
-    }
-
-    public SignRequest getNextSignRequest(Long signRequestId, String userEppn) {
-        SignRequest currentSignRequest = signRequestService.getById(signRequestId);
-        Optional<SignRequest> inSameSignBookSignRequest = currentSignRequest.getParentSignBook().getSignRequests().stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.equals(currentSignRequest)).findAny();
-        if(inSameSignBookSignRequest.isPresent()) {
-            return inSameSignBookSignRequest.get();
-        }
-        List<SignRequest> signRequests = signRequestService.getToSignRequests(userEppn).stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getId().equals(signRequestId)).sorted(Comparator.comparingLong(SignRequest::getId)).collect(Collectors.toList());
-        if(!signRequests.isEmpty()) {
-            return signRequests.get(0);
         } else {
             return null;
         }
@@ -1363,7 +1453,7 @@ public class SignBookService {
     @Transactional
     public void getMultipleSignedDocuments(List<Long> ids, HttpServletResponse response) throws IOException, EsupSignatureFsException {
         response.setContentType("application/zip; charset=utf-8");
-        response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode("alldocs", StandardCharsets.UTF_8.toString()) + ".zip");
+        response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode("alldocs", StandardCharsets.UTF_8) + ".zip");
         List<FsFile> fsFiles = new ArrayList<>();
         for(Long id : ids) {
             SignBook signBook = getById(id);
@@ -1391,7 +1481,7 @@ public class SignBookService {
     @Transactional
     public void getMultipleSignedDocumentsWithReport(List<Long> ids, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
         httpServletResponse.setContentType("application/zip; charset=utf-8");
-        httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode("alldocs", StandardCharsets.UTF_8.toString()) + ".zip");
+        httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode("alldocs", StandardCharsets.UTF_8) + ".zip");
         Map<byte[], String> documents = new HashMap<>();
         for(Long id : ids) {
             SignBook signBook = getById(id);

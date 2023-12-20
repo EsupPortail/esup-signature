@@ -685,12 +685,12 @@
             <div class="modal-body">
                 <div class="form-group mb-3">
                     <p>Vous allez réaffecter la demande à une autre personne que vous.</p>
-                    <form id="send-sign-form" method="post" th:action="'/user/signrequests/transfert/' + ${signRequest.id}">
+                    <form id="send-sign-form" method="post" th:action="'/user/signrequests/transfert/' + ${signBook.id}">
                     <label class="form-label" for="transfertRecipientsEmails">Choisir la personne qui vous remplacera dans cette demande</label>
                     <select class="select-users" name="transfertRecipientsEmails" id="transfertRecipientsEmails" size="1" multiple="multiple" required="required">
                         <option data-placeholder="true"></option>
                     </select>
-                    <div class="mt-2 mb-2" id="tempUsers-recipientsEmails"></div>
+                    <div class="mt-2 mb-2" id="tempUsers-transfertRecipientsEmails"></div>
                     <button type="submit" class="btn btn-success float-end">Valider</button>
                     <button type="button" class="btn btn-secondary float-end me-1" data-bs-dismiss="modal">Fermer</button>
                     </form>

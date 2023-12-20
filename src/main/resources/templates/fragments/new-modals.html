@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="new-modals" class="w-100" th:with="isUserOnSu = ${userEppn != authUserEppn}">
-    <div data-bs-focus="false" class="modal fade" id="wiz-self-sign-modal" th:unless="${globalProperties.hideAutoSign}"  role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
+    <div data-bs-focus="false" class="modal fade" id="wiz-self-sign-modal" th:unless="${globalProperties.hideAutoSign}"  role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
-                <div id="wiz-self-sign-div" style="transition: height 1s">
+                <div id="wiz-self-sign-div" class="wiz-transition">
                 </div>
             </div>
         </div>
@@ -13,140 +13,42 @@
     <div data-bs-focus="false" class="modal fade" id="wiz-fast-sign-modal" th:unless="${globalProperties.hideSendSignRequest}" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
-                <div id="wiz-fast-sign-div" style="transition: height 1s">
+                <div id="wiz-fast-sign-div" class="wiz-transition">
                 </div>
             </div>
         </div>
     </div>
 
-    <div data-bs-focus="false" class="modal fade" id="wiz-custom-sign-modal" th:unless="${globalProperties.hideWizard}" role="dialog" aria-labelledby="#newRequestlabel'" aria-hidden="true">
+    <div data-bs-focus="false" class="modal fade" id="wiz-custom-sign-modal" th:unless="${globalProperties.hideWizard}" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
-                <div id="wiz-custom-sign-div" style="transition: height 1s"></div>
+                <div id="wiz-custom-sign-div" class="wiz-transition"></div>
             </div>
         </div>
     </div>
 
-    <div data-bs-focus="false" class="modal fade" id="wiz-workflow-sign-modal" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
+    <div data-bs-focus="false" class="modal fade" id="wiz-workflow-sign-modal" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
-                <div id="wiz-workflow-sign-div" style="transition: height 1s"></div>
+                <div id="wiz-workflow-sign-div" class="wiz-transition"></div>
             </div>
         </div>
     </div>
 
-    <div data-bs-focus="false" class="modal fade" id="wiz-modal" th:unless="${globalProperties.hideWizard}" role="dialog" aria-labelledby="addSignRequestLabel"aria-hidden="true">
+    <div data-bs-focus="false" class="modal fade" id="wiz-modal" th:unless="${globalProperties.hideWizard}" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
-                <div id="wiz-div" style="transition: height 1s"></div>
+                <div id="wiz-div" class="wiz-transition"></div>
             </div>
         </div>
     </div>
 
-    <th:block th:each="form : ${forms}">
-        <div data-bs-focus="false" class="modal fade" th:id="'sendModal_' +  ${form.id}"  role="dialog" aria-hidden="true">
-            <div th:if="${form.messageToDisplay != null}" class="toast toast-xl bg-white show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="999999999" style="z-index: 3;">
-                <div class="toast-body toast-body-news">
-                    <button type="button" class="btn-close float-end" data-bs-dismiss="toast" aria-label="Close"></button>
-                    <h4 class="me-auto text-dark">Aide</h4>
-                    <h5 th:utext="${form.messageToDisplay}"></h5>
-                </div>
-                <div class="toast-footer">
-                    <button th:if="${form}" th:id="'markHelpAsReadButton_' + ${form.id}" class="btn btn-success me-2 mb-2 float-end" data-bs-dismiss="toast" aria-label="Close">
-                        <i class="fa fa-eye-slash"></i>
-                        Marquer comme lu
-                    </button>
-                </div>
-            </div>
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content modal-lg">
-                    <div class="modal-header">
-                        <h3 class="modal-title" th:text="${form.title}"></h3>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close">
-
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="send-form">
-                        <input type="submit" id="send-form-submit" class="d-none">
-                        <p th:if="${form.workflow == null || form.workflow.workflowSteps.size() == 0}">Après la validation, vous pourrez télécharger le document</p>
-                        <div th:if="${form.workflow != null && form.workflow.workflowSteps.size() > 0}">
-                            <h5>
-                                Le circuit associé à ce formulaire comporte <span
-                                    th:text="${form.workflow.workflowSteps.size()}"></span> étape<span th:if="${form.workflow.workflowSteps.size()} > 1">(s) : </span>
-                            </h5>
-                            <ul class="list-group striped-list">
-                            <th:block th:each="step, iterator : ${form.workflow.workflowSteps}">
-                                <div th:id="'step-form-' + ${iterator.index}">
-                                    <li class="list-group-item border-secondary">
-                                        <div class="form-group d-inline">
-                                            <div>
-                                                <h3 class="d-inline">
-                                                    <span class="badge rounded-pill text-bg-primary me-4 align-middle" th:text="${iterator.index + 1}"></span>
-                                                </h3>
-                                                <b th:if="${step.description != null && step.description != ''}" th:text="${step.description}"></b>
-                                                <th:block th:if="${step.users.size() > 0}">
-                                                    <div th:if="${step.description != null && step.description != ''}"></div>
-                                                    <th:block th:each="user, iterator : ${step.users}">
-                                                        <span th:text="${user.firstname} + ' ' + ${user.name}"></span>
-                                                        <span th:if="${iterator.index < step.users.size() - 1}"> ,</span>
-                                                    </th:block>
-                                                </th:block>
-                                            </div>
-                                            <span th:if="${step.repeatable}"> (cette étape peut donner lieu à plusieurs validations en série)</span>
-                                        </div>
-                                        <div th:if="${step.changeable == true}" class="form-group mb-3">
-                                            <label><span th:text="'Merci de saisir le' + ${step.maxRecipients != null && step.maxRecipients > 1 ? '(s)' : ''} + ' participant' + ${step.maxRecipients != null && step.maxRecipients > 1 ? '(s)' : ''} + ' pour l\'étape ' + ${iterator.index + 1}"></span></label>
-                                            <select class="select-users" th:id="'recipientEmails-' + ${form.id} + '-' + ${iterator.index + 1}"
-                                                    multiple="multiple" name="recipientEmails" required="required" th:maxlength="${step.maxRecipients}">
-                                                <option data-placeholder="true"></option>
-                                                <th:block th:each="user : ${step.users}">
-                                                    <option th:if="${user.email != null && user.email != 'generic'}" selected="selected"
-                                                            th:text="${user.email}"
-                                                            th:placeholder="${user.email}"
-                                                            th:value="${user.email}"></option>
-                                                </th:block>
-                                            </select>
-                                            <p class="small">
-                                                Les signataires sont pré-sélectionnés en fonction de vos précédentes saisies.
-                                            </p>
-                                            <div th:id="'tempUsers-recipientEmailsSelect-' + ${form.id} + '_' + ${iterator.index + 1}"></div>
-                                            <div class="form-group mb-3" id="allSignToComplete-simple">
-                                                <div class="form-check form-switch form-switch-md">
-                                                    <label  class="form-check-label" th:for="'allSignToComplete_' + ${iterator.index + 1}">Tous les participants doivent-ils signer ?</label>
-                                                    <input type="checkbox" class="form-check-input" name="allSignToCompletes" th:value="${iterator.index + 1}" th:id="'allSignToComplete_' + ${iterator.index + 1}"/>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                </div>
-                            </th:block>
-                            </ul>
-                            <th:block th:each="target : ${form.workflow.targets}">
-                                <hr>
-                                <div th:if="${target.targetUri.contains('mailto:')}" class="form-group mb-3">
-                                    <label>Étape finale : Envoi par mail à </label>
-                                    <select class="select-users" th:id="'targetEmailsSelect-' + ${form.id}" multiple="multiple" name="targetEmails">
-                                        <option data-placeholder="true"></option>
-                                        <option th:if="${target.targetUri != null && target.targetUri != ''}" th:value="${target.targetUri.split(':')[1]}" th:text="${target.targetUri.split(':')[1]}" selected></option>
-                                    </select>
-                                </div>
-                            </th:block>
-                        </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
-                        <button th:id="'send-form-button-' + ${form.id}" th:data-es-form-id="${form.id}" type="button" class="btn btn-success send-form-button">
-                            <div th:id="'send-form-spinner-' + ${form.id}" class="spinner-border d-none" style="width: 1rem; height: 1rem;">
-                            </div>
-                            Valider
-                        </button>
-                    </div>
-                </div>
+    <div data-bs-focus="false" class="modal fade" id="wiz-start-form-modal"  role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div id="wiz-start-form-div" class="wiz-transition"></div>
             </div>
         </div>
-    </th:block>
+    </div>
 </div>
 </html>

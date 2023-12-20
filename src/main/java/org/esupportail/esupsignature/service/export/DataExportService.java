@@ -1,11 +1,12 @@
 package org.esupportail.esupsignature.service.export;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
-import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.DataService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.slf4j.Logger;
@@ -13,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -31,7 +31,7 @@ public class DataExportService {
     private SignRequestService signRequestService;
 
     @Resource
-    private SignBookService signBookService;
+    private DataService dataService;
 
     @Resource
     private FormRepository formRepository;
@@ -82,7 +82,7 @@ public class DataExportService {
     public LinkedHashMap<String, String> getJsonDatasFromSignRequest(Long id) {
         SignRequest signRequest = signRequestService.getById(id);
         if(signRequest != null && signRequest.getParentSignBook() != null) {
-            Data data = signBookService.getBySignRequest(signRequest);
+            Data data = dataService.getBySignRequest(signRequest);
             if(data != null) {
                 return getToExportDatas(data, signRequest.getParentSignBook());
             } else {

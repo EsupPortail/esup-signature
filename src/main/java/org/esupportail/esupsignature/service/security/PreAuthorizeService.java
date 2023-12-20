@@ -23,6 +23,9 @@ public class PreAuthorizeService {
     private SignBookService signBookService;
 
     @Resource
+    private DataService dataService;
+
+    @Resource
     private SignRequestService signRequestService;
 
     @Resource
@@ -93,12 +96,7 @@ public class PreAuthorizeService {
 
     public boolean signBookManage(Long id, String userEppn) {
         if(userEppn != null) {
-            SignBook signBook = signBookService.getById(id);
-            if (signBook != null) {
-                return signBookService.checkUserManageRights(userEppn, signBook);
-            } else {
-                return true;
-            }
+            return signBookService.checkUserManageRights(userEppn, id);
         }
         return false;
     }
@@ -234,7 +232,7 @@ public class PreAuthorizeService {
                     return userShare.getUser();
                 }
             }
-            Data data = signBookService.getBySignBook(signBook);
+            Data data = dataService.getBySignBook(signBook);
             if(data !=  null) {
                 for (UserShare userShare : userShares) {
                     if (userShare.getForm().equals(data.getForm()) && signBookService.checkUserSignRights(signRequest, userShare.getUser().getEppn(), authUserEppn)) {
@@ -251,7 +249,7 @@ public class PreAuthorizeService {
             User user = userService.getByEppn(userEppn);
             if (userEppn.equals(authUserEppn) || signBookService.checkAllShareTypesForSignRequest(userEppn, authUserEppn, signRequest.getParentSignBook().getId())) {
                 List<SignRequest> signRequests = signRequestService.getByIdAndRecipient(signRequest.getId(), userEppn);
-                Data data = signBookService.getBySignBook(signRequest.getParentSignBook());
+                Data data = dataService.getBySignBook(signRequest.getParentSignBook());
                 User authUser = userService.getByEppn(authUserEppn);
                 return (data != null && (data.getForm() != null && data.getForm().getWorkflow() != null && data.getForm().getWorkflow().getManagers().contains(authUser.getEmail())))
                         ||

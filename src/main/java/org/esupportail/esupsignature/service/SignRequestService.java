@@ -173,6 +173,19 @@ public class SignRequestService {
 		return signRequestRepository.findByToken(token);
 	}
 
+	public SignRequest getNextSignRequest(Long signRequestId, String userEppn) {
+		SignRequest currentSignRequest = getById(signRequestId);
+		Optional<SignRequest> inSameSignBookSignRequest = currentSignRequest.getParentSignBook().getSignRequests().stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.equals(currentSignRequest)).findAny();
+		if(inSameSignBookSignRequest.isPresent()) {
+			return inSameSignBookSignRequest.get();
+		}
+		List<SignRequest> signRequests = getToSignRequests(userEppn).stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getId().equals(signRequestId)).sorted(Comparator.comparingLong(SignRequest::getId)).collect(Collectors.toList());
+		if(!signRequests.isEmpty()) {
+			return signRequests.get(0);
+		} else {
+			return null;
+		}
+	}
 
 	@Transactional
 	public boolean isEditable(long id, String userEppn) {
@@ -703,11 +716,11 @@ public class SignRequestService {
 						logger.warn("TODO Envoi Mail SHIBBOLETH ");
 						//TODO envoi mail spécifique
 					} else if (tempUser.getUserType().equals(UserType.external)) {
-						RecipientWsDto jsonExternalUserInfo = recipients.stream().filter(jsonExternalUserInfo1 -> jsonExternalUserInfo1.getEmail().equals(tempUser.getEmail())).findFirst().get();
-						tempUser.setFirstname(jsonExternalUserInfo.getFirstName());
-						tempUser.setName(jsonExternalUserInfo.getName());
-						if(StringUtils.hasText(jsonExternalUserInfo.getPhone())) {
-							tempUser.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(jsonExternalUserInfo.getPhone()));
+						RecipientWsDto recipientWsDto = recipients.stream().filter(recipientWsDto1 -> recipientWsDto1.getEmail().equals(tempUser.getEmail())).findFirst().get();
+						tempUser.setFirstname(recipientWsDto.getFirstName());
+						tempUser.setName(recipientWsDto.getName());
+						if(StringUtils.hasText(recipientWsDto.getPhone())) {
+							tempUser.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(recipientWsDto.getPhone()));
 						}
 					}
 				}

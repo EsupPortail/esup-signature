@@ -199,6 +199,8 @@ public class WorkflowService {
                 WorkflowStep workflowStep = workflowStepService.createWorkflowStep("", allSignToComplete, signType, changeable, step.getRecipients().toArray(RecipientWsDto[]::new));
                 workflow.getWorkflowSteps().add(workflowStep);
                 userPropertieService.createUserPropertieFromMails(user, Collections.singletonList(step));
+            } else {
+                throw new EsupSignatureRuntimeException("recipient must not be empty");
             }
         }
         return workflow;
@@ -580,96 +582,6 @@ public class WorkflowService {
         workflow.setTitle(savedTitle);
     }
 
-    public void importWorkflow(SignBook signBook, Workflow workflow, List<WorkflowStepDto> steps) {
-        logger.info("import workflow steps in signBook " + signBook.getSubject() + " - " + signBook.getId());
-        int i = 0;
-        for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
-            i++;
-            WorkflowStepDto step = new WorkflowStepDto();
-            int finalI = i;
-            Optional<WorkflowStepDto> optionalStep = steps.stream().filter(s -> s.getStepNumber() == finalI).findFirst();
-            if(optionalStep.isPresent()) step = optionalStep.get();
-            for (User user : workflowStep.getUsers()) {
-                if (user.equals(userService.getCreatorUser())) {
-                    user = signBook.getCreateBy();
-                }
-                recipientService.addRecipientInStep(step, user.getEmail());
-            }
-            step.setRepeatable(workflowStep.getRepeatable());
-            step.setRepeatableSignType(workflowStep.getRepeatableSignType());
-            step.setMultiSign(workflowStep.getMultiSign());
-            step.setAutoSign(workflowStep.getAutoSign());
-            step.setAllSignToComplete(workflowStep.getAllSignToComplete());
-            step.setSignType(workflowStep.getSignType());
-            LiveWorkflowStep newWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, workflowStep, step);
-            signBook.getLiveWorkflow().getLiveWorkflowSteps().add(newWorkflowStep);
-        }
-        if(!(workflow instanceof DefaultWorkflow)) {
-            signBook.getLiveWorkflow().setWorkflow(workflow);
-        }
-        dispatchSignRequestParams(signBook);
-    }
-
-    public void importWorkflowFromWorkflowStepDto(SignBook signBook, List<WorkflowStepDto> steps, String userEppn) {
-        logger.info("import workflow steps in signBook " + signBook.getSubject() + " - " + signBook.getId());
-        User user = userService.getByEppn(userEppn);
-        if(steps.get(0).getUserSignFirst() != null && steps.get(0).getUserSignFirst()) {
-            WorkflowStepDto workflowStepDto = new WorkflowStepDto();
-            recipientService.addRecipientInStep(workflowStepDto, user.getEmail());
-            workflowStepDto.setSignType(SignType.pdfImageStamp);
-            signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(signBook, null, workflowStepDto));
-        }
-        for (WorkflowStepDto step : steps) {
-            LiveWorkflowStep newWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, null, step);
-            signBook.getLiveWorkflow().getLiveWorkflowSteps().add(newWorkflowStep);
-        }
-        signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
-        dispatchSignRequestParams(signBook);
-    }
-
-    public void dispatchSignRequestParams(SignBook signBook) {
-        for(SignRequest signRequest : signBook.getSignRequests()) {
-            dispatchSignRequestParams(signRequest);
-        }
-    }
-
-    public void dispatchSignRequestParams(SignRequest signRequest) {
-            if(!signRequest.getSignRequestParams().isEmpty()) {
-                int i = 0;
-                for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
-                    if (liveWorkflowStep.getWorkflowStep() != null) {
-                        WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
-                        if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
-                            if(!workflowStep.getSignRequestParams().isEmpty()) {
-                                for (SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
-                                        for(SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
-                                            if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
-                                                    && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
-                                                    && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
-                                                liveWorkflowStep.getSignRequestParams().add(signRequestParams);
-                                            }
-                                        }
-                                }
-                            } else {
-                                if(signRequest.getSignRequestParams().size() > i) {
-                                    liveWorkflowStep.getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
-                                }
-                            }
-                        }
-                    } else if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().allMatch(liveWorkflowStep1 -> liveWorkflowStep1.getSignRequestParams().isEmpty())){
-                        signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(0).getSignRequestParams().addAll(signRequest.getSignRequestParams());
-                    }
-                    i++;
-                }
-            } else {
-                for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
-                    if(liveWorkflowStep.getWorkflowStep() != null) {
-                        WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
-                        liveWorkflowStep.getSignRequestParams().addAll(workflowStep.getSignRequestParams());
-                    }
-                }
-            }
-    }
 
     public void rename(Long id, String name) {
         Workflow workflow = getById(id);

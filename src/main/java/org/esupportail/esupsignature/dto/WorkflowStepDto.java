@@ -39,6 +39,8 @@ public class WorkflowStepDto {
 
 	private Boolean autoSign = false;
 
+	private Boolean forceAllSign = false;
+
 	private String comment;
 
 	private Boolean attachmentRequire = false;
@@ -182,6 +184,14 @@ public class WorkflowStepDto {
 
 	public void setAutoSign(Boolean autoSign) {
 		this.autoSign = autoSign;
+	}
+
+	public Boolean getForceAllSign() {
+		return forceAllSign;
+	}
+
+	public void setForceAllSign(Boolean forceAllSign) {
+		this.forceAllSign = forceAllSign;
 	}
 
 	public String getComment() {

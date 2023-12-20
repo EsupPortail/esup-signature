@@ -46,6 +46,9 @@ public class OtpSignRequestController {
     @Resource
     private SignWithService signWithService;
 
+    @Resource
+    private DataService dataService;
+
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
         return "signrequests";
@@ -110,7 +113,7 @@ public class OtpSignRequestController {
         }
         model.addAttribute("attachments", signRequestService.getAttachments(id));
         model.addAttribute("nextSignBook", signBookService.getNextSignBook(signRequest.getId(), userEppn));
-        model.addAttribute("nextSignRequest", signBookService.getNextSignRequest(signRequest.getId(), userEppn));
+        model.addAttribute("nextSignRequest", signRequestService.getNextSignRequest(signRequest.getId(), userEppn));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
         model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest));
@@ -157,7 +160,7 @@ public class OtpSignRequestController {
             userService.setUiParams(authUserEppn, UiParams.workflowVisaAlert, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId().toString() + ",");
 
         }
-        Data data = signBookService.getBySignBook(signRequest.getParentSignBook());
+        Data data = dataService.getBySignBook(signRequest.getParentSignBook());
         if(data != null && data.getForm() != null) {
             model.addAttribute("form", data.getForm());
         }

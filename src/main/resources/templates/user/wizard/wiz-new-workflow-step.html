@@ -65,6 +65,7 @@
     <hr>
     <h4 class="d-flex justify-content-center mt-4" th:text="'Paramètres de l’étape ' + ${workflow != null? workflow.workflowSteps.size() + 1 : 1}"></h4>
     <form id="wiz-step-form">
+        <input type="submit" id="wiz-step-form-submit" class="d-none">
         <input th:if="${workflow != null}" type="hidden" id="workflowId" name="workflowId" th:value="${workflow.id}">
         <div class="form-check form-switch form-switch-md">
             <input type="checkbox" class="form-check-input" id="changeable" name="changeable" onclick="if(this.checked) {$('#recipientsEmails').attr('required', false);} else {$('#recipientsEmails').attr('required', true);}"/>
@@ -73,13 +74,13 @@
             </label>
         </div>
         <div class="col-lg-12">
-            <label class="form-label" for="recipientsEmails">Choisir les participants</label>
-            <select data-es-check-list="false" name="recipientsEmails" id="recipientsEmails" multiple="multiple" required>
+            <label class="form-label" for="recipientsEmails-1">Choisir les participants</label>
+            <select data-es-check-list="true" name="recipientsEmails" id="recipientsEmails-1" multiple="multiple" required>
                 <option data-placeholder="true"></option>
             </select>
-            <div id="tempUsers-recipientsEmails"></div>
+            <div id="tempUsers-recipientsEmails-1"></div>
             <br/>
-            <div class="form-check form-switch form-switch-md mb-2">
+            <div class="form-check form-switch form-switch-md mb-2" id="allSignToComplete-div" style="display: none">
                 <label class="form-check-label">
                     Tous les participants doivent-ils signer ?
                 </label>

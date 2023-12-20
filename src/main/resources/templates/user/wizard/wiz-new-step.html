@@ -71,20 +71,20 @@
                     Je dois signer ce document avant l’envoi
                 </label>
             </div>
-            <label class="form-label" for="recipientsEmails">Choisir les participants</label>
-            <select class="select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmails" multiple="multiple" required="required">
+            <label class="form-label" for="recipientsEmails-1">Choisir les participants</label>
+            <select class="select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmails-1" multiple="multiple" required="required">
                 <option data-placeholder="true"></option>
             </select>
-            <div id="tempUsers-recipientsEmails"></div>
+            <div id="tempUsers-recipientsEmails-1"></div>
             <br/>
-            <div class="form-check form-switch form-switch-md mb-2">
-                <label class="form-check-label">
+            <div class="form-check form-switch form-switch-md mb-2" id="allSignToComplete-div" style="display: none">
+                <label class="form-check-label" for="allSignToComplete-1">
                     Tous les participants doivent-ils signer ?
                 </label>
-                <input type="checkbox" class="form-check-input" id="allSignToComplete" name="allSignToComplete"/>
+                <input type="checkbox" class="form-check-input" id="allSignToComplete-1" name="allSignToComplete"/>
             </div>
-            <label class="form-label">Type de signature :</label>
-            <select class="form-select" id="signType" name="signType">
+            <label class="form-label" for="signType-1">Type de signature :</label>
+            <select class="form-select" id="signType-1" name="signType">
                 <th:block th:each="signType : ${signTypes}">
                     <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
                 </th:block>

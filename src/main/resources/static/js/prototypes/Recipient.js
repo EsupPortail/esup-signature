@@ -1,4 +1,4 @@
-export class ExternalUserInfos {
+export class Recipient {
 
     constructor() {
         this.email;
