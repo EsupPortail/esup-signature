@@ -1,7 +1,7 @@
 import {default as FilesInput} from "../utils/FilesInput.js?version=@version@";
 import {default as SelectUser} from "../utils/SelectUser.js?version=@version@";
 import {Step} from "../../prototypes/Step.js?version=@version@";
-import {ExternalUserInfos} from "../../prototypes/ExternalUserInfos.js?version=@version@";
+import {Recipient} from "../../prototypes/Recipient.js?version=@version@";
 
 export class WizUi {
 
@@ -384,14 +384,14 @@ export class WizUi {
             if(recipientsSelect) {
                 let recipientsEmails = recipientsSelect.slim.getSelected();
                 recipientsEmails.forEach(function (email) {
-                    let externalUserInfos = new ExternalUserInfos();
-                    externalUserInfos.email = email;
-                    let extInfos = $("div[id='externalUserInfos_" + email + "']");
-                    externalUserInfos.name = extInfos.find("#names").val();
-                    externalUserInfos.firstName = extInfos.find("#firstnames").val();
-                    externalUserInfos.phone = extInfos.find("#phones").val();
-                    externalUserInfos.forceSms = extInfos.find("#forcesmses").val() === "1";
-                    step.recipients.push(externalUserInfos);
+                    let recipient = new Recipient();
+                    recipient.email = email;
+                    let extInfos = $("div[id='recipient_" + email + "']");
+                    recipient.name = extInfos.find("#names").val();
+                    recipient.firstName = extInfos.find("#firstnames").val();
+                    recipient.phone = extInfos.find("#phones").val();
+                    recipient.forceSms = extInfos.find("#forcesmses").val() === "1";
+                    step.recipients.push(recipient);
                 });
             }
             $('select[name="recipientsCCEmails"] option:selected').each(function() {

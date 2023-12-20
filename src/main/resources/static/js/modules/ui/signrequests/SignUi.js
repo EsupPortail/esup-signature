@@ -2,7 +2,7 @@ import {WorkspacePdf} from "./WorkspacePdf.js?version=@version@";
 import {CsrfToken} from "../../../prototypes/CsrfToken.js?version=@version@";
 import {Step} from "../../../prototypes/Step.js?version=@version@";
 import {Nexu} from "./Nexu.js?version=@version@";
-import {ExternalUserInfos} from "../../../prototypes/ExternalUserInfos.js?version=@version@";
+import {Recipient} from "../../../prototypes/Recipient.js?version=@version@";
 
 export class SignUi {
 
@@ -448,18 +448,18 @@ export class SignUi {
             return;
         }
         recipientsEmails.forEach(function(email) {
-            let externalUserInfos = new ExternalUserInfos();
-            externalUserInfos.email = email;
-            step.recipients.push(externalUserInfos);
+            let recipient = new Recipient();
+            recipient.email = email;
+            step.recipients.push(recipient);
         });
-        $("div[id^='externalUserInfos_']").each(function() {
-            let externalUserInfos = new ExternalUserInfos();
-            externalUserInfos.email = $(this).find("#emails").val();
-            externalUserInfos.name = $(this).find("#names").val();
-            externalUserInfos.firstName = $(this).find("#firstnames").val();
-            externalUserInfos.phone = $(this).find("#phones").val();
-            externalUserInfos.forceSms = $(this).find("#forcesmses").val();
-            step.recipients.push(externalUserInfos);
+        $("div[id^='recipient_']").each(function() {
+            let recipient = new Recipient();
+            recipient.email = $(this).find("#emails").val();
+            recipient.name = $(this).find("#names").val();
+            recipient.firstName = $(this).find("#firstnames").val();
+            recipient.phone = $(this).find("#phones").val();
+            recipient.forceSms = $(this).find("#forcesmses").val();
+            step.recipients.push(recipient);
         });
         let self = this;
         this.signComment = $("#signComment");

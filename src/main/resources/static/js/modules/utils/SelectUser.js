@@ -203,9 +203,9 @@ export default class SelectUser {
     displayExternalsError() {
         let name = '#tempUsers-' + this.selectField.attr("id");
         let tempUsersDiv = $(name);
-        if($("#externalUserInfos_").length === 0) {
+        if($("#recipient_").length === 0) {
             tempUsersDiv.append(
-                "<div class='alert alert-danger' id='externalUserInfos_'>" +
+                "<div class='alert alert-danger' id='recipient_'>" +
                 "<b>Le destinataire saisi n’est pas conforme</b><br>Soit les destinataires externes ne sont pas autorisés, soit il s’agit d’un groupe vide" +
                 "</div>");
         }
@@ -265,7 +265,7 @@ export default class SelectUser {
         }
         if(this.globalProperties.smsRequired) {
             tempUsersDiv.append(
-                "<div class='alert alert-primary' id='externalUserInfos_" + e.email + "'>" +
+                "<div class='alert alert-primary' id='recipient_" + e.email + "'>" +
                 "<b>Destinataire externe : <span>" + e.email + "</span></b>" +
                 "<input id=\"emails\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\"" + e.email + "\">" +
                 "<div class=\"d-flex col-12\"><label for=\"name\" class='col-3'>Nom</label>" +
@@ -277,7 +277,7 @@ export default class SelectUser {
                 "</div>");
         } else {
             tempUsersDiv.append(
-                "<div class='alert alert-primary' id='externalUserInfos_" + e.email + "'>" +
+                "<div class='alert alert-primary' id='recipient_" + e.email + "'>" +
                 "<b>Destinataire externe : <span>" + e.email + "</span></b>" +
                 "<input id=\"emails\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\"" + e.email + "\">" +
                 "<div class=\"d-flex col-12\"><label for=\"name\" class='col-3'>Nom</label>" +

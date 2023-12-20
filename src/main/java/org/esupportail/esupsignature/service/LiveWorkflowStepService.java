@@ -65,14 +65,14 @@ public class LiveWorkflowStepService {
         for (String recipientEmail : recipientsEmails) {
             User recipientUser = userService.getUserByEmail(recipientEmail);
             if(recipientUser != null && recipientUser.getUserType().equals(UserType.external) && recipients != null) {
-                Optional<RecipientWsDto> optionalRecipientWsDto = recipients.stream().filter(jsonExternalUserInfo1 -> jsonExternalUserInfo1.getEmail().equals(recipientEmail)).findFirst();
+                Optional<RecipientWsDto> optionalRecipientWsDto = recipients.stream().filter(recipientWsDto1 -> recipientWsDto1.getEmail().equals(recipientEmail)).findFirst();
                 if(optionalRecipientWsDto.isPresent()) {
-                    RecipientWsDto jsonExternalUserInfo = optionalRecipientWsDto.get();
-                    recipientUser.setName(jsonExternalUserInfo.getName());
-                    recipientUser.setFirstname(jsonExternalUserInfo.getFirstName());
-                    if(StringUtils.hasText(jsonExternalUserInfo.getPhone())) {
-                        recipientUser.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(jsonExternalUserInfo.getPhone()));
-                        recipientUser.setForceSms(jsonExternalUserInfo.getForceSms() != null && jsonExternalUserInfo.getForceSms());
+                    RecipientWsDto recipientWsDto = optionalRecipientWsDto.get();
+                    recipientUser.setName(recipientWsDto.getName());
+                    recipientUser.setFirstname(recipientWsDto.getFirstName());
+                    if(StringUtils.hasText(recipientWsDto.getPhone())) {
+                        recipientUser.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(recipientWsDto.getPhone()));
+                        recipientUser.setForceSms(recipientWsDto.getForceSms() != null && recipientWsDto.getForceSms());
                     }
                 }
             }
