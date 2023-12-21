@@ -16,12 +16,11 @@ import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
 import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
 import eu.europa.esig.dss.spi.DSSUtils;
-import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
+import eu.europa.esig.dss.spi.x509.tsp.TimestampToken;
 import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.validation.reports.Reports;
-import eu.europa.esig.dss.validation.timestamp.TimestampToken;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -152,7 +151,7 @@ public class SignService {
 		logger.info("start certSign for signRequest : " + signRequest.getId());
 		SignatureForm signatureForm;
 		List<Document> toSignDocuments = new ArrayList<>(getToSignDocuments(signRequest.getId()));
-		AbstractKeyStoreTokenConnection abstractKeyStoreTokenConnection = null;
+		SignatureTokenConnection abstractKeyStoreTokenConnection = null;
 		try {
 			if(signWith.equals(SignWith.userCert)) {
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
@@ -164,7 +163,7 @@ public class SignService {
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
 			} else if ((signWith.equals(SignWith.sealCert) && (userService.getRoles(userEppn).contains("ROLE_SEAL")) || userEppn.equals("system"))) {
 				try {
-					if(!userEppn.equals("system") || certificatService.getKey() != null) {
+					if(!userEppn.equals("system") || certificatService.getOpenSCKey() != null) {
 						abstractKeyStoreTokenConnection = certificatService.getSealToken();
 					}
 				} catch (Exception e) {

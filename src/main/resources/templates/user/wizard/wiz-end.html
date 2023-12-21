@@ -21,10 +21,4 @@
         <span class="bs-stepper-label">Fin</span>
     </div>
 </div>
-<script th:if="${workflow != null || (close != null && close)}" th:inline="javascript">
-    parent.location.href='/';
-</script>
-<script th:if="${signBook != null && !(close != null && close)}" th:inline="javascript">
-    parent.location.href='/user/wizard/wizredirect/[[${signBook.id}]]';
-</script>
 </html>

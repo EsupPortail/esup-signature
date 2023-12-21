@@ -1,10 +1,10 @@
 package org.esupportail.esupsignature.service.utils.upgrade;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.AppliVersionRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
-import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
@@ -13,7 +13,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -29,9 +28,6 @@ public class UpgradeService {
 
     @Resource
     private AppliVersionRepository appliVersionRepository;
-
-    @Resource
-    private DocumentService documentService;
 
     @Resource
     private FileService fileService;
@@ -51,7 +47,7 @@ public class UpgradeService {
                 method.invoke(this);
                 List<AppliVersion> appliVersions = new ArrayList<>();
                 appliVersionRepository.findAll().forEach(appliVersions::add);
-                if(appliVersions.size() > 0) {
+                if(!appliVersions.isEmpty()) {
                     appliVersions.get(0).setEsupSignatureVersion(update);
                 } else {
                     AppliVersion appliVersion = new AppliVersion();
@@ -68,7 +64,7 @@ public class UpgradeService {
     private int checkVersionUpToDate(String updateVersion) {
         List<AppliVersion> appliVersions = new ArrayList<>();
         appliVersionRepository.findAll().forEach(appliVersions::add);
-        if(appliVersions.size() == 0) return -1;
+        if(appliVersions.isEmpty()) return -1;
         String databaseVersion = appliVersions.get(0).getEsupSignatureVersion().split("-")[0];
         String[] codeVersionStrings = updateVersion.split("\\.");
         String[] databaseVersionStrings = databaseVersion.split("\\.");
@@ -107,9 +103,9 @@ public class UpgradeService {
     public void update_1_23() {
         logger.info("#### Starting update end dates of refused signBooks ####");
         List<SignBook> signBooks = signBookRepository.findAll(Pageable.unpaged()).getContent();
-        for(SignBook signBook : signBooks.stream().filter(signBook -> signBook.getEndDate() == null && signBook.getStatus().equals(SignRequestStatus.refused)).collect(Collectors.toList())) {
+        for(SignBook signBook : signBooks.stream().filter(signBook -> signBook.getEndDate() == null && signBook.getStatus().equals(SignRequestStatus.refused)).toList()) {
             List<Action> actions = signBook.getSignRequests().stream().map(SignRequest::getRecipientHasSigned).map(Map::values).flatMap(Collection::stream).filter(action -> action.getDate() != null).sorted(Comparator.comparing(Action::getDate).reversed()).collect(Collectors.toList());
-            if(actions.size() > 0) {
+            if(!actions.isEmpty()) {
                 signBook.setEndDate(actions.get(0).getDate());
             }
         }
@@ -120,7 +116,7 @@ public class UpgradeService {
     public void update_1_22() {
         logger.info("#### Starting update end dates of signBooks ####");
         List<SignBook> signBooks = signBookRepository.findAll(Pageable.unpaged()).getContent();
-        for(SignBook signBook : signBooks.stream().filter(signBook -> signBook.getEndDate() == null).collect(Collectors.toList())) {
+        for(SignBook signBook : signBooks.stream().filter(signBook -> signBook.getEndDate() == null).toList()) {
             if((signBook.getStatus().equals(SignRequestStatus.completed)
                     || signBook.getStatus().equals(SignRequestStatus.exported)
                     || signBook.getStatus().equals(SignRequestStatus.refused)
@@ -128,7 +124,7 @@ public class UpgradeService {
                     || signBook.getStatus().equals(SignRequestStatus.archived)
                     || signBook.getStatus().equals(SignRequestStatus.deleted))) {
                 List<Action> actions = signBook.getSignRequests().stream().map(SignRequest::getRecipientHasSigned).map(Map::values).flatMap(Collection::stream).filter(action -> action.getDate() != null).sorted(Comparator.comparing(Action::getDate).reversed()).collect(Collectors.toList());
-                if(actions.size() > 0) {
+                if(!actions.isEmpty()) {
                     signBook.setEndDate(actions.get(0).getDate());
                 }
             }
@@ -151,7 +147,7 @@ public class UpgradeService {
     public void update_1_19() {
         logger.info("#### Starting update subjets and workflowNames ####");
         List<SignBook> signBooks = signBookRepository.findBySubject(null);
-        if(signBooks.size() > 0) {
+        if(!signBooks.isEmpty()) {
             for(SignBook signBook : signBooks) {
                 if(signBook.getSubject() == null) {
                     if(signBook.getTitle() != null
@@ -164,11 +160,11 @@ public class UpgradeService {
                         signBook.setSubject(signBook.getTitle());
                     } else {
                         if(signBook.getName().isEmpty()) {
-                            if(signBook.getSignRequests().size() > 0) {
+                            if(!signBook.getSignRequests().isEmpty()) {
                                 if(signBook.getSignRequests().get(0).getTitle() != null && signBook.getSignRequests().get(0).getTitle().isEmpty()) {
                                     signBook.setSubject(signBook.getSignRequests().get(0).getTitle());
                                 } else {
-                                    if(signBook.getSignRequests().get(0).getOriginalDocuments().size() > 0) {
+                                    if(!signBook.getSignRequests().get(0).getOriginalDocuments().isEmpty()) {
                                         signBook.setSubject(fileService.getNameOnly(signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName()));
                                     } else {
                                         signBook.setSubject("Sans titre");
@@ -185,11 +181,11 @@ public class UpgradeService {
                                     && !signBook.getName().equals("Demande personnalisée".replaceAll("\\W+", "_"))) {
                                 signBook.setSubject(signBook.getName());
                             } else {
-                                if(signBook.getSignRequests().size() > 0) {
+                                if(!signBook.getSignRequests().isEmpty()) {
                                     if(signBook.getSignRequests().get(0).getTitle() != null && signBook.getSignRequests().get(0).getTitle().isEmpty()) {
                                         signBook.setSubject(signBook.getSignRequests().get(0).getTitle());
                                     } else {
-                                        if(signBook.getSignRequests().get(0).getOriginalDocuments().size() > 0) {
+                                        if(!signBook.getSignRequests().get(0).getOriginalDocuments().isEmpty()) {
                                             signBook.setSubject(fileService.getNameOnly(signBook.getSignRequests().get(0).getOriginalDocuments().get(0).getFileName()));
                                         } else {
                                             signBook.setSubject("Sans titre");

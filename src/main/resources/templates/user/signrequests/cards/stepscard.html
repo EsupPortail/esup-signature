@@ -44,9 +44,7 @@
                                         <i class="fa-solid fa-times"></i>
                                     </span>
                                 </th:block>
-                                <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="text-danger float-end"><i class="fa-solid fa-users"></i></span>
-                                <span title="Une signature suffit" th:unless="${liveWorkflowStep.allSignToComplete}" class="float-end d-none"><i class="fa-solid fa-user"></i></span>
-                                <span style="font-size: 10pt; font-weight: bold;" th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></span>
+                                <span class="step-type" th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></span>
                                 <div>
                                     <th:block th:if="${liveWorkflowStep.workflowStep != null && liveWorkflowStep.workflowStep.description != null && liveWorkflowStep.workflowStep.description != ''}">
                                         <span th:text="${liveWorkflowStep.workflowStep.description}"></span>
@@ -68,7 +66,7 @@
                                             </td>
                                             <td>
                                                 <a class="btn btn-sm btn-outline-primary"
-                                                       th:href="@{'/ws-secure/global/get-file/' + ${signRequest.signedDocuments.get(iterator.index).id}}"
+                                                    th:href="@{'/ws-secure/global/get-file/' + ${signRequest.signedDocuments.get(iterator.index).id}}"
                                                     title="Récupérer le document signé à cette étape"
                                                     th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}">
                                                     <i class="fa-solid fa-download"></i></a>
@@ -100,6 +98,8 @@
                                     </th:block>
                                     </table>
                                     <small title="" th:if="${liveWorkflowStep.getAutoSign()}">Étape automatique</small>
+                                    <span title="Une signature suffit" th:unless="${liveWorkflowStep.allSignToComplete}" class="float-end text-muted"><i class="fa-solid fa-users-slash"></i></span>
+                                    <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="float-end"><i class="fa-solid fa-users"></i></span>
                                 </div>
                             </div>
                             <div th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>

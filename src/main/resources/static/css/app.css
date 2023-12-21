@@ -204,6 +204,10 @@ dd {
     height: 2.5em;
 }
 
+.text-muted {
+    color: rgba(0,0,0,0.3) !important
+}
+
 .form-switch.form-switch-md .form-check-input {
     margin-left: -4.5em;
     height: 2em;
@@ -892,6 +896,11 @@ input:checked + .slider:before {
 .step-trigger {
     width: 100% !important;
     justify-content: left !important;
+}
+
+.step-type {
+    font-size: 10pt;
+    font-weight: bold;
 }
 
 .current-step {
@@ -2168,7 +2177,11 @@ ul.striped-list {
 }
 
 ul.striped-list > li:nth-of-type(odd) {
-    background-color: #e9e9f9 ;
+    background-color: rgba(0,0,0,.02) ;
+}
+
+ul.striped-list > li:nth-of-type(even) {
+    background-color: rgba(0,0,0,.06) ;
 }
 
 #snackbar {

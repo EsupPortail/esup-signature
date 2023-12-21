@@ -10,11 +10,12 @@ import eu.europa.esig.dss.model.SignatureValue;
 import eu.europa.esig.dss.model.ToBeSigned;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.spi.DSSUtils;
-import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import eu.europa.esig.dss.token.SignatureTokenConnection;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.SystemUtils;
-import org.esupportail.esupsignature.exception.EsupSignatureOpenSCException;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,19 +23,24 @@ import java.io.*;
 import java.nio.file.Files;
 import java.security.KeyStore;
 import java.security.cert.CertificateEncodingException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
-public class OpenSCSignatureToken extends AbstractKeyStoreTokenConnection {
+public class OpenSCSignatureToken implements SignatureTokenConnection {
 
-    private static final Logger LOG = LoggerFactory.getLogger(OpenSCSignatureToken.class);
+    private static final Logger logger = LoggerFactory.getLogger(OpenSCSignatureToken.class);
     private final KeyStore.PasswordProtection passwordProtection;
-    private static final int DEFAULT_BUFFER_SIZE = 8192;
+    private String module = "";
 
-    public OpenSCSignatureToken(KeyStore.PasswordProtection passwordProtection) {
+    private final SignProperties signProperties;
+
+    public OpenSCSignatureToken(KeyStore.PasswordProtection passwordProtection, SignProperties signProperties) {
         this.passwordProtection = passwordProtection;
+        this.signProperties = signProperties;
+        if(StringUtils.isNotBlank(signProperties.getOpenscCommandModule())) {
+            this.module += " --module " + signProperties.getOpenscCommandModule();
+        }
     }
 
     @Override
@@ -43,12 +49,15 @@ public class OpenSCSignatureToken extends AbstractKeyStoreTokenConnection {
     }
 
     @Override
-    public SignatureValue sign(ToBeSigned toBeSigned, DigestAlgorithm digestAlgorithm, DSSPrivateKeyEntry dssPrivateKeyEntry) throws EsupSignatureOpenSCException {
+    public SignatureValue sign(ToBeSigned toBeSigned, DigestAlgorithm digestAlgorithm, DSSPrivateKeyEntry dssPrivateKeyEntry) throws DSSException {
         final InputStream inputStream = new ByteArrayInputStream(toBeSigned.getBytes());
+        if (!(dssPrivateKeyEntry instanceof OpenSCPrivateKeyEntry)) {
+            throw new DSSException("Unsupported DSSPrivateKeyEntry instance " + dssPrivateKeyEntry.getClass() + " / Must be OpenSCPrivateKeyEntry.");
+        }
         final EncryptionAlgorithm encryptionAlgo = dssPrivateKeyEntry.getEncryptionAlgorithm();
         final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.getAlgorithm(encryptionAlgo, digestAlgorithm);
 
-        LOG.info("OpenSC>>>Signature algorithm: " + signatureAlgorithm.getJCEId());
+        logger.info("OpenSC>>>Signature algorithm: " + signatureAlgorithm.getJCEId());
         File tmpDir = null;
         try {
             String password = String.valueOf(passwordProtection.getPassword());
@@ -57,7 +66,8 @@ public class OpenSCSignatureToken extends AbstractKeyStoreTokenConnection {
             File toSignFile = new File(tmpDir + "/toSign");
             FileUtils.copyInputStreamToFile(inputStream, toSignFile);
             File signedFile = new File(tmpDir + "/signed");
-            launchProcess("pkcs11-tool --sign -v -p " + password + " --id 0001 --mechanism SHA256-RSA-PKCS --input-file " + toSignFile.getAbsolutePath() + " --output-file " + signedFile.getAbsolutePath());
+            String command = MessageFormat.format(signProperties.getOpenscCommandSign(), getId(), password, toSignFile.getAbsolutePath(), signedFile.getAbsolutePath());
+            launchProcess(command + module);
             SignatureValue value = new SignatureValue();
             value.setAlgorithm(signatureAlgorithm);
             value.setValue(FileUtils.readFileToByteArray(signedFile));
@@ -65,7 +75,7 @@ public class OpenSCSignatureToken extends AbstractKeyStoreTokenConnection {
             signedFile.delete();
             return value;
         } catch (IOException e) {
-            throw new EsupSignatureOpenSCException(e.getMessage(), e);
+            throw new DSSException(e);
         } finally {
             tmpDir.delete();
         }
@@ -73,12 +83,12 @@ public class OpenSCSignatureToken extends AbstractKeyStoreTokenConnection {
 
     @Override
     public SignatureValue sign(ToBeSigned toBeSigned, DigestAlgorithm digestAlgorithm, MaskGenerationFunction maskGenerationFunction, DSSPrivateKeyEntry dssPrivateKeyEntry) throws DSSException {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public SignatureValue sign(ToBeSigned toBeSigned, SignatureAlgorithm signatureAlgorithm, DSSPrivateKeyEntry dssPrivateKeyEntry) throws DSSException {
-        return sign(toBeSigned, signatureAlgorithm.getDigestAlgorithm(), dssPrivateKeyEntry);
+        return null;
     }
 
     @Override
@@ -97,80 +107,74 @@ public class OpenSCSignatureToken extends AbstractKeyStoreTokenConnection {
     }
 
     @Override
-    protected KeyStore getKeyStore() throws DSSException {
-        return null;
-    }
-
-    @Override
-    protected KeyStore.PasswordProtection getKeyProtectionParameter() {
-        return null;
-    }
-
-    @Override
-    public List<DSSPrivateKeyEntry> getKeys() throws EsupSignatureOpenSCException {
+    public List<DSSPrivateKeyEntry> getKeys() throws DSSException {
         final List<DSSPrivateKeyEntry> list = new ArrayList<>();
         list.add(getKey());
         return list;
     }
 
-    public DSSPrivateKeyEntry getKey() throws EsupSignatureOpenSCException {
-        byte[] cert = launchProcess("pkcs11-tool -r --id 0001 --type cert");
+    public DSSPrivateKeyEntry getKey() throws DSSException {
+        String command = MessageFormat.format(signProperties.getOpenscCommandGetKey(), getId());
+        byte[] cert = launchProcess(command + module);
         CertificateToken certificateToken = DSSUtils.loadCertificate(cert);
         try {
             return new OpenSCPrivateKeyEntry(certificateToken.getCertificate().getEncoded());
         } catch (CertificateEncodingException e) {
-            throw new EsupSignatureOpenSCException(e.getMessage(), e);
+            throw new DSSException(e);
         }
     }
 
-    public synchronized byte[] launchProcess(String command) throws EsupSignatureOpenSCException {
+    public String getId() {
+        String id = signProperties.getOpenscCommandCertId();
+        if(StringUtils.isBlank(id)) {
+            byte[] ids = launchProcess(signProperties.getOpenscCommandGetId() + module);
+            String[] lines = new String(ids).split("\n");
+            if (lines.length > 0) {
+                String lineWithID = "";
+                for (String line : lines) {
+                    if (line.contains("ID:")) {
+                        lineWithID = line;
+                        break;
+                    }
+                }
+                if (lineWithID.split(":").length > 1) {
+                    id = lineWithID.split(":")[1].trim();
+                }
+            } else {
+                throw new DSSException("No ID found");
+            }
+        }
+        return id;
+    }
+
+    public byte[] launchProcess(String command) throws DSSException {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder();
-            if(SystemUtils.IS_OS_WINDOWS) {
-                processBuilder.command("cmd", "/C", command);
-                Map<String, String> envs = processBuilder.environment();
-                System.out.println(envs.get("Path"));
-                envs.put("Path", "C:\\Program Files\\OpenSC Project\\OpenSC\\tools");
-            } else {
-                processBuilder.command("bash", "-c", command);
-            }
+            processBuilder.command("bash", "-c", signProperties.getOpenscPathLinux() + command);
             Process process = processBuilder.start();
             int exitVal = process.waitFor();
             if (exitVal == 0) {
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                transferTo(process.getInputStream(), outputStream);
+                IOUtils.copy(process.getInputStream(), outputStream);
                 return outputStream.toByteArray();
             } else {
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                transferTo(process.getErrorStream(), outputStream);
+                IOUtils.copy(process.getInputStream(), outputStream);
                 byte[] result = outputStream.toByteArray();
-                LOG.warn("OpenSc command fail");
+                logger.error("OpenSc command fail");
                 StringBuilder output = new StringBuilder();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(result)));
                 String line;
                 while ((line = reader.readLine()) != null) {
                     output.append(line).append("\n");
                 }
-                LOG.warn(output.toString());
-                throw new EsupSignatureOpenSCException(output.toString());
+                logger.error(output.toString());
+                throw new DSSException(output.toString());
             }
         } catch (InterruptedException | IOException e) {
-            throw new EsupSignatureOpenSCException(e.getMessage(), e);
+            throw new DSSException(e);
 
         }
-    }
-
-
-    public long transferTo(InputStream in, OutputStream out) throws IOException {
-        Objects.requireNonNull(out, "out");
-        long transferred = 0;
-        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
-        int read;
-        while ((read = in.read(buffer, 0, DEFAULT_BUFFER_SIZE)) >= 0) {
-            out.write(buffer, 0, read);
-            transferred += read;
-        }
-        return transferred;
     }
 
 }

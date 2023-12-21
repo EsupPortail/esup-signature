@@ -2,9 +2,13 @@ export default class SelectUser {
 
     constructor(selectName, limit, signRequestId, csrf) {
         console.info("init select-user : " + selectName);
+        this.selectField = $("#" + selectName);
+        this.stepNumber = "1";
+        if(selectName.split("-").length > 0) {
+            this.stepNumber = selectName.split("-")[1];
+        }
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.slimSelect = null;
-        this.selectField = $("#" + selectName);
         this.checkList = this.selectField.attr("data-es-check-list");
         this.signRequestId = signRequestId;
         this.csrf = csrf;
@@ -163,13 +167,11 @@ export default class SelectUser {
                 recipientEmails = new Array(this.slimSelect.getSelected());
             }
             if(!this.selectField.attr('id').includes("CC")) {
-                $('[id^="allSignToComplete-div"]').each(function () {
-                    if (recipientEmails.length > 1) {
-                        $(this).show();
-                    } else {
-                        $(this).hide();
-                    }
-                })
+                if (recipientEmails.length > 1) {
+                    $("#all-sign-to-complete-div-" + this.stepNumber).show();
+                } else {
+                    $("#all-sign-to-complete-div-" + this.stepNumber).hide();
+                }
                 if (this.csrf) {
                     let csrf = this.csrf;
                     $.ajax({

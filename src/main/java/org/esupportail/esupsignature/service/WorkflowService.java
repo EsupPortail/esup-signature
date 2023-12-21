@@ -298,15 +298,17 @@ public class WorkflowService {
     }
 
     @Transactional
-    public Workflow updateWorkflow(String userEppn, Long id, String name, List<String> recipientsCCEmails) {
+    public void updateWorkflow(String userEppn, Long id, String name, List<String> recipientsCCEmails) {
         User user = userService.getByEppn(userEppn);
         Workflow workflow = getById(id);
-        workflow.setCreateBy(user);
-        workflow.setName(name);
-        workflow.setDescription(name);
-        workflow.setTitle(name.replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_"));
-        addViewers(id, recipientsCCEmails);
-        return workflow;
+        if(workflow.getCreateBy().equals(user)) {
+            workflow.setName(name);
+            workflow.setDescription(name);
+            workflow.setTitle(name.replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_"));
+            addViewers(id, recipientsCCEmails);
+        } else {
+            throw new EsupSignatureRuntimeException("You are not authorized to update this workflow");
+        }
     }
 
     @Transactional

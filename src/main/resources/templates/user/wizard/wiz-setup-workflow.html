@@ -34,10 +34,9 @@
             <p>
                 Le circuit "<span th:text="${signBook.liveWorkflow.workflow.description}"></span>" comporte <span th:text="${signBook.liveWorkflow.workflow.workflowSteps.size()}"></span> étape<span th:if="${signBook.liveWorkflow.workflow.workflowSteps.size()} > 1">s</span>
             </p>
-            <ul class="list-group">
+            <ul class="list-group striped-list">
             <th:block th:each="step, iterator : ${signBook.liveWorkflow.workflow.workflowSteps}">
-                <div th:id="'step-wiz-' + ${iterator.index + 1}">
-                    <li class="list-group-item">
+                <li th:id="'step-wiz-' + ${iterator.index + 1}" class="list-group-item border-secondary">
                     <div class="form-group mb-1">
                         <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span>
                         <span th:if="${step.description != null && step.description != ''}" th:text="${step.description} + '.'"></span>
@@ -72,7 +71,6 @@
                     </div>
                     <div th:id="'tempUsers-recipientsEmails-' + ${iterator.index + 1}"></div>
                     </li>
-                </div>
             </th:block>
             <th:block th:if="${isTempUsers}">
                 <hr>

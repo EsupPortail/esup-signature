@@ -252,7 +252,7 @@ export class WizUi {
         let errorCallback = function() {
             $("#send-sign-submit").click();
         }
-        this.sendSteps('/user/wizard/wiz-init-workflow/' + this.newSignBookId + '?pending=' + pending, $("div[id^='step-wiz-']"), successCallback, errorCallback);
+        this.sendSteps('/user/wizard/wiz-init-workflow/' + this.newSignBookId + '?pending=' + pending, $("li[id^='step-wiz-']"), successCallback, errorCallback);
     }
 
     saveWorkflow() {
@@ -284,23 +284,12 @@ export class WizUi {
     }
 
     exit() {
-        let csrf = this.csrf;
         let self = this;
-        if(this.newSignBookId !== ""){
-            $.ajax({
-                url: "/user/wizard/wiz-end/" + this.newSignBookId + "?name=" + name + "&close=" + $('#close').val() + "&" + csrf.parameterName + "=" + csrf.token,
-                type: 'POST',
-                success: function() {
-                    location.href = "/user/signbooks/" + self.newSignBookId;
-                }
-            });
-        } else {
-            $.ajax({
-                url: "/user/wizard/wiz-save-workflow/" + self.newWorkflowId,
-                type: 'GET',
-                success: html => this.saveWorkflowDisplay(html)
-            });
-        }
+        $.ajax({
+            url: "/user/wizard/wiz-save-workflow/" + self.newWorkflowId,
+            type: 'GET',
+            success: html => self.saveWorkflowDisplay(html)
+        });
     }
 
     saveWorkflowDisplay(html) {
@@ -351,9 +340,7 @@ export class WizUi {
             let maxRecipient = $(this).attr('data-es-max-recipient');
             new SelectUser($(this).attr('id'), maxRecipient, null, self.csrf);
         });
-        $("#send-form-button").each(function(e){
-            $(this).on('click', e => self.sendForm(e));
-        });
+        $("#send-form-button").on("click", e => this.sendForm(e));
     }
 
     sendForm(e) {
@@ -398,7 +385,7 @@ export class WizUi {
                 step.recipientsCCEmails.push($(this).val());
             });
             step.userSignFirst = $('#userSignFirst').is(':checked');
-            step.allSignToComplete = $('#allSignToComplete-' + i).is(':checked');
+            step.allSignToComplete = $('#all-sign-to-complete-' + i).is(':checked');
             step.changeable = $('#changeable-' + i).is(':checked');
             step.autoSign = $('#autoSign-' + i).is(':checked');
             step.signType = $('#signType-' + i).val();
