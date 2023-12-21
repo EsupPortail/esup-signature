@@ -191,7 +191,7 @@ public class GlobalProperties {
     /**
      *  Pin du certificat cachet
      */
-    private String sealCertificatPin;
+    private String sealCertificatPin = "";
 
     /**
      *  Pin du certificat cachet
