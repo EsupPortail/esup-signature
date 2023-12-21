@@ -284,23 +284,12 @@ export class WizUi {
     }
 
     exit() {
-        let csrf = this.csrf;
         let self = this;
-        if(this.newSignBookId !== ""){
-            $.ajax({
-                url: "/user/wizard/wiz-end/" + this.newSignBookId + "?name=" + name + "&close=" + $('#close').val() + "&" + csrf.parameterName + "=" + csrf.token,
-                type: 'POST',
-                success: function() {
-                    location.href = "/user/signbooks/" + self.newSignBookId;
-                }
-            });
-        } else {
-            $.ajax({
-                url: "/user/wizard/wiz-save-workflow/" + self.newWorkflowId,
-                type: 'GET',
-                success: html => this.saveWorkflowDisplay(html)
-            });
-        }
+        $.ajax({
+            url: "/user/wizard/wiz-save-workflow/" + self.newWorkflowId,
+            type: 'GET',
+            success: html => self.saveWorkflowDisplay(html)
+        });
     }
 
     saveWorkflowDisplay(html) {

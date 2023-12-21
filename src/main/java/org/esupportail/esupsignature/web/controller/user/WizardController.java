@@ -7,7 +7,6 @@ import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
-import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignBookService;
@@ -21,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -226,10 +226,9 @@ public class WizardController {
     @PostMapping(value = "/wiz-save-workflow/{id}")
     @ResponseBody
     public ResponseEntity<Void> wizSaveWorkflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, @RequestParam(name="name") String name,
-                               @RequestParam(required = false) List<String> viewers,
-                               Model model) {
-        Workflow workflow = workflowService.updateWorkflow(userEppn, id, name, viewers);
-        model.addAttribute("workflow", workflow);
+                               @RequestParam(required = false) List<String> viewers) {
+        if(!StringUtils.hasText(name)) return ResponseEntity.badRequest().build();
+        workflowService.updateWorkflow(userEppn, id, name, viewers);
         return ResponseEntity.ok().build();
     }
 
@@ -254,45 +253,6 @@ public class WizardController {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
         }
         return ResponseEntity.ok().body(signBookId);
-    }
-
-    @GetMapping(value = "/wiz-end-workflow/{id}")
-    public String wizEndWorkflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model) throws EsupSignatureRuntimeException {
-        Workflow workflow = workflowService.getById(id);
-        if(workflow.getCreateBy().getEppn().equals(userEppn)) {
-            model.addAttribute("workflow", workflow);
-            return "user/wizard/wiz-end";
-        } else {
-            throw new EsupSignatureRuntimeException("not authorized");
-        }
-    }
-
-    @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
-    @PostMapping(value = "/wiz-end/{signBookId}")
-    public String wizEnd(@ModelAttribute("userEppn") String userEppn, @PathVariable("signBookId") Long signBookId, @RequestParam(name="close") String close, Model model) throws EsupSignatureRuntimeException, EsupSignatureMailException {
-        SignBook signBook = signBookService.getById(signBookId);
-        if(signBook.getCreateBy().getEppn().equals(userEppn)) {
-            mailService.sendCCAlert(signBook, null);
-            model.addAttribute("signBook", signBook);
-            model.addAttribute("close", close);
-            return "user/wizard/wiz-end";
-        } else {
-            throw new EsupSignatureRuntimeException("not authorized");
-        }
-    }
-
-    @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
-    @GetMapping(value = "/wizredirect/{signBookId}")
-    public String wizRedirect(@ModelAttribute("userEppn") String userEppn, @PathVariable("signBookId") Long signBookId, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
-        SignBook signBook = signBookService.getById(signBookId);
-        if(signBook.getCreateBy().getEppn().equals(userEppn)) {
-            if(signBook.getLiveWorkflow().getCurrentStep() == null) {
-                redirectAttributes.addFlashAttribute("message", new JsMessage("warn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande"));
-            }
-            return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
-        } else {
-            throw new EsupSignatureRuntimeException("not authorized");
-        }
     }
 
     @DeleteMapping(value = "/delete-workflow/{id}", produces = "text/html")
