@@ -32,19 +32,11 @@
                         <span title="Étape à venir" class="bs-stepper-circle">
                             <i class="fa-solid fa-clock"></i>
                         </span>
-                        <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}" class="text-danger float-end">
-                            <i class="fa-solid fa-users"></i>
-                        </span>
-                        <span title="Une signature suffit" th:unless="${workflowStep.allSignToComplete}" class="float-end">
-                            <i class="fa-solid fa-user"></i>
-                        </span>
-                        <div class="bs-stepper-label">
-                            <th:block th:if="${workflowStep != null && workflowStep.description != null && workflowStep.description != ''}">
-                                <span th:text="${workflowStep.description}"></span>
-                                <br/>
-                            </th:block>
-                            <span  th:text="#{'signbook.signtype.' + ${workflowStep.signType}}"></span>
-                            <br/>
+                        <th:block th:if="${workflowStep != null && workflowStep.description != null && workflowStep.description != ''}">
+                            <span th:text="${workflowStep.description}"></span>
+                        </th:block>
+                        <span  th:text="#{'signbook.signtype.' + ${workflowStep.signType}}"></span>
+                        <div>
                             <table class="table table-sm table-hover table-borderless">
                                 <th:block th:each="user : ${workflowStep.users}">
                                     <tr>
@@ -55,6 +47,8 @@
                                     </tr>
                                 </th:block>
                             </table>
+                            <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}" class="float-end"><i class="fa-solid fa-users"></i></span>
+                            <span title="Une signature suffit" th:unless="${workflowStep.allSignToComplete}" class="float-end text-muted"><i class="fa-solid fa-users-slash"></i></span>
                         </div>
                     </div>
                     <div th:if="${workflow.workflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
@@ -80,11 +74,11 @@
             </select>
             <div id="tempUsers-recipientsEmails-1"></div>
             <br/>
-            <div class="form-check form-switch form-switch-md mb-2" id="allSignToComplete-div" style="display: none">
-                <label class="form-check-label">
+            <div class="form-check form-switch form-switch-md mb-2" id="all-sign-to-complete-div-1" style="display: none">
+                <label class="form-check-label" for="all-sign-to-complete-1">
                     Tous les participants doivent-ils signer ?
                 </label>
-                <input type="checkbox" class="form-check-input" name="allSignToComplete"/>
+                <input type="checkbox" class="form-check-input" id="all-sign-to-complete-1" name="allSignToComplete"/>
             </div>
         </div>
         <label for="signType">Type de signature :</label>
