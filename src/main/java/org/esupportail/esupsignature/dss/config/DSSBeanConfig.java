@@ -5,10 +5,6 @@ import eu.europa.esig.dss.alert.ExceptionOnStatusAlert;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.jaxb.common.DocumentBuilderFactoryBuilder;
-import eu.europa.esig.dss.jaxb.common.SchemaFactoryBuilder;
-import eu.europa.esig.dss.jaxb.common.ValidatorConfigurator;
-import eu.europa.esig.dss.jaxb.common.XmlDefinerUtils;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.service.crl.JdbcCacheCRLSource;
@@ -26,8 +22,8 @@ import eu.europa.esig.dss.spi.client.http.IgnoreDataLoader;
 import eu.europa.esig.dss.spi.client.jdbc.JdbcCacheConnector;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
+import eu.europa.esig.dss.spi.x509.aia.AIASource;
 import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
-import eu.europa.esig.dss.spi.x509.aia.OnlineAIASource;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.tsl.alerts.LOTLAlert;
 import eu.europa.esig.dss.tsl.alerts.TLAlert;
@@ -47,6 +43,10 @@ import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.RevocationDataVerifier;
 import eu.europa.esig.dss.validation.SignaturePolicyProvider;
 import eu.europa.esig.dss.xades.signature.XAdESService;
+import eu.europa.esig.dss.xml.common.DocumentBuilderFactoryBuilder;
+import eu.europa.esig.dss.xml.common.SchemaFactoryBuilder;
+import eu.europa.esig.dss.xml.common.ValidatorConfigurator;
+import eu.europa.esig.dss.xml.common.XmlDefinerUtils;
 import jakarta.annotation.PostConstruct;
 import org.apache.hc.client5.http.ssl.TrustAllStrategy;
 import org.slf4j.Logger;
@@ -147,12 +147,12 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public OnlineAIASource onlineAIASource(CommonsDataLoader dataLoader) {
+	public AIASource onlineAIASource(CommonsDataLoader dataLoader) {
 		return new DefaultAIASource(dataLoader);
 	}
 
 	@Bean
-	public JdbcCacheAIASource cachedAIASource(JdbcCacheConnector jdbcCacheConnector, OnlineAIASource onlineAIASource) {
+	public JdbcCacheAIASource cachedAIASource(JdbcCacheConnector jdbcCacheConnector, AIASource onlineAIASource) {
 		JdbcCacheAIASource jdbcCacheAIASource = new JdbcCacheAIASource();
 		jdbcCacheAIASource.setJdbcCacheConnector(jdbcCacheConnector);
 		jdbcCacheAIASource.setProxySource(onlineAIASource);
@@ -176,7 +176,7 @@ public class DSSBeanConfig {
 	@Bean
 	public KeyStoreCertificateSource ojContentKeyStore() {
 		try {
-			return new KeyStoreCertificateSource(new ClassPathResource("/keystore.p12").getInputStream(), "PKCS12", "dss-password");
+			return new KeyStoreCertificateSource(new ClassPathResource("/keystore.p12").getInputStream(), "PKCS12", "dss-password".toCharArray());
 		} catch (IOException e) {
 			throw new DSSException("Unable to load the file " + "keystore.p12", e);
 		}
@@ -250,8 +250,7 @@ public class DSSBeanConfig {
 
 	@Bean
 	public RevocationDataVerifier revocationDataVerifier() {
-		RevocationDataVerifier revocationDataVerifier = RevocationDataVerifier.createDefaultRevocationDataVerifier();
-		return revocationDataVerifier;
+        return RevocationDataVerifier.createDefaultRevocationDataVerifier();
 	}
 
 	@Bean

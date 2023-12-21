@@ -150,24 +150,22 @@ public class WizardController {
     @PostMapping(value = "/wiz-add-step-signbook/{signBookId}", produces = "text/html")
     public String wizWorkflowSignAddStep(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                        @PathVariable("signBookId") Long signBookId,
-                       @RequestParam(name="end", required = false) Boolean end,
+                       @RequestParam(name="end", required = false, defaultValue = "false") Boolean end,
                        @RequestParam(name="close", required = false) Boolean close,
                        @RequestParam(name="start", required = false) Boolean start,
                        @RequestBody List<WorkflowStepDto> steps,
                        Model model) throws EsupSignatureRuntimeException {
         SignBook signBook = signBookService.getById(signBookId);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
-            if(!steps.get(0).getRecipients().isEmpty()) {
+            if(!end && !steps.isEmpty()) {
                 if(steps.get(0).getUserSignFirst() != null && steps.get(0).getUserSignFirst()) {
                     signBookService.addUserSignFirstStep(signBookId, userEppn);
                 }
                 signBookService.addNewStepToSignBook(signBookId, steps, authUserEppn);
-            } else {
-                end = true;
             }
             model.addAttribute("signBook", signBook);
             model.addAttribute("close", close);
-            if(end != null && end) {
+            if(end) {
                 if(signBookService.startLiveWorkflow(signBook, userEppn, authUserEppn, start)) {
                     return "user/wizard/wiz-save";
                 } else {
