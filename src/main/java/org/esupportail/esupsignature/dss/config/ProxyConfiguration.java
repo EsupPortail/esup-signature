@@ -29,7 +29,7 @@ public class ProxyConfiguration {
 			httpProperties.setHost(dssProxyProperties.getHttpHost());
 			httpProperties.setPort(dssProxyProperties.getHttpPort());
 			httpProperties.setUser(dssProxyProperties.getHttpUser());
-			httpProperties.setPassword(dssProxyProperties.getHttpPassword());
+			httpProperties.setPassword(dssProxyProperties.getHttpPassword().toCharArray());
 			httpProperties.setExcludedHosts(Collections.singleton(dssProxyProperties.getHttpExcludedHosts()));
 			config.setHttpProperties(httpProperties);
 		}
@@ -38,7 +38,7 @@ public class ProxyConfiguration {
 			httpsProperties.setHost(dssProxyProperties.getHttpsHost());
 			httpsProperties.setPort(dssProxyProperties.getHttpsPort());
 			httpsProperties.setUser(dssProxyProperties.getHttpsUser());
-			httpsProperties.setPassword(dssProxyProperties.getHttpsPassword());
+			httpsProperties.setPassword(dssProxyProperties.getHttpsPassword().toCharArray());
 			httpsProperties.setExcludedHosts(Collections.singleton(dssProxyProperties.getHttpsExcludedHosts()));
 			config.setHttpsProperties(httpsProperties);
 		}

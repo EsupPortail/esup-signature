@@ -11,10 +11,11 @@
                             Le circuit n’est pas démarré
                         </th:block>
                         <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" th:each="liveWorkflowStep, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
-                            <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-dark bg-white rounded p-1" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber} ? 'div-disable'">
-                                <th:block th:if="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
+                            <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-dark bg-white rounded p-1" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} ? 'div-disable'">
+                                <th:block th:if="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
                                         <span title="Étape à venir" class="bs-stepper-circle">
-                                            <i class="fa-solid fa-clock"></i>
+                                            <i th:if="${!liveWorkflowStep.getAutoSign()}" class="fa-solid fa-clock"></i>
+                                            <i th:if="${liveWorkflowStep.getAutoSign()}" class="fa-solid fa-robot"></i>
                                         </span>
                                 </th:block>
                                 <th:block th:if="${iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
@@ -43,19 +44,17 @@
                                         <i class="fa-solid fa-times"></i>
                                     </span>
                                 </th:block>
-                                <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="text-danger float-end"><i class="fa-solid fa-users"></i></span>
-                                <span title="Une signature suffit" th:unless="${liveWorkflowStep.allSignToComplete}" class="float-end d-none"><i class="fa-solid fa-user"></i></span>
-                                <span style="font-size: 10pt; font-weight: bold;" th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></span>
+                                <span class="step-type" th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></span>
                                 <div>
                                     <th:block th:if="${liveWorkflowStep.workflowStep != null && liveWorkflowStep.workflowStep.description != null && liveWorkflowStep.workflowStep.description != ''}">
                                         <span th:text="${liveWorkflowStep.workflowStep.description}"></span>
                                         <br/>
                                     </th:block>
-                                    <table class="table table-sm table-hover table-borderless">
+                                    <table th:if="${!liveWorkflowStep.getAutoSign()}" class="table table-sm table-hover table-borderless">
                                     <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
                                         <tr>
                                             <td th:title="${recipient.user.email}">
-                                                <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                                <span style="word-break: break-all" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
                                                 <br/>
                                                 <small th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" th:text="'Le ' + ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}"></small>
                                             </td>
@@ -67,7 +66,7 @@
                                             </td>
                                             <td>
                                                 <a class="btn btn-sm btn-outline-primary"
-                                                       th:href="@{'/ws-secure/signrequests/get-file/' + ${signRequest.signedDocuments.get(iterator.index).id}}"
+                                                    th:href="@{'/ws-secure/global/get-file/' + ${signRequest.signedDocuments.get(iterator.index).id}}"
                                                     title="Récupérer le document signé à cette étape"
                                                     th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}">
                                                     <i class="fa-solid fa-download"></i></a>
@@ -98,6 +97,9 @@
                                         </div>
                                     </th:block>
                                     </table>
+                                    <small title="" th:if="${liveWorkflowStep.getAutoSign()}">Étape automatique</small>
+                                    <span title="Une signature suffit" th:unless="${liveWorkflowStep.allSignToComplete}" class="float-end text-muted"><i class="fa-solid fa-users-slash"></i></span>
+                                    <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="float-end"><i class="fa-solid fa-users"></i></span>
                                 </div>
                             </div>
                             <div th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>

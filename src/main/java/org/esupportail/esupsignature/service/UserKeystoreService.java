@@ -1,9 +1,9 @@
 package org.esupportail.esupsignature.service;
 
 import eu.europa.esig.dss.model.x509.CertificateToken;
-import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
+import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.validation.CertificateValidator;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.reports.CertificateReports;
@@ -48,7 +48,7 @@ public class UserKeystoreService {
 		}
 	}
 
-	public CertificateToken getCertificateToken(AbstractKeyStoreTokenConnection token) throws EsupSignatureKeystoreException {
+	public CertificateToken getCertificateToken(SignatureTokenConnection token) throws EsupSignatureKeystoreException {
 		try {
 			DSSPrivateKeyEntry ksPrivateKeyEntry = token.getKeys().get(0);
 			return ksPrivateKeyEntry.getCertificate();
@@ -58,10 +58,9 @@ public class UserKeystoreService {
 		}
 	}
 
-	public CertificateToken[] getCertificateTokenChain(AbstractKeyStoreTokenConnection token) {
-			DSSPrivateKeyEntry ksPrivateKeyEntry = token.getKeys().get(0);
-			CertificateToken[] certificateTokens = ksPrivateKeyEntry.getCertificateChain();
-			return certificateTokens;
+	public CertificateToken[] getCertificateTokenChain(SignatureTokenConnection token) {
+		DSSPrivateKeyEntry ksPrivateKeyEntry = token.getKeys().get(0);
+        return ksPrivateKeyEntry.getCertificateChain();
 	}
 
 	@Transactional

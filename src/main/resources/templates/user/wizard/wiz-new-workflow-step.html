@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<div class="modal-header">
+    <h3 class="modal-title">Assistant de création de circuit</h3>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <div id="stepper1" class="bs-stepper linear">
+        <div class="bs-stepper-header" role="tablist">
+            <div class="step active" data-bs-target="#test-l-3">
+                <span class="bs-stepper-circle"><i class="fa-solid fa-project-diagram"></i></span>
+                <span class="bs-stepper-label">Création du circuit</span>
+            </div>
+            <div class="bs-stepper-line"></div>
+            <div class="step" data-bs-target="#test-l-3">
+                <span class="bs-stepper-circle"><i class="fa-solid fa-save"></i></span>
+                <span class="bs-stepper-label">Sauvegarde</span>
+            </div>
+            <div class="bs-stepper-line"></div>
+            <div class="step" data-bs-target="#test-l-3">
+                <span class="bs-stepper-circle"><i class="fa-solid fa-flag-checkered"></i></span>
+                <span class="bs-stepper-label">Fin</span>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <div id="stepper2" class="bs-stepper linear">
+        <div class="bs-stepper-header" role="tablist">
+            <th:block th:if="${workflow != null}">
+                <th:block th:if="${workflow.workflowSteps.size() > 0}" th:each="workflowStep, iterator : ${workflow.workflowSteps}">
+                    <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-dark bg-white rounded p-1" th:name="'step_' + ${iterator.index}">
+                        <span title="Étape à venir" class="bs-stepper-circle">
+                            <i class="fa-solid fa-clock"></i>
+                        </span>
+                        <th:block th:if="${workflowStep != null && workflowStep.description != null && workflowStep.description != ''}">
+                            <span th:text="${workflowStep.description}"></span>
+                        </th:block>
+                        <span  th:text="#{'signbook.signtype.' + ${workflowStep.signType}}"></span>
+                        <div>
+                            <table class="table table-sm table-hover table-borderless">
+                                <th:block th:each="user : ${workflowStep.users}">
+                                    <tr>
+                                        <td th:title="${user.email}" th:text="${user.firstname + ' ' + user.name}"></td>
+                                        <td class="text-right">
+                                            <i title="N'a pas signé le document" class="fa-solid fa-minus-circle text-secondary"></i>
+                                        </td>
+                                    </tr>
+                                </th:block>
+                            </table>
+                            <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}" class="float-end"><i class="fa-solid fa-users"></i></span>
+                            <span title="Une signature suffit" th:unless="${workflowStep.allSignToComplete}" class="float-end text-muted"><i class="fa-solid fa-users-slash"></i></span>
+                        </div>
+                    </div>
+                    <div th:if="${workflow.workflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
+                </th:block>
+            </th:block>
+        </div>
+    </div>
+    <hr>
+    <h4 class="d-flex justify-content-center mt-4" th:text="'Paramètres de l’étape ' + ${workflow != null? workflow.workflowSteps.size() + 1 : 1}"></h4>
+    <form id="wiz-step-form">
+        <input type="submit" id="wiz-step-form-submit" class="d-none">
+        <input th:if="${workflow != null}" type="hidden" id="workflowId" name="workflowId" th:value="${workflow.id}">
+        <div class="form-check form-switch form-switch-md">
+            <input type="checkbox" class="form-check-input" id="changeable" name="changeable" onclick="if(this.checked) {$('#recipientsEmails').attr('required', false);} else {$('#recipientsEmails').attr('required', true);}"/>
+            <label for="changeable" class="form-check-label">
+                Le créateur du circuit pourra modifier les participants de cette étape
+            </label>
+        </div>
+        <div class="col-lg-12">
+            <label class="form-label" for="recipientsEmails-1">Choisir les participants</label>
+            <select data-es-check-list="true" name="recipientsEmails" id="recipientsEmails-1" multiple="multiple" required>
+                <option data-placeholder="true"></option>
+            </select>
+            <div id="tempUsers-recipientsEmails-1"></div>
+            <br/>
+            <div class="form-check form-switch form-switch-md mb-2" id="all-sign-to-complete-div-1" style="display: none">
+                <label class="form-check-label" for="all-sign-to-complete-1">
+                    Tous les participants doivent-ils signer ?
+                </label>
+                <input type="checkbox" class="form-check-input" id="all-sign-to-complete-1" name="allSignToComplete"/>
+            </div>
+        </div>
+        <label for="signType">Type de signature :</label>
+        <select class="form-select" id="signType" name="signType">
+            <th:block th:each="signType : ${signTypes}">
+                <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
+            </th:block>
+        </select>
+        <input type="hidden" name="name" th:value="${name}">
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+    <button type="button" id="save-step" value="true" class="btn btn-primary">
+        <i class="fa-solid fa-save"></i> Enregistrer cette étape
+    </button>
+    <button id="wiz-exit" name="wiz-exit" value="true" th:if="${workflow != null && workflow.workflowSteps.size() > 0}" type="button" class="btn btn-success">
+        <i class="fa-solid fa-flag-checkered"></i> Terminer
+    </button>
+</div>
+</html>

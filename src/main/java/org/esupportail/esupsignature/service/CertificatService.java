@@ -3,19 +3,14 @@ package org.esupportail.esupsignature.service;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.spi.DSSUtils;
-import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
-import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import eu.europa.esig.dss.token.Pkcs11SignatureToken;
-import eu.europa.esig.dss.token.Pkcs12SignatureToken;
+import eu.europa.esig.dss.token.*;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang.SystemUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.entity.Certificat;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
-import org.esupportail.esupsignature.exception.EsupSignatureOpenSCException;
 import org.esupportail.esupsignature.repository.CertificatRepository;
 import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.esupportail.esupsignature.service.utils.sign.OpenSCSignatureToken;
@@ -29,14 +24,16 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
-import java.security.*;
-import java.security.cert.CertificateException;
+import java.security.Key;
+import java.security.KeyStore;
 import java.util.*;
 
 @Service
 public class CertificatService {
 
     private static final Logger logger = LoggerFactory.getLogger(CertificatService.class);
+
+    private final OpenSCSignatureToken openSCSignatureToken;
 
     @Resource
     private UserService userService;
@@ -55,25 +52,21 @@ public class CertificatService {
     private DocumentService documentService;
 
     @Resource
-    private SignProperties signProperties;
-
-    @Resource
     private WorkflowStepRepository workflowStepRepository;
 
-    @Resource
     private final GlobalProperties globalProperties;
 
-    public CertificatService(GlobalProperties globalProperties) {
+    private final SignProperties signProperties;
+
+    public CertificatService(GlobalProperties globalProperties, SignProperties signProperties) {
         this.globalProperties = globalProperties;
+        this.openSCSignatureToken = new OpenSCSignatureToken(new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray()), signProperties);
+        this.signProperties = signProperties;
     }
 
 
     public Certificat getById(Long id) {
         return certificatRepository.findById(id).get();
-    }
-
-    public Certificat getCertificatByRole(String role) {
-        return certificatRepository.findByRolesIn(Collections.singleton(role)).get(0);
     }
 
     @Transactional
@@ -144,21 +137,21 @@ public class CertificatService {
         return null;
     }
 
-    public AbstractKeyStoreTokenConnection getSealToken() {
-        if(globalProperties.getSealCertificatDriver() != null && (globalProperties.getSealCertificatType().equals("PKCS11") || globalProperties.getSealCertificatType().equals("PKCS12"))) {
-           return getSealTokenPKCS();
-        } else if(globalProperties.getSealCertificatType().equals("OPENSC")){
-            return getSealTokenOpenSC();
+    public SignatureTokenConnection getSealToken() {
+        if(globalProperties.getSealCertificatDriver() != null && (globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12))) {
+           return getPkcsToken();
+        } else if(globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC)){
+            return openSCSignatureToken;
         }
         return null;
     }
 
-    public AbstractKeyStoreTokenConnection getSealTokenPKCS() throws EsupSignatureKeystoreException {
+    public AbstractKeyStoreTokenConnection getPkcsToken() throws EsupSignatureKeystoreException {
         if(globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatPin() != null) {
-            if (globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals("PKCS11")) {
+            if (globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) {
                 KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
                 return new Pkcs11SignatureToken(globalProperties.getSealCertificatDriver(), passwordProtection);
-            } else if (globalProperties.getSealCertificatFile() != null && globalProperties.getSealCertificatType().equals("PKCS12")) {
+            } else if (globalProperties.getSealCertificatFile() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) {
                 try {
                     return userKeystoreService.getPkcs12Token(new FileInputStream(globalProperties.getSealCertificatFile()), globalProperties.getSealCertificatPin());
                 } catch (FileNotFoundException e) {
@@ -169,109 +162,22 @@ public class CertificatService {
         throw new EsupSignatureKeystoreException("no seal certificat present (no type or no pin");
     }
 
-    public OpenSCSignatureToken getSealTokenOpenSC() throws EsupSignatureKeystoreException {
-        return new OpenSCSignatureToken(new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray()));
-    }
-
-    public CertificateToken getKey() throws DSSException {
+    public CertificateToken getOpenSCKey() throws DSSException {
         try {
-            byte[] cert = launchProcess("pkcs11-tool -r --id 0001 --type cert");
-            return DSSUtils.loadCertificate(cert);
+            return DSSUtils.loadCertificate(openSCSignatureToken.getKey().getCertificate().getEncoded());
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
         return null;
     }
 
-    public CertificateToken[] getCertificateChain() {
-        try {
-            byte[] cert = launchProcess("pkcs11-tool -r --id 0001 --type cert");
-            return new CertificateToken[]{DSSUtils.loadCertificate(cert)};
-        } catch (EsupSignatureOpenSCException e) {
-            logger.error(e.getMessage());
-        }
-        return null;
-    }
-
-    public byte[] launchProcess(String command) throws DSSException {
-        try {
-            ProcessBuilder processBuilder = new ProcessBuilder();
-            if(SystemUtils.IS_OS_WINDOWS) {
-                processBuilder.command("cmd", "/C", command);
-                Map<String, String> envs = processBuilder.environment();
-                System.out.println(envs.get("Path"));
-                envs.put("Path", "C:\\Program Files\\OpenSC Project\\OpenSC\\tools");
-            } else {
-                processBuilder.command("bash", "-c", command);
-            }
-            Process process = processBuilder.start();
-            int exitVal = process.waitFor();
-            if (exitVal == 0) {
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                transferTo(process.getInputStream(), outputStream);
-                return outputStream.toByteArray();
-            } else {
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                transferTo(process.getErrorStream(), outputStream);
-                byte[] result = outputStream.toByteArray();
-                logger.warn("OpenSc command fail");
-                StringBuilder output = new StringBuilder();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(result)));
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    output.append(line).append("\n");
-                }
-                logger.warn(output.toString());
-                throw new DSSException(output.toString());
-            }
-        } catch (InterruptedException | IOException e) {
-            throw new DSSException(e);
-
-        }
-    }
-
-    private static final int DEFAULT_BUFFER_SIZE = 8192;
-
-    public void transferTo(InputStream in, OutputStream out) throws IOException {
-        Objects.requireNonNull(out, "out");
-        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
-        int read;
-        while ((read = in.read(buffer, 0, DEFAULT_BUFFER_SIZE)) >= 0) {
-            out.write(buffer, 0, read);
-        }
-    }
-
-    public KeyStore getSealKeyStore() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException, EsupSignatureKeystoreException {
-        if(globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatPin() != null) {
-            if (globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals("PKCS11")) {
-                KeyStore keyStore = KeyStore.getInstance("PKCS11");
-                KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
-                keyStore.load(CertificatService.class.getResourceAsStream(globalProperties.getSealCertificatDriver()), passwordProtection.getPassword());
-                return keyStore;
-            } else if (globalProperties.getSealCertificatFile() != null && globalProperties.getSealCertificatType().equals("PKCS12")) {
-                KeyStore keyStore = KeyStore.getInstance("PKCS12");
-                KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
-                keyStore.load(new FileInputStream(globalProperties.getSealCertificatFile()), passwordProtection.getPassword());
-                return keyStore;
-            }
-        }
-        throw new EsupSignatureKeystoreException("no seal certificat present");
-    }
-
-    public PrivateKey getSealPrivateKey() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, UnrecoverableKeyException, EsupSignatureKeystoreException {
-        KeyStore keyStore = getSealKeyStore();
-        KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
-        return (PrivateKey) keyStore.getKey(keyStore.aliases().nextElement(), passwordProtection.getPassword());
-
-    }
-
     public List<DSSPrivateKeyEntry> getSealCertificats() {
         List<DSSPrivateKeyEntry> dssPrivateKeyEntries = new ArrayList<>();
         try {
-            if (globalProperties.getSealCertificatDriver() != null && (globalProperties.getSealCertificatType().equals("PKCS11") || globalProperties.getSealCertificatType().equals("PKCS12"))) {
-                dssPrivateKeyEntries = getSealTokenPKCS().getKeys();
-            } else if (globalProperties.getSealCertificatType().equals("OPENSC")) {
-                dssPrivateKeyEntries = getSealTokenOpenSC().getKeys();
+            if (globalProperties.getSealCertificatDriver() != null && (globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12))) {
+                dssPrivateKeyEntries = getPkcsToken().getKeys();
+            } else if (globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC)) {
+                dssPrivateKeyEntries = openSCSignatureToken.getKeys();
             }
         } catch (Exception e) {
             logger.debug("no seal certificat found", e);

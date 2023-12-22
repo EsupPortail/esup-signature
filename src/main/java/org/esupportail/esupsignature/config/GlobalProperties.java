@@ -172,7 +172,11 @@ public class GlobalProperties {
     /**
      *  Type de certificat cachet (PKCS11, PKCS12, OPENSC)
      */
-    private String sealCertificatType;
+    private TokenType sealCertificatType;
+
+    public enum TokenType {
+        PKCS11, PKCS12, OPENSC
+    }
 
     /**
      *  Emplacement du certificat cachet (actif pour PKCS12)
@@ -187,7 +191,7 @@ public class GlobalProperties {
     /**
      *  Pin du certificat cachet
      */
-    private String sealCertificatPin;
+    private String sealCertificatPin = "";
 
     /**
      *  Pin du certificat cachet
@@ -528,11 +532,11 @@ public class GlobalProperties {
         this.exportAttachements = exportAttachements;
     }
 
-    public String getSealCertificatType() {
+    public TokenType getSealCertificatType() {
         return sealCertificatType;
     }
 
-    public void setSealCertificatType(String sealCertificatType) {
+    public void setSealCertificatType(TokenType sealCertificatType) {
         this.sealCertificatType = sealCertificatType;
     }
 

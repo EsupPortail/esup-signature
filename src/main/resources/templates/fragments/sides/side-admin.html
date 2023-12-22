@@ -16,7 +16,7 @@
         </a>
         <a th:classappend="${activeMenu == 'users'} ? 'btn-secondary' : 'btn-light'"
            title="Gestion des utilisateurs" type="button" href="/admin/users" class="mb-1 col-12 btn text-left">
-            <i class="fa-solid fa-users"></i> <span class="sidebar-label">Utilisateurs</span>
+            <i class="fa-solid fa-user-group"></i> <span class="sidebar-label">Utilisateurs</span>
         </a>
         <a th:classappend="${activeMenu == 'charts'} ? 'btn-secondary' : 'btn-light'"
            title="Statistiques" type="button" href="/admin/charts" class="mb-1 col-12 btn text-left">
@@ -50,7 +50,7 @@
         <div class="hr"><i class="fa-solid fa-tools me-1"></i><span class="sidebar-label"> Outils</span></div>
         <a th:classappend="${activeMenu == 'currentSessions'} ? 'btn-secondary' : 'btn-light'"
            title="Sessions courantes" href="/admin/currentsessions" class="btn col-12 mb-1 text-left">
-            <i class="fa-solid fa-users"></i> <span class="sidebar-label">Sessions courantes</span> <span th:text="${nbSessions}" class="badge bg-primary"></span>
+            <i class="fa-solid fa-user-lock"></i> <span class="sidebar-label">Sessions courantes</span> <span th:text="${nbSessions}" class="badge bg-primary"></span>
         </a>
         <a th:if="${globalProperties.enableSu}" th:classappend="${activeMenu == 'su'} ? 'btn-secondary' : 'btn-light'"
            title="Switch user" href="/admin/su" class="btn col-12 mb-1 text-left">

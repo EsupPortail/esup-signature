@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<div class="modal-header">
+    <h3  class="d-flex justify-content-center mt-4">Création de la demande personnalisée terminée</h3>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
 <div class="bs-stepper-header" role="tablist">
     <div class="step" data-bs-target="#test-l-2">
         <span class="bs-stepper-circle bg-success"><i class="fa-solid fa-copy"></i></span>
@@ -21,23 +26,24 @@
         <span class="bs-stepper-label">Fin</span>
     </div>
 </div>
-<h4 class="d-flex justify-content-center mt-4">Création du circuit terminée</h4>
 <form id="saveWorkflowForm">
     <input type="hidden" id="close" th:value="${close}" />
     <div class="row">
         <div class="col-lg-12">
             <label for="workflowName"><strong>Choisir un nom pour sauvegarder le circuit en tant que modèle</strong></label>
-            <input type="submit" id="saveWorkflowSubmit" class="d-none">
+            <input type="submit" id="save-workflow-submit" class="d-none">
             <input type="hidden" id="elementId" th:value="${signBook.id}">
             <input type="text" id="workflowName" name="name" class="form-control required" required>
-            <br>
-            <button id="exitWiz" type="button" class="btn btn-secondary float-start">
-                <i class="fa-solid fa-door-open"></i> Fermer sans enregistrer
-            </button>
-            <button id="saveWorkflow" type="button" class="btn btn-success float-end">
-                <i class="fa-solid fa-save"></i> Enregistrer le circuit
-            </button>
         </div>
     </div>
 </form>
+</div>
+<div class="modal-footer">
+    <button id="wiz-exit" type="button" class="btn btn-secondary float-start">
+        <i class="fa-solid fa-door-open"></i> Fermer sans enregistrer
+    </button>
+    <button id="save-workflow" type="button" class="btn btn-success float-end">
+        <i class="fa-solid fa-save"></i> Enregistrer le circuit
+    </button>
+</div>
 </html>

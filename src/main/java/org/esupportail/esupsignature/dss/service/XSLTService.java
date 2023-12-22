@@ -1,17 +1,17 @@
 package org.esupportail.esupsignature.dss.service;
 
-import eu.europa.esig.dss.DSSXmlErrorListener;
-import eu.europa.esig.dss.DomUtils;
 import eu.europa.esig.dss.detailedreport.DetailedReportFacade;
 import eu.europa.esig.dss.diagnostic.DiagnosticDataFacade;
 import eu.europa.esig.dss.diagnostic.jaxb.XmlDiagnosticData;
 import eu.europa.esig.dss.simplereport.SimpleReportFacade;
+import eu.europa.esig.dss.xml.utils.DSSXmlErrorListener;
+import eu.europa.esig.dss.xml.utils.DomUtils;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.PostConstruct;
 import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
