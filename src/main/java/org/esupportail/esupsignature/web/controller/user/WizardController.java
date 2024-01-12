@@ -138,7 +138,7 @@ public class WizardController {
                 signBookService.initSignBook(signBookId, workflowId, userEppn);
                 model.addAttribute("isTempUsers", signRequestService.isTempUsers(signBook.getId()));
                 model.addAttribute("workflowId", workflowId);
-                model.addAttribute("modalTitle", "Création d'une nouvelle demande dans le circuit : " + signBook.getLiveWorkflow().getWorkflow().getName());
+                model.addAttribute("modalTitle", "Création d'une nouvelle demande dans le circuit : " + signBook.getLiveWorkflow().getWorkflow().getDescription());
                 return "user/wizard/wiz-setup-workflow";
             }
         }

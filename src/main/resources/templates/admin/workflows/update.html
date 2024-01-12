@@ -117,7 +117,7 @@
                                     Les superviseurs ont accès à l’espace supervision du circuit. Cela permet de consulter et supprimer les demandes associées et d’exporter les données
                                 </div>
                             </div>
-                            <select id="managersSelect" class="select-users" multiple="multiple" name="managers">
+                            <select id="managersSelect" class="auto-select-users" multiple="multiple" name="managers">
                                 <option data-placeholder="true"></option>
                                 <th:block th:each="manager : ${workflow.managers}">
                                     <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
@@ -136,7 +136,7 @@
                                     Les observateurs sont alertés à la fin d’un circuit et ont un accès en lecture. (Modifiable à la création du circuit)
                                 </div>
                             </div>
-                            <select id="viewersSelect" class="select-users" multiple="multiple" name="viewersEmails">
+                            <select id="viewersSelect" class="auto-select-users" multiple="multiple" name="viewersEmails">
                                 <option data-placeholder="true"></option>
                                 <th:block th:each="viewer : ${workflow.viewers}">
                                     <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
