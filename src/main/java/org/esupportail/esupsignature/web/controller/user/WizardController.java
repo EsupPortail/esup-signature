@@ -117,7 +117,7 @@ public class WizardController {
         String name = "Demande personnalisée";
         if (workflowId != null) {
             workflow = workflowService.getById(workflowId);
-            name = workflow.getName();
+            name = workflow.getDescription();
         }
         SignBook signBook = signBookService.createSignBook("", workflow, name, userEppn, false);
         return ResponseEntity.ok().body(signBook.getId());
