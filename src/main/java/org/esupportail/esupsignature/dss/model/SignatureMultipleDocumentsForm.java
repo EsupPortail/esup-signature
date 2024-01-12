@@ -3,7 +3,7 @@ package org.esupportail.esupsignature.dss.model;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
-import org.esupportail.esupsignature.dss.DssUtils;
+import org.esupportail.esupsignature.dss.DssUtilsService;
 
 import java.util.List;
 
@@ -33,7 +33,7 @@ public class SignatureMultipleDocumentsForm extends AbstractSignatureForm implem
 
 	@AssertTrue(message = "{error.to.sign.files.mandatory}")
 	public boolean isDocumentsToSign() {
-		return DssUtils.isCollectionNotEmpty(documentsToSign);
+		return DssUtilsService.isCollectionNotEmpty(documentsToSign);
 	}
 
 }
