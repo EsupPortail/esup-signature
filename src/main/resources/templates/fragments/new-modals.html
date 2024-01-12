@@ -1,357 +1,54 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
-<!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <div th:fragment="new-modals" class="w-100" th:with="isUserOnSu = ${userEppn != authUserEppn}">
-    <div th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')') || #authorization.expression('hasRole(''ROLE_FRANCECONNECT'')')}">
-        <div data-bs-focus="false" class="modal fade" id="fastSignRequestModal" th:unless="${globalProperties.hideAutoSign}"  role="dialog" aria-labelledby="addSignRequestLabel"
-             aria-hidden="true">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                    <form id="fast-sign-form" th:action="'/ws-secure/signrequests/create-sign-book?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
-                          method="post" enctype="multipart/form-data">
-                        <div class="modal-header">
-                            <h3 class="modal-title" id="fastSignRequestLabel">Signer un document présent sur votre poste de travail</h3>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="col-lg-12">
-                                <div class="form-group mb-3">
-                                    <label class="form-label" for="fast-sign-file-input">Choix des fichiers à signer</label>
-                                    <input id="fast-sign-file-input" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''" required>
-                                    <script th:inline="javascript" type="module">
-                                        import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=[[${versionApp}]]';
-                                        new FilesInput($("#fast-sign-file-input"), [[${globalProperties.maxUploadSize}]], [[${_csrf}]]);
-                                    </script>
-                                </div>
-                                <input type="hidden" name="signType" value="pdfImageStamp">
-<!--                                <label class="form-label" for="signType">Choisir un type de signature</label>-->
-<!--                                <select name="signType" id="signType" class="slim-select-simple">-->
-<!--                                    <th:block th:each="signType : ${signTypes}">-->
-<!--                                        <option th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" th:value="${signType}"-->
-<!--                                                th:text="#{'signbook.signtype.' + ${signType}}"></option>-->
-<!--                                    </th:block>-->
-<!--                                </select>-->
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" id="fast-form-submit" class="d-none"></button>
-                            <button type="button" id="fast-form-cancel" class="btn btn-secondary float-start d-none" onclick="window.location.reload();">Annuler</button>
-                            <button type="button" id="fast-form-close" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
-                            <button type="button" id="fast-sign-button" class="btn btn-success float-end">Valider</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div data-bs-focus="false" class="modal fade" id="wizModal" th:unless="${globalProperties.hideWizard}"  role="dialog" aria-labelledby="addSignRequestLabel"
-             aria-hidden="true">
-            <div class="modal-dialog modal-xl" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3 class="modal-title">Assistant de création de circuit</h3>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <div id="wizFrame" style="width: 100%; height: 600px;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div data-bs-focus="false" class="modal fade" id="sendSignRequestModal"  role="dialog" aria-hidden="true">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                    <form id="send-sign-form" th:action="'/ws-secure/signrequests/create-full-sign-book?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
-                          method="post" enctype="multipart/form-data">
-                        <div class="modal-header">
-                            <h3 class="modal-title" id="sendSignRequestLabel">Créer une demande de signature</h3>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="form-group mb-3">
-                                <label class="form-label" for="titre" >Titre (facultatif)</label>
-                                <input type="text" id="titre" class="form-control" name="title" placeholder="Vous pouvez saisir un titre pour retrouver votre demande">
-                            </div>
-                            <div class="form-group mb-3">
-                                <label class="form-label" for="send-sign-file-input">Choix des fichiers à signer</label>
-                                <input required="true" id="send-sign-file-input" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''">
-                                <script th:inline="javascript" type="module">
-                                    import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=[[${versionApp}]]';
-                                    new FilesInput($("#send-sign-file-input"), [[${globalProperties.maxUploadSize}]], [[${_csrf}]]);
-                                </script>
-                            </div>
-                            <div id="forceAllSign" class="form-check form-switch form-switch-md d-none">
-                                <input class="form-check-input" type="checkbox" name="forceAllSign">
-                                <label class="form-check-label">Forcer la signature de tous les documents</label>
-                            </div>
-                            <div class="form-group mb-3">
-                                <div class="form-check form-switch form-switch-md">
-                                    <label class="form-check-label" for="userSignFirst">Je dois signer ce document avant l'envoi</label>
-                                    <input type="checkbox" class="form-check-input" name="userSignFirst" id="userSignFirst">
-                                </div>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label class="form-label" for="signType2">Choisir un type de signature</label>
-                                <select class="slim-select-simple" name="signType" id="signType2">
-                                    <th:block th:each="signType : ${signTypes}">
-                                        <option th:value="${signType}"
-                                                th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
-                                    </th:block>
-                                </select>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label class="form-label"for="recipientsEmails">Choisir les participants</label>
-                                <select class="select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmails" multiple="multiple" required="required">
-                                    <option data-placeholder="true"></option>
-                                </select>
-                                <div id="tempUsers-recipientsEmails"></div>
-                            </div>
-                            <div class="form-group mb-3" id="allSignToComplete-simple" style="display: none;">
-                                <div class="form-check form-switch form-switch-md">
-                                    <label  class="form-check-label" for="allSignToComplete">Tous les participants doivent-ils signer ?</label>
-                                    <input type="checkbox" class="form-check-input" name="allSignToComplete" id="allSignToComplete"/>
-                                </div>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label class="form-label" for="recipientsCCEmails">Choisir les observateurs en copie</label>
-                                <select class="select-users" data-es-check-cert="true" name="recipientsCCEmails" id="recipientsCCEmails" multiple="multiple">
-                                    <option data-placeholder="true"></option>
-                                </select>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label class="form-label" for="comment" >Commentaire (facultatif)</label>
-                                <textarea id="comment" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" id="send-sign-submit" class="btn btn-success d-none"></button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                            <button type="button" id="send-draft-button" class="btn btn-success">
-                                <i class="fa-solid fa-save"></i> Annoter avant envoi
-                            </button>
-                            <button type="button" id="send-pending-button" class="btn btn-success">
-                                <i class="fa-solid fa-paper-plane"></i> Envoyer immédiatement la demande
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div id="sendPending" data-bs-focus="false" class="modal fade" >
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3 class="modal-title" id="exampleModalLabel">Envoyer immédiatement</h3>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <textarea placeholder="Vous pouvez saisir un commentaire" class="form-control" id="submitComment"></textarea>
-                        <button type="button" id="submitSendPending" class="btn btn-success mt-2 pull-right">
-                            Valider l'envoi
-                        </button>
-                    </div>
-                    <div class="modal-header"></div>
-                </div>
-            </div>
-        </div>
-
-<!--    <div data-bs-focus="false" class="modal fade" id="newFomModal"  role="dialog"-->
-<!--         aria-labelledby="exampleModalLabel" aria-hidden="true">-->
-<!--         aria-labelledby="exampleModalLabel" aria-hidden="true">-->
-<!--        <div class="modal-dialog modal-lg" role="document">-->
-<!--            <div class="modal-content">-->
-<!--                <div class="modal-header">-->
-<!--                    <h5 class="modal-title" id="exampleModalLabel">Choix du-->
-<!--                        document</h5>-->
-<!--                    <button type="button" class="btn-close" data-bs-dismiss="modal"-->
-<!--                            aria-label="Close">-->
-<!--                        -->
-<!--                    </button>-->
-<!--                </div>-->
-<!--                <div class="modal-body">-->
-<!--                    <table class="table table-hover table-striped table-bordered">-->
-<!--                        <tbody>-->
-<!--                        <tr>-->
-<!--                            <td>Signer un document existant</td>-->
-<!--                            <td class="show text-center">-->
-<!--                                <form action="/user/signrequest" method="post"-->
-<!--                                      enctype="multipart/form-data">-->
-<!--                                    <div class="form-group mb-3">-->
-<!--                                        <input type="file" name="multipartFile" class="form-control-file">-->
-<!--                                        <input type="submit" class="btn btn-success" value="Valider">-->
-<!--                                    </div>-->
-<!--                                </form>-->
-<!--                            </td>-->
-<!--                        </tr>-->
-<!--                        <tr th:each="form : ${forms}">-->
-<!--                            <td th:text="${form.name}"></td>-->
-<!--                            <td class="show text-center">-->
-<!--                                <button type="button"-->
-<!--                                        th:onclick="'window.location.href = \'' + @{/user/data/form/{id}(id=${form.id})} + '\''"-->
-<!--                                        class="btn btn-primary">-->
-<!--                                    <i class="fa-solid fa-plus fa-2xl"></i>-->
-<!--                                    Ajouter-->
-<!--                                </button>-->
-<!--                            </td>-->
-<!--                        </tr>-->
-<!--                        </tbody>-->
-<!--                    </table>-->
-<!--                </div>-->
-<!--                <div class="modal-footer">-->
-<!--                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Annuler</button>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-
-    <div data-bs-focus="false" class="modal fade" id="wizModalCustom"  role="dialog"
-         aria-labelledby="#newRequestlabel'" aria-hidden="true">
+    <div data-bs-focus="false" class="modal fade" id="wiz-self-sign-modal" th:unless="${globalProperties.hideAutoSign}"  role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">Création d'une nouvelle demande</h3>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div id="wizFrameCustom" style="transition: height 1s">
-                    </div>
+                <div id="wiz-self-sign-div" class="wiz-transition">
                 </div>
             </div>
         </div>
     </div>
 
-    <div data-bs-focus="false" class="modal fade" id="wizModalWorkflow"  role="dialog"
-         aria-labelledby="addSignRequestLabel"
-         aria-hidden="true">
+    <div data-bs-focus="false" class="modal fade" id="wiz-fast-sign-modal" th:unless="${globalProperties.hideSendSignRequest}" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">Assistant de création de demande</h3>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div th:id="wizFrameWorkflow" style="transition: height 1s"></div>
+                <div id="wiz-fast-sign-div" class="wiz-transition">
                 </div>
             </div>
         </div>
     </div>
 
-    <th:block th:each="form : ${forms}">
-        <div data-bs-focus="false" class="modal fade" th:id="'sendModal_' +  ${form.id}"  role="dialog" aria-hidden="true">
-            <div th:if="${form.messageToDisplay != null}" class="toast toast-xl bg-white show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="999999999" style="z-index: 3;">
-                <div class="toast-body toast-body-news">
-                    <button type="button" class="btn-close float-end" data-bs-dismiss="toast" aria-label="Close"></button>
-                    <h4 class="me-auto text-dark">Aide</h4>
-                    <h5 th:utext="${form.messageToDisplay}"></h5>
-                </div>
-                <div class="toast-footer">
-                    <button th:if="${form}" th:id="'markHelpAsReadButton_' + ${form.id}" class="btn btn-success me-2 mb-2 float-end" data-bs-dismiss="toast" aria-label="Close">
-                        <i class="fa fa-eye-slash"></i>
-                        Marquer comme lu
-                    </button>
-                </div>
-            </div>
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content modal-lg">
-                    <div class="modal-header">
-                        <h3 class="modal-title" th:text="${form.title}"></h3>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close">
-
-                        </button>
-                    </div>
-                    <form th:action="'/user/datas/send-form/' + ${form.id}" method="post">
-                        <div class="modal-body">
-                            <p th:if="${form.workflow == null || form.workflow.workflowSteps.size() == 0}">Après la validation, vous pourrez télécharger le document</p>
-                            <div th:if="${form.workflow != null && form.workflow.workflowSteps.size() > 0}">
-                                <h5>
-                                    Le circuit associé à ce formulaire comporte <span
-                                        th:text="${form.workflow.workflowSteps.size()}"></span> étape<span th:if="${form.workflow.workflowSteps.size()} > 1">(s) : </span>
-                                </h5>
-                                <ul class="list-group striped-list">
-                                <th:block th:each="step, iterator : ${form.workflow.workflowSteps}">
-                                    <li class="list-group-item border-secondary">
-                                    <!--                            <div class="form-group mb-3">-->
-                                    <!--                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>-->
-                                    <!--                            </div>-->
-                                        <div class="form-group d-inline">
-                                            <div>
-                                                <h3 class="d-inline">
-                                                    <span class="badge rounded-pill text-bg-primary me-4 align-middle" th:text="${iterator.index + 1}"></span>
-                                                </h3>
-                                                <b th:if="${step.description != null && step.description != ''}" th:text="${step.description}"></b>
-                                                <th:block th:if="${step.users.size() > 0}">
-                                                    <div th:if="${step.description != null && step.description != ''}"></div>
-                                                    <th:block th:each="user, iterator : ${step.users}">
-                                                        <span th:text="${user.firstname} + ' ' + ${user.name}"></span>
-                                                        <span th:if="${iterator.index < step.users.size() - 1}"> ,</span>
-                                                    </th:block>
-                                                </th:block>
-                                            </div>
-                                            <span th:if="${step.repeatable}"> (cette étape peut donner lieu à plusieurs validations en série)</span>
-                                        </div>
-                                        <div th:if="${step.changeable == true}" class="form-group mb-3">
-                                            <label><span th:text="'Merci de saisir le' + ${step.maxRecipients != null && step.maxRecipients > 1 ? '(s)' : ''} + ' participant' + ${step.maxRecipients != null && step.maxRecipients > 1 ? '(s)' : ''} + ' pour l\'étape ' + ${iterator.index + 1}"></span></label>
-                                            <select class="select-users" th:id="'recipientEmailsSelect-' + ${form.id} + '_' + ${iterator.index + 1}"
-                                                    multiple="multiple" name="recipientEmails" required="required" th:maxlength="${step.maxRecipients}">
-                                                <option data-placeholder="true"></option>
-                                                <th:block th:each="user : ${step.users}">
-                                                    <option th:if="${user.email != null && user.email != 'generic'}" selected="selected"
-                                                            th:text="${user.email}"
-                                                            th:placeholder="${user.email}"
-                                                            th:value="${iterator.index + 1} + '*' + ${user.email}"></option>
-                                                </th:block>
-                                            </select>
-                                            <p class="small">
-                                                Les signataires sont pré-sélectionnés en fonction de vos précédentes saisies.
-                                            </p>
-                                            <div th:id="'tempUsers-recipientEmailsSelect-' + ${form.id} + '_' + ${iterator.index + 1}"></div>
-                                            <div class="form-group mb-3" id="allSignToComplete-simple">
-                                                <div class="form-check form-switch form-switch-md">
-                                                    <label  class="form-check-label" th:for="'allSignToComplete_' + ${iterator.index + 1}">Tous les participants doivent-ils signer ?</label>
-                                                    <input type="checkbox" class="form-check-input" name="allSignToCompletes" th:value="${iterator.index + 1}" th:id="'allSignToComplete_' + ${iterator.index + 1}"/>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                </th:block>
-                                </ul>
-                                <hr>
-                                <th:block th:each="target : ${form.workflow.targets}">
-                                    <div th:if="${target.targetUri.contains('mailto:')}" class="form-group mb-3">
-                                        <label>Étape finale : Envoi par mail à </label>
-                                        <select class="select-users" th:id="'targetEmailsSelect-' + ${form.id}" multiple="multiple" name="targetEmails">
-                                            <option data-placeholder="true"></option>
-                                            <option th:if="${target.targetUri != null && target.targetUri != ''}" th:value="${target.targetUri.split(':')[1]}" th:text="${target.targetUri.split(':')[1]}" selected></option>
-                                        </select>
-                                    </div>
-                                </th:block>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
-                            <button type="submit" class="btn btn-success">Valider</button>
-                        </div>
-                    </form>
-                </div>
+    <div data-bs-focus="false" class="modal fade" id="wiz-custom-sign-modal" th:unless="${globalProperties.hideWizard}" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div id="wiz-custom-sign-div" class="wiz-transition"></div>
             </div>
         </div>
-    </th:block>
     </div>
-    <script th:inline="javascript" type="module">
-        import {NewUi} from '/js/modules/ui/NewUi.js?version=[[${versionApp}]]';
-        new NewUi([[${_csrf}]]);
-    </script>
+
+    <div data-bs-focus="false" class="modal fade" id="wiz-workflow-sign-modal" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div id="wiz-workflow-sign-div" class="wiz-transition"></div>
+            </div>
+        </div>
+    </div>
+
+    <div data-bs-focus="false" class="modal fade" id="wiz-modal" th:unless="${globalProperties.hideWizard}" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div id="wiz-div" class="wiz-transition"></div>
+            </div>
+        </div>
+    </div>
+
+    <div data-bs-focus="false" class="modal fade" id="wiz-start-form-modal"  role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div id="wiz-start-form-div" class="wiz-transition"></div>
+            </div>
+        </div>
+    </div>
 </div>
 </html>

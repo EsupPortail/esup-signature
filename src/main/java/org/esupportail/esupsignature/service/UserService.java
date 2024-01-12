@@ -7,6 +7,7 @@ import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
+import org.esupportail.esupsignature.dto.RecipientWsDto;
 import org.esupportail.esupsignature.dto.UserDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
@@ -24,7 +25,6 @@ import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLdap;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
 import org.esupportail.esupsignature.service.utils.file.FileService;
-import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.hibernate.LazyInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -599,10 +599,10 @@ public class UserService {
     }
 
     @Transactional
-    public List<User> checkTempUsers(List<String> recipientEmails) {
-        if (recipientEmails!= null && !recipientEmails.isEmpty()) {
+    public List<User> checkTempUsers(List<RecipientWsDto> recipients) {
+        if (recipients!= null && !recipients.isEmpty()) {
             try {
-                List<User> users = getTempUsersFromRecipientList(recipientEmails);
+                List<User> users = getTempUsersFromRecipientList(recipients);
                 if (smsService != null || !globalProperties.getSmsRequired()) {
                     return users;
                 } else {
@@ -618,21 +618,17 @@ public class UserService {
     }
 
     @Transactional
-    public List<User> getTempUsersFromRecipientList(List<String> recipientsEmails) {
+    public List<User> getTempUsersFromRecipientList(List<RecipientWsDto> recipients) {
         List<User> tempUsers = new ArrayList<>();
-        for (String recipientEmail : recipientsEmails) {
-            if(recipientEmail != null) {
-                if (recipientEmail.contains("*")) {
-                    recipientEmail = recipientEmail.split("\\*")[1];
-                }
-                Optional<User> optionalUser = userRepository.findByEmailIgnoreCase(recipientEmail);
+        for (RecipientWsDto recipient : recipients) {
+            if(recipient != null) {
+                Optional<User> optionalUser = userRepository.findByEmailIgnoreCase(recipient.getEmail());
                 if(optionalUser.isPresent() && optionalUser.get().getUserType().equals(UserType.external)) {
                     tempUsers.add(optionalUser.get());
                 } else {
-                    List<String> groupUsers = new ArrayList<>();
-                    groupUsers.addAll(userListService.getUsersEmailFromList(recipientEmail));
-                    if (groupUsers.size() == 0 && !recipientEmail.contains(globalProperties.getDomain())) {
-                        User recipientUser = getUserByEmail(recipientEmail);
+                    List<String> groupUsers = new ArrayList<>(userListService.getUsersEmailFromList(recipient.getEmail()));
+                    if (groupUsers.isEmpty() && !recipient.getEmail().contains(globalProperties.getDomain())) {
+                        User recipientUser = getUserByEmail(recipient.getEmail());
                         if (recipientUser != null && recipientUser.getUserType().equals(UserType.external)) {
                             tempUsers.add(recipientUser);
                         }
@@ -644,28 +640,28 @@ public class UserService {
     }
 
     @Transactional
-    public List<User> getTempUsers(SignRequest signRequest, List<String> recipientsEmails) throws EsupSignatureRuntimeException {
-        Set<User> users = new HashSet<>(getTempUsers(signRequest));
-        if(recipientsEmails != null) {
-            users.addAll(getTempUsersFromRecipientList(recipientsEmails));
+    public List<User> getTempUsers(SignBook signBook, List<RecipientWsDto> recipients) throws EsupSignatureRuntimeException {
+        Set<User> users = new HashSet<>(getTempUsers(signBook));
+        if(recipients != null) {
+            users.addAll(getTempUsersFromRecipientList(recipients));
         }
         return new ArrayList<>(users);
     }
 
     @Transactional
-    public List<User> getTempUsers(SignRequest signRequest) {
+    public List<User> getTempUsers(SignBook signBook) {
         Set<User> users = new HashSet<>();
-        if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size() > 0) {
-            for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
+        if(!signBook.getLiveWorkflow().getLiveWorkflowSteps().isEmpty()) {
+            for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
                 for (Recipient recipient : liveWorkflowStep.getRecipients()) {
                     if (recipient.getUser().getUserType().equals(UserType.external) || (recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && !recipient.getUser().getUserType().equals(UserType.group) && !recipient.getUser().getUserType().equals(UserType.shib) && recipient.getUser().getEppn().equals(recipient.getUser().getName()))) {
                         users.add(recipient.getUser());
                     }
                 }
             }
-        } else if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
-            if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getWorkflowSteps().size() > 0) {
-                for (WorkflowStep workflowStep : signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getWorkflowSteps()) {
+        } else if(signBook.getLiveWorkflow().getWorkflow() != null) {
+            if (!signBook.getLiveWorkflow().getWorkflow().getWorkflowSteps().isEmpty()) {
+                for (WorkflowStep workflowStep : signBook.getLiveWorkflow().getWorkflow().getWorkflowSteps()) {
                     for (User user : workflowStep.getUsers()) {
                         if (user.getUserType().equals(UserType.external) || (user.getEppn().equals(user.getEmail()) && !user.getUserType().equals(UserType.group) && user.getEppn().equals(user.getName()))) {
                             users.add(user);
@@ -753,26 +749,6 @@ public class UserService {
     public void setDefaultSignImage(String authUserEppn, int signImageNumber) {
         User user = getByEppn(authUserEppn);
         user.setDefaultSignImageNumber(signImageNumber);
-    }
-
-    public List<JsonExternalUserInfo> getJsonExternalUserInfos(List<String> emails, List<String> names, List<String> firstnames, List<String> phones, List<String> forcesmses) {
-        List<JsonExternalUserInfo> externalUsersInfos = new ArrayList<>();
-        if(emails != null) {
-            for (int i = 0; i < emails.size(); i++) {
-                JsonExternalUserInfo jsonExternalUserInfo = new JsonExternalUserInfo();
-                jsonExternalUserInfo.setEmail(emails.get(i));
-                jsonExternalUserInfo.setName(names.get(i));
-                jsonExternalUserInfo.setFirstname(firstnames.get(i));
-                if(forcesmses != null && forcesmses.size() >= i + 1) {
-                    jsonExternalUserInfo.setForcesms(forcesmses.get(i));
-                }
-                if(phones.size() >= i + 1) {
-                    jsonExternalUserInfo.setPhone(phones.get(i));
-                }
-                externalUsersInfos.add(jsonExternalUserInfo);
-            }
-        }
-        return externalUsersInfos;
     }
 
     @Transactional

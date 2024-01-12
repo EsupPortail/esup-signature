@@ -1,11 +1,11 @@
-package org.esupportail.esupsignature.dto;
+package org.esupportail.esupsignature.dto.js;
 
-public class SlimSelectDto {
+public class JsSlimSelect {
 
     String text;
     String value;
 
-    public SlimSelectDto(String text, String value) {
+    public JsSlimSelect(String text, String value) {
         this.text = text;
         this.value = value;
     }

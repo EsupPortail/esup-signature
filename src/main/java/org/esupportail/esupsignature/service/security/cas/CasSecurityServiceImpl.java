@@ -20,7 +20,6 @@ import org.springframework.security.cas.authentication.CasAssertionAuthenticatio
 import org.springframework.security.cas.authentication.CasAuthenticationProvider;
 import org.springframework.security.cas.web.CasAuthenticationEntryPoint;
 import org.springframework.security.cas.web.CasAuthenticationFilter;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
@@ -62,7 +61,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 	private MappingGroupsRolesRepository mappingGroupsRolesRepository;
 
 	@Resource
-	private SessionRegistry sessionRegistry;
+	private RegisterSessionAuthenticationStrategy registerSessionAuthenticationStrategy;
 
 	@Override
 	public String getTitle() {
@@ -91,7 +90,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 	public CasAuthenticationFilter getAuthenticationProcessingFilter() {
 		CasAuthenticationFilter authenticationFilter = new CasAuthenticationFilter();
 		authenticationFilter.setAuthenticationManager(casAuthenticationManager());
-		authenticationFilter.setSessionAuthenticationStrategy(new RegisterSessionAuthenticationStrategy(sessionRegistry));
+		authenticationFilter.setSessionAuthenticationStrategy(registerSessionAuthenticationStrategy);
 		authenticationFilter.setAuthenticationSuccessHandler(casAuthenticationSuccessHandler);
 		return authenticationFilter;
 	}
@@ -109,7 +108,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 	}
 
 	public AuthenticationManager casAuthenticationManager() {
-		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<AuthenticationProvider>();
+		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<>();
 		authenticatedAuthenticationProviders.add(casAuthenticationProvider());
 		return new ProviderManager(authenticatedAuthenticationProviders);
 	}

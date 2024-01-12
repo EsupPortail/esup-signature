@@ -13,7 +13,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
-import org.esupportail.esupsignature.web.ws.json.JsonMessage;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -45,6 +45,9 @@ public class OtpSignRequestController {
 
     @Resource
     private SignWithService signWithService;
+
+    @Resource
+    private DataService dataService;
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
@@ -110,7 +113,7 @@ public class OtpSignRequestController {
         }
         model.addAttribute("attachments", signRequestService.getAttachments(id));
         model.addAttribute("nextSignBook", signBookService.getNextSignBook(signRequest.getId(), userEppn));
-        model.addAttribute("nextSignRequest", signBookService.getNextSignRequest(signRequest.getId(), userEppn));
+        model.addAttribute("nextSignRequest", signRequestService.getNextSignRequest(signRequest.getId(), userEppn));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
         model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest));
@@ -124,7 +127,7 @@ public class OtpSignRequestController {
                 List<String> signImages = signBookService.getSignImagesForSignRequest(id, userEppn, authUserEppn, userShareId);
                 model.addAttribute("signImages", signImages);
             } catch (EsupSignatureUserException e) {
-                model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
+                model.addAttribute("message", new JsMessage("warn", e.getMessage()));
             }
         }
         model.addAttribute("signatureIds", new ArrayList<>());
@@ -153,11 +156,11 @@ public class OtpSignRequestController {
                 && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && userService.getUiParams(authUserEppn) != null
                 && (userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert) == null || !Arrays.asList(userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert).split(",")).contains(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId().toString()))
                 && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
-            model.addAttribute("message", new JsonMessage("custom", "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document.\nSa validation implique que vous en acceptez le contenu.\nVous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa et en y adjoignant vos commentaires."));
+            model.addAttribute("message", new JsMessage("custom", "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document.\nSa validation implique que vous en acceptez le contenu.\nVous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa et en y adjoignant vos commentaires."));
             userService.setUiParams(authUserEppn, UiParams.workflowVisaAlert, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId().toString() + ",");
 
         }
-        Data data = signBookService.getBySignBook(signRequest.getParentSignBook());
+        Data data = dataService.getBySignBook(signRequest.getParentSignBook());
         if(data != null && data.getForm() != null) {
             model.addAttribute("form", data.getForm());
         }
@@ -169,7 +172,7 @@ public class OtpSignRequestController {
     @PostMapping(value = "/refuse/{id}")
     public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes) throws EsupSignatureMailException, EsupSignatureRuntimeException {
         signBookService.refuse(id, comment, userEppn, authUserEppn);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La demandes a bien été refusée"));
+        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La demandes a bien été refusée"));
         return "redirect:/otp/signrequests/" + id;
     }
 
@@ -181,7 +184,7 @@ public class OtpSignRequestController {
                                  RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         logger.info("start add attachment");
         signRequestService.addAttachement(multipartFiles, link, id, authUserEppn);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La piece jointe a bien été ajoutée"));
+        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La piece jointe a bien été ajoutée"));
         return "redirect:/otp/signrequests/" + id;
     }
 
@@ -190,7 +193,7 @@ public class OtpSignRequestController {
     public String removeAttachement(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, RedirectAttributes redirectAttributes) {
         logger.info("start remove attachment");
         signRequestService.removeAttachement(id, attachementId, redirectAttributes);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La pieces jointe a été supprimée"));
+        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La pieces jointe a été supprimée"));
         return "redirect:/otp/signrequests/" + id;
     }
 
@@ -199,7 +202,7 @@ public class OtpSignRequestController {
     public String removeLink(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("linkId") Integer linkId, RedirectAttributes redirectAttributes) {
         logger.info("start remove link");
         signRequestService.removeLink(id, linkId);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le lien a été supprimé"));
+        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le lien a été supprimé"));
         return "redirect:/user/signrequests/" + id;
     }
 
@@ -213,9 +216,9 @@ public class OtpSignRequestController {
                           @RequestParam(value = "commentPosY", required = false) Integer commentPosY,
                           @RequestParam(value = "postit", required = false) String postit, Model model) {
         if(signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, postit, spotStepNumber, authUserEppn, userEppn)) {
-            model.addAttribute("message", new JsonMessage("success", "Annotation ajoutée"));
+            model.addAttribute("message", new JsMessage("success", "Annotation ajoutée"));
         } else {
-            model.addAttribute("message", new JsonMessage("error", "Ajout d'emplacement non autorisé"));
+            model.addAttribute("message", new JsMessage("error", "Ajout d'emplacement non autorisé"));
         }
         return "redirect:/otp/signrequests/" + id;
     }

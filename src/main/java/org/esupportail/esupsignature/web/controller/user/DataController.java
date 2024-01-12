@@ -3,19 +3,18 @@ package org.esupportail.esupsignature.web.controller.user;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.dto.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.service.DataService;
-import org.esupportail.esupsignature.service.FormService;
-import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
-import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
-import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -27,8 +26,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
@@ -64,26 +61,22 @@ public class DataController {
 	private ObjectMapper objectMapper;
 
 	@PostMapping("/send-form/{id}")
-	public String sendForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
-						   @RequestParam(required = false) List<String> recipientEmails,
-						   @RequestParam(required = false) List<String> signTypes,
-						   @RequestParam(required = false) List<String> allSignToCompletes,
+	@ResponseBody
+	public ResponseEntity<String> sendForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 						   @RequestParam(required = false) List<String> targetEmails,
-						   @RequestParam(value = "emails", required = false) List<String> emails,
-						   @RequestParam(value = "names", required = false) List<String> names,
-						   @RequestParam(value = "firstnames", required = false) List<String> firstnames,
-						   @RequestParam(value = "phones", required = false) List<String> phones,
-						   @RequestParam(value = "forcesmses", required = false) List<String> forcesmses,
-						   @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
-		List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones, forcesmses);
+						   @RequestBody List<WorkflowStepDto> steps,
+						   @PathVariable("id") Long id) throws EsupSignatureRuntimeException {
+		logger.warn("create form " + id);
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			Data data = dataService.addData(id, userEppn);
-			SignBook signBook = signBookService.sendForSign(data.getId(), recipientEmails, signTypes, allSignToCompletes, externalUsersInfos, targetEmails, null, userEppn, authUserEppn, false, null, null, null, null, true);
-			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
-		} else {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Formulaire non autorisé"));
-			return "redirect:/user";
+			try {
+				SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, null, userEppn, authUserEppn, false, null, null, null, null, true);
+				return ResponseEntity.ok().body(signBook.getId().toString());
+			} catch (EsupSignatureRuntimeException e) {
+				logger.warn(e.getMessage() + " for " + id);
+			}
 		}
+		return ResponseEntity.internalServerError().body("Formulaire non autorisé");
 
 	}
 
@@ -105,7 +98,7 @@ public class DataController {
 			logger.debug("dataId is null");
 		}
 		Data data = dataService.addData(id, dataLongId , datas, user, authUser);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Données enregistrées"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Données enregistrées"));
 		return data.getId().toString();
 	}
 

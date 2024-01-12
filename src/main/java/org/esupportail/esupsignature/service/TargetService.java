@@ -49,9 +49,10 @@ public class TargetService {
 
     @Transactional
     public void copyTargets(List<Target> targets, SignBook signBook, List<String> targetEmails) throws EsupSignatureFsException {
-        signBook.getLiveWorkflow().getTargets().clear();
         for(Target target : targets) {
-            if(fsAccessFactoryService.getPathIOType(target.getTargetUri()) != DocumentIOType.mail && target.getTargetUri() != null && !target.getTargetUri().isEmpty()) {
+            if(signBook.getLiveWorkflow().getTargets().stream().noneMatch(t -> t != null && t.getTargetUri().equals(target.getTargetUri()))
+                    && fsAccessFactoryService.getPathIOType(target.getTargetUri()) != DocumentIOType.mail
+                    && target.getTargetUri() != null && !target.getTargetUri().isEmpty()) {
                 signBook.getLiveWorkflow().getTargets().add(createTarget(target.getTargetUri()));
             }
         }
