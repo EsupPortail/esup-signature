@@ -405,20 +405,20 @@ export class GlobalUi {
         this.breadcrumb.addClass('breadcrumb-nav-full');
     }
 
-    // checkSelectUser() {
-    //     let csrf = this.csrf;
-    //     $("select").each(function () {
-    //         if($(this).hasClass("select-users")) {
-    //             let selectId = $(this).attr('id');
-    //             console.info("auto enable select-user for : " + selectId);
-    //             let limit = null;
-    //             if ($(this).attr("maxLength") != null) {
-    //                 limit = parseInt($(this).attr("maxLength"));
-    //             }
-    //             new SelectUser(selectId, limit, $(this).attr('data-signrequest-id'), csrf);
-    //         }
-    //     });
-    // }
+    checkSelectUser() {
+        let csrf = this.csrf;
+        $("select").each(function () {
+            if($(this).hasClass("auto-select-users")) {
+                let selectId = $(this).attr('id');
+                console.info("auto enable select-user for : " + selectId);
+                let limit = null;
+                if ($(this).attr("maxLength") != null) {
+                    limit = parseInt($(this).attr("maxLength"));
+                }
+                new SelectUser(selectId, limit, $(this).attr('data-signrequest-id'), csrf);
+            }
+        });
+    }
 
     checkSlimSelect() {
         let self = this;
@@ -504,7 +504,7 @@ export class GlobalUi {
     onDocumentLoad() {
         console.info("global on load");
         $.fn.modal.Constructor.prototype.enforceFocus = function () {};
-        // this.checkSelectUser();
+        this.checkSelectUser();
         this.checkSlimSelect();
         this.enableSummerNote();
         this.adjustUi();
