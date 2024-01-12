@@ -54,7 +54,7 @@ public class WizardController {
         String modalTile = "Création d'une nouvelle demande";
         if(workflowId != null) {
             Workflow workflow = workflowService.getById(workflowId);
-            modalTile = "Création d'une nouvelle demande dans le circuit : " + workflow.getName();
+            modalTile = "Création d'une nouvelle demande dans le circuit : " + workflow.getDescription();
             model.addAttribute("workflow", workflow);
         }
         model.addAttribute("modalTitle", modalTile);
