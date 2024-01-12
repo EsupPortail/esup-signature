@@ -139,7 +139,7 @@ public class GlobalProperties {
     /**
      * Taille maximum des uploads de fichiers en bytes
      */
-    private Integer maxUploadSize = 52428800;
+    private Integer maxUploadSize = 62428800;
     /**
      * Nombre de jours avant alerte de suppression pour les demandes en attente (-1 non actif)
      */

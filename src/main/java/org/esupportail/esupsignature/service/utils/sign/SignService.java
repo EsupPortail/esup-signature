@@ -25,7 +25,7 @@ import eu.europa.esig.dss.xades.signature.XAdESService;
 import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
-import org.esupportail.esupsignature.dss.DssUtils;
+import org.esupportail.esupsignature.dss.DssUtilsService;
 import org.esupportail.esupsignature.dss.config.DSSProperties;
 import org.esupportail.esupsignature.dss.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.model.DssMultipartFile;
@@ -127,6 +127,9 @@ public class SignService {
 
 
 	private final OpenXPKICertificatGenerationService openXPKICertificatGenerationService;
+
+	@Resource
+	private DssUtilsService dssUtilsService;
 
 	public SignService(@Autowired(required = false) OpenXPKICertificatGenerationService openXPKICertificatGenerationService, SignProperties signProperties) {
 		this.openXPKICertificatGenerationService = openXPKICertificatGenerationService;
@@ -437,7 +440,7 @@ public class SignService {
 	public DSSDocument certSignDocument(SignatureMultipleDocumentsForm form, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) {
 		logger.info("Start signDocument with multiple documents");
 		MultipleDocumentsSignatureService service = getASiCSignatureService(form.getSignatureForm());
-		List<DSSDocument> toSignDocuments = DssUtils.toDSSDocuments(form.getDocumentsToSign());
+		List<DSSDocument> toSignDocuments = dssUtilsService.toDSSDocuments(form.getDocumentsToSign());
 		ToBeSigned dataToSign = service.getDataToSign(toSignDocuments, parameters);
 		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
 		DSSDocument signedDocument = service.signDocument(toSignDocuments, parameters, signatureValue);
@@ -449,7 +452,7 @@ public class SignService {
 	public TimestampToken getContentTimestamp(SignatureMultipleDocumentsForm form, AbstractSignatureParameters<?> parameters) {
 		logger.info("Start getContentTimestamp with multiple documents");
 		MultipleDocumentsSignatureService service = getASiCSignatureService(form.getSignatureForm());
-		TimestampToken contentTimestamp = service.getContentTimestamp(DssUtils.toDSSDocuments(form.getDocumentsToSign()), parameters);
+		TimestampToken contentTimestamp = service.getContentTimestamp(dssUtilsService.toDSSDocuments(form.getDocumentsToSign()), parameters);
 		logger.info("End getContentTimestamp with  multiple documents");
 		return contentTimestamp;
 	}
