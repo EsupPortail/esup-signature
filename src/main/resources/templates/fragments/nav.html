@@ -162,33 +162,6 @@
     </nav>
     <div th:if="${user.name != null}" id="user-infos" class="position-absolute user-infos collapse overflow-y-scroll drop-shadows">
         <div class="card card-body user-infos text-center">
-            <div id="manageShare" class="d-none">
-            <h3 th:if="${isUserOnSu}">
-                Vous avez activé la délégation
-            </h3>
-            <h5 th:unless="${isUserOnSu}">
-                <b>Délégations</b>
-            </h5>
-            <form id="changeSuEppn" th:action="'/user/users/shares/change'" method="post">
-                <select id="suEppn" class="slim-select-simple" name="suEppn" onchange="document.getElementById('changeSuEppn').submit();">
-                    <option th:if="${isUserOnSu}" value="" selected>Désactiver la délégation en cours</option>
-                    <option th:unless="${isUserOnSu}" selected disabled>Choisir un mandant
-                    </option>
-                    <th:block th:each="suUser : ${suUsers}">
-                        <option th:if="${user.eppn == suUser.eppn}" th:value="${suUser.eppn}"
-                                th:text="${suUser.firstname} + ' ' + ${suUser.name} " selected></option>
-                        <option th:unless="${user.eppn == suUser.eppn}" th:value="${suUser.eppn}"
-                                th:text="${suUser.firstname} + ' ' + ${suUser.name} "></option>
-                    </th:block>
-                </select>
-            </form>
-            <a th:unless="${isUserOnSu}" class="btn btn-sm light btn-outline-dark mt-1"
-                aria-label="Paramètres utilisateur "
-                title="Paramètres" href="/user/users/shares">
-                <i class="fa-solid fa-share-alt"></i> Gérer mes délégations
-            </a>
-            <hr>
-            </div>
             <h5><b>Vos informations</b></h5>
             <table class="table table-sm table-borderless text-left">
                 <tbody>

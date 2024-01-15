@@ -54,8 +54,8 @@
                                     <div class="table-container row" th:if="${not #lists.isEmpty(lotl.pivotInfos)}">
                                     <h4>
                                         <span th:text=#{label.summary.pivot.loaded.header}></span>&nbsp;
-                                        <a class="h6 font-weight-bold" th:href="@{/admin/dss/pivot-changes/} + ${lotl.getDSSId().asXmlId()}"
-                                           th:text="#{label.summary.pivot.check.text}"></a>
+                                        <a class="h6 font-weight-bold" th:href="@{'/admin/dss/pivot-changes/' + ${lotl.getDSSId().asXmlId()}}"
+                                        th:text="#{label.summary.pivot.check.text}"></a>
                                     </h4>
                                     <table class="pivot-summary summary-table table">
                                         <thead>
@@ -68,9 +68,9 @@
                                         </tr>
                                         </thead>
                                         <tbody th:each="pivot,iterTL : ${lotl.pivotInfos}" th:with="id=${pivot.getDSSId().asXmlId()},
-									downloadResult=${pivot.downloadCacheInfo},
-									parsingResult=${pivot.parsingCacheInfo},
-									validationResult=${pivot.validationCacheInfo}">
+                                            downloadResult=${pivot.downloadCacheInfo},
+                                            parsingResult=${pivot.parsingCacheInfo},
+                                            validationResult=${pivot.validationCacheInfo}">
                                         <tr class="pivot-info-preview">
                                             <!-- URL -->
                                             <td>
@@ -78,8 +78,8 @@
                                             </td>
                                             <!-- Last Download Attempt date -->
                                             <td>
-										<span th:text="${downloadResult != null and downloadResult.lastDownloadAttemptTime != null} ?
-												${#dates.format(downloadResult.lastDownloadAttemptTime, 'dd-MMM-yyyy HH:mm:ss')} : '-'"></span>
+                                                <span th:text="${downloadResult != null and downloadResult.lastDownloadAttemptTime != null} ?
+                                                    ${#dates.format(downloadResult.lastDownloadAttemptTime, 'dd-MMM-yyyy HH:mm:ss')} : '-'"></span>
                                             </td>
 
                                             <!-- Download result -->
@@ -130,21 +130,21 @@
                             <div class="table-container row" th:if="${not #lists.isEmpty(summary.otherTLInfos)}">
                                 <h2 th:text=#{label.summary.tl.info.other.header}></h2>
                                 <table class="tl-summary summary-table table accordion">
-                                    <thead th:replace="~{fragments/tl-info :: tl-info-header()}							parsingResult=${parsingResult}, validationResult=${validationResult})}"></thead>
+                                    <thead th:replace="~{fragments/tl-info :: tl-info-header()}parsingResult=${parsingResult}, validationResult=${validationResult})}"></thead>
 
                                     <tbody th:each="tl,iterTL : ${summary.otherTLInfos}" th:with="id=${tl.getDSSId().asXmlId()},
-								country=${tl.parsingCacheInfo.isResultExist()}?${tl.parsingCacheInfo.territory}:'no_country',
-								downloadResult=${tl.downloadCacheInfo},
-								parsingResult=${tl.parsingCacheInfo},
-								validationResult=${tl.validationCacheInfo}">
+                                    country=${tl.parsingCacheInfo.isResultExist()}?${tl.parsingCacheInfo.territory}:'no_country',
+                                    downloadResult=${tl.downloadCacheInfo},
+                                    parsingResult=${tl.parsingCacheInfo},
+                                    validationResult=${tl.validationCacheInfo}">
 
                                     <!-- TL-Info preview -->
                                     <tr th:replace="~{fragments/tl-info :: tl-info-preview(id=${id}, country=${country}, downloadResult=${downloadResult},
-										parsingResult=${parsingResult}, validationResult=${validationResult})}"></tr>
+                                        parsingResult=${parsingResult}, validationResult=${validationResult})}"></tr>
 
                                     <!-- TL-Info body -->
                                     <tr th:replace="~{fragments/tl-info :: tl-info-body(id=${id}, url=${tl.url}, downloadResult=${downloadResult},
-										parsingResult=${parsingResult}, validationResult=${validationResult})}"></tr>
+                                        parsingResult=${parsingResult}, validationResult=${validationResult})}"></tr>
                                     </tbody>
 
                                 </table>

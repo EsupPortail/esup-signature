@@ -18,16 +18,15 @@
                 <p th:if="${lotlInfo == null}">Aucune info trouvée pour ce LOTL</p>
                 <div th:if="${lotlInfo != null}">
                     <div class="lotl"
-                         th:with="downloadResult=${lotlInfo.downloadCacheInfo}, parsingResult=${lotlInfo.parsingCacheInfo}, validationResult=${lotlInfo.validationCacheInfo}">
+                        th:with="downloadResult=${lotlInfo.downloadCacheInfo}, parsingResult=${lotlInfo.parsingCacheInfo}, validationResult=${lotlInfo.validationCacheInfo}">
                         <h2>
-                            <a th:href="@{/admin/dss/lotl/} + ${lotlInfo.getDSSId().asXmlId()}">
-							<span th:if="${parsingResult.resultExist and parsingResult.territory != null}"
-                                  th:class="${'lotl-flag small_flag mt-2 flag_' + parsingResult.territory}"
-                                  th:title="${parsingResult.territory}"></span>
+                            <a th:href="@{'/admin/dss/lotl/' + ${lotlInfo.getDSSId().asXmlId()}}">
+                                <span th:if="${parsingResult.resultExist and parsingResult.territory != null}"
+                                th:class="${'lotl-flag small_flag mt-2 flag_' + parsingResult.territory}"
+                                th:title="${parsingResult.territory}"></span>
                             </a>
                             <span th:text="#{label.summary.lotl}"></span>&nbsp;
-                            <a class="h5 fw-bold" th:href="${lotlInfo.url}"
-                               th:text="'(' + ${lotlInfo.url} + ')'" target="_blank"></a>
+                            <a class="h5 fw-bold" th:href="${lotlInfo.url}" th:text="'(' + ${lotlInfo.url} + ')'" target="_blank"></a>
                         </h2>
 
                         <!-- LOTL Info -->
