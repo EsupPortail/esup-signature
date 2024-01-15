@@ -54,7 +54,7 @@ public class WizardController {
         String modalTile = "Création d'une nouvelle demande";
         if(workflowId != null) {
             Workflow workflow = workflowService.getById(workflowId);
-            modalTile = "Création d'une nouvelle demande dans le circuit : " + workflow.getName();
+            modalTile = "Création d'une nouvelle demande dans le circuit : " + workflow.getDescription();
             model.addAttribute("workflow", workflow);
         }
         model.addAttribute("modalTitle", modalTile);
@@ -117,7 +117,7 @@ public class WizardController {
         String name = "Demande personnalisée";
         if (workflowId != null) {
             workflow = workflowService.getById(workflowId);
-            name = workflow.getName();
+            name = workflow.getDescription();
         }
         SignBook signBook = signBookService.createSignBook("", workflow, name, userEppn, false);
         return ResponseEntity.ok().body(signBook.getId());
@@ -138,7 +138,7 @@ public class WizardController {
                 signBookService.initSignBook(signBookId, workflowId, userEppn);
                 model.addAttribute("isTempUsers", signRequestService.isTempUsers(signBook.getId()));
                 model.addAttribute("workflowId", workflowId);
-                model.addAttribute("modalTitle", "Création d'une nouvelle demande dans le circuit : " + signBook.getLiveWorkflow().getWorkflow().getName());
+                model.addAttribute("modalTitle", "Création d'une nouvelle demande dans le circuit : " + signBook.getLiveWorkflow().getWorkflow().getDescription());
                 return "user/wizard/wiz-setup-workflow";
             }
         }

@@ -13,7 +13,7 @@ import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.annotation.Resource;
-import org.esupportail.esupsignature.dss.DssUtils;
+import org.esupportail.esupsignature.dss.DssUtilsService;
 import org.esupportail.esupsignature.dss.model.DssMultipartFile;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
@@ -40,6 +40,9 @@ public class ValidationService {
     protected FileService fileService;
 
     @Resource
+    protected DssUtilsService dssUtilsService;
+
+    @Resource
     protected SignaturePolicyProvider signaturePolicyProvider;
 
     @Resource
@@ -55,12 +58,12 @@ public class ValidationService {
             List<DSSDocument> detachedContents = new ArrayList<>();
             SignedDocumentValidator documentValidator;
             if(signInputStream != null && signInputStream.available() > 0) {
-                detachedContents.add(DssUtils.toDSSDocument(new DssMultipartFile("doc", "doc", null, docInputStream)));
-                documentValidator = SignedDocumentValidator.fromDocument(Objects.requireNonNull(DssUtils.toDSSDocument(new DssMultipartFile("sign", "sign", null, signInputStream))));
+                detachedContents.add(dssUtilsService.toDSSDocument(new DssMultipartFile("doc", "doc", null, docInputStream)));
+                documentValidator = SignedDocumentValidator.fromDocument(Objects.requireNonNull(dssUtilsService.toDSSDocument(new DssMultipartFile("sign", "sign", null, signInputStream))));
                 documentValidator.setValidationLevel(ValidationLevel.LONG_TERM_DATA);
                 documentValidator.setDetachedContents(detachedContents);
             } else {
-                DSSDocument dssDocument = DssUtils.toDSSDocument(new DssMultipartFile("doc", "doc", null, docInputStream));
+                DSSDocument dssDocument = dssUtilsService.toDSSDocument(new DssMultipartFile("doc", "doc", null, docInputStream));
                 if(dssDocument != null) {
                     documentValidator = SignedDocumentValidator.fromDocument(dssDocument);
                 } else {
