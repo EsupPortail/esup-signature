@@ -212,7 +212,7 @@ public class WorkflowService {
         if (userService.getSystemUser().equals(user)) {
             name = title;
         } else {
-            name = user.getEppn().split("@")[0] + title.substring(0, 1).toUpperCase() + title.toLowerCase().substring(1);
+            name = user.getEppn() + title.substring(0, 1).toUpperCase() + title.toLowerCase().substring(1);
             name = name.replaceAll("[^a-zA-Z0-9]", "");
         }
         if (!isWorkflowExist(name, user.getEppn())) {
