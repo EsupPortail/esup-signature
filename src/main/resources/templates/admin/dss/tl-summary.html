@@ -14,7 +14,6 @@
         </nav>
         <div id="content" class="content">
             <div class="p-2">
-
                 <div class="alert alert-secondary">
                     <div class="eu-official-journal">
                         <p><span th:text="#{label.keystore.synchronized.with}"></span>&nbsp;<a th:href="${currentOjUrl}" th:text="#{label.eu.oj.page}" target="_blank"></a></p>
@@ -28,9 +27,7 @@
                         <span th:text="${#lists.size(keystoreCertificates)}"></span>&nbsp<span th:text="#{label.trusted.certificates.from.OJ}"></span>
                     </span>
                 </div>
-
                 <p th:if="${summary == null}" th:text="#{label.summary.tl.info.empty}"></p>
-
                 <th:block th:if="${summary != null}">
                     <div layout:fragment="content">
                         <p th:if="${summary == null}" th:text="#{label.summary.tl.info.empty}"></p>
@@ -45,17 +42,15 @@
                                     <a class="h4" th:if="${parsingResult.TSLType != null}" th:text="'(' + (${parsingResult.TSLType.label != null ? parsingResult.TSLType.label : parsingResult.TSLType.uri}) + ')'" th:href="${parsingResult.TSLType.uri}" target="_blank"></a>
                                     <a class="h6" th:href="${lotl.url}" th:text="${lotl.url}?:'-'" target="_blank"></a>
                                 </h2>
-
                                 <!-- LOTL Info -->
                                 <div th:replace="~{fragments/lotl-info-fragments :: lotl-info-summary(downloadResult=${downloadResult}, parsingResult=${parsingResult}, validationResult=${validationResult}, parsingResult=${parsingResult}, validationResult=${validationResult})}"></div>
-
                                 <!-- Pivots -->
                                 <div class="alert alert-light mb-2">
                                     <div class="table-container row" th:if="${not #lists.isEmpty(lotl.pivotInfos)}">
                                     <h4>
                                         <span th:text=#{label.summary.pivot.loaded.header}></span>&nbsp;
-                                        <a class="h6 font-weight-bold" th:href="@{/admin/dss/pivot-changes/} + ${lotl.getDSSId().asXmlId()}"
-                                           th:text="#{label.summary.pivot.check.text}"></a>
+                                        <a class="h6 font-weight-bold" th:href="@{'/admin/dss/pivot-changes/' + ${lotl.getDSSId().asXmlId()}}"
+                                        th:text="#{label.summary.pivot.check.text}"></a>
                                     </h4>
                                     <table class="pivot-summary summary-table table">
                                         <thead>
@@ -68,9 +63,9 @@
                                         </tr>
                                         </thead>
                                         <tbody th:each="pivot,iterTL : ${lotl.pivotInfos}" th:with="id=${pivot.getDSSId().asXmlId()},
-									downloadResult=${pivot.downloadCacheInfo},
-									parsingResult=${pivot.parsingCacheInfo},
-									validationResult=${pivot.validationCacheInfo}">
+                                            downloadResult=${pivot.downloadCacheInfo},
+                                            parsingResult=${pivot.parsingCacheInfo},
+                                            validationResult=${pivot.validationCacheInfo}">
                                         <tr class="pivot-info-preview">
                                             <!-- URL -->
                                             <td>
@@ -78,8 +73,8 @@
                                             </td>
                                             <!-- Last Download Attempt date -->
                                             <td>
-										<span th:text="${downloadResult != null and downloadResult.lastDownloadAttemptTime != null} ?
-												${#dates.format(downloadResult.lastDownloadAttemptTime, 'dd-MMM-yyyy HH:mm:ss')} : '-'"></span>
+                                                <span th:text="${downloadResult != null and downloadResult.lastDownloadAttemptTime != null} ?
+                                                    ${#dates.format(downloadResult.lastDownloadAttemptTime, 'dd-MMM-yyyy HH:mm:ss')} : '-'"></span>
                                             </td>
 
                                             <!-- Download result -->
@@ -109,10 +104,10 @@
                                         <thead th:replace="~{fragments/tl-info :: tl-info-header()}"></thead>
 
                                         <tbody th:each="tl,iterTL : ${lotl.getTLInfos()}" th:with="id=${tl.getDSSId().asXmlId()},
-									country=${tl.parsingCacheInfo.isResultExist()}?${tl.parsingCacheInfo.territory}:'no_country',
-									downloadResult=${tl.downloadCacheInfo},
-									parsingResult=${tl.parsingCacheInfo},
-									validationResult=${tl.validationCacheInfo}">
+                                            country=${tl.parsingCacheInfo.isResultExist()}?${tl.parsingCacheInfo.territory}:'no_country',
+                                            downloadResult=${tl.downloadCacheInfo},
+                                            parsingResult=${tl.parsingCacheInfo},
+                                            validationResult=${tl.validationCacheInfo}">
 
                                         <!-- TL-Info preview -->
                                         <tr th:replace="~{fragments/tl-info :: tl-info-preview(id=${id}, country=${country}, downloadResult=${downloadResult}, parsingResult=${parsingResult}, validationResult=${validationResult})}"></tr>
@@ -130,21 +125,18 @@
                             <div class="table-container row" th:if="${not #lists.isEmpty(summary.otherTLInfos)}">
                                 <h2 th:text=#{label.summary.tl.info.other.header}></h2>
                                 <table class="tl-summary summary-table table accordion">
-                                    <thead th:replace="~{fragments/tl-info :: tl-info-header()}							parsingResult=${parsingResult}, validationResult=${validationResult})}"></thead>
-
+                                    <thead th:replace="~{fragments/tl-info :: tl-info-header()}parsingResult=${parsingResult}, validationResult=${validationResult})}"></thead>
                                     <tbody th:each="tl,iterTL : ${summary.otherTLInfos}" th:with="id=${tl.getDSSId().asXmlId()},
-								country=${tl.parsingCacheInfo.isResultExist()}?${tl.parsingCacheInfo.territory}:'no_country',
-								downloadResult=${tl.downloadCacheInfo},
-								parsingResult=${tl.parsingCacheInfo},
-								validationResult=${tl.validationCacheInfo}">
-
+                                    country=${tl.parsingCacheInfo.isResultExist()}?${tl.parsingCacheInfo.territory}:'no_country',
+                                    downloadResult=${tl.downloadCacheInfo},
+                                    parsingResult=${tl.parsingCacheInfo},
+                                    validationResult=${tl.validationCacheInfo}">
                                     <!-- TL-Info preview -->
                                     <tr th:replace="~{fragments/tl-info :: tl-info-preview(id=${id}, country=${country}, downloadResult=${downloadResult},
-										parsingResult=${parsingResult}, validationResult=${validationResult})}"></tr>
-
+                                        parsingResult=${parsingResult}, validationResult=${validationResult})}"></tr>
                                     <!-- TL-Info body -->
                                     <tr th:replace="~{fragments/tl-info :: tl-info-body(id=${id}, url=${tl.url}, downloadResult=${downloadResult},
-										parsingResult=${parsingResult}, validationResult=${validationResult})}"></tr>
+                                        parsingResult=${parsingResult}, validationResult=${validationResult})}"></tr>
                                     </tbody>
 
                                 </table>
@@ -153,15 +145,13 @@
                     </div>
                 </th:block>
             </div>
-
             <script type="text/javascript" th:inline="javascript">
                 $('tr > td > a > span').on('click', function(e) {
-                    if(jQuery.inArray( "small_flag", e.target.classList ) != -1){
+                    if(jQuery.inArray( "small_flag", e.target.classList ) !== -1){
                         e.stopPropagation();
                     }
                 });
             </script>
-
         </div>
     </div>
 </main>

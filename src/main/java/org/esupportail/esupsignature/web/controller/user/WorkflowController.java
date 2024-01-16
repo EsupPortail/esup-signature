@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
 import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -48,7 +49,7 @@ public class WorkflowController {
 
 
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
-    @PostMapping(value = "/add-step/{id}")
+    @PostMapping(value = "/add-step/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public String addStep(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
                           @RequestBody WorkflowStepDto step) throws EsupSignatureRuntimeException {
         workflowStepService.addStep(id, step, userEppn, true, false, null);

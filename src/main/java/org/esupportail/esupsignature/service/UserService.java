@@ -690,7 +690,7 @@ public class UserService {
         Optional<Document> signImage = authUser.getSignImages().stream().filter(document -> document.getId().equals(id)).findFirst();
         if(signImage.isPresent()) {
             signature.put("bytes", signImage.get().getInputStream().readAllBytes());
-            signature.put("fileName", signImage.get().getFileName());
+            signature.put("fileName", "sign_" + signImage.get().getFileName());
             signature.put("contentType", signImage.get().getContentType());
         }
         return signature;

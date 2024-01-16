@@ -25,7 +25,7 @@ public class WorkflowStepDto {
 
 	private Integer signLevel = 0;
 
-	private SignType signType = SignType.visa;
+	private SignType signType;
 
 	private Boolean repeatable = false;
 

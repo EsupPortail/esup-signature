@@ -54,7 +54,7 @@ public class DSSController {
 		model.addAttribute("summary", summary);
 		model.addAttribute("keystoreCertificates", keystoreService.getCertificatesDTOFromKeyStore(dssService.getTrustedListsCertificateSource().getCertificates()));
 		OfficialJournalSchemeInformationURI ojUriInfo = (OfficialJournalSchemeInformationURI) dssService.getLotlSource().getSigningCertificatesAnnouncementPredicate();
-		model.addAttribute("currentOjUrl", ojUriInfo.getOfficialJournalURL());
+		model.addAttribute("currentOjUrl", ojUriInfo.getUri());
 		model.addAttribute("actualOjUrl", dssService.getActualOjUrl());
 		return "admin/dss/tl-summary";
 	}
