@@ -17,7 +17,7 @@ build3:
     - mvn clean package -DskipTests -Dspring.config.location=/opt/esup-signature/application.yml
     - sudo systemctl stop esup-signature.service
     - rm -f /opt/esup-signature/esup-signature.war
-    - cp /target/esup-signature.war /opt/esup-signature/
+    - cp target/esup-signature.war /opt/esup-signature/
     - sudo systemctl restart esup-signature.service
   only:
     - tags
