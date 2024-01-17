@@ -215,7 +215,8 @@ export class WizUi {
             self.start = true;
             self.workflowSignSubmitStepData();
         });
-        $("#wiz-exit").on('click', e => this.exit());
+        $("#wiz-end").on('click', e => this.wizardEnd());
+        $("#wiz-exit").on('click', e => this.wizardExit());
         $("#save-workflow").on('click', e => this.saveWorkflow());
         $("#save-step").on('click', e => this.workflowSignSubmitStepData());
         $("#send-draft-button").on('click', e => this.workflowSignSubmitLastStepData(false));
@@ -283,7 +284,11 @@ export class WizUi {
         });
     }
 
-    exit() {
+    wizardExit() {
+        location.href = "/user/signbooks/" + this.newSignBookId;
+    }
+
+    wizardEnd() {
         let self = this;
         $.ajax({
             url: "/user/wizard/wiz-save-workflow/" + self.newWorkflowId,

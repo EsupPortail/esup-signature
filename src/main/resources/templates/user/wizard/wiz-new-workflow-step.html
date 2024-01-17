@@ -95,7 +95,7 @@
     <button type="button" id="save-step" value="true" class="btn btn-primary">
         <i class="fa-solid fa-save"></i> Enregistrer cette étape
     </button>
-    <button id="wiz-exit" name="wiz-exit" value="true" th:if="${workflow != null && workflow.workflowSteps.size() > 0}" type="button" class="btn btn-success">
+    <button id="wiz-end" name="wiz-exit" value="true" th:if="${workflow != null && workflow.workflowSteps.size() > 0}" type="button" class="btn btn-success">
         <i class="fa-solid fa-flag-checkered"></i> Terminer
     </button>
 </div>
