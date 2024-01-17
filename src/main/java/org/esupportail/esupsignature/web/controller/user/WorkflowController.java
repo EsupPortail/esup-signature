@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -10,7 +11,6 @@ import org.esupportail.esupsignature.service.CertificatService;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
-import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -47,11 +47,17 @@ public class WorkflowController {
     }
 
 
-    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #authUserEppn)")
     @PostMapping(value = "/add-step/{id}")
-    public String addStep(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
-                          @RequestBody WorkflowStepDto step) throws EsupSignatureRuntimeException {
-        workflowStepService.addStep(id, step, userEppn, true, false, null);
+    public String addStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,						  @RequestParam("signType") String signType,
+                          @RequestParam(name="description", required = false) String description,
+                          @RequestParam(name="recipientsEmails", required = false) String[] recipientsEmails,
+                          @RequestParam(name="changeable", required = false) Boolean changeable,
+                          @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
+                          @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
+                          @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) throws EsupSignatureRuntimeException {
+        WorkflowStepDto workflowStepDto = new WorkflowStepDto(SignType.valueOf(signType), description, recipientService.convertRecipientEmailsToRecipientDto(List.of(recipientsEmails)), changeable, maxRecipients, allSignToComplete, attachmentRequire);
+        workflowStepService.addStep(id, workflowStepDto, authUserEppn, false, false, null);
         return "redirect:/user/workflows/" + id;
     }
 
