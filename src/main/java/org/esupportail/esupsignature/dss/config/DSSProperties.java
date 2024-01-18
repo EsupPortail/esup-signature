@@ -21,6 +21,7 @@ public class DSSProperties {
     private String stateOrProvince;
     private String postalCode;
     private String locality;
+    private Boolean checkRevocationForUntrustedChains = true;
 
     public String getCacheUsername() {
         return cacheUsername;
@@ -148,5 +149,13 @@ public class DSSProperties {
 
     public void setLocality(String locality) {
         this.locality = locality;
+    }
+
+    public Boolean getCheckRevocationForUntrustedChains() {
+        return checkRevocationForUntrustedChains;
+    }
+
+    public void setCheckRevocationForUntrustedChains(Boolean checkRevocationForUntrustedChains) {
+        this.checkRevocationForUntrustedChains = checkRevocationForUntrustedChains;
     }
 }
