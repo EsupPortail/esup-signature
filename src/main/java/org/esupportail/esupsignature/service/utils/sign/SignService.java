@@ -202,9 +202,9 @@ public class SignService {
 				List<SignRequestParams> signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
 				List<SignRequestParams> signRequestParamsesForSign = signRequestParamses.stream().filter(srp -> srp.getSignImageNumber() >= 0 && srp.getTextPart() == null).toList();
 				if((abstractKeyStoreTokenConnection instanceof OpenSCSignatureToken
-						|| abstractKeyStoreTokenConnection instanceof Pkcs11SignatureToken
-						|| abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken)
-					&& !signRequestParamsesForSign.isEmpty() && !user.getEppn().equals("system")) {
+                        || abstractKeyStoreTokenConnection instanceof Pkcs11SignatureToken
+                        || abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken)
+                        && signRequestParamsesForSign.size() == 1 && !user.getEppn().equals("system")) {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequestParamsesForSign.get(0) , new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign().getBytes()), user, signatureDocumentForm.getSigningDate());
 				} else {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, user);
@@ -407,7 +407,7 @@ public class SignService {
 				((SignatureDocumentForm) abstractSignatureForm).setContainerType(signProperties.getContainerType());
 			}
 		}
-		if(signProperties.getSignWithExpiredCertificate() || (environment.getActiveProfiles().length > 0 && environment.getActiveProfiles()[0].equals("dev"))) {
+		if(signProperties.getSignWithExpiredCertificate() || (environment.getActiveProfiles().length > 0 && List.of(environment.getActiveProfiles()).contains("dev"))) {
 			abstractSignatureForm.setSignWithExpiredCertificate(true);
 		}
 		abstractSignatureForm.setSignatureForm(signatureForm);
