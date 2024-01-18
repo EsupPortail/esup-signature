@@ -40,7 +40,6 @@ import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
-import eu.europa.esig.dss.validation.RevocationDataVerifier;
 import eu.europa.esig.dss.validation.SignaturePolicyProvider;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 import eu.europa.esig.dss.xml.common.DocumentBuilderFactoryBuilder;
@@ -244,13 +243,8 @@ public class DSSBeanConfig {
 		certificateVerifier.setOcspSource(onlineOcspSource);
 		certificateVerifier.setTrustedCertSources(trustedListSource);
 		certificateVerifier.setAlertOnMissingRevocationData(new ExceptionOnStatusAlert());
-		certificateVerifier.setCheckRevocationForUntrustedChains(false);
+		certificateVerifier.setCheckRevocationForUntrustedChains(dssProperties.getCheckRevocationForUntrustedChains());
 		return certificateVerifier;
-	}
-
-	@Bean
-	public RevocationDataVerifier revocationDataVerifier() {
-        return RevocationDataVerifier.createDefaultRevocationDataVerifier();
 	}
 
 	@Bean
