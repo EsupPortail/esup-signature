@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<div id="stepscard" th:fragment="stepscard-light"   >
-    <div class="alert alert-light mb-1">
+<div id="stepscard" th:fragment="stepscard-light">
+    <div class="alert alert-light mb-1" style="height: calc(100vh - 260px); overflow-y: scroll;">
         <h5>Etapes du circuit</h5>
-                <div id="stepper" class="bs-stepper vertical">
+                <div id="stepper" class="bs-stepper vertical" >
                     <div class="bs-stepper-header" role="tablist">
                         <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
                             <div class="step border border-dark bg-white rounded p-1" th:id="'step-' + ${iterator.index}">
                                 <div class="step-trigger">
                                     <span class="bs-stepper-circle bg-primary" th:text="${iterator.index + 1}"></span>
-                                    <div class="bs-stepper-label">
+                                    <div class="bs-stepper-label" style="overflow: clip;">
                                         <span  th:text="#{'signbook.signtype.' + ${workflowStep.getSignType()}}"></span> <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}"><i class="fa-solid fa-users"></i></span>
                                         <br/>
                                         <span th:if="${workflowStep.name != null}" th:text="${workflowStep.name}"></span>

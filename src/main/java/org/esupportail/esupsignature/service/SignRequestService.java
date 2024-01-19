@@ -826,7 +826,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public boolean addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, String postit, Integer spotStepNumber, String authUserEppn, String userEppn) {
+	public Long addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, String postit, Integer spotStepNumber, String authUserEppn, String userEppn) {
 		SignRequest signRequest = getById(id);
 		if(spotStepNumber == null || userEppn.equals(signRequest.getCreateBy().getEppn())) {
 			if (spotStepNumber != null && spotStepNumber > 0) {
@@ -850,9 +850,9 @@ public class SignRequestService {
 			} else {
 				updateStatus(signRequest.getId(), null, "Ajout d'un emplacement de signature", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
 			}
-			return true;
+			return comment.getId();
 		} else {
-			return false;
+			return null;
 		}
 	}
 

@@ -23,6 +23,11 @@
         <div id="content" class="content">
             <div class="fixed-action-btns active" th:if="${form.workflow != null}">
                 <ul class="list-unstyled">
+                    <li>
+                        <a id="save" title="Enregister" type="button" class="btn-floating btn-lg bg-success" onclick="window.location.reload();">
+                            <i class="fa-solid fa-save fa-2xl"></i>
+                        </a>
+                    </li>
                     <li th:if="${form.document != null && form.signRequestParams != null}">
                         <a id="addSignRequestParams" title="Modifier les champs signature" type="button" data-bs-toggle="modal" data-bs-target="#updateSignsModal" class="btn-floating btn-lg bg-warning">
                             <i class="fa-solid fa-pencil fa-2xl"></i>
@@ -42,7 +47,7 @@
                 </li>
             </ul>
             <div th:replace="~{admin/forms/includes/tools :: tools}"></div>
-            <div style="position: fixed; z-index: 999;">
+            <div style="position: fixed; z-index: 999;width: 300px;">
             <div th:insert="~{admin/workflows/cards/stepscard-light :: stepscard-light}"></div>
             </div>
             <div th:replace="~{admin/forms/includes/workspace :: workspace}"></div>
