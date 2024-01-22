@@ -66,7 +66,7 @@ export class SignPosition extends EventFactory {
     addSign(page, restore, signImageNumber, forceSignNumber) {
         let id = this.id;
         let currentSignRequestParams = null;
-        if(signImageNumber != null && signImageNumber >= 0) {
+        if(signImageNumber != null && signImageNumber >= 0 && signImageNumber != 999999) {
             if(forceSignNumber != null) {
                 currentSignRequestParams = this.currentSignRequestParamses[forceSignNumber];
             } else {
@@ -80,7 +80,10 @@ export class SignPosition extends EventFactory {
         }
         if(signImageNumber != null) {
             let favoriteSignRequestParams = currentSignRequestParams;
-            if(signImageNumber >= 0) {
+            if (signImageNumber === 999999) {
+                id = 999999;
+                this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, false, false, false, signImageNumber, this.scrollTop, this.csrf, this.signType));
+            } else if(signImageNumber >= 0) {
                 if(JSON.parse(sessionStorage.getItem("favoriteSignRequestParams")) != null) {
                     favoriteSignRequestParams = JSON.parse(sessionStorage.getItem("favoriteSignRequestParams"));
                     if(currentSignRequestParams != null) {
@@ -89,15 +92,10 @@ export class SignPosition extends EventFactory {
                     }
                 }
                 this.signRequestParamses.set(id, new SignRequestParams(favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, this.signImages, this.scrollTop));
-            } else if (signImageNumber === -999999) {
-                id = 999999;
-                this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, false, false, false, -999999, this.scrollTop, this.csrf, this.signType));
             } else {
                 this.signRequestParamses.set(id, new SignRequestParams(favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, this.signImages, this.scrollTop));
             }
-            if (signImageNumber !== -999999) {
-                this.signRequestParamses.get(id).changeSignImage(signImageNumber);
-            }
+            this.signRequestParamses.get(id).changeSignImage(signImageNumber);
         } else {
             this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page, this.userName, this.authUserName, restore, signImageNumber != null && signImageNumber >= 0, false, this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, this.signImages, this.scrollTop));
         }

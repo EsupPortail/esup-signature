@@ -62,8 +62,7 @@
                 <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}" title="Cliquer pour supprimer l'emplacement de signature"
                     th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').removeClass(\'circle-border\');'">
-                    <i class="fa-solid fa-map-marker-alt fa-3x" title="Cliquer pour supprimer l'emplacement de signature"></i>
-                    <div th:id="'inDocSign_' + ${spot.id}" style="width: 200px; height: 150px; margin-top:-11px; margin-left: 18px;color: #000;" class="sign-field">
+                    <div th:id="'inDocSign_' + ${spot.id}" style="width: 150px; height: 75px; color: #000;" class="sign-field">
                         Cliquer pour supprimer l’emplacement de signature
                     </div>
                 </div>
