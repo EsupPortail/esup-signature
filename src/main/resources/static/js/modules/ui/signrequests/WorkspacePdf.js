@@ -67,6 +67,7 @@ export class WorkspacePdf {
         this.initChangeModeSelector();
         this.initDataFields(fields);
         this.wsTabs = $("#ws-tabs");
+        this.navWidth = this.wsTabs.innerWidth();
         this.workspace = $("#workspace");
         this.secondTools = $("#second-tools");
         this.addSignButton = $("#addSignButton")
@@ -1018,33 +1019,31 @@ export class WorkspacePdf {
     }
 
     autocollapse() {
-        var menu = "#ws-tabs";
-        var maxHeight = 50;
-        var navHeight = this.wsTabs.innerHeight();
-        if (navHeight >= maxHeight) {
+        let menu = "#ws-tabs";
+        let maxWidth = $("#workspace").width() - 100;
+        console.info(maxWidth);
+        if (this.navWidth >= maxWidth) {
             $(menu + ' .dropdown').removeClass('d-none');
-            while (navHeight > maxHeight) {
-                //  add child to dropdown
-                var children = this.wsTabs.children(menu + ' li:not(:last-child)');
-                var count = children.length;
+            while (this.navWidth > maxWidth) {
+                let children = this.wsTabs.children(menu + ' li:not(:last-child)');
+                let count = children.length;
+                this.navWidth = this.navWidth - $(children[count - 1]).width();
+                console.warn(this.navWidth);
+
                 $(children[count - 1]).prependTo(menu + ' .dropdown-menu');
-                navHeight = this.wsTabs.innerHeight();
             }
-        }
-        else {
-            var collapsed = $(menu + ' .dropdown-menu').children(menu + ' li');
+        } else if (this.navWidth < maxWidth - 300) {
+            let collapsed = $(menu + ' .dropdown-menu').children(menu + ' li');
             if (collapsed.length===0) {
                 $(menu + ' .dropdown').addClass('d-none');
             }
-            while (navHeight < maxHeight && (this.wsTabs.children(menu + ' li').length > 0) && collapsed.length > 0) {
-                //  remove child from dropdown
-                collapsed = $(menu + ' .dropdown-menu').children('li');
-                $(collapsed[0]).insertBefore(this.wsTabs.children(menu + ' li:last-child'));
-                navHeight = this.wsTabs.innerHeight();
-            }
-
-            if (navHeight > maxHeight) {
-                this.autocollapse();
+            collapsed = $(menu + ' .dropdown-menu').children('li');
+            let i = 0;
+            while (this.navWidth < maxWidth && (this.wsTabs.children(menu + ' li').length > 0) && collapsed.length > i + 1) {
+                $(collapsed[i]).insertBefore(this.wsTabs.children(menu + ' li:last-child'));
+                this.navWidth = this.navWidth + $(collapsed[i]).width();
+                if(this.navWidth >= maxWidth) break;
+                i++;
             }
 
         }

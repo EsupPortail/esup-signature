@@ -782,7 +782,6 @@ input:checked + .slider:before {
     z-index: 1028;
     position: fixed;
     padding-left: 10px;
-    overflow-x: auto;
 }
 
 .tools-admin {
@@ -1180,6 +1179,10 @@ height: 100%;
 .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
     color: black;
     border-color: #000 #000 transparent #000 !important;
+}
+
+#ws-tabs {
+    width: fit-content !important;
 }
 
 .file-tab {
