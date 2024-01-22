@@ -468,7 +468,7 @@ export class GlobalUi {
     enableSummerNote() {
         $('.summer-note').each(function() {
             console.info("auto enable summer note for " + $(this).attr('id'));
-            $(this).summernote({
+            let summernote = $(this).summernote({
                 tabsize: 2,
                 height: 250,
                 toolbar: [
@@ -480,6 +480,13 @@ export class GlobalUi {
                     ['insert', ['link', 'picture', 'video']],
                     ['view', ['fullscreen', 'codeview', 'help']]
                 ]
+            });
+            $('form').on('submit',function(){
+                if (summernote.summernote('isEmpty')) {
+                    summernote.val('');
+                }else if(summernote.val()==='<p><br></p>'){
+                    summernote.val('');
+                }
             });
         });
     }
