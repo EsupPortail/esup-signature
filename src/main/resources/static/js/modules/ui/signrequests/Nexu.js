@@ -1,6 +1,7 @@
 export class Nexu {
 
-    constructor(addExtra, id, currentSignType) {
+    constructor(addExtra, id, currentSignType, urlProfil) {
+        Nexu.urlProfil = urlProfil;
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.nexuUrl = this.globalProperties.nexuUrl;
         this.nexuVersion = this.globalProperties.nexuVersion;
@@ -94,7 +95,7 @@ export class Nexu {
             Nexu.keyId = certificateData.response.keyId;
             console.info("esup-dss-client version : " + Nexu.version);
             console.log("init tokenId : " + this.tokenId + "," + this.keyId);
-            let url = "/user/nexu-sign/get-data-to-sign";
+            let url = "/nexu-sign/get-data-to-sign";
             let toSend = { signingCertificate: signingCertificate, certificateChain: certificateChain, encryptionAlgorithm: encryptionAlgorithm };
             callUrl(Nexu.rootUrl + url + "?addExtra=" + Nexu.addExtra + "&id=" + Nexu.id, "POST",  JSON.stringify(toSend), Nexu.sign, Nexu.error);
         }
@@ -119,7 +120,7 @@ export class Nexu {
         if(signatureData.response != null) {
             let signatureValue = signatureData.response.signatureValue;
             let toSend = {signatureValue: signatureValue};
-            callUrl(Nexu.rootUrl + "/user/nexu-sign/sign-document?id=" + Nexu.id, "POST", JSON.stringify(toSend), Nexu.downloadSignedDocument, Nexu.error);
+            callUrl(Nexu.rootUrl + "/nexu-sign/sign-document?id=" + Nexu.id, "POST", JSON.stringify(toSend), Nexu.downloadSignedDocument, Nexu.error);
         } else {
             const merror = {
                 errorMessage: "Erreur au moment de la signature du document"
@@ -133,7 +134,7 @@ export class Nexu {
         let bar = $('#bar');
         bar.removeClass('progress-bar-striped active');
         bar.addClass('progress-bar-success');
-        window.location.href = "/user/signrequests/" + Nexu.id;
+        window.location.href = "/" + Nexu.urlProfil + "/signrequests/" + Nexu.id;
         $("#success").show();
     }
 
@@ -166,7 +167,7 @@ export class Nexu {
         $("#success").hide();
         $.ajax({
             type: "POST",
-            url: Nexu.rootUrl + "/user/nexu-sign/error?id=" + Nexu.id,
+            url: Nexu.rootUrl + "/nexu-sign/error?id=" + Nexu.id,
             crossDomain: true,
             dataType: "json",
             async: true,
