@@ -208,12 +208,14 @@ public class WorkflowService {
 
     @Transactional
     public Workflow createWorkflow(String title, String description, User user) throws EsupSignatureRuntimeException {
-        String name;
-        if (userService.getSystemUser().equals(user)) {
-            name = title;
-        } else {
-            name = user.getEppn() + title.substring(0, 1).toUpperCase() + title.toLowerCase().substring(1);
-            name = name.replaceAll("[^a-zA-Z0-9]", "");
+        String name = user.getEppn() + description;
+        if(StringUtils.hasText(title)) {
+            if (userService.getSystemUser().equals(user)) {
+                name = title;
+            } else {
+                name = user.getEppn() + title.substring(0, 1).toUpperCase() + title.toLowerCase().substring(1);
+                name = name.replaceAll("[^a-zA-Z0-9]", "");
+            }
         }
         if (!isWorkflowExist(name, user.getEppn())) {
             Workflow workflow = new Workflow();

@@ -7,7 +7,6 @@ import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.model.x509.revocation.ocsp.OCSP;
 import eu.europa.esig.dss.spi.x509.revocation.RevocationToken;
 import eu.europa.esig.dss.validation.CertificateVerifier;
-import eu.europa.esig.dss.validation.RevocationDataVerifier;
 import eu.europa.esig.dss.validation.SignaturePolicyProvider;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
@@ -34,8 +33,6 @@ public class ValidationService {
 
     private final CertificateVerifier certificateVerifier;
 
-    private final RevocationDataVerifier revocationDataVerifier;
-
     @Resource
     protected FileService fileService;
 
@@ -48,9 +45,8 @@ public class ValidationService {
     @Resource
     private org.springframework.core.io.Resource defaultPolicy;
 
-    public ValidationService(CertificateVerifier certificateVerifier, RevocationDataVerifier revocationDataVerifier) {
+    public ValidationService(CertificateVerifier certificateVerifier) {
         this.certificateVerifier = certificateVerifier;
-        this.revocationDataVerifier = revocationDataVerifier;
     }
 
     public Reports validate(InputStream docInputStream, InputStream signInputStream) {
@@ -96,8 +92,9 @@ public class ValidationService {
     }
 
     public boolean checkRevocation(CertificateToken certificateToken) {
+        if(!certificateVerifier.isCheckRevocationForUntrustedChains()) return true;
         RevocationToken<OCSP> revocationToken = certificateVerifier.getOcspSource().getRevocationToken(certificateToken, certificateToken);
-        return revocationToken != null && revocationDataVerifier.isAcceptable(revocationToken);
+        return revocationToken != null && certificateVerifier.getRevocationDataVerifier().isAcceptable(revocationToken);
     }
 
 }

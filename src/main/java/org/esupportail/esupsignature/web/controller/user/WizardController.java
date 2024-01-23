@@ -4,6 +4,7 @@ import jakarta.annotation.Resource;
 import jakarta.mail.MessagingException;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
@@ -70,7 +71,9 @@ public class WizardController {
     @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
     @GetMapping(value = "/wiz-start-form/{formId}", produces = "text/html")
     public String wizStartForm(@PathVariable("formId") Long formId, @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) {
-        model.addAttribute("form", formService.getById(formId));
+        Form form = formService.getById(formId);
+        form.setMessageToDisplay(formService.getHelpMessage(userEppn, form));
+        model.addAttribute("form", form);
         return "user/wizard/wiz-start-form";
     }
 
