@@ -114,7 +114,7 @@ public class OtpSignRequestController {
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
         model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest));
-        model.addAttribute("sealCertOK", false);
+        model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn, true));
         model.addAttribute("otp", true);
         if(!signRequest.getStatus().equals(SignRequestStatus.draft)) {
             try {
