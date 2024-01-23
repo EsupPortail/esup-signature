@@ -195,7 +195,7 @@ export class SignUi {
     checkSignOptions() {
         console.info("check sign options");
         if (this.signable) {
-            new Nexu(null, null, this.currentSignType);
+            new Nexu(null, null, this.currentSignType, null);
         }
 
     }
@@ -380,7 +380,7 @@ export class SignUi {
             data: signRequestUrlParams,
             success: function(data, textStatus, xhr) {
                 if(data === "initNexu") {
-                    document.location.href="/user/nexu-sign/" + self.signRequestId;
+                    document.location.href="/nexu-sign/" + self.signRequestId;
                 } else {
                     if (self.gotoNext) {
                         document.location.href = $("#nextSignRequest").attr('href');
