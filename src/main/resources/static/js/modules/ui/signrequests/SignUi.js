@@ -338,7 +338,6 @@ export class SignUi {
         }
         if(this.workspace != null) {
             let signRequestParamses = Array.from(this.workspace.signPosition.signRequestParamses.values());
-            //remove signImages attribut from all signRequestParamses elements
             signRequestParamses.forEach(function (signRequestParams){
                 delete signRequestParams.signImages;
             });
