@@ -338,6 +338,10 @@ export class SignUi {
         }
         if(this.workspace != null) {
             let signRequestParamses = Array.from(this.workspace.signPosition.signRequestParamses.values());
+            //remove signImages attribut from all signRequestParamses elements
+            signRequestParamses.forEach(function (signRequestParams){
+                delete signRequestParams.signImages;
+            });
             this.signRequestUrlParams = {
                 'password' : $("#password").val(),
                 'certType' : this.certTypeSelect.val(),
@@ -365,7 +369,6 @@ export class SignUi {
                 "password": document.getElementById("password").value,
             }
         }
-        console.info("params to send : " + this.signRequestUrlParams);
         this.sendData(this.signRequestUrlParams);
     }
 
