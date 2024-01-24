@@ -337,6 +337,9 @@ export class SignUi {
         }
         if(this.workspace != null) {
             let signRequestParamses = Array.from(this.workspace.signPosition.signRequestParamses.values());
+            signRequestParamses.forEach(function (signRequestParams){
+                delete signRequestParams.signImages;
+            });
             this.signRequestUrlParams = {
                 'password' : $("#password").val(),
                 'certType' : this.certTypeSelect.val(),
