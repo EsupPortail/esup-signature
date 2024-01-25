@@ -7,11 +7,14 @@ import jakarta.validation.Valid;
 import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.NexuSignature;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.esupportail.esupsignature.service.utils.sign.NexuService;
 import org.slf4j.Logger;
@@ -26,7 +29,7 @@ import java.io.Serializable;
 
 @CrossOrigin(allowedHeaders = "Content-Type", origins = "*")
 @Controller
-@RequestMapping("/user/nexu-sign")
+@RequestMapping("/nexu-sign")
 public class NexuProcessController implements Serializable {
 
 	private static final Logger logger = LoggerFactory.getLogger(NexuProcessController.class);
@@ -38,6 +41,9 @@ public class NexuProcessController implements Serializable {
 
 	@Resource
 	private NexuService nexuService;
+
+	@Resource
+	private UserService userService;
 
 	@Resource
 	private SignBookService signBookService;
@@ -53,6 +59,12 @@ public class NexuProcessController implements Serializable {
 		nexuService.deleteNexuSignature(id);
 		SignRequest signRequest = signRequestService.getById(id);
 		model.addAttribute("id", signRequest.getId());
+		User user = userService.getByEppn(userEppn);
+		if(user.getUserType().equals(UserType.external)) {
+			model.addAttribute("urlProfil", "otp");
+		} else {
+			model.addAttribute("urlProfil", "user");
+		}
 		return "user/signrequests/nexu-signature-process";
 	}
 

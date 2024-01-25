@@ -25,8 +25,8 @@
                     <div class="card-body">
                         <h5><i class="fa-solid fa-user"></i>
                             <a data-bs-toggle="collapse" th:href="'#sess-' + ${currentSession.sessionId}" role="button"
-                               aria-expanded="false"
-                               th:aria-controls="'sess-' + ${currentSession.sessionId}">
+                                aria-expanded="false"
+                                th:aria-controls="'sess-' + ${currentSession.sessionId}">
                                 <span th:text="${currentSession.principal.username}"></span></a>
                         </h5>
                         <div class="collapse" th:id="'sess-' + ${currentSession.sessionId}">

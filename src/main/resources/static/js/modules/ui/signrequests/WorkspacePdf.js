@@ -197,6 +197,7 @@ export class WorkspacePdf {
     }
 
     addSign(forceSignNumber) {
+        this.pdfViewer.annotationLinkRemove();
         let targetPageNumber = this.pdfViewer.pageNum;
         let signNum = this.signPosition.currentSignRequestParamsNum;
         if(forceSignNumber != null) {
