@@ -65,6 +65,7 @@ public class WebAppConfig implements WebMvcConfigurer {
 		registrationBean.setOrder(5);
 		registrationBean.addUrlPatterns(
 				"/user/", "/user/*",
+				"/nexu-sign/", "/nexu-sign/*",
 				"/otp/", "/otp/*",
 				"/error", "/error/*",
 				"/admin/", "/admin/*",
