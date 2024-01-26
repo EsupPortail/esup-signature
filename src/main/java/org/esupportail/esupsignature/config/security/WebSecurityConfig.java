@@ -211,7 +211,7 @@ public class WebSecurityConfig {
 		http.csrf(csrf -> csrf.ignoringRequestMatchers(antMatcher("/resources/**"))
 				.ignoringRequestMatchers(antMatcher("/webjars/**"))
 				.ignoringRequestMatchers(antMatcher("/ws/**"))
-				.ignoringRequestMatchers(antMatcher("/user/nexu-sign/**"))
+				.ignoringRequestMatchers(antMatcher("/nexu-sign/**"))
 				.ignoringRequestMatchers(antMatcher("/otp-access/**"))
 				.ignoringRequestMatchers(antMatcher("/log/**"))
 				.ignoringRequestMatchers(antMatcher("/actuator/**"))
@@ -279,6 +279,7 @@ public class WebSecurityConfig {
 				.requestMatchers(antMatcher("/swagger-ui.html")).hasAnyRole("ADMIN")
 				.requestMatchers(antMatcher("/admin/**")).hasAnyRole("ADMIN", "MANAGER")
 				.requestMatchers(antMatcher("/user/**")).hasAnyRole("USER")
+				.requestMatchers(antMatcher("/nexu-sign/**")).hasAnyRole("USER", "OTP", "FRANCECONNECT")
 				.requestMatchers(antMatcher("/otp/**")).hasAnyRole("OTP", "FRANCECONNECT")
 				.requestMatchers(antMatcher("/ws-secure/**")).hasAnyRole("USER", "OTP", "FRANCECONNECT")
 				.anyRequest().permitAll());

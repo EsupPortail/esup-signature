@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.service.utils.sign;
 
 import eu.europa.esig.dss.enumerations.TokenExtractionStrategy;
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.model.x509.revocation.ocsp.OCSP;
 import eu.europa.esig.dss.spi.x509.revocation.RevocationToken;
@@ -19,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,17 +74,10 @@ public class ValidationService {
             documentValidator.setValidationLevel(ValidationLevel.LONG_TERM_DATA);
             documentValidator.setSignaturePolicyProvider(signaturePolicyProvider);
             documentValidator.setIncludeSemantics(true);
-
-            Reports reports = null;
-            try {
-                InputStream is = defaultPolicy.getInputStream();
-                reports = documentValidator.validateDocument(is);
-            } catch (Exception e) {
-                logger.error("Unable to parse policy : " + e.getMessage(), e);
-            }
-            return reports;
-        } catch (DSSException | UnsupportedOperationException | IOException e) {
-            logger.warn("Unable to read document : " + e.getMessage());
+            InputStream is = defaultPolicy.getInputStream();
+            return documentValidator.validateDocument(is);
+        } catch (Exception e) {
+            logger.warn("Unable to validate document : " + e.getMessage());
         }
         return null;
     }

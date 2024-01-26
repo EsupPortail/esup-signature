@@ -5,10 +5,10 @@
 <script th:inline="javascript" type="module">
     import {Nexu} from '/js/modules/ui/signrequests/Nexu.js?version=[[${versionApp}]]';
     $(document).ready(function() {
-        new Nexu([[${addExtra}]], [[${id}]], 'nexuSign');
+        new Nexu([[${addExtra}]], [[${id}]], 'nexuSign', [[${urlProfil}]]);
     });
     $("#refresh-certType2").on('click', function (e) {
-        new Nexu([[${addExtra}]], [[${id}]], 'nexuSign');
+        new Nexu([[${addExtra}]], [[${id}]], 'nexuSign', [[${urlProfil}]]);
     });
 </script>
 <body>
@@ -30,7 +30,7 @@
         <div id="alertNexu" class="alert alert-danger col-10 mb-1 mx-auto text-center" style="display: none;">
             L'application Esup-DSS-Client n’a pas été détectée. Cette application est nécessaire pour le niveau de signature eIDas qui vous est demandé.
             <br>
-            <a th:href="'/user/signrequests/' + ${id}" class="btn btn-secondary">
+            <a th:href="'/' + ${urlProfil} + '/signrequests/' + ${id}" class="btn btn-secondary">
                 <i class="fa-solid fa-door-open fa-2xl"></i><br/>Annuler la signature et retourner à la demande
             </a>
             <button id="refresh-certType2" class="mx-auto btn btn-primary align-self-center">
@@ -55,7 +55,7 @@
                             <textarea class="form-control mb-1" id="errorcontent"></textarea>
                         </div>
                         <div class="inline-flex">
-                            <a th:href="'/user/signrequests/' + ${id}" class="btn btn-secondary">
+                            <a th:href="'/' + ${urlProfil} + '/signrequests/' + ${id}" class="btn btn-secondary">
                                 <i class="fa-solid fa-door-open fa-2xl"></i><br/>Annuler la signature et retourner à la demande
                             </a>
                             <a onclick="location.reload();" class="btn btn-primary">

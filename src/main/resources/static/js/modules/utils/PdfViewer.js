@@ -111,6 +111,12 @@ export class PdfViewer extends EventFactory {
         });
     }
 
+    annotationLinkRemove() {
+        $('.linkAnnotation').each(function (){
+            $(this).remove();
+        });
+    }
+
     checkCurrentPage(e) {
         if(this.renderedPages < this.numPages) return;
         let numPages = this.pdfDoc.numPages;
@@ -278,6 +284,7 @@ export class PdfViewer extends EventFactory {
     postRender(page) {
         this.promiseRenderForm(false, page).then(e => this.promiseRestoreValue());
         console.groupEnd();
+        this.annotationLinkTargetBlank();
         this.restoreScrolling();
     }
 
