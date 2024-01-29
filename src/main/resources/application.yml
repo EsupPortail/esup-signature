@@ -50,9 +50,6 @@ management:
             show-details: ALWAYS
 
 spring:
-    session:
-        jdbc:
-            initialize-schema: ALWAYS
     datasource:
         driver-class-name: org.postgresql.Driver
         url: jdbc:postgresql://localhost:5432/esupsignature
