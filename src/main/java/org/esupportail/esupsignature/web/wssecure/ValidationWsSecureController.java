@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
 import java.io.IOException;
+import java.io.InputStream;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -26,10 +27,13 @@ public class ValidationWsSecureController {
     @GetMapping(value = "/short/{id}")
     @ResponseBody
     public String shortValidateDocument(@PathVariable(name="id") long id) throws IOException {
-        Reports reports = validationService.validate(signRequestService.getToValidateFile(id), null);
-        if (reports != null) {
-            String xmlSimpleReport = reports.getXmlSimpleReport();
-            return xsltService.generateShortReport(xmlSimpleReport);
+        InputStream inputStream = signRequestService.getToValidateFile(id);
+        if(inputStream != null && inputStream.available() > 0) {
+            Reports reports = validationService.validate(inputStream, null);
+            if (reports != null) {
+                String xmlSimpleReport = reports.getXmlSimpleReport();
+                return xsltService.generateShortReport(xmlSimpleReport);
+            }
         }
         return null;
     }
