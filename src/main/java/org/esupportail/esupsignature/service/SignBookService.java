@@ -1440,10 +1440,12 @@ public class SignBookService {
             zipOutputStream.closeEntry();
 
             Reports reports = validationService.validate(new ByteArrayInputStream(fileBytes), null);
-            ByteArrayOutputStream reportByteArrayOutputStream = new ByteArrayOutputStream();
-            fopService.generateSimpleReport(reports.getXmlSimpleReport(), reportByteArrayOutputStream);
-            zipOutputStream.putNextEntry(new ZipEntry("rapport-signature.pdf"));
-            IOUtils.copy(new ByteArrayInputStream(reportByteArrayOutputStream.toByteArray()), zipOutputStream);
+            if(reports != null) {
+                ByteArrayOutputStream reportByteArrayOutputStream = new ByteArrayOutputStream();
+                fopService.generateSimpleReport(reports.getXmlSimpleReport(), reportByteArrayOutputStream);
+                zipOutputStream.putNextEntry(new ZipEntry("rapport-signature.pdf"));
+                IOUtils.copy(new ByteArrayInputStream(reportByteArrayOutputStream.toByteArray()), zipOutputStream);
+            }
             zipOutputStream.closeEntry();
         }
         zipOutputStream.close();
