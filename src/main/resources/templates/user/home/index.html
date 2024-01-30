@@ -51,7 +51,7 @@
                                             </span>
                                             <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>
                                         </td>
-                                        <td class="text-break w-20 d-none d-md-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}">
+                                        <td class="text-break w-20 d-none d-md-table-cell" th:text="'Créé par : ' + ${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}">
                                         </td>
                                         <td class="text-break w-20"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                         </td>
@@ -110,7 +110,12 @@
                                             </span>
                                             <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>
                                         </td>
-                                        <td class="text-break w-20 d-none d-md-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}">
+                                        <td class="text-break w-20 d-none d-md-table-cell">
+                                            <th:block th:each="recipient : ${signBook.liveWorkflow.currentStep.recipients}">
+                                                <li th:title="${recipient.user.email}" style="display: inline-flex;">
+                                                    <span class="me-1" th:text="'En attente chez : ' + ${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                                </li>
+                                            </th:block>
                                         </td>
                                         <td class="text-break w-20"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                         </td>
