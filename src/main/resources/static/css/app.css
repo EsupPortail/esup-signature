@@ -426,7 +426,7 @@ code {
 
 .div-scrollable {
     overflow-y: auto;
-    height: calc(100vh - 405px);
+    height: calc(100vh - 426px);
 }
 
 .static-border {
