@@ -993,15 +993,16 @@ public class SignRequestService {
 	@Transactional
 	public InputStream getToValidateFile(long id) throws IOException {
 		SignRequest signRequest = getById(id);
-		Document toValideDocument = signRequest.getLastSignedDocument();
-		if(toValideDocument != null) {
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-			IOUtils.copy(toValideDocument.getInputStream(), outputStream);
-			outputStream.close();
-			return new ByteArrayInputStream(outputStream.toByteArray());
-		} else {
-			return null;
+		if(signRequest != null) {
+			Document toValideDocument = signRequest.getLastSignedDocument();
+			if (toValideDocument != null) {
+				ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+				IOUtils.copy(toValideDocument.getInputStream(), outputStream);
+				outputStream.close();
+				return new ByteArrayInputStream(outputStream.toByteArray());
+			}
 		}
+		return null;
 	}
 
 	@Transactional

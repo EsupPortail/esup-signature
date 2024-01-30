@@ -341,12 +341,25 @@ public class SignRequestController {
                                           @RequestParam(value = "postit", required = false) String postit, Model model) {
         Long commentId = signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, postit, spotStepNumber, authUserEppn, userEppn);
         if(commentId != null) {
-            model.addAttribute("message", new JsMessage("success", "Annotation ajoutée"));
             return ResponseEntity.ok().body(commentId);
         } else {
-            model.addAttribute("message", new JsMessage("error", "Ajout d'emplacement non autorisé"));
             return ResponseEntity.badRequest().body(null);
         }
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")
+    @PostMapping(value = "/postit/{id}")
+    public String postit(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+                                        @RequestParam(value = "comment", required = false) String comment,
+                                        @RequestParam(value = "postit", required = false) String postit, Model model) {
+        Long commentId = signRequestService.addComment(id, comment, null, null, null, postit, null, authUserEppn, userEppn);
+        if(commentId != null) {
+            model.addAttribute("message", new JsMessage("success", "Post-it ajouté"));
+        } else {
+            model.addAttribute("message", new JsMessage("error", "Problème lors de l'ajout du post-it"));
+        }
+        return "redirect:/user/signrequests/" + id;
+
     }
 
     @PreAuthorize("@preAuthorizeService.commentCreator(#postitId, #userEppn)")

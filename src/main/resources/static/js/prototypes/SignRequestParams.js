@@ -358,7 +358,6 @@ export class SignRequestParams extends EventFactory {
             } else {
                 $("#extraTypeDiv_" + this.id).html("<span>Signature OTP<br></span>");
             }
-
             $("#extraTools_" + this.id).remove();
             $("#crossTools_" + this.id).css("top", "-45px");
         }
