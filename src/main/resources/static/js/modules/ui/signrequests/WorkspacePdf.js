@@ -865,6 +865,9 @@ export class WorkspacePdf {
         $(".postit-global").each(function () {
             $(this).removeClass("d-none");
             $(this).draggable();
+            $(this).resizable({
+                aspectRatio: true
+            });
         });
     }
 
