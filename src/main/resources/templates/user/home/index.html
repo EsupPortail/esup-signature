@@ -22,14 +22,14 @@
             </ol>
         </nav>
         <div id="content" class="content flex align-content-center">
-            <div class="row">
+            <div class="row gap-1">
                 <div id="new-div" style="z-index: 1000;">
                     <div th:replace="~{fragments/new :: new}"></div>
                 </div>
                 <div id="listSignRequestTable" class="div-scrollable scrollbar-style">
-                <div id="to-sign-list" class="d-flex col-12">
-                    <div class="col-12 card mt-1 mb-1 mx-auto">
-                        <div class="card-body">
+                    <div id="to-sign-list" class="d-flex col-12 mb-1">
+                        <div class="col-12 card mx-auto">
+                            <div class="card-body">
                             <h5 class="text-center"><b>Demandes à signer</b></h5>
                             <table th:if="${signBooksToSign.size() > 0}" class="table table-sm table-borderless table-hover">
                                 <tbody>
@@ -82,19 +82,17 @@
                                 </th:block>
                                 </tbody>
                             </table>
-                            <div th:unless="${signBooksToSign.size() > 0}"
-                                 class="alert alert-secondary">
+                            <div th:unless="${signBooksToSign.size() > 0}" class="alert alert-secondary">
                                 Aucun document à signer pour le moment
                             </div>
                         </div>
+                        </div>
                     </div>
-                </div>
-                <div id="pendingList" class="d-flex col-12" th:if="${userEppn == authUserEppn}">
-                    <div class="col-12 card mb-2 mx-auto">
-                        <div class="card-body">
+                    <div id="pendingList" class="d-flex col-12" th:if="${userEppn == authUserEppn}">
+                        <div class="col-12 card mx-auto">
+                            <div class="card-body">
                             <h5 class="text-center"><b>Demandes en attente de signature</b></h5>
-                            <table th:if="${signBooksPending.size() > 0}"
-                                   class="table table-sm table-borderless table-hover">
+                            <table th:if="${signBooksPending.size() > 0}" class="table table-sm table-borderless table-hover">
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksPending}">
                                     <tr th:title="${signBook.description}" th:data-href="'/user/signbooks/' + ${signBook.id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}">
@@ -143,34 +141,12 @@
                                 </th:block>
                                 </tbody>
                             </table>
-                            <div th:unless="${signBooksPending.size() > 0}"
-                                 class="alert alert-secondary">
+                            <div th:unless="${signBooksPending.size() > 0}" class="alert alert-secondary">
                                 Aucun document en attente
                             </div>
                         </div>
+                        </div>
                     </div>
-                    <!--                    <div class="card mb-2" th:if="${datas.size() > 0}">-->
-                    <!--                        <div class="card-body">-->
-                    <!--                            <h5 class="text-center"><b>Bouillons</b></h5>-->
-                    <!--                            <table class="table table-sm table-borderless">-->
-                    <!--                                <tbody>-->
-                    <!--                                <th:block th:each="data : ${datas}">-->
-                    <!--                                    <tr>-->
-                    <!--                                        <td class="text-break w-50" th:text="${data.name}"></td>-->
-                    <!--                                        <td class="text-break w-40"-->
-                    <!--                                            th:text="${#dates.format(data.createDate, 'dd/MM/yyyy HH:mm')}"></td>-->
-                    <!--                                        <td class="text-center w-10">-->
-                    <!--                                            <a title="Voir" th:href="'/user/datas/' + ${data.id} + '/update'"-->
-                    <!--                                               class="btn btn-warning">-->
-                    <!--                                                <i class="fa-solid fa-pencil-alt"></i>-->
-                    <!--                                            </a>-->
-                    <!--                                        </td>-->
-                    <!--                                    </tr>-->
-                    <!--                                </th:block>-->
-                    <!--                                </tbody>-->
-                    <!--                            </table>-->
-                    <!--                        </div>-->
-                </div>
                 </div>
             </div>
         </div>
