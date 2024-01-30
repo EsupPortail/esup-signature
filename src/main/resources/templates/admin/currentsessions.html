@@ -27,7 +27,9 @@
                             <a data-bs-toggle="collapse" th:href="'#sess-' + ${currentSession.sessionId}" role="button"
                                 aria-expanded="false"
                                 th:aria-controls="'sess-' + ${currentSession.sessionId}">
-                                <span th:text="${currentSession.principal.username}"></span></a>
+                                <span th:text="${currentSession.principal.username}"></span>
+                            </a>
+                             : <span th:text="${'inactif depuis ' + (#dates.createNow().toInstant().toEpochMilli() - currentSession.lastRequest.toInstant().toEpochMilli()) / 1000 / 60 + ' mins'}"></span>
                         </h5>
                         <div class="collapse" th:id="'sess-' + ${currentSession.sessionId}">
                             <table class="table table-hover table-responsive">
