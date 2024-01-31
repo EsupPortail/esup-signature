@@ -236,7 +236,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form>
                     <div id="alert-sign-present" class="alert alert-danger mb-1" th:if="${!(signRequest.parentSignBook.liveWorkflow.currentStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signRequest.parentSignBook.liveWorkflow.currentStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign) && signatureIds.size() > 0}">
                         Attention ce document comporte <span th:text="${signatureIds.size()}"></span> signature(s) électronique(s). Le fait d’apposer une signature calligraphique ou un visa visuel aura pour effet de détruire les précédentes signatures
                     </div>
@@ -305,7 +304,6 @@
                             </p>
                         </div>
                     </div>
-                </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
