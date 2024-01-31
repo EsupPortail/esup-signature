@@ -151,7 +151,7 @@ public class CertificatService {
             if (globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) {
                 KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
                 return new Pkcs11SignatureToken(globalProperties.getSealCertificatDriver(), passwordProtection);
-            } else if (globalProperties.getSealCertificatFile() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) {
+            } else if (globalProperties.getSealCertificatFile() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
                 try {
                     return userKeystoreService.getPkcs12Token(new FileInputStream(globalProperties.getSealCertificatFile()), globalProperties.getSealCertificatPin());
                 } catch (FileNotFoundException e) {
