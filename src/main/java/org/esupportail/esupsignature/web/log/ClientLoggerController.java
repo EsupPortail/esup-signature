@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.web.log;
 
 import org.esupportail.esupsignature.web.controller.user.UserController;
-import org.esupportail.esupsignature.web.ws.json.JsonClientSideError;
+import org.esupportail.esupsignature.dto.js.JsError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -22,7 +22,7 @@ public class ClientLoggerController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @PostMapping(consumes = {"application/json"})
-    public ResponseEntity<Boolean> log(@RequestBody JsonClientSideError jsonClientSideError, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<Boolean> log(@RequestBody JsError jsonClientSideError, HttpServletRequest httpServletRequest) {
         long contentLength = httpServletRequest.getContentLengthLong();
         if (contentLength > Long.parseLong("1000")) {
             logger.warn("This request is too big and its content will not be logged. Headers");

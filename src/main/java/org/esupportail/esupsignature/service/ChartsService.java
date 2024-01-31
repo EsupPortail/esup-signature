@@ -1,13 +1,13 @@
 package org.esupportail.esupsignature.service;
 
-import org.esupportail.esupsignature.dto.charts.BarChart;
-import org.esupportail.esupsignature.dto.charts.BarData;
-import org.esupportail.esupsignature.dto.charts.BarDataset;
 import org.esupportail.esupsignature.dto.charts.CountByYears;
 import org.esupportail.esupsignature.repository.AuditStepRepository;
 import org.esupportail.esupsignature.repository.LogRepository;
 import org.springframework.stereotype.Service;
+import software.xdev.chartjs.model.charts.BarChart;
 import software.xdev.chartjs.model.color.Color;
+import software.xdev.chartjs.model.data.BarData;
+import software.xdev.chartjs.model.dataset.BarDataset;
 import software.xdev.chartjs.model.options.BarOptions;
 import software.xdev.chartjs.model.options.Legend;
 import software.xdev.chartjs.model.options.Plugins;

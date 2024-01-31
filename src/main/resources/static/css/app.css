@@ -204,6 +204,10 @@ dd {
     height: 2.5em;
 }
 
+.text-muted {
+    color: rgba(0,0,0,0.3) !important
+}
+
 .form-switch.form-switch-md .form-check-input {
     margin-left: -4.5em;
     height: 2em;
@@ -285,6 +289,10 @@ td {
     line-height: 38px;
 }
 
+.wiz-transition {
+    transition: height 1s;
+}
+
 .mini-menu {
     width:200px;
     right: 10px;
@@ -361,13 +369,6 @@ code {
      padding: 10px 10px !important;
  }
 
-.file-preview-frame {
-    width: 100%;
-    display: inline-flex;
-}
-.file-preview-frame * {
-    margin: 5px;
-}
 .file-details-cell {
     width: 100%;
     text-align: left;
@@ -397,6 +398,14 @@ code {
 	content: "Parcourir" !important;
 }
 
+.workflow-btn {
+    height: 170px;
+}
+
+.workflow-btn-perso {
+    height: 150px;
+}
+
 .cross-tools {
     left: 0px;
     top: -45px;
@@ -408,8 +417,7 @@ code {
 }
 
 #new-div {
-    height: 267px;
-    margin-bottom: 4px;
+    height: 290px;
 }
 
 #new-fragment {
@@ -418,7 +426,7 @@ code {
 
 .div-scrollable {
     overflow-y: auto;
-    height: calc(100vh - 405px);
+    height: calc(100vh - 426px);
 }
 
 .static-border {
@@ -774,7 +782,6 @@ input:checked + .slider:before {
     z-index: 1028;
     position: fixed;
     padding-left: 10px;
-    overflow-x: auto;
 }
 
 .tools-admin {
@@ -888,6 +895,11 @@ input:checked + .slider:before {
 .step-trigger {
     width: 100% !important;
     justify-content: left !important;
+}
+
+.step-type {
+    font-size: 10pt;
+    font-weight: bold;
 }
 
 .current-step {
@@ -1167,6 +1179,10 @@ height: 100%;
 .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
     color: black;
     border-color: #000 #000 transparent #000 !important;
+}
+
+#ws-tabs {
+    width: fit-content !important;
 }
 
 .file-tab {
@@ -1652,7 +1668,7 @@ input:focus, textarea:focus, select:focus {
     border: 1px solid transparent !important;
     background-color: rgba(189, 255, 189, 1) !important;
     mix-blend-mode: multiply;
-    cursor: pointer;
+    cursor: pointer !important;
     overflow: hidden;
 }
 
@@ -2164,7 +2180,11 @@ ul.striped-list {
 }
 
 ul.striped-list > li:nth-of-type(odd) {
-    background-color: #e9e9f9 ;
+    background-color: rgba(0,0,0,.02) ;
+}
+
+ul.striped-list > li:nth-of-type(even) {
+    background-color: rgba(0,0,0,.06) ;
 }
 
 #snackbar {
@@ -2230,19 +2250,6 @@ ul.striped-list > li:nth-of-type(odd) {
     }
 }
 
-/*@keyframes pulse-success {*/
-/*    0% {*/
-/*        -moz-box-shadow: 0px 0px 20px 5px rgba(25, 135, 84, .8);*/
-/*        box-shadow: 0px 0px 20px 5px rgba(25, 135, 84, .8);*/
-/*        color: rgba(255, 255, 255, 1);*/
-/*    }*/
-/*    70% {*/
-/*        -moz-box-shadow: 0px 0px 20px 5px rgba(25, 135, 84, 0);*/
-/*        box-shadow: 0px 0px 20px 5px rgba(25, 135, 84, 0);*/
-/*    }*/
-/*    100% {*/
-/*        -moz-box-shadow: 0px 0px 20px 5px rgba(25, 135, 84, .8);*/
-/*        box-shadow: 0px 0px 20px 5px rgba(25, 135, 84, .8);*/
-/*        color: rgba(255, 255, 255, 1);*/
-/*    }*/
-/*}*/
+.text-disable-selection > [role=presentation] {
+    pointer-events: none;
+}

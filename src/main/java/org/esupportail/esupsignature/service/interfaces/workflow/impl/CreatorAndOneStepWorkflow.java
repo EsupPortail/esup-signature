@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.interfaces.workflow.impl;
 
+import org.esupportail.esupsignature.dto.RecipientWsDto;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
@@ -67,7 +68,7 @@ public class CreatorAndOneStepWorkflow extends DefaultWorkflow {
 	}
 
 	@Override
-	public void fillWorkflowSteps(Workflow workflow, List<String> recipentEmailsStep) {
+	public void fillWorkflowSteps(Workflow workflow, List<RecipientWsDto> recipents) {
 		workflow.getWorkflowSteps().get(1).getUsers().clear();
 	}
 }

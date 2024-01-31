@@ -3,7 +3,7 @@ package org.esupportail.esupsignature.web.controller.admin;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.service.CertificatService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.web.ws.json.JsonMessage;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -52,9 +52,9 @@ public class CertificatController {
             RedirectAttributes redirectAttributes) {
         try {
             certificatService.addCertificat(keystore, roleNames, password);
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Certificat ajouté"));
+            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Certificat ajouté"));
         } catch (IOException | EsupSignatureKeystoreException e) {
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Erreur lors de l'ajout du keystore : <br>" + e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Erreur lors de l'ajout du keystore : <br>" + e.getMessage()));
         }
 
         return "redirect:/admin/certificats";
@@ -64,7 +64,7 @@ public class CertificatController {
     public String deleteCertificat(@RequestParam Long id,
             RedirectAttributes redirectAttributes) {
         certificatService.delete(id);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Certificat supprimé"));
+        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Certificat supprimé"));
         return "redirect:/admin/certificats";
     }
 

@@ -52,7 +52,7 @@ public class UserShareService {
     public List<User> getSuUsers(String authUserEppn) {
         List<User> suUsers = new ArrayList<>();
         if(globalProperties.getShareMode() > 0) {
-            for (UserShare userShare : userShareRepository.findByToUsersEppnIn(Arrays.asList(authUserEppn))) {
+            for (UserShare userShare : userShareRepository.findByToUsersEppnIn(Collections.singletonList(authUserEppn))) {
                 if (!suUsers.contains(userShare.getUser()) && checkUserShareDate(userShare)) {
                     User user = userShare.getUser();
                     user.setUserShareId(userShare.getId());
@@ -83,7 +83,7 @@ public class UserShareService {
         }
         userShare.getShareTypes().addAll(shareTypes);
         for(Long formId : formsIds) {
-            Form form = formRepository.findById(formId).get();
+            Form form = formRepository.findById(formId).orElseThrow();
             if(new HashSet<>(form.getAuthorizedShareTypes()).containsAll(shareTypes)) {
                 userShare.setForm(form);
             } else {
@@ -91,8 +91,8 @@ public class UserShareService {
             }
         }
         for(Long workflowId : workflowsIds) {
-            Workflow workflow = workflowRepository.findById(workflowId).get();
-            if(userShareRepository.findByUserEppnAndWorkflow(user.getEppn(), workflow).size() == 0) {
+            Workflow workflow = workflowRepository.findById(workflowId).orElseThrow();
+            if(userShareRepository.findByUserEppnAndWorkflow(user.getEppn(), workflow).isEmpty()) {
                 if (new HashSet<>(workflow.getAuthorizedShareTypes()).containsAll(shareTypes)) {
                  userShare.setWorkflow(workflow);
                 } else {
@@ -102,7 +102,7 @@ public class UserShareService {
                 throw new EsupSignatureUserException("Une délégation pour ce circuit existe déjà, merci de la modifier");
             }
         }
-        if(formsIds.size() == 0 && workflowsIds.size() == 0) {
+        if(formsIds.isEmpty() && workflowsIds.isEmpty()) {
             userShare.setAllSignRequests(true);
         }
         userShare.getToUsers().addAll(userEmails);
@@ -178,7 +178,7 @@ public class UserShareService {
         if (signbook.getLiveWorkflow().getWorkflow() != null) {
             userShares.addAll(userShareRepository.findByUserEppnAndToUsersEppnInAndWorkflowAndShareTypesContains(fromUserEppn, Collections.singletonList(toUserEppn), signbook.getLiveWorkflow().getWorkflow(), shareType));
             List<Form> forms = formRepository.findByWorkflowIdEquals(signbook.getLiveWorkflow().getWorkflow().getId());
-            if(forms.size() > 0 && forms.get(0) != null) {
+            if(!forms.isEmpty() && forms.get(0) != null) {
                 userShares.addAll(userShareRepository.findByUserEppnAndToUsersEppnInAndFormAndShareTypesContains(fromUserEppn, Collections.singletonList(toUserEppn), forms.get(0), shareType));
             }
         }
@@ -209,7 +209,7 @@ public class UserShareService {
             return true;
         }
         List<UserShare> userShares = getUserShares(fromUserEppn, Collections.singletonList(toUserEppn), shareType);
-        if(shareType.equals(ShareType.sign) && userShares.size() > 0) {
+        if(shareType.equals(ShareType.sign) && !userShares.isEmpty()) {
             return true;
         }
         for(UserShare userShare : userShares) {
@@ -225,7 +225,7 @@ public class UserShareService {
             return true;
         }
         List<UserShare> userShares = getUserShares(fromUserEppn, Collections.singletonList(toUserEppn), shareType);
-        if(userShares.size() > 0 ) {
+        if(!userShares.isEmpty()) {
             return true;
         }
         return false;
@@ -279,16 +279,16 @@ public class UserShareService {
         return userShareRepository.findByFormId(form.getId());
     }
 
-    public List<UserShare> getByToUsersInAndShareTypesContains(List<String> usersIds, ShareType shareType) {
-        return userShareRepository.findByToUsersEppnInAndShareTypesContains(usersIds, shareType);
-    }
 
     public List<UserShare> getByUserAndToUsersInAndShareTypesContains(String userEppn, User authUser, ShareType shareType) {
         return userShareRepository.findByUserEppnAndToUsersEppnInAndShareTypesContains(userEppn, Collections.singletonList(authUser.getEppn()), shareType);
     }
 
-
     public List<UserShare> getUserSharesToUser(String eppn) {
         return userShareRepository.findByToUsersEppnIn(Collections.singletonList(eppn));
+    }
+
+    public List<UserShare> getByToUsersEppnInAndShareTypesContains(List<String> eppns, ShareType shareType) {
+        return userShareRepository.findByToUsersEppnInAndShareTypesContains(eppns, shareType);
     }
 }

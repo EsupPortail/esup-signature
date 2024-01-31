@@ -2,20 +2,23 @@ export default class SelectUser {
 
     constructor(selectName, limit, signRequestId, csrf) {
         console.info("init select-user : " + selectName);
+        this.selectField = $("#" + selectName);
+        this.stepNumber = "1";
+        if(selectName.split("-").length > 0) {
+            this.stepNumber = selectName.split("-")[1];
+        }
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.slimSelect = null;
-        this.selectField = $("#" + selectName);
-        this.selectField.attr("stepSelection", "true");
         this.checkList = this.selectField.attr("data-es-check-list");
         this.signRequestId = signRequestId;
         this.csrf = csrf;
         this.valuePrefix = "";
         this.limit = 99;
         this.flag = false;
-        let selectNameSplit = selectName.split("_");
-        if(selectNameSplit.length === 2) {
-            this.valuePrefix = selectNameSplit[1] + "*";
-        }
+        // let selectNameSplit = selectName.split("_");
+        // if(selectNameSplit.length === 2) {
+        //     this.valuePrefix = selectNameSplit[1] + "*";
+        // }
         let defaultValues = [];
         $("#" + selectName + " > option").each(function() {
             if($(this).text() !== "") {
@@ -146,14 +149,14 @@ export default class SelectUser {
 
     displayTempUsers(e) {
         if(this.checkList !== "false") {
-            if (this.selectField.attr('id') === 'recipientsEmailsWiz') {
+            if (this.selectField.attr('id') === 'recipientsEmails') {
                 if (this.slimSelect.getSelected().length > 0) {
                     // $('#addNew').show();
-                    $('#endStart').hide();
+                    $('#end-workflow-sign').hide();
                     $('#end').hide();
                 } else {
                     // $('#addNew').hide();
-                    $('#endStart').show();
+                    $('#end-workflow-sign').show();
                     $('#end').show();
                 }
             }
@@ -164,13 +167,11 @@ export default class SelectUser {
                 recipientEmails = new Array(this.slimSelect.getSelected());
             }
             if(!this.selectField.attr('id').includes("CC")) {
-                $('[id^="allSignToComplete-"]').each(function () {
-                    if (recipientEmails.length > 1) {
-                        $(this).show();
-                    } else {
-                        $(this).hide();
-                    }
-                })
+                if (recipientEmails.length > 1) {
+                    $("#all-sign-to-complete-div-" + this.stepNumber).show();
+                } else {
+                    $("#all-sign-to-complete-div-" + this.stepNumber).hide();
+                }
                 if (this.csrf) {
                     let csrf = this.csrf;
                     $.ajax({
@@ -204,9 +205,9 @@ export default class SelectUser {
     displayExternalsError() {
         let name = '#tempUsers-' + this.selectField.attr("id");
         let tempUsersDiv = $(name);
-        if($("#externalUserInfos_").length === 0) {
+        if($("#recipient_").length === 0) {
             tempUsersDiv.append(
-                "<div class='alert alert-danger' id='externalUserInfos_'>" +
+                "<div class='alert alert-danger' id='recipient_'>" +
                 "<b>Le destinataire saisi n’est pas conforme</b><br>Soit les destinataires externes ne sont pas autorisés, soit il s’agit d’un groupe vide" +
                 "</div>");
         }
@@ -266,7 +267,7 @@ export default class SelectUser {
         }
         if(this.globalProperties.smsRequired) {
             tempUsersDiv.append(
-                "<div class='alert alert-primary' id='externalUserInfos_" + e.email + "'>" +
+                "<div class='alert alert-primary' id='recipient_" + e.email + "'>" +
                 "<b>Destinataire externe : <span>" + e.email + "</span></b>" +
                 "<input id=\"emails\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\"" + e.email + "\">" +
                 "<div class=\"d-flex col-12\"><label for=\"name\" class='col-3'>Nom</label>" +
@@ -278,7 +279,7 @@ export default class SelectUser {
                 "</div>");
         } else {
             tempUsersDiv.append(
-                "<div class='alert alert-primary' id='externalUserInfos_" + e.email + "'>" +
+                "<div class='alert alert-primary' id='recipient_" + e.email + "'>" +
                 "<b>Destinataire externe : <span>" + e.email + "</span></b>" +
                 "<input id=\"emails\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\"" + e.email + "\">" +
                 "<div class=\"d-flex col-12\"><label for=\"name\" class='col-3'>Nom</label>" +

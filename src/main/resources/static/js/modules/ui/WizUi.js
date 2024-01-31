@@ -1,30 +1,27 @@
 import {default as FilesInput} from "../utils/FilesInput.js?version=@version@";
 import {default as SelectUser} from "../utils/SelectUser.js?version=@version@";
 import {Step} from "../../prototypes/Step.js?version=@version@";
-import {ExternalUserInfos} from "../../prototypes/ExternalUserInfos.js?version=@version@";
+import {Recipient} from "../../prototypes/Recipient.js?version=@version@";
 
 export class WizUi {
 
-    constructor(workflowId, div, workflowName, csrf, maxSize) {
+    constructor(workflowId, div, csrf, maxSize) {
         this.workflowId = workflowId;
-        this.signBookId = "";
+        this.newSignBookId = "";
+        this.newWorkflowId = "";
         this.div = div;
-        this.workflowName = workflowName;
-        if(workflowName === "" || workflowName == null) {
-            this.workflowName = "custom";
-        }
         this.csrf = csrf;
         this.maxSize = maxSize;
-        this.mode = "";
-        this.input;
-        this.fileInput;
-        this.recipientCCSelect;
-        this.form;
+        this.pending = false;
+        this.input = null;
+        this.fileInput = null;
+        this.recipientCCSelect = null;
+        this.form = null;
         this.close = false;
         this.end = false;
         this.start = false;
-        this.modal = $('#' + this.div.attr('id').replace("Frame", "Modal"));
-        $('#addNew').hide();
+        this.modal = $('#' + this.div.attr('id').replace("div", "modal"));
+        $('#save-step').hide();
         this.initListeners();
     }
 
@@ -32,45 +29,298 @@ export class WizUi {
         this.modal.on('hidden.bs.modal', e => this.checkOnModalClose());
     }
 
-    submitStartWorkflow() {
+    selfSignStart() {
+        console.info("start self signbook");
+        $.ajax({
+            type: "GET",
+            url: '/user/wizard/wiz-start-sign/self',
+            dataType : 'html',
+            cache: false,
+            success : html => this.selfSignDisplayForm(html),
+        });
+    }
+
+    selfSignDisplayForm(html) {
         let self = this;
-        let form = $("#start-workflow-form");
-        let title = $("#title-wiz");
-        if(this.workflowName === "custom" && title.val() === "") {
-            console.log("submit form custom");
-            $(window).on('scroll', function(e) {
-                window.scrollTo(0,0);
-            });
-            $("#title-wiz-submit").click();
-        } else {
-            console.log("send post " + form.attr("action"));
-            $.post({
-                url: form.attr("action"),
-                data: form.serialize(),
-                success: function () {
-                    self.input.fileinput("upload");
+        this.div.html(html);
+        this.input = $("#multipartFiles");
+        this.fileInput = new FilesInput(this.input, this.maxSize, this.csrf, null, false, null);
+        this.input.on("filebatchuploadsuccess", function() {
+            $.ajax({
+                url: "/user/wizard/start-self-sign/" + self.newSignBookId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
+                type: 'POST',
+                success: function() {
+                    location.href = "/user/signbooks/" + self.newSignBookId;
                 }
             });
+        });
+        $("#fast-sign-button").on('click', e => self.wizCreateSign("self"));
+    }
+
+    wizCreateSign(type) {
+        console.info("create signbook");
+        let self = this;
+        $.ajax({
+            url: "/user/wizard/wiz-create-sign/" + type + "?"+ self.csrf.parameterName + "=" + self.csrf.token,
+            type: 'POST',
+            success: function(signBookId) {
+                self.newSignBookId = signBookId
+                self.fileInput.signBookId = self.newSignBookId;
+                self.input.fileinput("upload")
+            }
+        });
+    }
+
+    fastStartSign() {
+        console.info("start fast signbook");
+        $.ajax({
+            type: "GET",
+            url: '/user/wizard/wiz-start-sign/fast',
+            dataType : 'html',
+            cache: false,
+            success : html => this.fastSignDisplayForm(html),
+        });
+    }
+
+    fastSignDisplayForm(html) {
+        this.div.html(html);
+        this.input = $("#multipartFiles");
+        let self = this;
+        this.fileInput = new FilesInput(this.input, this.maxSize, this.csrf, null, false, null);
+        if($("#recipientsEmails-1").length) {
+            new SelectUser("recipientsEmails-1", null, null, this.csrf);
         }
+        if($("#recipientsCCEmails").length) {
+            this.recipientCCSelect = new SelectUser("recipientsCCEmails", null, null, this.csrf);
+        }
+        this.input.on("filebatchuploadsuccess", e => this.fastSignSubmitDatas());
+        $("#send-draft-button").on('click', function() {
+            self.wizCreateSign("fast");
+        });
+        $("#send-pending-button").on('click', function() {
+            self.pending = true;
+            self.wizCreateSign("fast");
+        });
+    }
+
+    fastSignSubmitDatas() {
+        let self = this;
+        let successCallback = function () {
+            location.href = "/user/signbooks/" + self.newSignBookId;
+        }
+        let errorCallback = function () {
+            $("#update-fast-sign-submit").click();
+
+        }
+        this.sendSteps('/user/wizard/update-fast-sign/' + this.newSignBookId + '?pending=' + self.pending, $("#update-fast-sign"), successCallback, errorCallback);
+
+    }
+
+    workflowSignStart() {
+        console.info("start workflow signbook");
+        $.ajax({
+            type: "GET",
+            url: '/user/wizard/wiz-start-sign/workflow?workflowId=' + this.workflowId,
+            dataType : 'html',
+            cache: false,
+            success : html => this.workflowSignDisplayForm(html)
+        });
+    }
+
+    workflowSignDisplayForm(html) {
+        let self = this;
+        this.div.html(html);
+        this.input = $("#multipartFiles_" + this.workflowId);
+        if(!this.workflowId) this.input = $("#multipartFiles_0");
+        this.newSignBookId = this.input.attr("data-es-signbook-id");
+        this.fileInput = new FilesInput(this.input, this.maxSize, this.csrf, null, false, this.newSignBookId);
+        if($("#recipientsCCEmails").length) {
+            this.recipientCCSelect = new SelectUser("recipientsCCEmails", null, null, this.csrf);
+        }
+        this.input.on("filebatchuploadsuccess", function() {
+            self.workflowSignNextStep();
+        });
+        $("#wiz-start-button").on('click', function (){
+            $.ajax({
+                type: "POST",
+                url: '/user/wizard/wiz-create-workflow-sign?workflowId=' + self.workflowId + "&" + self.csrf.parameterName + "=" + self.csrf.token,
+                success: function(signBookId) {
+                    self.newSignBookId = signBookId
+                    self.fileInput.signBookId = self.newSignBookId;
+                    self.input.fileinput("upload")
+                }
+            });
+        });
+    }
+
+    wizardFormStart(formId) {
+        console.info("start wizard form");
+        $.ajax({
+            type: "GET",
+            url: '/user/wizard/wiz-start-form/'+ formId,
+            dataType : 'html',
+            cache: false,
+            success : html => this.startFormDisplayForm(html)
+        });
+    }
+
+    wizardWorkflowStart() {
+        console.info("start wizard workflow");
+        $.ajax({
+            type: "GET",
+            url: '/user/wizard/wiz-start-workflow',
+            dataType : 'html',
+            cache: false,
+            success : html => this.workflowSignNextStepDisplay(html)
+        });
+    }
+
+    workflowSignNextStep() {
+        console.info("Next workflow step");
+        let id = this.workflowId;
+        if(id === "") {
+            id = 0;
+        }
+        let self = this;
+        let successCallback = function (html) {
+            self.workflowSignNextStepDisplay(html)
+        }
+        let errorCallback = function () {
+            $("#workflow-form-submit").click();
+        }
+        this.sendSteps('/user/wizard/wiz-new-step/' + self.newSignBookId + '?workflowId=' + id, $("#start-workflow-form"), successCallback, errorCallback);
+        this.div.html("");
+    }
+
+    workflowSignNextStepDisplay(html) {
+        console.info("Last workflow step");
+        let self = this;
+        this.div.html(html);
+        $('[id^="recipientsEmails-"]').each(function (){
+            let maxRecipient = $(this).attr('data-es-max-recipient');
+            new SelectUser($(this).attr('id'), maxRecipient, null, self.csrf);
+        });
+        if($("#targetEmailsSelect").length) {
+            new SelectUser("targetEmailsSelect", null, null, this.csrf);
+        }
+        if($("#recipientsCCEmails").length) {
+            this.recipientCCSelect = new SelectUser("recipientsCCEmails", null, null, this.csrf);
+        }
+        let workflowIdInput = $("#workflowId");
+        if(workflowIdInput.length) {
+            this.newWorkflowId = workflowIdInput.val();
+        }
+        $("#end-workflow-sign").on('click', function (){
+            self.end = true;
+            self.start = true;
+            self.workflowSignSubmitStepData();
+        });
+        $("#wiz-end").on('click', e => this.wizardEnd());
+        $("#wiz-exit").on('click', e => this.wizardExit());
+        $("#save-workflow").on('click', e => this.saveWorkflow());
+        $("#save-step").on('click', e => this.workflowSignSubmitStepData());
+        $("#send-draft-button").on('click', e => this.workflowSignSubmitLastStepData(false));
+        $("#send-pending-button").on('click', e => this.workflowSignSubmitLastStepData(true));
+    }
+
+    workflowSignSubmitStepData() {
+        console.info("Submit step");
+        let self = this;
+        let mode = "workflow";
+        let elementId = -1;
+        if (this.newSignBookId !== "") {
+            mode = "signbook";
+            elementId = this.newSignBookId;
+        } else if (this.newWorkflowId !== "") {
+            elementId = this.newWorkflowId;
+        }
+        let successCallback = function(html) {
+            self.workflowSignNextStepDisplay(html)
+        };
+        let errorCallback = function (data) {
+            $("#wiz-step-form-submit").click();
+        };
+        let url = '/user/wizard/wiz-add-step-' + mode +  '/' + elementId + '?end=' + self.end + '&start=' + self.start + '&close=' + self.close;
+        this.sendSteps(url, $("#wiz-step-form"), successCallback, errorCallback);
+
+    }
+
+    workflowSignSubmitLastStepData(pending) {
+        let self = this;
+        let successCallback = function() {
+            location.href = "/user/signbooks/" + self.newSignBookId;
+        }
+        let errorCallback = function() {
+            $("#send-sign-submit").click();
+        }
+        this.sendSteps('/user/wizard/wiz-init-workflow/' + this.newSignBookId + '?pending=' + pending, $("li[id^='step-wiz-']"), successCallback, errorCallback);
+    }
+
+    saveWorkflow() {
+        let csrf = this.csrf;
+        let name = $("#workflowName").val();
+        let self = this;
+        let mode = "workflow";
+        let elementId = -1;
+        if (this.newSignBookId !== "") {
+            mode = "signbook";
+            elementId = this.newSignBookId;
+        } else if (this.newWorkflowId !== "") {
+            elementId = this.newWorkflowId;
+        }
+        $.ajax({
+            url: "/user/wizard/wiz-save-"+ mode +"/" + elementId + "?name=" + name + "&viewers=" + self.recipientCCSelect.slimSelect.getSelected() + "&" + csrf.parameterName + "=" + csrf.token,
+            type: 'POST',
+            success: function() {
+                if(self.newSignBookId !== "") {
+                    location.href = "/user/signbooks/" + self.newSignBookId;
+                } else {
+                    location.href = "/user";
+                }
+            },
+            error: function() {
+                $("#save-workflow-submit").click();
+            }
+        });
+    }
+
+    wizardExit() {
+        location.href = "/user/signbooks/" + this.newSignBookId;
+    }
+
+    wizardEnd() {
+        let self = this;
+        $.ajax({
+            url: "/user/wizard/wiz-save-workflow/" + self.newWorkflowId,
+            type: 'GET',
+            success: html => self.saveWorkflowDisplay(html)
+        });
+    }
+
+    saveWorkflowDisplay(html) {
+        this.div.html(html);
+        if($("#recipientsCCEmails").length) {
+            this.recipientCCSelect = new SelectUser("recipientsCCEmails", null, null, this.csrf);
+        }
+        $("#save-workflow").on('click', e => this.saveWorkflow());
+
     }
 
     checkOnModalClose() {
-        let workflowId = $("#wizWorkflowId").val();
-        if(this.signBookId || workflowId) {
-            let self = this;
+        let self = this;
+        if(self.newSignBookId || self.newWorkflowId) {
             bootbox.confirm("Attention si vous fermez cette fenêtre, les modifications seront perdues", function(result) {
                 if(result) {
-                    if (workflowId != null) {
+                    if (self.newWorkflowId !== "") {
                         $.ajax({
                             method: "DELETE",
-                            url: "/user/workflows/silent-delete/" + workflowId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
+                            url: "/ws-secure/global/silent-delete-workflow/" + self.newWorkflowId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
                             cache: false
                         });
-                    } else {
-                        console.log(self.signBookId);
+                    } else if (self.newSignBookId !== "") {
                         $.ajax({
                             method: "DELETE",
-                            url: "/user/signbooks/silent-delete/" + self.signBookId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
+                            url: "/ws-secure/global/silent-delete-signbook/" + self.newSignBookId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
                             cache: false
                         });
                     }
@@ -81,192 +331,78 @@ export class WizUi {
                     self.modal.modal('show');
                 }
             });
+        } else {
+            this.modal.modal('hide');
+            this.modal.unbind();
+            this.div.html("");
         }
-    }
+   }
 
-    startByDocs() {
-        console.info("Start wizard signbook");
-        $.ajax({
-            type: "GET",
-            url: '/user/wizard/wiz-start-by-docs?workflowId=' + this.workflowId,
-            dataType : 'html',
-            cache: false,
-            success : html => this.initWiz1(html)
-        });
-    }
-
-    startByRecipients() {
-        console.info("Start wizard workflow");
-        this.mode = "-workflow";
-        $.ajax({
-            type: "GET",
-            url: '/user/wizard/wiz-init-steps-workflow',
-            dataType : 'html',
-            cache: false,
-            success : html => this.initWiz2(html)
-        });
-    }
-
-    initWiz1(html) {
+    startFormDisplayForm(html) {
         let self = this;
         this.div.html(html);
-        $("#wiz-start-button").on('click', e => this.submitStartWorkflow());
-        this.input = $("#multipartFiles_" + this.workflowId);
-        if(!this.workflowId) this.input = $("#multipartFiles_0");
-        this.fileInput = new FilesInput(this.input, this.maxSize, this.csrf, this.workflowName, null, false);
-        this.input.on("fileuploaded", function(event, data, previewId, index, fileId) {
-            self.signBookId = data.response;
-        });
-        this.input.on("filebatchuploadcomplete", function(event, data, previewId, index, fileId) {
-            self.gotoStep2(data.response);
-        });
-        let id = this.workflowId;
-        if(id === "") {
-            id = 0;
-        }
-        this.recipientCCSelect = new SelectUser("recipientsCCEmailsWiz" + id, null, null, this.csrf);
-        this.form = this.div.find('form');
-        this.form.on('submit', function(e){
-            e.preventDefault();
-            let url = self.form.attr('action') + "?" + self.csrf.parameterName + '=' + self .csrf.token;
-            let formData = new FormData(this);
-            $.ajax( {
-                url: url,
-                method: 'POST',
-                type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: result => self.gotoStep2(result),
-                error: function(request, status, error) {
-                    alert(request.responseText);
-                }
-            } );
-        });
-
-    }
-
-    gotoStep2(e) {
-        console.log("goto step 2");
-        let comment = $("#commentWiz");
-        let title = $("#title-wiz");
-        let id = this.workflowId;
-        if(id === "") {
-            id = 0;
-        }
-        let recipientsCCEmailsWiz=[];
-        $('select[name="recipientsCCEmailsWiz' + id + '"] option:selected').each(function() {
-            recipientsCCEmailsWiz.push($(this).val());
-        });
-        let forceAllSign = $('input[name="forceAllSign2"]').is(":checked");
-        this.div.html("");
-        $.ajax({
-            type: "GET",
-            url: '/user/wizard/wiz-init-steps?workflowId=' + id + "&recipientsCCEmailsWiz=" + recipientsCCEmailsWiz + "&forceAllSign=" + forceAllSign + "&comment=" + encodeURIComponent(comment.val()) + "&title=" + title.val(),
-            dataType : 'html',
-            cache: false,
-            success : html => this.initWiz2(html)
-        });
-    }
-
-    initWiz2(html) {
-        let self = this;
-        this.div.html(html);
-        if($("#recipientsEmailsWiz").length) {
-            new SelectUser("recipientsEmailsWiz", null, null, this.csrf);
-        }
-        $('[id^="recipientEmailsWizSelect_"]').each(function (){
+        $('[id^="recipientsEmails-"]').each(function (){
             let maxRecipient = $(this).attr('data-es-max-recipient');
             new SelectUser($(this).attr('id'), maxRecipient, null, self.csrf);
         });
-        if($("#targetEmailsSelect").length) {
-            new SelectUser("targetEmailsSelect", null, null, this.csrf);
-        }
-        if($("#recipientsCCEmailsWiz").length) {
-            this.recipientCCSelect = new SelectUser("recipientsCCEmailsWiz", null, null, this.csrf);
-        }
-        $("#end").on('click', function (){
-            self.end = true;
-        });
-        $("#endStart").on('click', function (){
-            self.end = true;
-            self.start = true;
-        });
-        $("#exitWiz").on('click', e => this.exit());
-        $("#saveWorkflow").on('click', e => this.saveWorkflow(e));
-        $("#wiz-step-form").on('submit', e => this.gotoAddStep(e));
+        $("#send-form-button").on("click", e => this.sendForm(e));
     }
 
-    gotoAddStep(e) {
-        e.preventDefault();
-        let csrf = this.csrf;
-        let step = new Step();
-        step.workflowId = $('#wizWorkflowId').val();
-        step.recipientsEmails = $('#recipientsEmailsWiz').find(`[data-es-check-cert='true']`).prevObject[0].slim.getSelected();
-        step.allSignToComplete = $('#allSignToCompleteWiz').is(':checked');
-        step.changeable = $('#changeableWiz').is(':checked');
-        step.autoSign = $('#autoSign').is(':checked');
-        let userSignFirst = $('#userSignFirstWiz').is(':checked');
-        step.signType = $('#signTypeWiz').val();
-        $("div[id^='externalUserInfos_']").each(function() {
-            let externalUserInfos = new ExternalUserInfos();
-            externalUserInfos.email = $(this).find("#emails").val();
-            externalUserInfos.name = $(this).find("#names").val();
-            externalUserInfos.firstname = $(this).find("#firstnames").val();
-            externalUserInfos.phone = $(this).find("#phones").val();
-            externalUserInfos.forcesms = $(this).find("#forcesmses").val();
-            step.externalUsersInfos.push(externalUserInfos);
-        });
-        let signBookId = this.signBookId;
-        console.log(signBookId);
+    sendForm(e) {
+        let formId = $(e.target).attr('data-es-form-id');
+        let spinner = $("#send-form-spinner");
+        spinner.removeClass("d-none");
+        let successCallback = function(id) {
+            location.href = "/user/signbooks/" + id;
+        };
+        let errorCallback = function() {
+            $("#send-form-submit").click();
+            spinner.addClass("d-none");
+        };
+        this.sendSteps('/user/datas/send-form/' + formId + '?pending=' + false, $("li[id^='step-form-']"), successCallback, errorCallback);
+    }
+
+    sendSteps(url, stepsSources, successCallback, errorCallback) {
         let self = this;
-        $.ajax({
-            url: "/user/wizard/wiz-add-step"+ this.mode +"?end=" + self.end + "&userSignFirst=" + userSignFirst + "&start=" + self.start + "&close=" + self.close + "&" + csrf.parameterName + "=" + csrf.token,
-            type: 'POST',
-            contentType: "application/json",
-            data: JSON.stringify(step),
-            success: html => this.initWiz2(html),
-            error: function(data){
-                console.error(data.responseJSON.message);
-                bootbox.alert("Une erreur s'est produite. Merci de vérifier votre saisie", function (){ });
+        let steps = [];
+        let i = 0;
+        stepsSources.each(function() {
+            i++;
+            let step = new Step();
+            step.stepNumber=i;
+            step.title = $('#title').val();
+            step.comment = $("#comment").val();
+            let recipientsSelect = $('#recipientsEmails-' + i).find(`[data-es-check-cert='true']`).prevObject[0];
+            if(recipientsSelect) {
+                let recipientsEmails = recipientsSelect.slim.getSelected();
+                recipientsEmails.forEach(function (email) {
+                    let recipient = new Recipient();
+                    recipient.email = email;
+                    let extInfos = $("div[id='recipient_" + email + "']");
+                    recipient.name = extInfos.find("#names").val();
+                    recipient.firstName = extInfos.find("#firstnames").val();
+                    recipient.phone = extInfos.find("#phones").val();
+                    recipient.forceSms = extInfos.find("#forcesmses").val() === "1";
+                    step.recipients.push(recipient);
+                });
             }
+            $('select[name="recipientsCCEmails"] option:selected').each(function() {
+                step.recipientsCCEmails.push($(this).val());
+            });
+            step.userSignFirst = $('#userSignFirst').is(':checked');
+            step.allSignToComplete = $('#all-sign-to-complete-' + i).is(':checked');
+            step.changeable = $('#changeable-' + i).is(':checked');
+            step.autoSign = $('#autoSign-' + i).is(':checked');
+            step.signType = $('#signType-' + i).val();
+            step.forceAllSign = $('input[name="forceAllSign"]').is(":checked");
+            steps.push(step);
+        });
+        $.post({
+            url: url + '&' + self.csrf.parameterName + '=' + self.csrf.token,
+            contentType: "application/json",
+            data: JSON.stringify(steps),
+            success: e => successCallback(e),
+            error: e => errorCallback(e)
         });
     }
-
-    saveWorkflow(e) {
-        let saveWorkflowForm = $("#saveWorkflowForm");
-        if (saveWorkflowForm.find('.required').filter(function(){ return this.value === '' }).length > 0) {
-            $("#saveWorkflowSubmit").click();
-            return false;
-        }
-
-        let csrf = this.csrf;
-        let name = $("#workflowName").val();
-        let elementId = $("#elementId");
-        let self = this;
-        $.ajax({
-            url: "/user/wizard/wiz-save"+ this.mode +"/" + elementId.val() + "?name=" + name + "&viewers=" + self.recipientCCSelect.slimSelect.getSelected() + "&" + csrf.parameterName + "=" + csrf.token,
-            type: 'POST',
-            success: html => this.initWiz2(html)
-        });
-    }
-
-    exit() {
-        let csrf = this.csrf;
-        if(this.signBookId !== ""){
-            $.ajax({
-                url: "/user/wizard/wizend?name=" + name + "&close=" + $('#close').val() + "&" + csrf.parameterName + "=" + csrf.token,
-                type: 'POST',
-                success: html => this.initWiz2(html)
-            });
-        } else {
-            $.ajax({
-                url: "/user/wizard/wiz-save-workflow/" + $('#wizWorkflowId').val(),
-                type: 'GET',
-                success: html => this.initWiz2(html)
-            });
-        }
-
-    }
-
 }

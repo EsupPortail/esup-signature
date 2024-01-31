@@ -1,13 +1,13 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
-import org.esupportail.esupsignature.dto.SlimSelectDto;
+import org.esupportail.esupsignature.dto.js.JsSlimSelect;
 import org.esupportail.esupsignature.dto.UserDto;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.web.ws.json.JsonMessage;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -108,10 +108,10 @@ public class SignBookAdminController {
 	@GetMapping("/creators")
 	@ResponseBody
 	public Object[] creators() {
-		List<SlimSelectDto> slimSelectDtos = new ArrayList<>();
-		slimSelectDtos.add(new SlimSelectDto("Tout", ""));
+		List<JsSlimSelect> slimSelectDtos = new ArrayList<>();
+		slimSelectDtos.add(new JsSlimSelect("Tout", ""));
 		for(UserDto userDto : userService.getAllUsersDto()) {
-			slimSelectDtos.add(new SlimSelectDto(userDto.getFirstname() + " " + userDto.getName(), userDto.getEmail()));
+			slimSelectDtos.add(new JsSlimSelect(userDto.getFirstname() + " " + userDto.getName(), userDto.getEmail()));
 		}
 		return slimSelectDtos.toArray();
 	}
@@ -152,7 +152,7 @@ public class SignBookAdminController {
 		if(signRequest != null) {
 			return "redirect:/admin/signrequests/" + signRequest.getId();
 		}
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande non trouvée"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non trouvée"));
 		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
 
@@ -162,7 +162,7 @@ public class SignBookAdminController {
 		if(signRequest != null) {
 			return "redirect:/admin/signrequests/" + signRequest.getId();
 		}
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande non trouvée"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non trouvée"));
 		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
 
@@ -172,14 +172,14 @@ public class SignBookAdminController {
 		for(Long id : ids) {
 				signBookService.delete(id, authUserEppn);
 		}
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
 		return new ResponseEntity<>(true, HttpStatus.OK);
 	}
 
 	@DeleteMapping(value = "/{id}", produces = "text/html")
 	public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
 		signBookService.delete(id, authUserEppn);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
 		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
 

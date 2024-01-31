@@ -2,25 +2,22 @@ package org.esupportail.esupsignature.service.utils.sign;
 
 import eu.europa.esig.dss.enumerations.TokenExtractionStrategy;
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.model.x509.revocation.ocsp.OCSP;
 import eu.europa.esig.dss.spi.x509.revocation.RevocationToken;
 import eu.europa.esig.dss.validation.CertificateVerifier;
-import eu.europa.esig.dss.validation.RevocationDataVerifier;
 import eu.europa.esig.dss.validation.SignaturePolicyProvider;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.annotation.Resource;
-import org.esupportail.esupsignature.dss.DssUtils;
+import org.esupportail.esupsignature.dss.DssUtilsService;
 import org.esupportail.esupsignature.dss.model.DssMultipartFile;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,10 +31,11 @@ public class ValidationService {
 
     private final CertificateVerifier certificateVerifier;
 
-    private final RevocationDataVerifier revocationDataVerifier;
-
     @Resource
     protected FileService fileService;
+
+    @Resource
+    protected DssUtilsService dssUtilsService;
 
     @Resource
     protected SignaturePolicyProvider signaturePolicyProvider;
@@ -45,9 +43,8 @@ public class ValidationService {
     @Resource
     private org.springframework.core.io.Resource defaultPolicy;
 
-    public ValidationService(CertificateVerifier certificateVerifier, RevocationDataVerifier revocationDataVerifier) {
+    public ValidationService(CertificateVerifier certificateVerifier) {
         this.certificateVerifier = certificateVerifier;
-        this.revocationDataVerifier = revocationDataVerifier;
     }
 
     public Reports validate(InputStream docInputStream, InputStream signInputStream) {
@@ -55,12 +52,12 @@ public class ValidationService {
             List<DSSDocument> detachedContents = new ArrayList<>();
             SignedDocumentValidator documentValidator;
             if(signInputStream != null && signInputStream.available() > 0) {
-                detachedContents.add(DssUtils.toDSSDocument(new DssMultipartFile("doc", "doc", null, docInputStream)));
-                documentValidator = SignedDocumentValidator.fromDocument(Objects.requireNonNull(DssUtils.toDSSDocument(new DssMultipartFile("sign", "sign", null, signInputStream))));
+                detachedContents.add(dssUtilsService.toDSSDocument(new DssMultipartFile("doc", "doc", null, docInputStream)));
+                documentValidator = SignedDocumentValidator.fromDocument(Objects.requireNonNull(dssUtilsService.toDSSDocument(new DssMultipartFile("sign", "sign", null, signInputStream))));
                 documentValidator.setValidationLevel(ValidationLevel.LONG_TERM_DATA);
                 documentValidator.setDetachedContents(detachedContents);
             } else {
-                DSSDocument dssDocument = DssUtils.toDSSDocument(new DssMultipartFile("doc", "doc", null, docInputStream));
+                DSSDocument dssDocument = dssUtilsService.toDSSDocument(new DssMultipartFile("doc", "doc", null, docInputStream));
                 if(dssDocument != null) {
                     documentValidator = SignedDocumentValidator.fromDocument(dssDocument);
                 } else {
@@ -77,24 +74,18 @@ public class ValidationService {
             documentValidator.setValidationLevel(ValidationLevel.LONG_TERM_DATA);
             documentValidator.setSignaturePolicyProvider(signaturePolicyProvider);
             documentValidator.setIncludeSemantics(true);
-
-            Reports reports = null;
-            try {
-                InputStream is = defaultPolicy.getInputStream();
-                reports = documentValidator.validateDocument(is);
-            } catch (Exception e) {
-                logger.error("Unable to parse policy : " + e.getMessage(), e);
-            }
-            return reports;
-        } catch (DSSException | UnsupportedOperationException | IOException e) {
-            logger.warn("Unable to read document : " + e.getMessage());
+            InputStream is = defaultPolicy.getInputStream();
+            return documentValidator.validateDocument(is);
+        } catch (Exception e) {
+            logger.warn("Unable to validate document : " + e.getMessage());
         }
         return null;
     }
 
     public boolean checkRevocation(CertificateToken certificateToken) {
+        if(!certificateVerifier.isCheckRevocationForUntrustedChains()) return true;
         RevocationToken<OCSP> revocationToken = certificateVerifier.getOcspSource().getRevocationToken(certificateToken, certificateToken);
-        return revocationToken != null && revocationDataVerifier.isAcceptable(revocationToken);
+        return revocationToken != null && certificateVerifier.getRevocationDataVerifier().isAcceptable(revocationToken);
     }
 
 }

@@ -14,7 +14,7 @@
 		<tr>
 			<td style="width:100%; padding:10px;background-color:#f8f9fa;">
 				<p style="margin-bottom:1rem; margin-top:0">Bonjour,</p>
-				<p style="margin-bottom:1rem; margin-top:0">Vous avez une nouvelle demande de signatures en attente : </p>
+				<p style="margin-bottom:1rem; margin-top:0">Vous avez une nouvelle demande de signature en attente : </p>
 				<p style="margin-bottom:1rem; margin-top:0" th:text="'Nom : ' + ${signRequest.title}"></p>
 				<p style="margin-bottom:1rem; margin-top:0" th:text="'Date de création : ' + ${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></p>
 				<p style="margin-bottom:1rem; margin-top:0">

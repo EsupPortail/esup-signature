@@ -3,9 +3,11 @@ package org.esupportail.esupsignature.web.wssecure;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.service.FieldPropertieService;
+import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.UserPropertieService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValue;
@@ -40,6 +42,9 @@ public class UserWsSecureController {
     @Resource
     private ExtValueService extValueService;
 
+    @Resource
+    private RecipientService recipientService;
+
     @GetMapping(value="/search-extvalue")
     @ResponseBody
     public List<Map<String, Object>> searchValue(@RequestParam(value="searchType") String searchType, @RequestParam(value="searchString") String searchString, @RequestParam(value = "serviceName") String serviceName, @RequestParam(value = "searchReturn") String searchReturn) {
@@ -60,7 +65,6 @@ public class UserWsSecureController {
         return fieldPropertieService.getFavoritesValues(authUserEppn, id);
     }
 
-
     @GetMapping("/get-ui-params")
     @ResponseBody
     public Map<UiParams, String> getUiParams(@ModelAttribute("authUserEppn") String authUserEppn) {
@@ -73,11 +77,10 @@ public class UserWsSecureController {
         userService.setUiParams(authUserEppn, UiParams.valueOf(key), value);
     }
 
-
     @ResponseBody
     @PostMapping(value ="/check-temp-users")
     private List<User> checkTempUsers(@RequestBody(required = false) List<String> recipientEmails) {
-        return userService.checkTempUsers(recipientEmails);
+        return userService.checkTempUsers(recipientService.convertRecipientEmailsToStep(recipientEmails).stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).toList());
     }
 
     @GetMapping(value = "/get-sign-image/{id}")
@@ -105,7 +108,6 @@ public class UserWsSecureController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 
     private ResponseEntity<Void> getDocumentResponseEntity(HttpServletResponse response, byte[] bytes, String fileName, String contentType) throws IOException {
         response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20"));

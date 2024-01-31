@@ -35,6 +35,7 @@ export class SignRequestParams extends EventFactory {
         this.divExtra = null;
         this.textareaExtra = null;
         this.textareaPart = null;
+        this.signRequestId = null;
         this.textPart = null;
         this.signColorPicker = null;
         this.pdSignatureFieldName = null;
@@ -55,7 +56,7 @@ export class SignRequestParams extends EventFactory {
                 this.offset = (signPage.offset().top) + (10 * (parseInt(this.signPageNumber) - 1));
             }
         }
-        if(signImages === -999999) {
+        if(signImages === 999999) {
             this.initSpot();
         } else if(light) {
             this.initLight();
@@ -134,7 +135,7 @@ export class SignRequestParams extends EventFactory {
         this.cross.css('height', (this.signHeight * this.currentScale));
         this.cross.css('background-color', 'rgba(189, 255, 189, .5)');
         this.cross.append("<p class='text-black'>Positionner le champ de signature et cliquer sur enregistrer</p>");
-        this.cross.css("font-size", 12 + "px");
+        this.cross.css("font-size", Math.round(12 * this.currentScale)  + "px");
         this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute bottom-0 end-0'><i class='fas fa-save'></i></button>");
         $("#signDrop_999999").on("click", function (){
             $("#addSpotButton").attr("disabled", false);
@@ -147,28 +148,67 @@ export class SignRequestParams extends EventFactory {
     }
 
     saveSpot() {
+        let self = this;
         let spotStepNumber = $("#spotStepNumber").val();
         if(spotStepNumber == null || spotStepNumber === "") {
             alert("Merci de selectionner une étape");
         } else {
             let commentUrlParams = "comment=" + encodeURIComponent($("#spotComment").val()) +
                 "&commentPosX=" + Math.round(this.xPos) +
-                "&commentPosY=" + Math.round(this.yPos) +
+                "&commentPosY=" + (Math.round(this.yPos) - 10) +
                 "&commentPageNumber=" + this.signPageNumber +
                 "&spotStepNumber=" + spotStepNumber +
                 "&" + this.csrf.parameterName + "=" + this.csrf.token;
-            let url = "/user/signrequests/comment/" + $("#saveSpotButton").attr("data-es-signrequest-id") + "?" + commentUrlParams;
+            this.signRequestId = $("#saveSpotButton").attr("data-es-signrequest-id");
+            let url = "/user/signrequests/comment/" + this.signRequestId + "?" + commentUrlParams;
             if (this.signType === "form") {
-                url = "/admin/forms/add-spot/" + $("#saveSpotButton").attr("data-es-signrequest-id") + "?" + commentUrlParams;
+                url = "/admin/forms/add-spot/" + this.signRequestId + "?" + commentUrlParams;
             }
             $.ajax({
                 method: 'POST',
                 url: url,
-                success: function () {
-                    document.location.reload();
+                success: function (result) {
+                    $("#spot-modal").modal("hide");
+                    self.id = result;
+                    self.disableSpot();
                 }
             });
         }
+    }
+
+    disableSpot() {
+        console.log("disable spot");
+        let self = this;
+        this.cross.html("<p>Cliquer pour supprimer l’emplacement de signature</p>");
+        this.cross.draggable("disable");
+        this.cross.removeAttr("id");
+        this.cross.removeAttr("data-id");
+        this.cross.css("cursor", "default");
+        this.cross.css("color", "black");
+        this.cross.addClass("sign-field");
+        this.cross.css("opacity", "0.6");
+        $('#saveSpotButton').unbind();
+        $("#addCommentButton").attr("disabled", false);
+        $("#addSpotButton").attr("disabled", false);
+        this.border.remove();
+        this.tools.remove();
+        $('#submit-add-spot').remove();
+        this.cross.on('mouseup', function (e) {
+            e.stopPropagation();
+            bootbox.confirm("Supprimer cet emplacement de signature ?", function (result) {
+                if (result) {
+                    let url = "/ws-secure/global/delete-comment/" + self.signRequestId + "/" + self.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
+                    $.ajax({
+                        method: 'DELETE',
+                        url: url,
+                        success: function () {
+                            self.cross.remove();
+                            $("#addSpotButton").attr("disabled", false);
+                        }
+                    });
+                }
+            });
+        });
     }
 
     initLight() {
@@ -318,7 +358,6 @@ export class SignRequestParams extends EventFactory {
             } else {
                 $("#extraTypeDiv_" + this.id).html("<span>Signature OTP<br></span>");
             }
-
             $("#extraTools_" + this.id).remove();
             $("#crossTools_" + this.id).css("top", "-45px");
         }
@@ -572,7 +611,6 @@ export class SignRequestParams extends EventFactory {
             this.textareaExtra.removeClass("sign-textarea-lock");
         }
     }
-
 
     prevSignImage() {
         if(this.signImageNumber > 0) {

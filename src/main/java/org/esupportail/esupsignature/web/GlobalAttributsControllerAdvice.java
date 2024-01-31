@@ -11,7 +11,6 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
-import org.esupportail.esupsignature.service.security.SessionService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -48,9 +48,6 @@ public class GlobalAttributsControllerAdvice {
     private UserService userService;
 
     @Resource
-    private SessionService sessionService;
-
-    @Resource
     private ReportService reportService;
 
     @Resource
@@ -64,6 +61,9 @@ public class GlobalAttributsControllerAdvice {
 
     @Resource
     private ObjectMapper objectMapper;
+
+    @Resource
+    private SessionRegistry sessionRegistry;
 
     private final Environment environment;
 
@@ -94,7 +94,7 @@ public class GlobalAttributsControllerAdvice {
             }
             List<String> roles = userService.getRoles(userEppn);
             if(roles.contains("ROLE_ADMIN")) {
-                model.addAttribute("nbSessions", sessionService.countSessions());
+                model.addAttribute("nbSessions", sessionRegistry.getAllPrincipals().size());
             }
             userService.parseRoles(userEppn, myGlobalProperties);
             model.addAttribute("securityServiceName", httpServletRequest.getSession().getAttribute("securityServiceName"));

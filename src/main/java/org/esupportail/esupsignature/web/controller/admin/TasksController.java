@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import org.esupportail.esupsignature.service.scheduler.TaskService;
-import org.esupportail.esupsignature.web.ws.json.JsonMessage;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -43,10 +43,10 @@ public class TasksController {
     public String runArchive(RedirectAttributes redirectAttributes) {
         if(!taskService.isEnableArchiveTask()) {
             taskService.initArchive();
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Archivage démarré"));
+            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Archivage démarré"));
         } else {
             taskService.setEnableArchiveTask(false);
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Archivage arrêté"));
+            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Archivage arrêté"));
         }
         return "redirect:/admin/tasks";
     }
@@ -55,10 +55,10 @@ public class TasksController {
     public String runClean(RedirectAttributes redirectAttributes) {
         if(!taskService.isEnableCleanTask()) {
             taskService.initCleanning("system");
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Nettoyage démarré"));
+            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Nettoyage démarré"));
         } else {
             taskService.setEnableCleanTask(false);
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Nettoyage arrêté"));
+            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Nettoyage arrêté"));
         }
         return "redirect:/admin/tasks";
     }
@@ -67,10 +67,10 @@ public class TasksController {
     public String runCleanUploadingSignBooks(RedirectAttributes redirectAttributes) {
         if(!taskService.isEnableCleanUploadingSignBookTask()) {
             taskService.initCleanUploadingSignBooks();
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Nettoyage signbooks temporaires démarré"));
+            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Nettoyage signbooks temporaires démarré"));
         } else {
             taskService.setEnableCleanUploadingSignBookTask(false);
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Nettoyage signbooks temporaires arrêté"));
+            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Nettoyage signbooks temporaires arrêté"));
         }
         return "redirect:/admin/tasks";
     }

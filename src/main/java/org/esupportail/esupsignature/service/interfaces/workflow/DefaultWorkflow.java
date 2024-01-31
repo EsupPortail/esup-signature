@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.interfaces.workflow;
 
+import org.esupportail.esupsignature.dto.RecipientWsDto;
 import org.esupportail.esupsignature.entity.Target;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
@@ -56,6 +57,8 @@ public class DefaultWorkflow extends Workflow implements Cloneable {
         return userService.getSystemUser();
     }
 
-    public void fillWorkflowSteps(Workflow workflow, List<String> recipentEmailsStep) throws EsupSignatureUserException { }
+    public void fillWorkflowSteps(Workflow workflow, List<RecipientWsDto> recipentEmailsStep) throws EsupSignatureUserException {
+
+    }
 
 }

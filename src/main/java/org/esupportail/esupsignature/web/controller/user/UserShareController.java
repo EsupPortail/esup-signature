@@ -8,7 +8,7 @@ import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.web.ws.json.JsonMessage;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -63,7 +63,7 @@ public class UserShareController {
             model.addAttribute("userShare", userShare);
             return "user/users/shares/update";
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès refusé"));
+            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès refusé"));
             return "redirect:/user/users/shares";
         }
     }
@@ -85,7 +85,7 @@ public class UserShareController {
         try {
             userShareService.addUserShare(authUser, signWithOwnSign, form, workflow, types, userEmails, beginDate, endDate);
         } catch (EsupSignatureUserException e) {
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
         }
         return "redirect:/user/users/shares";
     }
@@ -105,7 +105,7 @@ public class UserShareController {
     @DeleteMapping("/del/{id}")
     public String delShare(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes) {
         userShareService.delete(id, authUserEppn);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Élément supprimé"));
+        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Élément supprimé"));
         return "redirect:/user/users/shares";
     }
 
@@ -114,14 +114,14 @@ public class UserShareController {
         if(eppn == null || eppn.isEmpty()) {
             httpSession.setAttribute("suEppn", null);
             httpSession.removeAttribute("userShareId");
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation désactivée"));
+            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Délégation désactivée"));
         } else {
             if(userShareService.isOneShareActive(eppn, authUserEppn)) {
                 httpSession.setAttribute("suEppn", eppn);
                 httpSession.setAttribute("userShareId", userShareId);
-                redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation activée : " + eppn));
+                redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Délégation activée : " + eppn));
             } else {
-                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucune délégation active en ce moment"));
+                redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Aucune délégation active en ce moment"));
             }
         }
         return "redirect:/";

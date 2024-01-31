@@ -8,15 +8,16 @@ import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.spi.x509.CertificateSource;
 import eu.europa.esig.dss.spi.x509.CommonCertificateSource;
+import eu.europa.esig.dss.spi.x509.tsp.TimestampToken;
 import eu.europa.esig.dss.utils.Utils;
-import eu.europa.esig.dss.validation.timestamp.TimestampToken;
 import eu.europa.esig.dss.ws.dto.TimestampDTO;
 import eu.europa.esig.dss.ws.signature.common.TimestampTokenConverter;
-import org.esupportail.esupsignature.dss.config.MultipartResolverProvider;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.model.DssMultipartFile;
 import org.esupportail.esupsignature.dss.model.OriginalFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,18 +25,22 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class DssUtils {
+@Service
+public final class DssUtilsService {
 
-	private static final Logger LOG = LoggerFactory.getLogger(DssUtils.class);
+	private static final Logger LOG = LoggerFactory.getLogger(DssUtilsService.class);
 
-	private DssUtils() {
-	}
+	private final GlobalProperties globalProperties;
 
-	public static DSSDocument toDSSDocument(MultipartFile multipartFile) {
+    public DssUtilsService(GlobalProperties globalProperties) {
+        this.globalProperties = globalProperties;
+    }
+
+    public DSSDocument toDSSDocument(MultipartFile multipartFile) {
 		try {
 			if ((multipartFile != null) && !multipartFile.isEmpty()) {
-				if (multipartFile.getSize() > MultipartResolverProvider.getInstance().getMaxFileSize()) {
-					throw new MaxUploadSizeExceededException(MultipartResolverProvider.getInstance().getMaxFileSize());
+				if (multipartFile.getSize() > globalProperties.getMaxUploadSize()) {
+					throw new MaxUploadSizeExceededException(globalProperties.getMaxUploadSize());
 				}
 				return new InMemoryDocument(multipartFile.getBytes(), multipartFile.getOriginalFilename());
 			}
@@ -45,7 +50,7 @@ public final class DssUtils {
 		return null;
 	}
 
-	public static List<DSSDocument> toDSSDocuments(List<DssMultipartFile> documentsToSign) {
+	public List<DSSDocument> toDSSDocuments(List<DssMultipartFile> documentsToSign) {
 		List<DSSDocument> dssDocuments = new ArrayList<>();
 		if (Utils.isCollectionNotEmpty(documentsToSign)) {
 			for (MultipartFile multipartFile : documentsToSign) {
@@ -66,14 +71,14 @@ public final class DssUtils {
 		return TimestampTokenConverter.toTimestampToken(dto);
 	}
 
-	public static List<DSSDocument> originalFilesToDSSDocuments(List<OriginalFile> originalFiles) {
+	public List<DSSDocument> originalFilesToDSSDocuments(List<OriginalFile> originalFiles) {
 		List<DSSDocument> dssDocuments = new ArrayList<>();
 		if (Utils.isCollectionNotEmpty(originalFiles)) {
 			for (OriginalFile originalDocument : originalFiles) {
 				if (originalDocument.isNotEmpty()) {
 					DSSDocument dssDocument;
 					if (originalDocument.getCompleteFile() != null) {
-						dssDocument = DssUtils.toDSSDocument(originalDocument.getCompleteFile());
+						dssDocument = toDSSDocument(originalDocument.getCompleteFile());
 					} else {
 						dssDocument = new DigestDocument(originalDocument.getDigestAlgorithm(),
 								originalDocument.getBase64Digest(), originalDocument.getFilename());
@@ -116,7 +121,7 @@ public final class DssUtils {
 		if (Utils.isCollectionNotEmpty(certificateFiles)) {
 			certSource = new CommonCertificateSource();
 			for (MultipartFile file : certificateFiles) {
-				CertificateToken certificateChainItem = DssUtils.toCertificateToken(file.getBytes());
+				CertificateToken certificateChainItem = DssUtilsService.toCertificateToken(file.getBytes());
 				if (certificateChainItem != null) {
 					certSource.addCertificate(certificateChainItem);
 				}

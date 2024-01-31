@@ -13,7 +13,7 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.entity.Otp;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
-import org.esupportail.esupsignature.web.ws.json.JsonMessage;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,14 +135,14 @@ public class OtpAccessController {
                         otp.setPhoneNumber(phone);
                         return "otp/signin";
                     } else {
-                        redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Numéro de mobile incorrect"));
+                        redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Numéro de mobile incorrect"));
                         return "redirect:/otp-access/first/" + urlId;
                     }
                 }
-                redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Merci de saisir le code reçu par SMS"));
+                redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Merci de saisir le code reçu par SMS"));
                 return "redirect:/otp-access/first/" + urlId;
             } else {
-                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Ce numéro ne peut pas être utilisé"));
+                redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Ce numéro ne peut pas être utilisé"));
                 return "redirect:/otp-access/first/" + urlId;
             }
         } else {
@@ -166,7 +166,7 @@ public class OtpAccessController {
                 return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
             } else {
                 model.addAttribute("result", "KO");
-                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Mauvais code SMS, un nouveau code vous à été envoyé"));
+                redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Mauvais code SMS, un nouveau code vous à été envoyé"));
                 return "redirect:/otp-access/first/" + urlId;
             }
         } else {

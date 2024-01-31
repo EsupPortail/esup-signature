@@ -90,11 +90,11 @@ public class SignWithService {
         if(userService.getRoles(userEppn).contains("ROLE_SEAL") &&
                 StringUtils.hasText(globalProperties.getSealCertificatPin()) &&
                 (
-                    (StringUtils.hasText(globalProperties.getSealCertificatType()) && globalProperties.getSealCertificatType().equals("PKCS11") && StringUtils.hasText(globalProperties.getSealCertificatDriver()))
+                    (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11) && StringUtils.hasText(globalProperties.getSealCertificatDriver()))
                     ||
-                    (StringUtils.hasText(globalProperties.getSealCertificatType()) && globalProperties.getSealCertificatType().equals("OPENSC"))
+                    (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC))
                     ||
-                    (StringUtils.hasText(globalProperties.getSealCertificatType()) && globalProperties.getSealCertificatType().equals("PKCS12") && StringUtils.hasText(globalProperties.getSealCertificatFile()))
+                    (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12) && StringUtils.hasText(globalProperties.getSealCertificatFile()))
                 )
         ) {
             if(!force) return true;

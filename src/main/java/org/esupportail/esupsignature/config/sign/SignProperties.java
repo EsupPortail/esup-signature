@@ -18,6 +18,12 @@ public class SignProperties {
     private Boolean signWithExpiredCertificate = false;
     private Long passwordTimeout;
     private String aesKey;
+    private String openscCommandSign = "pkcs11-tool --sign -v --id {0} -p {1} --mechanism SHA256-RSA-PKCS --input-file {2} --output-file {3}";
+    private String openscCommandGetId = "pkcs11-tool -O --type pubkey";
+    private String openscCommandGetKey = "pkcs11-tool -r --id {0} --type cert";
+    private String openscCommandCertId;
+    private String openscCommandModule;
+    private String openscPathLinux = "";
 
     public SignatureForm getDefaultSignatureForm() {
         return defaultSignatureForm;
@@ -112,5 +118,53 @@ public class SignProperties {
 
     public void setAesKey(String aesKey) {
         this.aesKey = aesKey;
+    }
+
+    public String getOpenscCommandSign() {
+        return openscCommandSign;
+    }
+
+    public void setOpenscCommandSign(String openscCommandSign) {
+        this.openscCommandSign = openscCommandSign;
+    }
+
+    public String getOpenscCommandGetId() {
+        return openscCommandGetId;
+    }
+
+    public void setOpenscCommandGetId(String openscCommandGetId) {
+        this.openscCommandGetId = openscCommandGetId;
+    }
+
+    public String getOpenscCommandGetKey() {
+        return openscCommandGetKey;
+    }
+
+    public void setOpenscCommandGetKey(String openscCommandGetKey) {
+        this.openscCommandGetKey = openscCommandGetKey;
+    }
+
+    public String getOpenscCommandCertId() {
+        return openscCommandCertId;
+    }
+
+    public void setOpenscCommandCertId(String openscCommandCertId) {
+        this.openscCommandCertId = openscCommandCertId;
+    }
+
+    public String getOpenscCommandModule() {
+        return openscCommandModule;
+    }
+
+    public void setOpenscCommandModule(String openscCommandModule) {
+        this.openscCommandModule = openscCommandModule;
+    }
+
+    public String getOpenscPathLinux() {
+        return openscPathLinux;
+    }
+
+    public void setOpenscPathLinux(String openscPathLinux) {
+        this.openscPathLinux = openscPathLinux;
     }
 }
