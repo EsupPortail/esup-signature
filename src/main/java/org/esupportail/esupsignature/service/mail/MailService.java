@@ -126,9 +126,9 @@ public class MailService {
         ctx.setVariable("userService", userService);
         setTemplate(ctx);
         Set<String> toEmails = new HashSet<>();
-        toEmails.add(signBook.getCreateBy().getEmail());
+        if(!signBook.getCreateBy().getEppn().equals("system")) toEmails.add(signBook.getCreateBy().getEmail());
         toEmails.remove(user.getEmail());
-        if(toEmails.size() > 0) {
+        if(!toEmails.isEmpty()) {
             try {
                 MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
                 String htmlContent = templateEngine.process("mail/email-completed.html", ctx);
@@ -158,8 +158,7 @@ public class MailService {
         ctx.setVariable("userService", userService);
         setTemplate(ctx);
         Set<String> toEmails = new HashSet<>();
-        toEmails.add(signBook.getCreateBy().getEmail());
-        //TODO envoi dans les deux sens ?
+        if(!signBook.getCreateBy().getEppn().equals("system")) toEmails.add(signBook.getCreateBy().getEmail());
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-postit.html", ctx);
@@ -252,7 +251,7 @@ public class MailService {
         ctx.setVariable("user", user);
         setTemplate(ctx);
         Set<String> toEmails = new HashSet<>();
-        toEmails.add(signBook.getCreateBy().getEmail());
+        if(!signBook.getCreateBy().getEppn().equals("system")) toEmails.add(signBook.getCreateBy().getEmail());
         for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
             for(User toUser : liveWorkflowStep.getUsers()) {
                 if(!user.getEppn().equals(toUser.getEppn())) {
