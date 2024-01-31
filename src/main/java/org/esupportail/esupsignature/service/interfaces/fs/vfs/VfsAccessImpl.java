@@ -329,13 +329,9 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 				}
 			}
 			newFile.createFile();
-
 			OutputStream outstr = newFile.getContent().getOutputStream();
-
 			FileCopyUtils.copy(inputStream, outstr);
-
 			mayClose(dir, folder);
-
 			success = true;
 		} catch (FileSystemException e) {
 			logger.info("can't upload file : " + e.getMessage(), e);

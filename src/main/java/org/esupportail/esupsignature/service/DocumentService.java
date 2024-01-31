@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.BigFile;
@@ -102,8 +103,8 @@ public class DocumentService {
 
 	public String archiveDocument(Document signedFile, String path, String subPath, String name) throws EsupSignatureFsException {
 		try {
-			URI baseURI = new URI(path);
-			URI resolvedURI = baseURI.resolve(subPath);
+			URI baseURI = new URI(path.replace(" ", "%20")).normalize();
+			URI resolvedURI = baseURI.resolve(subPath.replace(" ", "%20")).normalize();
 			return exportDocument(fsAccessFactoryService.getPathIOType(path), resolvedURI.toString(), signedFile, name);
 		} catch (EsupSignatureRuntimeException | URISyntaxException e) {
 			logger.error(e.getMessage());
@@ -126,13 +127,13 @@ public class DocumentService {
 					}
 				}
 				logger.info("send to " + documentIOType.name() + " in " + targetUrl + name);
-				if (fsAccessService.putFile(targetUrl, name, inputStream, UploadActionType.OVERRIDE)) {
+				if (fsAccessService.putFile(StringUtils.stripAccents(targetUrl), name, inputStream, UploadActionType.OVERRIDE)) {
 					documentUri = targetUrl + name;
 					return documentUri;
 				} else {
 					throw new EsupSignatureRuntimeException("file is not exported");
 				}
-			} catch (EsupSignatureFsException e) {
+			} catch (EsupSignatureFsException  e) {
 				throw new EsupSignatureRuntimeException("write fsaccess error : ", e);
 			}
 		} else {
