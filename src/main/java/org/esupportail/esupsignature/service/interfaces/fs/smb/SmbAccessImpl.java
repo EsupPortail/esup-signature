@@ -39,7 +39,10 @@ import org.springframework.util.FileCopyUtils;
 import jakarta.annotation.Resource;
 import java.io.*;
 import java.net.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 
@@ -180,7 +183,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	public String createFile(String parentPath, String title, String type) {
 		try {
 			String ppath = parentPath;
-			URI uri = new URI(parentPath.replace(" ", "%20")).normalize();
+			URI uri = new URI(parentPath);
 			SmbFile newFile;
 			if(uri.getScheme().equals("smb")) {
 				newFile = new SmbFile(parentPath + "/" + title, this.cifsContext);
