@@ -1,0 +1,165 @@
+.btn-floating {
+    position: relative;
+    z-index: 6 !important;
+    display: inline-block;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    vertical-align: middle;
+    cursor: pointer;
+    border-radius: 50%;
+    -webkit-box-shadow: 0 5px 11px 0 rgba(0,0,0,0.18), 0 4px 15px 0 rgba(0,0,0,0.15);
+    box-shadow: 0 5px 11px 0 rgba(0,0,0,0.18), 0 4px 15px 0 rgba(0,0,0,0.15);
+    -webkit-transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
+    width: 47px;
+    height: 47px;
+}
+
+.btn-floating:hover {
+    -webkit-box-shadow: 0 8px 17px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    box-shadow: 0 8px 17px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+.btn-floating.btn-small {
+    width: 36px;
+    height: 36px;
+}
+
+.btn-floating.btn-small i {
+    /*font-size: 1rem;*/
+    /*line-height: 38px;*/
+}
+
+.btn-floating.btn-lg {
+    width: 62px;
+    height: 62px;
+}
+
+.btn-floating i {
+    display: inline-block;
+    width: inherit;
+    color: #fff;
+    text-align: center;
+    margin-top: 22px;
+}
+
+.btn-floating.btn-lg i {
+    margin-top: 32px;
+}
+
+.fixed-action-simple-btn {
+    position: fixed;
+    right: 25px;
+    bottom: 40px;
+    z-index: 8;
+    overflow: hidden;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: end;
+    -ms-flex-align: end;
+    align-items: flex-end;
+    padding: 20px;
+}
+
+.fixed-action-btn {
+    position: fixed;
+    right: 25px;
+    bottom: 80px;
+    z-index: 8;
+    overflow: hidden;
+    height: 500px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: end;
+    -ms-flex-align: end;
+    align-items: flex-end;
+    padding: 20px;
+}
+
+.fixed-action-btn ul {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: 9;
+    left: 0;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    height: 0;
+    padding: 0;
+    margin: 0 0 15px;
+    text-align: center;
+    -webkit-transition: 400ms all;
+    transition: 400ms all;
+    opacity: 0;
+    margin-bottom: 0;
+}
+
+.fixed-action-btn.active ul {
+    height: auto;
+    margin-bottom: 80px;
+    opacity: 1;
+}
+
+.fixed-action-btn ul li {
+    z-index: 10;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    margin-right: auto;
+    margin-bottom: 15px;
+    margin-left: auto;
+}
+
+.fixed-action-btns {
+    pointer-events: none;
+    position: fixed;
+    right: 1vw;
+    bottom: 25px;
+    margin-bottom: 0;
+    z-index: 6;
+    overflow: hidden;
+    height: 500px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: end;
+    -ms-flex-align: end;
+    align-items: flex-end;
+    padding: 20px 50px 20px 50px;
+}
+
+.fixed-action-btns ul {
+    pointer-events: initial;
+    height: auto;
+    opacity: 1;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    padding: 0;
+    text-align: center;
+    -webkit-transition: 400ms all;
+    transition: 400ms all;
+}
+
+.fixed-action-btns li {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    margin-right: auto;
+    margin-bottom: 15px;
+    margin-left: auto;
+}

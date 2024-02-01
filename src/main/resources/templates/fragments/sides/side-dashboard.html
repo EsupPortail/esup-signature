@@ -8,7 +8,7 @@
         <div class="hr"><i class="fa-solid fa-inbox me-1"></i><span class="sidebar-label"> Demandes reçues</span></div>
         <a th:classappend="${statusFilter == 'toSign'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signbooks?statusFilter=toSign">
             <span class="sidebar-label">A signer</span>
-            <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-md-inline" th:text="${nbToSign}">
+            <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-lg-inline" th:text="${nbToSign}">
             </span>
         </a>
         <a th:classappend="${statusFilter == 'signedByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks?statusFilter=signedByMe">Signées</a>
@@ -16,7 +16,7 @@
         <div class="hr"><i class="fa-solid fa-paper-plane me-1"></i><span class="sidebar-label"> Demandes envoyées</span></div>
         <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signbooks?statusFilter=pending">
             <span class="sidebar-label">En attente</span>
-            <span title="Demandes en attente" th:if="${nbSignRequests > 0  && userEppn == authUserEppn}" class="badge bg-warning d-none d-md-inline" th:text="${nbSignRequests}">
+            <span title="Demandes en attente" th:if="${nbSignRequests > 0  && userEppn == authUserEppn}" class="badge bg-warning d-none d-lg-inline" th:text="${nbSignRequests}">
             </span>
         </a>
         <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signbooks?statusFilter=completed">Signées</a>

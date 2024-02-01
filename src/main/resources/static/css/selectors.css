@@ -1,0 +1,19 @@
+.select-users {
+    /*for javascript detection : new SelectUser()*/
+}
+
+.slim-select-filter {
+    /*for javascript detection : new SlimSelect()*/
+}
+
+.slim-select, .slim-select-simple {
+    /*for javascript detection : new SlimSelect()*/
+}
+
+.summer-note {
+    /*for javascript detection : new summernote()*/
+}
+
+.toast-es {
+    /*for javascript detection : new Toast()*/
+}
