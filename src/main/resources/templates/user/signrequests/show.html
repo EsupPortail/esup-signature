@@ -407,22 +407,16 @@
                         </select>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="allSignToComplete">
-                            Tous les participants doivent-ils signer ?
-                        </label>
-                        <label class="switch">
+                        <div class="form-check form-switch form-switch-md">
+                            <label  class="form-check-label" for="allSignToComplete">Tous les participants doivent-ils signer ?</label>
                             <input type="checkbox" class="form-check-input" name="allSignToComplete" id="allSignToComplete"/>
-                            <span class="slider round"></span>
-                        </label>
+                        </div>
                     </div>
                     <div class="form-group mb-3" id="multi-sign">
-                        <label for="multiSign">
-                            L'utilisateur peut apposer plusieurs signatures ?
-                        </label>
-                        <label class="switch">
+                        <div class="form-check form-switch form-switch-md">
+                            <label  class="form-check-label" for="multiSign">L'utilisateur peut apposer plusieurs signatures ?</label>
                             <input type="checkbox" class="form-check-input" name="multiSign" id="multiSign"/>
-                            <span class="slider round"></span>
-                        </label>
+                        </div>
                     </div>
                     <div class="form-group mb-3" th:if="${signRequest.parentSignBook.liveWorkflow.currentStep.repeatableSignType == null}">
                         <label for="signType">Choisir un type de signature</label>
@@ -806,7 +800,7 @@
                         <div>
                         </div>
                     </div>
-                    <div id="signCrop" class="mx-auto">
+                    <div id="sign-crop" class="mx-auto">
                         <div id="crop-div" class="alert alert-light text-dark text-center" style="display: none;">
                             <div class="d-flex justify-content-center">
                                 <button type="button" id="zoomout"

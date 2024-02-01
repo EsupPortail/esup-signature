@@ -1,0 +1,70 @@
+@font-face {
+    font-family: 'FontAwesome';
+    src: url('/webjars/font-awesome/6.2.0/webfonts/fa-solid-900.woff2') format('woff2'),
+    url('/webjars/font-awesome/6.2.0/webfonts/fa-solid-900.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'LiberationSans-Regular';
+    src: url('/fonts/LiberationSans-Regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Gravity';
+    src: url('/fonts/Gravity-Bold.otf') format('opentype');
+    font-weight: 700;
+}
+
+@font-face {
+    font-family: 'Gravity';
+    src: url('/fonts/Gravity-Regular.otf') format('opentype');
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: 'Gravity';
+    src: url('/fonts/Gravity-Book.otf') format('opentype');
+    font-weight: 300;
+}
+
+@font-face {
+    font-family: 'Gravity';
+    src: url('/fonts/Gravity-Light.otf') format('opentype');
+    font-weight: 200;
+}
+
+@font-face {
+    font-family: 'Gravity';
+    src: url('/fonts/Gravity-UltraLight.otf') format('opentype');
+    font-weight: 100;
+}
+
+@font-face {
+    font-family: 'Signature';
+    src: url('/fonts/Signature.otf') format('opentype');
+    font-weight: 700;
+}
+
+@font-face {
+    font-family: 'Signature';
+    src: url('/fonts/Signature.otf') format('opentype');
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: 'Signature';
+    src: url('/fonts/Signature.otf') format('opentype');
+    font-weight: 300;
+}
+
+@font-face {
+    font-family: 'Signature';
+    src: url('/fonts/Signature/otf') format('opentype');
+    font-weight: 200;
+}
+
+@font-face {
+    font-family: 'Signature';
+    src: url('/fonts/Signature.otf') format('opentype');
+    font-weight: 100;
+}

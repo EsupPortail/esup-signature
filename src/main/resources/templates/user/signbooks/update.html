@@ -43,7 +43,7 @@
                         </div>
                         <div class="form-group">
                             <label for="viewersSelect">Observateurs</label>
-                            <select id="viewersSelect" class="select-users" multiple="multiple" name="viewers">
+                            <select id="viewersSelect" class="auto-select-users" multiple="multiple" name="viewers">
                                 <th:block th:each="viewer : ${signBook.viewers}">
                                     <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
                                 </th:block>
@@ -181,17 +181,12 @@
                         <div class="form-group mb-3">
                             <select name="recipientsEmails" id="recipientsEmails2" multiple="multiple" required="required"></select>
                         </div>
-                        <br><br>
-                        <div class="form-group mb-3" id="all-sign-to-complete-update">
-                            <label for="allSignToComplete">
-                                Tous les participants doivent-ils signer ?
-                            </label>
-                                <label class="switch">
-                                    <input type="checkbox" class="form-check-input" name="allSignToComplete" id="allSignToComplete"/>
-                                    <span class="slider round"></span>
-                                </label>
+                        <div class="form-group mb-3" id="all-sign-to-complete-div">
+                            <div class="form-check form-switch form-switch-md">
+                                <label class="form-check-label" for="all-sign-to-complete">Tous les participants doivent-ils signer ?</label>
+                                <input type="checkbox" class="form-check-input" name="allSignToComplete" id="all-sign-to-complete"/>
+                            </div>
                         </div>
-
                         <label for="signType_id">Type de signature</label>
                         <select class="slim-select-simple" id="signType_id" name="signType" size="1">
                             <th:block th:each="signType : ${signTypes}">
