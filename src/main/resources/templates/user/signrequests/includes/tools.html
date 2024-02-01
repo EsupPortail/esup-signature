@@ -3,10 +3,10 @@
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div th:fragment="tools" id="tools" class="tools" th:if="${toSignDocument != null}">
 	<div class="d-flex mb-1">
-		<a th:unless="${user.userType.name() == 'external'}" class="btn btn-light btn-outline-dark d-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
+		<a th:unless="${user.userType.name() == 'external'}" class="btn btn-light btn-outline-dark d-none d-lg-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
 			<i class="fa-solid fa-info-circle"></i>
 		</a>
-		<a class="btn btn-light btn-outline-dark d-block ms-1 me-1"
+		<a class="btn btn-light btn-outline-dark d-none d-lg-block ms-1 me-1"
 		   onclick="printIt()" target="_blank"
 		   title="Imprimer le document"><i class="fa-solid fa-print"></i></a>
 		<script th:inline="javascript">
@@ -19,59 +19,60 @@
 				});
 			}
 		</script>
-		<div class="border ms-3 me-3 d-none d-lg-block ms-1"></div>
+		<div class="border ms-1 me-2 d-none d-lg-block ms-1"></div>
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf'}">
-			<button id="zoomout" title="Zoom arrière" class="btn btn-light btn-outline-dark"><i
+			<button id="zoomout" title="Zoom arrière" class="btn btn-light btn-outline-dark me-1"><i
 					class="fa-solid fa-search-minus"></i></button>
-			<button id="zoomin" title="Zoom avant" class="btn btn-light btn-outline-dark ms-1"><i
+			<button id="zoomin" title="Zoom avant" class="btn btn-light btn-outline-dark me-1"><i
 					class="fa-solid fa-search-plus"></i></button>
-			<button id="fullwidth" title="Pleine largeur" class="btn btn-light btn-outline-dark ms-1"><i
+			<button id="fullwidth" title="Pleine largeur" class="btn btn-light btn-outline-dark me-1"><i
 					class="fa-solid fa-expand"></i></button>
-			<button id="fullheight" title="Pleine hauteur" class="btn btn-light btn-outline-dark ms-1"><i
+			<button id="fullheight" title="Pleine hauteur" class="btn btn-light btn-outline-dark d-none d-lg-block me-1"><i
 					class="fa-solid fa-compress"></i></button>
-			<div class="zoom bg-light ms-1 p-1 pt-2 d-inline fw-bold"><span id="zoom"></span> %</div>
-			<div class="border ms-3 me-3 d-none d-lg-block"></div>
-			<button id="prev" title="Page précédente" class="btn btn-light btn-outline-dark ms-1" aria-label="Précédent">
+			<div class="zoom bg-light me-1 p-1 pt-2 d-inline fw-bold"><span id="zoom"></span> %</div>
+			<div class="border ms-1 me-2 d-none d-lg-block"></div>
+			<button id="prev" title="Page précédente" class="btn btn-light btn-outline-dark" aria-label="Précédent">
 				<i class="fa-solid fa-arrow-up"></i>
 			</button>
 			<div class="bg-light ms-1 p-1 pt-2  d-none d-lg-inline fw-bold text-center" style="min-width: 150px;">
 				<span>Page <span id="page_num"></span> / <span id="page_count"></span></span>
 			</div>
-			<button id="next" title="Page suivante" class="btn btn-light btn-outline-dark ms-1" aria-label="Prochain">
+			<button id="next" title="Page suivante" class="btn btn-light btn-outline-dark me-1" aria-label="Prochain">
 				<i class="fa-solid fa-arrow-down"></i>
 			</button>
-			<button id="rotateleft" class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block"><i
-					class="fa-solid fa-undo"></i></button>
-			<button id="rotateright" class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block"><i
-					class="fa-solid fa-redo"></i></button>
-			<div class="border ms-3 me-3 "></div>
-			<button class="btn btn-light btn-outline-dark ms-1" data-bs-toggle="modal" title="Pièces jointes"
+			<button id="rotateleft" class="btn btn-light btn-outline-dark ms-1 d-none">
+				<i class="fa-solid fa-undo"></i>
+			</button>
+			<button id="rotateright" class="btn btn-light btn-outline-dark ms-1 d-none">
+				<i class="fa-solid fa-redo"></i>
+			</button>
+			<div class="border ms-1 me-2"></div>
+			<button class="btn btn-light btn-outline-dark d-none d-sm-block me-1" data-bs-toggle="modal" title="Pièces jointes"
 					data-bs-target="#attachment">
 				<i class="fa-solid fa-paperclip"></i> <span class="d-none d-xxl-inline">Pièces jointes</span>
 				<div th:if="${attachments != null && attachments.size() + signRequest.links.size() > 0 }"
 					 th:text="${attachments.size() + signRequest.links.size()}"
 					 class="badge bg-primary"></div>
 			</button>
-			<button th:if="${editable}" class="btn btn-light btn-outline-dark ms-1" data-bs-toggle="modal" title="Ajouter un post-it"
+			<button th:if="${editable}" class="btn btn-light btn-outline-dark me-1" data-bs-toggle="modal" title="Ajouter un post-it"
 					data-bs-target="#addCommentModal">
 				<i class="fa-solid fa-sticky-note"></i> <span class="d-none d-xl-inline">Post-it</span>
 			</button>
-			<button th:if="${signImages == null || signImages.size() == 0}" id="signImage" class="btn btn-light btn-outline-dark ms-1" title="Ajouter une image de signature">
+			<button th:if="${signImages == null || signImages.size() == 0}" id="signImage" class="btn btn-light btn-outline-dark d-none d-lg-block me-1" title="Ajouter une image de signature">
 				<i class="fa-solid fa-plus-square"></i> <span class="d-xl-inline">Créer une image de votre signature</span>
 			</button>
-			<div th:if="${displayNotif && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="border ms-3 me-3"></div>
 			<form th:if="${displayNotif && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
 				  th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
-				<button type="submit" class="btn btn-light btn-outline-dark ms-1">
+				<button type="submit" class="btn btn-light btn-outline-dark me-1">
 					<i class="fa-solid fa-bullhorn"></i> <span class="d-none d-xxl-inline">Relancer</span>
 				</button>
 			</form>
 		</th:block>
-		<div class="border ms-3 me-3 d-none d-lg-block ms-1"></div>
-		<a th:if="${signable}" class="btn btn-light btn-outline-dark d-block ms-1" title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
+		<div class="border 1 me-2 d-none d-lg-block ms-1"></div>
+		<a th:if="${signable}" class="btn btn-light btn-outline-dark me-1" title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
 			<i class="fa-solid fa-people-arrows"></i>
 		</a>
-		<a th:if="${signRequest.parentSignBook.createBy.eppn == user.eppn}" class="btn btn-light btn-outline-dark d-block ms-1 me-1" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal">
+		<a th:if="${signRequest.parentSignBook.createBy.eppn == user.eppn}" class="btn btn-light btn-outline-dark d-none d-lg-block ms-1 me-1" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal">
 			<i class="fa-solid fa-users-viewfinder"></i>
 		</a>
 		<a th:if="${signRequest.parentSignBook.createBy.eppn == user.eppn
@@ -81,13 +82,11 @@
 	</div>
 	<div id="second-tools" class="d-flex mb-1">
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
-			<th:block >
-				<div class="input-group-text me-1 d-none d-xl-inline">Choix du mode : </div>
-				<div class="me-1">
+			<div class="input-group-text me-1 d-none d-xl-inline">Choix du mode : </div>
+			<div class="me-1 d-none d-lg-block">
 				<select id="changeMode" name="changeMode" class="change-mode"></select>
-				</div>
-			</th:block>
-			<div id="sign-tools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="d-none me-1">
+			</div>
+			<div id="sign-tools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="d-none me-1 mb-1">
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp
 				||
 				signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign
@@ -96,22 +95,22 @@
 				}"
 						id="addSignButton"
 						class="btn btn-light btn-outline-primary">
-					<i class="fa-solid fa-plus"></i> <span class="d-none d-md-inline">Insérer une signature</span>
+					<i class="fa-solid fa-plus"></i> <span class="d-inline">Insérer une signature</span>
 				</button>
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
 						id="addSignButton"
 						class="btn btn-light btn-outline-primary">
-					<i class="fa-solid fa-plus"></i> <span class="d-none d-md-inline">Insérer un visa</span>
+					<i class="fa-solid fa-plus"></i> <span class="d-inline">Insérer un visa</span>
 				</button>
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
 						id="visualButton" title="Afficher/Masquer le visuel"
 						class="btn btn-light btn-outline-primary ms-1 d-none">Afficher/Masquer le visuel
 				</button>
-				<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addCheck" title="Ajouter une coche" class="btn btn-light btn-outline-primary ms-1"><i class="fa-solid fa-check"></i></button>
-				<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addTimes" title="Ajouter une croix" class="btn btn-light btn-outline-primary ms-1"><i class="fa-solid fa-times"></i></button>
-				<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addCircle" title="Ajouter un cercle" class="btn btn-light btn-outline-primary ms-1"><i class="fa-regular fa-circle"></i></button>
-				<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addMinus" title="Ajouter un trait" class="btn btn-light btn-outline-primary ms-1 d-none"><i class="fa-solid fa-minus"></i></button>
-				<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addText" title="Ajouter un texte" class="btn btn-light btn-outline-primary ms-1"><i class="fa-solid fa-i-cursor"></i><i class="fa-solid fa-font d-none d-md-inline"></i></button>
+				<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addCheck" title="Ajouter une coche" class="btn btn-light btn-outline-primary d-none d-lg-block ms-1"><i class="fa-solid fa-check"></i></button>
+				<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addTimes" title="Ajouter une croix" class="btn btn-light btn-outline-primary d-none d-lg-block ms-1"><i class="fa-solid fa-times"></i></button>
+				<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addCircle" title="Ajouter un cercle" class="btn btn-light btn-outline-primary d-none d-lg-block ms-1"><i class="fa-regular fa-circle"></i></button>
+				<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addMinus" title="Ajouter un trait" class="btn btn-light btn-outline-primary d-none d-lg-block ms-1 d-none"><i class="fa-solid fa-minus"></i></button>
+				<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addText" title="Ajouter un texte" class="btn btn-light btn-outline-primary d-none d-lg-block ms-1"><i class="fa-solid fa-i-cursor"></i><i class="fa-solid fa-font d-none d-md-inline"></i></button>
 			</div>
 			<div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable}" style="display: none;">
 				<button id="addCommentButton"

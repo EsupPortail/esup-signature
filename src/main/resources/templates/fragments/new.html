@@ -17,7 +17,7 @@
                         <div class="crop">
                             <i class="fa-solid fa-signature fa-3x"></i>
                         </div>
-                        <h7>Auto signature</h7>
+                        <span class="h7">Auto signature</span>
                     </a>
 
                     <a id="new-fast-sign" th:if="${!isUserOnSu}" th:unless="${globalProperties.hideSendSignRequest}" role="button" data-bs-dismiss="modal" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0" style="width: 120px; height: 170px;"
@@ -27,7 +27,7 @@
                         <div class="crop">
                             <i class="fa-solid fa-paper-plane fa-3x"></i>
                         </div>
-                        <h7>Demander une signature</h7>
+                        <span class="h7">Demander une signature</span>
                     </a>
 
                     <a id="start-wizard-custom-button" th:if="${!isUserOnSu}"
@@ -41,7 +41,7 @@
                                 <i class="fa-solid fa-cog fa-stack-1x ms-3 mt-3 text-black-50"></i>
                             </span>
                         </div>
-                        <h7>Créer une demande personnalisée</h7>
+                        <span class="h7">Créer une demande personnalisée</span>
                     </a>
                     <hr class="newHr d-none">
                     <h5 class="newToggled d-none">Circuits</h5>
@@ -51,7 +51,7 @@
                         <div class="crop">
                             <i class="fa-solid fa-magic fa-3x "></i>
                         </div>
-                        <h7>Assistant de création de circuit</h7>
+                        <span class="h7">Assistant de création de circuit</span>
                     </a>
                     <div class="d-inline-flex" id="newWorkflow">
                         <th:block th:each="workflow : ${workflows}">
@@ -66,7 +66,7 @@
                                     <div class="crop">
                                         <i class="fa-solid fa-project-diagram fa-3x project-diagram-color"></i>
                                     </div>
-                                    <h7 th:text="'Circuit : ' + ${workflow.description}"></h7>
+                                    <span class="h7" th:text="'Circuit : ' + ${workflow.description}"></span>
                                 </a><br/>
                                 <button style="margin-left: 90px; margin-top: -68px;" class="btn btn-transparent btn-sm text-dark toggle-mini-menu rounded-0"
                                         th:if="${workflow.createBy.eppn == userEppn}" type="button" th:id="'menu-toggle_' + ${workflow.id}"
@@ -93,7 +93,7 @@
                             style="width: 120px; height: 170px;">
                             <div class="crop">
                             </div>
-                            <h7>Aucun circuit</h7>
+                            <span class="h7">Aucun circuit</span>
                         </a>
                     </th:block>
                     <hr class="newHr d-none">
@@ -109,7 +109,7 @@
                                     <i class="fa-solid fa-file-alt fa-3x file-alt-color"></i>
 <!--                                    <img th:src="'/user/datas/forms/' + ${form.id} + '/get-image/'" height="150px"/>-->
                                 </div>
-                                <h7 th:text="${form.title}"></h7>
+                                <span class="h7" th:text="${form.title}"></span>
                             </a>
                         </th:block>
                     </div>
@@ -118,7 +118,7 @@
                             style="width: 120px; height: 170px;">
                             <div class="crop">
                             </div>
-                            <h7>Aucun formulaire</h7>
+                            <span class="h7">Aucun formulaire</span>
                         </a>
                     </th:block>
                 </div>

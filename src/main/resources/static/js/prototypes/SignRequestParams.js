@@ -104,21 +104,21 @@ export class SignRequestParams extends EventFactory {
                 e.stopPropagation();
             });
         }
-        $("#signDrop_" + this.id).on("click", e => this.deleteSign());
-        $("#signNextImage_" + this.id).on("click", e => this.changeSignImage(parseInt(this.signImageNumber) + 1));
-        $("#signPrevImage_" + this.id).on("click", e => this.prevSignImage());
-        $("#displayMoreTools_" + this.id).on("click", e => this.displayMoreTools());
-        $("#hideMoreTools_" + this.id).on("click", e => this.hideMoreTools());
-        $("#watermark_" + this.id).on("click", e => this.toggleWatermark());
-        $("#allPages_" + this.id).on("click", e => this.toggleAllPages());
-        $("#signImage_" + this.id).on("click", e => this.toggleImage());
-        $("#signExtra_" + this.id).on("click", e => this.toggleExtra());
-        $("#signExtraOnTop_" + this.id).on("click", e => this.toggleExtraOnTop());
+        $("#signDrop_" + this.id).on("mousedown", e => this.deleteSign());
+        $("#signNextImage_" + this.id).on("mousedown", e => this.changeSignImage(parseInt(this.signImageNumber) + 1));
+        $("#signPrevImage_" + this.id).on("mousedown", e => this.prevSignImage());
+        $("#displayMoreTools_" + this.id).on("mousedown", e => this.displayMoreTools());
+        $("#hideMoreTools_" + this.id).on("mousedown", e => this.hideMoreTools());
+        $("#watermark_" + this.id).on("mousedown", e => this.toggleWatermark(e));
+        $("#allPages_" + this.id).on("mousedown", e => this.toggleAllPages());
+        $("#signImage_" + this.id).on("mousedown", e => this.toggleImage());
+        $("#signExtra_" + this.id).on("mousedown", e => this.toggleExtra());
+        $("#signExtraOnTop_" + this.id).on("mousedown", e => this.toggleExtraOnTop());
 
-        $("#extraType_" + this.id).on("click", e => this.toggleType());
-        $("#extraName_" + this.id).on("click", e => this.toggleName());
-        $("#extraDate_" + this.id).on("click", e => this.toggleDate());
-        $("#extraText_" + this.id).on("click", e => this.toggleText());
+        $("#extraType_" + this.id).on("mousedown", e => this.toggleType());
+        $("#extraName_" + this.id).on("mousedown", e => this.toggleName());
+        $("#extraDate_" + this.id).on("mousedown", e => this.toggleDate());
+        $("#extraText_" + this.id).on("mousedown", e => this.toggleText());
     }
 
     initSpot() {
@@ -705,7 +705,10 @@ export class SignRequestParams extends EventFactory {
         }
     }
 
-    toggleWatermark() {
+    toggleWatermark(e) {
+        if(e != null) {
+            e.stopPropagation();
+        }
         if(this.addWatermark) {
             $("#watermark_" + this.id).removeClass("btn-outline-light");
             this.cross.removeClass("watermark-width");

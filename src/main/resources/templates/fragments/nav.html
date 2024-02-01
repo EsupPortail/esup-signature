@@ -28,7 +28,7 @@
                     <a th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
                             href="/user" class="btn btn-transparent text-left me-1">
                         <i class="fa-solid fa-home"></i> <span class="nav-item-label d-none d-xxl-inline">Accueil</span>
-                        <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-md-inline" th:text="${nbToSign}">
+                        <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-lg-inline" th:text="${nbToSign}">
                         </span>
                     </a>
                 </li>
@@ -36,7 +36,7 @@
                     <a th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
                        th:href="'/otp/signrequests/' + ${signRequestId}" class="btn btn-transparent text-left me-1">
                         <i class="fa-solid fa-file-signature"></i> <span class="nav-item-label d-none d-xxl-inline">Retour à ma demande</span>
-                        <span title="Retour à ma demande" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-md-inline" th:text="${nbToSign}">
+                        <span title="Retour à ma demande" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-lg-inline" th:text="${nbToSign}">
                         </span>
                     </a>
                 </li>
@@ -46,7 +46,7 @@
                         href="/user/signbooks" class="btn btn-transparent text-left me-1">
                         <i class="fa-solid fa-paste"></i> <span
                             class="nav-item-label d-none d-xl-inline">Tableau de bord</span>
-                        <span title="Demandes en attente" th:if="${nbSignRequests > 0  && userEppn == authUserEppn}" class="badge bg-warning d-none d-md-inline" th:text="${nbSignRequests}">
+                        <span title="Demandes en attente" th:if="${nbSignRequests > 0  && userEppn == authUserEppn}" class="badge bg-warning d-none d-lg-inline" th:text="${nbSignRequests}">
                         </span>
                     </a>
                 </li>
@@ -123,7 +123,7 @@
                     <a href="/admin" class="btn text-white btn-transparent"
                         th:classappend="${adminMenu == 'active'} ? 'bg-secondary' : ''">
                         <i class="fa-solid fa-crown"></i><span class="nav-item-label d-none d-xxl-inline">Admin</span>
-                        <span title="Statut DSS" th:if="${dssStatus == null || dssStatus == true}" class="badge bg-danger d-none d-md-inline ms-1">
+                        <span title="Statut DSS" th:if="${dssStatus == null || dssStatus == true}" class="badge bg-danger d-none d-lg-inline ms-1">
                             !
                         </span>
                     </a>
