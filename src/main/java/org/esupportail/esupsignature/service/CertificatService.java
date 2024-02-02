@@ -138,7 +138,7 @@ public class CertificatService {
     }
 
     public SignatureTokenConnection getSealToken() {
-        if(globalProperties.getSealCertificatDriver() != null && (globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12))) {
+        if((globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
            return getPkcsToken();
         } else if(globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC)){
             return openSCSignatureToken;
@@ -151,7 +151,7 @@ public class CertificatService {
             if (globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) {
                 KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
                 return new Pkcs11SignatureToken(globalProperties.getSealCertificatDriver(), passwordProtection);
-            } else if (globalProperties.getSealCertificatFile() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) {
+            } else if (globalProperties.getSealCertificatFile() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
                 try {
                     return userKeystoreService.getPkcs12Token(new FileInputStream(globalProperties.getSealCertificatFile()), globalProperties.getSealCertificatPin());
                 } catch (FileNotFoundException e) {
@@ -174,7 +174,7 @@ public class CertificatService {
     public List<DSSPrivateKeyEntry> getSealCertificats() {
         List<DSSPrivateKeyEntry> dssPrivateKeyEntries = new ArrayList<>();
         try {
-            if (globalProperties.getSealCertificatDriver() != null && (globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12))) {
+            if ((globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
                 dssPrivateKeyEntries = getPkcsToken().getKeys();
             } else if (globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC)) {
                 dssPrivateKeyEntries = openSCSignatureToken.getKeys();
