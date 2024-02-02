@@ -1,0 +1,122 @@
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes blink { 50% { border-color:#fff !important; }  }
+
+.flash {
+    animation: flash 1s linear infinite;
+}
+
+@keyframes flash {
+    50% {
+        opacity: 0;
+    }
+}
+
+@keyframes border-dance {
+    0% {
+        background-position: left top, right bottom, left bottom, right   top;
+    }
+    100% {
+        background-position: left 15px top, right 15px bottom , left bottom 15px , right   top 15px;
+    }
+}
+
+@-webkit-keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 100px; opacity: 1;}
+}
+
+@keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 100px; opacity: 1;}
+}
+
+@-webkit-keyframes fadeout {
+    from {bottom: 100px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
+
+@keyframes fadeout {
+    from {bottom: 100px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
+
+@-webkit-keyframes pulse-success {
+    0% {
+        -webkit-box-shadow: 0px 0px 1px 10px rgba(25, 135, 84, .5);
+        color: rgba(255, 255, 255, 1);
+    }
+    70% {
+        -webkit-box-shadow: 0px 0px 1px 10px rgba(25, 135, 84, 0);
+    }
+    100% {
+        -webkit-box-shadow: 0px 0px 1px 10px rgba(25, 135, 84, .5);
+        color: rgba(255, 255, 255, 1);
+    }
+}
+
+.wiz-transition {
+    transition: height 1s;
+}
+
+.loader {
+    border: 5px solid #f3f3f3;
+    -webkit-animation: spin 1s linear infinite;
+    animation: spin 1s linear infinite;
+    border-top: 5px solid #555;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+}
+
+.anim-border {
+    z-index: 4;
+    position: absolute;
+    top :0;
+    left :0;
+    /*background-color: rgba(173, 255, 47, 0.5);*/
+    background-image: linear-gradient(90deg, green 50%, transparent 50%), linear-gradient(90deg, green 50%, transparent 50%), linear-gradient(0deg, green 50%, transparent 50%), linear-gradient(0deg, green 50%, transparent 50%);
+    background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+    background-size: 15px 2px, 15px 2px, 2px 15px, 2px 15px;
+    background-position: left top, right bottom, left bottom, right   top;
+    animation: border-dance 1s infinite linear;
+}
+
+#snackbar.show {
+    visibility: visible;
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+.waves-effect {
+    display: inline-block;
+    overflow: hidden;
+    transition: all ease-in-out .5s;
+}
+
+.waves-effect::after {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 50%;
+    width: 50%;
+    background-color: #000;
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    transition: all ease-in-out 0.5s;
+    transform: scale(5, 5);
+}
+
+.waves-effect:active::after {
+    padding: 0;
+    margin: 0;
+    opacity: .2;
+    transition: 0s;
+    transform: scale(0, 0);
+}

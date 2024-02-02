@@ -722,7 +722,7 @@ export class PdfViewer extends EventFactory {
     }
 
     zoomIn() {
-        if (this.scale >= 2) {
+        if (this.scale >= 1.9) {
             return;
         }
         this.scale = Math.round((this.scale + this.zoomStep) * 10) / 10;
@@ -731,7 +731,7 @@ export class PdfViewer extends EventFactory {
     }
 
     zoomOut() {
-        if (this.scale <= 0.50) {
+        if (this.scale <= 0.4) {
             return;
         }
         this.scale = this.scale - this.zoomStep;

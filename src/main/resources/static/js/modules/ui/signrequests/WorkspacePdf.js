@@ -248,25 +248,18 @@ export class WorkspacePdf {
         }
         this.refreshAfterPageChange();
         this.initForm();
-        this.pdfViewer.pdfDiv.on('click', e => this.clickAction(e));
-
+        this.pdfViewer.pdfDiv.on('mousedown', e => this.clickAction(e));
     }
 
     initForm() {
         console.info("init form");
         if(!this.formInitialized) {
             this.formInitialized = true;
-            // let inputs = $("#signForm .annotationLayer :input");
-            // $.each(inputs, (index, e) => this.listenForChange(e));
             if (this.mode === 'read' || this.mode === 'comment') {
                 this.disableForm();
             }
         }
     }
-
-    // listenForChange(input) {
-    //     $(input).change(e => this.saveData());
-    // }
 
     saveData(disableAlert) {
         let self = this;
