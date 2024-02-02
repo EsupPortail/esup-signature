@@ -35,25 +35,25 @@
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksToSign}">
                                     <tr th:if="${signBook.signRequests.size() > 0}" th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}">
-                                        <td class="text-break d-none d-md-table-cell">
+                                        <td class="text-break d-none d-md-table-cell" style="width: 25px;">
                                             <a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fa-solid fa-plus"></i></a>
                                         </td>
-                                        <td class="text-break w-5 d-none d-md-table-cell">
+                                        <td class="text-break w-5 d-none d-md-table-cell" style="width: 25px;">
                                             <i th:if="${signBook.signRequests.size() > 1}" class="fa-solid fa-folder-open p-2"></i>
                                             <i th:unless="${signBook.signRequests.size() > 1}" class="fa-solid fa-file-alt p-2"></i>
                                         </td>
-                                        <td class="text-break d-none d-xxl-table-cell" th:text="${signBook.workflowName}">
+                                        <td class="text-break d-none d-xxl-table-cell" style="width: 200px;" th:text="${signBook.workflowName}">
                                         </td>
-                                        <td class="text-break w-30">
+                                        <td class="text-break w-30" style="width: 400px;">
                                             <span th:if="${signBook.signRequests.size() > 1}">
                                                 <span th:text="${signBook.signRequests.get(0).getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
                                                 <i class="fa-solid fa-caret-down"></i>
                                             </span>
                                             <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>
                                         </td>
-                                        <td class="text-break w-20 d-none d-md-table-cell" th:text="'Créé par : ' + ${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}">
+                                        <td class="text-break w-20 d-none d-md-table-cell" style="width: 300px;" th:text="'Créé par : ' + ${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}">
                                         </td>
-                                        <td class="text-break w-20"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                        <td class="text-break w-20" style="width: 250px;"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                         </td>
                                     </tr>
                                     <tr th:title="${signBook.description}" th:if="${signBook.signRequests.size() > 1}">
@@ -96,28 +96,28 @@
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksPending}">
                                     <tr th:title="${signBook.description}" th:data-href="'/user/signbooks/' + ${signBook.id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}">
-                                        <td class="text-break w-5 d-none d-md-table-cell"><a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fa-solid fa-plus"></i></a></td>
-                                        <td class="text-break w-5 d-none d-md-table-cell">
+                                        <td class="text-break w-5 d-none d-md-table-cell" style="width: 25px;"><a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fa-solid fa-plus"></i></a></td>
+                                        <td class="text-break w-5 d-none d-md-table-cell" style="width: 25px;">
                                             <i th:if="${signBook.signRequests.size() > 1}" class="fa-solid fa-folder-open p-2"></i>
                                             <i th:unless="${signBook.signRequests.size() > 1}" class="fa-solid fa-file-alt p-2"></i>
                                         </td>
-                                        <td class="text-break d-none d-xxl-table-cell" th:text="${signBook.workflowName}">
+                                        <td class="text-break d-none d-xxl-table-cell" style="width: 200px;" th:text="${signBook.workflowName}">
                                         </td>
-                                        <td class="text-break w-30">
+                                        <td class="text-break w-30" style="width: 400px;">
                                             <span th:if="${signBook.signRequests.size() > 1}">
                                                 <span th:text="${signBook.signRequests.get(0).getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
                                                 <i class="fa-solid fa-caret-down"></i>
                                             </span>
                                             <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>
                                         </td>
-                                        <td class="text-break w-20 d-none d-md-table-cell">
+                                        <td class="text-break w-20 d-none d-md-table-cell" style="width: 300px;">
                                             <th:block th:each="recipient : ${signBook.liveWorkflow.currentStep.recipients}">
                                                 <li th:title="${recipient.user.email}" style="display: inline-flex;">
                                                     <span class="me-1" th:text="'En attente chez : ' + ${recipient.user.firstname + ' ' + recipient.user.name}"></span>
                                                 </li>
                                             </th:block>
                                         </td>
-                                        <td class="text-break w-20"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                        <td class="text-break w-20" style="width: 250px;"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                         </td>
                                     </tr>
                                     <tr th:title="${signBook.description}" th:if="${signBook.signRequests.size() > 1}">

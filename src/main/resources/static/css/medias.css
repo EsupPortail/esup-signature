@@ -1,0 +1,170 @@
+@media (max-height: 600px) {
+    #listSignRequestTable {
+        height: 100%;
+    }
+}
+
+@media (min-width: 1600px) {
+    .d-xxxl-table-cell {
+        display: table-cell !important;
+    }
+}
+
+@media (max-width: 1200px) {
+    .new-max-w {
+        width: 100%;
+    }
+
+    .content {
+        margin-top: 100px;
+        width: 100vw;
+        margin-left: 0;
+    }
+
+    #sidebar {
+        z-index: 10002;
+        display: none;
+    }
+
+    #sidebar2 {
+        display: none;
+    }
+
+    #sidebar {
+        top : 56px;
+        position: relative;
+        max-width: initial;
+        min-height: 0px;
+    }
+
+    #sidebar.active {
+        top : 0px;
+        position: relative;
+        max-width: initial;
+        min-width: initial;
+    }
+
+    #sidebarCollapse {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+
+    #returnButton {
+        display: none;
+    }
+
+    #logo {
+        margin-left: 5px;
+    }
+
+    .new-width-full {
+        width: calc(100vw);
+    }
+
+    #breadcrumb {
+        width: 100vw;
+        margin: 0;
+    }
+
+    .workspace-sign {
+        display: flex;
+    }
+
+    .fixed-action-btns {
+        bottom: 25px;
+        right: -5px;
+    }
+
+    .sign-menu {
+        max-width: initial;
+        position: relative !important;
+    }
+
+    .sign-preview {
+        overflow: auto;
+        margin-left: initial;
+    }
+
+}
+
+@media (max-width: 576px) {
+
+    .fixed-action-btns {
+        height: 100px;
+        width: 100%;
+        overflow: revert;
+    }
+
+    .fixed-action-btns ul {
+        -webkit-box-orient: revert;
+        -webkit-box-direction: revert;
+        -ms-flex-direction: revert;
+        flex-direction: revert;
+    }
+
+    .sidebar-label {
+        display: inline !important;
+    }
+
+    .nav-item-label {
+        display: inline !important;
+    }
+
+    .navbar-collapse {
+        position: absolute;
+        width: 100%;
+        top: 50px;
+        background-color: #343a40 !important;
+    }
+
+    #breadcrumb {
+        display: none;
+    }
+
+    .tools {
+        top: 50px;
+    }
+
+    .workspace-pdf {
+        width: min-content;
+        margin-top: 88px;
+        padding: 3px;
+    }
+
+    .workspace {
+        width: min-content;
+        margin-top: 0;
+        padding: 3px;
+    }
+
+    .content {
+        overflow: auto;
+        margin-top: 55px;
+    }
+
+    #returnButton {
+        display: none;
+    }
+
+    #logo {
+        margin-left: 10px;
+    }
+
+}
+
+@media (max-width: 319px) {
+    body {
+        visibility: hidden;
+    }
+
+    body::after {
+        position: absolute;
+        top: 0;
+        left: 0;
+        visibility: visible;
+        content: 'Résolution trop faible !!!';
+    }
+}
+
