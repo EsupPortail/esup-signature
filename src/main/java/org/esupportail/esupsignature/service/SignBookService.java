@@ -878,7 +878,7 @@ public class SignBookService {
         SignBook signBook = createSignBook(title, null, "Demande générée", createByEppn, true);
         addDocumentsToSignBook(signBook.getId(), multipartFiles, createByEppn);
         signBook.setForceAllDocsSign(forceAllSign);
-        addViewers(signBook.getId(), steps.stream().map(WorkflowStepDto::getRecipientsCCEmails).flatMap(List::stream).toList());
+        addViewers(signBook.getId(), steps.stream().map(WorkflowStepDto::getRecipientsCCEmails).filter(Objects::nonNull).flatMap(List::stream).toList());
         if(targetUrl != null && !targetUrl.isEmpty()) {
             signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
         }
