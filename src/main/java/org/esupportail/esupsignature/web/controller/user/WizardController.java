@@ -13,7 +13,6 @@ import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.service.mail.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -24,8 +23,11 @@ import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.util.List;
+import java.util.Locale;
 
 @RequestMapping("/user/wizard")
 @Controller
@@ -46,7 +48,7 @@ public class WizardController {
     private SignRequestService signRequestService;
 
     @Resource
-    private MailService mailService;
+    private TemplateEngine templateEngine;
 
     @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
     @GetMapping(value = "/wiz-start-sign/{type}", produces = "text/html")
@@ -151,32 +153,40 @@ public class WizardController {
 
     @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
     @PostMapping(value = "/wiz-add-step-signbook/{signBookId}", produces = "text/html")
-    public String wizWorkflowSignAddStep(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+    @ResponseBody
+    public ResponseEntity<String> wizWorkflowSignAddStep(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                        @PathVariable("signBookId") Long signBookId,
                        @RequestParam(name="end", required = false, defaultValue = "false") Boolean end,
                        @RequestParam(name="close", required = false) Boolean close,
                        @RequestParam(name="start", required = false) Boolean start,
                        @RequestBody List<WorkflowStepDto> steps,
                        Model model) throws EsupSignatureRuntimeException {
+        final Context context = new Context(Locale.FRENCH);
         SignBook signBook = signBookService.getById(signBookId);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             if(!end && !steps.isEmpty()) {
                 if(steps.get(0).getUserSignFirst() != null && steps.get(0).getUserSignFirst()) {
                     signBookService.addUserSignFirstStep(signBookId, userEppn);
                 }
-                signBookService.addNewStepToSignBook(signBookId, steps, authUserEppn);
+                try {
+                    signBookService.addNewStepToSignBook(signBookId, steps, authUserEppn);
+                } catch (EsupSignatureRuntimeException e) {
+                    logger.debug(e.getMessage());
+                    return ResponseEntity.internalServerError().build();
+                }
             }
             model.addAttribute("signBook", signBook);
             model.addAttribute("close", close);
+            model.asMap().forEach(context::setVariable);
             if(end) {
                 if(signBookService.startLiveWorkflow(signBook, userEppn, authUserEppn, start)) {
-                    return "user/wizard/wiz-save";
+                    return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-save", context));
                 } else {
-                    return "user/wizard/wiz-end";
+                    return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-end", context));
                 }
             }
         }
-        return "user/wizard/wiz-new-step";
+        return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-new-step", context));
     }
 
     @PostMapping(value = "/wiz-save-signbook/{id}")
