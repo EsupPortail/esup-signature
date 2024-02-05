@@ -12,10 +12,8 @@ import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
 import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
 import eu.europa.esig.dss.service.http.commons.OCSPDataLoader;
-import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
 import eu.europa.esig.dss.service.http.proxy.ProxyConfig;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
-import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.service.x509.aia.JdbcCacheAIASource;
 import eu.europa.esig.dss.spi.client.http.DSSFileLoader;
 import eu.europa.esig.dss.spi.client.http.IgnoreDataLoader;
@@ -95,16 +93,15 @@ public class DSSBeanConfig {
 
 
 	@Bean
-	public TSPSource tspSource() {
-		OnlineTSPSource tspSource = new OnlineTSPSource(dssProperties.getTspServer());
-		TimestampDataLoader timestampDataLoader = new TimestampDataLoader();
-		timestampDataLoader.setTimeoutConnection(10000);
-		timestampDataLoader.setTrustStrategy(TrustAllStrategy.INSTANCE);
-		if(proxyConfig != null) {
-			timestampDataLoader.setProxyConfig(proxyConfig);
-		}
-		tspSource.setDataLoader(timestampDataLoader);
-		return tspSource;
+	public TSPSourceManager tspSourceManager(ProxyConfig proxyConfig) {
+		TSPSourceManager manager = (proxyConfig != null) ? new TSPSourceManager(proxyConfig) : new TSPSourceManager();
+		manager.initializeTSPSources(dssProperties.getTspServers());
+		return manager;
+	}
+
+	@Bean
+	public TSPSource tspSource(TSPSourceManager tspSourceManager) {
+		return tspSourceManager.getCompositeTSPSource();
 	}
 
 	@Bean
