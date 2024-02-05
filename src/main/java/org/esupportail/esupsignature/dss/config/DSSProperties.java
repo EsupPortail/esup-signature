@@ -2,6 +2,8 @@ package org.esupportail.esupsignature.dss.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.List;
+
 @ConfigurationProperties(prefix="dss")
 public class DSSProperties {
 
@@ -10,7 +12,7 @@ public class DSSProperties {
     private String cacheDataSourceUrl;
     private String cacheDataSourceDriverClassName;
     private String defaultValidationPolicy;
-    private String tspServer;
+    private List<String> tspServers = List.of("http://timestamp.sectigo.com/qualified", "http://tsa.belgium.be");
     private String serverSigningKeystoreType;
     private String serverSigningKeystoreFilename;
     private String serverSigningKeystorePassword;
@@ -63,12 +65,12 @@ public class DSSProperties {
         this.defaultValidationPolicy = defaultValidationPolicy;
     }
 
-    public String getTspServer() {
-        return tspServer;
+    public List<String> getTspServers() {
+        return tspServers;
     }
 
-    public void setTspServer(String tspServer) {
-        this.tspServer = tspServer;
+    public void setTspServers(List<String> tspServers) {
+        this.tspServers = tspServers;
     }
 
     public String getServerSigningKeystoreType() {

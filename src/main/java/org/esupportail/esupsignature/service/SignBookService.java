@@ -517,7 +517,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public void addNewStepToSignBook(Long signBookId, List<WorkflowStepDto> steps, String authUserEppn) {
+    public void addNewStepToSignBook(Long signBookId, List<WorkflowStepDto> steps, String authUserEppn) throws EsupSignatureRuntimeException {
         SignBook signBook = signBookRepository.findById(signBookId).get();
         logger.info("add new workflow step to signBook " + signBook.getSubject() + " - " + signBook.getId());
         LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, null, steps.get(0));
