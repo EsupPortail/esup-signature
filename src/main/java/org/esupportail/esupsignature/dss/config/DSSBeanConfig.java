@@ -24,6 +24,7 @@ import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.spi.x509.aia.AIASource;
 import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
+import eu.europa.esig.dss.spi.x509.tsp.CompositeTSPSource;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.tsl.alerts.LOTLAlert;
 import eu.europa.esig.dss.tsl.alerts.TLAlert;
@@ -60,6 +61,8 @@ import javax.sql.DataSource;
 import javax.xml.XMLConstants;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 @EnableConfigurationProperties(DSSProperties.class)
@@ -93,18 +96,28 @@ public class DSSBeanConfig {
 		xmlDefinerUtils.setValidatorConfigurator(validatorConfigurator);
 	}
 
-
 	@Bean
-	public TSPSource tspSource() {
-		OnlineTSPSource tspSource = new OnlineTSPSource(dssProperties.getTspServer());
+	public TimestampDataLoader timestampDataLoader() {
 		TimestampDataLoader timestampDataLoader = new TimestampDataLoader();
 		timestampDataLoader.setTimeoutConnection(10000);
 		timestampDataLoader.setTrustStrategy(TrustAllStrategy.INSTANCE);
 		if(proxyConfig != null) {
 			timestampDataLoader.setProxyConfig(proxyConfig);
 		}
-		tspSource.setDataLoader(timestampDataLoader);
-		return tspSource;
+		return timestampDataLoader;
+	}
+
+	@Bean
+	public TSPSource tspSource(TimestampDataLoader timestampDataLoader) {
+		CompositeTSPSource compositeTSPSource = new CompositeTSPSource();
+		Map<String, TSPSource> tspSourceMap = new HashMap<>();
+		for(String tspServer : dssProperties.getTspServers()) {
+			OnlineTSPSource tspSource = new OnlineTSPSource(tspServer);
+			tspSource.setDataLoader(timestampDataLoader);
+			tspSourceMap.put(tspServer, tspSource);
+		}
+		compositeTSPSource.setTspSources(tspSourceMap);
+		return compositeTSPSource;
 	}
 
 	@Bean
