@@ -29,6 +29,7 @@
                         <table class="table table-sm table-striped table-hover table-borderless">
                             <thead class="table-secondary">
                             <tr>
+                                <th>Id</th>
                                 <th class="w-50">Titre</th>
                                 <th>Nom</th>
                                 <th>Circuit associé</th>
@@ -40,6 +41,7 @@
                             </thead>
                             <tbody>
                             <tr th:each="form : ${forms}" th:data-href="'/admin/forms/update/' + ${form.id}">
+                                <td><input type="text" th:value="${form.id}" disabled></td>
                                 <td class="clickable-td" th:text="${form.title}"></td>
                                 <td class="clickable-td" th:text="${form.name}"></td>
                                 <td>
