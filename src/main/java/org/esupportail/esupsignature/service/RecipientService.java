@@ -121,6 +121,7 @@ public class RecipientService {
         for(RecipientWsDto recipient : recipientWsDtos) {
             if(workflowStepDtos.size() < recipient.getStep()) {
                 WorkflowStepDto workflowStepDto = new WorkflowStepDto();
+                workflowStepDto.setStepNumber(recipient.getStep());
                 addRecipientInStep(workflowStepDto, recipient);
                 workflowStepDtos.add(workflowStepDto);
             } else {
