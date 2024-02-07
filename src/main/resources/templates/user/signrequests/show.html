@@ -43,6 +43,7 @@
                 <li class="breadcrumb-item active" aria-current="page">Demande : <span
                         th:text="${signRequest.parentSignBook.subject}"></span>&nbsp;du&nbsp;<span
                         th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                    <span id="not-viewed" th:unless="${signRequest.viewedBy.contains(user)}">(non lu)</span>
                 </li>
             </ol>
         </nav>

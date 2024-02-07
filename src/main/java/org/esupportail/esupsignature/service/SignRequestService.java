@@ -1116,4 +1116,11 @@ public class SignRequestService {
 	public List<SignRequest> getByIdAndRecipient(Long id, String userEppn) {
 		return signRequestRepository.findByIdAndRecipient(id, userEppn);
 	}
+
+	@Transactional
+	public void viewedBy(Long signRequestId, String userEppn) {
+		User user = userService.getByEppn(userEppn);
+		SignRequest signRequest = getById(signRequestId);
+		signRequest.getViewedBy().add(user);
+	}
 }

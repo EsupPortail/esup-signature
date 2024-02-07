@@ -86,6 +86,14 @@ public class GlobalWsSecureController {
         }
     }
 
+    @PreAuthorize("@preAuthorizeService.signRequestSign(#signRequestId, #userEppn, #authUserEppn)")
+    @ResponseBody
+    @PostMapping(value = "/viewed/{signRequestId}")
+    public ResponseEntity<Void> sign(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signRequestId") Long signRequestId) {
+        signRequestService.viewedBy(signRequestId, userEppn);
+        return ResponseEntity.ok().build();
+    }
+
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/get-last-file/{id}")
     public ResponseEntity<Void> getLastFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
