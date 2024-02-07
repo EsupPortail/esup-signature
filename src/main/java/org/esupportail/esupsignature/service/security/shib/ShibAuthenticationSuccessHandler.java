@@ -31,7 +31,9 @@ public class ShibAuthenticationSuccessHandler extends SavedRequestAwareAuthentic
 	public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) {
 		String eppn = authentication.getName();
         String email = httpServletRequest.getHeader("mail");
-        String name = httpServletRequest.getHeader("sn");
+		if(email == null) {
+			throw new EsupSignatureRuntimeException("user must have an email");
+		}        String name = httpServletRequest.getHeader("sn");
 		String firstname = httpServletRequest.getHeader("givenName");
 		logger.info("shib auth with - eppn : " + eppn + ", mail : " + email + ", name : " + name + ", givenName : " + firstname);
 		if(StringUtils.hasText(eppn) && StringUtils.hasText(email) && StringUtils.hasText(name) && StringUtils.hasText(firstname)) {
