@@ -1,4 +1,5 @@
 import {CsrfToken} from "../../../prototypes/CsrfToken.js?version=@version@";
+import {Nexu} from "../signrequests/Nexu.js?version=@version@";
 
 export class ListSignBooksUi {
 
@@ -32,14 +33,20 @@ export class ListSignBooksUi {
         this.signRequestTable = $("#signRequestTable");
         this.page = 0;
         this.initListeners();
-        this.massSignButtonHide = true;
+        this.launchMassSignButtonHide = true;
         this.rowHeight = null;
+        this.certTypeSelect = $("#certType");
+        $("#password").hide();
+        new Nexu(null, null, null, null);
+
     }
 
     initListeners() {
+        $("#refresh-certType").on('click', e => this.checkSignOptions());
+        $("#certType").on("change", e => this.checkAfterChangeSignType());
         $('#toggle-new-grid').on('click', e => this.toggleNewMenu());
-        $('#massSignButton').on('click', e => this.launchMassSign(false));
-        $('#checkCertSignButton').on("click", e => this.checkCertSign());
+        $('#launchMassSignButton').on('click', e => this.launchMassSign());
+        //$('#massSignModalButton').on("click", e => this.checkCertSign());
         $('#workflowFilter').on('change', e => this.buildUrlFilter());
         $('#recipientsFilter').on('change', e => this.buildUrlFilter());
         $('#docTitleFilter').on('change', e => this.buildUrlFilter());
@@ -60,6 +67,29 @@ export class ListSignBooksUi {
         document.addEventListener("sign", e => this.updateErrorWaitModal(e));
         $("#more-sign-request").on("click", e => this.addToPage());
         $('#new-scroll').on('wheel', e => this.activeHorizontalScrolling(e));
+    }
+
+    checkSignOptions() {
+        console.info("check sign options");
+        new Nexu(null, null, null, null);
+    }
+
+    checkAfterChangeSignType() {
+        let value = this.certTypeSelect.val();
+        $("#alert-sign-present").hide();
+        if(value === "userCert") {
+            $("#password").show();
+        } else {
+            $("#password").hide();
+        }
+        if(value === "nexuCert") {
+            $("#nexuCheck").removeClass('d-none');
+        } else {
+            $("#nexuCheck").addClass('d-none');
+        }
+        if(value === "imageStamp") {
+            $("#alert-sign-present").show();
+        }
     }
 
     refreshListeners() {
@@ -118,12 +148,12 @@ export class ListSignBooksUi {
             $('#menuDownloadMultipleButtonWithReport').addClass('d-none');
         }
 
-        if (idDom.length > 1 && this.massSignButtonHide) {
-            $('#checkCertSignButton').removeClass('d-none');
-            this.massSignButtonHide = false;
-        } else if (idDom.length < 2 && !this.massSignButtonHide) {
-            $('#checkCertSignButton').addClass('d-none');
-            this.massSignButtonHide = true;
+        if (idDom.length > 1 && this.launchMassSignButtonHide) {
+            $('#massSignModalButton').removeClass('d-none');
+            this.launchMassSignButtonHide = false;
+        } else if (idDom.length < 2 && !this.launchMassSignButtonHide) {
+            $('#massSignModalButton').addClass('d-none');
+            this.launchMassSignButtonHide = true;
         }
     }
 
@@ -255,15 +285,8 @@ export class ListSignBooksUi {
         document.location.href = "/" + this.mode + "/signbooks?" + currentParams.toString();
     }
 
-    launchMassSign(comeFromDispatcher) {
-        if (!comeFromDispatcher) {
-            let passwordInput = $('#password');
-            if(passwordInput.val() == null || passwordInput.val() === "") {
-                $("#passwordSubmit").click();
-                return;
-            }
-            $('#checkCertSignModal').modal('hide');
-        }
+    launchMassSign() {
+        $('#massSignModal').modal('hide');
         let signRequestIds = $('.sign-requests-ids:checked');
         let ids = [];
         for (let i = 0; i < signRequestIds.length ; i++) {
@@ -276,7 +299,7 @@ export class ListSignBooksUi {
             let self = this;
             bootbox.confirm("Vous êtes sur le point de signer " + ids.length + " documents sans consultation préalable.<br/>Cette action est irrevocable !<br/>Voulez-vous continuer ?", function (result) {
                 if (result) {
-                    self.massSign(ids, comeFromDispatcher);
+                    self.massSign(ids);
                 }
             });
         } else {
@@ -284,21 +307,16 @@ export class ListSignBooksUi {
         }
     }
 
-    massSign(ids, comeFromDispatcher) {
+    massSign(ids) {
         let waitModal = $("#wait");
         waitModal.modal('show');
         waitModal.modal({backdrop: 'static', keyboard: false});
         let signRequestUrlParams;
-        if (!comeFromDispatcher) {
-            signRequestUrlParams = {
-                "ids" : JSON.stringify(ids),
-                "password" : $('#password').val()
-            };
-        } else {
-            signRequestUrlParams = {
-                "ids" : JSON.stringify(ids)
-            };
-        }
+        signRequestUrlParams = {
+            "ids" : JSON.stringify(ids),
+            "signWith" : $("#certType").val(),
+            "password" : $("#password").val()
+        };
         this.reset();
         let self = this;
         $.ajax({
@@ -404,7 +422,7 @@ export class ListSignBooksUi {
             });
             $('#checkCertSignModal').modal('show');
         } else {
-            this.launchMassSign(true)
+            this.launchMassSign()
         }
     }
 

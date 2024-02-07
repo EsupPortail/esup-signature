@@ -197,7 +197,6 @@ export class SignUi {
         if (this.signable) {
             new Nexu(null, null, this.currentSignType, null);
         }
-
     }
 
     checkAttachement() {

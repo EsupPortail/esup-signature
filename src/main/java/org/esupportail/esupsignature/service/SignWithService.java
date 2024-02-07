@@ -53,6 +53,17 @@ public class SignWithService {
 
     @Transactional
     public List<SignWith> getAuthorizedSignWiths(String userEppn, SignRequest signRequest) {
+        List<SignWith> signWiths = getAuthorizedSignWiths(userEppn);
+        if(signRequest.getCurrentSignType() != null) {
+            signWiths.removeIf(signWith -> signWith.getValue() < signRequest.getCurrentSignType().getValue());
+        }
+        if(dataService.getBySignBook(signRequest.getParentSignBook()) != null && signRequestService.isMoreWorkflowStepAndNotAutoSign(signRequest.getParentSignBook())) {
+            signWiths.removeIf(signWith -> signWith.getValue() > 2);
+        }
+        return signWiths;
+    }
+
+    public List<SignWith> getAuthorizedSignWiths(String userEppn) {
         User user = userService.getByEppn(userEppn);
         List<SignWith> signWiths = new ArrayList<>(List.of(SignWith.values()));
         if(globalProperties.getDisableCertStorage() || user.getKeystore() == null) {
@@ -66,12 +77,6 @@ public class SignWithService {
         }
         if(globalProperties.getOpenXPKIServerUrl() == null) {
             signWiths.remove(SignWith.openPkiCert);
-        }
-        if(signRequest.getCurrentSignType() != null) {
-            signWiths.removeIf(signWith -> signWith.getValue() < signRequest.getCurrentSignType().getValue());
-        }
-        if(dataService.getBySignBook(signRequest.getParentSignBook()) != null && signRequestService.isMoreWorkflowStepAndNotAutoSign(signRequest.getParentSignBook())) {
-            signWiths.removeIf(signWith -> signWith.getValue() > 2);
         }
         List<SignWith> toRemoveSignWiths = new ArrayList<>();
         for (SignWith signWith : signWiths) {

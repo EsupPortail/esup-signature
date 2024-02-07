@@ -50,6 +50,9 @@ public class SignBookController {
     @Resource
     private RecipientService recipientService;
 
+    @Resource
+    private SignWithService signWithService;
+
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
         return "signbooks";
@@ -105,6 +108,7 @@ public class SignBookController {
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
+        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn));
         model.addAttribute("workflowFilter", workflowFilter);
         model.addAttribute("docTitleFilter", docTitleFilter);
         model.addAttribute("dateFilter", dateFilter);
@@ -376,9 +380,9 @@ public class SignBookController {
                                            @ModelAttribute("authUserEppn") String authUserEppn,
                                            @RequestParam String ids,
                                            @RequestParam(value = "password", required = false) String password,
-                                           @RequestParam(value = "certType", required = false) String certType,
+                                           @RequestParam(value = "signWith", required = false) String signWith,
                                            HttpSession httpSession) throws EsupSignatureRuntimeException, IOException {
-        String error = signBookService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, certType);
+        String error = signBookService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, signWith);
         if(error == null) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
