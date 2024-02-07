@@ -381,7 +381,7 @@ export class SignUi {
             data: signRequestUrlParams,
             success: function(data, textStatus, xhr) {
                 if(data === "initNexu") {
-                    document.location.href="/nexu-sign/" + self.signRequestId;
+                    document.location.href="/nexu-sign/start?ids=" + self.signRequestId;
                 } else {
                     if (self.gotoNext) {
                         document.location.href = $("#nextSignRequest").attr('href');

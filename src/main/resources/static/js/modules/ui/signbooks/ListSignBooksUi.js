@@ -348,7 +348,7 @@ export class ListSignBooksUi {
             },
             error: function(e) {
                 if(e.responseText === "initNexu") {
-                    alert(ids);
+                    document.location.href="/nexu-sign/start?ids=" + ids;
                 } else {
                     bootbox.alert("La signature s'est terminée, d'une façon inattendue. La page va s'actualiser", function () {
                         location.href = "/" + self.mode + "/reports";
