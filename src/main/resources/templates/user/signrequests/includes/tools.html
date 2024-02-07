@@ -117,7 +117,7 @@
 						class="btn btn-outline-primary ms-1">
 					<i class="fa-solid fa-comment"></i> Ajouter une annotation
 				</button>
-				<button th:if="${signRequest.createBy.eppn == user.eppn && signRequest.data == null}" id="addSpotButton"
+				<button th:if="${signRequest.createBy.eppn == user.eppn && signRequest.data == null && signatureIds.size() == 0 && isNotSigned}" id="addSpotButton"
 						class="btn btn-outline-primary ms-1">
 					<i class="fa-solid fa-map-marker-alt"></i> Ajouter un emplacement de signature
 				</button>
