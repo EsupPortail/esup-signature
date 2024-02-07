@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.service;
 
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.BigFile;
@@ -127,7 +126,7 @@ public class DocumentService {
 					}
 				}
 				logger.info("send to " + documentIOType.name() + " in " + targetUrl + name);
-				if (fsAccessService.putFile(StringUtils.stripAccents(targetUrl), name, inputStream, UploadActionType.OVERRIDE)) {
+				if (fsAccessService.putFile(targetUrl, name, inputStream, UploadActionType.OVERRIDE)) {
 					documentUri = targetUrl + name;
 					return documentUri;
 				} else {
