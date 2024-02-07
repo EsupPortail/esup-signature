@@ -105,9 +105,9 @@
                             <th:block th:each="signBook : ${listManagedSignBooks}">
                                 <tr th:data-href="'/user/signbooks/' + ${signBook.id}">
 <!--                                    <td class="w-20 d-none d-lg-table-cell">-->
-<!--                                        <input type="checkbox" class="form-check-input" class="sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"-->
-<!--                                               th:data-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"-->
-<!--                                               th:data-id-signbook="${signBook.id}">-->
+<!--                                        <input type="checkbox" class="form-check-input" class="sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-es-signrequest-status="${signRequest.status}"-->
+<!--                                               th:data-es-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"-->
+<!--                                               th:data-es-signbook-id="${signBook.id}">-->
 <!--                                    </td>-->
                                     <td class="clickable-td text-break"><span th:text="${signBook.subject}"></span></td>
                                     <td class="clickable-td d-none d-lg-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>

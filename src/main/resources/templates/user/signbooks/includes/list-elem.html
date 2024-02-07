@@ -2,9 +2,10 @@
 <th:block th:each="signBook : ${signBooks}">
     <tr th:if="${statusFilter != 'empty' && signBook.signRequests.size() > 0}" th:with="signRequest = ${signBook.signRequests.get(0)}" th:data-href="'/user/signbooks/' + ${signBook.id}" data-bs-toggle="tooltip" th:title="${signBook.subject}">
         <td class="w-20 d-none d-lg-table-cell">
-            <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"
-                th:data-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"
-                th:data-id-signbook="${signBook.id}">
+            <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]" th:value="${signRequest.id}"
+                th:data-es-signrequest-status="${signRequest.status}"
+                th:data-es-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"
+                th:data-es-signbook-id="${signBook.id}" th:data-es-viewed="${signRequest.viewedBy.contains(user)} ? 'true' : 'false'">
         </td>
         <td class="w-20 d-none d-lg-table-cell">
             <button title="Afficher les postits" th:if="${signBook.postits.size() > 0}" th:text="${signBook.postits.size()}" type="button" class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">

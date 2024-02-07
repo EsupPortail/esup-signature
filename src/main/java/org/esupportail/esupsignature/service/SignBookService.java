@@ -1128,6 +1128,9 @@ public class SignBookService {
 
     @Transactional
     public String initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String password, String signWith) throws IOException, EsupSignatureRuntimeException {
+        if (SignWith.valueOf(signWith).equals(SignWith.nexuCert)) {
+            return "initNexu";
+        }
         String error = null;
         TypeReference<List<String>> type = new TypeReference<>(){};
         List<String> idsString = objectMapper.readValue(ids, type);
@@ -1143,8 +1146,6 @@ public class SignBookService {
             SignRequest signRequest = signRequestService.getById(id);
             if (!signRequest.getStatus().equals(SignRequestStatus.pending)) {
                 reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.badStatus);
-            } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.nexuSign)) {
-                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signTypeNotCompliant);
             } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().noneMatch(r -> r.getUser().getEppn().equals(authUserEppn))) {
                 reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.userNotInCurrentStep);
                 error = messageSource.getMessage("report.reportstatus." + ReportStatus.userNotInCurrentStep, null, Locale.FRENCH);
