@@ -13,7 +13,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.SedaExportService;
-import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,9 +47,6 @@ public class GlobalWsSecureController {
 
     @Resource
     private DocumentService documentService;
-
-    @Resource
-    private PreAuthorizeService preAuthorizeService;
 
     @Resource
     private SedaExportService sedaExportService;
