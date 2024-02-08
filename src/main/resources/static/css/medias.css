@@ -47,6 +47,10 @@
     #sidebarCollapse {
         display: none;
     }
+
+    .not-viewed-position {
+        left: 50px;
+    }
 }
 
 @media (max-width: 768px) {
@@ -150,6 +154,11 @@
 
     #logo {
         margin-left: 10px;
+    }
+
+    .not-viewed-position {
+        left: revert;
+        right: 0px;
     }
 
 }

@@ -7,6 +7,7 @@ export class PdfViewer extends EventFactory {
     constructor(url, signable, editable, currentStepNumber, forcePageNum, fields, disableAllFields) {
         super();
         console.info("Starting PDF Viewer, signable : " + signable);
+        this.viewed = false;
         this.url= url;
         this.initialOffset = 0;
         this.pages = [];
@@ -124,6 +125,10 @@ export class PdfViewer extends EventFactory {
             if(e > $("#page_" + i).offset().top - 250) {
                 this.pageNum = i;
                 document.getElementById('page_num').textContent = this.pageNum;
+                if(this.pageNum === this.numPages && !this.viewed) {
+                    this.viewed = true;
+                    this.fireEvent('reachEnd', ['ok'])
+                }
             }
         }
     }

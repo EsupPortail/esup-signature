@@ -77,6 +77,9 @@ public class SignRequest {
 
     private Date lastNotifDate;
 
+    @ManyToMany
+    private Set<User> viewedBy = new HashSet<>();
+
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
@@ -225,6 +228,14 @@ public class SignRequest {
 
     public void setLastNotifDate(Date lastNotifDate) {
         this.lastNotifDate = lastNotifDate;
+    }
+
+    public Set<User> getViewedBy() {
+        return viewedBy;
+    }
+
+    public void setViewedBy(Set<User> viewedBy) {
+        this.viewedBy = viewedBy;
     }
 
     @JsonIgnore

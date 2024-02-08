@@ -127,7 +127,7 @@ export class SignUi {
                             });
                         } else {
                             bootbox.confirm({
-                                message: "<h3>Attention vous allez signer sans appliquer d’image de signature</h3>" +
+                                message: "<h3>Attention, vous allez signer sans appliquer d’image de signature</h3>" +
                                     "<div class='alert alert-danger'>Dans ce cas, seules les signatures avec certificat électronique sont possibles</div>",
                                 buttons: {
                                     cancel: {
@@ -197,7 +197,6 @@ export class SignUi {
         if (this.signable) {
             new Nexu(null, null, this.currentSignType, null);
         }
-
     }
 
     checkAttachement() {
@@ -382,7 +381,7 @@ export class SignUi {
             data: signRequestUrlParams,
             success: function(data, textStatus, xhr) {
                 if(data === "initNexu") {
-                    document.location.href="/nexu-sign/" + self.signRequestId;
+                    document.location.href="/nexu-sign/start?ids=" + self.signRequestId;
                 } else {
                     if (self.gotoNext) {
                         document.location.href = $("#nextSignRequest").attr('href');

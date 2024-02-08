@@ -17,3 +17,7 @@
 .toast-es {
     /*for javascript detection : new Toast()*/
 }
+
+.notViewed {
+    /*for javascript detection : not viewed signRequest for mass sign*/
+}
