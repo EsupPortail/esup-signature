@@ -319,6 +319,9 @@ public class UserService {
                 throw new EsupSignatureUserException("user " + authName + " not found");
             }
         }
+        if(mail == null) {
+            throw new EsupSignatureRuntimeException("user must have an email");
+        }
         return createUser(eppn, name, firstName, mail, userType, true);
     }
 

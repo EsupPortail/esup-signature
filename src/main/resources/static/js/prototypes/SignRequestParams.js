@@ -52,7 +52,7 @@ export class SignRequestParams extends EventFactory {
         this.signType = signType;
         if(!light) {
             let signPage = $("#page_" + this.signPageNumber);
-            if(signImages != null && signPage != null && signPage.offset() != null) {
+            if(signPage != null && signPage.offset() != null) {
                 this.offset = (signPage.offset().top) + (10 * (parseInt(this.signPageNumber) - 1));
             }
         }
@@ -1139,7 +1139,9 @@ export class SignRequestParams extends EventFactory {
                     this.cross.css("background-image", "url('" + img + "')");
                     let sizes = this.getImageDimensions(img);
                     sizes.then(result => this.changeSignSize(result));
-                    localStorage.setItem('signNumber', imageNum);
+                    if(imageNum !== 999999) {
+                        localStorage.setItem('signNumber', imageNum);
+                    }
                 } else {
                     let self = this;
                     $.get({
@@ -1149,7 +1151,10 @@ export class SignRequestParams extends EventFactory {
                             self.cross.css("background-image", "url('" + img + "')");
                             let sizes = self.getImageDimensions(img);
                             sizes.then(result => self.changeSignSize(result));
-                            localStorage.setItem('signNumber', imageNum);                        }
+                            if(imageNum !== 999999) {
+                                localStorage.setItem('signNumber', imageNum);
+                            }
+                        }
                     });
 
                 }

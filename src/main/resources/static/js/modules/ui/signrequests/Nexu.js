@@ -1,14 +1,16 @@
 export class Nexu {
 
-    constructor(addExtra, id, currentSignType, urlProfil) {
+    constructor(addExtra, ids, currentSignType, urlProfil) {
         Nexu.urlProfil = urlProfil;
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.nexuUrl = this.globalProperties.nexuUrl;
         this.nexuVersion = this.globalProperties.nexuVersion;
         Nexu.rootUrl = this.globalProperties.rootUrl;
         Nexu.addExtra = addExtra;
-        Nexu.id = id;
+        Nexu.ids = ids;
+        Nexu.i = 0;
         Nexu.version;
+        Nexu.certificateData;
         this.tokenId = null;
         this.keyId = null;
         this.bindingPorts = "9795";
@@ -22,7 +24,7 @@ export class Nexu {
                 $("#nexu_missing_alert").hide();
                 $("#no-options").hide();
                 $("#selectTypeDiv").show();
-                if(id != null) {
+                if(ids != null) {
                     self.loadScript();
                 }
                 $("#certType > option[value='nexuCert']").removeAttr('disabled');
@@ -87,6 +89,7 @@ export class Nexu {
             error(Object.create(merror));
         } else {
             console.log(Nexu.rootUrl);
+            Nexu.certificateData = certificateData;
             Nexu.updateProgressBar("Préparation de la signature", "35%");
             let signingCertificate = certificateData.response.certificate;
             let certificateChain = certificateData.response.certificateChain;
@@ -97,7 +100,7 @@ export class Nexu {
             console.log("init tokenId : " + this.tokenId + "," + this.keyId);
             let url = "/nexu-sign/get-data-to-sign";
             let toSend = { signingCertificate: signingCertificate, certificateChain: certificateChain, encryptionAlgorithm: encryptionAlgorithm };
-            callUrl(Nexu.rootUrl + url + "?addExtra=" + Nexu.addExtra + "&id=" + Nexu.id, "POST",  JSON.stringify(toSend), Nexu.sign, Nexu.error);
+            callUrl(Nexu.rootUrl + url + "?addExtra=" + Nexu.addExtra + "&id=" + Nexu.ids[Nexu.i], "POST", JSON.stringify(toSend), Nexu.sign, Nexu.error);
         }
     }
 
@@ -120,7 +123,7 @@ export class Nexu {
         if(signatureData.response != null) {
             let signatureValue = signatureData.response.signatureValue;
             let toSend = {signatureValue: signatureValue};
-            callUrl(Nexu.rootUrl + "/nexu-sign/sign-document?id=" + Nexu.id, "POST", JSON.stringify(toSend), Nexu.downloadSignedDocument, Nexu.error);
+            callUrl(Nexu.rootUrl + "/nexu-sign/sign-document?id=" + Nexu.ids[Nexu.i], "POST", JSON.stringify(toSend), Nexu.downloadSignedDocument, Nexu.error);
         } else {
             const merror = {
                 errorMessage: "Erreur au moment de la signature du document"
@@ -130,12 +133,23 @@ export class Nexu {
     }
 
     static downloadSignedDocument() {
-        Nexu.updateProgressBar("Signature terminée", "100%");
-        let bar = $('#bar');
-        bar.removeClass('progress-bar-striped active');
-        bar.addClass('progress-bar-success');
-        window.location.href = "/" + Nexu.urlProfil + "/signrequests/" + Nexu.id;
-        $("#success").show();
+        if(Nexu.ids.length > Nexu.i + 1) {
+            Nexu.i++
+            $("#current-doc-num").html(Nexu.i + 1);
+            Nexu.getDataToSign(Nexu.certificateData);
+            // nexu_get_certificates(Nexu.getDataToSign, Nexu.error);
+        } else {
+            Nexu.updateProgressBar("Signature terminée", "100%");
+            let bar = $('#bar');
+            bar.removeClass('progress-bar-striped active');
+            bar.addClass('progress-bar-success');
+            if(Nexu.ids.length === 1) {
+                window.location.href = "/" + Nexu.urlProfil + "/signrequests/" + Nexu.ids[0];
+            } else {
+                window.location.href = "/" + Nexu.urlProfil + "/signbooks";
+            }
+            $("#success").show();
+        }
     }
 
     static error(error) {
@@ -167,7 +181,7 @@ export class Nexu {
         $("#success").hide();
         $.ajax({
             type: "POST",
-            url: Nexu.rootUrl + "/nexu-sign/error?id=" + Nexu.id,
+            url: Nexu.rootUrl + "/nexu-sign/error?ids=" + Nexu.ids,
             crossDomain: true,
             dataType: "json",
             async: true,
@@ -238,6 +252,7 @@ export class Nexu {
     loadScript() {
         let url = "http://127.0.0.1:" + this.detectedPort + "/nexu.js";
         console.info("loading esup-dss-client script : " + url);
+        $("#current-doc-num").html("1");
         $.getScript(url, function() {
             nexu_get_certificates(Nexu.getDataToSign, Nexu.error);
         });

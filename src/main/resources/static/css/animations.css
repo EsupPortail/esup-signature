@@ -120,3 +120,13 @@
     transition: 0s;
     transform: scale(0, 0);
 }
+
+@keyframes jump {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0); }
+}
+
+.jumping {
+    animation: jump 0.5s infinite;
+}

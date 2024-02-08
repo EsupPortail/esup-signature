@@ -5,10 +5,10 @@
 <script th:inline="javascript" type="module">
     import {Nexu} from '/js/modules/ui/signrequests/Nexu.js?version=[[${versionApp}]]';
     $(document).ready(function() {
-        new Nexu([[${addExtra}]], [[${id}]], 'nexuSign', [[${urlProfil}]]);
+        new Nexu([[${addExtra}]], [[${ids}]], 'nexuSign', [[${urlProfil}]]);
     });
     $("#refresh-certType2").on('click', function (e) {
-        new Nexu([[${addExtra}]], [[${id}]], 'nexuSign', [[${urlProfil}]]);
+        new Nexu([[${addExtra}]], [[${ids}]], 'nexuSign', [[${urlProfil}]]);
     });
 </script>
 <body>
@@ -16,8 +16,9 @@
 <main role="main">
     <nav th:replace="~{fragments/sides/side :: side}"></nav>
     <div id="content" class="content">
-        <div class="alert alert-secondary col-10 mb-1 mx-auto">
-            <h3>Signature eIDas en cours</h3>
+        <div class="alert alert-secondary col-10 mb-1 mx-auto text-center">
+            <h1>Signature eIDas en cours</h1>
+            <h3>Document <span id="current-doc-num"></span> / <span th:text="${ids.size()}"></span></h3>
             <p>
                 L’application Esup-DSS-Client va s’ouvrir.
                 <br>
