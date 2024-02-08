@@ -290,10 +290,9 @@ public class SignRequestService {
 		} else {
 			reports = validationService.validate(getToValidateFile(signRequest.getId()), null);
 			DiagnosticData diagnosticData = reports.getDiagnosticData();
-			long nbSignatures = signRequestParamses.stream().filter(srp -> srp.getSignImageNumber() >= 0 && srp.getTextPart() == null).count();
 			if(diagnosticData.getAllSignatures().isEmpty()) {
-				for (SignRequestParams signRequestParams : signRequestParamses) {
-					if (nbSignatures > 1 || signRequestParams.getSignImageNumber() < 0 || StringUtils.hasText(signRequestParams.getTextPart())) {
+				if (signRequestParamses.size() > 1) {
+					for (SignRequestParams signRequestParams : signRequestParamses) {
 						filledInputStream = pdfService.stampImage(filledInputStream, signRequest, signRequestParams, 1, signerUser, date, userService.getRoles(userEppn).contains("ROLE_OTP"), true);
 						lastSignLogs.add(updateStatus(signRequest.getId(), signRequest.getStatus(), "Ajout d'un élément", "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn));
 						auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Ajout d'un élément", "Pas de timestamp", date, null, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
@@ -1116,5 +1115,12 @@ public class SignRequestService {
 
 	public List<SignRequest> getByIdAndRecipient(Long id, String userEppn) {
 		return signRequestRepository.findByIdAndRecipient(id, userEppn);
+	}
+
+	@Transactional
+	public void viewedBy(Long signRequestId, String userEppn) {
+		User user = userService.getByEppn(userEppn);
+		SignRequest signRequest = getById(signRequestId);
+		signRequest.getViewedBy().add(user);
 	}
 }

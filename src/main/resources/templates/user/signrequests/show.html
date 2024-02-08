@@ -43,6 +43,7 @@
                 <li class="breadcrumb-item active" aria-current="page">Demande : <span
                         th:text="${signRequest.parentSignBook.subject}"></span>&nbsp;du&nbsp;<span
                         th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                    <span class="not-viewed fw-bold" th:unless="${signRequest.viewedBy.contains(user)}">(non lu)</span>
                 </li>
             </ol>
         </nav>
@@ -104,28 +105,33 @@
 <!--                            </a>-->
 <!--                        </li>-->
                     </th:block>
-                <th:block id="openButtons" class="fixed-action-btns active"
-                     th:if="${viewRight && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}"
-                     onmouseover="$('#openButtons').toggleClass('active');"
-                     onmouseout="$('#openButtons').toggleClass('active');">
-                    <li>
-                        <a class="btn-lg btn-floating bg-primary waves-effect"
-                           th:href="'/ws-secure/global/get-last-file-report/' + ${id}" target="_blank"
-                           title="Enregistrer le document signé et le rapport de signature"><i class="fa-solid fa-file-archive fa-2xl"></i></a>
-                    </li>
-                    <li><a title="Export SEDA" class="btn btn-floating bg-primary aves-effect d-none" th:href="'/ws-secure/global/get-seda/' + ${id}">
-                        <i class="fa-solid fa-file-export fa-2xl"></i>
-                    </a></li>
-                    <li><a th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="btn btn-floating bg-primary waves-effect d-none" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
-                        <i class="fa-solid fa-shield-alt fa-2xl"></i>
-                    </a></li>
-                   </th:block>
+                    <th:block id="openButtons" class="fixed-action-btns active"
+                        th:if="${viewRight && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}"
+                        onmouseover="$('#openButtons').toggleClass('active');"
+                        onmouseout="$('#openButtons').toggleClass('active');">
+                        <li>
+                            <a class="btn-lg btn-floating bg-primary waves-effect"
+                                th:href="'/ws-secure/global/get-last-file-report/' + ${id}" target="_blank"
+                                title="Enregistrer le document signé et le rapport de signature"><i class="fa-solid fa-file-archive fa-2xl"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a title="Export SEDA" class="btn btn-floating bg-primary aves-effect d-none" th:href="'/ws-secure/global/get-seda/' + ${id}">
+                                <i class="fa-solid fa-file-export fa-2xl"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="btn btn-floating bg-primary waves-effect d-none" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
+                                <i class="fa-solid fa-shield-alt fa-2xl"></i>
+                            </a>
+                        </li>
+                    </th:block>
                     <li th:if="${nextSignBook != null}" class="">
-                        <a id="nextSignBookButton" role="button" th:href="'/user/signbooks/' + ${nextSignBook.id}"
-                           class="btn-lg btn-floating bg-primary waves-effect" title="Demande suivante">
+                        <a id="nextSignBookButton" role="button" th:href="'/user/signbooks/' + ${nextSignBook.id}"class="btn-lg btn-floating bg-primary waves-effect" title="Demande suivante">
                             <i class="fa-solid fa-arrow-right fa-2xl"></i>
                         </a>
-                        <a id="nextSignRequest" th:href="'/user/signrequests/' + ${nextSignRequest.id}" class="d-none"></a>
+                        <a th:if="${otp == null}" id="nextSignRequest" th:href="'/user/signrequests/' + ${nextSignRequest.id}" class="d-none"></a>
+                        <a th:unless="${otp == null}" id="nextSignRequest" th:href="'/otp/signrequests/' + ${nextSignRequest.id}" class="d-none"></a>
                     </li>
                 </ul>
             </div>
@@ -163,7 +169,7 @@
                 </div>
             </th:block>
             <div th:if="${signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace"
-                 class="workspace alert alert-secondary row">
+                class="workspace alert alert-secondary row">
                 <div class="card col-lg-10 mx-auto mb-1">
                     <div class="card-body">
                         <h5 class="text-center">Liste des documents originaux</h5>
@@ -307,14 +313,14 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <div th:unless="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}">
+                <div th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa || signWiths.size() > 0}">
                     <button id="checkValidateSignButtonEnd" th:if="${signBook.signRequests.size() == 1 || nextSignBook == null}"
-                            class="btn btn-success me-1" title="Signer" th:value="${signRequest.id}" autofocus>
+                            class="btn btn-success me-1" title="Signer/Viser" th:value="${signRequest.id}" autofocus>
                         <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer</span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>
                     </button>
-                    <button id="checkValidateSignButtonNext" th:if="${nextSignBook != null && otp == null}"
-                            class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
+                    <button id="checkValidateSignButtonNext" th:if="${nextSignBook != null}"
+                            class="btn btn-success" title="Signer/viser et aller à la suivante" th:value="${signRequest.id}" autofocus>
                         <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer et aller à la suivante </span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser et aller à la suivante </span>
                         <i class="fa-solid fa-arrow-alt-circle-right"></i>
@@ -825,8 +831,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <a id="saveButton"
-                   class="btn btn-success">
+                <a id="saveButton" class="btn btn-success">
                     <i class="fa-solid fa-save"></i> Enregistrer la signature
                 </a>
             </div>

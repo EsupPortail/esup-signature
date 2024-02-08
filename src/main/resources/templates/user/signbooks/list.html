@@ -24,7 +24,8 @@
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li>
-                        <a type="button" id="checkCertSignButton"
+                        <a type="button" id="massSignModalButton"
+                            data-bs-toggle="modal" data-bs-target="#massSignModal"
                             title="Signer en masse les demandes sélectionnées"
                             class="btn-floating btn-lg bg-success wave-effect d-none">
                             <i class="fa-solid fa-file-signature fa-2xl"></i>
@@ -164,37 +165,50 @@
         </div>
     </div>
 </main>
-<div data-bs-focus="false" class="modal fade" id="checkCertSignModal"
-      role="dialog" aria-labelledby="checkCertSignModalLabel" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="massSignModal" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title" id="checkCertSignModalLabel">Signature électronique détectée</h3>
+                <h3 class="modal-title" id="checkCertSignModalLabel">Signature en masse</h3>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 
                 </button>
             </div>
             <div class="modal-body">
-                <div class="alert alert-warning">Nous avons détecté une signature électronique parmi les demandes sélectionnées</div>
+                <div class="alert alert-warning">Merci de selectionner un type de signature</div>
                 <div class="modal-body">
-                    <form id="passwordForm">
-                        <input type="submit" id="passwordSubmit" class="d-none">
-                        <input class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" required/>
-                    </form>
+                    <div id="selectTypeDiv" class="alert alert-secondary mt-1">
+                        <label for="certType">Si besoin, merci de sélectionner le type de signature que vous souhaitez utiliser parmi ceux disponibles</label>
+                        <div class="input-group mt-2">
+                            <select id="certType" name="certType" class="form-control form-select border-secondary-subtle" required>
+                                <th:block th:each="signWith : ${signWiths}">
+                                    <th:block th:if="${signWith.name != 'sealCert'}">
+                                        <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                                    </th:block>
+                                    <th:block th:if="${signWith.name == 'sealCert'}">
+                                        <option th:if="${sealCertOK}" th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                                        <option th:unless="${sealCertOK}" value="" th:text="#{'signwith.' + ${signWith}}" disabled></option>
+                                    </th:block>
+                                </th:block>
+                            </select>
+                            <button id="refresh-certType" type="button" class="btn border-secondary-subtle" title="Actualiser la liste des types de signature"><i class="fa-solid fa-arrows-rotate"></i></button>
+                        </div>
+                        <input type="text" autocomplete="username" name="username" class="d-none">
+                        <input class="form-control mt-2 mb-1" autocomplete="new-password" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" />
+                    </div>
+
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button id="massSignButton"
-                        class="btn btn-success" title="Signer" autofocus>
-                    Lancer la signature en masse <i class="fa-solid fa-arrow-alt-circle-right"></i>
+                <button id="launchMassSignButton" class="btn btn-success" title="Lancer la signature en masse" autofocus>
+                    <i class="fas fa-signature"></i> Lancer la signature en masse
                 </button>
             </div>
         </div>
     </div>
 </div>
-<div data-bs-focus="false" class="modal fade" id="newFomModal"  role="dialog"
-     aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="newFomModal"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
