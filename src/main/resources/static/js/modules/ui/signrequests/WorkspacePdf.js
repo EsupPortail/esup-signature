@@ -150,6 +150,26 @@ export class WorkspacePdf {
             }
             $("#add-sign-image").modal("show");
         });
+        this.notviewedAnim();
+    }
+
+    notviewedAnim() {
+        let div = document.querySelector('.jumping');
+        if(div == null) return;
+        let isPaused = false;
+        function togglePause() {
+            isPaused = !isPaused;
+            if (!isPaused) {
+                div.style.animationPlayState = 'running';
+            } else {
+                div.style.animationPlayState = 'paused';
+                setTimeout(togglePause, 3000);
+            }
+        }
+
+        div.addEventListener('animationiteration', () => {
+            togglePause();
+        });
     }
 
     markAsViewed() {
@@ -157,7 +177,7 @@ export class WorkspacePdf {
             url: "/ws-secure/global/viewed/" + this.signRequestId + "?" + this.csrf.parameterName + "=" + this.csrf.token,
             type: 'POST',
             success: function () {
-                $("#not-viewed").remove();
+                $(".not-viewed").remove();
             }
         });
     }

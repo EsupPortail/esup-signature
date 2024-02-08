@@ -92,12 +92,12 @@
                 </button>
                 <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signBook.id}">
                     <li>
-                        <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
+                        <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Signer" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                             <i class="fa-solid fa-signature pr-2 text-success"></i> Signer
                         </a>
                     </li>
                     <li>
-                        <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
+                        <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id}">
                             <i class="fa-solid fa-eye pr-2"></i> Consulter
                         </a>
                     </li>

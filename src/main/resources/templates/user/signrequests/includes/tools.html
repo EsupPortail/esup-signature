@@ -82,10 +82,13 @@
 	</div>
 	<div id="second-tools" class="d-flex mb-1">
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
-			<div class="input-group-text me-1 d-none d-xl-inline">Choix du mode : </div>
+			<div class="d-none d-xl-inline">
+				<button class="btn btn-light text-dark btn-outline-light" style="cursor: default;">Choix du mode : </button>
+			</div>
 			<div class="me-1 d-none d-lg-block">
 				<select id="changeMode" name="changeMode" class="change-mode"></select>
 			</div>
+			<div class="border ms-1 me-2"></div>
 			<div id="sign-tools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="d-none me-1 mb-1">
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp
 				||
@@ -124,7 +127,7 @@
 			</div>
 		</th:block>
 	</div>
-	<ul id="ws-tabs" class="nav nav-tabs" th:if="${nbSignRequestInSignBookParent > 1}" style="flex-wrap: nowrap !important;">
+	<ul id="ws-tabs" class="nav nav-tabs" th:if="${nbSignRequestInSignBookParent > 1}">
 		<th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
 			<li class="nav-item overflow-hidden ws-tab" th:classappend="${(signRequest.id == signRequestTab.id ? 'active' : '') + ' ' + (nbSignRequestInSignBookParent > 1 ? 'file-tab' : '')}">
 				<a class="nav-link" th:classappend="${(signRequest.id == signRequestTab.id ? 'current alert-secondary' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'bg-success text-light' : '') + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused ? 'bg-danger text-light' : '')}"

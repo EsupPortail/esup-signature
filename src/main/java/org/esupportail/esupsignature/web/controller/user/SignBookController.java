@@ -120,8 +120,8 @@ public class SignBookController {
             docTitles.addAll(signBookService.getAllDocTitles(userEppn));
             workflowNames.addAll(signBookService.getWorkflowNames(userEppn));
         } else {
-            docTitles.addAll(signBooks.stream().map(SignBook::getSubject).collect(Collectors.toList()));
-            workflowNames.addAll(signBooks.stream().map(SignBook::getWorkflowName).collect(Collectors.toList()));
+            docTitles.addAll(signBooks.stream().map(SignBook::getSubject).toList());
+            workflowNames.addAll(signBooks.stream().map(SignBook::getWorkflowName).toList());
         }
         model.addAttribute("docTitles", docTitles);
         model.addAttribute("workflowNames", workflowNames);
@@ -166,7 +166,7 @@ public class SignBookController {
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes, Model model) {
         SignBook signBook = signBookService.getById(id);
-        if(signBook.getSignRequests().size() > 0) {
+        if(!signBook.getSignRequests().isEmpty()) {
             Long signRequestId = signBook.getSignRequests().get(0).getId();
             if (signBook.getSignRequests().size() > 1) {
                 if (signBook.getSignRequests().stream().anyMatch(s -> s.getStatus().equals(SignRequestStatus.pending))) {
