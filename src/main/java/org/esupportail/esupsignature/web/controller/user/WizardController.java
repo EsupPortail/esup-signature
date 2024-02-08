@@ -208,22 +208,31 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wiz-add-step-workflow/{workflowId}", produces = "text/html")
-    public String wizXWorkflow(@PathVariable("workflowId") Long workflowId,
+    @ResponseBody
+    public ResponseEntity<String> wizXWorkflow(@PathVariable("workflowId") Long workflowId,
                                @ModelAttribute("userEppn") String userEppn,
                                @RequestParam(name="end", required = false) Boolean end,
                                @RequestBody List<WorkflowStepDto> steps,
                                Model model) {
         User user = (User) model.getAttribute("user");
-        Workflow workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0).getSignType(), steps.get(0).getAllSignToComplete(), steps.get(0).getChangeable(), steps.get(0), user);
+        final Context context = new Context(Locale.FRENCH);
+        Workflow workflow;
+        try {
+            workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0).getSignType(), steps.get(0).getAllSignToComplete(), steps.get(0).getChangeable(), steps.get(0), user);
+        } catch (EsupSignatureRuntimeException e) {
+            logger.debug(e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
         model.addAttribute("workflow", workflow);
+        model.asMap().forEach(context::setVariable);
         if(end != null && end) {
-            if(!workflow.getWorkflowSteps().isEmpty()) {
-                return "user/wizard/wiz-save-workflow";
+            if(workflow!=null && !workflow.getWorkflowSteps().isEmpty()) {
+                return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-save-workflow", context));
             }else {
-                return "user/wizard/wiz-end";
+                return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-end", context));
             }
         }
-        return "user/wizard/wiz-new-workflow-step";
+        return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-new-workflow-step", context));
     }
 
     @GetMapping(value = "/wiz-save-workflow/{id}")

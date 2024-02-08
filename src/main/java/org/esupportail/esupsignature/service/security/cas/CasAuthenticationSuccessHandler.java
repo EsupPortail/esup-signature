@@ -5,7 +5,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UserType;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +41,6 @@ public class CasAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
 		String name = httpServletRequest.getHeader("sn");
 		String firstname = httpServletRequest.getHeader("givenName");
 		String email = httpServletRequest.getHeader("mail");
-		if(email == null) {
-			throw new EsupSignatureRuntimeException("user must have an email");
-		}
         User user = userService.createUserWithAuthentication(null, name, firstname, email, authentication, UserType.ldap);
 		if(!user.getManagersRoles().isEmpty()) {
 			CasAuthenticationToken auth = (CasAuthenticationToken) authentication;
