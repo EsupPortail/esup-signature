@@ -52,7 +52,7 @@ export class SignRequestParams extends EventFactory {
         this.signType = signType;
         if(!light) {
             let signPage = $("#page_" + this.signPageNumber);
-            if(signImages != null && signPage != null && signPage.offset() != null) {
+            if(signPage != null && signPage.offset() != null) {
                 this.offset = (signPage.offset().top) + (10 * (parseInt(this.signPageNumber) - 1));
             }
         }
