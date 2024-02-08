@@ -217,6 +217,7 @@ header {
 
 #ws-tabs {
     width: fit-content !important;
+    flex-wrap: nowrap !important;
 }
 
 .nav-tab-admin {
@@ -279,4 +280,10 @@ header {
     height: 300px;
     justify-content: center;
     margin: auto auto 50px;
+}
+
+.not-viewed-position {
+    position: fixed;
+    bottom: 100px;
+    left: 300px;
 }

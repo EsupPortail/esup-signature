@@ -50,6 +50,9 @@ public class SignBookController {
     @Resource
     private RecipientService recipientService;
 
+    @Resource
+    private SignWithService signWithService;
+
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
         return "signbooks";
@@ -105,6 +108,8 @@ public class SignBookController {
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
+        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn));
+        model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn, true));
         model.addAttribute("workflowFilter", workflowFilter);
         model.addAttribute("docTitleFilter", docTitleFilter);
         model.addAttribute("dateFilter", dateFilter);
@@ -115,8 +120,8 @@ public class SignBookController {
             docTitles.addAll(signBookService.getAllDocTitles(userEppn));
             workflowNames.addAll(signBookService.getWorkflowNames(userEppn));
         } else {
-            docTitles.addAll(signBooks.stream().map(SignBook::getSubject).collect(Collectors.toList()));
-            workflowNames.addAll(signBooks.stream().map(SignBook::getWorkflowName).collect(Collectors.toList()));
+            docTitles.addAll(signBooks.stream().map(SignBook::getSubject).toList());
+            workflowNames.addAll(signBooks.stream().map(SignBook::getWorkflowName).toList());
         }
         model.addAttribute("docTitles", docTitles);
         model.addAttribute("workflowNames", workflowNames);
@@ -161,7 +166,7 @@ public class SignBookController {
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes, Model model) {
         SignBook signBook = signBookService.getById(id);
-        if(signBook.getSignRequests().size() > 0) {
+        if(!signBook.getSignRequests().isEmpty()) {
             Long signRequestId = signBook.getSignRequests().get(0).getId();
             if (signBook.getSignRequests().size() > 1) {
                 if (signBook.getSignRequests().stream().anyMatch(s -> s.getStatus().equals(SignRequestStatus.pending))) {
@@ -376,9 +381,9 @@ public class SignBookController {
                                            @ModelAttribute("authUserEppn") String authUserEppn,
                                            @RequestParam String ids,
                                            @RequestParam(value = "password", required = false) String password,
-                                           @RequestParam(value = "certType", required = false) String certType,
+                                           @RequestParam(value = "signWith", required = false) String signWith,
                                            HttpSession httpSession) throws EsupSignatureRuntimeException, IOException {
-        String error = signBookService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, certType);
+        String error = signBookService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, signWith);
         if(error == null) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {

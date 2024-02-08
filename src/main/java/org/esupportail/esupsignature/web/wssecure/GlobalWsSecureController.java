@@ -13,7 +13,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.SedaExportService;
-import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,9 +49,6 @@ public class GlobalWsSecureController {
     private DocumentService documentService;
 
     @Resource
-    private PreAuthorizeService preAuthorizeService;
-
-    @Resource
     private SedaExportService sedaExportService;
 
     @Resource
@@ -84,6 +80,14 @@ public class GlobalWsSecureController {
             logger.warn(e.getMessage(), e);
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestView(#signRequestId, #userEppn, #authUserEppn)")
+    @ResponseBody
+    @PostMapping(value = "/viewed/{signRequestId}")
+    public ResponseEntity<Void> sign(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signRequestId") Long signRequestId) {
+        signRequestService.viewedBy(signRequestId, userEppn);
+        return ResponseEntity.ok().build();
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")

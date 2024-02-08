@@ -6,7 +6,6 @@ import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.NexuSignature;
-import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -15,6 +14,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.esupportail.esupsignature.service.utils.sign.NexuService;
 import org.slf4j.Logger;
@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.List;
 
 @CrossOrigin(allowedHeaders = "Content-Type", origins = "*")
 @Controller
@@ -33,6 +34,9 @@ import java.io.Serializable;
 public class NexuProcessController implements Serializable {
 
 	private static final Logger logger = LoggerFactory.getLogger(NexuProcessController.class);
+
+	@Resource
+	private PreAuthorizeService preAuthorizeService;
 
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
@@ -51,14 +55,15 @@ public class NexuProcessController implements Serializable {
 	@Resource
 	private SignRequestService signRequestService;
 
-	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
-	@GetMapping(value = "/{id}", produces = "text/html")
+	@GetMapping(value = "/start", produces = "text/html")
 	public String showSignatureParameters(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
-										  @PathVariable("id") Long id, Model model) {
-		logger.info("init nexu sign by : " + userEppn + " for signRequest : " + id);
-		nexuService.deleteNexuSignature(id);
-		SignRequest signRequest = signRequestService.getById(id);
-		model.addAttribute("id", signRequest.getId());
+										  @RequestParam("ids") List<Long> ids, Model model) {
+		logger.info("init nexu sign by : " + userEppn + " for signRequest : " + ids);
+		for(Long id : ids) {
+			if(!preAuthorizeService.signRequestSign(id, userEppn, authUserEppn)) throw new EsupSignatureRuntimeException("Vous n'avez pas les droits pour signer ce document");
+			nexuService.deleteNexuSignature(id);
+		}
+		model.addAttribute("ids", ids);
 		User user = userService.getByEppn(userEppn);
 		if(user.getUserType().equals(UserType.external)) {
 			model.addAttribute("urlProfil", "otp");
@@ -74,7 +79,7 @@ public class NexuProcessController implements Serializable {
 	public GetDataToSignResponse getDataToSign(@ModelAttribute("userEppn") String userEppn,
 											   @ModelAttribute("authUserEppn") String authUserEppn,
 											   @RequestBody @Valid DataToSignParams dataToSignParams,
-											   @ModelAttribute("id") Long id) throws IOException, EsupSignatureRuntimeException {
+											   @RequestParam("id") Long id) throws IOException, EsupSignatureRuntimeException {
 		logger.info("get data to sign for signRequest: " + id);
 		AbstractSignatureForm abstractSignatureForm = nexuService.getSignatureForm(id);
 		abstractSignatureForm.setCertificate(dataToSignParams.getSigningCertificate());
@@ -96,7 +101,7 @@ public class NexuProcessController implements Serializable {
 	@ResponseBody
 	public SignDocumentResponse signDocument(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 											 @RequestBody @Valid SignResponse signatureValue,
-											 @ModelAttribute("id") Long id) throws EsupSignatureRuntimeException, IOException {
+											 @RequestParam("id") Long id) throws EsupSignatureRuntimeException, IOException {
 		NexuSignature nexuSignature = nexuService.getNexuSignature(id);
 		AbstractSignatureForm abstractSignatureForm = nexuService.getAbstractSignatureFormFromNexuSignature(nexuSignature);
 		abstractSignatureForm.setSignatureValue(signatureValue.getSignatureValue());

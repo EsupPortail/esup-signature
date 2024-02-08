@@ -101,6 +101,7 @@ export class WorkspacePdf {
             // this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
             // this.signPosition.addEventListener("stopDrag", e => this.showAllPostits());
             this.pdfViewer.addEventListener('renderFinished', e => this.initWorkspace());
+            this.pdfViewer.addEventListener('reachEnd', e => this.markAsViewed());
             this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
             this.pdfViewer.addEventListener('change', e => this.saveData(localStorage.getItem('disableFormAlert') === "true"));
 
@@ -148,6 +149,36 @@ export class WorkspacePdf {
                 this.userUI = new UserUi();
             }
             $("#add-sign-image").modal("show");
+        });
+        this.notviewedAnim();
+    }
+
+    notviewedAnim() {
+        let div = document.querySelector('.jumping');
+        if(div == null) return;
+        let isPaused = false;
+        function togglePause() {
+            isPaused = !isPaused;
+            if (!isPaused) {
+                div.style.animationPlayState = 'running';
+            } else {
+                div.style.animationPlayState = 'paused';
+                setTimeout(togglePause, 3000);
+            }
+        }
+
+        div.addEventListener('animationiteration', () => {
+            togglePause();
+        });
+    }
+
+    markAsViewed() {
+        $.ajax({
+            url: "/ws-secure/global/viewed/" + this.signRequestId + "?" + this.csrf.parameterName + "=" + this.csrf.token,
+            type: 'POST',
+            success: function () {
+                $(".not-viewed").remove();
+            }
         });
     }
 
