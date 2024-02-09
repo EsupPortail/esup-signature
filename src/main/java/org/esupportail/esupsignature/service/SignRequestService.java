@@ -223,9 +223,6 @@ public class SignRequestService {
 		StepStatus stepStatus;
 		Date date = new Date();
 		List<Log> lastSignLogs = new ArrayList<>();
-		if(signRequest.getAuditTrail() == null) {
-			signRequest.setAuditTrail(auditTrailService.create(signRequest.getToken()));
-		}
 		User signerUser = userService.getByEppn(userEppn);
 		if(userShareId != null) {
 			UserShare userShare = userShareService.getById(userShareId);
