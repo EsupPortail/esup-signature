@@ -4,6 +4,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.dto.RecipientWsDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.User;
@@ -29,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -174,8 +176,11 @@ public class WorkflowAdminController {
 						  @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
 						  @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) throws EsupSignatureRuntimeException {
-
-		WorkflowStepDto workflowStepDto = new WorkflowStepDto(SignType.valueOf(signType), description, recipientService.convertRecipientEmailsToRecipientDto(List.of(recipientsEmails)), changeable, maxRecipients, allSignToComplete, attachmentRequire);
+		List<RecipientWsDto> recipientWsDtos = new ArrayList<>();
+		if(recipientsEmails != null) {
+			recipientWsDtos = recipientService.convertRecipientEmailsToRecipientDto(List.of(recipientsEmails));
+		}
+		WorkflowStepDto workflowStepDto = new WorkflowStepDto(SignType.valueOf(signType), description, recipientWsDtos, changeable, maxRecipients, allSignToComplete, attachmentRequire);
 		workflowStepService.addStep(id, workflowStepDto, authUserEppn, false, false, null);
 		return "redirect:/admin/workflows/steps/" + id;
 	}
