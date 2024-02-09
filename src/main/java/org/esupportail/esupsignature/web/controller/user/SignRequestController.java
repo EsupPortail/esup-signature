@@ -66,9 +66,6 @@ public class SignRequestController {
     private UserService userService;
 
     @Resource
-    private RecipientService recipientService;
-
-    @Resource
     private CertificatService certificatService;
 
     @Resource
