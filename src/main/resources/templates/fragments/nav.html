@@ -166,27 +166,27 @@
             <table class="table table-sm table-borderless text-left">
                 <tbody>
                 <tr>
-                    <th class="text-break w-40">Nom</th>
+                    <td class="text-break w-40">Nom</td>
                     <td class="text-break w-60" th:text="${user.name}"></td>
                 </tr>
                 <tr>
-                    <th>Prénom</th>
+                    <td>Prénom</td>
                     <td th:text="${user.firstname}"></td>
                 </tr>
                 <tr>
-                    <th>Email</th>
+                    <td>Email</td>
                     <td th:text="${user.email}"></td>
                 </tr>
                 <tr>
-                    <th>Identifiant</th>
+                    <td>Identifiant</td>
                     <td th:text="${user.eppn}"></td>
                 </tr>
                 <tr th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" >
-                    <th>Auth</th>
+                    <td>Auth</td>
                     <td th:text="${securityServiceName}"></td>
                 </tr>
                 <tr>
-                    <th>Mes signatures</th>
+                    <td>Mes signatures</td>
                     <td>
                         <div style="width: 250px;" th:if="${userImagesIds.size() > 0 && userImagesIds.get(0) != null}" id="carouselSign" class="carousel slide border rounded border-secondary" data-bs-ride="carousel">
                             <div class="carousel-inner">
@@ -211,7 +211,7 @@
                     </td>
                 </tr>
                 <tr th:if="${!globalProperties.disableCertStorage}">
-                    <th>Magasin de certificats</th>
+                    <td>Magasin de certificats</td>
                     <td>
                         <div th:unless="${keystoreFileName == null}" class="alert alert-secondary">
                             Keystore PKCS12 :
