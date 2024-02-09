@@ -157,7 +157,7 @@ export class Nexu {
         $('#bar').removeClass('progress-bar-success active').addClass('progress-bar-danger');
         if (error!= null && error.responseJSON !=null) {
             let jsonResp = error.responseJSON;
-            if (jsonResp.feedback.stacktrace != null) {
+            if (jsonResp.feedback != null && jsonResp.feedback.stacktrace != null) {
                 $("#errorcontent").html(jsonResp.feedback.stacktrace);
                 if(jsonResp.feedback.stacktrace.includes("No slots")) {
                     $("#errorText").html("Aucune clé n'a été détecté");
@@ -167,6 +167,11 @@ export class Nexu {
                     $("#errorText").html("Le code pin est incorrect");
                 }
             } else if (jsonResp.message !=null){
+                if(jsonResp.message.includes("is expired")) {
+                    $("#errorText").html("Votre certificat est expiré");
+                } else if(jsonResp.message.includes("revoked") || jsonResp.message.includes("suspended")) {
+                    $("#errorText").html("Votre certificat est révoqué");
+                }
                 $("#errorcontent").html(jsonResp.message);
             } else if (jsonResp.errorMessage !=null){
                 if(jsonResp.errorMessage.includes("The user has cancelled the operation")) {
