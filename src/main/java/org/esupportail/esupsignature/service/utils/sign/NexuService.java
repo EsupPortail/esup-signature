@@ -13,6 +13,7 @@ import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import jakarta.annotation.Resource;
+import org.bouncycastle.asn1.x509.Certificate;
 import org.esupportail.esupsignature.dss.DssUtilsService;
 import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.Document;
@@ -22,6 +23,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.NexuSignatureRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.service.AuditTrailService;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
@@ -34,6 +36,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -61,6 +64,9 @@ public class NexuService {
 
 	@Resource
 	private DssUtilsService dssUtilsService;
+
+	@Resource
+	private AuditTrailService auditTrailService;
 
 	public AbstractSignatureParameters<?> getParameters(SignatureMultipleDocumentsForm signatureMultipleDocumentsForm, List<Document> documentsToSign) throws IOException {
 		AbstractSignatureParameters<?> parameters = signService.getASiCSignatureParameters(signatureMultipleDocumentsForm.getContainerType(), signatureMultipleDocumentsForm.getSignatureForm());
@@ -248,12 +254,16 @@ public class NexuService {
 
 	@Transactional
 	public SignDocumentResponse getSignDocumentResponse(Long signRequestId, SignResponse signatureValue, AbstractSignatureForm abstractSignatureForm, String userEppn, List<Document> documentsToSign) throws EsupSignatureRuntimeException {
+		User user = userService.getByEppn(userEppn);
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		SignDocumentResponse signedDocumentResponse;
 		abstractSignatureForm.setSignatureValue(signatureValue.getSignatureValue());
 		try {
 			Document signedFile = nexuSign(signRequest, userEppn, abstractSignatureForm, documentsToSign);
 			if(signedFile != null) {
+				Certificate certificate = Certificate.getInstance(abstractSignatureForm.getCertificate());
+				auditTrailService.addAuditStep(signRequest.getToken(), userEppn, certificate.getSubject().toString(), "", new Date(), signRequest.getViewedBy().contains(user), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0).getSignPageNumber(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0).getxPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0).getyPos());
+				auditTrailService.closeAuditTrail(signRequest.getToken(), signedFile, signedFile.getInputStream());
 				signedDocumentResponse = new SignDocumentResponse();
 				signedDocumentResponse.setUrlToDownload("download");
 				return signedDocumentResponse;

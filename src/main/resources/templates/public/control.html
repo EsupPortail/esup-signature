@@ -9,7 +9,7 @@
 <main role="main">
     <div class="col-10 mx-auto" style="margin-top: 60px" th:fragment="control">
         <div class="alert alert-primary mb-1 text-center">
-            <h5>Vérification de la conformité du document : <span th:text="${token}"></span></h5>
+            <h5>Vérification de la conformité du document : <span th:text="${token}"></span></h5>
         </div>
         <div th:if="${error}" class="alert alert-danger mb-1">
             <h5>Le document que vous avez fourni n’est pas conforme : </h5>
@@ -21,78 +21,73 @@
         <th:block th:if="${auditTrail != null && (auditTrailChecked != null && auditTrailChecked) || (viewAccess != null && viewAccess) || signRequest != null}">
             <th:block th:if="${auditTrail != null && auditTrail.getDocumentCheckSum() != null}">
                 <div class="alert alert-success mb-1 text-center">
-                    <h5>Le document est conforme</h5>
+                    <h5>Le document est conforme.</h5>
                 </div>
                 <div class="alert alert-info mb-1" th:if="${signRequest != null && viewAccess != null && viewAccess}">
-                    Vous avez accès à cette demande : <a th:href="'/user/signrequests/' + ${signRequest.id}">Voir la demande</a>
+                    Vous avez accès à cette demande : <a th:href="'/user/signrequests/' + ${signRequest.id}">Voir la demande</a>
                 </div>
-                <div class="card mb-1">
-                    <div class="card-header">
-                        <h5>Dossier de preuves</h5></div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="alert alert-light border-secondary mx-auto mb-1">
-                            <h4>Informations générales sur le document</h4>
-                            <dl class="row border-bottom m-0">
-                                <dt class="col-3">Nom de document : </dt>
-                                <dd class="col-9" th:text="${auditTrail.documentName}"></dd>
-                            </dl>
-                            <dl class="row border-bottom m-0">
-                                <dt class="col-3">Type de document : </dt>
-                                <dd class="col-9" th:text="${auditTrail.documentType}"></dd>
-                            </dl>
-                            <dl class="row border-bottom m-0">
-                                <dt class="col-3">Taille : </dt>
-                                <dd class="col-9" th:text="${size} + ' (' + ${auditTrail.documentSize} + ')'"></dd>
-                            </dl>
-                            </div>
-                            <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
-                                <h4>Signatures</h4>
-                                <table class="table table-sm table-hover">
-                                    <thead class="table-secondary">
-                                    <tr>
-                                        <th></th>
-                                        <th>Date</th>
-                                        <th>Nom</th>
-                                        <th>Email</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <th:block th:each="auditStep, iterator : ${auditTrail.auditSteps}">
-                                        <tr data-bs-toggle="collapse" data-bs-target="#collapseExample" style="cursor: pointer;" title="Cliquez ici pour afficher le detail">
-                                            <td><i class="fa-solid fa-plus fa-2xl"></i></td>
-                                            <td class="text-left"><span
-                                                    th:text="${#dates.format(auditStep.timeStampDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
-                                            <td class="text-left"><span th:text="${auditStep.firstname} + ' ' + ${auditStep.name}"></span></td>
-                                            <td class="text-left"><span
-                                                    th:text="${auditStep.email}"></span></td>
-                                        </tr>
-                                        <tr class="collapse" id="collapseExample">
-                                            <td colspan="6">
-                                                <dl class="row border-bottom m-0">
-                                                    <dt class="col-lg-5">Login : </dt>
-                                                    <dd th:text="${auditStep.authenticationDetails}"></dd>
-                                                </dl>
-                                                <dl class="row border-bottom m-0">
-                                                    <dt class="col-lg-5">Authentification : </dt>
-                                                    <dd th:text="${auditStep.authenticationDetails}"></dd>
-                                                </dl>
-                                                <dl class="row border-bottom m-0">
-                                                    <dt class="col-lg-5">Certificat signature : </dt>
-                                                    <dd th:text="${auditStep.signCertificat}"></dd>
-                                                </dl>
-                                                <dl class="row border-bottom m-0">
-                                                    <dt class="col-lg-5">Certificat timestamp : </dt>
-                                                    <dd th:text="${auditStep.timeStampCertificat}"></dd>
-                                                </dl>
-                                            </td>
-                                        </tr>
-                                    </th:block>
-                                    </tbody>
-                                </table>
-                                <div th:utext="${simpleReport}"></div>
-                            </div>
-                        </div>
+                <div class="row">
+                    <div class="alert alert-light border-secondary mx-auto mb-1">
+                        <h4>Informations générales sur le document</h4>
+                        <dl class="row border-bottom m-0">
+                            <dt class="col-3">Nom de document : </dt>
+                            <dd class="col-9" th:text="${auditTrail.documentName}"></dd>
+                        </dl>
+                        <dl class="row border-bottom m-0">
+                            <dt class="col-3">Type de document : </dt>
+                            <dd class="col-9" th:text="${auditTrail.documentType}"></dd>
+                        </dl>
+                        <dl class="row border-bottom m-0">
+                            <dt class="col-3">Taille : </dt>
+                            <dd class="col-9" th:text="${size} + ' (' + ${auditTrail.documentSize} + ')'"></dd>
+                        </dl>
+                    </div>
+                    <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
+                        <h4>Signatures</h4>
+                        <table class="table table-sm table-hover">
+                            <thead class="table-secondary">
+                            <tr>
+                                <th></th>
+                                <th>Date</th>
+                                <th>Nom</th>
+                                <th>Email</th>
+                                <th>Document lu</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <th:block th:each="auditStep, iterator : ${auditTrail.auditSteps}">
+                                <tr data-bs-toggle="collapse" data-bs-target="#collapseExample" style="cursor: pointer;" title="Cliquez ici pour afficher le detail">
+                                    <td><i class="fa-solid fa-plus"></i></td>
+                                    <td class="text-left"><span
+                                            th:text="${#dates.format(auditStep.timeStampDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
+                                    <td class="text-left"><span th:text="${auditStep.firstname} + ' ' + ${auditStep.name}"></span></td>
+                                    <td class="text-left"><span th:text="${auditStep.email}"></span></td>
+                                    <td class="text-left" th:text="${auditStep.getAllScrolled()} ? 'lu' : 'non lu'"></td>
+                                </tr>
+                                <tr class="collapse" id="collapseExample">
+                                    <td colspan="6">
+                                        <dl class="row border-bottom m-0">
+                                            <dt class="col-lg-5">Login : </dt>
+                                            <dd th:text="${auditStep.authenticationDetails}"></dd>
+                                        </dl>
+                                        <dl class="row border-bottom m-0">
+                                            <dt class="col-lg-5">Authentification : </dt>
+                                            <dd th:text="${auditStep.authenticationDetails}"></dd>
+                                        </dl>
+                                        <dl class="row border-bottom m-0">
+                                            <dt class="col-lg-5">Certificat signature : </dt>
+                                            <dd th:text="${auditStep.signCertificat}"></dd>
+                                        </dl>
+                                        <dl class="row border-bottom m-0">
+                                            <dt class="col-lg-5">Certificat timestamp : </dt>
+                                            <dd th:text="${auditStep.timeStampCertificat}"></dd>
+                                        </dl>
+                                    </td>
+                                </tr>
+                            </th:block>
+                            </tbody>
+                        </table>
+                        <div th:utext="${simpleReport}" class="mt-2"></div>
                     </div>
                 </div>
                 <div class="alert alert-success mb-1 text-center" th:if="${signRequest == null}">
