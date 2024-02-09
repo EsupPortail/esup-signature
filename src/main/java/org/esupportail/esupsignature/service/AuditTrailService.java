@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.service;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import jakarta.annotation.Resource;
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FileUtils;
@@ -52,15 +51,9 @@ public class AuditTrailService {
 
     @Resource
     private LogService logService;
-//
-//    @Resource
-//    private SignRequestService signRequestService;
 
     @Resource
     private TemplateEngine templateEngine;
-
-    @Resource
-    private ServletContext servletContext;
 
     public AuditTrail create(String token) {
         AuditTrail auditTrail = new AuditTrail();
@@ -122,6 +115,7 @@ public class AuditTrailService {
         return auditTrailRepository.findByToken(token);
     }
 
+    @Transactional
     public ByteArrayOutputStream generateAuditTrailPdf(SignRequest signRequest, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException {
         AuditTrail auditTrail = getAuditTrailByToken(signRequest.getToken());
         RequestContext requestContext = new RequestContext(httpServletRequest, httpServletResponse);
