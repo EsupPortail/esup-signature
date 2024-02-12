@@ -1053,6 +1053,9 @@ public class SignBookService {
     @Transactional
     public StepStatus initSign(Long signRequestId, String signRequestParamsJsonString, String comment, String formData, String password, String signWith, Long userShareId, String userEppn, String authUserEppn) throws IOException, EsupSignatureRuntimeException {
         SignRequest signRequest = signRequestService.getById(signRequestId);
+        if(signRequest.getAuditTrail() == null) {
+            signRequest.setAuditTrail(auditTrailService.create(signRequest.getToken()));
+        }
         SignType signType = signRequest.getCurrentSignType();
         if(signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) && signWith == null) signWith = "imageStamp";
         String finalSignWith = signWith;
