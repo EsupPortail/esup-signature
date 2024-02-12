@@ -80,7 +80,7 @@
 			<i class="fa-solid fa-pencil-alt"></i>
 		</a>
 	</div>
-	<div id="second-tools" class="d-flex mb-1">
+	<div id="second-tools" class="d-flex">
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
 			<div class="d-none d-xl-inline">
 				<button class="btn btn-light text-dark btn-outline-light" style="cursor: default;">Choix du mode : </button>
