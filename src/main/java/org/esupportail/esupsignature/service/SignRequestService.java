@@ -658,6 +658,9 @@ public class SignRequestService {
 	@Transactional
 	public void deleteDefinitive(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
+		if(!signRequest.getParentSignBook().isEditable()) {
+			throw new EsupSignatureRuntimeException("Suppression impossible, la demande est déjà démarrée");
+		}
 		signRequest.getRecipientHasSigned().clear();
 		signRequestRepository.save(signRequest);
 		if (signRequest.getData() != null) {

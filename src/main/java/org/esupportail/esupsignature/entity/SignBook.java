@@ -243,4 +243,8 @@ public class SignBook {
         return signRequests.stream().map(SignRequest::getComments).flatMap(comments -> comments.stream().filter(Comment::getPostit)).collect(Collectors.toList());
     }
 
+    public boolean isEditable() {
+        return getSignRequests().stream().noneMatch(s -> !s.getStatus().equals(SignRequestStatus.pending) && !s.getStatus().equals(SignRequestStatus.deleted) && !s.getStatus().equals(SignRequestStatus.draft) && !s.getStatus().equals(SignRequestStatus.uploading));
+    }
+
 }

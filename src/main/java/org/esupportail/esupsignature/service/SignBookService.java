@@ -836,6 +836,9 @@ public class SignBookService {
     public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn) {
         int i = 0;
         SignBook signBook = getById(signBookId);
+        if(!signBook.isEditable()) {
+            throw new EsupSignatureRuntimeException("Ajout impossible, la demande est déjà démarrée");
+        }
         for (MultipartFile multipartFile : multipartFiles) {
             pdfService.checkPdfPermitions(multipartFile);
             SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, authUserEppn, authUserEppn);

@@ -241,8 +241,12 @@ public class SignRequestController {
         SignRequest signRequest = signRequestService.getById(id);
         String referer = httpServletRequest.getHeader("referer");
         if(signRequest.getParentSignBook().getSignRequests().size() > 1) {
-            signRequestService.deleteDefinitive(id);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
+            try {
+                signRequestService.deleteDefinitive(id);
+                redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
+            } catch (EsupSignatureRuntimeException e) {
+                redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+            }
             if(referer.contains("signrequests")) {
                 return "redirect:/user/signbooks";
             } else {
