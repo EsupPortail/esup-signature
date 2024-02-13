@@ -836,6 +836,9 @@ public class SignBookService {
     public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn) {
         int i = 0;
         SignBook signBook = getById(signBookId);
+        if(!signBook.isEditable()) {
+            throw new EsupSignatureRuntimeException("Ajout impossible, la demande est déjà démarrée");
+        }
         for (MultipartFile multipartFile : multipartFiles) {
             pdfService.checkPdfPermitions(multipartFile);
             SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, authUserEppn, authUserEppn);
@@ -941,7 +944,7 @@ public class SignBookService {
                     addToTeam(signBook, userEppn);
                     if (!emailSended && sendEmailAlert) {
                         try {
-                            mailService.sendEmailAlerts(signRequest, userEppn, data, forceSendEmail);
+                            mailService.sendEmailAlerts(signBook, userEppn, data, forceSendEmail);
                             mailService.sendCCAlert(signBook, null);
                             emailSended = true;
                         } catch (EsupSignatureMailException e) {
@@ -1152,11 +1155,13 @@ public class SignBookService {
             } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().noneMatch(r -> r.getUser().getEppn().equals(authUserEppn))) {
                 reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.userNotInCurrentStep);
                 error = messageSource.getMessage("report.reportstatus." + ReportStatus.userNotInCurrentStep, null, Locale.FRENCH);
+            } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().getValue() > SignWith.valueOf(signWith).getValue()) {
+                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signTypeNotCompliant);
+                error = messageSource.getMessage("report.reportstatus." + ReportStatus.signTypeNotCompliant, null, Locale.FRENCH);
             } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty() && SignWith.valueOf(signWith).equals(SignWith.imageStamp)) {
                 reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.noSignField);
                 error = messageSource.getMessage("report.reportstatus." + ReportStatus.noSignField, null, Locale.FRENCH);
-            }
-            else if (signRequest.getStatus().equals(SignRequestStatus.pending) && initSign(id,null, null, null, password, signWith, userShareId, userEppn, authUserEppn) != null) {
+            } else if (signRequest.getStatus().equals(SignRequestStatus.pending) && initSign(id,null, null, null, password, signWith, userShareId, userEppn, authUserEppn) != null) {
                 reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signed);
                 error = null;
             }
@@ -1923,7 +1928,7 @@ public class SignBookService {
         if(replacedByUser != null) {
             List<SignRequest> signRequests = getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).flatMap(signBook -> signBook.getSignRequests().stream().distinct()).collect(Collectors.toList());
             for(SignRequest signRequest : signRequests) {
-                transfertSignRequest(signRequest.getId(), user, replacedByUser);
+                transfertSignRequest(signRequest.getId(), user, replacedByUser, false);
                 i++;
             }
         }
@@ -1931,21 +1936,21 @@ public class SignBookService {
     }
 
     @Transactional
-    public void transfertSignRequest(Long signRequestId, String userEppn, String replacedByUserEmail) {
+    public void transfertSignRequest(Long signRequestId, String userEppn, String replacedByUserEmail, boolean keepFollow) {
         if(checkSignRequestSignable(signRequestId, userEppn, userEppn)) {
             User user = userService.getByEppn(userEppn);
             User replacedByUser = userService.getUserByEmail(replacedByUserEmail);
             if (user.equals(replacedByUser)) {
                 throw new EsupSignatureRuntimeException("Transfer impossible");
             }
-            transfertSignRequest(signRequestId, user, replacedByUser);
+            transfertSignRequest(signRequestId, user, replacedByUser, keepFollow);
         } else {
             throw new EsupSignatureRuntimeException("Transfer impossible");
         }
     }
 
     @Transactional
-    public void transfertSignRequest(Long signRequestId, User user, User replacedByUser) {
+    public void transfertSignRequest(Long signRequestId, User user, User replacedByUser, boolean keepFollow) {
         SignRequest signRequest = signRequestService.getById(signRequestId);
         signRequest.getParentSignBook().getTeam().remove(user);
         addToTeam(signRequest.getParentSignBook(), user.getEppn());
@@ -1960,6 +1965,9 @@ public class SignBookService {
                     recipient.setUser(replacedByUser);
                 }
             }
+        }
+        if(keepFollow) {
+            addViewers(signRequest.getParentSignBook().getId(), Collections.singletonList(user.getEmail()));
         }
     }
 

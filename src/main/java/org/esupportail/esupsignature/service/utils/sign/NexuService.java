@@ -256,13 +256,24 @@ public class NexuService {
 	public SignDocumentResponse getSignDocumentResponse(Long signRequestId, SignResponse signatureValue, AbstractSignatureForm abstractSignatureForm, String userEppn, List<Document> documentsToSign) throws EsupSignatureRuntimeException {
 		User user = userService.getByEppn(userEppn);
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
+		if(signRequest.getAuditTrail() == null) {
+			signRequest.setAuditTrail(auditTrailService.create(signRequest.getToken()));
+		}
 		SignDocumentResponse signedDocumentResponse;
 		abstractSignatureForm.setSignatureValue(signatureValue.getSignatureValue());
 		try {
 			Document signedFile = nexuSign(signRequest, userEppn, abstractSignatureForm, documentsToSign);
 			if(signedFile != null) {
 				Certificate certificate = Certificate.getInstance(abstractSignatureForm.getCertificate());
-				auditTrailService.addAuditStep(signRequest.getToken(), userEppn, certificate.getSubject().toString(), "", new Date(), signRequest.getViewedBy().contains(user), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0).getSignPageNumber(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0).getxPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0).getyPos());
+				int pageNumber = 0;
+				int posX = 0;
+				int posY = 0;
+				if(!signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty()) {
+					pageNumber = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0).getSignPageNumber();
+					posX = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0).getxPos();
+					posY = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0).getyPos();
+				}
+				auditTrailService.addAuditStep(signRequest.getToken(), userEppn, certificate.getSubject().toString(), "", new Date(), signRequest.getViewedBy().contains(user), pageNumber, posX, posY);
 				auditTrailService.closeAuditTrail(signRequest.getToken(), signedFile, signedFile.getInputStream());
 				signedDocumentResponse = new SignDocumentResponse();
 				signedDocumentResponse.setUrlToDownload("download");

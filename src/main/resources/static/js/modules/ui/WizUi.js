@@ -29,6 +29,17 @@ export class WizUi {
         this.modal.on('hidden.bs.modal', e => this.checkOnModalClose());
     }
 
+    listenHelpMarkAsReadButton(btn) {
+        console.debug("debug - " + "listen to" + btn);
+        $(btn).on('click', e => this.markHelpAsRead(e));
+    }
+
+    markHelpAsRead(e) {
+        let id = e.target.id.split('_')[1];
+        console.info("mark help as read message " + id);
+        $.get("/user/users/mark-help-as-read/" + id);
+    }
+
     selfSignStart() {
         console.info("start self signbook");
         $.ajax({
@@ -151,6 +162,7 @@ export class WizUi {
                 }
             });
         });
+        $('button[id^="markHelpAsReadButton_"]').each((index, e) => this.listenHelpMarkAsReadButton(e));
     }
 
     wizardFormStart(formId) {
