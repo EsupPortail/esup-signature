@@ -54,6 +54,7 @@ public class CurrentSessionsController {
 		for(Object principal : sessionRegistry.getAllPrincipals()) {
 			sessions.addAll(sessionRegistry.getAllSessions(principal, false));
 		}
+		sessions.sort((s1, s2) -> s2.getLastRequest().compareTo(s1.getLastRequest()));
 		model.addAttribute("currentSessions", sessions);
 		model.addAttribute("sessionSize", 0);
 		model.addAttribute("active", "sessions");
