@@ -320,14 +320,22 @@ public class SignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
     @PostMapping(value = "/transfert/{id}")
     public String transfer(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                                @RequestParam(value = "transfertRecipientsEmails") List<String> transfertRecipientsEmails, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
+                           @RequestParam(value = "transfertRecipientsEmails") List<String> transfertRecipientsEmails,
+                           @RequestParam(value = "keepFollow", required = false) Boolean keepFollow,
+                           RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
+        if(keepFollow == null) keepFollow = false;
         try {
-            signBookService.transfertSignRequest(id, authUserEppn, transfertRecipientsEmails.get(0));
+            signBookService.transfertSignRequest(id, authUserEppn, transfertRecipientsEmails.get(0), keepFollow);
             redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Demande transférée"));
+            if(keepFollow) {
+                return "redirect:/user/signrequests/" + id;
+            } else {
+                return "redirect:/user";
+            }
         } catch (EsupSignatureRuntimeException e) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non transférée"));
+            return "redirect:/user/signrequests/" + id;
         }
-        return "redirect:/user/signrequests/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")

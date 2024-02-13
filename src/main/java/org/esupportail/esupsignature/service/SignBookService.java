@@ -1928,7 +1928,7 @@ public class SignBookService {
         if(replacedByUser != null) {
             List<SignRequest> signRequests = getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).flatMap(signBook -> signBook.getSignRequests().stream().distinct()).collect(Collectors.toList());
             for(SignRequest signRequest : signRequests) {
-                transfertSignRequest(signRequest.getId(), user, replacedByUser);
+                transfertSignRequest(signRequest.getId(), user, replacedByUser, false);
                 i++;
             }
         }
@@ -1936,21 +1936,21 @@ public class SignBookService {
     }
 
     @Transactional
-    public void transfertSignRequest(Long signRequestId, String userEppn, String replacedByUserEmail) {
+    public void transfertSignRequest(Long signRequestId, String userEppn, String replacedByUserEmail, boolean keepFollow) {
         if(checkSignRequestSignable(signRequestId, userEppn, userEppn)) {
             User user = userService.getByEppn(userEppn);
             User replacedByUser = userService.getUserByEmail(replacedByUserEmail);
             if (user.equals(replacedByUser)) {
                 throw new EsupSignatureRuntimeException("Transfer impossible");
             }
-            transfertSignRequest(signRequestId, user, replacedByUser);
+            transfertSignRequest(signRequestId, user, replacedByUser, keepFollow);
         } else {
             throw new EsupSignatureRuntimeException("Transfer impossible");
         }
     }
 
     @Transactional
-    public void transfertSignRequest(Long signRequestId, User user, User replacedByUser) {
+    public void transfertSignRequest(Long signRequestId, User user, User replacedByUser, boolean keepFollow) {
         SignRequest signRequest = signRequestService.getById(signRequestId);
         signRequest.getParentSignBook().getTeam().remove(user);
         addToTeam(signRequest.getParentSignBook(), user.getEppn());
@@ -1965,6 +1965,9 @@ public class SignBookService {
                     recipient.setUser(replacedByUser);
                 }
             }
+        }
+        if(keepFollow) {
+            addViewers(signRequest.getParentSignBook().getId(), Collections.singletonList(user.getEmail()));
         }
     }
 
