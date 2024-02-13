@@ -394,7 +394,8 @@ export class WizUi {
                     recipient.name = extInfos.find("#names").val();
                     recipient.firstName = extInfos.find("#firstnames").val();
                     recipient.phone = extInfos.find("#phones").val();
-                    recipient.forceSms = extInfos.find("#forcesmses").val() === "1";
+                    let toto = extInfos.find("#forcesmses");
+                    recipient.forceSms = toto.prop("checked");
                     step.recipients.push(recipient);
                 });
             }
