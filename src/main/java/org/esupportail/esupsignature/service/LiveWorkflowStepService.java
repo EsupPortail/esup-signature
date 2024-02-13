@@ -72,8 +72,9 @@ public class LiveWorkflowStepService {
                     recipientUser.setFirstname(recipientWsDto.getFirstName());
                     if(StringUtils.hasText(recipientWsDto.getPhone())) {
                         recipientUser.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(recipientWsDto.getPhone()));
-                        recipientUser.setForceSms(recipientWsDto.getForceSms() != null && recipientWsDto.getForceSms());
                     }
+                    recipientUser.setForceSms(recipientWsDto.getForceSms() != null && recipientWsDto.getForceSms());
+
                 }
             }
             if(liveWorkflowStep.getId() != null) {
