@@ -83,6 +83,8 @@ public class SignBook {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date endDate;
 
+    private Date lastNotifDate;
+
     private String lastOtp;
 
     public Long getId() {
@@ -229,6 +231,14 @@ public class SignBook {
 
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
+    }
+
+    public Date getLastNotifDate() {
+        return lastNotifDate;
+    }
+
+    public void setLastNotifDate(Date lastNotifDate) {
+        this.lastNotifDate = lastNotifDate;
     }
 
     public String getLastOtp() {

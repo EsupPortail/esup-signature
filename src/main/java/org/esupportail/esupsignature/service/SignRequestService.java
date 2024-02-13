@@ -936,11 +936,11 @@ public class SignRequestService {
 			}
 		}
 		long notifTime = Long.MAX_VALUE;
-		if(signRequest.getLastNotifDate() != null) {
-			notifTime = Duration.between(signRequest.getLastNotifDate().toInstant(), new Date().toInstant()).toHours();
+		if(signRequest.getParentSignBook().getLastNotifDate() != null) {
+			notifTime = Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours();
 		}
 		if(!recipientEmails.isEmpty() && notifTime >= globalProperties.getHoursBeforeRefreshNotif() && signRequest.getStatus().equals(SignRequestStatus.pending)) {
-			mailService.sendSignRequestReplayAlert(recipientEmails, signRequest);
+			mailService.sendSignRequestReplayAlert(recipientEmails, signRequest.getParentSignBook());
 			return true;
 		}
 		return false;

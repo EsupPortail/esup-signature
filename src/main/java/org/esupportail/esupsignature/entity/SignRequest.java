@@ -75,8 +75,6 @@ public class SignRequest {
 
     private Boolean warningReaded = false;
 
-    private Date lastNotifDate;
-
     @ManyToMany
     private Set<User> viewedBy = new HashSet<>();
 
@@ -220,14 +218,6 @@ public class SignRequest {
 
     public Map<Recipient, Action> getRecipientHasSigned() {
         return recipientHasSigned;
-    }
-
-    public Date getLastNotifDate() {
-        return lastNotifDate;
-    }
-
-    public void setLastNotifDate(Date lastNotifDate) {
-        this.lastNotifDate = lastNotifDate;
     }
 
     public Set<User> getViewedBy() {

@@ -944,7 +944,7 @@ public class SignBookService {
                     addToTeam(signBook, userEppn);
                     if (!emailSended && sendEmailAlert) {
                         try {
-                            mailService.sendEmailAlerts(signRequest, userEppn, data, forceSendEmail);
+                            mailService.sendEmailAlerts(signBook, userEppn, data, forceSendEmail);
                             mailService.sendCCAlert(signBook, null);
                             emailSended = true;
                         } catch (EsupSignatureMailException e) {
