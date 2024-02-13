@@ -926,6 +926,7 @@ public class SignRequestService {
 		return new ArrayList<>(signRequest.getAttachments());
 	}
 
+	@Transactional
 	public boolean replayNotif(Long id) throws EsupSignatureMailException {
 		SignRequest signRequest = this.getById(id);
 		List<String> recipientEmails = new ArrayList<>();
