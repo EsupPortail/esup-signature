@@ -69,9 +69,6 @@
 			</form>
 		</th:block>
 		<div class="border 1 me-2 d-none d-lg-block ms-1"></div>
-		<a th:if="${signable}" class="btn btn-light btn-outline-dark me-1" title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
-			<i class="fa-solid fa-people-arrows"></i>
-		</a>
 		<a th:if="${signRequest.parentSignBook.createBy.eppn == user.eppn}" class="btn btn-light btn-outline-dark d-none d-lg-block ms-1 me-1" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal">
 			<i class="fa-solid fa-users-viewfinder"></i>
 		</a>

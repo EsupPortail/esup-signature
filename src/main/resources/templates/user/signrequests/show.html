@@ -58,6 +58,11 @@
                         <a id="visaLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
                             title="Viser"><i class="fa-solid fa-check fa-2xl"></i></a>
                     </li>
+                    <li>
+                        <a th:if="${signable}" class="btn-floating btn-lg bg-warning waves-effect " title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
+                            <i class="fa-solid fa-people-arrows fa-2xl text-dark"></i>
+                        </a>
+                    </li>
                     <li th:if="${signRequest.createBy.eppn != userEppn && signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a id="refuseLaunchButton" role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Refuser"
                             th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"><i
@@ -70,8 +75,8 @@
                     </li>
                     <li th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}">
                         <a id="trashLaunchButton" role="button" class="btn-floating btn-lg bg-danger waves-effect"
-                           th:title="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
-                           data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
+                            th:title="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
+                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
                             <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-dumpster fa-2xl"></i>
                             <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-trash-alt fa-2xl"></i>
                         </a>
