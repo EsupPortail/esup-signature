@@ -61,7 +61,7 @@
                                 <th>Titre</th>
                                 <th class="d-none d-md-table-cell">Date de création</th>
                                 <th class="d-none d-lg-table-cell">Créé par</th>
-                                <th class="">Action</th>
+                                <th th:if="${signBook.isEditable()}" class="">Action</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -70,7 +70,7 @@
                                     <td class="text-break" th:text="${signRequest.title}"></td>
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span></td>
-                                    <td class="">
+                                    <td th:if="${signBook.isEditable()}" class="">
                                         <div class="dropdown position-relative">
                                             <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-bs-toggle="dropdown">
                                                 <i class="fa-solid fa-ellipsis-v"></i>
@@ -112,7 +112,7 @@
                     <div th:unless="${#lists.size(signBook.signRequests) > 0}" class="alert alert-secondary">
                         Aucun document à signer pour le moment
                     </div>
-                    <a title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn-floating btn-lg text-dark bg-primary waves-effect float-end m-3">
+                    <a th:if="${signBook.isEditable()}" title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn-floating btn-lg text-dark bg-primary waves-effect float-end m-3">
                         <i class="fa-solid fa-file-medical fa-2xl"></i>
                     </a>
 
@@ -140,9 +140,6 @@
                         <div class="form-group mb-3">
                             <div class="custom-file">
                                 <input required class="form-control" data-buttontext="Choisir fichier" id="send-sign-file-input" name="multipartFiles" type="file">
-                                <label class="custom-file-label" for="send-sign-file-input" id="inputGroupLabel02">
-                                    Choisir un document
-                                </label>
                             </div>
                         </div>
                     </div>

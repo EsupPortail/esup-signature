@@ -114,8 +114,7 @@ public class UserController {
 
 	@GetMapping(value = "/remove-keystore")
 	public String removeKeystore(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
-		User authUser = userService.getByEppn(authUserEppn);
-		authUser.setKeystore(null);
+		userService.removeKeystore(authUserEppn);
 		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le magasin de clés a bien été supprimé"));
 		return "redirect:/user/users";
 	}

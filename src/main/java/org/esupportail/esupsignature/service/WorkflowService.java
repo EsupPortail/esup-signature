@@ -55,9 +55,6 @@ public class WorkflowService {
     private LiveWorkflowService liveWorkflowService;
 
     @Resource
-    private LiveWorkflowStepService liveWorkflowStepService;
-
-    @Resource
     private FsAccessFactoryService fsAccessFactoryService;
 
     @Resource
@@ -494,6 +491,7 @@ public class WorkflowService {
         workflowToUpdate.getRoles().addAll(workflow.getRoles());
         workflowToUpdate.setUpdateBy(user.getEppn());
         workflowToUpdate.setUpdateDate(new Date());
+        workflowToUpdate.setMessage(workflow.getMessage());
         workflowRepository.save(workflowToUpdate);
         return workflowToUpdate;
     }
@@ -622,5 +620,22 @@ public class WorkflowService {
     public String getByIdJson(Long id) throws JsonProcessingException {
         return objectMapper.writeValueAsString(workflowRepository.getByIdJson(id));
     }
-}
 
+    @Transactional
+    public String getHelpMessage(String userEppn, Workflow workflow) {
+        User user = userService.getByEppn(userEppn);
+        String messsage = null;
+        boolean sendMessage = true;
+        if(user.getFormMessages() != null) {
+            String[] formMessages = user.getFormMessages().split(" ");
+            if(Arrays.asList(formMessages).contains(workflow.getId().toString())) {
+                sendMessage = false;
+            }
+        }
+        if(sendMessage && workflow.getMessage() != null && !workflow.getMessage().isEmpty()) {
+            messsage = workflow.getMessage();
+        }
+        return messsage;
+    }
+
+}

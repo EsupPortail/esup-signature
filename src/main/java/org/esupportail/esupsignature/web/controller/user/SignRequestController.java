@@ -105,9 +105,9 @@ public class SignRequestController {
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
         SignRequest signRequest = signRequestService.getById(id);
         boolean displayNotif = false;
-        if (signRequest.getLastNotifDate() == null && Duration.between(signRequest.getCreateDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()) {
-            displayNotif = true;
-        } else if (signRequest.getLastNotifDate() != null && Duration.between(signRequest.getLastNotifDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()) {
+        if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequest.getCreateBy().getEppn().equals(userEppn) &&
+            (signRequest.getParentSignBook().getLastNotifDate() == null && Duration.between(signRequest.getParentSignBook().getCreateDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()) ||
+            (signRequest.getParentSignBook().getLastNotifDate() != null && Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif())) {
             displayNotif = true;
         }
         model.addAttribute("displayNotif", displayNotif);
@@ -241,8 +241,12 @@ public class SignRequestController {
         SignRequest signRequest = signRequestService.getById(id);
         String referer = httpServletRequest.getHeader("referer");
         if(signRequest.getParentSignBook().getSignRequests().size() > 1) {
-            signRequestService.deleteDefinitive(id);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
+            try {
+                signRequestService.deleteDefinitive(id);
+                redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
+            } catch (EsupSignatureRuntimeException e) {
+                redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+            }
             if(referer.contains("signrequests")) {
                 return "redirect:/user/signbooks";
             } else {
@@ -316,14 +320,22 @@ public class SignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
     @PostMapping(value = "/transfert/{id}")
     public String transfer(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                                @RequestParam(value = "transfertRecipientsEmails") List<String> transfertRecipientsEmails, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
+                           @RequestParam(value = "transfertRecipientsEmails") List<String> transfertRecipientsEmails,
+                           @RequestParam(value = "keepFollow", required = false) Boolean keepFollow,
+                           RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
+        if(keepFollow == null) keepFollow = false;
         try {
-            signBookService.transfertSignRequest(id, authUserEppn, transfertRecipientsEmails.get(0));
+            signBookService.transfertSignRequest(id, authUserEppn, transfertRecipientsEmails.get(0), keepFollow);
             redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Demande transférée"));
+            if(keepFollow) {
+                return "redirect:/user/signrequests/" + id;
+            } else {
+                return "redirect:/user";
+            }
         } catch (EsupSignatureRuntimeException e) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non transférée"));
+            return "redirect:/user/signrequests/" + id;
         }
-        return "redirect:/user/signrequests/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")

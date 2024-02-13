@@ -935,4 +935,10 @@ public class UserService {
         User user = getByEppn(userEppn);
         return new ArrayList<>(user.getRoles());
     }
+
+    @Transactional
+    public void removeKeystore(String authUserEppn) {
+        User authUser = getByEppn(authUserEppn);
+        authUser.setKeystore(null);
+    }
 }

@@ -318,15 +318,14 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @PostMapping(value = "/add-docs/{id}")
     public String addDocumentToNewSignRequest(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles) {
-        logger.info("start add documents");
+                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, RedirectAttributes redirectAttributes) {
         try {
             signBookService.addDocumentsToSignBook(id, multipartFiles, authUserEppn);
-            return "redirect:/user/signbooks/update/" + id;
+            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Ajout effectuée"));
         } catch(Exception e) {
-            logger.warn("redirect to home");
+            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
         }
-        return "redirect:/user";
+        return "redirect:/user/signbooks/update/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signBookOwner(#id, #authUserEppn)")

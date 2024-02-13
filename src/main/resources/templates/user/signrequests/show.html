@@ -58,6 +58,11 @@
                         <a id="visaLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
                             title="Viser"><i class="fa-solid fa-check fa-2xl"></i></a>
                     </li>
+                    <li>
+                        <a th:if="${signable}" class="btn-floating btn-lg bg-warning waves-effect " title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
+                            <i class="fa-solid fa-people-arrows fa-2xl text-dark"></i>
+                        </a>
+                    </li>
                     <li th:if="${signRequest.createBy.eppn != userEppn && signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a id="refuseLaunchButton" role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Refuser"
                             th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"><i
@@ -70,8 +75,8 @@
                     </li>
                     <li th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}">
                         <a id="trashLaunchButton" role="button" class="btn-floating btn-lg bg-danger waves-effect"
-                           th:title="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
-                           data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
+                            th:title="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
+                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
                             <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-dumpster fa-2xl"></i>
                             <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-trash-alt fa-2xl"></i>
                         </a>
@@ -659,7 +664,7 @@
 </div>
 
 <div data-bs-focus="false" class="modal fade" id="detailsModal"  role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title" id="detailsModalLabel">Details de la demande</h3>
@@ -685,12 +690,18 @@
             <div class="modal-body">
                 <div class="form-group mb-3">
                     <p>Vous allez réaffecter la demande à une autre personne que vous.</p>
-                    <form id="send-sign-form" method="post" th:action="'/user/signrequests/transfert/' + ${signBook.id}">
+                    <form id="send-sign-form" method="post" th:action="'/user/signrequests/transfert/' + ${signRequest.id}">
                     <label class="form-label" for="transfertRecipientsEmails">Choisir la personne qui vous remplacera dans cette demande</label>
-                    <select class="select-users" name="transfertRecipientsEmails" id="transfertRecipientsEmails" size="1" multiple="multiple" required="required">
+                    <select class="auto-select-users" name="transfertRecipientsEmails" id="transfertRecipientsEmails" size="1" multiple="multiple" required="required">
                         <option data-placeholder="true"></option>
                     </select>
                     <div class="mt-2 mb-2" id="tempUsers-transfertRecipientsEmails"></div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="keepFollow" id="keepFollow">
+                        <label class="form-check-label" for="keepFollow">
+                            Continuer de recevoir les alertes mail pour cette demande
+                        </label>
+                    </div>
                     <button type="submit" class="btn btn-success float-end">Valider</button>
                     <button type="button" class="btn btn-secondary float-end me-1" data-bs-dismiss="modal">Fermer</button>
                     </form>
@@ -700,7 +711,7 @@
     </div>
 </div>
 
-<div data-bs-focus="false" class="modal fade" id="addViewersModal"  role="dialog" aria-labelledby="forwardModalLabel" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="addViewersModal"  role="dialog" aria-labelledby="viewersModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -709,10 +720,9 @@
             </div>
             <div class="modal-body">
                 <div class="form-group mb-3">
-                    <p>Vous allez réaffecter la demande à une autre personne que vous.</p>
                     <form id="add-viewers-form" th:method="post" th:action="'/user/signbooks/add-viewers/' + ${signBook.id}">
-                    <label class="form-label" for="transfertRecipientsEmails">Choisir la personne qui vous remplacera dans cette demande</label>
-                    <select class="select-users mb-4" name="viewers" id="viewers" size="1" multiple="multiple" required="required">
+                    <label class="form-label" for="transfertRecipientsEmails">Choisir la/les personne(s) à ajouter</label>
+                    <select class="auto-select-users mb-4" name="viewers" id="viewers" size="1" multiple="multiple" required="required">
                         <option data-placeholder="true"></option>
                     </select>
                     <button type="submit" class="btn btn-success float-end">Valider</button>
