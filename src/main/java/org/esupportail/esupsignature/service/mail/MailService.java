@@ -81,24 +81,23 @@ public class MailService {
     @Resource
     private UserShareService userShareService;
 
-    public void sendEmailAlerts(SignRequest signRequest, String userEppn, Data data, boolean forceSend) throws EsupSignatureMailException {
-        for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
+    public void sendEmailAlerts(SignBook signBook, String userEppn, Data data, boolean forceSend) throws EsupSignatureMailException {
+        for (Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
             User recipientUser = recipient.getUser();
             if (!UserType.external.equals(recipientUser.getUserType())
                     && (!recipientUser.getEppn().equals(userEppn) || forceSend)
                     && (recipientUser.getEmailAlertFrequency() == null
                     || recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately)
                     || userService.checkEmailAlert(recipientUser))) {
-                sendSignRequestEmailAlert(signRequest, recipientUser, data);
+                sendSignRequestEmailAlert(signBook, recipientUser, data);
             }
         }
     }
 
-    public void sendSignRequestEmailAlert(SignRequest signRequest, User recipientUser, Data data) throws EsupSignatureMailException {
+    public void sendSignRequestEmailAlert(SignBook signBook, User recipientUser, Data data) throws EsupSignatureMailException {
         Date date = new Date();
         Set<String> toEmails = new HashSet<>();
         toEmails.add(recipientUser.getEmail());
-        SignBook signBook = signRequest.getParentSignBook();
         Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
         recipientUser.setLastSendAlertDate(date);
         if(data != null && data.getForm() != null) {
@@ -112,7 +111,7 @@ public class MailService {
                 }
             }
         }
-        sendSignRequestAlert(new ArrayList<>(toEmails), signRequest);
+        sendSignRequestAlert(new ArrayList<>(toEmails), signBook);
     }
 
     public void sendCompletedMail(SignBook signBook, String userEppn) throws EsupSignatureMailException {
@@ -279,18 +278,18 @@ public class MailService {
         }
     }
 
-    public void sendSignRequestAlert(List<String> recipientsEmails, SignRequest signRequest) throws EsupSignatureMailException {
+    public void sendSignRequestAlert(List<String> recipientsEmails, SignBook signBook) throws EsupSignatureMailException {
         if (!checkMailSender()) {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
 
-        PersonLdap personLdap = userService.findPersonLdapByUser(signRequest.getCreateBy());
+        PersonLdap personLdap = userService.findPersonLdapByUser(signBook.getCreateBy());
         if(personLdap != null) {
             OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
             ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
         }
-        ctx.setVariable("signRequest", signRequest);
+        ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);
         setTemplate(ctx);
@@ -304,25 +303,25 @@ public class MailService {
             logger.info("send email alert for " + recipientsEmails.get(0));
 //            mailSender.send(signMessage(mimeMessage.getMimeMessage()));
             mailSender.send(mimeMessage.getMimeMessage());
-            signRequest.setLastNotifDate(new Date());
+            signBook.setLastNotifDate(new Date());
         } catch (Exception e) {
             logger.error("unable to send ALERT email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
         }
     }
 
-    public void sendSignRequestReplayAlert(List<String> recipientsEmails, SignRequest signRequest) throws EsupSignatureMailException {
+    public void sendSignRequestReplayAlert(List<String> recipientsEmails, SignBook signBook) throws EsupSignatureMailException {
         if (!checkMailSender()) {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
 
-        PersonLdap personLdap = userService.findPersonLdapByUser(signRequest.getCreateBy());
+        PersonLdap personLdap = userService.findPersonLdapByUser(signBook.getCreateBy());
         if(personLdap != null) {
             OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
             ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
         }
-        ctx.setVariable("signRequest", signRequest);
+        ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);
         setTemplate(ctx);
@@ -335,7 +334,7 @@ public class MailService {
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             logger.info("send email replay alert for " + recipientsEmails.get(0));
             mailSender.send(mimeMessage.getMimeMessage());
-            signRequest.setLastNotifDate(new Date());
+            signBook.setLastNotifDate(new Date());
         } catch (MessagingException e) {
             logger.error("unable to send ALERT email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);

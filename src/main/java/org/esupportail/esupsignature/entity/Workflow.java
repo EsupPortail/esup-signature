@@ -24,6 +24,9 @@ public class Workflow {
 
     private String description;
 
+    @Column(columnDefinition = "TEXT")
+    private String message;
+
     private Integer counter;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -78,6 +81,9 @@ public class Workflow {
 
     private Boolean sealAtEnd = false;
 
+    @Transient
+    private String messageToDisplay;
+
     public Long getId() {
         return id;
     }
@@ -108,6 +114,14 @@ public class Workflow {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public Integer getCounter() {
@@ -290,5 +304,13 @@ public class Workflow {
 
     public void setSealAtEnd(Boolean sealAtEnd) {
         this.sealAtEnd = sealAtEnd;
+    }
+
+    public String getMessageToDisplay() {
+        return messageToDisplay;
+    }
+
+    public void setMessageToDisplay(String messageToDisplay) {
+        this.messageToDisplay = messageToDisplay;
     }
 }

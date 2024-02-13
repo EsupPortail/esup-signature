@@ -46,6 +46,10 @@
                             <input id="description" class="form-control" type="text" th:field="*{description}" value="" autocomplete="on">
                         </div>
                         <div class="form-group mb-3">
+                            <label for="message"><strong>Message d’accueil</strong></label>
+                            <textarea id="message" class="summer-note" th:field="*{message}"></textarea>
+                        </div>
+                        <div class="form-group mb-3">
                             <label for="title"><strong>Prefix</strong> (utilisé lors de l'import de documents dans le circuit)</label>
                             <input id="title" class="form-control" type="text" th:field="*{title}" value="" autocomplete="on">
                         </div>

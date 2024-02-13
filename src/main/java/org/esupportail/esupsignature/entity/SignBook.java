@@ -83,6 +83,8 @@ public class SignBook {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date endDate;
 
+    private Date lastNotifDate;
+
     private String lastOtp;
 
     public Long getId() {
@@ -231,6 +233,14 @@ public class SignBook {
         this.endDate = endDate;
     }
 
+    public Date getLastNotifDate() {
+        return lastNotifDate;
+    }
+
+    public void setLastNotifDate(Date lastNotifDate) {
+        this.lastNotifDate = lastNotifDate;
+    }
+
     public String getLastOtp() {
         return lastOtp;
     }
@@ -241,6 +251,10 @@ public class SignBook {
 
     public List<Comment> getPostits() {
         return signRequests.stream().map(SignRequest::getComments).flatMap(comments -> comments.stream().filter(Comment::getPostit)).collect(Collectors.toList());
+    }
+
+    public boolean isEditable() {
+        return getSignRequests().stream().noneMatch(s -> !s.getStatus().equals(SignRequestStatus.pending) && !s.getStatus().equals(SignRequestStatus.deleted) && !s.getStatus().equals(SignRequestStatus.draft) && !s.getStatus().equals(SignRequestStatus.uploading));
     }
 
 }

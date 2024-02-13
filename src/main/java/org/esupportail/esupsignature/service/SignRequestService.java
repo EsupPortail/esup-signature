@@ -658,6 +658,9 @@ public class SignRequestService {
 	@Transactional
 	public void deleteDefinitive(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
+		if(!signRequest.getParentSignBook().isEditable()) {
+			throw new EsupSignatureRuntimeException("Suppression impossible, la demande est déjà démarrée");
+		}
 		signRequest.getRecipientHasSigned().clear();
 		signRequestRepository.save(signRequest);
 		if (signRequest.getData() != null) {
@@ -933,11 +936,11 @@ public class SignRequestService {
 			}
 		}
 		long notifTime = Long.MAX_VALUE;
-		if(signRequest.getLastNotifDate() != null) {
-			notifTime = Duration.between(signRequest.getLastNotifDate().toInstant(), new Date().toInstant()).toHours();
+		if(signRequest.getParentSignBook().getLastNotifDate() != null) {
+			notifTime = Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours();
 		}
 		if(!recipientEmails.isEmpty() && notifTime >= globalProperties.getHoursBeforeRefreshNotif() && signRequest.getStatus().equals(SignRequestStatus.pending)) {
-			mailService.sendSignRequestReplayAlert(recipientEmails, signRequest);
+			mailService.sendSignRequestReplayAlert(recipientEmails, signRequest.getParentSignBook());
 			return true;
 		}
 		return false;
