@@ -119,7 +119,8 @@ export class WizUi {
         let successCallback = function () {
             location.href = "/user/signbooks/" + self.newSignBookId;
         }
-        let errorCallback = function () {
+        let errorCallback = function(e) {
+
             $("#update-fast-sign-submit").click();
 
         }
@@ -197,7 +198,7 @@ export class WizUi {
         let successCallback = function (html) {
             self.workflowSignNextStepDisplay(html)
         }
-        let errorCallback = function () {
+        let errorCallback = function (e) {
             $("#workflow-form-submit").click();
         }
         this.sendSteps('/user/wizard/wiz-new-step/' + self.newSignBookId + '?workflowId=' + id, $("#start-workflow-form"), successCallback, errorCallback);
@@ -262,8 +263,14 @@ export class WizUi {
         let successCallback = function() {
             location.href = "/user/signbooks/" + self.newSignBookId;
         }
-        let errorCallback = function() {
-            $("#send-sign-submit").click();
+        let errorCallback = function(e) {
+            if(e.responseText.startsWith('400'))  {
+                bootbox.alert("Une erreur s’est produite lors du démarrage du circuit<br>" + e.responseText, function() {
+                    self.closeModal();
+                });
+            } else {
+                $("#send-sign-submit").click();
+            }
         }
         this.sendSteps('/user/wizard/wiz-init-workflow/' + this.newSignBookId + '?pending=' + pending, $("li[id^='step-wiz-']"), successCallback, errorCallback);
     }
@@ -336,18 +343,20 @@ export class WizUi {
                             cache: false
                         });
                     }
-                    self.modal.modal('hide');
-                    self.modal.unbind();
-                    self.div.html("");
+
                 } else {
                     self.modal.modal('show');
                 }
             });
         } else {
-            this.modal.modal('hide');
-            this.modal.unbind();
-            this.div.html("");
+            this.closeModal();
         }
+   }
+
+   closeModal() {
+       this.modal.modal('hide');
+       this.modal.unbind();
+       this.div.html("");
    }
 
     startFormDisplayForm(html) {
@@ -367,7 +376,7 @@ export class WizUi {
         let successCallback = function(id) {
             location.href = "/user/signbooks/" + id;
         };
-        let errorCallback = function() {
+        let errorCallback = function(e) {
             $("#send-form-submit").click();
             spinner.addClass("d-none");
         };
