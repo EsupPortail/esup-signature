@@ -315,4 +315,10 @@ public class NexuService {
 		return extendedDoc;
 	}
 
+	public void delete(Long signRequestId) {
+		NexuSignature nexuSignature = nexuSignatureRepository.findBySignRequestId(signRequestId);
+		if(nexuSignature != null) {
+			nexuSignatureRepository.delete(nexuSignature);
+		}
+	}
 }
