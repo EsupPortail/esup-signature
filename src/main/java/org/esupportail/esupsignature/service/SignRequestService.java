@@ -32,6 +32,7 @@ import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.metric.CustomMetricsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
+import org.esupportail.esupsignature.service.utils.sign.NexuService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.slf4j.Logger;
@@ -62,8 +63,10 @@ public class SignRequestService {
 	@Resource
 	private TargetService targetService;
 
-	public SignRequestService(GlobalProperties globalProperties,
-							  SignBookRepository signBookRepository) {
+	@Resource
+	private NexuService nexuService;
+
+	public SignRequestService(GlobalProperties globalProperties, SignBookRepository signBookRepository) {
 		this.globalProperties = globalProperties;
 		this.signBookRepository = signBookRepository;
 	}
@@ -651,6 +654,7 @@ public class SignRequestService {
 			signRequest.setStatus(SignRequestStatus.deleted);
 			logService.create(signRequest.getId(), SignRequestStatus.deleted, "Suppression par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			otpService.deleteOtpBySignRequestId(signRequestId);
+			nexuService.delete(signRequestId);
 			return false;
 		}
 	}
@@ -673,6 +677,7 @@ public class SignRequestService {
 			commentService.deleteComment(commentId, signRequest);
 		}
 		signRequest.getParentSignBook().getSignRequests().remove(signRequest);
+		nexuService.delete(signRequestId);
 		signRequestRepository.delete(signRequest);
 	}
 
