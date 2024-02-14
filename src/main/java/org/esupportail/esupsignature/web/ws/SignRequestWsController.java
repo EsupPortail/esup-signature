@@ -202,4 +202,13 @@ public class SignRequestWsController {
         }
         return ResponseEntity.internalServerError().build();
     }
+
+    @GetMapping(value = "/return-test")
+    @ResponseBody
+    public ResponseEntity<Void> returnTest(@RequestParam("signRequestId") String signRequestId, @RequestParam("status") String status, @RequestParam("step") String step) {
+        logger.info(signRequestId + ", " + status + ", " + step);
+        //ici, le code à executer en fonction du statut
+        return ResponseEntity.ok().build();
+    }
+
 }
