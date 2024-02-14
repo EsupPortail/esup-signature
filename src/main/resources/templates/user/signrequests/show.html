@@ -471,8 +471,7 @@
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" class="modal-title">Démarrer le circuit</h3>
-                <h3 th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" class="modal-title">Valider le document</h3>
+                <h3 class="modal-title">Démarrer le circuit</h3>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                         aria-label="Close">
 
@@ -515,7 +514,7 @@
                                 </div>
                                 <div th:if="${step.changeable == true}" class="form-group mb-1">
                                     <label><span th:text="'Merci de saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span></label>
-                                    <select class="select-users"
+                                    <select class="auto-select-users"
                                             th:data-signrequest-id="${signRequest.id}"
                                             th:id="'recipientEmailsSelect_' + ${iterator.index + 1}"
                                             multiple="multiple" name="recipientEmails" required="required">
@@ -591,7 +590,7 @@
                         <th:block th:each="target : ${signRequest.parentSignBook.liveWorkflow.targets}">
                         <div th:if="${target.targetUri.contains('mailto:')}" class="form-group mb-3">
                             <label>Etape finale : Envoi par mail à </label>
-                            <select class="select-users" id="targetEmailsSelect" multiple="multiple" name="targetEmails" required>
+                            <select class="auto-select-users" id="targetEmailsSelect" multiple="multiple" name="targetEmails" required>
                                 <th:block th:each="targetEmail : ${target.targetUri.replace('mailto:', '').split(',')}">
                                     <option selected="selected" th:if="${targetEmail != ''}" th:text="${targetEmail}" th:value="${targetEmail}"></option>
                                 </th:block>

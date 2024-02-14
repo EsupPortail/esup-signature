@@ -418,7 +418,7 @@ public class SignBookService {
     }
 
     public void importWorkflow(SignBook signBook, Workflow workflow, List<WorkflowStepDto> steps) {
-        logger.info("import workflow steps in signBook " + signBook.getSubject() + " - " + signBook.getId());
+        logger.info("try import workflow steps in signBook " + signBook.getSubject() + " - " + signBook.getId());
         int i = 0;
         for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
             i++;

@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignBookService;
@@ -257,23 +258,24 @@ public class WizardController {
 
     @PreAuthorize("@preAuthorizeService.signBookOwner(#signBookId, #authUserEppn)")
     @PostMapping(value = "/wiz-init-workflow/{signBookId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Long> pending(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+    public ResponseEntity<Object> pending(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                         @PathVariable("signBookId") Long signBookId,
                                         @RequestBody List<WorkflowStepDto> steps,
                                         @RequestParam(value = "comment", required = false) String comment,
                                         @RequestParam(value = "pending", required = false) Boolean pending,
-                                        @RequestParam(value = "sendEmailAlert", required = false, defaultValue = "true") Boolean sendEmailAlert,
-                                        RedirectAttributes redirectAttributes) throws MessagingException, EsupSignatureRuntimeException {
+                                        @RequestParam(value = "sendEmailAlert", required = false, defaultValue = "true") Boolean sendEmailAlert) throws MessagingException, EsupSignatureRuntimeException {
         if (sendEmailAlert == null) sendEmailAlert = true;
         try {
             signBookService.initSignBookWorkflow(signBookId, steps, null, userEppn, authUserEppn, pending, sendEmailAlert);
             if(comment != null && !comment.isEmpty()) {
                 signRequestService.addPostit(signBookId, comment, userEppn, authUserEppn);
             }
-            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Votre demande a bien été transmise"));
         } catch (EsupSignatureRuntimeException e) {
-            logger.error(e.getMessage(), e);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+            if(e instanceof EsupSignatureFsException) {
+                signBookService.deleteDefinitive(signBookId, authUserEppn);
+                logger.error(e.getMessage());
+            }
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
         return ResponseEntity.ok().body(signBookId);
     }
