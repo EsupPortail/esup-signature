@@ -44,7 +44,11 @@ public class TargetService {
                 .queryParam("status", status)
                 .queryParam("step", step)
                 .build();
-        return restTemplate.getForEntity(targetUri.toUri(), String.class);
+        try {
+            return restTemplate.getForEntity(targetUri.toUri(), String.class);
+        } catch (Exception e) {
+            throw new EsupSignatureFsException(e.getMessage());
+        }
     }
 
     @Transactional
