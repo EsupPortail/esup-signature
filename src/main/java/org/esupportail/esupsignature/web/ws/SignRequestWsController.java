@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.web.ws;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -49,7 +50,7 @@ public class SignRequestWsController {
     @PostMapping(value ="/new", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @Operation(description = "Création d'une demande de signature")
     public ResponseEntity<?> create(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
-                                    @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", schema = @Schema(implementation = WorkflowStepDto[].class), example = "[{\n" +
+                                    @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example = "[{\n" +
                                             "  \"title\": \"string\",\n" +
                                             "  \"workflowId\": 0,\n" +
                                             "  \"stepNumber\": 0,\n" +
