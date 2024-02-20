@@ -61,7 +61,7 @@ public class FormWsController {
     @PostMapping(value = "/{id}/new", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @Operation(description = "Création d'une nouvelle instance d'un formulaire")
     public ResponseEntity<?> start(@PathVariable Long id,
-                                   @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", schema = @Schema(implementation = WorkflowStepDto[].class), example = "[{\n" +
+                                   @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example = "[{\n" +
                                            "  \"title\": \"string\",\n" +
                                            "  \"workflowId\": 0,\n" +
                                            "  \"stepNumber\": 0,\n" +
