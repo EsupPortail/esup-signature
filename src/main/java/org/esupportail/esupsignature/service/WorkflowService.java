@@ -354,7 +354,7 @@ public class WorkflowService {
         }
     }
 
-    public List<User> getFavoriteRecipientEmail(long stepNumber, List<RecipientWsDto> recipients) {
+    public List<User> getFavoriteRecipientEmail(int stepNumber, List<RecipientWsDto> recipients) {
         List<User> users = new ArrayList<>();
         if (recipients != null && !recipients.isEmpty()) {
             recipients = recipients.stream().filter(r -> r.getStep().equals(stepNumber)).collect(Collectors.toList());
@@ -431,13 +431,14 @@ public class WorkflowService {
         }
     }
 
+    @Transactional
     public List<Workflow> getWorkflowsByDisplayWorkflowType(DisplayWorkflowType displayWorkflowType) {
         if (displayWorkflowType == null) {
             displayWorkflowType = DisplayWorkflowType.system;
         }
         List<Workflow> workflows = new ArrayList<>();
         if(DisplayWorkflowType.system.equals(displayWorkflowType)) {
-            workflows.addAll(getWorkflowsBySystemUser().stream().filter(workflow -> workflow.getFromCode() == null || !workflow.getFromCode()).collect(Collectors.toList()));
+            workflows.addAll(getWorkflowsBySystemUser().stream().filter(workflow -> workflow.getFromCode() == null || !workflow.getFromCode()).toList());
         } else if(DisplayWorkflowType.classes.equals(displayWorkflowType)) {
             workflows.addAll(getClassesWorkflows());
         } else if(DisplayWorkflowType.all.equals(displayWorkflowType)) {
@@ -450,9 +451,10 @@ public class WorkflowService {
         return workflows;
     }
 
+    @Transactional
     public Workflow update(Workflow workflow, User user, String[] types, Set<String> managers) {
         Workflow workflowToUpdate = getById(workflow.getId());
-        if(managers != null && managers.size() > 0) {
+        if(managers != null && !managers.isEmpty()) {
             workflowToUpdate.getManagers().clear();
             for(String manager : managers) {
                 User managerUser = userService.getUserByEmail(manager);
@@ -485,6 +487,7 @@ public class WorkflowService {
         workflowToUpdate.setPublicUsage(workflow.getPublicUsage());
         workflowToUpdate.setSealAtEnd(workflow.getSealAtEnd());
         workflowToUpdate.setOwnerSystem(workflow.getOwnerSystem());
+        workflowToUpdate.setDisableDeleteByCreator(workflow.getDisableDeleteByCreator());
         workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
         workflowToUpdate.setSendAlertToAllRecipients(workflow.getSendAlertToAllRecipients());
         workflowToUpdate.getRoles().clear();
@@ -566,10 +569,7 @@ public class WorkflowService {
                 for(User user : workflowStepSetup.getUsers()) {
                     recipients.add(new RecipientWsDto(user.getEmail()));
                 }
-                WorkflowStepDto workflowStepDto = new WorkflowStepDto(workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), recipients, workflowStepSetup.getChangeable(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getAttachmentRequire());
-
                 WorkflowStep newWorkflowStep = workflowStepService.createWorkflowStep(workflowSetup.getName(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getSignType(), workflowStepSetup.getChangeable(), recipients.toArray(RecipientWsDto[]::new));
-
                 workflowStepService.updateStep(newWorkflowStep.getId(), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentAlert(), workflowStepSetup.getAttachmentRequire(), false, null);
                 workflow.getWorkflowSteps().add(newWorkflowStep);
             }
@@ -584,7 +584,7 @@ public class WorkflowService {
         workflow.setTitle(savedTitle);
     }
 
-
+    @Transactional
     public void rename(Long id, String name) {
         Workflow workflow = getById(id);
         workflow.setDescription(name);
@@ -593,7 +593,7 @@ public class WorkflowService {
     @Transactional
     public void addViewers(Long id, List<String> recipientsCCEmails) {
         Workflow workflow = getById(id);
-        if(recipientsCCEmails != null && recipientsCCEmails.size() > 0) {
+        if(recipientsCCEmails != null && !recipientsCCEmails.isEmpty()) {
             workflow.getViewers().clear();
             for (String recipientsEmail : recipientsCCEmails) {
                 User user = userService.getUserByEmail(recipientsEmail);

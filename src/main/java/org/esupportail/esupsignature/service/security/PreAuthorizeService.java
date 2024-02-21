@@ -104,26 +104,35 @@ public class PreAuthorizeService {
     public boolean signRequestOwner(Long id, String userEppn) {
         if(userEppn != null) {
             SignRequest signRequest = signRequestService.getById(id);
-            User user = userService.getByEppn(userEppn);
-            boolean isManager = false;
-            if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
-                Workflow workflow = workflowService.getById(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId());
-                isManager = workflow.getManagers().contains(user.getEmail());
-            }
+            boolean isManager = isManager(userEppn, signRequest.getParentSignBook());
             return signRequest.getCreateBy().getEppn().equals(userEppn) || isManager;
         }
         return false;
     }
 
+    public boolean signRequestDelete(Long id, String userEppn) {
+        if(userEppn != null) {
+            SignRequest signRequest = signRequestService.getById(id);
+            boolean isManager = isManager(userEppn, signRequest.getParentSignBook());
+            return signRequestService.isDeletetable(signRequest, userEppn) && (signRequest.getCreateBy().getEppn().equals(userEppn) || isManager);
+        }
+        return false;
+    }
+
+    private boolean isManager(String userEppn, SignBook signRequest) {
+        User user = userService.getByEppn(userEppn);
+        boolean isManager = false;
+        if (signRequest.getLiveWorkflow().getWorkflow() != null) {
+            Workflow workflow = workflowService.getById(signRequest.getLiveWorkflow().getWorkflow().getId());
+            isManager = workflow.getManagers().contains(user.getEmail());
+        }
+        return isManager;
+    }
+
     public boolean signBookOwner(Long id, String userEppn) {
         if(userEppn != null) {
             SignBook signBook = signBookService.getById(id);
-            User user = userService.getByEppn(userEppn);
-            boolean isManager = false;
-            if (signBook.getLiveWorkflow().getWorkflow() != null) {
-                Workflow workflow = workflowService.getById(signBook.getLiveWorkflow().getWorkflow().getId());
-                isManager = workflow.getManagers().contains(user.getEmail());
-            }
+            boolean isManager = isManager(userEppn, signBook);
             return signBook.getCreateBy().getEppn().equals(userEppn) || isManager;
         }
         return false;

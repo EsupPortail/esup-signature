@@ -79,6 +79,8 @@ public class Workflow {
 
     private Boolean ownerSystem = false;
 
+    private Boolean disableDeleteByCreator = false;
+
     private Boolean sealAtEnd = false;
 
     @Transient
@@ -288,6 +290,14 @@ public class Workflow {
 
     public void setOwnerSystem(Boolean ownerSystem) {
         this.ownerSystem = ownerSystem;
+    }
+
+    public Boolean getDisableDeleteByCreator() {
+        return disableDeleteByCreator;
+    }
+
+    public void setDisableDeleteByCreator(Boolean disableDeleteByCreator) {
+        this.disableDeleteByCreator = disableDeleteByCreator;
     }
 
     public List<User> getViewers() {
