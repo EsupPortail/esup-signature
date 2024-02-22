@@ -160,7 +160,7 @@
             </ul>
         </div>
     </nav>
-    <div th:if="${user.name != null}" id="user-infos" class="position-absolute user-infos collapse overflow-y-scroll drop-shadows">
+    <div th:if="${user.name != null && !#authorization.expression('hasRole(''ROLE_OTP'')')}" id="user-infos" class="position-absolute user-infos collapse overflow-y-scroll drop-shadows">
         <div class="card card-body user-infos text-center">
             <h5><b>Vos informations</b></h5>
             <table class="table table-sm table-borderless text-left">
