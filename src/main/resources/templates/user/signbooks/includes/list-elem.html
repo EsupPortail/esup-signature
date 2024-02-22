@@ -41,7 +41,8 @@
             </div>
         </td>
         <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" class="clickable-td d-none d-xxl-table-cell text-nowrap" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
-        <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" class="clickable-td d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+        <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" class="clickable-td d-none d-xl-table-cell">
+            <span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
         </td>
         <td class="d-none d-xl-table-cell">
             <div th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0 && signBook.liveWorkflow.currentStepNumber > 0}">
@@ -169,6 +170,11 @@
         </td>
     </tr>
     <tr th:if="${statusFilter == 'empty'}" th:title="${signBook.subject}">
+        <td class="w-20 d-none d-lg-table-cell" >
+            <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]"
+                th:data-es-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"
+                th:data-es-signbook-id="${signBook.id}">
+        </td>
         <td></td>
         <td class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signBook.subject}">
         </td>
@@ -180,8 +186,8 @@
         <td class="d-none d-xl-table-cell">
             <div th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0 && signBook.liveWorkflow.currentStepNumber > 0}">
                 <div class="dropdown">
-                    <button class="btn btn-sm btn-light btn-outline-light dropdown-toggle" type="button" th:id="'dropdownMenuButton-' + ${signBook.id}" data-bs-toggle="dropdown">
-                        <i class="fa-solid fa-users"></i> Liste des participants
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" th:id="'dropdownMenuButton-' + ${signBook.id}" data-bs-toggle="dropdown">
+                        <i class="fa-solid fa-list"></i> Liste des participants
                     </button>
                     <ul class="dropdown-menu" th:aria-labelledby="'dropdownMenuButton-' + ${signBook.id}">
                         <th:block th:each="liveWorkflowStep : ${signBook.liveWorkflow.liveWorkflowSteps}">
