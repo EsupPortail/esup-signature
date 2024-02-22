@@ -190,8 +190,12 @@ export class GlobalUi {
             closeButton: true,
             animate: true,
             className: "my-modal"
-
         });
+        bootbox.addLocale("fr", {
+            OK : 'Fermer',
+            CANCEL : 'Annuler',
+            CONFIRM : 'Confirmer'
+        })
     }
 
     checkBrowser() {
