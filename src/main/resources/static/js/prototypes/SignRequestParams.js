@@ -5,6 +5,7 @@ export class SignRequestParams extends EventFactory {
 
     constructor(signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone, light, signImages, scrollTop, csrf, signType) {
         super();
+        this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.signWidth = 150;
         this.signHeight = 75;
         Object.assign(this, signRequestParamsModel);
@@ -238,8 +239,6 @@ export class SignRequestParams extends EventFactory {
         }
         this.addWatermark = !this.addWatermark;
         this.toggleWatermark();
-        this.toggleWatermark();
-        this.toggleWatermark();
     }
 
     init() {
@@ -360,6 +359,10 @@ export class SignRequestParams extends EventFactory {
             }
             $("#extraTools_" + this.id).remove();
             $("#crossTools_" + this.id).css("top", "-45px");
+            if(!this.globalProperties.watermarkForExternals) {
+                this.addWatermark = true;
+                this.toggleWatermark();
+            }
         }
         this.cross.attr("page", this.signPageNumber);
     }
