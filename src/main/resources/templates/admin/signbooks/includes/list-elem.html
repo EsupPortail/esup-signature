@@ -2,9 +2,10 @@
 <th:block th:each="signBook : ${signBooks}">
     <tr th:if="${statusFilter != 'empty' && signBook.signRequests.size() > 0}" th:with="signRequest = ${signBook.signRequests.get(0)}" th:data-href="'/admin/signbooks/' + ${signBook.id}" data-bs-toggle="tooltip" th:title="${signBook.description}">
         <td class="w-20 d-none d-lg-table-cell">
-            <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-es-signrequest-status="${signRequest.status}"
-                   th:data-es-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"
-                   th:data-es-signbook-id="${signBook.id}">
+            <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]"
+                th:value="${signRequest.id}" th:data-es-signrequest-status="${signRequest.status}"
+                th:data-es-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"
+                th:data-es-signbook-id="${signBook.id}">
         </td>
         <td class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/admin/signrequests/' + ${signRequest.id}" th:text="${signBook.workflowName}"></td>
         <td class="clickable-td text-break overflow-hidden" style="white-space: pre-line" th:text="${signBook.subject}"></td>
@@ -21,7 +22,7 @@
                         <th:block th:each="liveWorkflowStep : ${signBook.liveWorkflow.liveWorkflowSteps}">
                             <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
                                 <li class="dropdown-item" th:title="${recipient.user.email}" style="display: inline-flex;">
-                                   <span class="me-1" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                    <span class="me-1" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
                                     <div th:switch="${recipient.signed}">
                                         <th:block th:case="true">
                                             <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" title="A signé le document" class="fa-solid fa-check-circle text-success"></i>
@@ -160,9 +161,7 @@
                     </div>
                 </div>
             </div>
-
         </td>
     </tr>
-
 </th:block>
 </html>
