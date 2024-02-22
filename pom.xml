@@ -815,7 +815,7 @@
 							<target>
 								<replace token="@version@"
 										 value="${project.version}">
-									<fileset dir="target/classes/static/js/" includes="**/*" />
+									<fileset dir="target/classes/static/" includes="**/*" />
 								</replace>
 							</target>
 						</configuration>
