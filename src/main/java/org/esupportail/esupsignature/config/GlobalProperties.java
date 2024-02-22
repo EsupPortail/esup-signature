@@ -268,6 +268,11 @@ public class GlobalProperties {
      */
     private Float fixFactor = .75f;
 
+    /**
+     * Activer le watermark pour les utilisateurs externes
+     */
+    private Boolean watermarkForExternals = true;
+
     public String getRootUrl() {
         return rootUrl;
     }
@@ -686,5 +691,13 @@ public class GlobalProperties {
 
     public void setFixFactor(Float fixFactor) {
         this.fixFactor = fixFactor;
+    }
+
+    public Boolean getWatermarkForExternals() {
+        return watermarkForExternals;
+    }
+
+    public void setWatermarkForExternals(Boolean watermarkForExternals) {
+        this.watermarkForExternals = watermarkForExternals;
     }
 }

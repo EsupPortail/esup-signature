@@ -47,24 +47,56 @@ public class SignRequestWsController {
     private SignBookService signBookService;
 
     @CrossOrigin
-    @PostMapping("/new")
+    @PostMapping(value ="/new", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @Operation(description = "Création d'une demande de signature")
     public ResponseEntity<?> create(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
-                       @RequestParam(required = false) @Parameter(description = "Liste des étape (objet json)", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = WorkflowStepDto[].class)))) String stepsJsonString,
-                       @Parameter(description = "Liste des participants") @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
-                       @Parameter(description = "Liste des participants (ancien nom)") @RequestParam(value = "recipientEmails", required = false) List<String> recipientEmails,
-                       @Parameter(description = "Liste des personnes en copie (emails). Ne prend pas en charge les groupes") @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
-                       @Parameter(description = "Tout les participants doivent-ils signer ?") @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
-                       @Parameter(description = "Le créateur doit-il signer en premier ?") @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
-                       @Parameter(description = "Envoyer la demande automatiquement") @RequestParam(value = "pending", required = false) Boolean pending,
-                       @Parameter(description = "Forcer la signature de tous les documents") @RequestParam(value = "forceAllSign", required = false) Boolean forceAllSign,
-                       @Parameter(description = "Commentaire") @RequestParam(value = "comment", required = false) String comment,
-                       @Parameter(description = "Type de signature", schema = @Schema(allowableValues = {"visa", "pdfImageStamp", "certSign", "nexuSign"}), examples = {@ExampleObject(value = "visa"), @ExampleObject(value = "pdfImageStamp"), @ExampleObject(value = "certSign"), @ExampleObject(value = "nexuSign")}) @RequestParam("signType") String signType,
-                       @Parameter(description = "EPPN du créateur/propriétaire de la demande (ancien nom)") @RequestParam(required = false) String eppn,
-                       @Parameter(description = "EPPN du créateur/propriétaire de la demande") @RequestParam(required = false) String createByEppn,
-                       @Parameter(description = "Un titre (facultatif)") @RequestParam(value = "title", required = false) String title,
-                       @RequestParam(required = false) @Parameter(description = "Emplacement final", example = "smb://drive.univ-ville.fr/forms-archive/") String targetUrl,
-                       @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json) {
+                                    @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example = "[{\n" +
+                                            "  \"title\": \"string\",\n" +
+                                            "  \"workflowId\": 0,\n" +
+                                            "  \"stepNumber\": 0,\n" +
+                                            "  \"description\": \"string\",\n" +
+                                            "  \"recipientsCCEmails\": [\n" +
+                                            "    \"string\"\n" +
+                                            "  ],\n" +
+                                            "  \"recipients\": [\n" +
+                                            "    {\n" +
+                                            "      \"step\": 0,\n" +
+                                            "      \"email\": \"string\",\n" +
+                                            "      \"phone\": \"string\",\n" +
+                                            "      \"name\": \"string\",\n" +
+                                            "      \"firstName\": \"string\",\n" +
+                                            "      \"forceSms\": true\n" +
+                                            "    }\n" +
+                                            "  ],\n" +
+                                            "  \"changeable\": true,\n" +
+                                            "  \"signLevel\": 0,\n" +
+                                            "  \"signType\": \"hiddenVisa\",\n" +
+                                            "  \"repeatable\": true,\n" +
+                                            "  \"repeatableSignType\": \"hiddenVisa\",\n" +
+                                            "  \"allSignToComplete\": true,\n" +
+                                            "  \"userSignFirst\": true,\n" +
+                                            "  \"multiSign\": true,\n" +
+                                            "  \"autoSign\": true,\n" +
+                                            "  \"forceAllSign\": true,\n" +
+                                            "  \"comment\": \"string\",\n" +
+                                            "  \"attachmentRequire\": true,\n" +
+                                            "  \"maxRecipients\": 0\n" +
+                                            "}]") String stepsJsonString,
+                                    @RequestParam(required = false) @Parameter(description = "EPPN du créateur/propriétaire de la demande") String createByEppn,
+                                    @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title,
+                                    @RequestParam(required = false) @Parameter(description = "Liste des personnes en copie (emails). Ne prend pas en charge les groupes") List<String> recipientsCCEmails,
+                                    @RequestParam(required = false) @Parameter(description = "Commentaire") String comment,
+                                    @RequestParam(required = false) @Parameter(description = "Envoyer la demande automatiquement") Boolean pending,
+                                    @RequestParam(required = false) @Parameter(description = "Emplacement final", example = "smb://drive.univ-ville.fr/forms-archive/") String targetUrl,
+                                    @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json,
+                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants") List<String> recipientsEmails,
+                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants (ancien nom)") List<String> recipientEmails,
+                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Tout les participants doivent-ils signer ?") Boolean allSignToComplete,
+                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Le créateur doit-il signer en premier ?") Boolean userSignFirst,
+                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Forcer la signature de tous les documents") Boolean forceAllSign,
+                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Type de signature", schema = @Schema(allowableValues = {"visa", "pdfImageStamp", "certSign", "nexuSign"}), examples = {@ExampleObject(value = "visa"), @ExampleObject(value = "pdfImageStamp"), @ExampleObject(value = "certSign"), @ExampleObject(value = "nexuSign")}) String signType,
+                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "EPPN du créateur/propriétaire de la demande (ancien nom)") String eppn
+                       ) {
         if(json == null) {
             json = false;
         }

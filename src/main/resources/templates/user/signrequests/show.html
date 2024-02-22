@@ -73,7 +73,7 @@
                             <i class="fa-solid fa-trash-restore fa-2xl"></i>
                         </a>
                     </li>
-                    <li th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}">
+                    <li th:if="${@preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn)}">
                         <a id="trashLaunchButton" role="button" class="btn-floating btn-lg bg-danger waves-effect"
                             th:title="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
                             data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
