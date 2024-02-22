@@ -120,15 +120,21 @@ spring:
         mode: HTML
         servlet:
             produce-partial-output-while-processing: false
-#    web:
-#        resources:
-#            cache:
-#                cachecontrol:
-#                    max-age: 1d
-#                    cache-public: true
-#            static-locations: classpath:/static
-#    mvc:
-#        static-path-pattern: /**
+    web:
+        resources:
+            cache:
+                cachecontrol:
+                    max-age: 1d
+                    cache-public: true
+            static-locations: classpath:/static
+            chain:
+                enabled: true
+                strategy:
+                    content:
+                        enabled: true
+                        paths: /**
+    mvc:
+        static-path-pattern: /**
 
 ldap:
     search-base: ou=people
