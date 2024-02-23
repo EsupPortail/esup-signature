@@ -12,7 +12,7 @@
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.28.13-SNAPSHOT</version>
+	<version>1.28.14-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
@@ -174,7 +174,7 @@
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>pdfjs-dist</artifactId>
-			<version>4.0.269</version>
+			<version>4.0.379</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
@@ -815,7 +815,7 @@
 							<target>
 								<replace token="@version@"
 										 value="${project.version}">
-									<fileset dir="target/classes/static/js/" includes="**/*" />
+									<fileset dir="target/classes/static/" includes="**/*" />
 								</replace>
 							</target>
 						</configuration>

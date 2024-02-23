@@ -147,6 +147,10 @@ export default class SelectUser {
         this.selectField.css("z-index", -1);
     }
 
+    getSelected() {
+        return this.slimSelect.getSelected();
+    }
+
     displayTempUsers(e) {
         if(this.checkList !== "false") {
             if (this.selectField.attr('id') === 'recipientsEmails') {

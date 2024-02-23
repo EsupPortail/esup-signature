@@ -171,32 +171,28 @@
             <div class="modal-header">
                 <h3 class="modal-title" id="checkCertSignModalLabel">Signature en masse</h3>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-
                 </button>
             </div>
             <div class="modal-body">
-                <div class="alert alert-warning">Merci de selectionner un type de signature</div>
-                <div class="modal-body">
-                    <div id="selectTypeDiv" class="alert alert-secondary mt-1">
-                        <label for="certType">Si besoin, merci de sélectionner le type de signature que vous souhaitez utiliser parmi ceux disponibles</label>
-                        <div class="input-group mt-2">
-                            <select id="certType" name="certType" class="form-control form-select border-secondary-subtle" required>
-                                <th:block th:each="signWith : ${signWiths}">
-                                    <th:block th:if="${signWith.name != 'sealCert'}">
-                                        <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
-                                    </th:block>
-                                    <th:block th:if="${signWith.name == 'sealCert'}">
-                                        <option th:if="${sealCertOK}" th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
-                                        <option th:unless="${sealCertOK}" value="" th:text="#{'signwith.' + ${signWith}}" disabled></option>
-                                    </th:block>
+                <div class="alert alert-warning">Le système de signature en masse essaie de signer toutes les demandes sélectionnées, peu importe leur type ou leur statut. Cependant, il peut ne pas prendre en compte certaines demandes en fonction du type de signature, du statut du document ou de la présence d'un emplacement de signature. Après la signature, un rapport d'erreurs est généré pour identifier les problèmes éventuels.</div>
+                <div id="selectTypeDiv" class="alert alert-secondary mt-1">
+                    <label for="certType">Si besoin, merci de sélectionner le type de signature que vous souhaitez utiliser parmi ceux disponibles</label>
+                    <div class="input-group mt-2">
+                        <select id="certType" name="certType" class="form-control form-select border-secondary-subtle" required>
+                            <th:block th:each="signWith : ${signWiths}">
+                                <th:block th:if="${signWith.name != 'sealCert'}">
+                                    <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
                                 </th:block>
-                            </select>
-                            <button id="refresh-certType" type="button" class="btn border-secondary-subtle" title="Actualiser la liste des types de signature"><i class="fa-solid fa-arrows-rotate"></i></button>
-                        </div>
-                        <input type="text" autocomplete="username" name="username" class="d-none">
-                        <input class="form-control mt-2 mb-1" autocomplete="new-password" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" />
+                                <th:block th:if="${signWith.name == 'sealCert'}">
+                                    <option th:if="${sealCertOK}" th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                                    <option th:unless="${sealCertOK}" value="" th:text="#{'signwith.' + ${signWith}}" disabled></option>
+                                </th:block>
+                            </th:block>
+                        </select>
+                        <button id="refresh-certType" type="button" class="btn border-secondary-subtle" title="Actualiser la liste des types de signature"><i class="fa-solid fa-arrows-rotate"></i></button>
                     </div>
-
+                    <input type="text" autocomplete="username" name="username" class="d-none">
+                    <input class="form-control mt-2 mb-1" autocomplete="new-password" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" />
                 </div>
             </div>
             <div class="modal-footer">
