@@ -98,8 +98,9 @@ export class WizUi {
         this.input = $("#multipartFiles");
         let self = this;
         this.fileInput = new FilesInput(this.input, this.maxSize, this.csrf, null, false, null);
+        let recipientsEmails;
         if($("#recipientsEmails-1").length) {
-            new SelectUser("recipientsEmails-1", null, null, this.csrf);
+            recipientsEmails = new SelectUser("recipientsEmails-1", null, null, this.csrf);
         }
         if($("#recipientsCCEmails").length) {
             this.recipientCCSelect = new SelectUser("recipientsCCEmails", null, null, this.csrf);
@@ -109,8 +110,12 @@ export class WizUi {
             self.wizCreateSign("fast");
         });
         $("#send-pending-button").on('click', function() {
-            self.pending = true;
-            self.wizCreateSign("fast");
+            if(recipientsEmails.slimSelect.getSelected().length > 0) {
+                self.pending = true;
+                self.wizCreateSign("fast");
+            } else {
+                $("#update-fast-sign-submit").click();
+            }
         });
     }
 
