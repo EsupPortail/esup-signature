@@ -95,6 +95,10 @@
                             <input id="ownerSystem" type="checkbox" class="form-check-input" th:field="*{ownerSystem}"/>
                             <label for="ownerSystem" class="form-check-label">Le compte système est propriétaire des demandes de ce circuit (les créateurs ne pourront pas supprimer les demandes)</label>
                         </div>
+                        <div class="form-check mb-2">
+                            <input id="disableDeleteByCreator" type="checkbox" class="form-check-input" th:field="*{disableDeleteByCreator}"/>
+                            <label for="disableDeleteByCreator" class="form-check-label">Le propriétaire ne peut pas supprimer la demande</label>
+                        </div>
                         <div class="form-group mb-2">
                             <label><strong>Autorisations</strong></label>
                             <div class="form-check mb-2">

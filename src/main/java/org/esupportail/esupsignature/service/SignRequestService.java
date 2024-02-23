@@ -139,6 +139,7 @@ public class SignRequestService {
 
 	@Resource
 	private ObjectMapper objectMapper;
+
 	private final SignBookRepository signBookRepository;
 
 	@PostConstruct
@@ -689,9 +690,23 @@ public class SignRequestService {
 		return null;
 	}
 
+	public boolean isDeletetable(SignRequest signRequest, String userEppn) {
+		User user = userService.getByEppn(userEppn);
+		return signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() == null
+				||
+				signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getDisableDeleteByCreator() == null
+				||
+				!signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getDisableDeleteByCreator()
+				||
+				user.getRoles().contains("ROLE_ADMIN");
+	}
+
 	@Transactional
 	public void deleteSignRequest(Long signRequestId, String userEppn) {
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).orElseThrow();
+		if(!isDeletetable(signRequest, userEppn)) {
+			throw new EsupSignatureRuntimeException("Interdiction de supprimer les demandes de ce circuit");
+		}
 		if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
 			deleteDefinitive(signRequestId);
 		} else {

@@ -189,13 +189,6 @@ header {
     overflow-y: auto;
 }
 
-#sidebar::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
-    background-color: transparent;
-}
-
-
 #sidebar.active {
     min-width: 60px;
     max-width: 60px;
@@ -238,7 +231,7 @@ header {
     padding: 5px;
     position: fixed;
     margin-left: 260px;
-    width: calc(100vw - 275px);
+    width: calc(100vw - 269px);
     z-index: 1028;
 }
 

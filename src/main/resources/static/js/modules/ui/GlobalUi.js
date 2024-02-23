@@ -1,7 +1,5 @@
 import {default as SelectUser} from "../utils/SelectUser.js?version=@version@";
 import {WizUi} from "./WizUi.js?version=@version@";
-import {Step} from "../../prototypes/Step.js?version=@version@";
-import {Recipient} from "../../prototypes/Recipient.js?version=@version@";
 
 export class GlobalUi {
 
@@ -190,8 +188,12 @@ export class GlobalUi {
             closeButton: true,
             animate: true,
             className: "my-modal"
-
         });
+        bootbox.addLocale("fr", {
+            OK : 'Fermer',
+            CANCEL : 'Annuler',
+            CONFIRM : 'Confirmer'
+        })
     }
 
     checkBrowser() {
