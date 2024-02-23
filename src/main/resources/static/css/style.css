@@ -1,21 +1,27 @@
 html {
     font-size: 16px;
-    scrollbar-color: #E10F46 #CECECE;
 }
 
-html::-webkit-scrollbar {
-    background-color: #CECECE;
+@-moz-document url-prefix() {
+    * {
+        scrollbar-color: #E10F46 darkgray;
+        scrollbar-track-color: darkgray;
+        scrollbar-gutter: stable;
+        scrollbar-width: unset;
+    }
+}
+
+::-webkit-scrollbar {
+    background-color: darkgray;
     width: 12px;
     height: 12px;
-    padding: 2px;
-    margin: 2px;
 }
 
-html::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
+    border-radius: 6px;
     background-color: #E10F46;
-    border-radius: 10px;
-    width: 8px !important;
-    border: solid 3px #CECECE;
+    width: 6px !important;
+    border: 3px solid darkgray;
 }
 
 body {
@@ -141,11 +147,6 @@ td {
     box-shadow: 0 2px 4px 3px rgba(0, 0, 0, 0.2);
 }
 
-#sidebar::-webkit-scrollbar-thumb {
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
-    background-color: #ebebeb
-}
-
 .nav-tabs {
     border-bottom : 1px solid #000000;
 }
@@ -198,20 +199,16 @@ td {
     overflow-y: hidden;
 }
 
-.scrollbar-style::-webkit-scrollbar {
-    background-color: #CECECE;
-    width: 12px;
-    height: 12px;
-    padding: 2px;
-    margin: 2px;
-}
+/*.scrollbar-style::-webkit-scrollbar {*/
+/*    background-color: #CECECE;*/
+/*    width: 5px;*/
+/*    height: 5px;*/
+/*}*/
 
-.scrollbar-style::-webkit-scrollbar-thumb {
-    background-color: #E10F46;
-    border-radius: 10px;
-    width: 8px !important;
-    border: solid 3px #CECECE;
-}
+/*.scrollbar-style::-webkit-scrollbar-thumb {*/
+/*    background-color: #E10F46;*/
+/*    width: 5px !important;*/
+/*}*/
 
 dd {
     font-weight: bold;
