@@ -254,6 +254,11 @@ public class SignBookService {
             List<SignBook> sharedSignBooks = filterByUserShares(userEppn, authUserEppn, signBooks.getContent());
             signBooks = new PageImpl<>(sharedSignBooks, pageable, sharedSignBooks.size());
         }
+        for (SignBook signBook : signBooks.getContent()) {
+            if(signBook.getSignRequests().size() > 0) {
+                signBook.setDeleteableByCurrentUser(signRequestService.isDeletetable(signBook.getSignRequests().get(0), userEppn) && (signBook.getCreateBy().getEppn().equals(userEppn)));
+            }
+        }
         return signBooks;
     }
 

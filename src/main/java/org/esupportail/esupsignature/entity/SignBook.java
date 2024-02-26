@@ -68,6 +68,10 @@ public class SignBook {
     @Transient
     transient String comment;
 
+    @JsonIgnore
+    @Transient
+    transient Boolean deleteableByCurrentUser;
+
     @ManyToMany
     private Set<User> viewers = new HashSet<>();
 
@@ -191,6 +195,14 @@ public class SignBook {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public Boolean getDeleteableByCurrentUser() {
+        return deleteableByCurrentUser;
+    }
+
+    public void setDeleteableByCurrentUser(Boolean deleteableByCurrentUser) {
+        this.deleteableByCurrentUser = deleteableByCurrentUser;
     }
 
     public Set<User> getViewers() {
