@@ -76,8 +76,8 @@
             <th:block th:if="${isTempUsers}">
                 <hr>
                 <p>Certains destinataires sont externes à l’établissement, merci de saisir/vérifier les informations complémentaires si besoin</p>
-                <th:block th:each="workflowStep : ${signBook.liveWorkflow.workflow.workflowSteps}">
-                    <th:block th:each="user, iterator : ${workflowStep.users}">
+                <th:block th:each="workflowStep, iterator : ${signBook.liveWorkflow.workflow.workflowSteps}">
+                    <th:block th:each="user : ${workflowStep.users}">
                         <div th:id="'extRecipient-' + ${iterator.index + 1} + '-' + ${user.email}" th:data-es-email="${user.email}" class="alert alert-primary" th:if="${user.userType.name() == 'external'}">
                             <b>Destinataire : <span th:text="${user.email}"></span></b>
                             <input id="emails" type="hidden" name="emails" th:value="${user.email}">
