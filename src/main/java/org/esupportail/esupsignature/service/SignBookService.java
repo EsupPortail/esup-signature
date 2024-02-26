@@ -608,6 +608,7 @@ public class SignBookService {
     @Transactional
     public boolean checkUserManageRights(String userEppn, Long signBookId) {
         SignBook signBook = getById(signBookId);
+        if(signBook == null) return false;
         if(signBook.getSignRequests().size() == 1) {
             User user = userService.getByEppn(userEppn);
             Data data = dataService.getBySignBook(signBook);

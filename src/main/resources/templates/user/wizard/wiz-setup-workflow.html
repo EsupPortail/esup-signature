@@ -38,7 +38,7 @@
             <th:block th:each="step, iterator : ${signBook.liveWorkflow.workflow.workflowSteps}">
                 <li th:id="'step-wiz-' + ${iterator.index + 1}" class="list-group-item border-secondary">
                     <div class="form-group mb-1">
-                        <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span>
+                        <b th:text="'Etape ' + ${iterator.index + 1} + ' : '"></b>
                         <span th:if="${step.description != null && step.description != ''}" th:text="${step.description} + '.'"></span>
                         <th:block th:unless="${step.autoSign}">
                         Destinataires :
@@ -70,14 +70,15 @@
                         </p>
                     </div>
                     <div th:id="'tempUsers-recipientsEmails-' + ${iterator.index + 1}"></div>
-                    </li>
+                </li>
             </th:block>
+            </ul>
             <th:block th:if="${isTempUsers}">
                 <hr>
-                <p>Certains destinataires sont externes à l'établissement, merci de saisir/vérifier les informations complémentaires si besoin</p>
-                <th:block th:each="workflowStep : ${signBook.liveWorkflow.workflow.workflowSteps}">
+                <p>Certains destinataires sont externes à l’établissement, merci de saisir/vérifier les informations complémentaires si besoin</p>
+                <th:block th:each="workflowStep, iterator : ${signBook.liveWorkflow.workflow.workflowSteps}">
                     <th:block th:each="user : ${workflowStep.users}">
-                        <div class="alert alert-primary" th:if="${user.userType.name() == 'external'}">
+                        <div th:id="'extRecipient-' + ${iterator.index + 1} + '-' + ${user.email}" th:data-es-email="${user.email}" class="alert alert-primary" th:if="${user.userType.name() == 'external'}">
                             <b>Destinataire : <span th:text="${user.email}"></span></b>
                             <input id="emails" type="hidden" name="emails" th:value="${user.email}">
                             <div class="d-flex col-10">
@@ -94,9 +95,8 @@
                             </div>
                         </div>
                     </th:block>
-                </th:block>²
+                </th:block>
             </th:block>
-            </ul>
         </div>
         <th:block th:each="target, iterator : ${signBook.liveWorkflow.workflow.targets}">
                 <div th:if="${target.targetUri.contains('mailto:')}" class="form-group mb-3">
