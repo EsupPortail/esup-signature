@@ -17,7 +17,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -104,7 +104,7 @@ public class WorkflowController {
         Workflow workflow = workflowService.getById(id);
         WorkflowStep workflowStep = null;
         try {
-            workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientService.convertRecipientEmailsToRecipientDto(Collections.singletonList(recipientsEmails)));
+            workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientService.convertRecipientEmailsToRecipientDto(Arrays.stream(recipientsEmails.split(",")).toList()));
             redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Participant ajouté"));
         } catch (EsupSignatureRuntimeException e) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Participant non ajouté"));

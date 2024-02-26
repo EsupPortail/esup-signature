@@ -215,8 +215,10 @@ export class WizUi {
         let self = this;
         this.div.html(html);
         $('[id^="recipientsEmails-"]').each(function (){
-            let maxRecipient = $(this).attr('data-es-max-recipient');
-            new SelectUser($(this).attr('id'), maxRecipient, null, self.csrf);
+            if($(this).is('select')) {
+                let maxRecipient = $(this).attr('data-es-max-recipient');
+                new SelectUser($(this).attr('id'), maxRecipient, null, self.csrf);
+            }
         });
         if($("#targetEmailsSelect").length) {
             new SelectUser("targetEmailsSelect", null, null, this.csrf);
@@ -390,6 +392,8 @@ export class WizUi {
 
     sendSteps(url, stepsSources, successCallback, errorCallback) {
         let self = this;
+        let errorMsg = new Object();
+        errorMsg.responseText = "500";
         let steps = [];
         let i = 0;
         stepsSources.each(function() {
@@ -408,11 +412,30 @@ export class WizUi {
                     recipient.name = extInfos.find("#names").val();
                     recipient.firstName = extInfos.find("#firstnames").val();
                     recipient.phone = extInfos.find("#phones").val();
-                    let toto = extInfos.find("#forcesmses");
-                    recipient.forceSms = toto.prop("checked");
+                    recipient.forceSms = extInfos.find("#forcesmses").prop("checked");
                     step.recipients.push(recipient);
                 });
             }
+            $('div[id^="extRecipient-"]').each(function() {
+                if($(this).attr("id").includes("-" + i + "-")) {
+                    let recipient = new Recipient();
+                    recipient.email = $(this).attr("data-es-email");
+                    let extInfos = $(this);
+                    recipient.name = extInfos.find("#names").val();
+                    if(recipient.name == null || recipient.name === '') {
+                        errorCallback(errorMsg);
+                        return;
+                    }
+                    recipient.firstName = extInfos.find("#firstnames").val();
+                    if(recipient.firstName == null || recipient.firstName === '') {
+                        errorCallback(errorMsg);
+                        return;
+                    }
+                    recipient.phone = extInfos.find("#phones").val();
+                    recipient.forceSms = extInfos.find("#forcesmses").prop("checked");
+                    step.recipients.push(recipient);
+                }
+            })
             $('select[name="recipientsCCEmails"] option:selected').each(function() {
                 step.recipientsCCEmails.push($(this).val());
             });

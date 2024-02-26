@@ -274,6 +274,8 @@ public class WizardController {
             if(e instanceof EsupSignatureFsException) {
                 signBookService.deleteDefinitive(signBookId, authUserEppn);
                 logger.error(e.getMessage());
+            } else {
+                logger.warn(e.getMessage());
             }
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
