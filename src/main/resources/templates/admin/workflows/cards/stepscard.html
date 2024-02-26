@@ -126,7 +126,8 @@
                                 <th:block th:each="user : ${workflowStep.users}">
                                     <tr>
                                         <td class="text-left">
-                                            <span th:text="${user.firstname + ' ' + user.name}"></span>
+                                            <span th:if="${user.firstname != '' || user.name != ''}" th:text="${user.firstname + ' ' + user.name}"></span>
+                                            <span th:unless="${user.firstname != '' || user.name != ''}" th:text="${user.email}"></span>
                                         </td>
                                         <td>
                                             <form th:action="${fromAdmin == true ? '/admin/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id : '/user/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id}" th:method="'delete'">
