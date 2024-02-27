@@ -731,7 +731,7 @@ public class SignRequestService {
 		SignBook signBook = signBookRepository.findById(id).get();
 		List<User> tempUsers = userService.getTempUsers(signBook, recipients);
 		if(!tempUsers.isEmpty()) {
-			if (recipients != null && tempUsers.size() == recipients.size()) {
+			if (recipients != null && tempUsers.size() <= recipients.size()) {
 				for (User tempUser : tempUsers) {
 					if (tempUser.getUserType().equals(UserType.shib)) {
 						logger.warn("TODO Envoi Mail SHIBBOLETH ");
