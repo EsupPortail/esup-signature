@@ -374,6 +374,7 @@ export class WizUi {
             new SelectUser($(this).attr('id'), maxRecipient, null, self.csrf);
         });
         $("#send-form-button").on("click", e => this.sendForm(e));
+        $('button[id^="markHelpAsReadButton_"]').each((index, e) => this.listenHelpMarkAsReadButton(e));
     }
 
     sendForm(e) {
