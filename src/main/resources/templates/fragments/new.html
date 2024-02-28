@@ -102,6 +102,7 @@
                         <th:block th:each="form : ${forms}">
                             <a role="button" class="btn btn-material btn-light text-center pt-3 me-2 overflow-hidden p-0 form-button start-form-button"
                                 style="width: 120px; height: 170px;"
+                                th:classappend="${form.hideButton} ? 'd-none' : ''"
                                 th:title="${form.title}"
                                 th:id="'form-button-' + ${form.id}"
                                 th:data-es-form-id="${form.id}"
