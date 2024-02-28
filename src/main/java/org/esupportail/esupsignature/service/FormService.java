@@ -150,6 +150,7 @@ public class FormService {
 		form.setDescription(updateForm.getDescription());
 		form.setMessage(updateForm.getMessage());
 		form.setPublicUsage(updateForm.getPublicUsage());
+		form.setHideButton(updateForm.getHideButton());
 		form.setAction(updateForm.getAction());
 		form.getAuthorizedShareTypes().clear();
 		form.setActiveVersion(updateForm.getActiveVersion());

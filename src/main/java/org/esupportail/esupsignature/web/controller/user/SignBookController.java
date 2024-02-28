@@ -85,7 +85,7 @@ public class SignBookController {
                        @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
                        @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
                        @RequestParam(value = "dateFilter", required = false) String dateFilter,
-                       @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 12) Pageable pageable, Model model) {
+                       @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
         if(statusFilter == null || statusFilter.equals("all")) statusFilter = "";
         if(workflowFilter != null && (workflowFilter.isEmpty() || workflowFilter.equals("all"))) {
             workflowFilter = null;

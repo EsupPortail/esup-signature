@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.serializer.SerializeRecipientActionMap;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.*;
@@ -79,6 +80,7 @@ public class SignRequest {
     private Set<User> viewedBy = new HashSet<>();
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @SerializeRecipientActionMap
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
     @OneToOne(cascade = CascadeType.DETACH)
