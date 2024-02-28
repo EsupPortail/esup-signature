@@ -31,7 +31,7 @@ export class HomeUi {
                 recipientNotPresentSignRequests.modal('show');
             }
             if(startFormId != null) {
-                $("#sendModal_" + startFormId).modal('show');
+                $('#form-button-' + startFormId)[0].click();
             }
         });
     }

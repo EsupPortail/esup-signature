@@ -84,14 +84,18 @@
                             <label><strong>Autorisations</strong></label>
                             <div class="form-check mb-2">
                                 <input id="publicUsage" type="checkbox" class="form-check-input" th:field="*{publicUsage}"/>
-                                <label for="publicUsage">Visibilité publique ?</label>
+                                <label for="publicUsage">Accès publique</label>
                             </div>
-                            <label for="roles" class="form-check-label">Diffusion du workflow pour les rôles</label>
-                            <select id="roles" class="slim-select-filter" type="text" th:field="*{roles}" data-placeholder="Choisir des roles" multiple>
+                            <label for="roles" class="form-check-label">Accès au formulaire pour les rôles</label>
+                            <select id="roles" class="slim-select-filter mb-2" type="text" th:field="*{roles}" data-placeholder="Choisir des roles" multiple>
                                 <th:block th:each="newRole : ${roles}">
                                     <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(form.roles, newRole)}"></option>
                                 </th:block>
                             </select>
+                            <div class="form-check mb-2">
+                                <input id="hideButton" type="checkbox" class="form-check-input" th:field="*{hideButton}"/>
+                                <label for="hideButton">Masquer le bouton sur la page d’accueil </label>
+                            </div>
                         </div>
                         <div class="form-group mb-3">
                             <label for="workflowType"><strong>Circuit associé au formulaire</strong></label>

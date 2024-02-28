@@ -66,7 +66,7 @@ public class DataController {
 						   @RequestParam(required = false) List<String> targetEmails,
 						   @RequestBody List<WorkflowStepDto> steps,
 						   @PathVariable("id") Long id) throws EsupSignatureRuntimeException {
-		logger.warn("create form " + id);
+		logger.info("create form " + id);
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			Data data = dataService.addData(id, userEppn);
 			try {
@@ -75,6 +75,8 @@ public class DataController {
 			} catch (EsupSignatureRuntimeException e) {
 				logger.warn(e.getMessage() + " for " + id);
 			}
+		} else {
+			logger.warn("form id " + id + " not autorized");
 		}
 		return ResponseEntity.internalServerError().body("Formulaire non autorisé");
 

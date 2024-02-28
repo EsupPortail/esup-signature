@@ -247,8 +247,10 @@ export default class SelectUser {
                 alert("Merci de sélectionner une liste contenant au maximum 10 personnes. La liste sélectionnée dépasse cette limite.");
             } else {
                 for (let i = 0; i < data.length; i++) {
-                    arrayTexts.push({text: data[i], value: this.valuePrefix + data[i], display: true})
-                    arrayValues.push(this.valuePrefix + data[i]);
+                    if(!arrayValues.includes(this.valuePrefix + data[i])) {
+                        arrayTexts.push({text: data[i], value: this.valuePrefix + data[i], display: true})
+                        arrayValues.push(this.valuePrefix + data[i]);
+                    }
                 }
             }
             this.slimSelect.setData(arrayTexts);
