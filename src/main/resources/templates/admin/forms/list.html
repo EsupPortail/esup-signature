@@ -34,6 +34,7 @@
                                 <th>Nom</th>
                                 <th>Circuit associé</th>
                                 <th>Actif</th>
+                                <th>Bouton masqué</th>
                                 <th>Supprimé</th>
                                 <th>Rôle</th>
                                 <th class="text-center">Action</th>
@@ -50,6 +51,10 @@
                                 <td class="clickable-td">
                                     <i th:if="${form.activeVersion}" class="fa-solid fa-check text-success"></i>
                                     <i th:unless="${form.activeVersion}" class="fa-solid fa-times text-danger"></i>
+                                </td>
+                                <td class="clickable-td">
+                                    <i th:if="${form.hideButton}" class="fa-solid fa-check text-success"></i>
+                                    <i th:unless="${form.hideButton}" class="fa-solid fa-minus text-secondary"></i>
                                 </td>
                                 <td class="clickable-td">
                                     <i th:if="${form.deleted}" class="fa-solid fa-times text-danger"></i>

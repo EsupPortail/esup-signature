@@ -75,10 +75,14 @@ public class WizardController {
     @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
     @GetMapping(value = "/wiz-start-form/{formId}", produces = "text/html")
     public String wizStartForm(@PathVariable("formId") Long formId, @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) {
-        Form form = formService.getById(formId);
-        form.setMessageToDisplay(formService.getHelpMessage(userEppn, form));
-        model.addAttribute("form", form);
-        return "user/wizard/wiz-start-form";
+        if(formService.isFormAuthorized(userEppn, authUserEppn, formId)) {
+            Form form = formService.getById(formId);
+            form.setMessageToDisplay(formService.getHelpMessage(userEppn, form));
+            model.addAttribute("form", form);
+            return "user/wizard/wiz-start-form";
+        } else {
+            return "user/wizard/wiz-not-autorized";
+        }
     }
 
     @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
