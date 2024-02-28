@@ -58,6 +58,8 @@ public class Form {
 
 	private Boolean publicUsage = false;
 
+	private Boolean hideButton = false;
+
 	private Boolean pdfDisplay = true;
 
 	private Boolean activeVersion = false;
@@ -181,6 +183,15 @@ public class Form {
 
 	public void setPublicUsage(Boolean publicUsage) {
 		this.publicUsage = publicUsage;
+	}
+
+	public Boolean getHideButton() {
+		if(hideButton == null) return false;
+		return hideButton;
+	}
+
+	public void setHideButton(Boolean hideButton) {
+		this.hideButton = hideButton;
 	}
 
 	public Boolean getPdfDisplay() {
