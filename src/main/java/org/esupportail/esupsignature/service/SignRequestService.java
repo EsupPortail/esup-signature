@@ -644,28 +644,31 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public boolean delete(Long signRequestId, String userEppn) {
+	public Long delete(Long signRequestId, String userEppn) {
 		SignRequest signRequest = getById(signRequestId);
-		if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
-			deleteDefinitive(signRequestId);
-			return true;
+		if(signRequest.getStatus().equals(SignRequestStatus.deleted) || signRequest.getStatus().equals(SignRequestStatus.draft) || (signRequest.getParentSignBook().getSignRequests().size() > 1 && signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending))) {
+			return deleteDefinitive(signRequestId);
 		} else {
 			if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
 				signRequest.getOriginalDocuments().clear();
 				signRequest.getSignedDocuments().clear();
 			}
-			signRequest.setStatus(SignRequestStatus.deleted);
-			logService.create(signRequest.getId(), SignRequestStatus.deleted, "Suppression par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
+			logService.create(signRequest.getId(), SignRequestStatus.deleted, "Suppression du document par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			otpService.deleteOtpBySignRequestId(signRequestId);
 			nexuService.delete(signRequestId);
-			return false;
+			if(signRequest.getParentSignBook().getSignRequests().stream().filter(s -> !s.getStatus().equals(SignRequestStatus.deleted)).count() == 1) {
+				signRequest.getParentSignBook().setStatus(SignRequestStatus.deleted);
+				logService.create(signRequest.getId(), SignRequestStatus.deleted, "Suppression de la demande par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
+			}
+			signRequest.setStatus(SignRequestStatus.deleted);
+			return signRequest.getParentSignBook().getId();
 		}
 	}
 
 	@Transactional
-	public void deleteDefinitive(Long signRequestId) {
+	public Long deleteDefinitive(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
-		if(!signRequest.getParentSignBook().isEditable()) {
+		if(!signRequest.getStatus().equals(SignRequestStatus.deleted) && !signRequest.getRecipientHasSigned().values().stream().allMatch(a -> a.getActionType().equals(ActionType.none))) {
 			throw new EsupSignatureRuntimeException("Suppression impossible, la demande est déjà démarrée");
 		}
 		signRequest.getRecipientHasSigned().clear();
@@ -680,8 +683,13 @@ public class SignRequestService {
 			commentService.deleteComment(commentId, signRequest);
 		}
 		signRequest.getParentSignBook().getSignRequests().remove(signRequest);
+		long signBookId = 0;
+		if(!signRequest.getParentSignBook().getSignRequests().isEmpty()) {
+			signBookId = signRequest.getParentSignBook().getId();
+		}
 		nexuService.delete(signRequestId);
 		signRequestRepository.delete(signRequest);
+		return signBookId;
 	}
 
 	public Date getEndDate(SignRequest signRequest) {

@@ -612,7 +612,7 @@
 <div th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}" data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="command" th:action="'/user/signbooks/'+ ${signRequest.parentSignBook.id}" th:method="delete">
+            <form id="command" th:action="'/user/signrequests/'+ ${signRequest.id}" th:method="delete">
                 <div class="modal-header">
                     <h2>Attention</h2>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
