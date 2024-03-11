@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.dss.config;
 
+import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import eu.europa.esig.dss.alert.ExceptionOnStatusAlert;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
@@ -14,6 +15,7 @@ import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
 import eu.europa.esig.dss.service.http.commons.OCSPDataLoader;
 import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
 import eu.europa.esig.dss.service.http.proxy.ProxyConfig;
+import eu.europa.esig.dss.service.ocsp.JdbcCacheOCSPSource;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.service.x509.aia.JdbcCacheAIASource;
@@ -57,10 +59,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import javax.sql.DataSource;
 import javax.xml.XMLConstants;
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -94,6 +96,18 @@ public class DSSBeanConfig {
 		validatorConfigurator.removeAttribute(XMLConstants.ACCESS_EXTERNAL_DTD);
 		validatorConfigurator.removeAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA);
 		xmlDefinerUtils.setValidatorConfigurator(validatorConfigurator);
+	}
+
+	@Bean
+	public JdbcCacheConnector jdbcCacheConnector() {
+		HikariConfig hikariConfig = new HikariConfig();
+		hikariConfig.setPoolName("DSS-Hikari-Pool");
+		hikariConfig.setDriverClassName(dssProperties.getCacheDataSourceDriverClassName());
+		hikariConfig.setJdbcUrl(dssProperties.getCacheDataSourceUrl());
+		hikariConfig.setUsername(dssProperties.getCacheUsername());
+		hikariConfig.setPassword(dssProperties.getCachePassword());
+		hikariConfig.setAutoCommit(false);
+		return new JdbcCacheConnector(new HikariDataSource(hikariConfig));
 	}
 
 	@Bean
@@ -145,17 +159,14 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public JdbcCacheCRLSource cachedCRLSource(OnlineCRLSource onlineCRLSource, JdbcCacheConnector jdbcCacheConnector) {
+	public JdbcCacheCRLSource jdbcCacheCRLSource(OnlineCRLSource onlineCRLSource, JdbcCacheConnector jdbcCacheConnector) throws SQLException {
 		JdbcCacheCRLSource jdbcCacheCRLSource = new JdbcCacheCRLSource();
 		jdbcCacheCRLSource.setJdbcCacheConnector(jdbcCacheConnector);
 		jdbcCacheCRLSource.setProxySource(onlineCRLSource);
-		jdbcCacheCRLSource.setDefaultNextUpdateDelay((long) (60 * 3)); // 3 minutes
+		Long oneWeek = (long) (60 * 60 * 24 * 7);
+		jdbcCacheCRLSource.setDefaultNextUpdateDelay(oneWeek);
+		jdbcCacheCRLSource.initTable();
 		return jdbcCacheCRLSource;
-	}
-
-	@Bean
-	public JdbcCacheConnector jdbcCacheConnector() {
-		return new JdbcCacheConnector(cacheDataSource());
 	}
 
 	@Bean
@@ -164,10 +175,11 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public JdbcCacheAIASource cachedAIASource(JdbcCacheConnector jdbcCacheConnector, AIASource onlineAIASource) {
+	public JdbcCacheAIASource jdbcCacheAIASource(AIASource onlineAIASource, JdbcCacheConnector jdbcCacheConnector) throws SQLException {
 		JdbcCacheAIASource jdbcCacheAIASource = new JdbcCacheAIASource();
 		jdbcCacheAIASource.setJdbcCacheConnector(jdbcCacheConnector);
 		jdbcCacheAIASource.setProxySource(onlineAIASource);
+		jdbcCacheAIASource.initTable();
 		return jdbcCacheAIASource;
 	}
 
@@ -183,6 +195,17 @@ public class DSSBeanConfig {
 		OnlineOCSPSource onlineOCSPSource = new OnlineOCSPSource();
 		onlineOCSPSource.setDataLoader(ocspDataLoader);
 		return onlineOCSPSource;
+	}
+
+	@Bean
+	public JdbcCacheOCSPSource jdbcCacheOCSPSource(OnlineOCSPSource onlineOcspSource, JdbcCacheConnector jdbcCacheConnector) throws SQLException {
+		JdbcCacheOCSPSource jdbcCacheOCSPSource = new JdbcCacheOCSPSource();
+		jdbcCacheOCSPSource.setJdbcCacheConnector(jdbcCacheConnector);
+		jdbcCacheOCSPSource.setProxySource(onlineOcspSource);
+		Long threeMinutes = (long) (60 * 3);
+		jdbcCacheOCSPSource.setDefaultNextUpdateDelay(threeMinutes);
+		jdbcCacheOCSPSource.initTable();
+		return jdbcCacheOCSPSource;
 	}
 
 	@Bean
@@ -250,10 +273,11 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public CertificateVerifier certificateVerifier(OnlineOCSPSource onlineOcspSource, TrustedListsCertificateSource trustedListSource, JdbcCacheCRLSource cachedCRLSource) {
+	public CertificateVerifier certificateVerifier(JdbcCacheOCSPSource jdbcCacheOCSPSource, JdbcCacheCRLSource jdbcCacheCRLSource, JdbcCacheAIASource jdbcCacheAIASource, TrustedListsCertificateSource trustedListSource) {
 		CommonCertificateVerifier certificateVerifier = new CommonCertificateVerifier();
-		certificateVerifier.setCrlSource(cachedCRLSource);
-		certificateVerifier.setOcspSource(onlineOcspSource);
+		certificateVerifier.setCrlSource(jdbcCacheCRLSource);
+		certificateVerifier.setOcspSource(jdbcCacheOCSPSource);
+		certificateVerifier.setAIASource(jdbcCacheAIASource);
 		certificateVerifier.setTrustedCertSources(trustedListSource);
 		certificateVerifier.setAlertOnMissingRevocationData(new ExceptionOnStatusAlert());
 		certificateVerifier.setCheckRevocationForUntrustedChains(dssProperties.getCheckRevocationForUntrustedChains());
@@ -307,16 +331,6 @@ public class DSSBeanConfig {
 		return service;
 	}
 
-	public DataSource cacheDataSource() {
-		HikariDataSource ds = new HikariDataSource();
-		ds.setPoolName("DSS-Hikari-Pool");
-		ds.setJdbcUrl(dssProperties.getCacheDataSourceUrl());
-		ds.setDriverClassName(dssProperties.getCacheDataSourceDriverClassName());
-		ds.setUsername(dssProperties.getCacheUsername());
-		ds.setPassword(dssProperties.getCachePassword());
-		ds.setAutoCommit(false);
-		return ds;
-	}
 
 	public TLAlert tlSigningAlert() {
 		TLSignatureErrorDetection signingDetection = new TLSignatureErrorDetection();
