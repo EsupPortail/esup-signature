@@ -656,8 +656,10 @@ public class SignRequestService {
 			logService.create(signRequest.getId(), SignRequestStatus.deleted, "Suppression du document par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			otpService.deleteOtpBySignRequestId(signRequestId);
 			nexuService.delete(signRequestId);
-			if(signRequest.getParentSignBook().getSignRequests().stream().filter(s -> !s.getStatus().equals(SignRequestStatus.deleted)).count() == 1) {
+			if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.deleted))) {
 				signRequest.getParentSignBook().setStatus(SignRequestStatus.deleted);
+				signRequest.getParentSignBook().setUpdateDate(new Date());
+				signRequest.getParentSignBook().setUpdateBy(userEppn);
 				logService.create(signRequest.getId(), SignRequestStatus.deleted, "Suppression de la demande par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			}
 			signRequest.setStatus(SignRequestStatus.deleted);
@@ -683,12 +685,20 @@ public class SignRequestService {
 			commentService.deleteComment(commentId, signRequest);
 		}
 		signRequest.getParentSignBook().getSignRequests().remove(signRequest);
+		signRequestRepository.delete(signRequest);
 		long signBookId = 0;
 		if(!signRequest.getParentSignBook().getSignRequests().isEmpty()) {
 			signBookId = signRequest.getParentSignBook().getId();
+		} else {
+			signBookRepository.delete(signRequest.getParentSignBook());
 		}
 		nexuService.delete(signRequestId);
-		signRequestRepository.delete(signRequest);
+		if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.signed) || s.getStatus().equals(SignRequestStatus.completed) || s.getStatus().equals(SignRequestStatus.refused))) {
+			signRequest.getParentSignBook().setStatus(SignRequestStatus.completed);
+		}
+		if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.refused))) {
+			signRequest.getParentSignBook().setStatus(SignRequestStatus.refused);
+		}
 		return signBookId;
 	}
 

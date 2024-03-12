@@ -73,10 +73,18 @@
                             <i class="fa-solid fa-trash-restore fa-2xl"></i>
                         </a>
                     </li>
-                    <li th:if="${@preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn)}">
+                    <li th:if="${signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && @preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn) && (!signRequest.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || signBook.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}">
                         <a id="trashLaunchButton" role="button" class="btn-floating btn-lg bg-danger waves-effect"
                             th:title="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
                             data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
+                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-dumpster fa-2xl"></i>
+                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-trash-alt fa-2xl"></i>
+                        </a>
+                    </li>
+                    <li th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && @preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn) && (!signRequest.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || signBook.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}">
+                        <a id="trashLaunchButton2" role="button" class="btn-floating btn-lg bg-danger waves-effect"
+                           title="Supprimer définitivement de la corbeille"
+                           data-bs-toggle="modal" th:data-bs-target="'#modal-warning-2-' + ${signRequest.id}">
                             <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-dumpster fa-2xl"></i>
                             <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-trash-alt fa-2xl"></i>
                         </a>
@@ -622,6 +630,28 @@
                 <div class="modal-body">
                     <div th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
                     <div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
+                    <button type="submit" class="btn btn-danger">Oui</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}" data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-2-' + ${signRequest.id}">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="command2" th:action="'/user/signbooks/'+ ${signRequest.parentSignBook.id}" th:method="delete">
+                <div class="modal-header">
+                    <h2>Attention</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Confirmez-vous la suppression définitivement de cette demande et de tous les documents contenus dedans ?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
