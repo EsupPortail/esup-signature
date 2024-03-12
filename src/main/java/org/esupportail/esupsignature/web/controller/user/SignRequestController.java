@@ -392,7 +392,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + signRequestId;
     }
 
-    @PreAuthorize("@preAuthorizeService.signBookCreator(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signBookSendOtp(#id, #authUserEppn)")
     @PostMapping(value = "/send-otp/{id}/{recipientId}")
     public String sendOtp(@ModelAttribute("authUserEppn") String authUserEppn,
                           @PathVariable("id") Long id,
