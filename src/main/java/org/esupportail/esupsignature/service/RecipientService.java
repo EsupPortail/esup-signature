@@ -119,13 +119,13 @@ public class RecipientService {
             }
         }
         for(RecipientWsDto recipient : recipientWsDtos) {
-            if(workflowStepDtos.size() < recipient.getStep()) {
+            if(workflowStepDtos.stream().noneMatch(w -> w.getStepNumber().equals(recipient.getStep()))) {
                 WorkflowStepDto workflowStepDto = new WorkflowStepDto();
                 workflowStepDto.setStepNumber(recipient.getStep());
                 addRecipientInStep(workflowStepDto, recipient);
                 workflowStepDtos.add(workflowStepDto);
             } else {
-                addRecipientInStep(workflowStepDtos.get(recipient.getStep()-1), recipient);
+                addRecipientInStep(workflowStepDtos.stream().filter(w -> w.getStepNumber().equals(recipient.getStep())).findFirst().get(), recipient);
             }
         }
         return workflowStepDtos;

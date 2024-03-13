@@ -58,7 +58,7 @@ public class FormWsController {
     private ObjectMapper objectMapper;
 
     @CrossOrigin
-    @PostMapping(value = "/{id}/new", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    @PostMapping(value = "/{id}/new")
     @Operation(description = "Création d'une nouvelle instance d'un formulaire")
     public ResponseEntity<?> start(@PathVariable Long id,
                                    @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example = "[{\n" +
@@ -109,7 +109,7 @@ public class FormWsController {
                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Eppn du propriétaire du futur document (ancien nom)") String eppn
 
 
-    ) {
+    ) throws JsonProcessingException {
         logger.debug("init new form instance : " + id);
         if(json == null) {
             json = false;
@@ -118,7 +118,7 @@ public class FormWsController {
             recipientEmails = recipientsEmails;
         }
         if(stepsJsonString == null && recipientEmails != null) {
-            stepsJsonString = recipientService.convertRecipientEmailsToStep(recipientEmails).toString();
+            stepsJsonString = objectMapper.writeValueAsString(recipientService.convertRecipientEmailsToStep(recipientEmails));
         }
         if(createByEppn == null && eppn != null && !eppn.isEmpty()) {
             createByEppn = eppn;
@@ -154,7 +154,7 @@ public class FormWsController {
     }
 
     @CrossOrigin
-    @PostMapping(value = "/{id}/new-doc")
+    @PostMapping(value = "/{id}/new-doc", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @Operation(description = "Création d'une nouvelle instance d'un formulaire")
     public ResponseEntity<?> startWithDoc(@PathVariable Long id,
                              @RequestParam @Parameter(description = "Multipart stream du fichier à signer") MultipartFile[] multipartFiles,
@@ -203,9 +203,18 @@ public class FormWsController {
     }
 
     @CrossOrigin
+    @Deprecated
     @PostMapping(value = "/get-datas/{id}")
+    @Operation(description = "Récupération des données d'un formulaire (POST)", deprecated = true)
+    public LinkedHashMap<String, String> postGetDatas(@PathVariable Long id) {
+        return dataExportService.getJsonDatasFromSignRequest(id);
+    }
+
+    @CrossOrigin
+    @GetMapping(value = "/get-datas/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(description = "Récupération des données d'un formulaire")
     public LinkedHashMap<String, String> getDatas(@PathVariable Long id) {
         return dataExportService.getJsonDatasFromSignRequest(id);
     }
+
 }
