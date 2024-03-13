@@ -186,6 +186,7 @@ public class DSSBeanConfig {
 	@Bean
 	public OCSPDataLoader ocspDataLoader() {
 		OCSPDataLoader ocspDataLoader = configureCommonsDataLoader(new OCSPDataLoader());
+		ocspDataLoader.setProxyConfig(proxyConfig);
 		ocspDataLoader.setSslProtocol("TLSv1.3");
 		return ocspDataLoader;
 	}
