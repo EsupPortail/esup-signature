@@ -2,11 +2,12 @@ package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.entity.serializer.SerializeRecipientActionMap;
+import org.esupportail.esupsignature.entity.serializer.RecipientActionMapSerializer;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.*;
@@ -80,7 +81,7 @@ public class SignRequest {
     private Set<User> viewedBy = new HashSet<>();
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
-    @SerializeRecipientActionMap
+    @JsonSerialize(using = RecipientActionMapSerializer.class)
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
     @OneToOne(cascade = CascadeType.DETACH)

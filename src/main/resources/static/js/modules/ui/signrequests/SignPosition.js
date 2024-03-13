@@ -25,6 +25,7 @@ export class SignPosition extends EventFactory {
         this.currentScale = 1;
         this.scrollTop = 0;
         this.signType = signType;
+        this.forwardButton = $("#forward-btn");
         this.faImages = ["check-solid", "times-solid", "circle-regular", "minus-solid"];
         if(localStorage.getItem("scale") != null) {
             this.currentScale = localStorage.getItem("scale");
@@ -46,6 +47,7 @@ export class SignPosition extends EventFactory {
         this.signRequestParamses.delete(id);
         if(this.signRequestParamses.size === 0) {
             $("#addSignButton").removeAttr("disabled");
+            this.enableForwardButton();
         }
     }
 
@@ -63,10 +65,23 @@ export class SignPosition extends EventFactory {
         });
     }
 
+    disableForwardButton() {
+        if(this.forwardButton.length) {
+            this.forwardButton.addClass("disabled");
+        }
+    }
+
+    enableForwardButton() {
+        if(this.forwardButton.length) {
+            this.forwardButton.removeClass("disabled");
+        }
+    }
+
     addSign(page, restore, signImageNumber, forceSignNumber) {
+        this.disableForwardButton();
         let id = this.id;
         let currentSignRequestParams = null;
-        if(signImageNumber != null && signImageNumber >= 0 && signImageNumber != 999999) {
+        if(signImageNumber != null && signImageNumber >= 0 && signImageNumber !== 999999) {
             if(forceSignNumber != null) {
                 currentSignRequestParams = this.currentSignRequestParamses[forceSignNumber];
             } else {
