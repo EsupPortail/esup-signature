@@ -203,9 +203,18 @@ public class FormWsController {
     }
 
     @CrossOrigin
+    @Deprecated
     @PostMapping(value = "/get-datas/{id}")
+    @Operation(description = "Récupération des données d'un formulaire (POST)", deprecated = true)
+    public LinkedHashMap<String, String> postGetDatas(@PathVariable Long id) {
+        return dataExportService.getJsonDatasFromSignRequest(id);
+    }
+
+    @CrossOrigin
+    @GetMapping(value = "/get-datas/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(description = "Récupération des données d'un formulaire")
     public LinkedHashMap<String, String> getDatas(@PathVariable Long id) {
         return dataExportService.getJsonDatasFromSignRequest(id);
     }
+
 }
