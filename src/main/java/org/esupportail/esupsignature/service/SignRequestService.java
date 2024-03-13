@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.zxing.WriterException;
 import eu.europa.esig.dss.diagnostic.DiagnosticData;
@@ -16,7 +15,6 @@ import org.esupportail.esupsignature.dto.RecipientWsDto;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
-import org.esupportail.esupsignature.entity.serializer.RecipientActionMapSerializer;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
@@ -1123,9 +1121,6 @@ public class SignRequestService {
 	@Transactional
 	public String getJson(Long id) throws JsonProcessingException {
 		SignRequest signRequest = getById(id);
-		SimpleModule module = new SimpleModule();
-		module.addSerializer(new RecipientActionMapSerializer());
-		objectMapper.registerModule(module);
 		return objectMapper.writeValueAsString(signRequest);
 	}
 
