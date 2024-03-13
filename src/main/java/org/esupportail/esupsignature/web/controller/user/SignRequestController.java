@@ -226,42 +226,48 @@ public class SignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestDelete(#id, #authUserEppn)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-        if(signRequestService.delete(id, authUserEppn)) {
+        Long result = signRequestService.delete(id, authUserEppn);
+        if(result == 0) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression définitive effectuée"));
             return "redirect:/user/signbooks";
-        } else {
+        } else if(result > 0) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
+            return "redirect:/user/signbooks/" + result;
+
+        } else {
+            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression impossible car la demande est en cours de signature ou déjà signée"));
             return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+
         }
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestDelete(#id, #authUserEppn)")
-    @DeleteMapping(value = "/force-delete/{id}", produces = "text/html")
-    public String forceDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-        SignRequest signRequest = signRequestService.getById(id);
-        String referer = httpServletRequest.getHeader("referer");
-        if(signRequest.getParentSignBook().getSignRequests().size() > 1) {
-            try {
-                signRequestService.deleteDefinitive(id);
-                redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
-            } catch (EsupSignatureRuntimeException e) {
-                redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
-            }
-            if(referer.contains("signrequests")) {
-                return "redirect:/user/signbooks";
-            } else {
-                return "redirect:" + referer;
-            }
-        } else {
-            signBookService.deleteDefinitive(signRequest.getParentSignBook().getId(), authUserEppn);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
-            if(referer.contains("signrequests")) {
-                return "redirect:/user";
-            } else {
-                return "redirect:" + referer;
-            }
-        }
-    }
+//    @PreAuthorize("@preAuthorizeService.signRequestDelete(#id, #authUserEppn)")
+//    @DeleteMapping(value = "/force-delete/{id}", produces = "text/html")
+//    public String forceDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+//        SignRequest signRequest = signRequestService.getById(id);
+//        String referer = httpServletRequest.getHeader("referer");
+//        if(signRequest.getParentSignBook().getSignRequests().size() > 1) {
+//            try {
+//                signRequestService.deleteDefinitive(id);
+//                redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
+//            } catch (EsupSignatureRuntimeException e) {
+//                redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+//            }
+//            if(referer.contains("signrequests")) {
+//                return "redirect:/user/signbooks";
+//            } else {
+//                return "redirect:" + referer;
+//            }
+//        } else {
+//            signBookService.deleteDefinitive(signRequest.getParentSignBook().getId(), authUserEppn);
+//            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
+//            if(referer.contains("signrequests")) {
+//                return "redirect:/user";
+//            } else {
+//                return "redirect:" + referer;
+//            }
+//        }
+//    }
 
     @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
     @PostMapping(value = "/add-attachment/{id}")
@@ -392,7 +398,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + signRequestId;
     }
 
-    @PreAuthorize("@preAuthorizeService.signBookCreator(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signBookSendOtp(#id, #authUserEppn)")
     @PostMapping(value = "/send-otp/{id}/{recipientId}")
     public String sendOtp(@ModelAttribute("authUserEppn") String authUserEppn,
                           @PathVariable("id") Long id,
