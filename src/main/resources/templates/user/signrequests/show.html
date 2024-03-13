@@ -59,7 +59,7 @@
                             title="Viser"><i class="fa-solid fa-check fa-2xl"></i></a>
                     </li>
                     <li>
-                        <a th:if="${signable}" class="btn-floating btn-lg bg-warning waves-effect " title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
+                        <a id="forward-btn" th:if="${signable}" class="btn-floating btn-lg bg-warning waves-effect " title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
                             <i class="fa-solid fa-people-arrows fa-2xl text-dark"></i>
                         </a>
                     </li>
