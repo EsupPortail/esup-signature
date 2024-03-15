@@ -86,20 +86,20 @@
 			</div>
 			<div class="border ms-1 me-2"></div>
 			<div id="sign-tools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="d-none me-1 mb-1">
-				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp
+				<a th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp
 				||
 				signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign
 				||
 				signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign
 				}"
 						id="addSignButton"
-						class="btn btn-light btn-outline-primary">
-					<i class="fa-solid fa-plus"></i> <span class="d-inline">Insérer une signature</span>
-				</button>
+						class="btn btn-light btn-outline-primary pulse-primary">
+					<i class="fa-solid fa-file-signature"></i> <span class="d-inline">Insérer une signature</span>
+				</a>
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
 						id="addSignButton"
-						class="btn btn-light btn-outline-primary">
-					<i class="fa-solid fa-plus"></i> <span class="d-inline">Insérer un visa</span>
+						class="btn btn-light btn-outline-primary pulse-primary">
+					<i class="fa-solid fa-file-signature"></i> <span class="d-inline">Insérer un visa</span>
 				</button>
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
 						id="visualButton" title="Afficher/Masquer le visuel"

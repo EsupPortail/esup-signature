@@ -136,9 +136,7 @@ public class MailService {
                 mimeMessage.setFrom(mailConfig.getMailFrom());
                 mimeMessage.setTo(toEmails.toArray(String[]::new));
                 logger.info("send email completed to : " + StringUtils.join(toEmails.toArray(String[]::new), ";"));
-                if (mailSender != null) {
-                    mailSender.send(mimeMessage.getMimeMessage());
-                }
+                sendMail(mimeMessage.getMimeMessage());
             } catch (MailSendException | MessagingException e) {
                 logger.error("unable to send COMPLETE email", e);
                 throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
@@ -166,9 +164,7 @@ public class MailService {
             mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(toEmails.toArray(String[]::new));
             logger.info("send email completed to : " + StringUtils.join(toEmails.toArray(String[]::new), ";"));
-            if (mailSender != null) {
-                mailSender.send(mimeMessage.getMimeMessage());
-            }
+            sendMail(mimeMessage.getMimeMessage());
         } catch (MailSendException | MessagingException e) {
             logger.error("unable to send COMPLETE email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
@@ -202,9 +198,7 @@ public class MailService {
                 }
                 mimeMessage.setTo(to);
                 logger.info("send email completes cc for " + user.getEppn());
-                if (mailSender != null) {
-                    mailSender.send(mimeMessage.getMimeMessage());
-                }
+                sendMail(mimeMessage.getMimeMessage());
             } else {
                 logger.debug("no viewers to send mail");
             }
@@ -271,7 +265,7 @@ public class MailService {
             }
             mimeMessage.setCc(viewersArray);
             logger.info("send email refused to : " + StringUtils.join(toEmails.toArray(String[]::new), ";"));
-            mailSender.send(mimeMessage.getMimeMessage());
+            sendMail(mimeMessage.getMimeMessage());
         } catch (MessagingException e) {
             logger.error("unable to send REFUSE email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
@@ -301,8 +295,8 @@ public class MailService {
             mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             logger.info("send email alert for " + recipientsEmails.get(0));
-//            mailSender.send(signMessage(mimeMessage.getMimeMessage()));
-            mailSender.send(mimeMessage.getMimeMessage());
+//            sendMail(signMessage(mimeMessage.getMimeMessage()));
+            sendMail(mimeMessage.getMimeMessage());
             signBook.setLastNotifDate(new Date());
         } catch (Exception e) {
             logger.error("unable to send ALERT email", e);
@@ -333,7 +327,7 @@ public class MailService {
             mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             logger.info("send email replay alert for " + recipientsEmails.get(0));
-            mailSender.send(mimeMessage.getMimeMessage());
+            sendMail(mimeMessage.getMimeMessage());
             signBook.setLastNotifDate(new Date());
         } catch (MessagingException e) {
             logger.error("unable to send ALERT email", e);
@@ -369,7 +363,7 @@ public class MailService {
             mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(recipientsCCEmails.toArray(String[]::new));
             logger.info("send email cc for " + String.join(";", recipientsCCEmails));
-            mailSender.send(mimeMessage.getMimeMessage());
+            sendMail(mimeMessage.getMimeMessage());
         } catch (MessagingException e) {
             logger.error("unable to send CC ALERT email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
@@ -395,7 +389,7 @@ public class MailService {
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             mimeMessage.setText(htmlContent, true);
             logger.info("send email alert for " + recipientsEmails.get(0));
-            mailSender.send(mimeMessage.getMimeMessage());
+            sendMail(mimeMessage.getMimeMessage());
         } catch (MessagingException e) {
             logger.error("unable to send SUMMARY email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
@@ -418,7 +412,7 @@ public class MailService {
             mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(otp.getUser().getEmail());
             logger.info("send email alert for " + otp.getUser().getEmail());
-            mailSender.send(mimeMessage.getMimeMessage());
+            sendMail(mimeMessage.getMimeMessage());
         } catch (MessagingException e) {
             logger.error("unable to send OTP email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
@@ -442,7 +436,7 @@ public class MailService {
         mimeMessage.setSubject("Nouveau document signé à télécharger : " + title);
         mimeMessage.setFrom(mailConfig.getMailFrom());
         mimeMessage.setTo(targetUri.replace("mailto:", "").split(","));
-        mailSender.send(mimeMessage.getMimeMessage());
+        sendMail(mimeMessage.getMimeMessage());
 
     }
 
@@ -466,7 +460,25 @@ public class MailService {
         String htmlContent = templateEngine.process("mail/email-test.html", ctx);
         message.setText(htmlContent, true);
         logger.info("send test email for " + recipientsEmails.get(0));
-        mailSender.send(mimeMessage);
+        sendMail(mimeMessage);
+    }
+
+    private void sendMail(MimeMessage mimeMessage) {
+        try {
+            String[] toHeader =  mimeMessage.getHeader("To");
+            List<String> tos = new ArrayList<>();
+            for(String to : toHeader) {
+                if(!to.equals("system@" + globalProperties.getDomain())) {
+                    tos.add(to);
+                }
+            }
+            if(!tos.isEmpty()) {
+                mimeMessage.setHeader("To", String.join(",", tos));
+                mailSender.send(mimeMessage);
+            }
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void setTemplate(Context ctx) {
