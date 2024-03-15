@@ -344,16 +344,6 @@ dd {
     border: 2px solid red !important;
 }
 
-.pulse-success {
-    color: rgba(255, 255, 255, 0.8);
-    box-shadow: 0px 0px 20px 5px rgba(25, 135, 84, .8);
-    animation: pulse-success 2s infinite;
-}
-
-.pulse-success:hover {
-    color: rgba(255, 255, 255, 1) !important;
-}
-
 #snackbar {
     visibility: hidden;
     min-width: 250px;
@@ -546,7 +536,7 @@ input:focus, textarea:focus, select:focus {
 
 .btn {
     outline: none !important;
-    box-shadow: none !important;
+    /*box-shadow: none !important;*/
     /*    border-radius: .125rem;*/
 }
 
