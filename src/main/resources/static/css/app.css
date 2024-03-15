@@ -1,9 +1,9 @@
 @import "flags.css?version=@version@";
 @import "fonts.css?version=@version@";
 @import "selectors.css?version=@version@";
-@import "animations.css?version=@version@";
 @import "layout.css?version=@version@";
 @import "style.css?version=@version@";
 @import "overrides.css?version=@version@";
 @import "float-buttons.css?version=@version@";
 @import "medias.css?version=@version@";
+@import "animations.css?version=@version@";
