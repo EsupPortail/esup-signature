@@ -283,7 +283,6 @@ export class SignUi {
     }
 
     launchSign(gotoNext) {
-        $(window).unbind("beforeunload");
         let signModal = $('#signModal');
         if(this.certTypeSelect.val() === '' || this.certTypeSelect.val() === null) {
             bootbox.alert("<div class='alert alert-danger'>Merci de choisir un type de signature dans la liste déroulante</div>", null);
@@ -294,6 +293,7 @@ export class SignUi {
             signModal.modal('hide');
             return;
         }
+        $(window).unbind("beforeunload");
         this.gotoNext = gotoNext;
         signModal.modal('hide');
         $('#stepRepeatableModal').modal('hide');
