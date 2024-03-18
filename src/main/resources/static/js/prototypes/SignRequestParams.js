@@ -516,6 +516,9 @@ export class SignRequestParams extends EventFactory {
                     self.yPos = Math.round((ui.position.top - (($("#page_" + self.signPageNumber).offset().top) - $("#page_1").offset().top)) / self.currentScale);
                     if (self.yPos < 0) self.yPos = 0;
                     console.log("x : " + self.xPos + ", y : " + self.yPos);
+                    if(self.textareaPart != null) {
+                        self.resizeText();
+                    }
                 } else {
                     self.dropped = false;
                 }
