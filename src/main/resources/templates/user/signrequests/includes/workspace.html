@@ -243,7 +243,7 @@
             </div>
         </div>
     </div>
-    <div  th:unless="${signRequest.viewedBy.contains(user)}" class="not-viewed jumping not-viewed-position" title="Pour valider la lecture du document, il faut le faire défiler jusqu'au bas du document">
-        <i class="fa-solid fa-arrows-down-to-line fa-3x"></i>
-    </div>
+    <button id="end-button" th:unless="${signRequest.viewedBy.contains(user)}" class="btn not-viewed jumping not-viewed-position" title="Pour valider la lecture du document, il faut le faire défiler jusqu'au bas du document">
+        <i class="fa-solid fa-arrows-down-to-line fa-2x"></i>
+    </button>
 </div>

@@ -83,6 +83,7 @@ public class GlobalAttributsControllerAdvice {
 
     @ModelAttribute
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) throws JsonProcessingException {
+        model.addAttribute("currentUri", httpServletRequest.getRequestURI());
         HttpSession httpSession = httpServletRequest.getSession();
         if(userEppn != null) {
             GlobalProperties myGlobalProperties = new GlobalProperties();

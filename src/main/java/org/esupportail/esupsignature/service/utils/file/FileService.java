@@ -327,7 +327,7 @@ public class FileService {
 		imgBuf.setRGB(0, 0, w, h, rgb, 0, w);
 	}
 
-	public InputStream getDefaultImage(String name, String firstname, boolean forPrint) throws IOException {
+	public InputStream getDefaultImage(String name, String firstname, String email, boolean forPrint) throws IOException {
 		float factor = 1f;
 		if(forPrint) {
 			factor = globalProperties.getFixFactor();
@@ -346,16 +346,27 @@ public class FileService {
 			word = firstname;
 		}
 		try {
-			Font font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/Signature.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(12f);
-			int fontSize = findFontSize(word, Math.round(250 / factor), font);
+			Font font;
+			int fontSize;
+			if(StringUtils.hasText(firstname) && StringUtils.hasText(name)) {
+				font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/Signature.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(12f);
+				fontSize = findFontSize(word, Math.round(250 / factor), font);
+			} else {
+				font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(12f);
+				fontSize = findFontSize(email, Math.round(500 / factor), font);
+			}
 			font = font.deriveFont((float) fontSize);
 			graphics2D.setFont(font);
 			graphics2D.setColor(Color.BLACK);
 			FontMetrics fm = graphics2D.getFontMetrics();
 			int y = rect.y + ((rect.height - fm.getHeight()) / 2) + fm.getAscent();
 			int lineHeight = Math.round((float) fontSize / 1.5f);
-			graphics2D.drawString(StringUtils.capitalize(firstname), 250 / factor, y - lineHeight);
-			graphics2D.drawString(StringUtils.capitalize(name), 250 / factor, y + lineHeight);
+			if(StringUtils.hasText(firstname) && StringUtils.hasText(name)) {
+				graphics2D.drawString(StringUtils.capitalize(firstname), 250 / factor, y - lineHeight);
+				graphics2D.drawString(StringUtils.capitalize(name), 250 / factor, y + lineHeight);
+			} else {
+				graphics2D.drawString(email, 10 / factor, y - lineHeight);
+			}
 			graphics2D.dispose();
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			ImageIO.write(bufferedImage, "png", outputStream);

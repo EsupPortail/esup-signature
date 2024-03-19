@@ -9,6 +9,11 @@
 <!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <body>
+<script th:inline="javascript" type="module">
+    import {SignRequestHelp} from '/js/modules/help/SignRequestHelp.js?version=[[${versionApp}]]';
+    let help = new SignRequestHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]], [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]);
+    help.autoStart();
+</script>
 <header th:unless="${frameMode}" th:replace="~{fragments/nav :: nav}"></header>
 <script>
     // Include model attributs for online forms javascript
@@ -33,7 +38,8 @@
 
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-sign :: side-sign}"></nav>
+        <nav th:if="${user.userType.name() == 'external'}" id="sidebar" class="scrollbar-lite scrollbar-style" th:include="~{fragments/sides/side-otp :: side}"></nav>
+        <nav th:unless="${user.userType.name() == 'external'}" id="sidebar" class="scrollbar-lite scrollbar-style" th:include="~{fragments/sides/side-sign :: side-sign}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li th:if="${editable && userEppn == authUserEppn}" class="breadcrumb-item"><a href="/user/signbooks">Tableau
@@ -51,14 +57,25 @@
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                        <a id="addSignButton2" role="button" class="btn-floating btn-lg bg-white waves-effect pulse-primary" title="Inserer une signature" style="border: 1px solid #0d6efd;">
+                            <i class="fa-solid fa-file-signature fa-2xl text-primary"></i>
+                        </a>
+                    </li>
+                    <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <a id="signLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
-                            title="Signer"><i class="fa-solid fa-file-signature fa-2xl"></i></a>
+                            title="Enregister la signature et passer à l'étape suivante">
+                            <span class="fa-stack fa-1x">
+                                <i class="fas fa-save fa-stack-1x" style="margin-top: 27px; margin-left: 10px"></i>
+                                <i class="fas fa-signature fa-stack-2x" style="margin-top: 8px; margin-left: -5px"></i>
+                            </span>
+<!--                            <i class="fa-solid fa-file-signature fa-2xl"></i>-->
+                        </a>
                     </li>
                     <li th:unless="${!signable || signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <a id="visaLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
                             title="Viser"><i class="fa-solid fa-check fa-2xl"></i></a>
                     </li>
-                    <li>
+                    <li th:if="${!user.userType.name.equals('external')}">
                         <a id="forward-btn" th:if="${signable}" class="btn-floating btn-lg bg-warning waves-effect " title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
                             <i class="fa-solid fa-people-arrows fa-2xl text-dark"></i>
                         </a>
@@ -107,7 +124,7 @@
                     </li>
                     <th:block id="signButtons" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" th:unless="${signable}" class="fixed-action-btns active">
                         <li>
-                            <a role="button" class="btn-floating btn-lg bg-success waves-effect" title="Démarrer le circuit"
+                            <a id="start-button" role="button" class="btn-floating btn-lg bg-success waves-effect" title="Démarrer le circuit"
                                 data-bs-toggle="modal" data-bs-target="#sendModal"><i class="fa-solid fa-play fa-2xl"></i>
                             </a>
                         </li>
@@ -880,9 +897,6 @@
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 <script th:inline="javascript" type="module">
     import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=[[${versionApp}]]';
-    import {SignRequestHelp} from '/js/modules/help/SignRequestHelp.js?version=[[${versionApp}]]';
-    let help = new SignRequestHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]], [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]);
-    help.autoStart();
     let signable = [[${signable}]];
     let editable = [[${editable}]];
     let currentSignType = [[${signRequest.currentSignType}]];
