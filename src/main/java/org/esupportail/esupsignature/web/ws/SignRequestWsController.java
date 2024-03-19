@@ -164,13 +164,13 @@ public class SignRequestWsController {
 
     @CrossOrigin
     @DeleteMapping("/{id}")
-    @Operation(description = "Supprimer une demande de signature")
+    @Operation(description = "Supprimer une demande de signature définitivement")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         Long signBookId = signRequestService.getParentIdIfSignRequestUnique(id);
         if(signBookId != null) {
             signBookService.deleteDefinitive(signBookId, "system");
         } else {
-            signRequestService.deleteDefinitive(id);
+            signRequestService.deleteDefinitive(id, true);
         }
         return ResponseEntity.ok().build();
     }

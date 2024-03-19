@@ -103,41 +103,33 @@ public class LogService {
         return logs;
     }
 
-    public Log create(Long id, String status, String action, String returnCode, String comment, String userEppn,  String authUserEppn) {
-        Log log = new Log();
-        log.setSignRequestId(id);
-        log.setEppn(authUserEppn);
-        User user = userService.getByEppn(authUserEppn);
-        log.setUser(user);
-        log.setEppnFor(userEppn);
-        setClientIp(log);
-        log.setInitialStatus(status);
-        log.setLogDate(new Date());
-        log.setAction(action);
-        log.setReturnCode(returnCode);
-        log.setComment(comment);
-        logRepository.save(log);
-        return log;
-    }
-
-    public void setClientIp(Log log) {
-        if (request != null) {
-            try {
-                log.setIp(request.getRemoteAddr());
-            } catch (IllegalStateException e) {
-                logger.debug("unable to get IP (maybe it was launched by scheduler)");
-            }
-        }
-    }
+//    public Log create(Long id, String status, String action, String returnCode, String comment, String userEppn,  String authUserEppn) {
+//        Log log = new Log();
+//        log.setSignRequestId(id);
+//        log.setEppn(authUserEppn);
+//        User user = userService.getByEppn(authUserEppn);
+//        log.setUser(user);
+//        log.setEppnFor(userEppn);
+//        setClientIp(log);
+//        log.setInitialStatus(status);
+//        log.setLogDate(new Date());
+//        log.setAction(action);
+//        log.setReturnCode(returnCode);
+//        log.setComment(comment);
+//        logRepository.save(log);
+//        return log;
+//    }
 
     @Transactional
-    public Log create(Long signRequestId, SignRequestStatus signRequestStatus, String action, String comment, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, String userEppn, String authUserEppn) {
+    public Log create(Long signRequestId, String subject, String workflowName, SignRequestStatus signRequestStatus, String action, String comment, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, String userEppn, String authUserEppn) {
         SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
         Log log = new Log();
         log.setSignRequestId(signRequest.getId());
         log.setSignRequestToken(signRequest.getToken());
         log.setEppn(authUserEppn);
         log.setEppnFor(userEppn);
+        log.setSubject(subject);
+        log.setWorkflowName(workflowName);
         User user = userService.getByEppn(authUserEppn);
         log.setUser(user);
         log.setEppnFor(userEppn);
@@ -163,6 +155,16 @@ public class LogService {
         }
         logRepository.save(log);
         return log;
+    }
+
+    public void setClientIp(Log log) {
+        if (request != null) {
+            try {
+                log.setIp(request.getRemoteAddr());
+            } catch (IllegalStateException e) {
+                logger.debug("unable to get IP (maybe it was launched by scheduler)");
+            }
+        }
     }
 
     public void delete(Log log) {

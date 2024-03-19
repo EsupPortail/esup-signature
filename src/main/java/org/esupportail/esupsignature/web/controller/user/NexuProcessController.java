@@ -106,7 +106,7 @@ public class NexuProcessController implements Serializable {
 		AbstractSignatureForm abstractSignatureForm = nexuService.getAbstractSignatureFormFromNexuSignature(nexuSignature);
 		abstractSignatureForm.setSignatureValue(signatureValue.getSignatureValue());
 		SignDocumentResponse responseJson = nexuService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn, nexuSignature.getDocumentToSign());
-		signRequestService.updateStatus(id, SignRequestStatus.signed, "Signature", "SUCCESS", userEppn, authUserEppn);
+		signRequestService.updateStatus(id, SignRequestStatus.signed, "Signature", null, "SUCCESS", null,null,null,null, userEppn, authUserEppn);
 		StepStatus stepStatus = signRequestService.applyEndOfSignRules(id, userEppn, authUserEppn, SignType.nexuSign, "");
 		if(stepStatus.equals(StepStatus.last_end)) {
 			signBookService.completeSignRequest(id, authUserEppn, "Tous les documents sont signés");
