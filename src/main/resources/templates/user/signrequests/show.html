@@ -38,7 +38,8 @@
 
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-sign :: side-sign}"></nav>
+        <nav th:if="${user.userType.name() == 'external'}" id="sidebar" class="scrollbar-lite scrollbar-style" th:include="~{fragments/sides/side-otp :: side}"></nav>
+        <nav th:unless="${user.userType.name() == 'external'}" id="sidebar" class="scrollbar-lite scrollbar-style" th:include="~{fragments/sides/side-sign :: side-sign}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li th:if="${editable && userEppn == authUserEppn}" class="breadcrumb-item"><a href="/user/signbooks">Tableau

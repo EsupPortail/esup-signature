@@ -352,7 +352,10 @@ export class SignRequestParams extends EventFactory {
 
         if(this.isOtp){
             this.toggleExtra();
-            this.toggleText()
+            this.toggleText();
+            if(this.userName.length < 2) {
+                this.toggleName();
+            }
             if(this.phone != null) {
                 $("#extraTypeDiv_" + this.id).html("<span>Signature OTP : " + this.phone + "<br></span>");
             } else {
