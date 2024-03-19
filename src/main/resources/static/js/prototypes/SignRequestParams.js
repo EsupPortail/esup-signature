@@ -172,6 +172,7 @@ export class SignRequestParams extends EventFactory {
                     $("#spot-modal").modal("hide");
                     self.id = result;
                     self.disableSpot();
+                    $(window).unbind("beforeunload");
                 }
             });
         }
