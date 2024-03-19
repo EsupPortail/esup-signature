@@ -1,10 +1,14 @@
 package org.esupportail.esupsignature.service;
 
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import org.esupportail.esupsignature.entity.Log;
+import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.LogRepository;
+import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,10 +18,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class LogService {
@@ -39,6 +42,9 @@ public class LogService {
 
     @Resource
     private SignRequestRepository signRequestRepository;
+
+    @Resource
+    private SignBookRepository signBookRepository;
 
     public List<Log> getRefuseLogs(Long id) {
         List<Log> logs = logRepository.findBySignRequestIdAndFinalStatus(id, SignRequestStatus.refused.name());
@@ -103,29 +109,26 @@ public class LogService {
         return logs;
     }
 
-//    public Log create(Long id, String status, String action, String returnCode, String comment, String userEppn,  String authUserEppn) {
-//        Log log = new Log();
-//        log.setSignRequestId(id);
-//        log.setEppn(authUserEppn);
-//        User user = userService.getByEppn(authUserEppn);
-//        log.setUser(user);
-//        log.setEppnFor(userEppn);
-//        setClientIp(log);
-//        log.setInitialStatus(status);
-//        log.setLogDate(new Date());
-//        log.setAction(action);
-//        log.setReturnCode(returnCode);
-//        log.setComment(comment);
-//        logRepository.save(log);
-//        return log;
-//    }
-
     @Transactional
-    public Log create(Long signRequestId, String subject, String workflowName, SignRequestStatus signRequestStatus, String action, String comment, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, String userEppn, String authUserEppn) {
-        SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
+    public Log create(Long id, String subject, String workflowName, SignRequestStatus signRequestStatus, String action, String comment, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, String userEppn, String authUserEppn) {
+        Optional<SignRequest> signRequest = signRequestRepository.findById(id);
         Log log = new Log();
-        log.setSignRequestId(signRequest.getId());
-        log.setSignRequestToken(signRequest.getToken());
+        log.setSignRequestId(id);
+        if(signRequest.isPresent()) {
+            action = "signRequest : " + action;
+            log.setSignRequestToken(signRequest.get().getToken());
+            log.setInitialStatus(signRequest.get().getStatus().name());
+            if(signRequestStatus != null) {
+                log.setFinalStatus(signRequestStatus.toString());
+                signRequest.get().setStatus(signRequestStatus);
+            } else {
+                log.setFinalStatus(signRequest.get().getStatus().name());
+            }
+        } else  {
+            action = "signBook : " + action;
+            SignBook signBook = signBookRepository.findById(id).get();
+            log.setInitialStatus(signBook.getStatus().name());
+        }
         log.setEppn(authUserEppn);
         log.setEppnFor(userEppn);
         log.setSubject(subject);
@@ -134,7 +137,6 @@ public class LogService {
         log.setUser(user);
         log.setEppnFor(userEppn);
         setClientIp(log);
-        log.setInitialStatus(signRequest.getStatus().toString());
         log.setLogDate(new Date());
         log.setAction(action);
         log.setReturnCode(returnCode);
@@ -146,12 +148,6 @@ public class LogService {
         }
         if(stepNumber != null) {
             log.setStepNumber(stepNumber);
-        }
-        if(signRequestStatus != null) {
-            log.setFinalStatus(signRequestStatus.toString());
-            signRequest.setStatus(signRequestStatus);
-        } else {
-            log.setFinalStatus(signRequest.getStatus().toString());
         }
         logRepository.save(log);
         return log;

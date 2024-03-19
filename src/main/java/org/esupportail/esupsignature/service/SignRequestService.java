@@ -630,7 +630,7 @@ public class SignRequestService {
 	public Long delete(Long signRequestId, String userEppn) {
 		SignRequest signRequest = getById(signRequestId);
 		if(signRequest.getStatus().equals(SignRequestStatus.deleted) || signRequest.getStatus().equals(SignRequestStatus.draft) || (signRequest.getParentSignBook().getSignRequests().size() > 1 && signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending))) {
-			return deleteDefinitive(signRequestId, false);
+			return deleteDefinitive(signRequestId, false, userEppn);
 		} else {
 			if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
 				signRequest.getOriginalDocuments().clear();
@@ -651,11 +651,12 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Long deleteDefinitive(Long signRequestId, boolean force) {
+	public Long deleteDefinitive(Long signRequestId, boolean force, String userEppn) {
 		SignRequest signRequest = getById(signRequestId);
 		if(!force && !signRequest.getStatus().equals(SignRequestStatus.deleted) && !signRequest.getRecipientHasSigned().values().stream().allMatch(a -> a.getActionType().equals(ActionType.none))) {
 			throw new EsupSignatureRuntimeException("Suppression impossible, la demande est déjà démarrée");
 		}
+		logService.create(signRequestId, signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Suppression définitive", null, "SUCCESS", null, null, null,null, userEppn, userEppn);
 		signRequest.getRecipientHasSigned().clear();
 		signRequestRepository.save(signRequest);
 		if (signRequest.getData() != null) {
@@ -711,7 +712,7 @@ public class SignRequestService {
 			throw new EsupSignatureRuntimeException("Interdiction de supprimer les demandes de ce circuit");
 		}
 		if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
-			deleteDefinitive(signRequestId, false);
+			deleteDefinitive(signRequestId, false, userEppn);
 		} else {
 			if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
 				signRequest.getOriginalDocuments().clear();

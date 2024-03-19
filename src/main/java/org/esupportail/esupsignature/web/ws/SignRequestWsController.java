@@ -170,7 +170,7 @@ public class SignRequestWsController {
         if(signBookId != null) {
             signBookService.deleteDefinitive(signBookId, "system");
         } else {
-            signRequestService.deleteDefinitive(id, true);
+            signRequestService.deleteDefinitive(id, true, "system");
         }
         return ResponseEntity.ok().build();
     }

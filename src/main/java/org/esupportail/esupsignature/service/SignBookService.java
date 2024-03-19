@@ -593,7 +593,7 @@ public class SignBookService {
             }
             List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).toList();
             for (Long signRequestId : signRequestsIds) {
-                signRequestService.deleteDefinitive(signRequestId, true);
+                signRequestService.deleteDefinitive(signRequestId, true, userEppn);
             }
             dataService.deleteBySignBook(signBook);
             signBookRepository.delete(signBook);
@@ -1007,8 +1007,8 @@ public class SignBookService {
                 }
             }
         }
-        updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber(), "SUCCESS", signBook.getComment(), userEppn, authUserEppn);
-        logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());
+        updateStatus(signBook, SignRequestStatus.pending, "Circuit démarré pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber(), "SUCCESS", signBook.getComment(), userEppn, authUserEppn);
+        logger.info("Circuit " + signBook.getId() + " démarré pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());
         if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getCurrentStep() != null) {
             for (Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
                 if (recipient.getUser().getUserType().equals(UserType.external)) {
