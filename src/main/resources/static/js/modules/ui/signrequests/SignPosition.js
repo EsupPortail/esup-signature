@@ -48,6 +48,7 @@ export class SignPosition extends EventFactory {
         this.signRequestParamses.delete(id);
         if(this.signRequestParamses.size === 0) {
             this.addSignButton.addClass("pulse-primary");
+            $("#addSignButton2").addClass("pulse-primary");
             $("#addSignButton").removeAttr("disabled");
             $(window).unbind("beforeunload");
             this.enableForwardButton();
@@ -86,6 +87,7 @@ export class SignPosition extends EventFactory {
             return "You have some unsaved changes";
         });
         this.addSignButton.removeClass("pulse-primary");
+        $("#addSignButton2").removeClass("pulse-primary");
         let id = this.id;
         let currentSignRequestParams = null;
         if(signImageNumber != null && signImageNumber >= 0 && signImageNumber !== 999999) {

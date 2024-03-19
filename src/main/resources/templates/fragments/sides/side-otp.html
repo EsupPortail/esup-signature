@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<!--/*@thymesVar id="toSignDocument" type="org.esupportail.esupsignature.entity.Document"*/-->
+<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
+<nav th:fragment="side">
+    <div class="ms-1 mt-3 d-none d-lg-block">
+        <div class="hr sidebar-label">Statut</div>
+        <div class="card card-body bg-light">
+            <th:block th:if="${signRequest != null}">
+                <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}" class="mb-1"></div>
+                <span th:if="${workflow != null}" th:text="'Circuit : ' + ${workflow.description}"></span>
+                <span>Créé par <span th:text="${signRequest.createBy.firstname + ' ' + signRequest.createBy.name}"></span></span>
+                <th:block th:if="${signBook.viewers.size() > 0 }">
+                    <span>
+                    Suivi par :
+                        <ul>
+                            <li th:each="user : ${signBook.viewers}" >
+                                <span th:text="${user.firstname + ' ' + user.name}"></span>
+
+                            </li>
+                        </ul>
+                    </span>
+                </th:block>
+            </th:block>
+            <th:block th:unless="${signRequest != null}">
+                <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
+            </th:block>
+        </div>
+        <div th:if="${signRequest != null}" th:insert="~{user/signrequests/cards/stepscard-light :: stepscard}"></div>
+    </div>
+</nav>
+</html>

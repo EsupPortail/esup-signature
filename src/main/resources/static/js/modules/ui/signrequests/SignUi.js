@@ -293,6 +293,7 @@ export class SignUi {
             signModal.modal('hide');
             return;
         }
+        $(window).unbind("beforeunload");
         this.gotoNext = gotoNext;
         signModal.modal('hide');
         $('#stepRepeatableModal').modal('hide');
