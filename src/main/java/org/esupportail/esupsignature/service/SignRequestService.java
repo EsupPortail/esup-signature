@@ -289,7 +289,7 @@ public class SignRequestService {
 			byte[] signedBytes = signedInputStream;
 
 			stepStatus = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, signType, comment);
-			documentService.addSignedFile(signRequest, new ByteArrayInputStream(signedBytes), signRequest.getTitle() + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType());
+			documentService.addSignedFile(signRequest, new ByteArrayInputStream(signedBytes), signRequest.getTitle() + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType(), user);
 		} else {
 			reports = validationService.validate(getToValidateFile(signRequest.getId()), null);
 			DiagnosticData diagnosticData = reports.getDiagnosticData();
