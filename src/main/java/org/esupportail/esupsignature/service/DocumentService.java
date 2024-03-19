@@ -159,9 +159,9 @@ public class DocumentService {
 	}
 
 	@Transactional
-	public Document addSignedFile(SignRequest signRequest, InputStream signedInputStream, String originalName, String mimeType) throws IOException {
+	public Document addSignedFile(SignRequest signRequest, InputStream signedInputStream, String originalName, String mimeType, User user) throws IOException {
 		String docName = getSignedName(originalName);
-		Document document = createDocument(signedInputStream, signRequest.getCreateBy(), docName, mimeType);
+		Document document = createDocument(signedInputStream, user, docName, mimeType);
 		document.setParentId(signRequest.getId());
 		signRequest.getSignedDocuments().add(document);
 		return document;

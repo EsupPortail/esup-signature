@@ -233,7 +233,7 @@ public class SignService {
 				dssDocument = certSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters, abstractKeyStoreTokenConnection);
 			}
 			abstractKeyStoreTokenConnection.close();
-			Document signedDocument = documentService.addSignedFile(signRequest, dssDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(dssDocument.getName()), Files.probeContentType(Path.of(dssDocument.getName())));
+			Document signedDocument = documentService.addSignedFile(signRequest, dssDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(dssDocument.getName()), Files.probeContentType(Path.of(dssDocument.getName())), user);
 			logger.info("certSign ok for signRequest : " + signRequest.getId());
 			return signedDocument;
 		} catch (EsupSignatureKeystoreException e) {
@@ -403,7 +403,7 @@ public class SignService {
 			if(includeDocuments) {
 				((SignatureDocumentForm) abstractSignatureForm).setDocumentToSign(new DssMultipartFile(toSignFile.getFileName(), toSignFile.getFileName(), toSignFile.getContentType(), bytes));
 			} else {
-				signRequest.getSignedDocuments().add(documentService.createDocument(new ByteArrayInputStream(bytes), userService.getSystemUser(), toSignFile.getFileName(), toSignFile.getContentType()));
+				documentService.addSignedFile(signRequest, new ByteArrayInputStream(bytes), toSignFile.getFileName(), toSignFile.getContentType(), userService.getSystemUser());
 			}
 			if(!signatureForm.equals(SignatureForm.PAdES)) {
 				((SignatureDocumentForm) abstractSignatureForm).setContainerType(signProperties.getContainerType());
