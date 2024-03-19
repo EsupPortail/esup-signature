@@ -78,6 +78,7 @@
 	</div>
 	<div id="second-tools" class="d-flex">
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
+			<th:block th:if="${!user.userType.name.equals('external')}">
 			<div class="d-none d-xl-inline">
 				<button class="btn btn-light text-dark btn-outline-light" style="cursor: default;">Choix du mode : </button>
 			</div>
@@ -85,6 +86,7 @@
 				<select id="changeMode" name="changeMode" class="change-mode"></select>
 			</div>
 			<div class="border ms-1 me-2"></div>
+			</th:block>
 			<div id="sign-tools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="d-none me-1 mb-1">
 				<a th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp
 				||

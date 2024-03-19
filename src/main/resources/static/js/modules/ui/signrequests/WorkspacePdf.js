@@ -94,6 +94,7 @@ export class WorkspacePdf {
         if (this.isPdf) {
             $('#prev').on('click', e => this.pdfViewer.prevPage());
             $('#next').on('click', e => this.pdfViewer.nextPage());
+            $('#end-button').on('click', e => this.pdfViewer.nextPage());
             $('#addCommentButton').on('click', e => this.enableCommentAdd(e));
             $('#addSpotButton').on('click', e => this.enableSpotAdd(e));
             $("#spotStepNumber").on('change', e => this.changeSpotStep());
@@ -843,6 +844,7 @@ export class WorkspacePdf {
             $(this).show();
         });
         $('#signLaunchButton').removeClass('d-none');
+        $('#addSignButton2').removeClass('d-none');
         $('#refuseLaunchButton').removeClass('d-none');
         $('#trashLaunchButton').removeClass('d-none');
         this.refreshAfterPageChange();
@@ -854,6 +856,7 @@ export class WorkspacePdf {
         $('#signModeButton').removeClass('btn-outline-success');
         $('#readModeButton').removeClass('btn-outline-secondary');
         $('#signLaunchButton').addClass('d-none');
+        $('#addSignButton2').addClass('d-none');
         $('#refuseLaunchButton').addClass('d-none');
         $("#commentHelp").addClass("d-none");
         $('#commentsTools').hide();
@@ -976,16 +979,16 @@ export class WorkspacePdf {
         let data = [];
         if(this.signable) {
             data.push({
-                html: '<div style="width: 200px;"><i style="font-size: 0.6rem;" class="fas fa-signature text-success"></i><i class="fas fa-pen text-success pr-2"></i></i> <b>Remplir et signer</b></div>',
-                text: 'Remplir et signer',
+                html: '<div style="width: 200px;"><i style="font-size: 0.6rem;" class="fas fa-signature text-success"></i><i class="fas fa-pen text-success pr-2"></i></i> <b>Signature</b></div>',
+                text: 'Signature',
                 value: 'sign',
                 selected: true
             });
         }
         if(this.status === "draft" || this.status === "pending") {
             data.push({
-                html: '<div style="width: 200px;"><i class="fas fa-comment text-warning pr-2 m-1"></i><b>Annoter</b></div>',
-                text: 'Annoter',
+                html: '<div style="width: 200px;"><i class="fas fa-comment text-warning pr-2 m-1"></i><b>Annotation</b></div>',
+                text: 'Annotation',
                 value: 'comment'
             });
         }

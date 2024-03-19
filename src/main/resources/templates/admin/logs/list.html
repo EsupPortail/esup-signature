@@ -21,6 +21,9 @@
                         <thead class="table-secondary">
                         <tr>
                             <th>Date</th>
+                            <th>Id</th>
+                            <th>Titre</th>
+                            <th>Circuit</th>
                             <th>Eppn</th>
                             <th>Action</th>
                             <th>Statut initial</th>
@@ -31,6 +34,9 @@
                         <th:block th:each="log : ${logs}">
                             <tr>
                                 <td><span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span></td>
+                                <td><input type="text" th:value="${log.signRequestId}" disabled /></td>
+                                <td><span th:text="${log.subject}"></span></td>
+                                <td><span th:text="${log.workflowName}"></span></td>
                                 <td><span th:text="${log.eppn}"></span></td>
                                 <td><span th:text="${log.action}"></span></td>
                                 <td><span th:text="#{'signbook.status.' + ${log.initialStatus}}"></span></td>

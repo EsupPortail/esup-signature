@@ -148,10 +148,10 @@ public class PdfService {
         } else {
             if ((signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) || !signRequestParams.getAddImage())
                     && (!StringUtils.hasText(signRequestParams.getTextPart()) || signRequestParams.getAddExtra()) ) {
-                signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), true), signRequestParams, signType, user, newDate, otp);
+                signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
             } else if (signRequestParams.getAddExtra()) {
                 if(signRequestParams.getSignImageNumber() == null || signRequestParams.getSignImageNumber() >= user.getSignImages().size()) {
-                    signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), true), signRequestParams, signType, user, newDate, otp);
+                    signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
                 } else {
                     signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType, user, newDate, otp);
                 }
@@ -159,7 +159,7 @@ public class PdfService {
                 if(user.getSignImages().size() >= signRequestParams.getSignImageNumber() + 1) {
                     signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
                 } else {
-                    signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), true), signRequestParams, signType, user, newDate, otp);
+                    signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
                 }
             }
             if (signRequestParams.getAddWatermark()) {
@@ -199,7 +199,7 @@ public class PdfService {
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
             ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
-            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, (float) (signRequestParams.getSignWidth() * fixFactor), (float) (signRequestParams.getSignHeight() * fixFactor));
+            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, signRequestParams.getSignWidth() * fixFactor, signRequestParams.getSignHeight() * fixFactor);
             if (signRequestParams.getSignImageNumber() >= 0 && !endingWithCert) {
                 addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted);
             }
@@ -208,8 +208,10 @@ public class PdfService {
             PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), WinAnsiEncoding.INSTANCE);
             contentStream.beginText();
             contentStream.setFont(pdFont, fontSize);
-            contentStream.newLineAtOffset(xAdjusted, (float) (yAdjusted + signRequestParams.getSignHeight() * fixFactor - fontSize));
             String[] lines = signRequestParams.getTextPart().split("\n");
+            float fontHeight = (pdFont.getFontDescriptor().getCapHeight()) / 1000 * signRequestParams.getFontSize();
+            yAdjusted = yAdjusted + (fontHeight * lines.length / fixFactor);
+            contentStream.newLineAtOffset(xAdjusted + 2, yAdjusted);
             for (String line : lines) {
                 contentStream.showText(line);
                 contentStream.newLineAtOffset(0, -fontSize / fixFactor);

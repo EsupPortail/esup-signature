@@ -18,6 +18,10 @@ public class Log {
 
     private String signRequestToken;
 
+    private String subject;
+
+    private String workflowName;
+
 	@Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy - HH:mm")
     private Date logDate;
@@ -67,6 +71,22 @@ public class Log {
 
     public void setSignRequestToken(String signRequestToken) {
         this.signRequestToken = signRequestToken;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
+    public String getWorkflowName() {
+        return workflowName;
+    }
+
+    public void setWorkflowName(String workflowName) {
+        this.workflowName = workflowName;
     }
 
     public Date getLogDate() {
@@ -156,10 +176,6 @@ public class Log {
 	public void setId(Long id) {
         this.id = id;
     }
-
-	
-
-	
 
     public Integer getPageNumber() {
         return pageNumber;

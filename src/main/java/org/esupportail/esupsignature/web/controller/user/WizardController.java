@@ -123,14 +123,16 @@ public class WizardController {
     @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
     @ResponseBody
     @PostMapping(value = "/wiz-create-workflow-sign")
-    public ResponseEntity<Long> wizCreateWorkflowSign(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "workflowId", required = false) Long workflowId) {
+    public ResponseEntity<Long> wizCreateWorkflowSign(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                                                      @RequestParam(value = "workflowId", required = false) Long workflowId,
+                                                      @RequestParam(value = "title", required = false, defaultValue = "") String title) {
         Workflow workflow = null;
         String name = "Demande personnalisée";
         if (workflowId != null) {
             workflow = workflowService.getById(workflowId);
             name = workflow.getDescription();
         }
-        SignBook signBook = signBookService.createSignBook("", workflow, name, userEppn, false);
+        SignBook signBook = signBookService.createSignBook(title, workflow, name, userEppn, false);
         return ResponseEntity.ok().body(signBook.getId());
     }
 

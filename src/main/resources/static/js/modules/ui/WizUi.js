@@ -158,9 +158,10 @@ export class WizUi {
             self.workflowSignNextStep();
         });
         $("#wiz-start-button").on('click', function (){
+            let title = $("#title-wiz").val();
             $.ajax({
                 type: "POST",
-                url: '/user/wizard/wiz-create-workflow-sign?workflowId=' + self.workflowId + "&" + self.csrf.parameterName + "=" + self.csrf.token,
+                url: '/user/wizard/wiz-create-workflow-sign?workflowId=' + self.workflowId + "&title=" + title + "&" + self.csrf.parameterName + "=" + self.csrf.token,
                 success: function(signBookId) {
                     self.newSignBookId = signBookId
                     self.fileInput.signBookId = self.newSignBookId;
