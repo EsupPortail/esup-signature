@@ -1829,6 +1829,9 @@ public class SignBookService {
         if(template.contains("[worflowName]")) {
             template = template.replace("[worflowName]", signBook.getWorkflowName());
         }
+        if(template.contains("[workflowName]")) {
+            template = template.replace("[workflowName]", signBook.getWorkflowName());
+        }
         if(template.contains("[user.eppn]")) {
             template = template.replace("[user.eppn]", user.getEppn());
         }
