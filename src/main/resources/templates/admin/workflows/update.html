@@ -204,7 +204,8 @@
                                 <tbody>
                                 <th:block th:each="target : ${workflow.targets}">
                                     <tr>
-                                        <td class="text-left w-100" th:text="${target.protectedTargetUri}">
+                                        <td class="text-left w-100">
+                                            <input type="text" th:value="${target.protectedTargetUri}" class="w-100" disabled />
                                         </td>
                                         <td>
                                             <a th:id="'deleteSign_' + ${signImageId}" th:href="'/admin/workflows/delete-target/' + ${workflow.id} + '/' + ${target.id}" role="button" class="btn btn-sm btn-danger text-white">
