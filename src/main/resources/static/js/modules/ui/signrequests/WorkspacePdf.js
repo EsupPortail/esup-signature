@@ -94,6 +94,7 @@ export class WorkspacePdf {
         if (this.isPdf) {
             $('#prev').on('click', e => this.pdfViewer.prevPage());
             $('#next').on('click', e => this.pdfViewer.nextPage());
+            $('#end-button').on('click', e => this.pdfViewer.nextPage());
             $('#addCommentButton').on('click', e => this.enableCommentAdd(e));
             $('#addSpotButton').on('click', e => this.enableSpotAdd(e));
             $("#spotStepNumber").on('change', e => this.changeSpotStep());

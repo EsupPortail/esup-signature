@@ -119,7 +119,7 @@
 
 .pulse-success {
     box-shadow: 0px 0px 20px 5px rgba(25, 135, 84, .8);
-    animation: pulse-success 2s infinite;
+    animation: pulse-success 1s infinite;
 }
 
 .pulse-success:hover {
@@ -128,13 +128,13 @@
 
 @-webkit-keyframes pulse-success {
     0% {
-        -webkit-box-shadow: 0px 0px 1px 10px rgba(25, 135, 84, .5);
+        -webkit-box-shadow: 0px 0px 1px 5px rgba(25, 135, 84, .8);
     }
     70% {
-        -webkit-box-shadow: 0px 0px 1px 10px rgba(25, 135, 84, 0);
+        -webkit-box-shadow: 0px 0px 1px 5px rgba(25, 135, 84, 0);
     }
     100% {
-        -webkit-box-shadow: 0px 0px 1px 10px rgba(25, 135, 84, .5);
+        -webkit-box-shadow: 0px 0px 1px 5px rgba(25, 135, 84, .8);
     }
 }
 
@@ -149,12 +149,12 @@
 
 @-webkit-keyframes pulse-primary {
     0% {
-        -webkit-box-shadow: 0px 0px 1px 5px rgba(13, 110, 253, .5);
+        -webkit-box-shadow: 0px 0px 1px 5px rgba(13, 110, 253, .8);
     }
     70% {
         -webkit-box-shadow: 0px 0px 1px 5px rgba(13, 110, 253, 0);
     }
     100% {
-        -webkit-box-shadow: 0px 0px 1px 5px rgba(13, 110, 253, .5);
+        -webkit-box-shadow: 0px 0px 1px 5px rgba(13, 110, 253, .8);
     }
 }
