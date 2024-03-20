@@ -800,7 +800,7 @@ public class SignBookService {
         if(computedWorkflow.getWorkflowSteps().isEmpty()) {
             toAddFile = pdfService.convertGS(toAddFile);
         }
-        String fileName = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
+        String fileName = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "") + ".pdf";
         MultipartFile multipartFile = new DssMultipartFile(fileName, fileName, "application/pdf", toAddFile);
         signRequestService.addDocsToSignRequest(signRequest, true, 0, form.getSignRequestParams(), multipartFile);
         importWorkflow(signBook, computedWorkflow, steps);
@@ -1828,6 +1828,9 @@ public class SignBookService {
         }
         if(template.contains("[worflowName]")) {
             template = template.replace("[worflowName]", signBook.getWorkflowName());
+        }
+        if(template.contains("[workflowName]")) {
+            template = template.replace("[workflowName]", signBook.getWorkflowName());
         }
         if(template.contains("[user.eppn]")) {
             template = template.replace("[user.eppn]", user.getEppn());

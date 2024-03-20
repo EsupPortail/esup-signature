@@ -295,7 +295,7 @@ public class NexuService {
 			dssDocument = signDocument(signRequest.getId(), userEppn, (SignatureDocumentForm) signatureDocumentForm, documentsToSign);
 		}
 		InMemoryDocument signedDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
-		return documentService.addSignedFile(signRequest, signedDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(signedDocument.getName()), Files.probeContentType(Path.of(dssDocument.getName())));
+		return documentService.addSignedFile(signRequest, signedDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(signedDocument.getName()), Files.probeContentType(Path.of(dssDocument.getName())), userService.getByEppn(userEppn));
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })

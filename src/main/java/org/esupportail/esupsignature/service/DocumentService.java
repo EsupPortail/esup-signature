@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -111,7 +112,7 @@ public class DocumentService {
         return null;
 	}
 
-	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile, String name) throws EsupSignatureRuntimeException, EsupSignatureFsException {
+	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile, String name) throws EsupSignatureRuntimeException {
 		String documentUri;
 		FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(targetUrl);
 		if(fsAccessService != null) {
@@ -121,12 +122,16 @@ public class DocumentService {
 				if(name == null) {
 					name = signedFile.getFileName();
 				} else {
-					if(!fileService.getExtension(name).equals(fileService.getExtension(signedFile.getFileName()))) {
+					String extension = fileService.getExtension(name);
+					if(!StringUtils.hasText(extension) || !extension.equals(fileService.getExtension(signedFile.getFileName()))) {
 						name = name + "." + fileService.getExtension(signedFile.getFileName());
 					}
 				}
 				logger.info("send to " + documentIOType.name() + " in " + targetUrl + name);
 				if (fsAccessService.putFile(targetUrl, name, inputStream, UploadActionType.OVERRIDE)) {
+					if(!targetUrl.endsWith("/")) {
+						targetUrl += "/";
+					}
 					documentUri = targetUrl + name;
 					return documentUri;
 				} else {
@@ -154,9 +159,9 @@ public class DocumentService {
 	}
 
 	@Transactional
-	public Document addSignedFile(SignRequest signRequest, InputStream signedInputStream, String originalName, String mimeType) throws IOException {
+	public Document addSignedFile(SignRequest signRequest, InputStream signedInputStream, String originalName, String mimeType, User user) throws IOException {
 		String docName = getSignedName(originalName);
-		Document document = createDocument(signedInputStream, signRequest.getCreateBy(), docName, mimeType);
+		Document document = createDocument(signedInputStream, user, docName, mimeType);
 		document.setParentId(signRequest.getId());
 		signRequest.getSignedDocuments().add(document);
 		return document;

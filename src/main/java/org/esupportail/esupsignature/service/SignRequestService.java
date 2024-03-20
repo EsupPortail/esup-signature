@@ -223,6 +223,9 @@ public class SignRequestService {
 	@Transactional
 	public StepStatus sign(SignRequest signRequest, String password, String signWith, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String userEppn, String authUserEppn, Long userShareId, String comment) throws EsupSignatureRuntimeException, IOException {
 		User user = userService.getByEppn(userEppn);
+		if(signRequest.getAuditTrail() == null) {
+			signRequest.setAuditTrail(auditTrailService.create(signRequest.getToken()));
+		}
 		boolean isViewed = signRequest.getViewedBy().contains(user);
 		StepStatus stepStatus;
 		Date date = new Date();
@@ -289,7 +292,7 @@ public class SignRequestService {
 			byte[] signedBytes = signedInputStream;
 
 			stepStatus = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, signType, comment);
-			documentService.addSignedFile(signRequest, new ByteArrayInputStream(signedBytes), signRequest.getTitle() + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType());
+			documentService.addSignedFile(signRequest, new ByteArrayInputStream(signedBytes), signRequest.getTitle() + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType(), user);
 		} else {
 			reports = validationService.validate(getToValidateFile(signRequest.getId()), null);
 			DiagnosticData diagnosticData = reports.getDiagnosticData();
