@@ -146,9 +146,6 @@ public class WorkflowStepService {
 
     @Transactional
     public void addStep(Long workflowId, WorkflowStepDto step, String authUserEppn, boolean saveFavorite, Boolean autoSign, Long certificatId) throws EsupSignatureRuntimeException {
-        if(autoSign && certificatId == null) {
-            throw new EsupSignatureRuntimeException("Certificat is empty");
-        }
         Workflow workflow = workflowRepository.findById(workflowId).get();
         WorkflowStep workflowStep = createWorkflowStep("", step.getAllSignToComplete(), step.getSignType(), step.getChangeable(), step.getRecipients().toArray(RecipientWsDto[]::new));
         workflowStep.setDescription(step.getDescription());
@@ -158,8 +155,11 @@ public class WorkflowStepService {
         workflowStep.setAttachmentRequire(step.getAttachmentRequire());
         workflowStep.setAutoSign(autoSign);
         if(autoSign) {
-            Certificat certificat = certificatService.getById(certificatId);
-            workflowStep.setCertificat(certificat);
+            if(certificatId != null) {
+                workflowStep.setCertificat(certificatService.getById(certificatId));
+            } else {
+                workflowStep.setCertificat(null);
+            }
         }
         workflow.getWorkflowSteps().add(workflowStep);
         if(saveFavorite) {

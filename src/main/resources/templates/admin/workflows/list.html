@@ -36,6 +36,7 @@
                     <table class="table table-sm table-borderless table-hover table-striped">
                         <thead class="table-secondary">
                         <tr>
+                            <th>Id</th>
                             <th>Nom</th>
                             <th>Créé par</th>
                             <th>Destinataires</th>
@@ -45,6 +46,9 @@
                         <tbody>
                         <th:block th:each="workflow : ${workflows}">
                             <tr th:data-href="'/admin/workflows/update/' + ${workflow.id}">
+                                <td>
+                                    <input type="text" th:value="${workflow.id}" disabled>
+                                </td>
                                 <td class="clickable-td" th:text="${workflow.description}"></td>
                                 <td class="clickable-td" th:text="${workflow.createBy.eppn}"></td>
                                 <td th:if="${workflow.workflowSteps.size() > 0}">
