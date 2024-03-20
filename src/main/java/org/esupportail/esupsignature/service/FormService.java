@@ -398,14 +398,6 @@ public class FormService {
 					field.setSearchType(nameValues[2].trim());
 					field.setSearchReturn(nameValues[3].trim().replace(")", ""));
 				}
-//				if(nameValues[0].equals("step") && nameValues[1].equals("update")) {
-//					for (int i = 2; i < nameValues.length; i++) {
-//						field.setStepNumbers(field.getStepNumbers() + " " + nameValues[i].replace(")", "").trim());
-//					}
-//				}
-//				if(field.getSearchType() == null) {
-//					field.setStepNumbers("0");
-//				}
 			}
 		}
 	}

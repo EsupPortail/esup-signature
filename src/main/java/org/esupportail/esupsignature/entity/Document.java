@@ -40,7 +40,7 @@ public class Document {
     private Date createDate;
 
     @JsonIgnore
-    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private BigFile bigFile = new BigFile();
 
     @JsonIgnore

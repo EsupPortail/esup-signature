@@ -55,7 +55,7 @@ public class User {
     private UserType userType;
 
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn
     private List<Document> signImages = new ArrayList<>();
 
@@ -77,7 +77,7 @@ public class User {
     private Long userShareId;
 
     @JsonIgnore
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Document keystore = new Document();
 
     @Enumerated(EnumType.STRING)
@@ -108,7 +108,7 @@ public class User {
     @OneToOne
     private SignRequestParams favoriteSignRequestParams;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Otp> otps = new HashSet<>();
 
     private Boolean returnToHomeAfterSign = true;
