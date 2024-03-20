@@ -36,7 +36,7 @@ export class SignUi {
         this.saveOptionText =  $("#certType > option[value='imageStamp']").text();
         $("#password").hide();
         this.initListeners();
-        if(status !== "exported" && currentSignType !== "form") {
+        if(status !== "archived" && status !== "cleaned" && currentSignType !== "form") {
             this.initReportModal();
         }
         this.checkAfterChangeSignType();
