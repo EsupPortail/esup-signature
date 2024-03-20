@@ -172,6 +172,7 @@ export class SignRequestParams extends EventFactory {
                     $("#spot-modal").modal("hide");
                     self.id = result;
                     self.disableSpot();
+                    $(window).unbind("beforeunload");
                 }
             });
         }
@@ -351,7 +352,10 @@ export class SignRequestParams extends EventFactory {
 
         if(this.isOtp){
             this.toggleExtra();
-            this.toggleText()
+            this.toggleText();
+            if(this.userName.length < 2) {
+                this.toggleName();
+            }
             if(this.phone != null) {
                 $("#extraTypeDiv_" + this.id).html("<span>Signature OTP : " + this.phone + "<br></span>");
             } else {
@@ -516,6 +520,9 @@ export class SignRequestParams extends EventFactory {
                     self.yPos = Math.round((ui.position.top - (($("#page_" + self.signPageNumber).offset().top) - $("#page_1").offset().top)) / self.currentScale);
                     if (self.yPos < 0) self.yPos = 0;
                     console.log("x : " + self.xPos + ", y : " + self.yPos);
+                    if(self.textareaPart != null) {
+                        self.resizeText();
+                    }
                 } else {
                     self.dropped = false;
                 }

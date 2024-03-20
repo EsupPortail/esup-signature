@@ -45,6 +45,9 @@
                                             <span th:if="${iterator.index < step.users.size() - 1}"> ,</span>
                                         </th:block>
                                     </th:block>
+                                    <th:block th:if="${step.autoSign}">
+                                        <p>Signature automatique</p>
+                                    </th:block>
                                 </div>
                                 <span th:if="${step.repeatable}"> (cette étape peut donner lieu à plusieurs validations en série)</span>
                             </div>

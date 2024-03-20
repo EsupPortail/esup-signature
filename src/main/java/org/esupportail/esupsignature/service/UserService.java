@@ -858,7 +858,7 @@ public class UserService {
     @Transactional
     public String getDefaultImage(String eppn) throws IOException {
         User user = getByEppn(eppn);
-        return fileService.getBase64Image(fileService.getDefaultImage(user.getName(), user.getFirstname(), false), "default");
+        return fileService.getBase64Image(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), false), "default");
     }
 
     @Transactional

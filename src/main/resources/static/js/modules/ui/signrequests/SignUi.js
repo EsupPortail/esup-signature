@@ -36,7 +36,7 @@ export class SignUi {
         this.saveOptionText =  $("#certType > option[value='imageStamp']").text();
         $("#password").hide();
         this.initListeners();
-        if(status !== "exported" && currentSignType !== "form") {
+        if(status !== "archived" && status !== "cleaned" && currentSignType !== "form") {
             this.initReportModal();
         }
         this.checkAfterChangeSignType();
@@ -127,20 +127,22 @@ export class SignUi {
                             });
                         } else {
                             bootbox.confirm({
-                                message: "<h3>Attention, vous allez signer sans appliquer d’image de signature</h3>" +
-                                    "<div class='alert alert-danger'>Dans ce cas, seules les signatures avec certificat électronique sont possibles</div>",
+                                message: "<div class='alert alert-secondary'><h4>Attention, vous allez signer sans appliquer d’image de signature</h4>Vous pouvez continuer mais, dans ce cas, un certificat électronique sera nécessaire.</div>",
                                 buttons: {
                                     cancel: {
-                                        label: '<i class="fa fa-undo"></i> Retourner au document',
-                                        className: 'btn-success'
+                                        label: '<i class="fa fa-undo"></i> Ajouter une signature',
+                                        className: 'btn-primary'
                                     },
                                     confirm: {
-                                        label: '<i class="fa fa-check"></i> Continuer sans visuel'
+                                        label: '<i class="fa fa-arrow-right"></i> Continuer sans visuel',
+                                        className: 'btn-secondary'
                                     }
                                 },
                                 callback: function (result) {
                                     if (result) {
                                         self.checkAttachement();
+                                    } else {
+                                        $("#addSignButton").click();
                                     }
                                 }
                             });
@@ -291,6 +293,7 @@ export class SignUi {
             signModal.modal('hide');
             return;
         }
+        $(window).unbind("beforeunload");
         this.gotoNext = gotoNext;
         signModal.modal('hide');
         $('#stepRepeatableModal').modal('hide');

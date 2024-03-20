@@ -14,9 +14,9 @@
             <span th:text="${signRequest.parentSignBook.description}"></span>
         </div>
         <div id="alertSign" class="alert alert-primary border-dark" th:if="${signatureIds.size() > 0}" style="width: 100%;">
-            <span th:if="${signatureIds.size() > 1}">Ce document contient des signatures éléctroniques
+            <span th:if="${signatureIds.size() > 1}">Ce document contient des signatures électroniques
             <button id="reportModalBtn" class="btn btn-sm btn-secondary d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir les signatures</button></span>
-            <span th:unless="${signatureIds.size() > 1}">Ce document contient une signature éléctronique
+            <span th:unless="${signatureIds.size() > 1}">Ce document contient une signature électronique
             <button id="reportModalBtn" class="btn btn-sm btn-secondary d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la signature</button>
             </span>
             <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
@@ -243,7 +243,7 @@
             </div>
         </div>
     </div>
-    <div  th:unless="${signRequest.viewedBy.contains(user)}" class="not-viewed jumping not-viewed-position" title="Pour valider la lecture du document, il faut le faire défiler jusqu'au bas du document">
-        <i class="fa-solid fa-arrows-down-to-line fa-3x"></i>
-    </div>
+    <button id="end-button" th:unless="${signRequest.viewedBy.contains(user)}" class="btn not-viewed jumping not-viewed-position" title="Pour valider la lecture du document, il faut le faire défiler jusqu'au bas du document">
+        <i class="fa-solid fa-arrows-down-to-line fa-2x"></i>
+    </button>
 </div>
