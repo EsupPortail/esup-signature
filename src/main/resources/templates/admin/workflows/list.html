@@ -46,7 +46,7 @@
                         <tbody>
                         <th:block th:each="workflow : ${workflows}">
                             <tr th:data-href="'/admin/workflows/update/' + ${workflow.id}">
-                                <td>
+                                <td class="clickable-td">
                                     <input type="text" th:value="${workflow.id}" disabled>
                                 </td>
                                 <td class="clickable-td" th:text="${workflow.description}"></td>
