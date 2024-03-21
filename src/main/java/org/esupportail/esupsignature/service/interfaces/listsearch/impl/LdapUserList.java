@@ -43,7 +43,7 @@ public class LdapUserList implements UserList {
         List<String> userEmails = ldapGroupService.getMembers(listName);
         for(String userEmail : userEmails) {
             List<String> childsUserEmails = getUsersEmailFromList(userEmail);
-            if(childsUserEmails.size() > 0) {
+            if(!childsUserEmails.isEmpty()) {
                 userEmailsOk.addAll(childsUserEmails);
             } else {
                 userEmailsOk.add(userEmail);
