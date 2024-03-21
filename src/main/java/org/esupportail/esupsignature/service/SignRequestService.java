@@ -1129,6 +1129,7 @@ public class SignRequestService {
 		if(signRequest != null) {
 			return objectMapper.writeValueAsString(signRequest.getAuditTrail());
 		} else {
+			logger.warn("audit trail not found for " + id);
 			return "";
 		}
 	}
