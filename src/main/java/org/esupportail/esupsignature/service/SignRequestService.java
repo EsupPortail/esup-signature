@@ -957,8 +957,8 @@ public class SignRequestService {
 	public boolean replayNotif(Long id, String userEppn) throws EsupSignatureMailException {
 		SignRequest signRequest = this.getById(id);
 		if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) && signRequest.getCreateBy().getEppn().equals(userEppn) &&
-				(signRequest.getParentSignBook().getLastNotifDate() == null && Duration.between(signRequest.getParentSignBook().getCreateDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()) ||
-				(signRequest.getParentSignBook().getLastNotifDate() != null && Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif())) {
+				((signRequest.getParentSignBook().getLastNotifDate() == null && Duration.between(signRequest.getParentSignBook().getCreateDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()) ||
+				(signRequest.getParentSignBook().getLastNotifDate() != null && Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()))) {
 			List<String> recipientEmails = new ArrayList<>();
 			List<Recipient> recipients = getCurrentRecipients(signRequest);
 			for (Recipient recipient : recipients) {
