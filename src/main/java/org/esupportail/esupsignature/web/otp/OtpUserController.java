@@ -58,11 +58,12 @@ public class OtpUserController {
         return "redirect:" + referer;
     }
 
-    @GetMapping("/delete-sign/{id}")
-    public String deleteSign(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes) {
+    @DeleteMapping("/delete-sign/{id}")
+    public String deleteSign(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         userService.deleteSign(authUserEppn, id);
         redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Signature supprimée"));
-        return "redirect:/otp/users";
+        String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+        return "redirect:" + referer;
     }
 
     @GetMapping("/set-default-sign-image/{signImageNumber}")
