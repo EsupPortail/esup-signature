@@ -1126,7 +1126,11 @@ public class SignRequestService {
 	@Transactional
 	public String getAuditTrailJson(Long id) throws JsonProcessingException {
 		SignRequest signRequest = getById(id);
-		return objectMapper.writeValueAsString(signRequest.getAuditTrail());
+		if(signRequest != null) {
+			return objectMapper.writeValueAsString(signRequest.getAuditTrail());
+		} else {
+			return "";
+		}
 	}
 
 	@Transactional
