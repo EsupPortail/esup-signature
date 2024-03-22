@@ -27,7 +27,7 @@ public class UserListService {
 
     private final GlobalProperties globalProperties;
 
-    public UserListService(@Autowired(required = false) List<UserList> userLists, UserRepository userRepository, LdapPersonService ldapPersonService, GlobalProperties globalProperties) {
+    public UserListService(@Autowired(required = false) List<UserList> userLists, UserRepository userRepository, @Autowired(required = false) LdapPersonService ldapPersonService, GlobalProperties globalProperties) {
         this.userLists = userLists;
         this.userRepository = userRepository;
         this.ldapPersonService = ldapPersonService;
@@ -39,7 +39,7 @@ public class UserListService {
             if(listName.contains("*")) {
                 listName = listName.split("\\*")[1];
             }
-            if(ldapPersonService.getPersonLdapByMail(listName).isEmpty()) {
+            if(ldapPersonService != null && ldapPersonService.getPersonLdapByMail(listName).isEmpty()) {
                 Optional<User> optionalUser = userRepository.findByEmailIgnoreCase(listName);
                 if (optionalUser.isEmpty() || optionalUser.get().getUserType().equals(UserType.group)) {
                     Set<String> emails = new HashSet<>();
