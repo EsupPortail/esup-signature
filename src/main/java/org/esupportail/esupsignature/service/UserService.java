@@ -441,6 +441,7 @@ public class UserService {
         users.addAll(userRepository.findByEppnStartingWith(searchString));
         users.addAll(userRepository.findByNameStartingWithIgnoreCase(searchString.toUpperCase()));
         users.addAll(userRepository.findByEmailStartingWith(searchString));
+        users.removeIf(user -> user.getEppn().equals("system") || user.getEppn().equals("scheduler"));
         if (ldapPersonLightService != null && !searchString.trim().isEmpty() && searchString.length() > 2) {
             List<PersonLightLdap> ldapSearchList = ldapPersonLightService.searchLight(searchString);
             if (!ldapSearchList.isEmpty()) {
@@ -453,6 +454,11 @@ public class UserService {
                     }
                 }
             }
+        } else {
+            for (User user : users) {
+                personLightLdaps.add(getPersonLdapLightFromUser(user));
+            }
+            users.clear();
         }
         List<PersonLightLdap> personLightLdapsToRemove = new ArrayList<>();
         List<User> personLightLdapsToAdd = new ArrayList<>();
