@@ -34,7 +34,7 @@
                 </li>
                 <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_OTP'')') && signRequestId != null}">
                     <a th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
-                       th:href="'/otp/signrequests/' + ${signRequestId}" class="btn btn-transparent text-left me-1">
+                        th:href="'/otp/signrequests/' + ${signRequestId}" class="btn btn-transparent text-left me-1">
                         <i class="fa-solid fa-file-signature"></i> <span class="nav-item-label d-none d-xxl-inline">Retour à ma demande</span>
                         <span title="Retour à ma demande" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-lg-inline" th:text="${nbToSign}">
                         </span>
