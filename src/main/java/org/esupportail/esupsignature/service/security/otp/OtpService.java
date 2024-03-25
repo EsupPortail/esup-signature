@@ -128,7 +128,8 @@ public class OtpService {
 
     public Otp getAndCheckOtpFromCache(String urlId){
         try{
-            return otpCache.get(urlId);
+            Otp otp = otpCache.get(urlId);
+            return otp;
         }catch (Exception e){
             logger.warn("error on get otp : " + e.getMessage());
         }

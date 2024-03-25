@@ -954,22 +954,26 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public boolean replayNotif(Long id) throws EsupSignatureMailException {
+	public boolean replayNotif(Long id, String userEppn) throws EsupSignatureMailException {
 		SignRequest signRequest = this.getById(id);
-		List<String> recipientEmails = new ArrayList<>();
-		List<Recipient> recipients = getCurrentRecipients(signRequest);
-		for(Recipient recipient : recipients) {
-			if(recipient.getUser() != null  && recipient.getUser().getEmail() != null) {
-				recipientEmails.add(recipient.getUser().getEmail());
+		if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) && signRequest.getCreateBy().getEppn().equals(userEppn) &&
+				((signRequest.getParentSignBook().getLastNotifDate() == null && Duration.between(signRequest.getParentSignBook().getCreateDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()) ||
+				(signRequest.getParentSignBook().getLastNotifDate() != null && Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()))) {
+			List<String> recipientEmails = new ArrayList<>();
+			List<Recipient> recipients = getCurrentRecipients(signRequest);
+			for (Recipient recipient : recipients) {
+				if (recipient.getUser() != null && recipient.getUser().getEmail() != null) {
+					recipientEmails.add(recipient.getUser().getEmail());
+				}
 			}
-		}
-		long notifTime = Long.MAX_VALUE;
-		if(signRequest.getParentSignBook().getLastNotifDate() != null) {
-			notifTime = Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours();
-		}
-		if(!recipientEmails.isEmpty() && notifTime >= globalProperties.getHoursBeforeRefreshNotif() && signRequest.getStatus().equals(SignRequestStatus.pending)) {
-			mailService.sendSignRequestReplayAlert(recipientEmails, signRequest.getParentSignBook());
-			return true;
+			long notifTime = Long.MAX_VALUE;
+			if (signRequest.getParentSignBook().getLastNotifDate() != null) {
+				notifTime = Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours();
+			}
+			if (!recipientEmails.isEmpty() && notifTime >= globalProperties.getHoursBeforeRefreshNotif() && signRequest.getStatus().equals(SignRequestStatus.pending)) {
+				mailService.sendSignRequestReplayAlert(recipientEmails, signRequest.getParentSignBook());
+				return true;
+			}
 		}
 		return false;
 	}
@@ -1126,7 +1130,12 @@ public class SignRequestService {
 	@Transactional
 	public String getAuditTrailJson(Long id) throws JsonProcessingException {
 		SignRequest signRequest = getById(id);
-		return objectMapper.writeValueAsString(signRequest.getAuditTrail());
+		if(signRequest != null) {
+			return objectMapper.writeValueAsString(signRequest.getAuditTrail());
+		} else {
+			logger.warn("audit trail not found for " + id);
+			return "";
+		}
 	}
 
 	@Transactional

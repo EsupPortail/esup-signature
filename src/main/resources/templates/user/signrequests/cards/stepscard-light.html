@@ -5,7 +5,7 @@
     <div class="hr">Étapes du circuit</div>
     <div class="card card-body bg-light mb-1">
             <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps != null}">
-                <div id="stepper" class="bs-stepper vertical">
+                <div id="stepper" class="bs-stepper vertical d-block">
                     <div class="bs-stepper-header" role="tablist">
                         <th:block th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
                             Le circuit n’est pas démarré
