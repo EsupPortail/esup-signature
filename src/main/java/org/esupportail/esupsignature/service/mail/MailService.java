@@ -468,7 +468,7 @@ public class MailService {
             String[] toHeader =  mimeMessage.getHeader("To");
             List<String> tos = new ArrayList<>();
             for(String to : toHeader) {
-                if(!to.equals("system@" + globalProperties.getDomain())) {
+                if(!to.equals("system") && !to.equals("system@" + globalProperties.getDomain())) {
                     tos.add(to);
                 }
             }

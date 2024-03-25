@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +23,14 @@ public class UserListService {
 
     private final UserRepository userRepository;
 
+    private final LdapPersonService ldapPersonService;
+
     private final GlobalProperties globalProperties;
 
-    public UserListService(@Autowired(required = false) List<UserList> userLists, UserRepository userRepository, GlobalProperties globalProperties) {
+    public UserListService(@Autowired(required = false) List<UserList> userLists, UserRepository userRepository, @Autowired(required = false) LdapPersonService ldapPersonService, GlobalProperties globalProperties) {
         this.userLists = userLists;
         this.userRepository = userRepository;
+        this.ldapPersonService = ldapPersonService;
         this.globalProperties = globalProperties;
     }
 
@@ -35,20 +39,24 @@ public class UserListService {
             if(listName.contains("*")) {
                 listName = listName.split("\\*")[1];
             }
-            Optional<User> optionalUser = userRepository.findByEmailIgnoreCase(listName);
-            if(optionalUser.isEmpty() || optionalUser.get().getUserType().equals(UserType.group)) {
-                Set<String> emails = new HashSet<>();
-                for (UserList userList : userLists) {
-                    emails.addAll(userList.getUsersEmailFromList(listName));
-                    emails.addAll(userList.getUsersEmailFromAliases(listName));
-                }
-                if(!emails.isEmpty()) {
-                    return emails.stream().toList();
-                } else if (listName.contains(globalProperties.getDomain())) {
-                    throw new EsupSignatureRuntimeException("no users found");
+            if(ldapPersonService != null && ldapPersonService.getPersonLdapByMail(listName).isEmpty()) {
+                Optional<User> optionalUser = userRepository.findByEmailIgnoreCase(listName);
+                if (optionalUser.isEmpty() || optionalUser.get().getUserType().equals(UserType.group)) {
+                    Set<String> emails = new HashSet<>();
+                    for (UserList userList : userLists) {
+                        emails.addAll(userList.getUsersEmailFromList(listName));
+                        emails.addAll(userList.getUsersEmailFromAliases(listName));
+                    }
+                    if (!emails.isEmpty()) {
+                        return emails.stream().toList();
+                    } else if (listName.contains(globalProperties.getDomain())) {
+                        throw new EsupSignatureRuntimeException("no users found");
+                    }
+                } else {
+                    logger.debug("user founded as local user : " + optionalUser.get().getEppn() + " as " + optionalUser.get().getUserType().name());
                 }
             } else {
-                logger.debug("user founded as local user : " + optionalUser.get().getEppn() + " as " + optionalUser.get().getUserType().name());
+                logger.info("user founded as ldap user : " + listName);
             }
         }
         return new ArrayList<>();

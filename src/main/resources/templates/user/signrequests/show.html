@@ -804,8 +804,6 @@
 <div th:replace="~{user/signrequests/includes/modals/attachment :: attachment}"></div>
 <div id="add-sign-image" class="modal" >
     <div class="modal-dialog modal-lg">
-        <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
-        <input type="hidden" name="id" th:value="${authUser.id}"/>
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Ajout d’une image de signature</h5>
@@ -813,76 +811,112 @@
             </div>
             <div class="modal-body">
                 <div class="text-center">
-                    <div class="alert alert-warning">
-                        Vous n'avez pas encore d'image de signature dans votre profil. Merci de retenter l'opération après l'enregistrement de votre image.
+                    <div th:unless="${signImages == null || signImages.size() < 2}">
+                        <label><strong>Mes signatures</strong></label>
+                        <table class="table table-borderless table-striped">
+                            <thead class="table-secondary">
+                            <tr>
+                                <th class="text-left">Aperçu</th>
+                                <th class="text-left">Préférée</th>
+                                <th>Supprimer</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <th:block th:each="signImageId, iterator : ${userImagesIds}">
+                                <tr>
+                                    <td class="text-left w-100" style="position: relative;height: 74px;" >
+                                        <img class="thumbnail" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}"  alt="Image de la signature"/>
+                                    </td>
+                                    <td>
+                                        <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/' + ${iterator.index}" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == iterator.index} ? 'text-warning' : 'text-secondary'">
+                                            <i class="fa-solid fa-star"></i>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <form th:id="'form-deleteSign_' + ${signImageId}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users/delete-sign/' + ${signImageId}" th:method="'delete'">
+                                            <button type="submit" th:id="'deleteSign_' + ${signImageId}" class="btn btn-sm btn-danger text-white">
+                                                <i class="fa-solid fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </th:block>
+                            </tbody>
+                        </table>
                     </div>
-                    <label class="col-form-label">
-                        <strong>Vous pouvez choisir une image provenant de votre ordinateur</strong>
-                        <button data-bs-target="#collapseHelpSignImage" data-bs-toggle="collapse"
-                                type="button"
-                                class="btn btn-sm btn-transparent">
-                            <i class="fa-solid fa-info-circle text-info"></i>
-                        </button>
-                        <div class="collapse" id="collapseHelpSignImage">
-                            <div class="alert alert-info">
-                                <small> Après avoir sélectionné une image, vous pourrez ajuster sa
-                                    taille pour
-                                    que la signature entre dans le carré blanc. Si votre signature
-                                    est grande
-                                    (contient un tampon par exemple), il est possible
-                                    d’élargir
-                                    le carré blanc (la signature prendra plus de place sur le
-                                    document) <br/>
-                                    Une image de la signature sera toujours nécessaire pour signer
-                                    un PDF
-                                </small>
+                    <div class="alert alert-warning" th:if="${signImages == null || signImages.size() < 2}">
+                        Vous n’avez pas encore d’image de signature dans votre profil. Merci de retenter l’opération après l’enregistrement de votre image.
+                    </div>
+                    <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
+                        <input type="hidden" name="id" th:value="${authUser.id}"/>
+                        <label class="col-form-label">
+                            <strong>Vous pouvez choisir une image provenant de votre ordinateur</strong>
+                            <button data-bs-target="#collapseHelpSignImage" data-bs-toggle="collapse"
+                                    type="button"
+                                    class="btn btn-sm btn-transparent">
+                                <i class="fa-solid fa-info-circle text-info"></i>
+                            </button>
+                            <div class="collapse" id="collapseHelpSignImage">
+                                <div class="alert alert-info">
+                                    <small> Après avoir sélectionné une image, vous pourrez ajuster sa
+                                        taille pour
+                                        que la signature entre dans le carré blanc. Si votre signature
+                                        est grande
+                                        (contient un tampon par exemple), il est possible
+                                        d’élargir
+                                        le carré blanc (la signature prendra plus de place sur le
+                                        document) <br/>
+                                        Une image de la signature sera toujours nécessaire pour signer
+                                        un PDF
+                                    </small>
+                                </div>
                             </div>
-                        </div>
-                    </label>
-                    <div class="mx-auto mb-1" style="width: 600px;">
-                        <input type="file" class="form-control" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
-                        <label class="custom-file-label" for="vanilla-upload">
-                            Choisissez une nouvelle image
                         </label>
-                    </div>
-                    <br/>
-                    <label id="signPadLabel" class="col-form-label"><strong>Vous pouvez dessiner une signature dans le rectangle ci dessous</strong></label>
-                    <div id="signPad">
-                        <canvas id="canvas" style="border: 1px solid black;"></canvas>
-                        <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
-                            Valider la signature
-                        </button>
-                        <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                        <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
-                            Réinitialiser
-                        </button>
-                        <div>
+                        <div class="mx-auto mb-1" style="width: 600px;">
+                            <input type="file" class="form-control" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
+                            <label class="custom-file-label" for="vanilla-upload">
+                                Choisissez une nouvelle image
+                            </label>
                         </div>
-                    </div>
-                    <div id="sign-crop" class="mx-auto">
-                        <div id="crop-div" class="alert alert-light text-dark text-center" style="display: none;">
-                            <div class="d-flex justify-content-center">
-                                <button type="button" id="zoomout"
-                                        class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
-                                    <i
-                                            class="fa-solid fa-search-minus"></i></button>
-                                <button type="button" id="zoomin"
-                                        class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
-                                    <i
-                                            class="fa-solid fa-search-plus"></i></button>
-                                <button type="button"
-                                        class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
-                                        data-deg="90"><i class="fa-solid fa-undo"></i></button>
-                                <button type="button"
-                                        class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
-                                        data-deg="-90"><i class="fa-solid fa-redo"></i></button>
+                        <br/>
+                        <label id="signPadLabel" class="col-form-label"><strong>Vous pouvez dessiner une signature dans le rectangle ci dessous</strong></label>
+                        <div id="signPad">
+                            <canvas id="canvas" style="border: 1px solid black;"></canvas>
+                            <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
+                                Valider la signature
+                            </button>
+                            <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                            <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
+                                Réinitialiser
+                            </button>
+                            <div>
                             </div>
-                            <div id="vanilla-crop" class="mt-2"></div>
                         </div>
-                    </div>
-                    <input type="hidden" id="signImageBase64" name="signImageBase64" value="">
+                        <div id="sign-crop" class="mx-auto">
+                            <div id="crop-div" class="alert alert-light text-dark text-center" style="display: none;">
+                                <div class="d-flex justify-content-center">
+                                    <button type="button" id="zoomout"
+                                            class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
+                                        <i
+                                                class="fa-solid fa-search-minus"></i></button>
+                                    <button type="button" id="zoomin"
+                                            class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
+                                        <i
+                                                class="fa-solid fa-search-plus"></i></button>
+                                    <button type="button"
+                                            class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
+                                            data-deg="90"><i class="fa-solid fa-undo"></i></button>
+                                    <button type="button"
+                                            class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
+                                            data-deg="-90"><i class="fa-solid fa-redo"></i></button>
+                                </div>
+                                <div id="vanilla-crop" class="mt-2"></div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="signImageBase64" name="signImageBase64" value="">
+                    </form>
                 </div>
             </div>
             <div class="modal-footer">
@@ -891,7 +925,6 @@
                 </a>
             </div>
         </div>
-        </form>
     </div>
 </div>
 <footer th:replace="~{fragments/footer :: footer}"></footer>
