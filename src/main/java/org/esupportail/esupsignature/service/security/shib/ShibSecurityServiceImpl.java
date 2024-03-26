@@ -17,6 +17,8 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 
 import jakarta.annotation.Resource;
+import org.springframework.util.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,7 +84,7 @@ public class ShibSecurityServiceImpl implements SecurityService {
 	public ShibRequestHeaderAuthenticationFilter getAuthenticationProcessingFilter() {
 		ShibRequestHeaderAuthenticationFilter authenticationFilter = new ShibRequestHeaderAuthenticationFilter();
 		authenticationFilter.setPrincipalRequestHeader(shibProperties.getPrincipalRequestHeader());
-		if(shibProperties.getCredentialsRequestHeader() != null) {
+		if(StringUtils.hasText(shibProperties.getCredentialsRequestHeader())) {
 			authenticationFilter.setCredentialsRequestHeader(shibProperties.getCredentialsRequestHeader());
 		}
 		authenticationFilter.setAuthenticationManager(shibAuthenticationManager());
