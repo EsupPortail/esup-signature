@@ -118,11 +118,6 @@ public class IndexController {
 		}
 	}
 
-	@GetMapping("/login/**")
-	public String loginRedirection() {
-		return "redirect:/user";
-	}
-
 	@RequestMapping(value = "/denied/ws/**", method = {RequestMethod.GET, RequestMethod.POST})
 	@ResponseBody
 	public ResponseEntity<String> deniedWs() {
@@ -171,7 +166,7 @@ public class IndexController {
 					}
 					user = userService.getByEppn(eppn);
 				} else {
-					if (personLdaps.size() == 0) {
+					if (personLdaps.isEmpty()) {
 						logger.debug("no result on ldap search for " + auth.getName());
 					} else {
 						logger.debug("more than one result on ldap search for " + auth.getName());
