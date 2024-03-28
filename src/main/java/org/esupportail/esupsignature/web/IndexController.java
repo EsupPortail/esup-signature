@@ -126,6 +126,7 @@ public class IndexController {
 
 	@RequestMapping(value = "/denied/**", method = {RequestMethod.GET, RequestMethod.POST})
 	public String denied(HttpSession httpSession, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+		httpServletRequest.getSession().removeAttribute("SPRING_SECURITY_SAVED_REQUEST");
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		User authUser = getAuthUser(auth);
 		Object forwardObject = httpServletRequest.getAttribute("jakarta.servlet.forward.request_uri");
@@ -147,7 +148,7 @@ public class IndexController {
 						return "redirect:/user";
 					}
 				} catch (Exception e) {
-					return "redirect:/user";
+					logger.warn(e.getMessage());
 				}
 			}
 		}

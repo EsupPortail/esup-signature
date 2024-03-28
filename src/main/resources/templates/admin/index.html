@@ -48,7 +48,7 @@
                             <i class="fa-solid fa-user-tie fa-2xl"></i><br><span>Gestionnaires de rôles</span>
                         </a>
                         <a title="Gestion des certificats" type="button" href="/admin/certificats" class="btn text-center col-2">
-                            <i class="fa-solid fa-certificate fa-2xl"></i><br><span>Gestion des certificats</span>
+                            <i class="fa-solid fa-certificate fa-2xl"  th:classappend="${expiredCertificat == null || expiredCertificat == true} ? 'text-danger' : 'text-success'"></i><br><span th:classappend="${expiredCertificat == null || expiredCertificat == true} ? 'text-danger' : 'text-success'">Gestion des certificats</span>
                         </a>
                     </div>
                     <hr class="newHr">
@@ -66,7 +66,7 @@
                             <i class="fa-solid fa-tasks fa-2xl"></i><br><span>Tâches planifiées</span>
                         </a>
                         <a title="Statut DSS" type="button" href="/admin/dss" class="btn text-center col-2">
-                            <i class="fa-solid fa-shield-heart fa-2xl" th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : 'text-success'"></i><br><span>Statut DSS</span>
+                            <i class="fa-solid fa-shield-heart fa-2xl" th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : 'text-success'"></i><br><span th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : 'text-success'">Statut DSS</span>
                         </a>
                         <a title="Doc des APIs" target="_blank" type="button" href="/swagger-ui.html" class="btn text-center col-2">
                             <i class="fa-solid fa-code fa-2xl"></i><br><span>APIs Doc</span>

@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.repository.CertificatRepository;
 import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.esupportail.esupsignature.service.utils.sign.OpenSCSignatureToken;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -183,6 +184,24 @@ public class CertificatService {
             logger.debug("no seal certificat found", e);
         }
         return dssPrivateKeyEntries;
+    }
+
+    public boolean checkExpiredCertificat() {
+        boolean expiredCertificat = false;
+        Date lastDate = new DateTime().minusDays(globalProperties.getNbDaysBeforeCertifWarning()).toDate();
+        for(Certificat certificat : getAllCertificats()) {
+            if(certificat.getExpireDate().before(lastDate)) {
+                expiredCertificat = true;
+                break;
+            }
+        }
+        for(DSSPrivateKeyEntry dssPrivateKeyEntry : getSealCertificats()) {
+            if(dssPrivateKeyEntry.getCertificate().getNotAfter().before(lastDate)) {
+                expiredCertificat = true;
+                break;
+            }
+        }
+        return expiredCertificat;
     }
 
 }
