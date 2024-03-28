@@ -45,7 +45,7 @@
         </a>
         <a th:classappend="${activeMenu == 'certificats'} ? 'btn-secondary' : 'btn-light'" th:if="${validationToolsEnabled}"
             title="Gestion des certificats" type="button" href="/admin/certificats" class="mb-1 col-12 btn text-left">
-            <i class="fa-solid fa-certificate" th:classappend="${expiredCertificat == null || expiredCertificat == true} ? 'text-danger' : 'text-success'"></i> <span th:classappend="${expiredCertificat == null || expiredCertificat == true} ? 'text-danger' : ''" class="sidebar-label">Gestion des certificats</span>
+            <i class="fa-solid fa-certificate" th:classappend="${expiredCertificat == true} ? 'text-danger' : 'text-success'"></i> <span th:classappend="${expiredCertificat == true} ? 'text-danger' : ''" class="sidebar-label">Gestion des certificats</span>
         </a>
         <div class="hr"><i class="fa-solid fa-tools me-1"></i><span class="sidebar-label"> Outils</span></div>
         <a th:classappend="${activeMenu == 'currentSessions'} ? 'btn-secondary' : 'btn-light'"
