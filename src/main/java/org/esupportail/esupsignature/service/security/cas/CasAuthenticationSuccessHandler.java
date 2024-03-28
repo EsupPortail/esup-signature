@@ -13,8 +13,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.DefaultRedirectStrategy;
-import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Service;
@@ -31,8 +29,6 @@ public class CasAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
 
 	@Resource
 	private UserService userService;
-
-	private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
 	@Override
 	@Transactional
@@ -56,12 +52,12 @@ public class CasAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
 			if (queryString != null && queryString.split("=")[0].equals("redirect")) {
 				if(!queryString.split("=", 2)[1].equals("null")) {
 					String url = queryString.split("=", 2)[1];
-					this.redirectStrategy.sendRedirect(httpServletRequest, httpServletResponse, url);
+					httpServletResponse.sendRedirect(url);
 					return;
 				}
 			}
 		}
-		this.redirectStrategy.sendRedirect(httpServletRequest, httpServletResponse, "/");
+		httpServletResponse.sendRedirect("/");
 	}
 
 }
