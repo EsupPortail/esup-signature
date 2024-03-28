@@ -1120,7 +1120,7 @@ public class SignBookService {
             StepStatus stepStatus = signRequestService.sign(signRequest, password, signWith, signRequestParamses, formDataMap, userEppn, authUserEppn, userShareId, comment);
             if(stepStatus.equals(StepStatus.last_end)) {
                 try {
-                    if(globalProperties.getSealAllDocs()) {
+                    if(globalProperties.getSealAllDocs() || signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSealAtEnd()) {
                         sealAllDocs(signRequest.getParentSignBook().getId());
                     }
                     completeSignBook(signRequest.getParentSignBook().getId(), authUserEppn, "Tous les documents sont signés");
