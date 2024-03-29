@@ -155,6 +155,11 @@ public class IndexController {
 		return "denied";
 	}
 
+	@GetMapping("/login/casentry")
+	public String loginRedirection() {
+		return "redirect:/user";
+	}
+
 	public User getAuthUser(Authentication auth) {
 		User user = null;
 		if (auth != null && !auth.getName().equals("anonymousUser")) {
