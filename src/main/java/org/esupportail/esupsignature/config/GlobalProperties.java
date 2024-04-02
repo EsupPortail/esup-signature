@@ -273,6 +273,11 @@ public class GlobalProperties {
      */
     private Boolean watermarkForExternals = true;
 
+    /**
+     * Delai d’alerte avant expiration des certificats serveur
+     */
+    private Integer nbDaysBeforeCertifWarning = 60;
+
     public String getRootUrl() {
         return rootUrl;
     }
@@ -699,5 +704,13 @@ public class GlobalProperties {
 
     public void setWatermarkForExternals(Boolean watermarkForExternals) {
         this.watermarkForExternals = watermarkForExternals;
+    }
+
+    public Integer getNbDaysBeforeCertifWarning() {
+        return nbDaysBeforeCertifWarning;
+    }
+
+    public void setNbDaysBeforeCertifWarning(Integer nbDaysBeforeCertifWarning) {
+        this.nbDaysBeforeCertifWarning = nbDaysBeforeCertifWarning;
     }
 }

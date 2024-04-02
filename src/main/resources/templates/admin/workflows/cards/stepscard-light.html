@@ -26,15 +26,6 @@
                             </div>
                             <div th:if="${workflow.workflowSteps.size() > iterator.index + 1}" class="line"></div>
                         </th:block>
-                        <th:block th:each="target : ${workflow.targets}">
-                            <div class="bs-stepper-line"></div>
-                            <div class="step">
-                                <div class="step-trigger">
-                                    <div class="bs-stepper-circle"><i class="fa-solid fa-file-export"></i></div>
-                                    <div class="bs-stepper-label text-break" th:text="${target}"></div>
-                                </div>
-                            </div>
-                        </th:block>
                     </div>
                 </div>
             </div>

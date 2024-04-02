@@ -1,5 +1,8 @@
 package org.esupportail.esupsignature.service.security.shib;
 
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.UserService;
@@ -8,12 +11,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
+import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 @Service
@@ -28,7 +30,7 @@ public class ShibAuthenticationSuccessHandler extends SavedRequestAwareAuthentic
 	private RegisterSessionAuthenticationStrategy registerSessionAuthenticationStrategy;
 
 	@Override
-	public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) {
+	public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException {
 		String eppn = authentication.getName();
         String email = httpServletRequest.getHeader("mail");
         String name = httpServletRequest.getHeader("sn");
@@ -43,6 +45,15 @@ public class ShibAuthenticationSuccessHandler extends SavedRequestAwareAuthentic
 		}
 		registerSessionAuthenticationStrategy.onAuthentication(authentication, httpServletRequest, httpServletResponse);
 		httpServletRequest.getSession().setAttribute("securityServiceName", "ShibSecurityServiceImpl");
+		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpServletRequest.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+		if(defaultSavedRequest != null) {
+			String queryString = defaultSavedRequest.getRequestURL();
+			if(StringUtils.hasText(queryString)) {
+				httpServletResponse.sendRedirect(queryString);
+				return;
+			}
+		}
+		httpServletResponse.sendRedirect("/");
 	}
 	
 }

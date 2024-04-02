@@ -6,7 +6,6 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dss.service.OJService;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.service.*;
@@ -19,12 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
-import java.io.IOException;
 import java.util.List;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller", "org.esupportail.esupsignature.web.otp"})
@@ -57,13 +54,7 @@ public class GlobalAttributsControllerAdvice {
     private PreAuthorizeService preAuthorizeService;
 
     @Resource
-    private OJService ojService;
-
-    @Resource
     private ObjectMapper objectMapper;
-
-    @Resource
-    private SessionRegistry sessionRegistry;
 
     private final Environment environment;
 
@@ -71,14 +62,17 @@ public class GlobalAttributsControllerAdvice {
 
     private final ValidationService validationService;
 
+    private final CertificatService certificatService;
+
     public GlobalAttributsControllerAdvice(GlobalProperties globalProperties,
                                            @Autowired(required = false) BuildProperties buildProperties,
                                            ValidationService validationService,
-                                           Environment environment) {
+                                           Environment environment, CertificatService certificatService) {
         this.globalProperties = globalProperties;
         this.buildProperties = buildProperties;
         this.validationService = validationService;
         this.environment = environment;
+        this.certificatService = certificatService;
     }
 
     @ModelAttribute
@@ -94,9 +88,6 @@ public class GlobalAttributsControllerAdvice {
                 return;
             }
             List<String> roles = userService.getRoles(userEppn);
-            if(roles.contains("ROLE_ADMIN")) {
-                model.addAttribute("nbSessions", sessionRegistry.getAllPrincipals().size());
-            }
             userService.parseRoles(userEppn, myGlobalProperties);
             model.addAttribute("securityServiceName", httpServletRequest.getSession().getAttribute("securityServiceName"));
             model.addAttribute("user", user);
@@ -128,14 +119,11 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
             model.addAttribute("nbToSign", signRequestService.nbToSignSignRequests(userEppn));
             model.addAttribute("nbFollowByMe", signRequestService.nbFollowedByMe(userEppn));
-            try {
-                model.addAttribute("dssStatus", ojService.checkOjFreshness());
-            } catch (IOException e) {
-                logger.debug("enable to get dss status");
-            }
         }
         model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
         model.addAttribute("maxInactiveInterval", httpSession.getMaxInactiveInterval());
+        model.addAttribute("expiredCertificat", certificatService.checkExpiredCertificat());
+
     }
 
 }

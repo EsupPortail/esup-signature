@@ -123,9 +123,7 @@
                     <a href="/admin" class="btn text-white btn-transparent"
                         th:classappend="${adminMenu == 'active'} ? 'bg-secondary' : ''">
                         <i class="fa-solid fa-crown"></i><span class="nav-item-label d-none d-xxl-inline">Admin</span>
-                        <span title="Statut DSS" th:if="${dssStatus == null || dssStatus == true}" class="badge bg-danger d-none d-lg-inline ms-1">
-                            !
-                        </span>
+                        <span title="Statut DSS" th:if="${dssStatus == true || expiredCertificat == true}" class="badge bg-danger d-none d-lg-inline ms-1">!</span>
                     </a>
                 </li>
             </ul>
@@ -160,8 +158,8 @@
             </ul>
         </div>
     </nav>
-    <div th:if="${user.name != null && !#authorization.expression('hasRole(''ROLE_OTP'')')}" id="user-infos" class="position-absolute user-infos collapse overflow-y-scroll drop-shadows">
-        <div class="card card-body user-infos text-center">
+    <div th:if="${user.name != null && !#authorization.expression('hasRole(''ROLE_OTP'')')}" id="user-infos" class="position-absolute user-infos collapse">
+        <div class="card card-body user-infos text-center drop-shadows">
             <h5><b>Vos informations</b></h5>
             <table class="table table-sm table-borderless text-left">
                 <tbody>
@@ -239,6 +237,9 @@
                 <i class="fa-solid fa-power-off"></i> Déconnexion
             </a>
         </div>
+    </div>
+    <div th:if="${expiredCertificat == true && user.roles.contains('ROLE_ADMIN')}"  class="alert alert-danger text-center" style="position: sticky;">
+        Au moins un des certificats serveur va expirer, merci vérifier les certificats concernés
     </div>
 </header>
 </html>
