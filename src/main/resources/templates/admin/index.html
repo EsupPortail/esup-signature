@@ -48,7 +48,7 @@
                             <i class="fa-solid fa-user-tie fa-2xl"></i><br><span>Gestionnaires de rôles</span>
                         </a>
                         <a title="Gestion des certificats" type="button" href="/admin/certificats" class="btn text-center col-2">
-                            <i class="fa-solid fa-certificate fa-2xl"  th:classappend="${expiredCertificat == null || expiredCertificat == true} ? 'text-danger' : 'text-success'"></i><br><span th:classappend="${expiredCertificat == null || expiredCertificat == true} ? 'text-danger' : 'text-success'">Gestion des certificats</span>
+                            <i class="fa-solid fa-certificate fa-2xl"  th:classappend="${expiredCertificat == true} ? 'text-danger' : 'text-success'"></i><br><span th:classappend="${expiredCertificat == true} ? 'text-danger' : 'text-success'">Gestion des certificats</span>
                         </a>
                     </div>
                     <hr class="newHr">
