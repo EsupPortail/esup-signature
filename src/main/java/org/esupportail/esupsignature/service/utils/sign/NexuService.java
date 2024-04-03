@@ -5,6 +5,7 @@ import eu.europa.esig.dss.cades.CAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.SignatureAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.*;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
@@ -17,6 +18,7 @@ import org.bouncycastle.asn1.x509.Certificate;
 import org.esupportail.esupsignature.dss.DssUtilsService;
 import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.NexuSignatureRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
@@ -64,6 +66,9 @@ public class NexuService {
 
 	@Resource
 	private AuditTrailService auditTrailService;
+
+	@Resource
+	private ValidationService validationService;
 
 	public AbstractSignatureParameters<?> getParameters(SignatureMultipleDocumentsForm signatureMultipleDocumentsForm, List<Document> documentsToSign) throws IOException {
 		AbstractSignatureParameters<?> parameters = signService.getASiCSignatureParameters(signatureMultipleDocumentsForm.getContainerType(), signatureMultipleDocumentsForm.getSignatureForm());
@@ -114,7 +119,7 @@ public class NexuService {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Transactional
-	public DSSDocument signDocument(Long id, String userEppn, SignatureDocumentForm signatureDocumentForm, List<Document> documentsToSign) throws IOException {
+	public DSSDocument signDocument(Long id, String userEppn, SignatureDocumentForm signatureDocumentForm, List<Document> documentsToSign) throws IOException, EsupSignatureException {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		logger.info("Start signDocument with one document");
 		DocumentSignatureService service = signService.getSignatureService(signatureDocumentForm.getContainerType(), signatureDocumentForm.getSignatureForm());
@@ -122,9 +127,22 @@ public class NexuService {
 		SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(signatureDocumentForm.getEncryptionAlgorithm(), signatureDocumentForm.getDigestAlgorithm());
 		SignatureValue signatureValue = new SignatureValue(sigAlgorithm, signatureDocumentForm.getSignatureValue());
 		AbstractSignatureParameters parameters = getSignatureParameters(signRequest, userEppn, signatureDocumentForm, documentsToSign);
-		DSSDocument signedDocument = service.signDocument(toSignDssDocument, parameters, signatureValue);
-		logger.info("End signDocument with one document");
-		return signedDocument;
+		boolean revocationValid = validationService.checkRevocation(DSSUtils.loadCertificate(signatureDocumentForm.getCertificate()));
+		if(!revocationValid) {
+			logger.info("LT or LTA signature level not supported, switching to T level");
+			if(parameters.getSignatureLevel().name().contains("_LT") || parameters.getSignatureLevel().name().contains("_LTA")) {
+				String newLevel = parameters.getSignatureLevel().name().replace("_LTA", "_T");
+				newLevel = newLevel.replace("_LT", "_T");
+				parameters.setSignatureLevel(SignatureLevel.valueOf(newLevel));
+			}
+		}
+		try {
+			logger.info("End signDocument with one document");
+			return service.signDocument(toSignDssDocument, parameters, signatureValue);
+		} catch (Exception e) {
+			logger.warn(e.getMessage());
+			throw new EsupSignatureException(e.getMessage());
+		}
 	}
 
 	
@@ -251,7 +269,7 @@ public class NexuService {
 	}
 
 	@Transactional
-	public SignDocumentResponse getSignDocumentResponse(Long signRequestId, SignResponse signatureValue, AbstractSignatureForm abstractSignatureForm, String userEppn, List<Document> documentsToSign) throws EsupSignatureRuntimeException {
+	public SignDocumentResponse getSignDocumentResponse(Long signRequestId, SignResponse signatureValue, AbstractSignatureForm abstractSignatureForm, String userEppn, List<Document> documentsToSign) throws EsupSignatureRuntimeException, EsupSignatureException {
 		User user = userService.getByEppn(userEppn);
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		if(signRequest.getAuditTrail() == null) {
@@ -284,7 +302,7 @@ public class NexuService {
 	}
 
 	@Transactional
-	public Document nexuSign(SignRequest signRequest, String userEppn, AbstractSignatureForm signatureDocumentForm, List<Document> documentsToSign) throws IOException {
+	public Document nexuSign(SignRequest signRequest, String userEppn, AbstractSignatureForm signatureDocumentForm, List<Document> documentsToSign) throws IOException, EsupSignatureException {
 		logger.info(userEppn + " launch nexu signature for signRequest : " + signRequest.getId());
 		DSSDocument dssDocument;
 		if(signatureDocumentForm instanceof SignatureMultipleDocumentsForm signatureMultipleDocumentsForm) {

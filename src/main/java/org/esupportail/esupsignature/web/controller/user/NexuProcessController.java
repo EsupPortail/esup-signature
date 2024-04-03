@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -19,6 +20,7 @@ import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.esupportail.esupsignature.service.utils.sign.NexuService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -99,29 +101,37 @@ public class NexuProcessController implements Serializable {
 	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
 	@PostMapping(value = "/sign-document")
 	@ResponseBody
-	public SignDocumentResponse signDocument(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
-											 @RequestBody @Valid SignResponse signatureValue,
-											 @RequestParam("id") Long id) throws EsupSignatureRuntimeException, IOException {
+	public ResponseEntity<?> signDocument(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+										  @RequestBody @Valid SignResponse signatureValue,
+										  @RequestParam("id") Long id) throws EsupSignatureRuntimeException, IOException {
 		NexuSignature nexuSignature = nexuService.getNexuSignature(id);
 		AbstractSignatureForm abstractSignatureForm = nexuService.getAbstractSignatureFormFromNexuSignature(nexuSignature);
 		abstractSignatureForm.setSignatureValue(signatureValue.getSignatureValue());
-		SignDocumentResponse responseJson = nexuService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn, nexuSignature.getDocumentToSign());
-		signRequestService.updateStatus(id, SignRequestStatus.signed, "Signature", null, "SUCCESS", null,null,null,null, userEppn, authUserEppn);
-		StepStatus stepStatus = signRequestService.applyEndOfSignRules(id, userEppn, authUserEppn, SignType.nexuSign, "");
-		if(stepStatus.equals(StepStatus.last_end)) {
-			signBookService.completeSignRequest(id, authUserEppn, "Tous les documents sont signés");
-		} else if (stepStatus.equals(StepStatus.completed)){
-			signBookService.pendingSignRequest(id, null, userEppn, authUserEppn, false);
-		}
-		nexuService.deleteNexuSignature(id);
-		return responseJson;
+        SignDocumentResponse responseJson = null;
+        try {
+            responseJson = nexuService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn, nexuSignature.getDocumentToSign());
+			signRequestService.updateStatus(id, SignRequestStatus.signed, "Signature", null, "SUCCESS", null,null,null,null, userEppn, authUserEppn);
+			StepStatus stepStatus = signRequestService.applyEndOfSignRules(id, userEppn, authUserEppn, SignType.nexuSign, "");
+			if(stepStatus.equals(StepStatus.last_end)) {
+				signBookService.completeSignRequest(id, authUserEppn, "Tous les documents sont signés");
+			} else if (stepStatus.equals(StepStatus.completed)){
+				signBookService.pendingSignRequest(id, null, userEppn, authUserEppn, false);
+			}
+			nexuService.deleteNexuSignature(id);
+			return ResponseEntity.ok().body(responseJson);
+        } catch (EsupSignatureException e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
 	}
 
-	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
 	@PostMapping(value = "/error")
 	@ResponseBody
-	public void error(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @ModelAttribute("id") Long id) throws EsupSignatureRuntimeException {
-		nexuService.deleteNexuSignature(id);
+	public void error(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids) throws EsupSignatureRuntimeException {
+		for(Long id : ids) {
+			if(preAuthorizeService.signRequestSign(id, userEppn, authUserEppn)) {
+				nexuService.deleteNexuSignature(id);
+			}
+		}
 	}
 
 }

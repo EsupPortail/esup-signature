@@ -153,33 +153,40 @@ export class Nexu {
     }
 
     static error(error) {
-        console.log(error);
+        console.error(error);
         $('#bar').removeClass('progress-bar-success active').addClass('progress-bar-danger');
-        if (error!= null && error.responseJSON !=null) {
-            let jsonResp = error.responseJSON;
-            if (jsonResp.feedback != null && jsonResp.feedback.stacktrace != null) {
-                $("#errorcontent").html(jsonResp.feedback.stacktrace);
-                if(jsonResp.feedback.stacktrace.includes("No slots")) {
-                    $("#errorText").html("Aucune clé n'a été détecté");
-                } else if (jsonResp.feedback.stacktrace.includes("keystore password was incorrect")) {
-                    $("#errorText").html("Le mot de passe du keystore est incorrect");
-                } else if (jsonResp.feedback.stacktrace.includes("CKR_PIN_INCORRECT")) {
-                    $("#errorText").html("Le code pin est incorrect");
+        if (error!= null) {
+            if (error.responseJSON !=null) {
+                let jsonResp = error.responseJSON;
+                if (jsonResp.feedback != null && jsonResp.feedback.stacktrace != null) {
+                    $("#errorcontent").html(jsonResp.feedback.stacktrace);
+                    if (jsonResp.feedback.stacktrace.includes("No slot")) {
+                        $("#errorText").html("Aucune clé n'a été détecté");
+                    } else if (jsonResp.feedback.stacktrace.includes("keystore password was incorrect")) {
+                        $("#errorText").html("Le mot de passe du keystore est incorrect");
+                    } else if (jsonResp.feedback.stacktrace.includes("CKR_PIN_INCORRECT")) {
+                        $("#errorText").html("Le code pin est incorrect");
+                    }
+                } else if (jsonResp.message != null) {
+                    if (jsonResp.message.includes("is expired")) {
+                        $("#errorText").html("Votre certificat est expiré");
+                    } else if (jsonResp.message.includes("revoked") || jsonResp.message.includes("suspended")) {
+                        $("#errorText").html("Votre certificat est révoqué");
+                    }
+                    $("#errorcontent").html(jsonResp.message);
+                } else if (jsonResp.errorMessage != null) {
+                    if (jsonResp.errorMessage.includes("The user has cancelled the operation")) {
+                        $("#errorText").html("Opération annulée par l'utilisateur");
+                    }
+                    $("#errorcontent").html(jsonResp.errorMessage);
+                } else if (jsonResp.error != null) {
+                    $("#errorcontent").html(jsonResp.error);
                 }
-            } else if (jsonResp.message !=null){
-                if(jsonResp.message.includes("is expired")) {
+            } else {
+                $("#errorcontent").html(error.responseText);
+                if(error.responseText.includes("Expired")) {
                     $("#errorText").html("Votre certificat est expiré");
-                } else if(jsonResp.message.includes("revoked") || jsonResp.message.includes("suspended")) {
-                    $("#errorText").html("Votre certificat est révoqué");
                 }
-                $("#errorcontent").html(jsonResp.message);
-            } else if (jsonResp.errorMessage !=null){
-                if(jsonResp.errorMessage.includes("The user has cancelled the operation")) {
-                    $("#errorText").html("Opération annulée par l'utilisateur");
-                }
-                $("#errorcontent").html(jsonResp.errorMessage);
-            } else if (jsonResp.error != null){
-                $("#errorcontent").html(jsonResp.error);
             }
         }
         $("#error").show();
