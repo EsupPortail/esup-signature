@@ -16,10 +16,7 @@ import jakarta.annotation.Resource;
 import org.bouncycastle.asn1.x509.Certificate;
 import org.esupportail.esupsignature.dss.DssUtilsService;
 import org.esupportail.esupsignature.dss.model.*;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.NexuSignature;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.NexuSignatureRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
@@ -239,9 +236,10 @@ public class NexuService {
 		if(abstractSignatureForm instanceof SignatureMultipleDocumentsForm signatureMultipleDocumentsForm) {
 			parameters = getParameters(signatureMultipleDocumentsForm, documentsToSign);
 		} else if(abstractSignatureForm instanceof SignatureDocumentForm signatureDocumentForm) {
+			List<SignRequestParams> signRequestParamsesForSign = signRequest.getSignRequestParams().stream().filter(srp -> signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().contains(srp) && srp.getSignImageNumber() >= 0 && srp.getTextPart() == null).toList();
 			if(abstractSignatureForm.getSignatureForm().equals(SignatureForm.PAdES)) {
-				if(!signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty()) {
-					parameters = signService.fillVisibleParameters(signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), documentsToSign.get(0).getInputStream(), user, abstractSignatureForm.getSigningDate());
+				if(!signRequestParamsesForSign.isEmpty()) {
+					parameters = signService.fillVisibleParameters(signatureDocumentForm, signRequestParamsesForSign.get(0), documentsToSign.get(0).getInputStream(), user, abstractSignatureForm.getSigningDate());
 				} else {
 					parameters = signService.fillVisibleParameters(signatureDocumentForm, user);
 				}
