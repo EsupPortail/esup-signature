@@ -512,8 +512,22 @@ export class SignRequestParams extends EventFactory {
                 if(self.firstLaunch) {
                     self.firstLaunch = false;
                 }
+                let toolsPosition = $("#tools").offset().top + 200;
+                let footerPosition = $("footer").offset().top;
+                let draggablePosition = $(this).offset().top + $(this).outerHeight();
+                let page = $("html, body");
+                if (draggablePosition < toolsPosition) {
+                    page.stop();
+                    page.animate({ scrollTop: 0 }, "slow");
+                }
+                if (draggablePosition > footerPosition) {
+                    page.stop();
+                    page.animate({ scrollTop: footerPosition }, "slow");
+                }
             },
             stop: function(event, ui) {
+                $("html, body").stop();
+                $(window).off('mousewheel DOMMouseScroll');
                 if(!self.dropped) {
                     self.signPageNumber = self.cross.attr("page");
                     self.xPos = Math.round(ui.position.left / self.currentScale);
