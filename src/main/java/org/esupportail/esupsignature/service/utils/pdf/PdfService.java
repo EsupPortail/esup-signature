@@ -867,26 +867,13 @@ public class PdfService {
                 }
             }
         }
-//
-//        Map<COSDictionary, Integer> pageNrByAnnotDict = new HashMap<>();
-//        int i = 0;
-//        for (Iterator<PDPage> it = pages; it.hasNext(); ) {
-//            PDPage pdPage = it.next();
-//            for (PDAnnotation annotation : pdPage.getAnnotations()) {
-//                pageNrByAnnotDict.put(annotation.getCOSObject(), i + 1);
-//            }
-//            i++;
-//        }
         return pageNrByAnnotDict;
     }
 
     public boolean isAcroForm(ByteArrayInputStream byteArrayInputStream) throws IOException {
         PDDocument pdDocument = PDDocument.load(byteArrayInputStream);
         PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
-        if(pdAcroForm != null && pdAcroForm.getFields().size() > 0) {
-            return true;
-        }
-        return false;
+        return pdAcroForm != null && !pdAcroForm.getFields().isEmpty();
     }
 
     public void checkPdfPermitions(MultipartFile multipartFile) throws EsupSignatureRuntimeException {
