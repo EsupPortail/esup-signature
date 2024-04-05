@@ -137,7 +137,6 @@ public class DSSBeanConfig {
 	@Bean
 	public CommonsDataLoader dataLoader() {
 		CommonsDataLoader dataLoader = configureCommonsDataLoader(new CommonsDataLoader());
-		dataLoader.setProxyConfig(proxyConfig);
 		dataLoader.setSslProtocol("TLSv1.3");
 		return dataLoader;
 	}
@@ -145,7 +144,6 @@ public class DSSBeanConfig {
 	@Bean
 	public CommonsDataLoader trustAllDataLoader() {
 		CommonsDataLoader dataLoader = configureCommonsDataLoader(new CommonsDataLoader());
-		dataLoader.setProxyConfig(proxyConfig);
 		dataLoader.setTrustStrategy(TrustAllStrategy.INSTANCE);
 		dataLoader.setSslProtocol("TLSv1.3");
 		return dataLoader;
@@ -186,7 +184,6 @@ public class DSSBeanConfig {
 	@Bean
 	public OCSPDataLoader ocspDataLoader() {
 		OCSPDataLoader ocspDataLoader = configureCommonsDataLoader(new OCSPDataLoader());
-		ocspDataLoader.setProxyConfig(proxyConfig);
 		ocspDataLoader.setSslProtocol("TLSv1.3");
 		return ocspDataLoader;
 	}
