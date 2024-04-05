@@ -10,13 +10,13 @@ public class DSSProxyProperties {
     private int httpPort;
     private String httpUser;
     private String httpPassword;
-    private String httpExcludedHosts;
+    private String httpExcludedHosts = "";
     private boolean httpsEnabled;
     private String httpsHost;
     private int httpsPort;
     private String httpsUser;
     private String httpsPassword;
-    private String httpsExcludedHosts;
+    private String httpsExcludedHosts = "";
 
     public boolean isHttpEnabled() {
         return httpEnabled;

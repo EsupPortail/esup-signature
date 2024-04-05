@@ -340,10 +340,10 @@ public class User {
     @JsonIgnore
     public User getCurrentReplaceUser() {
         Date checkDate = new Date();
-        if((replaceBeginDate == null
-                || checkDate.after(replaceBeginDate))
-                && (replaceEndDate == null
-                || checkDate.before(replaceEndDate))) {
+        if((getReplaceBeginDate() == null
+                || checkDate.after(getReplaceBeginDate()))
+                && (getReplaceEndDate() == null
+                || checkDate.before(getReplaceEndDate()))) {
             return replaceByUser;
         }
         return null;
