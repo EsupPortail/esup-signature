@@ -932,6 +932,12 @@ public class SignBookService {
                 pendingSignBook(signBook.getId(), null, userEppn, authUserEppn, false, sendEmailAlert);
             }
         }
+        if(signBook.getLiveWorkflow().getWorkflow().getOwnerSystem() != null && signBook.getLiveWorkflow().getWorkflow().getOwnerSystem()) {
+            signBook.setCreateBy(userService.getSystemUser());
+            for(SignRequest signRequest : signBook.getSignRequests()) {
+                signRequest.setCreateBy(userService.getSystemUser());
+            }
+        }
     }
 
     @Transactional

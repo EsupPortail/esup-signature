@@ -251,7 +251,9 @@ public class MailService {
                     toEmails.add(toUser.getEmail());
                 }
             }
+            if(liveWorkflowStep.equals(signBook.getLiveWorkflow().getCurrentStep())) break;
         }
+        if(toEmails.isEmpty()) return;
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-refused.html", ctx);
