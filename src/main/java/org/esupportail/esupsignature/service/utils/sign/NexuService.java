@@ -1,12 +1,16 @@
 package org.esupportail.esupsignature.service.utils.sign;
 
 import eu.europa.esig.dss.AbstractSignatureParameters;
+import eu.europa.esig.dss.model.SignatureValue;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.SignatureAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
-import eu.europa.esig.dss.model.*;
+import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.DSSException;
+import eu.europa.esig.dss.model.InMemoryDocument;
+import eu.europa.esig.dss.model.ToBeSigned;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
 import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
@@ -127,8 +131,8 @@ public class NexuService {
 		SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(signatureDocumentForm.getEncryptionAlgorithm(), signatureDocumentForm.getDigestAlgorithm());
 		SignatureValue signatureValue = new SignatureValue(sigAlgorithm, signatureDocumentForm.getSignatureValue());
 		AbstractSignatureParameters parameters = getSignatureParameters(signRequest, userEppn, signatureDocumentForm, documentsToSign);
-		boolean revocationValid = validationService.checkRevocation(DSSUtils.loadCertificate(signatureDocumentForm.getCertificate()));
-		if(!revocationValid) {
+		Boolean revocationValid = validationService.checkRevocation(DSSUtils.loadCertificate(signatureDocumentForm.getCertificate()));
+		if(revocationValid == null || !revocationValid) {
 			logger.info("LT or LTA signature level not supported, switching to T level");
 			if(parameters.getSignatureLevel().name().contains("_LT") || parameters.getSignatureLevel().name().contains("_LTA")) {
 				String newLevel = parameters.getSignatureLevel().name().replace("_LTA", "_T");

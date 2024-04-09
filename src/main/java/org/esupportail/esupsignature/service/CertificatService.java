@@ -1,9 +1,15 @@
 package org.esupportail.esupsignature.service;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.spi.DSSUtils;
-import eu.europa.esig.dss.token.*;
+import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
+import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import eu.europa.esig.dss.token.Pkcs12SignatureToken;
+import eu.europa.esig.dss.token.SignatureTokenConnection;
 import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
@@ -14,6 +20,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.repository.CertificatRepository;
 import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.esupportail.esupsignature.service.utils.sign.OpenSCSignatureToken;
+import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +31,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.security.Key;
 import java.security.KeyStore;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class CertificatService {
@@ -35,6 +46,8 @@ public class CertificatService {
     private static final Logger logger = LoggerFactory.getLogger(CertificatService.class);
 
     private final OpenSCSignatureToken openSCSignatureToken;
+
+    private static LoadingCache<String, List<DSSPrivateKeyEntry>> privateKeysCache;
 
     @Resource
     private UserService userService;
@@ -63,6 +76,12 @@ public class CertificatService {
         this.globalProperties = globalProperties;
         this.openSCSignatureToken = new OpenSCSignatureToken(new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray()), signProperties);
         this.signProperties = signProperties;
+        privateKeysCache = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<>() {
+            @Override
+            public @NotNull List<DSSPrivateKeyEntry> load(@NotNull String s) {
+                return new ArrayList<>();
+            }
+        });
     }
 
 
@@ -151,7 +170,7 @@ public class CertificatService {
         if(globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatPin() != null) {
             if (globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) {
                 KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
-                return new Pkcs11SignatureToken(globalProperties.getSealCertificatDriver(), passwordProtection);
+                return new eu.europa.esig.dss.token.Pkcs11SignatureToken(globalProperties.getSealCertificatDriver(), passwordProtection);
             } else if (globalProperties.getSealCertificatFile() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
                 try {
                     return userKeystoreService.getPkcs12Token(new FileInputStream(globalProperties.getSealCertificatFile()), globalProperties.getSealCertificatPin());
@@ -173,6 +192,7 @@ public class CertificatService {
     }
 
     public List<DSSPrivateKeyEntry> getSealCertificats() {
+        if(privateKeysCache.getIfPresent("keys") != null) return privateKeysCache.getIfPresent("keys");
         List<DSSPrivateKeyEntry> dssPrivateKeyEntries = new ArrayList<>();
         try {
             if ((globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
@@ -183,6 +203,7 @@ public class CertificatService {
         } catch (Exception e) {
             logger.debug("no seal certificat found", e);
         }
+        privateKeysCache.put("keys", dssPrivateKeyEntries);
         return dssPrivateKeyEntries;
     }
 
@@ -195,7 +216,7 @@ public class CertificatService {
                 break;
             }
         }
-        for(DSSPrivateKeyEntry dssPrivateKeyEntry : getSealCertificats()) {
+        for(eu.europa.esig.dss.token.DSSPrivateKeyEntry dssPrivateKeyEntry : getSealCertificats()) {
             if(dssPrivateKeyEntry.getCertificate().getNotAfter().before(lastDate)) {
                 expiredCertificat = true;
                 break;
