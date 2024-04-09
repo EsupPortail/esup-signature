@@ -31,20 +31,21 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "and (sb.createDate between :startDateFilter and :endDateFilter)")
     Page<SignBook> findSignBooksAllPaged(SignRequestStatus statusFilter, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
-    @Query("select distinct sb from SignBook sb " +
-            "left join sb.team team " +
-            "left join sb.signRequests sr " +
-            "left join sr.recipientHasSigned rhs " +
-            "where :user in (team) " +
-            "and (sb.status != 'pending' or key(rhs).user = :user or sb.createBy = :user) " +
-            "and (:workflowFilter is null or sb.workflowName = :workflowFilter) " +
-            "and (:docTitleFilter is null or sb.subject = :docTitleFilter) " +
-            "and (:creatorFilter is null or sb.createBy = :creatorFilter)" +
-            "and (sb.createBy = :user or sb.status <> 'draft')" +
-            "and size(sb.signRequests) > 0 " +
-            "and (sb.hidedBy) is empty " +
-            "and sb.status <> 'deleted' " +
-            "and (sb.createDate between :startDateFilter and :endDateFilter)")
+    @Query("""
+            select distinct sb from SignBook sb left join sb.team team 
+            left join sb.signRequests sr 
+            left join sr.recipientHasSigned rhs 
+            where :user in (team) 
+            and (sb.status != 'pending' or key(rhs).user = :user or sb.createBy = :user) 
+            and (:workflowFilter is null or sb.workflowName = :workflowFilter) 
+            and (:docTitleFilter is null or sb.subject = :docTitleFilter) 
+            and (:creatorFilter is null or sb.createBy = :creatorFilter) 
+            and (sb.createBy = :user or sb.status <> 'draft') 
+            and size(sb.signRequests) > 0 
+            and (sb.hidedBy) is empty 
+            and sb.status <> 'deleted' 
+            and (sb.createDate between :startDateFilter and :endDateFilter)
+            """)
     Page<SignBook> findByRecipientAndCreateByEppnIndexed(User user, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     @Query("select distinct sb from SignBook sb " +

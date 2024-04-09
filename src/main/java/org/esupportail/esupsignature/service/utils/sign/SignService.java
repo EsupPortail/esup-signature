@@ -7,7 +7,10 @@ import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.enumerations.*;
-import eu.europa.esig.dss.model.*;
+import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.InMemoryDocument;
+import eu.europa.esig.dss.model.SignatureValue;
+import eu.europa.esig.dss.model.ToBeSigned;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.SignatureFieldParameters;
@@ -216,8 +219,8 @@ public class SignService {
 			}
 			parameters.setSigningCertificate(certificateToken);
 			parameters.setCertificateChain(certificateTokenChain);
-			boolean revocationValid = validationService.checkRevocation(certificateToken);
-			if(!revocationValid) {
+			Boolean revocationValid = validationService.checkRevocation(certificateToken);
+			if(revocationValid == null || !revocationValid) {
 				logger.info("LT or LTA signature level not supported, switching to T level");
 				if(parameters.getSignatureLevel().name().contains("_LT") || parameters.getSignatureLevel().name().contains("_LTA")) {
 					String newLevel = parameters.getSignatureLevel().name().replace("_LTA", "_T");
@@ -320,7 +323,7 @@ public class SignService {
 		parameters.bLevel().setSigningDate(form.getSigningDate());
 		parameters.bLevel().setClaimedSignerRoles(List.of("Manager"));
 		if(StringUtils.hasText(dssProperties.getCountry())) {
-			SignerLocation signerLocation = new SignerLocation();
+			eu.europa.esig.dss.model.SignerLocation signerLocation = new eu.europa.esig.dss.model.SignerLocation();
 			signerLocation.setCountry(dssProperties.getCountry());
 			signerLocation.setStateOrProvince(dssProperties.getStateOrProvince());
 			signerLocation.setPostalCode(dssProperties.getPostalCode());
