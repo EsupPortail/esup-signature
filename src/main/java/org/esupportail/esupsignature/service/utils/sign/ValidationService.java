@@ -82,8 +82,8 @@ public class ValidationService {
         return null;
     }
 
-    public boolean checkRevocation(CertificateToken certificateToken) {
-        if(!certificateVerifier.isCheckRevocationForUntrustedChains()) return true;
+    public Boolean checkRevocation(CertificateToken certificateToken) {
+        if(!certificateVerifier.isCheckRevocationForUntrustedChains()) return null;
         try {
             RevocationToken<OCSP> revocationToken = certificateVerifier.getOcspSource().getRevocationToken(certificateToken, certificateToken);
             return revocationToken != null && certificateVerifier.getRevocationDataVerifier().isAcceptable(revocationToken);
