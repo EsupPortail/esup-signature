@@ -76,7 +76,7 @@ public class CertificatService {
         this.globalProperties = globalProperties;
         this.openSCSignatureToken = new OpenSCSignatureToken(new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray()), signProperties);
         this.signProperties = signProperties;
-        privateKeysCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.MINUTES).build(new CacheLoader<>() {
+        privateKeysCache = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<>() {
             @Override
             public @NotNull List<DSSPrivateKeyEntry> load(@NotNull String s) {
                 return new ArrayList<>();
