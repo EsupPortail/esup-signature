@@ -82,7 +82,7 @@
             </div>
         </div>
         <label for="signType">Type de signature :</label>
-        <select class="form-select" id="signType" name="signType">
+        <select class="form-select" id="signType-1" name="signType">
             <th:block th:each="signType : ${signTypes}">
                 <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
             </th:block>
