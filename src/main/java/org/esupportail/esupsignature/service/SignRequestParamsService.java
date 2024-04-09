@@ -159,9 +159,10 @@ public class SignRequestParamsService {
             if (signRequest.getSignRequestParams().size() < i + 1) {
                 signRequest.getSignRequestParams().add(signRequestParams);
             }
-            if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() < i +1) {
-                signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().add(signRequestParams);
+            if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() >= i + 1) {
+                signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().remove(i);
             }
+            signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().add(signRequestParams);
         }
     }
 
