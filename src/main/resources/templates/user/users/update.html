@@ -22,8 +22,7 @@
         </nav>
         <div id="content" class="content">
             <div id="floatButtons" class="fixed-action-simple-btn">
-                <a id="saveButton"
-                   class="btn-floating btn-lg bg-success wave-effect">
+                <a id="saveButton" class="btn-floating btn-lg bg-success wave-effect">
                     <i class="fa-solid fa-save fa-2xl"></i>
                 </a>
             </div>
@@ -66,9 +65,9 @@
                                                     </a>
                                                 </td>
                                                 <td>
-                                                    <a th:id="'deleteSign_' + ${signImageId}" th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/delete-sign/' + ${signImageId}" role="button" class="btn btn-sm btn-danger text-white">
+                                                    <button th:id="'deleteSign_' + ${signImageId}" th:data-es-id="${signImageId}" role="button" class="btn btn-sm btn-danger text-white">
                                                         <i class="fa-solid fa-trash-alt"></i>
-                                                    </a>
+                                                    </button>
                                                 </td>
                                             </tr>
                                         </th:block>
@@ -269,6 +268,10 @@
             </form>
         </div>
     </div>
+    <th:block th:each="signImageId, iterator : ${userImagesIds}">
+        <form th:id="'deleteForm-' + ${signImageId}" th:action="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/delete-sign/' + ${signImageId}" th:method="'delete'">
+        </form>
+    </th:block>
 </main>
 <div data-bs-focus="false" class="modal fade" id="testKeystore"  role="dialog" aria-labelledby="testKeystore" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
