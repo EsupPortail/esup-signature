@@ -35,7 +35,7 @@ export class UserUi {
                 e.preventDefault();
                 let target = e.currentTarget;
                 bootbox.confirm("Voulez-vous vraiment supprimer cette signature ?", function(result){
-                    if(result) $('#form-' + $(target).attr("id")).submit();
+                    if(result) $('#deleteForm-' + $(target).attr("data-es-id")).submit();
                 });
             });
         });
