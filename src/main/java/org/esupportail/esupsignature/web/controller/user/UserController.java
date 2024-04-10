@@ -94,7 +94,7 @@ public class UserController {
 		return "redirect:" + referer;
     }
 
-	@GetMapping("/delete-sign/{id}")
+	@DeleteMapping("/delete-sign/{id}")
 	public String deleteSign(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes) {
 		userService.deleteSign(authUserEppn, id);
 		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Signature supprimée"));
