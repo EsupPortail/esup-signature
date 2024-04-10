@@ -21,6 +21,7 @@ public class MDCFilter extends OncePerRequestFilter {
                 String name = SecurityContextHolder.getContext().getAuthentication().getName();
                 MDC.put("userId", name);
             }
+            if(response.isCommitted()) return;
             filterChain.doFilter(request, response);
         } finally {
             MDC.clear();
