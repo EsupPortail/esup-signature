@@ -49,10 +49,12 @@ public class ShibAuthenticationSuccessHandler extends SavedRequestAwareAuthentic
 		if(defaultSavedRequest != null) {
 			String queryString = defaultSavedRequest.getRequestURL();
 			if(StringUtils.hasText(queryString)) {
+				logger.info("redirect to saved request : " + queryString);
 				httpServletResponse.sendRedirect(queryString);
 				return;
 			}
 		}
+		logger.info("redirect to /user");
 		httpServletResponse.sendRedirect("/user");
 	}
 	
