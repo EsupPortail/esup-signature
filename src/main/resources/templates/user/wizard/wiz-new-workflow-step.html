@@ -62,8 +62,8 @@
         <input type="submit" id="wiz-step-form-submit" class="d-none">
         <input th:if="${workflow != null}" type="hidden" id="workflowId" name="workflowId" th:value="${workflow.id}">
         <div class="form-check form-switch form-switch-md">
-            <input type="checkbox" class="form-check-input" id="changeable" name="changeable" onclick="if(this.checked) {$('#recipientsEmails').attr('required', false);} else {$('#recipientsEmails').attr('required', true);}"/>
-            <label for="changeable" class="form-check-label">
+            <input type="checkbox" class="form-check-input" id="changeable-1" name="changeable" onclick="if(this.checked) {$('#recipientsEmails').attr('required', false);} else {$('#recipientsEmails').attr('required', true);}"/>
+            <label for="changeable-1" class="form-check-label">
                 Le créateur du circuit pourra modifier les participants de cette étape
             </label>
         </div>
@@ -81,8 +81,8 @@
                 <input type="checkbox" class="form-check-input" id="all-sign-to-complete-1" name="allSignToComplete"/>
             </div>
         </div>
-        <label for="signType">Type de signature :</label>
-        <select class="form-select" id="signType" name="signType">
+        <label for="signType-1">Type de signature :</label>
+        <select class="form-select" id="signType-1" name="signType">
             <th:block th:each="signType : ${signTypes}">
                 <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
             </th:block>
