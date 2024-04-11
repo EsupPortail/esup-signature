@@ -53,7 +53,7 @@ public class ShibAuthenticationSuccessHandler extends SavedRequestAwareAuthentic
 				return;
 			}
 		}
-		httpServletResponse.sendRedirect("/");
+		httpServletResponse.sendRedirect("/user");
 	}
 	
 }
