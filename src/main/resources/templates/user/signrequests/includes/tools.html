@@ -79,7 +79,7 @@
 	<div id="second-tools" class="d-flex">
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
 			<th:block th:if="${!user.userType.name.equals('external')}">
-			<div class="d-none d-xl-inline">
+			<div class="d-none d-xl-inline mb-1">
 				<button class="btn btn-light text-dark btn-outline-light" style="cursor: default;">Choix du mode : </button>
 			</div>
 			<div class="me-1 d-none d-lg-block">
@@ -118,7 +118,7 @@
 						class="btn btn-outline-primary ms-1">
 					<i class="fa-solid fa-comment"></i> Ajouter une annotation
 				</button>
-				<button th:if="${signRequest.createBy.eppn == user.eppn && signRequest.data == null && signatureIds.size() == 0 && isNotSigned}" id="addSpotButton"
+				<button th:if="${signRequest.createBy.eppn == user.eppn && signRequest.data == null}" id="addSpotButton"
 						class="btn btn-outline-primary ms-1">
 					<i class="fa-solid fa-map-marker-alt"></i> Ajouter un emplacement de signature
 				</button>

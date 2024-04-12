@@ -350,7 +350,7 @@ export class SignRequestParams extends EventFactory {
             this.textareaExtra.attr("readonly", true);
         }
 
-        if(this.isOtp){
+        if(this.isOtp && this.isSign){
             this.toggleExtra();
             this.toggleText();
             if(this.userName.length < 2) {

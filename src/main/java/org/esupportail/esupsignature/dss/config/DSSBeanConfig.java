@@ -296,23 +296,23 @@ public class DSSBeanConfig {
 
 	@Bean
 	public CAdESService cadesService(CertificateVerifier certificateVerifier, TSPSource tspSource) {
-		CAdESService service = new CAdESService(certificateVerifier);
-		service.setTspSource(tspSource);
-		return service;
+		CAdESService cAdESService = new CAdESService(certificateVerifier);
+		cAdESService.setTspSource(tspSource);
+		return cAdESService;
 	}
 
 	@Bean
 	public XAdESService xadesService(CertificateVerifier certificateVerifier, TSPSource tspSource) {
-		XAdESService service = new XAdESService(certificateVerifier);
-		service.setTspSource(tspSource);
-		return service;
+		XAdESService xAdESService = new XAdESService(certificateVerifier);
+		xAdESService.setTspSource(tspSource);
+		return xAdESService;
 	}
 
 	@Bean
 	public PAdESService padesService(CertificateVerifier certificateVerifier, TSPSource tspSource) {
-		PAdESService service = new PAdESService(certificateVerifier);
-		service.setTspSource(tspSource);
-		return service;
+		PAdESService pAdESService = new PAdESService(certificateVerifier);
+		pAdESService.setTspSource(tspSource);
+		return pAdESService;
 	}
 
 	@Bean
