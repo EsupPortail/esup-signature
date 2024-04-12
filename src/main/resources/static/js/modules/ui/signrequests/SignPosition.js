@@ -149,6 +149,10 @@ export class SignPosition extends EventFactory {
         this.addSign(page, false, -3);
     }
 
+    addMinusImage(page) {
+        this.addSign(page, false, -4);
+    }
+
     addText(page) {
         let signRequestParams = this.addSign(page, false, null);
         signRequestParams.turnToText();

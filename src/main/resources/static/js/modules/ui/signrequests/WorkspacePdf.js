@@ -142,6 +142,7 @@ export class WorkspacePdf {
         $("#addCheck").on("click", e => this.signPosition.addCheckImage(this.pdfViewer.pageNum));
         $("#addTimes").on("click", e => this.signPosition.addTimesImage(this.pdfViewer.pageNum));
         $("#addCircle").on("click", e => this.signPosition.addCircleImage(this.pdfViewer.pageNum));
+        $("#addMinus").on("click", e => this.signPosition.addMinusImage(this.pdfViewer.pageNum));
         $("#addText").on("click ", e => this.signPosition.addText(this.pdfViewer.pageNum));
 
         let signImageBtn = $("#signImage");
