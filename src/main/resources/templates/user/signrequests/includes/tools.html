@@ -77,7 +77,7 @@
 		</a>
 	</div>
 	<div id="second-tools" class="d-flex">
-		<th:block th:if="${signRequest.createBy.eppn.equals(user.eppn) && toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
+		<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
 			<th:block th:if="${!user.userType.name.equals('external')}">
 			<div class="d-none d-xl-inline mb-1">
 				<button class="btn btn-light text-dark btn-outline-light" style="cursor: default;">Choix du mode : </button>
