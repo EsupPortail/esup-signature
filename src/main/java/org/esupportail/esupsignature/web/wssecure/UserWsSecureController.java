@@ -87,7 +87,7 @@ public class UserWsSecureController {
     public ResponseEntity<Void> getSignature(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
         Map<String, Object> signature = userService.getSignatureByUserAndId(userEppn, id);
         if(signature != null) {
-            return getDocumentResponseEntity(response, (byte[]) signature.get("bytes"), signature.get("fileName").toString(), (String) signature.get("contentType"));
+            return getDocumentResponseEntity(response, (byte[]) signature.get("bytes"), (String) signature.get("fileName"), (String) signature.get("contentType"));
         } else {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }

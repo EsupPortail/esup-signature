@@ -701,8 +701,10 @@ public class UserService {
             signature.put("bytes", signImage.get().getInputStream().readAllBytes());
             signature.put("fileName", "sign_" + signImage.get().getFileName());
             signature.put("contentType", signImage.get().getContentType());
+            return signature;
+        } else {
+            return null;
         }
-        return signature;
     }
 
     @Transactional

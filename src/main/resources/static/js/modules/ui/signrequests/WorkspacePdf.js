@@ -267,10 +267,14 @@ export class WorkspacePdf {
                 localStorage.setItem('mode', this.mode);
             }
             console.info("init to " + this.mode + " mode");
-            if (localStorage.getItem('mode') === 'comment') {
+            if(this.signable) {
+                if (localStorage.getItem('mode') === 'comment') {
+                    this.enableCommentMode();
+                } else if (this.currentSignType !== 'form') {
+                    this.enableSignMode();
+                }
+            } else {
                 this.enableCommentMode();
-            } else if (this.currentSignType !== 'form') {
-                this.enableSignMode();
             }
             this.wheelDetector.addEventListener("down", e => this.pdfViewer.checkCurrentPage(e));
             this.wheelDetector.addEventListener("up", e => this.pdfViewer.checkCurrentPage(e));
@@ -1025,7 +1029,8 @@ export class WorkspacePdf {
             if(this.signable) {
                 this.changeModeSelector.setSelected("sign");
             } else {
-                this.changeModeSelector.setSelected("read");
+                this.changeModeSelector.setSelected("comment");
+                this.enableCommentMode();
             }
         }
     }
