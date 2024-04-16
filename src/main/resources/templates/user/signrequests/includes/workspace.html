@@ -28,7 +28,7 @@
                 <i class="fa-solid fa-sync-alt fa-2xl"></i><br> Cliquez ici après le lancement de Esup-DSS-Client
             </button>
         </div>
-        <th:block th:if="${toSignDocument.contentType == 'application/pdf'}">
+        <th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
             <div id="commentHelp" th:unless="${signRequest.comments.size() > 0}" class="alert alert-warning border-dark d-none" style="width: 100%">
                 Pour ajouter des annotations ou des emplacements de signature, cliquez sur le bouton correspondant puis sur le document
                 <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>

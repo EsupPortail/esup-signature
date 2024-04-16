@@ -273,6 +273,8 @@ export class WorkspacePdf {
                 } else if (this.currentSignType !== 'form') {
                     this.enableSignMode();
                 }
+            } else if(!this.editable) {
+                this.enableSignMode();
             } else {
                 this.enableCommentMode();
             }
