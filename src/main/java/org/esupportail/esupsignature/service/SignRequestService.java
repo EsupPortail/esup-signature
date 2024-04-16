@@ -633,17 +633,20 @@ public class SignRequestService {
 	public Long delete(Long signRequestId, String userEppn) {
 		logger.info("start delete of signrequest " + signRequestId);
 		SignRequest signRequest = getById(signRequestId);
+		if(!isDeletetable(signRequest, userEppn)) {
+			throw new EsupSignatureRuntimeException("Interdiction de supprimer les demandes de ce circuit");
+		}
 		if(signRequest.getStatus().equals(SignRequestStatus.deleted) || signRequest.getStatus().equals(SignRequestStatus.draft) || (signRequest.getParentSignBook().getSignRequests().size() > 1 && signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending))) {
 			logger.info("suppression définitive");
 			return deleteDefinitive(signRequestId, false, userEppn);
 		} else {
+			logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Mise à la corbeille du document par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
 				logger.info("nettoyage des documents archivés ou exportés");
 				signRequest.getOriginalDocuments().clear();
 				signRequest.getSignedDocuments().clear();
 				logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Nettoyage des documents déjà archivés", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			}
-			logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Mise à la corbeille du document par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			otpService.deleteOtpBySignRequestId(signRequestId);
 			nexuService.delete(signRequestId);
 			if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.deleted))) {
@@ -711,25 +714,6 @@ public class SignRequestService {
 				!signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getDisableDeleteByCreator()
 				||
 				user.getRoles().contains("ROLE_ADMIN");
-	}
-
-	@Transactional
-	public void deleteSignRequest(Long signRequestId, String userEppn) {
-		SignRequest signRequest = signRequestRepository.findById(signRequestId).orElseThrow();
-		if(!isDeletetable(signRequest, userEppn)) {
-			throw new EsupSignatureRuntimeException("Interdiction de supprimer les demandes de ce circuit");
-		}
-		if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
-			deleteDefinitive(signRequestId, false, userEppn);
-		} else {
-			if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
-				signRequest.getOriginalDocuments().clear();
-				signRequest.getSignedDocuments().clear();
-			}
-			signRequest.setStatus(SignRequestStatus.deleted);
-			logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Suppression par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
-			otpService.deleteOtpBySignRequestId(signRequestId);
-		}
 	}
 
 	@Transactional
