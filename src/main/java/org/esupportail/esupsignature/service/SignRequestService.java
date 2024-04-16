@@ -631,6 +631,7 @@ public class SignRequestService {
 
 	@Transactional
 	public Long delete(Long signRequestId, String userEppn) {
+		logger.info("start delete of signrequest " + signRequestId);
 		SignRequest signRequest = getById(signRequestId);
 		if(signRequest.getStatus().equals(SignRequestStatus.deleted) || signRequest.getStatus().equals(SignRequestStatus.draft) || (signRequest.getParentSignBook().getSignRequests().size() > 1 && signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending))) {
 			return deleteDefinitive(signRequestId, false, userEppn);
@@ -655,6 +656,7 @@ public class SignRequestService {
 
 	@Transactional
 	public Long deleteDefinitive(Long signRequestId, boolean force, String userEppn) {
+		logger.info("start definitive delete of signrequest " + signRequestId);
 		SignRequest signRequest = getById(signRequestId);
 		if(!force && !signRequest.getStatus().equals(SignRequestStatus.deleted) && !signRequest.getRecipientHasSigned().values().stream().allMatch(a -> a.getActionType().equals(ActionType.none))) {
 			throw new EsupSignatureRuntimeException("Suppression impossible, la demande est déjà démarrée");
