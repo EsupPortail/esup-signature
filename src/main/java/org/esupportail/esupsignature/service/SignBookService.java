@@ -571,7 +571,7 @@ public class SignBookService {
         }
         List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).toList();
         for(Long signRequestId : signRequestsIds) {
-            signRequestService.deleteSignRequest(signRequestId, userEppn);
+            signRequestService.delete(signRequestId, userEppn);
         }
         signBook.setStatus(SignRequestStatus.deleted);
         signBook.setUpdateDate(new Date());
