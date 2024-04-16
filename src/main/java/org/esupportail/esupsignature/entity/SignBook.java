@@ -28,7 +28,7 @@ public class SignBook {
 
     private String workflowName;
 
-    @OneToMany(mappedBy = "signBook", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "signBook", cascade = CascadeType.DETACH, orphanRemoval = true)
     private Set<Otp> otps = new HashSet<>();
 
     @Deprecated
