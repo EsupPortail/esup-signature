@@ -59,7 +59,7 @@
                             </thead>
                             <tbody>
                             <th:block th:each="auditStep, iterator : ${auditTrail.auditSteps}">
-                                <tr data-bs-toggle="collapse" data-bs-target="#collapseExample" style="cursor: pointer;" title="Cliquez ici pour afficher le detail">
+                                <tr data-bs-toggle="collapse" th:data-bs-target="'#collapse-' + ${iterator.index}" style="cursor: pointer;" title="Cliquez ici pour afficher le detail">
                                     <td><i class="fa-solid fa-plus"></i></td>
                                     <td class="text-left"><span
                                             th:text="${#dates.format(auditStep.timeStampDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
@@ -67,7 +67,7 @@
                                     <td class="text-left"><span th:text="${auditStep.email}"></span></td>
                                     <td class="text-left" th:text="${auditStep.getAllScrolled()} ? 'lu' : 'non lu'"></td>
                                 </tr>
-                                <tr class="collapse" id="collapseExample">
+                                <tr class="collapse" th:id="'collapse-' + ${iterator.index}">
                                     <td colspan="6">
                                         <dl class="row border-bottom m-0">
                                             <dt class="col-lg-5">Login : </dt>
