@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
@@ -41,7 +42,10 @@ public class XSLTService {
 		} catch (Exception e) {
 			logger.error("Error while generating simple report : " + e.getMessage(), e);
 		}
-		return writer.toString();
+		if(StringUtils.hasText(writer.toString())) {
+			return writer.toString();
+		}
+		return null;
 	}
 
 	public String generateSimpleReport(String xmlSimpleReport) {
