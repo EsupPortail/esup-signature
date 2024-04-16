@@ -637,17 +637,19 @@ public class SignRequestService {
 			return deleteDefinitive(signRequestId, false, userEppn);
 		} else {
 			if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
+				logger.info("nettoyage des documents archivés ou exportés");
 				signRequest.getOriginalDocuments().clear();
 				signRequest.getSignedDocuments().clear();
+				logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Nettoyage des documents déjà archivés", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			}
-			logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Suppression du document par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
+			logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Mise à la corbeille du document par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			otpService.deleteOtpBySignRequestId(signRequestId);
 			nexuService.delete(signRequestId);
 			if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.deleted))) {
 				signRequest.getParentSignBook().setStatus(SignRequestStatus.deleted);
 				signRequest.getParentSignBook().setUpdateDate(new Date());
 				signRequest.getParentSignBook().setUpdateBy(userEppn);
-				logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Suppression de la demande par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
+				logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Mise à la corbeille de la demande par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			}
 			signRequest.setStatus(SignRequestStatus.deleted);
 			return signRequest.getParentSignBook().getId();

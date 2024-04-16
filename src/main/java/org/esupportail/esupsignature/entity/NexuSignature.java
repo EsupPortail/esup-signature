@@ -18,7 +18,7 @@ public class NexuSignature {
 	@SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
 	private Long id;
 
-	@OneToOne
+	@OneToOne(cascade = CascadeType.DETACH)
 	private SignRequest signRequest;
 
 	@Temporal(TemporalType.TIMESTAMP)
