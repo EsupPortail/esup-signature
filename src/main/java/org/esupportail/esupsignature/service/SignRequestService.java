@@ -634,6 +634,7 @@ public class SignRequestService {
 		logger.info("start delete of signrequest " + signRequestId);
 		SignRequest signRequest = getById(signRequestId);
 		if(signRequest.getStatus().equals(SignRequestStatus.deleted) || signRequest.getStatus().equals(SignRequestStatus.draft) || (signRequest.getParentSignBook().getSignRequests().size() > 1 && signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending))) {
+			logger.info("suppression définitive");
 			return deleteDefinitive(signRequestId, false, userEppn);
 		} else {
 			if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {

@@ -22,7 +22,7 @@ public class Otp {
 
     private String password;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.DETACH)
     private SignBook signBook;
 
     @Temporal(TemporalType.TIMESTAMP)
