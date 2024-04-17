@@ -278,6 +278,10 @@ public class GlobalProperties {
      */
     private Integer nbDaysBeforeCertifWarning = 60;
 
+    private String systemUserName = "Esup-Signature";
+
+    private String systemUserFirstName = "Automate";
+
     public String getRootUrl() {
         return rootUrl;
     }
@@ -712,5 +716,21 @@ public class GlobalProperties {
 
     public void setNbDaysBeforeCertifWarning(Integer nbDaysBeforeCertifWarning) {
         this.nbDaysBeforeCertifWarning = nbDaysBeforeCertifWarning;
+    }
+
+    public String getSystemUserName() {
+        return systemUserName;
+    }
+
+    public void setSystemUserName(String systemUserName) {
+        this.systemUserName = systemUserName;
+    }
+
+    public String getSystemUserFirstName() {
+        return systemUserFirstName;
+    }
+
+    public void setSystemUserFirstName(String systemUserFirstName) {
+        this.systemUserFirstName = systemUserFirstName;
     }
 }

@@ -120,7 +120,7 @@ public class UserService {
 
     @Transactional
     public User getSystemUser() {
-        return createUser("system", "Esup-Signature", "Automate", "system", UserType.system, false);
+        return createUser("system", globalProperties.getSystemUserName(), globalProperties.getSystemUserFirstName(), "system", UserType.system, false);
     }
 
     @Transactional
@@ -135,7 +135,7 @@ public class UserService {
 
     @Transactional
     public User getSchedulerUser() {
-        return createUser("scheduler", "Esup-Signature", "Automate", globalProperties.getApplicationEmail(), UserType.system, false);
+        return createUser("scheduler", globalProperties.getSystemUserName(), globalProperties.getSystemUserFirstName(), globalProperties.getApplicationEmail(), UserType.system, false);
     }
 
     @Transactional
