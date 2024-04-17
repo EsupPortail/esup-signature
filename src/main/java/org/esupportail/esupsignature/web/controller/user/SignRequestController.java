@@ -225,20 +225,21 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestDelete(#id, #authUserEppn)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
-    public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-        Long result = signRequestService.delete(id, authUserEppn);
+    public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "definitive", required = false) Boolean definitive, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+        Long result;
+        if(definitive != null && definitive) {
+            result = signRequestService.deleteDefinitive(id, true, authUserEppn);
+        } else {
+            result = signRequestService.delete(id, authUserEppn);
+        }
         if(result == 0) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression définitive effectuée"));
-            return "redirect:/user/signbooks";
         } else if(result > 0) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
-            return "redirect:/user/signbooks/" + result;
-
         } else {
             redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression impossible car la demande est en cours de signature ou déjà signée"));
-            return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
-
         }
+        return "redirect:/user/signbooks";
     }
 
 //    @PreAuthorize("@preAuthorizeService.signRequestDelete(#id, #authUserEppn)")
