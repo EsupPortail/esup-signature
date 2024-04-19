@@ -138,10 +138,6 @@ export class SignRequestParams extends EventFactory {
         this.cross.append("<p class='text-black'>Positionner le champ de signature et cliquer sur enregistrer</p>");
         this.cross.css("font-size", Math.round(12 * this.currentScale)  + "px");
         this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute bottom-0 end-0'><i class='fas fa-save'></i></button>");
-        $("#signDrop_999999").on("click", function (){
-            $("#addSpotButton").attr("disabled", false);
-            $("#addCommentButton").attr("disabled", false);
-        })
         $("#submit-add-spot").on("click", function () {
             $("#spot-modal").modal("show");
         });
@@ -558,6 +554,8 @@ export class SignRequestParams extends EventFactory {
         this.cross.remove();
         this.fireEvent("delete", ["ok"]);
         $("#signLaunchButton").removeClass("pulse-success");
+        $("#addSpotButton").attr("disabled", false);
+        $("#addCommentButton").attr("disabled", false);
     }
 
     getTools() {
