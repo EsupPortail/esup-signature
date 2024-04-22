@@ -30,6 +30,7 @@ export class SignRequestParams extends EventFactory {
         this.isVisa = isVisa;
         this.isElec = isElec;
         this.firstLaunch = true;
+        this.firstCrossAlert = true;
         this.cross = null;
         this.border = null;
         this.tools = null;
@@ -503,27 +504,17 @@ export class SignRequestParams extends EventFactory {
         let self = this;
         this.cross.draggable({
             containment: "#pdf",
-            scroll: false,
+            scroll: true,
             drag: function(event, ui) {
                 if(self.firstLaunch) {
                     self.firstLaunch = false;
                 }
-                let toolsPosition = $("#tools").offset().top + 200;
-                let footerPosition = $("footer").offset().top;
-                let draggablePosition = $(this).offset().top + $(this).outerHeight();
-                let page = $("html, body");
-                if (draggablePosition < toolsPosition) {
-                    page.stop();
-                    page.animate({ scrollTop: 0 }, "slow");
-                }
-                if (draggablePosition > footerPosition) {
-                    page.stop();
-                    page.animate({ scrollTop: footerPosition }, "slow");
-                }
             },
             stop: function(event, ui) {
-                $("html, body").stop();
-                $(window).off('mousewheel DOMMouseScroll');
+                if($(event.target).hasClass("cross-error") && self.firstCrossAlert) {
+                    self.firstCrossAlert = false;
+                    bootbox.alert("Attention votre signature superpose un autre élément du document. Vous ne pourrez pas la valider tant que celle-ci sera de couleur rouge", null);
+                }
                 if(!self.dropped) {
                     self.signPageNumber = self.cross.attr("page");
                     self.xPos = Math.round(ui.position.left / self.currentScale);
@@ -687,13 +678,27 @@ export class SignRequestParams extends EventFactory {
                 }
                 $(this).unbind("dragstop");
             });
-            this.cross.simulate("drag", {
+            this.simulateDrag(x, y).then(function() {
+            });
+        }
+    }
+
+    simulateDrag(x, y) {
+        let self = this;
+        return new Promise(function(resolve, reject) {
+            self.cross.simulate("drag", {
                 handle: "corner",
                 moves: 1,
                 dx: x,
                 dy: y
             });
-        }
+
+            // Supposons que la simulation prend un certain temps
+            // Dans cet exemple, j'utilise setTimeout pour simuler un délai
+            setTimeout(function() {
+                resolve(); // La simulation de glissement est terminée
+            }, 100); // ajustez la durée selon vos besoins
+        });
     }
 
     displayMoreTools() {

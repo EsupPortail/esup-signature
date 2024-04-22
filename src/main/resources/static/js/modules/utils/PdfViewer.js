@@ -109,12 +109,30 @@ export class PdfViewer extends EventFactory {
     annotationLinkTargetBlank() {
         $('.linkAnnotation').each(function (){
             $(this).children().attr('target', '_blank');
+            $(this).droppable({
+                tolerance: "touch",
+                drop: function( event, ui ) {
+                    $(event.originalEvent.target).addClass("cross-error");
+                    $("#signLaunchButton").addClass("disabled");
+                },
+                over: function( event, ui ) {
+                    $(event.originalEvent.target).addClass("cross-error");
+                    $("#signLaunchButton").addClass("disabled");
+                },
+                out: function( event, ui ) {
+                    $(event.originalEvent.target).removeClass("cross-error");
+                    $("#signLaunchButton").removeClass("disabled");
+                }
+            });
         });
     }
 
     annotationLinkRemove() {
         $('.linkAnnotation').each(function (){
-            $(this).remove();
+            $(this).css("opacity", 0);
+            $(this).click(function(e) {
+                e.preventDefault();
+            });
         });
     }
 
