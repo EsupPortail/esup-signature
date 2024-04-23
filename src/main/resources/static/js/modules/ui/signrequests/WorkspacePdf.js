@@ -775,6 +775,7 @@ export class WorkspacePdf {
         localStorage.setItem('mode', 'comment');
         $("#postitHelp").remove();
         this.disableAllModes();
+        $("#changeMode1").attr("checked", true);
         $("#postit").removeClass("d-none");
         $("#commentHelp").removeClass("d-none");
         this.mode = 'comment';
@@ -807,6 +808,7 @@ export class WorkspacePdf {
         console.info("enable sign mode");
         localStorage.setItem('mode', 'sign');
         this.disableAllModes();
+        $("#changeMode2").attr("checked", true);
         this.mode = 'sign';
         this.signPosition.pointItEnable = false;
         if (this.status === 'pending') {
@@ -1011,27 +1013,15 @@ export class WorkspacePdf {
         //     text: 'Lecture',
         //     value: 'read'
         // });
-
-        if($("#changeMode").length) {
-            this.changeModeSelector = new SlimSelect({
-                select: '#changeMode',
-                settings: {
-                    showSearch: false,
-                    valuesUseText: false,
-                },
-                events: {
-                    afterChange: (val) => {
-                        this.changeMode(val)
-                    }
-                },
-            });
-            this.changeModeSelector.setData(data);
-        }
+        let self = this;
+        $("#changeMode1").on("click", function(e) {
+            self.changeMode("comment");
+        });
+        $("#changeMode2").on("click", function(e) {
+            self.changeMode("sign");
+        });
         if(this.changeModeSelector != null) {
-            if(this.signable) {
-                this.changeModeSelector.setSelected("sign");
-            } else {
-                this.changeModeSelector.setSelected("comment");
+            if(!this.signable) {
                 this.enableCommentMode();
             }
         }
@@ -1039,7 +1029,7 @@ export class WorkspacePdf {
 
     changeMode(e) {
         if(this.ready) {
-            let mode = e[0].value;
+            let mode = e;
             console.info("change mode to : " + mode);
             if (mode === "sign" && this.signable) {
                 this.enableSignMode();
