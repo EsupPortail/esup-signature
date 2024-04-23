@@ -260,6 +260,14 @@ export class SignRequestParams extends EventFactory {
                 if(self.isSign) {
                     localStorage.setItem("zoom", self.signScale);
                 }
+                self.cross.draggable("widget")._trigger("drag", event, {
+                    position: ui.position,
+                    offset: ui.offset
+                });
+                self.cross.draggable("widget")._trigger("dragStop", event, {
+                    position: ui.position,
+                    offset: ui.offset
+                });
             }
         });
         this.createBorder();
@@ -504,6 +512,7 @@ export class SignRequestParams extends EventFactory {
         let self = this;
         this.cross.draggable({
             containment: "#pdf",
+            refreshPositions:true,
             scroll: true,
             drag: function(event, ui) {
                 if(self.firstLaunch) {
@@ -678,26 +687,16 @@ export class SignRequestParams extends EventFactory {
                 }
                 $(this).unbind("dragstop");
             });
-            this.simulateDrag(x, y).then(function() {
-            });
+            this.simulateDrag(x, y);
         }
     }
 
     simulateDrag(x, y) {
-        let self = this;
-        return new Promise(function(resolve, reject) {
-            self.cross.simulate("drag", {
-                handle: "corner",
-                moves: 1,
-                dx: x,
-                dy: y
-            });
-
-            // Supposons que la simulation prend un certain temps
-            // Dans cet exemple, j'utilise setTimeout pour simuler un délai
-            setTimeout(function() {
-                resolve(); // La simulation de glissement est terminée
-            }, 100); // ajustez la durée selon vos besoins
+        this.cross.simulate("drag", {
+            handle: "corner",
+            moves: 1,
+            dx: x,
+            dy: y
         });
     }
 

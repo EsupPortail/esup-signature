@@ -226,7 +226,7 @@ public class WizardController {
         final Context context = new Context(Locale.FRENCH);
         Workflow workflow;
         try {
-            workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0).getSignType(), steps.get(0).getAllSignToComplete(), steps.get(0).getChangeable(), steps.get(0), user);
+            workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0).getSignType(), steps.get(0).getAllSignToComplete(), steps.get(0).getChangeable(), steps.get(0), user, false);
         } catch (EsupSignatureRuntimeException e) {
             logger.debug(e.getMessage());
             return ResponseEntity.internalServerError().build();
