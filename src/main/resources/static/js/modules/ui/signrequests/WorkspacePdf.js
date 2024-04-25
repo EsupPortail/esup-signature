@@ -75,8 +75,10 @@ export class WorkspacePdf {
             if(this.wsTabs.length) {
                 this.autocollapse();
                 let self = this;
-                $(window).on('resize', function () {
-                    self.autocollapse();
+                $(window).on('resize', function (e) {
+                    if(e.target.tagName == null) {
+                        self.autocollapse();
+                    }
                 });
                 if(this.secondTools.children().length > 0) {
                     this.workspace.css("margin-top", "216px");

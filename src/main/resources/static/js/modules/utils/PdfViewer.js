@@ -55,7 +55,7 @@ export class PdfViewer extends EventFactory {
         $('#fullheight').on('click', e => this.fullHeight());
         $('#rotateleft').on('click', e => this.rotateLeft());
         $('#rotateright').on('click', e => this.rotateRight());
-        $(window).on('resize', e => this.adjustZoom());
+        $(window).on('resize', e => this.adjustZoom(e));
         // this.addEventListener("renderFinished", e => this.listenToSearchCompletion());
         // this.addEventListener("ready", e => this.restoreScrolling());
    }
@@ -157,28 +157,30 @@ export class PdfViewer extends EventFactory {
         }
     }
 
-    adjustZoom() {
-        let newScale = 1;
-        if(localStorage.getItem('scale')) {
-            newScale = parseFloat(localStorage.getItem('scale'));
-        }
-        if (window.innerWidth < 1200) {
-            newScale = 0.9;
-        }
-        if (window.innerWidth < 992) {
-            newScale = 0.8;
-        }
-        if (window.innerWidth < 768) {
-            newScale = 0.7;
-        }
-        if (window.innerWidth < 576) {
-            newScale = 0.5;
-        }
-        if (newScale !== this.scale) {
-            console.info("adjust zoom to screen wide " + window.innerWidth);
-            this.scale = newScale;
-            console.info('zoom in, scale = ' + this.scale);
-            this.fireEvent('scaleChange', ['in']);
+    adjustZoom(e) {
+        if(e.target.tagName == null) {
+            let newScale = 1;
+            if (localStorage.getItem('scale')) {
+                newScale = parseFloat(localStorage.getItem('scale'));
+            }
+            if (window.innerWidth < 1200) {
+                newScale = 0.9;
+            }
+            if (window.innerWidth < 992) {
+                newScale = 0.8;
+            }
+            if (window.innerWidth < 768) {
+                newScale = 0.7;
+            }
+            if (window.innerWidth < 576) {
+                newScale = 0.5;
+            }
+            if (newScale !== this.scale) {
+                console.info("adjust zoom to screen wide " + window.innerWidth);
+                this.scale = newScale;
+                console.info('zoom in, scale = ' + this.scale);
+                this.fireEvent('scaleChange', ['in']);
+            }
         }
     }
 

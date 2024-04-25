@@ -105,7 +105,7 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     private Date replaceEndDate;
 
-    @OneToOne
+    @OneToOne(orphanRemoval = true)
     private SignRequestParams favoriteSignRequestParams;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

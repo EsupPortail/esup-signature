@@ -1154,7 +1154,7 @@ export class SignRequestParams extends EventFactory {
     changeSignImage(imageNum) {
         if(imageNum != null && imageNum >= 0) {
             if(this.signImages != null) {
-                if(imageNum > this.signImages.length - 1) {
+                if(imageNum > this.signImages.length - 1 && imageNum !== 999998) {
                     imageNum = 0;
                 }
                 this.signImageNumber = imageNum;
@@ -1171,7 +1171,7 @@ export class SignRequestParams extends EventFactory {
                 } else {
                     let self = this;
                     $.get({
-                        url: "/ws-secure/users/get-default-image",
+                        url: "/ws-secure/users/get-default-image-base64",
                         success: function(data) {
                             img = "data:image/PNG;charset=utf-8;base64, " + data;
                             self.cross.css("background-image", "url('" + img + "')");

@@ -770,7 +770,7 @@ public class SignBookService {
     public SignBook sendForSign(Long dataId, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas, InputStream formReplaceInputStream, String signRequestParamsJsonString, String title, boolean sendEmailAlert) throws EsupSignatureRuntimeException {
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
         if (signRequestParamsJsonString != null) {
-            signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
+            signRequestParamses = signRequestParamsService.getSignRequestParamsesFromJson(signRequestParamsJsonString);
             signRequestParamsRepository.saveAll(signRequestParamses);
         }
         User user = userService.createUserWithEppn(userEppn);
@@ -1117,7 +1117,7 @@ public class SignBookService {
         if (signRequestParamsJsonString == null) {
             signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
         } else {
-            signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
+            signRequestParamses = signRequestParamsService.getSignRequestParamsesFromJson(signRequestParamsJsonString);
         }
         if (signRequest.getCurrentSignType().equals(SignType.nexuSign) || (SignWith.valueOf(signWith).equals(SignWith.nexuCert))) {
             signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
@@ -1591,7 +1591,7 @@ public class SignBookService {
                 }
             }
         }
-        signImages.add(userService.getDefaultImage(authUserEppn));
+        signImages.add(fileService.getBase64Image(userService.getDefaultImage(authUserEppn), "default.png"));
         return signImages;
     }
 

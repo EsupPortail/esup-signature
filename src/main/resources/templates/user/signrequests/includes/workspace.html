@@ -215,13 +215,16 @@
     <div id="spot-modal" data-bs-focus="false" class="modal text-black">
         <div class="modal-dialog">
             <div class="modal-content">
+                <div class="modal-header">
+                    <h4>Valider l'ajout de l'emplacement</h4>
+                </div>
                 <div class="modal-body">
                     <form id="spot-form">
                         <input id="submit-spot" name="submitPostit" type="submit" class="d-none"/>
                         <input id="spotPosX" name="commentPosX" type="hidden"/>
                         <input id="spotPosY" name="commentPosY" type="hidden"/>
                         <input id="spotPageNumber" name="commentPageNumber" type="hidden"/>
-                        <div id="divSpotStepNumber" class="form-group mb-3">
+                        <div id="divSpotStepNumber" class="form-group mb-3" th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 1}">
                             <label for="spotStepNumber">Choisir l’étape concernée</label>
                             <br/>
                             <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
@@ -231,12 +234,12 @@
                                 </th:block>
                             </select>
                         </div>
-                        <textarea id="spotComment" name="comment" class="form-control postitarea float-start mb-2" placeholder="Saisir un commentaire" required></textarea>
-                        <button id="hideSpotButton" type="button" class="btn btn-sm btn-dark float-start" data-bs-dismiss="modal">
-                            <i class="fa-solid fa-times"></i>
+                        <input type="hidden" id="spotStepNumber" name="spotStepNumber" value="1" th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 1}">
+                        <button id="hideSpotButton" type="button" class="btn btn-sm btn-secondary float-start" data-bs-dismiss="modal">
+                            Annuler
                         </button>
-                        <button id="saveSpotButton" th:data-es-signrequest-id="${signRequest.id}" type="button" class="btn btn-sm btn-dark float-end">
-                            <i class="fa-solid fa-save"></i>
+                        <button id="saveSpotButton" th:data-es-signrequest-id="${signRequest.id}" type="button" class="btn btn-sm btn-success float-end">
+                            <i class="fa-solid fa-save"></i> Enregistrer
                         </button>
                     </form>
                 </div>

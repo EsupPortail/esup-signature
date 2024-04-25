@@ -95,9 +95,16 @@ public class UserWsSecureController {
 
     @GetMapping(value = "/get-default-image")
     @ResponseBody
-    public String getDefaultImage(@ModelAttribute("authUserEppn") String authUserEppn) throws IOException {
-        return userService.getDefaultImage(authUserEppn);
+    public ResponseEntity<Void> getDefaultImage(@ModelAttribute("authUserEppn") String authUserEppn, HttpServletResponse response) throws IOException {
+        return getDocumentResponseEntity(response, userService.getDefaultImage(authUserEppn).readAllBytes(), "default.png", "image/png");
     }
+
+    @GetMapping(value = "/get-default-image-base64")
+    @ResponseBody
+    public String getDefaultImageBase64(@ModelAttribute("authUserEppn") String authUserEppn, HttpServletResponse response) throws IOException {
+        return userService.getDefaultImage64(authUserEppn);
+    }
+
 
     @GetMapping(value = "/get-keystore")
     public ResponseEntity<Void> getKeystore(@ModelAttribute("authUserEppn") String authUserEppn, HttpServletResponse response) throws IOException {

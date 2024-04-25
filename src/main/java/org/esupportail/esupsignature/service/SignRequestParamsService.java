@@ -60,7 +60,7 @@ public class SignRequestParamsService {
     }
 
     @Transactional
-    public List<SignRequestParams> getSignRequestParamsFromJson(String signRequestParamsJsonString) {
+    public List<SignRequestParams> getSignRequestParamsesFromJson(String signRequestParamsJsonString) {
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
         try {
             signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
@@ -69,6 +69,17 @@ public class SignRequestParamsService {
             logger.warn("no signRequestParams returned", e);
         }
         return signRequestParamses;
+    }
+
+    @Transactional
+    public SignRequestParams getSignRequestParamsFromJson(String signRequestParamsJsonString) {
+        try {
+            SignRequestParams signRequestParams = objectMapper.readValue(signRequestParamsJsonString, SignRequestParams.class);
+            return signRequestParamsRepository.save(signRequestParams);
+        } catch (JsonProcessingException e) {
+            logger.warn("no signRequestParams returned", e);
+        }
+        return null;
     }
 
     public List<SignRequestParams> scanSignatureFields(InputStream inputStream, int docNumber) throws EsupSignatureIOException {
