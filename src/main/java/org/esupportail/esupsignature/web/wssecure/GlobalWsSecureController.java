@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
@@ -29,7 +30,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Objects;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -56,6 +59,12 @@ public class GlobalWsSecureController {
 
     @Resource
     private WorkflowService workflowService;
+
+    private final GlobalProperties globalProperties;
+
+    public GlobalWsSecureController(GlobalProperties globalProperties) {
+        this.globalProperties = globalProperties;
+    }
 
     @PreAuthorize("@preAuthorizeService.signRequestSign(#signRequestId, #userEppn, #authUserEppn)")
     @ResponseBody
@@ -198,6 +207,9 @@ public class GlobalWsSecureController {
     @PostMapping(value = "/add-docs/{signBookId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> addDocumentToNewSignRequest(@PathVariable("signBookId") Long signBookId,  @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents");
+        if(globalProperties.getPdfOnly() && Arrays.stream(multipartFiles).anyMatch(m -> !Objects.equals(m.getContentType(), "application/pdf"))) {
+            return ResponseEntity.internalServerError().body("Seul les fichiers PDF sont autorisés");
+        }
         try {
             signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn);
             return ResponseEntity.ok().body(signBookId.toString());
