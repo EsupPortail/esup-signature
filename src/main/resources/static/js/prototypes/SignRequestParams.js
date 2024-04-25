@@ -234,6 +234,11 @@ export class SignRequestParams extends EventFactory {
             this.isExtraText = !(this.extraText !== "");
             this.toggleText();
             this.textareaExtra.val(text);
+        } else {
+            this.extraType = true;
+            this.extraName = true;
+            this.extraDate = true;
+            this.isExtraText = true;
         }
         this.addWatermark = !this.addWatermark;
         this.toggleWatermark();
