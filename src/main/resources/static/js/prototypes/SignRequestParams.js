@@ -265,14 +265,6 @@ export class SignRequestParams extends EventFactory {
                 if(self.isSign) {
                     localStorage.setItem("zoom", self.signScale);
                 }
-                self.cross.draggable("widget")._trigger("drag", event, {
-                    position: ui.position,
-                    offset: ui.offset
-                });
-                self.cross.draggable("widget")._trigger("dragStop", event, {
-                    position: ui.position,
-                    offset: ui.offset
-                });
             }
         });
         this.createBorder();

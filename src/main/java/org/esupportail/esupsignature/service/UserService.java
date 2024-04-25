@@ -377,8 +377,9 @@ public class UserService {
             signRequestParams.setyPos(0);
             signRequestParams.setSignWidth(300);
             signRequestParams.setSignHeight(150);
-            authUser.setFavoriteSignRequestParams(signRequestParams);
+
         }
+        authUser.setFavoriteSignRequestParams(signRequestParams);
         if(multipartKeystore != null && !multipartKeystore.isEmpty() && !globalProperties.getDisableCertStorage()) {
             if(authUser.getKeystore() != null) {
                 documentService.delete(authUser.getKeystore());
