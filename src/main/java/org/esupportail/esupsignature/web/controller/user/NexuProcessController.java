@@ -63,7 +63,7 @@ public class NexuProcessController implements Serializable {
 		logger.info("init nexu sign by : " + userEppn + " for signRequest : " + ids);
 		for(Long id : ids) {
 			if(!preAuthorizeService.signRequestSign(id, userEppn, authUserEppn)) throw new EsupSignatureRuntimeException("Vous n'avez pas les droits pour signer ce document");
-			nexuService.deleteNexuSignature(id);
+			nexuService.delete(id);
 		}
 		model.addAttribute("ids", ids);
 		User user = userService.getByEppn(userEppn);
@@ -117,7 +117,7 @@ public class NexuProcessController implements Serializable {
 			} else if (stepStatus.equals(StepStatus.completed)){
 				signBookService.pendingSignRequest(id, null, userEppn, authUserEppn, false);
 			}
-			nexuService.deleteNexuSignature(id);
+			nexuService.delete(id);
 			return ResponseEntity.ok().body(responseJson);
         } catch (EsupSignatureException e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
@@ -129,7 +129,7 @@ public class NexuProcessController implements Serializable {
 	public void error(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids) throws EsupSignatureRuntimeException {
 		for(Long id : ids) {
 			if(preAuthorizeService.signRequestSign(id, userEppn, authUserEppn)) {
-				nexuService.deleteNexuSignature(id);
+				nexuService.delete(id);
 			}
 		}
 	}

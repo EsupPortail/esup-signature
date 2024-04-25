@@ -667,6 +667,7 @@ public class SignRequestService {
 		if(!force && !signRequest.getStatus().equals(SignRequestStatus.deleted) && !signRequest.getRecipientHasSigned().values().stream().allMatch(a -> a.getActionType().equals(ActionType.none))) {
 			throw new EsupSignatureRuntimeException("Suppression impossible, la demande est déjà démarrée");
 		}
+		nexuService.delete(signRequestId);
 		logService.create(signRequestId, signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Suppression définitive", null, "SUCCESS", null, null, null,null, userEppn, userEppn);
 		signRequest.getRecipientHasSigned().clear();
 		signRequestRepository.save(signRequest);
@@ -687,7 +688,6 @@ public class SignRequestService {
 		} else {
 			signBookRepository.delete(signRequest.getParentSignBook());
 		}
-		nexuService.delete(signRequestId);
 		if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.signed) || s.getStatus().equals(SignRequestStatus.completed) || s.getStatus().equals(SignRequestStatus.refused))) {
 			signRequest.getParentSignBook().setStatus(SignRequestStatus.completed);
 		}
