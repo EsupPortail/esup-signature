@@ -41,7 +41,7 @@ public class LdapProperties {
     /**
      * Filtre pour contrôler l’appartenance d’un utilisateur à un groupe, ex : &(uid={0})({1}))
      */
-    private String memberSearchFilter = "&(uid={0})({1}))";
+    private String memberSearchFilter = "(&(uid={0})({1}))";
     /**
      * Le champ dans lequel on trouve le login des utilisateurs récupéré au moment de l’authentification, ex : (uid={0})
      */
