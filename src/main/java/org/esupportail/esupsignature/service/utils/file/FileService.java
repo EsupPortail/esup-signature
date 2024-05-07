@@ -377,6 +377,39 @@ public class FileService {
 		}
 	}
 
+	public InputStream getDefaultParaphe(String name, String firstname, String email, boolean forPrint) throws IOException {
+		float factor = 1f;
+		if(forPrint) {
+			factor = globalProperties.getFixFactor();
+		}
+		BufferedImage bufferedImage = new BufferedImage(Math.round(600 / factor), Math.round(300 / factor), BufferedImage.TYPE_INT_ARGB);
+		Graphics2D graphics2D = bufferedImage.createGraphics();
+		graphics2D.setColor(new Color(0f,0f,0f,0f ));
+		Rectangle rect = new Rectangle();
+		rect.setRect(0, 0, 600 / factor, 300 / factor);
+		graphics2D.fillRect(0, 0, Math.round(600 / factor), Math.round(300 / factor));
+		setQualityParams(graphics2D);
+		String word = (firstname.charAt(0)  + "" + name.charAt(0)).toUpperCase();
+		try {
+			Font font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/Signature.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(12f);
+			int fontSize = findFontSize(word, Math.round(250 / factor), font);
+			font = font.deriveFont((float) fontSize);
+			graphics2D.setFont(font);
+			graphics2D.setColor(Color.BLACK);
+			FontMetrics fm = graphics2D.getFontMetrics();
+			int y = rect.y + ((rect.height - fm.getHeight()) / 2) + fm.getAscent();
+			int lineHeight = Math.round((float) fontSize / 1.5f);
+			graphics2D.drawString(word, 250 / factor, y - lineHeight);
+			graphics2D.dispose();
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			ImageIO.write(bufferedImage, "png", outputStream);
+			return new ByteArrayInputStream(outputStream.toByteArray());
+		} catch (FontFormatException e) {
+			logger.warn("unable to get font");
+			throw new EsupSignatureRuntimeException("unable to get font", e);
+		}
+	}
+
 	private int findFontSize(String word, int maxWidth, Font font) {
 		int maxSize = 80;
 		Graphics graphics = createGraphics();

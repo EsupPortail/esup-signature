@@ -1591,7 +1591,8 @@ public class SignBookService {
                 }
             }
         }
-        signImages.add(fileService.getBase64Image(userService.getDefaultImage(authUserEppn), "default.png"));
+        signImages.add(fileService.getBase64Image(userService.getDefaultImage(authUserEppn), "default-image.png"));
+        signImages.add(fileService.getBase64Image(userService.getDefaultParaphe(authUserEppn), "default-paraphe.png"));
         return signImages;
     }
 

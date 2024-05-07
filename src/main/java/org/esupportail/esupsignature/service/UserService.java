@@ -189,7 +189,7 @@ public class UserService {
                 user.setKeystoreFileName(user.getKeystore().getFileName());
             }
             user.setSignImagesIds(user.getSignImages().stream().map(Document::getId).collect(Collectors.toList()));
-            if (user.getDefaultSignImageNumber() == null || user.getDefaultSignImageNumber() < 0 || user.getDefaultSignImageNumber() >= user.getSignImages().size()) {
+            if (user.getDefaultSignImageNumber() == null || user.getDefaultSignImageNumber() < 0 || (user.getDefaultSignImageNumber() != 999997 && user.getDefaultSignImageNumber() >= user.getSignImages().size())) {
                 user.setDefaultSignImageNumber(999998);
             }
             return user;
@@ -855,6 +855,17 @@ public class UserService {
     @Transactional
     public String getDefaultImage64(String eppn) throws IOException {
         return fileService.getBase64Image(getDefaultImage(eppn), "default");
+    }
+
+    @Transactional
+    public InputStream getDefaultParaphe(String eppn) throws IOException {
+        User user = getByEppn(eppn);
+        return fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail(), false);
+    }
+
+    @Transactional
+    public String getDefaultParaphe64(String eppn) throws IOException {
+        return fileService.getBase64Image(getDefaultParaphe(eppn), "default");
     }
 
     @Transactional

@@ -90,7 +90,7 @@ public class UserController {
 						 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
 		if(returnToHomeAfterSign == null) returnToHomeAfterSign = false;
 		SignRequestParams signRequestParams = null;
-		if(!saveSignRequestParams) {
+		if(saveSignRequestParams == null || !saveSignRequestParams) {
 			signRequestParams = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
 		}
 		userService.updateUser(authUserEppn, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, signRequestParams, returnToHomeAfterSign);

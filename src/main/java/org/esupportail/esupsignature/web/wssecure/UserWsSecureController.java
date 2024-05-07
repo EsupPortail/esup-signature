@@ -101,10 +101,21 @@ public class UserWsSecureController {
 
     @GetMapping(value = "/get-default-image-base64")
     @ResponseBody
-    public String getDefaultImageBase64(@ModelAttribute("authUserEppn") String authUserEppn, HttpServletResponse response) throws IOException {
+    public String getDefaultImageBase64(@ModelAttribute("authUserEppn") String authUserEppn) throws IOException {
         return userService.getDefaultImage64(authUserEppn);
     }
 
+    @GetMapping(value = "/get-default-paraphe")
+    @ResponseBody
+    public ResponseEntity<Void> getDefaultParaphe(@ModelAttribute("authUserEppn") String authUserEppn, HttpServletResponse response) throws IOException {
+        return getDocumentResponseEntity(response, userService.getDefaultParaphe(authUserEppn).readAllBytes(), "default.png", "image/png");
+    }
+
+    @GetMapping(value = "/get-default-paraphe-base64")
+    @ResponseBody
+    public String getDefaultParapheBase64(@ModelAttribute("authUserEppn") String authUserEppn) throws IOException {
+        return userService.getDefaultParaphe64(authUserEppn);
+    }
 
     @GetMapping(value = "/get-keystore")
     public ResponseEntity<Void> getKeystore(@ModelAttribute("authUserEppn") String authUserEppn, HttpServletResponse response) throws IOException {
