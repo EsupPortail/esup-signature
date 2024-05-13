@@ -105,7 +105,7 @@ public class DocumentService {
 		try {
 			URI baseURI = new URI(path.replace(" ", "%20")).normalize();
 			URI resolvedURI = baseURI.resolve(subPath.replace(" ", "%20")).normalize();
-			return exportDocument(fsAccessFactoryService.getPathIOType(path), path + resolvedURI, signedFile, name);
+			return exportDocument(fsAccessFactoryService.getPathIOType(path), path + resolvedURI.getPath(), signedFile, name);
 		} catch (EsupSignatureRuntimeException | URISyntaxException e) {
 			logger.error(e.getMessage());
 		}
