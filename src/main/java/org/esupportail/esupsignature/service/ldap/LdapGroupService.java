@@ -173,10 +173,9 @@ public class LdapGroupService implements GroupService {
     }
 
     private void logQuery(LdapQuery ldapQuery) {
-        StringBuilder queryStringBuilder = new StringBuilder();
-        queryStringBuilder.append("Base: ").append(ldapQuery.base()).append("\n");
-        queryStringBuilder.append("Filtre: ").append(ldapQuery.filter().encode()).append("\n");
-        queryStringBuilder.append("Attributs: ").append(ldapQuery.attributes()).append("\n");
-        logger.info("group : " + queryStringBuilder);
+        String queryStringBuilder = "Base: " + ldapQuery.base() + ", " +
+                "Filtre: " + ldapQuery.filter().encode() + ", " +
+                "Attributs: " + Arrays.toString(ldapQuery.attributes()) + ", ";
+        logger.debug("group : " + queryStringBuilder);
     }
 }
