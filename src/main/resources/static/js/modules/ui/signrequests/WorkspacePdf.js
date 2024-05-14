@@ -210,9 +210,9 @@ export class WorkspacePdf {
                 signSpaceDiv.on("click", e => this.addSign(i));
                 if(currentSignRequestParams.ready == null || !currentSignRequestParams.ready) {
                     if(this.signType !== "visa") {
-                        signSpaceDiv.html("Cliquez ici pour insérer votre signature<br>" + currentSignRequestParams.comment);
+                        signSpaceDiv.html("Cliquez ici pour insérer votre signature");
                     } else {
-                        signSpaceDiv.html("Cliquez ici pour insérer votre visa<br>" + currentSignRequestParams.comment);
+                        signSpaceDiv.html("Cliquez ici pour insérer votre visa");
                     }
                 }
                 if (currentSignRequestParams.ready) {
