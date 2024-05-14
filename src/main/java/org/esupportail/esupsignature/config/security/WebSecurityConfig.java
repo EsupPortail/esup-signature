@@ -96,7 +96,7 @@ public class WebSecurityConfig {
 
 	@Bean
 	@Order(1)
-	@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base", "security.cas.service"})
+	@ConditionalOnProperty({"spring.ldap.base", "security.cas.service"})
 	public CasSecurityServiceImpl casSecurityServiceImpl() {
 		if(ldapContextSource!= null && ldapContextSource.getUserDn() != null) {
 			CasSecurityServiceImpl casSecurityService = new CasSecurityServiceImpl();

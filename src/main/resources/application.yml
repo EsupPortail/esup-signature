@@ -146,12 +146,14 @@ ldap:
     group-search-base: ou=groups
     group-search-filter: member={0}
     all-groups-search-filter: cn=*{0}
+    all-aliases-search-filter: (mail={0})
     user-id-search-filter: (uid={0})
     user-eppn-search-filter: (eduPersonPrincipalName={0})
     user-mail-search-filter: (mail={0})
     ou-search-filter: (supannCodeEntite={0})
     member-search-filter: (&(uid={0})({1}))
     members-of-group-search-filter: memberOf=cn={0},ou=groups,dc=univ-ville,dc=fr
+    eppn-left-part-search-filter:
     mapping-filters-groups:
         student : "(eduPersonAffiliation:=student)"
         staff : "(eduPersonAffiliation:=staff)"

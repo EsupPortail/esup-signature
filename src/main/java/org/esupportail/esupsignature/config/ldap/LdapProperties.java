@@ -3,6 +3,8 @@ package org.esupportail.esupsignature.config.ldap;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.util.StringUtils;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,47 +15,47 @@ public class LdapProperties {
     /**
      * Base de recherche des utilisateurs, ex : ou=people
      */
-    private String searchBase = "ou=people";
+    private String searchBase = "";
     /**
      * Filtre de recherche des utilisateurs
      */
-    private String usersSearchFilter = "(&(|(displayName={0}*)(cn={0}*)(uid={0})(mail={0}*))(mail=*))";
+    private String usersSearchFilter;
     /**
      * Base de recherche des groupes, ex : ou=groups
      */
-    private String groupSearchBase = "ou=groups";
+    private String groupSearchBase;
     /**
      * Filtre utilisé pour rechercher les groupes d’un utilisateur, ex : member={0}
      */
-    private String groupSearchFilter = "member={0}";
+    private String groupSearchFilter;
     /**
      * Filtre utilisé pour rechercher des groupes, ex : cn=*{0}
      */
-    private String allGroupsSearchFilter = "cn=*{0}";
+    private String allGroupsSearchFilter;
     /**
      * Filtre utilisé pour rechercher des aliases, ex : (mail=*{0})
      */
-    private String allAliasesSearchFilter = "(mail={0})";
+    private String allAliasesSearchFilter;
     /**
      * Filtre utilisé pour retrouver les membres d’un groupe, ex : memberOf=cn={0},ou=groups,dc=univ-ville,dc=fr
      */
-    private String membersOfGroupSearchFilter = "memberOf=cn={0},ou=groups,dc=univ-ville,dc=fr";
+    private String membersOfGroupSearchFilter;
     /**
      * Filtre pour contrôler l’appartenance d’un utilisateur à un groupe, ex : &(uid={0})({1}))
      */
-    private String memberSearchFilter = "(&(uid={0})({1}))";
+    private String memberSearchFilter;
     /**
      * Le champ dans lequel on trouve le login des utilisateurs récupéré au moment de l’authentification, ex : (uid={0})
      */
-    private String userIdSearchFilter = "(uid={0})";
+    private String userIdSearchFilter;
     /**
      * Le champ dans lequel on trouve l'eppn des utilisateurs c'est ce champ qui sera utilisé comme identifiant unique en base, ex : (eduPersonPrincipalName={0})
      */
-    private String userEppnSearchFilter = "(eduPersonPrincipalName={0})";
+    private String userEppnSearchFilter;
     /**
      * Le champ dans lequel on trouve l'email des utilisateurs , ex : (mail={0})
      */
-    private String userMailSearchFilter = "(mail={0})";
+    private String userMailSearchFilter;
     /**
      * Le champ dans lequel on trouve la partie gauche de l’EPPN (par défaut idem userIdSearchFilter)
      */
@@ -61,27 +63,27 @@ public class LdapProperties {
     /**
      * Requete pour trouver les OU des utilisateurs (utile seulement pour le pré-remplissage de l'affectation dans les formulaires)
      */
-    private String ouSearchFilter = "(supannCodeEntite={0})";
+    private String ouSearchFilter;
     /**
      * Object classes correspondant aux utilisateurs (un "ou" est appliqué aux valeurs de cette liste)
      */
-    private List<String> userObjectClasses = List.of("inetOrgPerson");
+    private List<String> userObjectClasses;
     /**
      * Object classes correspondant aux groupes (un "ou" est appliqué aux valeurs de cette liste)
      */
-    private List<String> groupObjectClasses = List.of("groupOfNames");
+    private List<String> groupObjectClasses;
     /**
      * Object classes correspondant aux OU (un "ou" est appliqué aux valeurs de cette liste)
      */
-    private List<String> ouObjectClasses = List.of("organizationalUnit");
+    private List<String> ouObjectClasses;
     /**
      * Object classes correspondant aux alias (un "ou" est appliqué aux valeurs de cette liste)
      */
-    private List<String> aliasObjectClasses = List.of("nisMailAlias");
+    private List<String> aliasObjectClasses;
 
     @PostConstruct
     private void initEppnLeftPartSearchFilter() {
-        if(eppnLeftPartSearchFilter == null) {
+        if(!StringUtils.hasText(eppnLeftPartSearchFilter)) {
             eppnLeftPartSearchFilter = userIdSearchFilter;
         }
     }
