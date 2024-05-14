@@ -383,14 +383,24 @@ public class PdfService {
             String producer = "esup-signature v." + globalProperties.getVersion();
 
             PDDocumentInformation info = pdDocument.getDocumentInformation();
-            info.setTitle(signRequest.getTitle() + globalProperties.getSignedSuffix());
-            info.setSubject(fileName);
-            info.setCreator(signRequest.getCreateBy().getEppn());
-            info.setProducer(producer);
+            if(!StringUtils.hasText(info.getTitle())) {
+                info.setTitle(signRequest.getTitle() + globalProperties.getSignedSuffix());
+            }
+            if(!StringUtils.hasText(info.getSubject())) {
+                info.setSubject(fileName);
+            }
+            if(!StringUtils.hasText(info.getCreator())) {
+                info.setCreator(signRequest.getCreateBy().getEppn());
+            }
+            if(!StringUtils.hasText(info.getProducer())) {
+                info.setProducer(producer);
+            }
             if (info.getCreationDate() == null) {
                 info.setCreationDate(Calendar.getInstance());
             }
-            info.setModificationDate(Calendar.getInstance());
+            if (info.getModificationDate() == null) {
+                info.setModificationDate(Calendar.getInstance());
+            }
 
             PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
 
