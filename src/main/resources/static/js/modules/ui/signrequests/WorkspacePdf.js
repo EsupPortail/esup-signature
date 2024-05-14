@@ -582,24 +582,26 @@ export class WorkspacePdf {
                         signDiv.css("font-size", 12 * self.pdfViewer.scale);
                     }
                     spotDiv.unbind('mouseup');
-                    spotDiv.on('mouseup', function (e) {
-                        e.stopPropagation();
-                        bootbox.confirm("Supprimer cet emplacement de signature ?", function (result) {
-                            if (result) {
-                                let url = "/ws-secure/global/delete-comment/" + self.signRequestId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
-                                if(self.currentSignType === "form") {
-                                    url = "/admin/forms/delete-spot/" + self.formId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
-                                }
-                                $.ajax({
-                                    method: 'DELETE',
-                                    url: url,
-                                    success: function () {
-                                        spotDiv.remove();
+                    if(signDiv.attr("data-es-delete")) {
+                        spotDiv.on('mouseup', function (e) {
+                            e.stopPropagation();
+                            bootbox.confirm("Supprimer cet emplacement de signature ?", function (result) {
+                                if (result) {
+                                    let url = "/ws-secure/global/delete-comment/" + self.signRequestId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
+                                    if (self.currentSignType === "form") {
+                                        url = "/admin/forms/delete-spot/" + self.formId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
                                     }
-                                });
-                            }
+                                    $.ajax({
+                                        method: 'DELETE',
+                                        url: url,
+                                        success: function () {
+                                            spotDiv.remove();
+                                        }
+                                    });
+                                }
+                            });
                         });
-                    });
+                    }
                 }
                 index++;
             }

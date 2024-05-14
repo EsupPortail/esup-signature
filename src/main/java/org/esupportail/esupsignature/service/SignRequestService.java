@@ -845,7 +845,8 @@ public class SignRequestService {
 	@Transactional
 	public Long addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, String postit, Integer spotStepNumber, String authUserEppn, String userEppn) {
 		SignRequest signRequest = getById(id);
-		if(spotStepNumber == null || userEppn.equals(signRequest.getCreateBy().getEppn())) {
+		User user = userService.getByEppn(userEppn);
+		if(spotStepNumber == null || signRequest.getCreateBy().equals(user) || signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail())) {
 			if (spotStepNumber != null && spotStepNumber > 0) {
 				SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY, 150, 75);
 				int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);

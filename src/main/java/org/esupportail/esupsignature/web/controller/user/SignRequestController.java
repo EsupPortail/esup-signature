@@ -363,21 +363,6 @@ public class SignRequestController {
         }
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")
-    @PostMapping(value = "/postit/{id}")
-    public String postit(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                                        @RequestParam(value = "comment", required = false) String comment,
-                                        @RequestParam(value = "postit", required = false) String postit, Model model) {
-        Long commentId = signRequestService.addComment(id, comment, null, null, null, postit, null, authUserEppn, userEppn);
-        if(commentId != null) {
-            model.addAttribute("message", new JsMessage("success", "Post-it ajouté"));
-        } else {
-            model.addAttribute("message", new JsMessage("error", "Problème lors de l'ajout du post-it"));
-        }
-        return "redirect:/user/signrequests/" + id;
-
-    }
-
     @PreAuthorize("@preAuthorizeService.commentCreator(#postitId, #userEppn)")
     @PutMapping(value = "/comment/{signRequestId}/update/{postitId}")
     public String commentUpdate(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
@@ -397,6 +382,21 @@ public class SignRequestController {
         signRequestService.deleteComment(signRequestId, postitId);
         redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Postit supprimé"));
         return "redirect:/user/signrequests/" + signRequestId;
+    }
+    
+    @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")
+    @PostMapping(value = "/postit/{id}")
+    public String postit(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+                                        @RequestParam(value = "comment", required = false) String comment,
+                                        @RequestParam(value = "postit", required = false) String postit, Model model) {
+        Long commentId = signRequestService.addComment(id, comment, null, null, null, postit, null, authUserEppn, userEppn);
+        if(commentId != null) {
+            model.addAttribute("message", new JsMessage("success", "Post-it ajouté"));
+        } else {
+            model.addAttribute("message", new JsMessage("error", "Problème lors de l'ajout du post-it"));
+        }
+        return "redirect:/user/signrequests/" + id;
+
     }
 
     @PreAuthorize("@preAuthorizeService.signBookSendOtp(#id, #authUserEppn)")
