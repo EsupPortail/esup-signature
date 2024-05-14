@@ -53,8 +53,16 @@ public class LdapPersonService {
             objectClasses.append("(objectClass=").append(objectClass).append(")");
         }
         formattedFilter = "(&(|" + objectClasses + ")" + formattedFilter + ")";
-        logger.debug(formattedFilter);
         LdapQuery ldapQuery = LdapQueryBuilder.query().countLimit(10).base(ldapProperties.getSearchBase()).filter(formattedFilter);
+        logQuery(ldapQuery);
         return ldapTemplate.search(ldapQuery, new PersonLdapAttributesMapper());
+    }
+
+    private void logQuery(LdapQuery ldapQuery) {
+        StringBuilder queryStringBuilder = new StringBuilder();
+        queryStringBuilder.append("Base: ").append(ldapQuery.base()).append("\n");
+        queryStringBuilder.append("Filtre: ").append(ldapQuery.filter().encode()).append("\n");
+        queryStringBuilder.append("Attributs: ").append(ldapQuery.attributes()).append("\n");
+        logger.info("person : " + queryStringBuilder);
     }
 }
