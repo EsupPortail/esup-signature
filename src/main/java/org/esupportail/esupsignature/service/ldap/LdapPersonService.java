@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -59,10 +60,9 @@ public class LdapPersonService {
     }
 
     private void logQuery(LdapQuery ldapQuery) {
-        StringBuilder queryStringBuilder = new StringBuilder();
-        queryStringBuilder.append("Base: ").append(ldapQuery.base()).append("\n");
-        queryStringBuilder.append("Filtre: ").append(ldapQuery.filter().encode()).append("\n");
-        queryStringBuilder.append("Attributs: ").append(ldapQuery.attributes()).append("\n");
-        logger.info("person : " + queryStringBuilder);
+        String queryStringBuilder = "Base: " + ldapQuery.base() + ", " +
+                "Filtre: " + ldapQuery.filter().encode() + ", " +
+                "Attributs: " + Arrays.toString(ldapQuery.attributes()) + ", ";
+        logger.debug("person : " + queryStringBuilder);
     }
 }
