@@ -1716,7 +1716,7 @@ public class SignBookService {
             for(SignRequest signRequest : signBook.getSignRequests()) {
                 Document signedFile = signRequest.getLastSignedDocument();
                 if(signedFile != null) {
-                    String subPath = "/" + signRequest.getParentSignBook().getWorkflowName() + "/";
+                    String subPath = "/" + signRequest.getParentSignBook().getWorkflowName().replaceAll("[^a-zA-Z0-9]", "_") + "/";
                     if (signRequest.getExportedDocumentURI() == null) {
                         String name = generateName(signBookId, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), true);
                         String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath, signedFile.getId() + "_" + name);
