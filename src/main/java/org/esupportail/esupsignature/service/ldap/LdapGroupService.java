@@ -94,10 +94,11 @@ public class LdapGroupService implements GroupService {
                 });
         List<String> groups = new ArrayList<>();
         if(!dns.isEmpty()) {
+            LdapQuery groupSearchQuery;
             try {
                 String userDn = dns.get(0);
                 String formattedGroupSearchFilter = MessageFormat.format(ldapProperties.getGroupSearchFilter(), userDn, username);
-                LdapQuery groupSearchQuery = LdapQueryBuilder.query().attributes("cn").base(ldapProperties.getGroupSearchBase()).filter(formattedGroupSearchFilter);
+                groupSearchQuery = LdapQueryBuilder.query().attributes("cn").base(ldapProperties.getGroupSearchBase()).filter(formattedGroupSearchFilter);
                 logQuery(groupSearchQuery);
                 groups = ldapTemplate.search(groupSearchQuery, (ContextMapper<String>) ctx -> {
                     DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
