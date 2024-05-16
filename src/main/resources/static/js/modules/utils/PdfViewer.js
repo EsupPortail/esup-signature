@@ -11,7 +11,6 @@ export class PdfViewer extends EventFactory {
         this.url= url;
         this.initialOffset = 0;
         this.pages = [];
-        this.annotationRendered = 0;
         this.signable = signable;
         this.editable = editable;
         this.currentStepNumber = currentStepNumber;
@@ -27,7 +26,6 @@ export class PdfViewer extends EventFactory {
             });
         }
         this.disableAllFields = disableAllFields;
-        this.pdfPageView = null;
         this.scale = 1;
         if(localStorage.getItem('scale')) {
             this.scale = parseFloat(localStorage.getItem('scale'));
@@ -39,7 +37,6 @@ export class PdfViewer extends EventFactory {
         this.page = null;
         this.dataFields = jsFields;
         this.savedFields = new Map();
-        this.pdfFields = [];
         this.events = {};
         this.rotation = 0;
         this.renderedPages = 0
@@ -47,7 +44,7 @@ export class PdfViewer extends EventFactory {
         let self = this;
         $(document).ready(function() {
             if (!pdfjsLib || !Promise.withResolvers) {
-                bootbox.alert("Votre navigateur ne support pas pdfJs", function () {
+                bootbox.alert("Votre navigateur ne support pas pdfJs pour l'affichage des PDF.<br>Version minimales : Firefox 121, Chrome 119, Safari 17.4", function () {
                     document.location = "https://www.mozilla.org/fr/firefox/new/"
                 });
             } else {
@@ -205,7 +202,6 @@ export class PdfViewer extends EventFactory {
         this.numPages = this.pdfDoc.numPages;
         document.getElementById('page_count').textContent = this.pdfDoc.numPages;
         this.renderedPages = 0;
-        this.annotationRendered = 0;
         this.pages = [];
         this.render();
         this.refreshTools();
@@ -471,7 +467,6 @@ export class PdfViewer extends EventFactory {
     }
 
     renderPdfFormWithFields(items) {
-        this.pdfFields = items;
         let datePickerIndex = 40;
         console.debug("debug - " + "rending pdfForm items");
         let signFieldNumber = 0;
