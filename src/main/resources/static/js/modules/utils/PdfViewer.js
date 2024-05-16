@@ -44,8 +44,17 @@ export class PdfViewer extends EventFactory {
         this.rotation = 0;
         this.renderedPages = 0
         this.initListeners();
-        pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
+        let self = this;
+        $(document).ready(function() {
+            if (!pdfjsLib || !Promise.withResolvers) {
+                bootbox.alert("Votre navigateur ne support pas pdfJs", function () {
+                    document.location = "https://www.mozilla.org/fr/firefox/new/"
+                });
+            } else {
 
+                pdfjsLib.getDocument(self.url).promise.then(pdf => self.startRender(pdf));
+            }
+        });
     }
 
     initListeners() {

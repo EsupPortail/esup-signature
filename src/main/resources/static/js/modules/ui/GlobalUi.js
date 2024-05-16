@@ -198,7 +198,7 @@ export class GlobalUi {
             OK : 'Fermer',
             CANCEL : 'Annuler',
             CONFIRM : 'Confirmer'
-        })
+        });
     }
 
     checkBrowser() {
