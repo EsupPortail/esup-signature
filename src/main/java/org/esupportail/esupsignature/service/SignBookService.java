@@ -416,9 +416,6 @@ public class SignBookService {
         if(user.equals(signBook.getCreateBy())) {
             Workflow workflow = workflowRepository.findById(workflowId).get();
             signBook.getLiveWorkflow().setWorkflow(workflow);
-            for(Target target : workflow.getTargets()) {
-                signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetUri()));
-            }
         }
     }
 

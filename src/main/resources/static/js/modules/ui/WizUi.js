@@ -451,6 +451,7 @@ export class WizUi {
             step.changeable = $('#changeable-' + i).is(':checked');
             step.autoSign = $('#autoSign-' + i).is(':checked');
             step.signType = $('#signType-' + i).val();
+            step.targetEmails = $('#targetEmailsSelect').val();
             step.forceAllSign = $('input[name="forceAllSign"]').is(":checked");
             steps.push(step);
         });

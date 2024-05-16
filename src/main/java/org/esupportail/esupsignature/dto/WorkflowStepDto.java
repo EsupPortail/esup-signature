@@ -47,6 +47,8 @@ public class WorkflowStepDto {
 
 	private Integer maxRecipients = 99;
 
+	private List<String> targetEmails = new ArrayList<>();
+
 	public WorkflowStepDto() {
 	}
 
@@ -216,5 +218,13 @@ public class WorkflowStepDto {
 
 	public void setMaxRecipients(Integer maxRecipients) {
 		this.maxRecipients = maxRecipients;
+	}
+
+	public List<String> getTargetEmails() {
+		return targetEmails;
+	}
+
+	public void setTargetEmails(List<String> targetEmails) {
+		this.targetEmails = targetEmails;
 	}
 }
