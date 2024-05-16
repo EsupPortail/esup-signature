@@ -585,7 +585,7 @@ public class PdfService {
 
     public boolean isPdfAComplient(byte[] pdfFile) throws EsupSignatureRuntimeException {
         List<String> result = checkPDFA(pdfFile, false);
-        if (result.size() > 0 && "success".equals(result.get(0))) {
+        if (!result.isEmpty() && "success".equals(result.get(0))) {
             return true;
         }
         return false;

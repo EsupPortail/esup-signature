@@ -21,6 +21,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
+import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +77,9 @@ public class SignRequestController {
 
     @Resource
     private WorkflowService workflowService;
+
+    @Resource
+    private PdfService pdfService;
 
     @Resource
     private SignBookService signBookService;
@@ -200,8 +204,10 @@ public class SignRequestController {
         }
         List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
         model.addAttribute("logs", logs);
+        model.addAttribute("pdfaCheck", toSignDocuments.get(0).getPdfaCheck());
         return "user/signrequests/show";
     }
+
 
     @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
     @PostMapping(value = "/refuse/{id}")

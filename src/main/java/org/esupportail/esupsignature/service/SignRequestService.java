@@ -428,10 +428,12 @@ public class SignRequestService {
 		return signRequest;
 	}
 
+	@Transactional
 	public void addDocsToSignRequest(SignRequest signRequest, boolean scanSignatureFields, int docNumber, List<SignRequestParams> signRequestParamses, MultipartFile... multipartFiles) throws EsupSignatureIOException {
 		for(MultipartFile multipartFile : multipartFiles) {
 			try {
 				byte[] bytes = multipartFile.getInputStream().readAllBytes();
+				String pdfaCheck = smallCheckPDFA(bytes);
 				String contentType = multipartFile.getContentType();
 				InputStream inputStream = new ByteArrayInputStream(bytes);
 				if (multipartFiles.length == 1 && bytes.length > 0) {
@@ -456,6 +458,7 @@ public class SignRequestService {
 						inputStream = new ByteArrayInputStream(bytes);
 					}
 					Document document = documentService.createDocument(inputStream, signRequest.getCreateBy(), multipartFile.getOriginalFilename(), contentType);
+					document.setPdfaCheck(pdfaCheck);
 					signRequest.getOriginalDocuments().add(document);
 					document.setParentId(signRequest.getId());
 				} else {
@@ -1152,4 +1155,23 @@ public class SignRequestService {
 		SignRequest signRequest = getById(signRequestId);
 		signRequest.getViewedBy().add(user);
 	}
+
+	@Transactional
+	public String smallCheckPDFA(Long signRequestId) throws IOException {
+		SignRequest signRequest = getById(signRequestId);
+		byte[] bytes = signRequest.getOriginalDocuments().get(0).getInputStream().readAllBytes();
+		return smallCheckPDFA(bytes);
+	}
+
+	private String smallCheckPDFA(byte[] bytes) {
+		List<String> results = pdfService.checkPDFA(bytes, true);
+		StringBuilder pdfaCheck = new StringBuilder();
+		for(String result : results) {
+			if(result.startsWith("6") && !pdfaCheck.toString().contains(result.substring(0, 5))) {
+				pdfaCheck.append(result, 0, 5).append(",");
+			}
+		}
+		return pdfaCheck.toString();
+	}
+
 }

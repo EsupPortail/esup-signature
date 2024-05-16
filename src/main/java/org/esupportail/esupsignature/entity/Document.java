@@ -32,6 +32,8 @@ public class Document {
 
     private String contentType;
 
+    private String pdfaCheck = "";
+
     @ManyToOne
     private User createBy;
 
@@ -96,6 +98,15 @@ public class Document {
 
 	public void setContentType(String contentType) {
         this.contentType = contentType;
+    }
+
+    public String getPdfaCheck() {
+        if(pdfaCheck == null) return "";
+        return pdfaCheck;
+    }
+
+    public void setPdfaCheck(String pdfaCheck) {
+        this.pdfaCheck = pdfaCheck;
     }
 
     public User getCreateBy() {
