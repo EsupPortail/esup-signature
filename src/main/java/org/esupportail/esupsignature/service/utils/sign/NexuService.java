@@ -208,14 +208,14 @@ public class NexuService {
 
 	@Transactional
 	public NexuSignature getNexuSignature(Long id) {
-		return nexuSignatureRepository.findBySignRequestId(id);
+		return nexuSignatureRepository.findBySignRequestId(id).get(0);
 	}
 
 	@Transactional
-	public void deleteNexuSignature(Long id) {
+	public void delete(Long id) {
 		SignRequest signRequest = signRequestRepository.findById(id).orElseThrow();
-		NexuSignature nexuSignature = nexuSignatureRepository.findBySignRequestId(id);
-		if(nexuSignature != null) {
+		List<NexuSignature> nexuSignatures = nexuSignatureRepository.findBySignRequestId(id);
+		for(NexuSignature nexuSignature : nexuSignatures) {
 			signRequest.getSignedDocuments().removeAll(nexuSignature.getDocumentToSign());
 			nexuSignatureRepository.delete(nexuSignature);
 		}
@@ -335,10 +335,4 @@ public class NexuService {
 		return extendedDoc;
 	}
 
-	public void delete(Long signRequestId) {
-		NexuSignature nexuSignature = nexuSignatureRepository.findBySignRequestId(signRequestId);
-		if(nexuSignature != null) {
-			nexuSignatureRepository.delete(nexuSignature);
-		}
-	}
 }

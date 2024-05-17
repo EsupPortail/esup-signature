@@ -45,7 +45,7 @@ public class NexuSignature {
 
 	private byte[] signatureValue;
 
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToMany(cascade = CascadeType.DETACH, fetch = FetchType.LAZY)
 	private List<Document> documentToSign = new ArrayList<>();
 
 	public Long getId() {

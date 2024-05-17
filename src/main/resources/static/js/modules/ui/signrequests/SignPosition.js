@@ -39,7 +39,7 @@ export class SignPosition extends EventFactory {
 
     initListeners() {
         let self = this;
-        $(window).on('scroll', function() {
+        $(window).on('scroll', function(e) {
             self.scrollTop = $(this).scrollTop();
         });
     }

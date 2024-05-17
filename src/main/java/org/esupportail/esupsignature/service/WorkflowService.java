@@ -183,7 +183,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public Workflow addStepToWorkflow(Long id, SignType signType, Boolean allSignToComplete, Boolean changeable, WorkflowStepDto step, User user) throws EsupSignatureRuntimeException {
+    public Workflow addStepToWorkflow(Long id, SignType signType, Boolean allSignToComplete, Boolean changeable, WorkflowStepDto step, User user, boolean recipientsRequired) throws EsupSignatureRuntimeException {
         Workflow workflow;
         if (id != null && id != -1) {
             workflow = getById(id);
@@ -191,14 +191,10 @@ public class WorkflowService {
             workflow = createWorkflow(user);
         }
         if(workflow.getCreateBy().getEppn().equals(user.getEppn())) {
-            if(step.getRecipients() != null && !step.getRecipients().isEmpty()) {
-                logger.info("add new workflow step to Workflow " + workflow.getId());
-                WorkflowStep workflowStep = workflowStepService.createWorkflowStep("", allSignToComplete, signType, changeable, step.getRecipients().toArray(RecipientWsDto[]::new));
-                workflow.getWorkflowSteps().add(workflowStep);
-                userPropertieService.createUserPropertieFromMails(user, Collections.singletonList(step));
-            } else {
-                throw new EsupSignatureRuntimeException("recipient must not be empty");
-            }
+            logger.info("add new workflow step to Workflow " + workflow.getId());
+            WorkflowStep workflowStep = workflowStepService.createWorkflowStep("", allSignToComplete, signType, changeable, step.getRecipients().toArray(RecipientWsDto[]::new));
+            workflow.getWorkflowSteps().add(workflowStep);
+            userPropertieService.createUserPropertieFromMails(user, Collections.singletonList(step));
         }
         return workflow;
     }

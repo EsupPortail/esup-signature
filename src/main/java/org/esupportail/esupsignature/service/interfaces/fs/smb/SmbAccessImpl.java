@@ -194,7 +194,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 				newFile = new SmbFile(root.getPath() + ppath + title, this.cifsContext);
 			}
 			open();
-			logger.info("newFile : " + newFile.toString());
+			logger.info("newFile : " + newFile);
 			if ("folder".equals(type)) {
 				newFile.mkdir();
 				logger.info("folder " + title + " created");

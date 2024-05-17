@@ -151,7 +151,11 @@ public class PdfService {
                 signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
             } else if (signRequestParams.getAddExtra()) {
                 if(signRequestParams.getSignImageNumber() == null || signRequestParams.getSignImageNumber() >= user.getSignImages().size()) {
-                    signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
+                    if(signRequestParams.getSignImageNumber() >= user.getSignImages().size() + 1) {
+                        signImage = fileService.addTextToImage(fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
+                    } else {
+                        signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
+                    }
                 } else {
                     signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType, user, newDate, otp);
                 }
@@ -159,7 +163,11 @@ public class PdfService {
                 if(user.getSignImages().size() >= signRequestParams.getSignImageNumber() + 1) {
                     signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
                 } else {
-                    signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
+                    if(signRequestParams.getSignImageNumber() >= user.getSignImages().size() + 1) {
+                        signImage = fileService.addTextToImage(fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
+                    } else {
+                        signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
+                    }
                 }
             }
             if (signRequestParams.getAddWatermark()) {
@@ -383,14 +391,24 @@ public class PdfService {
             String producer = "esup-signature v." + globalProperties.getVersion();
 
             PDDocumentInformation info = pdDocument.getDocumentInformation();
-            info.setTitle(signRequest.getTitle() + globalProperties.getSignedSuffix());
-            info.setSubject(fileName);
-            info.setCreator(signRequest.getCreateBy().getEppn());
-            info.setProducer(producer);
+            if(!StringUtils.hasText(info.getTitle())) {
+                info.setTitle(signRequest.getTitle() + globalProperties.getSignedSuffix());
+            }
+            if(!StringUtils.hasText(info.getSubject())) {
+                info.setSubject(fileName);
+            }
+            if(!StringUtils.hasText(info.getCreator())) {
+                info.setCreator(signRequest.getCreateBy().getEppn());
+            }
+            if(!StringUtils.hasText(info.getProducer())) {
+                info.setProducer(producer);
+            }
             if (info.getCreationDate() == null) {
                 info.setCreationDate(Calendar.getInstance());
             }
-            info.setModificationDate(Calendar.getInstance());
+            if (info.getModificationDate() == null) {
+                info.setModificationDate(Calendar.getInstance());
+            }
 
             PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
 
@@ -567,7 +585,7 @@ public class PdfService {
 
     public boolean isPdfAComplient(byte[] pdfFile) throws EsupSignatureRuntimeException {
         List<String> result = checkPDFA(pdfFile, false);
-        if (result.size() > 0 && "success".equals(result.get(0))) {
+        if (!result.isEmpty() && "success".equals(result.get(0))) {
             return true;
         }
         return false;

@@ -54,10 +54,34 @@
                                         </tr>
                                         </thead>
                                         <tbody>
+                                        <tr>
+                                            <td class="text-left w-100" style="position: relative;height: 74px;" >
+                                                <img class="thumbnail" th:src="'/ws-secure/users/get-default-paraphe'"  alt="Image avec paraphe"/>
+                                            </td>
+                                            <td>
+                                                <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/999997'" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == 999997} ? 'text-warning' : 'text-secondary'">
+                                                    <i class="fa-solid fa-star"></i>
+                                                </a>
+                                            </td>
+                                            <td>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left w-100" style="position: relative;height: 74px;" >
+                                                <img class="thumbnail" th:src="'/ws-secure/users/get-default-image'"  alt="Image avec nom prénom"/>
+                                            </td>
+                                            <td>
+                                                <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/999998'" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == 999998} ? 'text-warning' : 'text-secondary'">
+                                                    <i class="fa-solid fa-star"></i>
+                                                </a>
+                                            </td>
+                                            <td>
+                                            </td>
+                                        </tr>
                                         <th:block th:each="signImageId, iterator : ${userImagesIds}">
                                             <tr>
                                                 <td class="text-left w-100" style="position: relative;height: 74px;" >
-                                                    <img class="thumbnail" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}"  alt="Image de la signature"/>
+                                                    <img class="thumbnail" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}"  th:alt="'Image de la signature' + ${iterator.index}"/>
                                                 </td>
                                                 <td>
                                                     <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/' + ${iterator.index}" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == iterator.index} ? 'text-warning' : 'text-secondary'">

@@ -428,10 +428,12 @@ public class SignRequestService {
 		return signRequest;
 	}
 
+	@Transactional
 	public void addDocsToSignRequest(SignRequest signRequest, boolean scanSignatureFields, int docNumber, List<SignRequestParams> signRequestParamses, MultipartFile... multipartFiles) throws EsupSignatureIOException {
 		for(MultipartFile multipartFile : multipartFiles) {
 			try {
 				byte[] bytes = multipartFile.getInputStream().readAllBytes();
+				String pdfaCheck = smallCheckPDFA(bytes);
 				String contentType = multipartFile.getContentType();
 				InputStream inputStream = new ByteArrayInputStream(bytes);
 				if (multipartFiles.length == 1 && bytes.length > 0) {
@@ -456,6 +458,7 @@ public class SignRequestService {
 						inputStream = new ByteArrayInputStream(bytes);
 					}
 					Document document = documentService.createDocument(inputStream, signRequest.getCreateBy(), multipartFile.getOriginalFilename(), contentType);
+					document.setPdfaCheck(pdfaCheck);
 					signRequest.getOriginalDocuments().add(document);
 					document.setParentId(signRequest.getId());
 				} else {
@@ -667,6 +670,7 @@ public class SignRequestService {
 		if(!force && !signRequest.getStatus().equals(SignRequestStatus.deleted) && !signRequest.getRecipientHasSigned().values().stream().allMatch(a -> a.getActionType().equals(ActionType.none))) {
 			throw new EsupSignatureRuntimeException("Suppression impossible, la demande est déjà démarrée");
 		}
+		nexuService.delete(signRequestId);
 		logService.create(signRequestId, signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Suppression définitive", null, "SUCCESS", null, null, null,null, userEppn, userEppn);
 		signRequest.getRecipientHasSigned().clear();
 		signRequestRepository.save(signRequest);
@@ -687,7 +691,6 @@ public class SignRequestService {
 		} else {
 			signBookRepository.delete(signRequest.getParentSignBook());
 		}
-		nexuService.delete(signRequestId);
 		if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.signed) || s.getStatus().equals(SignRequestStatus.completed) || s.getStatus().equals(SignRequestStatus.refused))) {
 			signRequest.getParentSignBook().setStatus(SignRequestStatus.completed);
 		}
@@ -845,7 +848,8 @@ public class SignRequestService {
 	@Transactional
 	public Long addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, String postit, Integer spotStepNumber, String authUserEppn, String userEppn) {
 		SignRequest signRequest = getById(id);
-		if(spotStepNumber == null || userEppn.equals(signRequest.getCreateBy().getEppn())) {
+		User user = userService.getByEppn(userEppn);
+		if(spotStepNumber == null || signRequest.getCreateBy().equals(user) || signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail())) {
 			if (spotStepNumber != null && spotStepNumber > 0) {
 				SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY, 150, 75);
 				int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
@@ -1151,4 +1155,23 @@ public class SignRequestService {
 		SignRequest signRequest = getById(signRequestId);
 		signRequest.getViewedBy().add(user);
 	}
+
+	@Transactional
+	public String smallCheckPDFA(Long signRequestId) throws IOException {
+		SignRequest signRequest = getById(signRequestId);
+		byte[] bytes = signRequest.getOriginalDocuments().get(0).getInputStream().readAllBytes();
+		return smallCheckPDFA(bytes);
+	}
+
+	private String smallCheckPDFA(byte[] bytes) {
+		List<String> results = pdfService.checkPDFA(bytes, true);
+		StringBuilder pdfaCheck = new StringBuilder();
+		for(String result : results) {
+			if(result.startsWith("6") && !pdfaCheck.toString().contains(result.substring(0, 5))) {
+				pdfaCheck.append(result, 0, 5).append(",");
+			}
+		}
+		return pdfaCheck.toString();
+	}
+
 }
