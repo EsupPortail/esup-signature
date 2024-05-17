@@ -64,7 +64,9 @@ public class LdapGroupService implements GroupService {
             for(String objectClass : ldapProperties.getGroupObjectClasses()) {
                 objectClasses.append("(objectClass=").append(objectClass).append(")");
             }
-            formattedFilter = "(&(|" + objectClasses + ")(" + formattedFilter + "))";
+            if(StringUtils.hasText(objectClasses)) {
+                formattedFilter = "(&(|" + objectClasses + ")(" + formattedFilter + "))";
+            }
             logger.debug(formattedFilter);
             groups = ldapTemplate.search(LdapQueryBuilder.query().attributes("cn", "description").base(ldapProperties.getGroupSearchBase()).filter(formattedFilter),
                     (ContextMapper<Map.Entry<String, String>>) ctx -> {
