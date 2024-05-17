@@ -43,7 +43,7 @@ public class LdapOrganizationalUnitService {
 
     public OrganizationalUnitLdap getOrganizationalUnitLdap(String supannCodeEntite) {
         List<OrganizationalUnitLdap> organizationalUnitLdap = getOrganizationalUnitLdaps(supannCodeEntite);
-        if(organizationalUnitLdap.size() > 0) {
+        if(!organizationalUnitLdap.isEmpty()) {
             return organizationalUnitLdap.get(0);
         }
         return null;
