@@ -68,6 +68,8 @@ public class CasSecurityServiceImpl implements SecurityService {
 	@Resource
 	private RegisterSessionAuthenticationStrategy registerSessionAuthenticationStrategy;
 
+	private LdapUserDetailsService ldapUserDetailsService;
+
 	@Override
 	public String getTitle() {
 		return casProperties.getTitle();
@@ -139,9 +141,10 @@ public class CasSecurityServiceImpl implements SecurityService {
 	}
 
 	public LdapUserDetailsService ldapUserDetailsService() {
+		if(this.ldapUserDetailsService != null) return this.ldapUserDetailsService;
 		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getUserIdSearchFilter(), ldapContextSource);
 		if(!StringUtils.hasText(ldapProperties.getGroupSearchBase())) {
-			logger.warn("no groupSearchBase found, unable to get users groups");
+			logger.warn("no groupSearchBase found, unable to get users groups automatically");
 		}
 		CasLdapAuthoritiesPopulator casLdapAuthoritiesPopulator = new CasLdapAuthoritiesPopulator(ldapContextSource, ldapProperties.getGroupSearchBase());
 		casLdapAuthoritiesPopulator.setMappingFiltersGroupsRepository(mappingFiltersGroupsRepository);
@@ -159,6 +162,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 		LdapUserDetailsMapper ldapUserDetailsMapper = new LdapUserDetailsMapper();
 		ldapUserDetailsMapper.setRoleAttributes(new String[] {});
 		ldapUserDetailsService.setUserDetailsMapper(ldapUserDetailsMapper);
+		this.ldapUserDetailsService = ldapUserDetailsService;
 		return ldapUserDetailsService;
 	}
 
