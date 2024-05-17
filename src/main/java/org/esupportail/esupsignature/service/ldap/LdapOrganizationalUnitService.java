@@ -41,6 +41,8 @@ public class LdapOrganizationalUnitService {
             }
             if(StringUtils.hasText(objectClasses)) {
                 formattedFilter = "(&(|" + objectClasses + ")" + formattedFilter + ")";
+            } else {
+                logger.debug("no ouSearchFilter found");
             }
             logger.debug("search OrganizationalUnit by mail : " + formattedFilter);
             LdapQuery ldapQuery = LdapQueryBuilder.query().countLimit(10).filter(formattedFilter);
