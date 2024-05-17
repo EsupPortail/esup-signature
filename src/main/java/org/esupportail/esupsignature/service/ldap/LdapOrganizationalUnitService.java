@@ -13,7 +13,10 @@ import org.springframework.ldap.query.LdapQueryBuilder;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
+import org.springframework.util.StringUtils;
+
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,15 +33,18 @@ public class LdapOrganizationalUnitService {
     private LdapTemplate ldapTemplate;
 
     public List<OrganizationalUnitLdap> getOrganizationalUnitLdaps(String supannCodeEntite) {
-        String formattedFilter = MessageFormat.format(ldapProperties.getOuSearchFilter(), (Object[]) new String[] { supannCodeEntite });
-        StringBuilder objectClasses = new StringBuilder();
-        for(String objectClass : ldapProperties.getOuObjectClasses()) {
-            objectClasses.append("(objectClass=").append(objectClass).append(")");
+        if(StringUtils.hasText(ldapProperties.getOuSearchFilter())) {
+            String formattedFilter = MessageFormat.format(ldapProperties.getOuSearchFilter(), (Object[]) new String[]{supannCodeEntite});
+            StringBuilder objectClasses = new StringBuilder();
+            for (String objectClass : ldapProperties.getOuObjectClasses()) {
+                objectClasses.append("(objectClass=").append(objectClass).append(")");
+            }
+            formattedFilter = "(&(|" + objectClasses + ")" + formattedFilter + ")";
+            logger.debug("search OrganizationalUnit by mail : " + formattedFilter);
+            LdapQuery ldapQuery = LdapQueryBuilder.query().countLimit(10).filter(formattedFilter);
+            return ldapTemplate.search(ldapQuery, new OrganizationalUnitLdapAttributesMapper());
         }
-        formattedFilter = "(&(|" + objectClasses + ")" + formattedFilter + ")";
-        logger.debug("search OrganizationalUnit by mail : " + formattedFilter);
-        LdapQuery ldapQuery = LdapQueryBuilder.query().countLimit(10).filter(formattedFilter);
-        return ldapTemplate.search(ldapQuery, new OrganizationalUnitLdapAttributesMapper());
+        return new ArrayList<>();
     }
 
     public OrganizationalUnitLdap getOrganizationalUnitLdap(String supannCodeEntite) {
