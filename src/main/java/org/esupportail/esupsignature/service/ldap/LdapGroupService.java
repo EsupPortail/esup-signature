@@ -110,16 +110,18 @@ public class LdapGroupService implements GroupService {
                 logger.warn(e.getMessage(), e);
             }
         }
-        for(String ldapFilter: ldapFiltersGroups.keySet()) {
-            String hardcodedFilter = MessageFormat.format(ldapProperties.getMemberSearchFilter(), username, ldapFilter);
-            List<String> filterDns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").filter(hardcodedFilter),
-                    (ContextMapper<String>) ctx -> {
-                        DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
-                        return searchResultContext.getNameInNamespace();
-                    });
+        if(StringUtils.hasText(ldapProperties.getMemberSearchFilter())) {
+            for (String ldapFilter : ldapFiltersGroups.keySet()) {
+                String hardcodedFilter = MessageFormat.format(ldapProperties.getMemberSearchFilter(), username, ldapFilter);
+                List<String> filterDns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").filter(hardcodedFilter),
+                        (ContextMapper<String>) ctx -> {
+                            DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
+                            return searchResultContext.getNameInNamespace();
+                        });
 
-            if(!filterDns.isEmpty()) {
-                groups.add(ldapFiltersGroups.get(ldapFilter));
+                if (!filterDns.isEmpty()) {
+                    groups.add(ldapFiltersGroups.get(ldapFilter));
+                }
             }
         }
         return groups;
