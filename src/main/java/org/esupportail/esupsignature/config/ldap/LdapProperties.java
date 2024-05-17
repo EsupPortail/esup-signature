@@ -63,7 +63,7 @@ public class LdapProperties {
     /**
      * Requete pour trouver les OU des utilisateurs (utile seulement pour le pré-remplissage de l'affectation dans les formulaires)
      */
-    private String ouSearchFilter = "";
+    private String ouSearchFilter;
     /**
      * Object classes correspondant aux utilisateurs (un "ou" est appliqué aux valeurs de cette liste)
      */
