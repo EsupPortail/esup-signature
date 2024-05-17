@@ -28,7 +28,7 @@ public class LdapProperties {
     /**
      * Filtre utilisé pour rechercher les groupes d’un utilisateur, ex : member={0}
      */
-    private String groupSearchFilter;
+    private String groupSearchFilter = "";
     /**
      * Filtre utilisé pour rechercher des groupes, ex : cn=*{0}
      */
@@ -44,7 +44,7 @@ public class LdapProperties {
     /**
      * Filtre pour contrôler l’appartenance d’un utilisateur à un groupe, ex : (&(uid={0})({1}))
      */
-    private String memberSearchFilter;
+    private String memberSearchFilter = "";
     /**
      * Le champ dans lequel on trouve le login des utilisateurs récupéré au moment de l’authentification, ex : (uid={0})
      */

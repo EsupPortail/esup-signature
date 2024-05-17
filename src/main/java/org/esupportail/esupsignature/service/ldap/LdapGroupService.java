@@ -110,8 +110,8 @@ public class LdapGroupService implements GroupService {
                 logger.warn(e.getMessage(), e);
             }
         }
-        if(StringUtils.hasText(ldapProperties.getMemberSearchFilter())) {
-            for (String ldapFilter : ldapFiltersGroups.keySet()) {
+        for (String ldapFilter : ldapFiltersGroups.keySet()) {
+            try {
                 String hardcodedFilter = MessageFormat.format(ldapProperties.getMemberSearchFilter(), username, ldapFilter);
                 List<String> filterDns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").filter(hardcodedFilter),
                         (ContextMapper<String>) ctx -> {
@@ -122,6 +122,8 @@ public class LdapGroupService implements GroupService {
                 if (!filterDns.isEmpty()) {
                     groups.add(ldapFiltersGroups.get(ldapFilter));
                 }
+            } catch (Exception e) {
+                logger.warn(e.getMessage(), e);
             }
         }
         return groups;
