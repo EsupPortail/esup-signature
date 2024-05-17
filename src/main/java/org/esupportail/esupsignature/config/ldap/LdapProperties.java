@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import jakarta.annotation.PostConstruct;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,19 +68,19 @@ public class LdapProperties {
     /**
      * Object classes correspondant aux utilisateurs (un "ou" est appliqué aux valeurs de cette liste)
      */
-    private List<String> userObjectClasses;
+    private List<String> userObjectClasses = new ArrayList<>();
     /**
      * Object classes correspondant aux groupes (un "ou" est appliqué aux valeurs de cette liste)
      */
-    private List<String> groupObjectClasses;
+    private List<String> groupObjectClasses = new ArrayList<>();
     /**
      * Object classes correspondant aux OU (un "ou" est appliqué aux valeurs de cette liste)
      */
-    private List<String> ouObjectClasses;
+    private List<String> ouObjectClasses = new ArrayList<>();
     /**
      * Object classes correspondant aux alias (un "ou" est appliqué aux valeurs de cette liste)
      */
-    private List<String> aliasObjectClasses;
+    private List<String> aliasObjectClasses = new ArrayList<>();
 
     @PostConstruct
     private void initEppnLeftPartSearchFilter() {
