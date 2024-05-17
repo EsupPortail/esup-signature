@@ -29,7 +29,9 @@ public class SignRequest {
 
 	@Column(unique=true)
 	private String token;
-	
+
+    private String wsAccessToken;
+
 	private String title;
 	
     @Temporal(TemporalType.TIMESTAMP)
@@ -105,6 +107,14 @@ public class SignRequest {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getWsAccessToken() {
+        return wsAccessToken;
+    }
+
+    public void setWsAccessToken(String wsAccessToken) {
+        this.wsAccessToken = wsAccessToken;
     }
 
     public String getTitle() {

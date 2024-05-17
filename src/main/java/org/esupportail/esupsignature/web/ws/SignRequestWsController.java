@@ -89,6 +89,7 @@ public class SignRequestWsController {
                                     @RequestParam(required = false) @Parameter(description = "Envoyer la demande automatiquement") Boolean pending,
                                     @RequestParam(required = false) @Parameter(description = "Emplacement final", example = "smb://drive.univ-ville.fr/forms-archive/") String targetUrl,
                                     @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json,
+                                    @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants") List<String> recipientsEmails,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants (ancien nom)") List<String> recipientEmails,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Tout les participants doivent-ils signer ?") Boolean allSignToComplete,
@@ -124,7 +125,7 @@ public class SignRequestWsController {
         }
         if(workflowStepDtos != null) {
             try {
-                Map<SignBook, String> signBookStringMap = signBookService.createAndSendSignBook(title, multipartFiles, pending, workflowStepDtos, createByEppn, true, forceAllSign, targetUrl);
+                Map<SignBook, String> signBookStringMap = signBookService.createAndSendSignBook(title, multipartFiles, pending, workflowStepDtos, createByEppn, true, forceAllSign, targetUrl, wsAccessToken);
                 List<String> signRequestIds = signBookStringMap.keySet().stream().flatMap(sb -> sb.getSignRequests().stream().map(signRequest -> signRequest.getId().toString())).toList();
                 if(json) {
                     return ResponseEntity.ok(signRequestIds);
@@ -142,16 +143,18 @@ public class SignRequestWsController {
     @CrossOrigin
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(description = "Récupération d'une demande de signature", responses = @ApiResponse(description = "SignRequest", content = @Content(schema = @Schema(implementation = SignRequest.class))))
-    public String get(@Parameter(description = "Identifiant de la demande") @PathVariable Long id) throws JsonProcessingException {
-        return signRequestService.getJson(id);
+    public String get(@Parameter(description = "Identifiant de la demande") @PathVariable Long id,
+                      @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) throws JsonProcessingException {
+        return signRequestService.getJson(id, wsAccessToken);
     }
 
     @CrossOrigin
     @GetMapping(value = "/status/{id}")
     @Operation(description = "Récupération du statut d'une demande de signature")
     @ResponseBody
-    public String getStatus(@Parameter(description = "Identifiant de la demande") @PathVariable Long id) {
-        return signRequestService.getStatus(id);
+    public String getStatus(@Parameter(description = "Identifiant de la demande") @PathVariable Long id,
+                            @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
+        return signRequestService.getStatus(id, wsAccessToken);
     }
 
     @CrossOrigin

@@ -160,13 +160,15 @@ public class SignRequestService {
 		return null;
 	}
 
-	public String getStatus(long id) {
+	public String getStatus(long id, String wsAccessToken) {
 		SignRequest signRequest = getById(id);
-		if(signRequest != null){
-			return signRequest.getStatus().name();
+		if (signRequest != null) {
+			if(!StringUtils.hasText(signRequest.getWsAccessToken()) || signRequest.getWsAccessToken().equals(wsAccessToken)) {
+				return signRequest.getStatus().name();
+			}
 		} else {
 			List<Log> logs = logService.getBySignRequest(id);
-			if(!logs.isEmpty()) {
+			if (!logs.isEmpty()) {
 				return "fully-deleted";
 			}
 		}
@@ -401,7 +403,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public SignRequest createSignRequest(String name, SignBook signBook, String userEppn, String authUserEppn) {
+	public SignRequest createSignRequest(String name, SignBook signBook, String userEppn, String authUserEppn, String wsAccessToken) {
 		String token = UUID.randomUUID().toString();
 		while (signRequestRepository.findByToken(token).isPresent()) {
 			token = UUID.randomUUID().toString();
@@ -1105,9 +1107,13 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public String getJson(Long id) throws JsonProcessingException {
+	public String getJson(Long id, String wsAccessToken) throws JsonProcessingException {
 		SignRequest signRequest = getById(id);
-		return objectMapper.writeValueAsString(signRequest);
+		if(!StringUtils.hasText(signRequest.getWsAccessToken()) || signRequest.getWsAccessToken().equals(wsAccessToken)) {
+			return objectMapper.writeValueAsString(signRequest);
+		} else {
+			throw new EsupSignatureRuntimeException("access denied");
+		}
 	}
 
 	@Transactional
