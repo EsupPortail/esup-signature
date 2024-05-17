@@ -20,7 +20,7 @@ public class LdapProperties {
     /**
      * Filtre de recherche des utilisateurs
      */
-    private String usersSearchFilter;
+    private String usersSearchFilter = "(&(|(displayName={0}*)(cn={0}*)(uid={0})(mail={0}*))(mail=*))";
     /**
      * Base de recherche des groupes, ex : ou=groups
      */
@@ -48,15 +48,15 @@ public class LdapProperties {
     /**
      * Le champ dans lequel on trouve le login des utilisateurs récupéré au moment de l’authentification, ex : (uid={0})
      */
-    private String userIdSearchFilter;
+    private String userIdSearchFilter = "(uid={0})";
     /**
-     * Le champ dans lequel on trouve l'eppn des utilisateurs c'est ce champ qui sera utilisé comme identifiant unique en base, ex : (eduPersonPrincipalName={0})
+     * Le champ dans lequel on trouve l’eppn des utilisateurs, c’est ce champ qui sera utilisé comme identifiant unique en base, ex : (eduPersonPrincipalName={0})
      */
-    private String userEppnSearchFilter;
+    private String userEppnSearchFilter = "(eduPersonPrincipalName={0})";
     /**
      * Le champ dans lequel on trouve l'email des utilisateurs , ex : (mail={0})
      */
-    private String userMailSearchFilter;
+    private String userMailSearchFilter = "(mail={0})";
     /**
      * Le champ dans lequel on trouve la partie gauche de l’EPPN (par défaut idem userIdSearchFilter)
      */
