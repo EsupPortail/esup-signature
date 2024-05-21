@@ -15,9 +15,10 @@ public class WsAccessToken {
 
     private String appName;
 
+    @Column(unique=true)
     private String token;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<Workflow> workflows = new HashSet<>();
 
     private Boolean createSignrequest = true;

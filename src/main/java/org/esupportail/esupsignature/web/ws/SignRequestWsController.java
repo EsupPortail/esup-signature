@@ -23,7 +23,6 @@ import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.WsAccessTokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -48,12 +47,14 @@ public class SignRequestWsController {
 
     @Resource
     private SignBookService signBookService;
-    @Autowired
+
+    @Resource
     private WsAccessTokenService wsAccessTokenService;
 
     @CrossOrigin
     @PostMapping(value ="/new", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @Operation(description = "Création d'une demande de signature")
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
     public ResponseEntity<?> create(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
                                     @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example = "[{\n" +
                                             "  \"title\": \"string\",\n" +
@@ -168,14 +169,18 @@ public class SignRequestWsController {
     @GetMapping(value = "/audit-trail/{id}")
     @Operation(description = "Récupération du dossier de preuve de la demande", responses = @ApiResponse(description = "AuditTrail", content = @Content(schema = @Schema(implementation = AuditTrail.class))))
     @ResponseBody
-    public String getAuditTail(@Parameter(description = "Dossier de preuve de la demande") @PathVariable Long id) throws JsonProcessingException {
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+    public String getAuditTail(@Parameter(description = "Dossier de preuve de la demande") @PathVariable Long id,
+                               @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) throws JsonProcessingException {
         return signRequestService.getAuditTrailJson(id);
     }
 
     @CrossOrigin
     @DeleteMapping("/{id}")
     @Operation(description = "Supprimer une demande de signature définitivement")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+    public ResponseEntity<String> delete(@PathVariable Long id,
+                                         @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
         Long signBookId = signRequestService.getParentIdIfSignRequestUnique(id);
         if(signBookId != null) {
             signBookService.deleteDefinitive(signBookId, "system");
@@ -188,7 +193,9 @@ public class SignRequestWsController {
     @CrossOrigin
     @DeleteMapping("/soft/{id}")
     @Operation(description = "Supprimer une demande de signature")
-    public ResponseEntity<String> softDelete(@PathVariable Long id) {
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+    public ResponseEntity<String> softDelete(@PathVariable Long id,
+                                             @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
         Long signBookId = signRequestService.getParentIdIfSignRequestUnique(id);
         if(signBookId != null) {
             signBookService.delete(signBookId, "system");
@@ -201,7 +208,9 @@ public class SignRequestWsController {
     @CrossOrigin
     @DeleteMapping("/{id}/signbook")
     @Operation(description = "Supprimer le parapheur dans lequel se trouve la demande ciblée")
-    public ResponseEntity<String> deleteSignBook(@PathVariable Long id) {
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+    public ResponseEntity<String> deleteSignBook(@PathVariable Long id,
+                                                 @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
         SignRequest signRequest = signRequestService.getById(id);
         signBookService.deleteDefinitive(signRequest.getParentSignBook().getId(), "system");
         return ResponseEntity.ok().build();
@@ -210,7 +219,9 @@ public class SignRequestWsController {
     @GetMapping(value = "/get-last-file/{id}")
     @ResponseBody
     @Operation(description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
-    public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+    public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id,
+                                                           @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken, HttpServletResponse httpServletResponse) {
         try {
             signRequestService.getToSignFileResponse(id, "attachment", httpServletResponse);
             return ResponseEntity.ok().build();
@@ -223,7 +234,9 @@ public class SignRequestWsController {
     @GetMapping(value = "/print-with-code/{id}")
     @ResponseBody
     @Operation(description = "Récupérer le dernier fichier signé d'une demande avec un datamatrix apposé dessus", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
-    public ResponseEntity<Void> printWithCode(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+    public ResponseEntity<Void> printWithCode(@PathVariable("id") Long id,
+                                              @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken, HttpServletResponse httpServletResponse) {
         try {
             signRequestService.getToSignFileResponseWithCode(id, httpServletResponse);
             return ResponseEntity.ok().build();
@@ -236,7 +249,8 @@ public class SignRequestWsController {
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @Operation(description = "Récupérer toutes les demandes", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = List.class), mediaType = "application/pdf")))
-    public ResponseEntity<String> getAllSignRequests() {
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+    public ResponseEntity<String> getAllSignRequests(@RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
         try {
             return ResponseEntity.ok(signRequestService.getAllToJSon());
         } catch (Exception e) {
@@ -246,10 +260,11 @@ public class SignRequestWsController {
     }
 
     @GetMapping(value = "/return-test")
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
     @ResponseBody
-    public ResponseEntity<Void> returnTest(@RequestParam("signRequestId") String signRequestId, @RequestParam("status") String status, @RequestParam("step") String step) {
+    public ResponseEntity<Void> returnTest(@RequestParam("signRequestId") String signRequestId, @RequestParam("status") String status, @RequestParam("step") String step,
+                                           @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
         logger.info(signRequestId + ", " + status + ", " + step);
-        //ici, le code à executer en fonction du statut
         return ResponseEntity.ok().build();
     }
 

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="workflows" type="java.util.List<org.esupportail.esupsignature.entity.Workflow>"*/-->
+<head th:replace="~{fragments/head :: head}"></head>
+<body>
+<header th:replace="~{fragments/nav :: nav}"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+        <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb col-12">
+                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
+                <li class="breadcrumb-item active">Liste des circuits</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="fixed-action-simple-btn" >
+                <a title="Créer un nouveau token" data-bs-toggle="modal" data-bs-target="#newWsAccessToken" type="button" class="btn-floating btn-lg bg-primary wave-effect">
+                    <i class="fa-solid fa-plus fa-2xl"></i>
+                </a>
+            </div>
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-body">
+                    <h5 class="text-center"><b>Tokens d'API</b></h5>
+                    <p class="alert alert-warning" th:if="${wsAccessTokens.isEmpty()}">
+                        Les web services sont inaccessibles, car aucun token n’a été trouvée.
+                        La configuration d’origine (accessibilité des web service restriction par IP seule) sera rétablie au prochain redémarrage.
+                        <br><br>
+                        <a class="btn btn-warning" href="/admin/ws-access-token/reset">Cliquez ici pour rétablir la configuration d’origine dès maintenant</a>
+                    </p>
+                    <table class="table table-sm table-borderless table-hover table-striped" th:if="${!wsAccessTokens.isEmpty()}">
+                        <thead class="table-secondary">
+                        <tr>
+                            <th>Application</th>
+                            <th>Workflows</th>
+                            <th>Token</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="wsAccessToken : ${wsAccessTokens}">
+                            <tr>
+                                <td>
+                                    <p th:if="${wsAccessToken.appName != null}" th:text="${wsAccessToken.appName}"></p>
+                                    <p th:unless="${wsAccessToken.appName != null}">IP autorisées</p>
+                                </td>
+                                <td>
+                                    <ul th:if="${wsAccessToken.workflows.size() > 0}" th:each="workflow : ${wsAccessToken.workflows}">
+                                        <li><a th:href="'/admin/workflows/update/' + ${workflow.id}" th:text="${workflow.description}"></a></li>
+                                    </ul>
+                                    <p th:unless="${wsAccessToken.workflows.size() > 0}">Tous les workflows</p>
+                                </td>
+                                <td>
+                                    <input type="text" style="width: 100%;" disabled th:if="${wsAccessToken.token != null}" th:value="${wsAccessToken.token}"></input>
+                                    <p th:unless="${wsAccessToken.token != null}">Accessible sans token</p>
+                                </td>
+                                <td class="text-center">
+                                    <div class="dropdown position-relative" th:if="${wsAccessToken.id != null}">
+                                        <button type="button" th:id="'menu-toggle_' + ${wsAccessToken.id}" class="btn text-dark" th:title="'Actions ' + ${wsAccessToken.id}"
+                                                th:data-bs-target="'#menu-' + ${wsAccessToken.id}" th:aria-controls="'menu-' + ${wsAccessToken.id}" data-bs-toggle="dropdown">
+                                            <i class="fa-solid fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${wsAccessToken.id}">
+                                            <li>
+                                                <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
+                                                    data-bs-toggle="modal" th:data-bs-target="'#modal-update-' + ${wsAccessToken.id}">
+                                                    <i class="fa-solid fa-pencil-alt pr-2"></i> Modifier les paramètres
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="btn btn-transparent text-dark text-left col-12" role="button" title="Régénérer le token"
+                                                    data-bs-toggle="modal" th:data-bs-target="'#modal-renew-' + ${wsAccessToken.id}">
+                                                    <i class="fa-solid fa-refresh pr-2"></i> Régénérer le token
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="btn btn-transparent text-dark text-left col-12" role="button" title="Supprimer"
+                                                    data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${wsAccessToken.id}">
+                                                    <i class="fa-solid fa-trash-alt pr-2"></i> Supprimer
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <div data-bs-focus="false" class="modal fade" th:id="'modal-update-' + ${wsAccessToken.id}" role="dialog" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg" role="document">
+                                            <div class="modal-content">
+                                                <form th:action="'/admin/ws-access-token/' + ${wsAccessToken.id}" th:method="'put'">
+                                                    <div class="modal-header">
+                                                        <h3 class="modal-title">Modification du token <span th:text="${wsAccessToken.appName}"></span></h3>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="form-group mb-3">
+                                                            <label for="description"><strong>Nom de l’application métier</strong></label>
+                                                            <input id="description" name="appName" th:value="${wsAccessToken.appName}" class="form-control" type="text" value="" required="required">
+                                                        </div>
+                                                        <div class="form-group mb-3">
+                                                            <label for="workflowIds2"><strong>Workflows concernés</strong></label>
+                                                            <select id="workflowIds2" name="workflowIds" class="slim-select-simple" required multiple>
+                                                                <option th:value="0" th:selected="${wsAccessToken.workflows.isEmpty()}">Tous les workflows</option>
+                                                                <th:block th:each="workflow : ${workflows}">
+                                                                    <option th:value="${workflow.id}" th:text="${workflow.description}" th:selected="${wsAccessToken.workflows.contains(workflow)}"></option>
+                                                                </th:block>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                        <button type="submit" class="btn btn-success">Modifier</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-renew-' + ${wsAccessToken.id}">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form id="renew-token" th:action="'/admin/ws-access-token/renew/' + ${wsAccessToken.id}" th:method="'put'">
+                                                    <div class="modal-header">
+                                                        <h3>Attention !</h3>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="alert alert-danger text-left">
+                                                            La régénération aura pour effet de supprimer les accès de toutes les applications qui utilisent ce token.
+                                                            <br>
+                                                            Confirmez-vous la régénération du token ?
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-outline pull-left" data-bs-dismiss="modal">Non</button>
+                                                        <button type="submit" class="btn btn-outline pull-left btn-danger">Oui</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${wsAccessToken.id}">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form id="command" th:action="'/admin/ws-access-token/' + ${wsAccessToken.id}" th:method="'delete'">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="alert alert-danger text-center">
+                                                            La suppression aura pour effet de supprimer les accès de toutes les applications qui utilisent ce token.
+                                                            <br>
+                                                            Confirmez-vous la suppression du token ?
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-outline pull-left" data-bs-dismiss="modal">Non</button>
+                                                        <button type="submit" class="btn btn-outline pull-left btn-danger">Oui</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<div data-bs-focus="false" class="modal fade" id="newWsAccessToken"  role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form th:action="'/admin/ws-access-token'" method="post">
+                <div class="modal-header">
+                    <h3 class="modal-title">Créer un nouveau token</h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="description"><strong>Nom de l’application métier</strong></label>
+                        <input id="description" name="appName" class="form-control" type="text" value="" required="required">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="workflowIds"><strong>Workflows concernés</strong></label>
+                        <select id="workflowIds" name="workflowIds" class="slim-select-simple" required multiple>
+                            <option th:value="0">Tous les workflows</option>
+                            <th:block th:each="workflow : ${workflows}">
+                                <option th:value="${workflow.id}" th:text="${workflow.description}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">Créer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>

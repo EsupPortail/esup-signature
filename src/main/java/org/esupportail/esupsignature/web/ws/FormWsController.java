@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -60,6 +61,7 @@ public class FormWsController {
     @CrossOrigin
     @PostMapping(value = "/{id}/new")
     @Operation(description = "Création d'une nouvelle instance d'un formulaire")
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
     public ResponseEntity<?> start(@PathVariable Long id,
                                    @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example = "[{\n" +
                                            "  \"title\": \"string\",\n" +
@@ -100,6 +102,7 @@ public class FormWsController {
                                    @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls,
                                    @RequestParam(required = false) @Parameter(description = "Données par défaut à remplir dans le formulaire", example = "{'field1' : 'toto, 'field2' : 'tata'}") String formDatas,
                                    @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Envoyer une alerte mail") Boolean sendEmailAlert,
+                                   @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken,
                                    @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json,
                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants pour chaque étape (ancien nom)", example = "[stepNumber*email] ou [stepNumber*email*phone]") List<String> recipientEmails,
                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants pour chaque étape", example = "[stepNumber*email] ou [stepNumber*email*phone]") List<String> recipientsEmails,
@@ -149,13 +152,15 @@ public class FormWsController {
     @CrossOrigin
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(description = "Récupération d'un circuit", responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = WorkflowDto.class))))
-    public String get(@PathVariable Long id) throws JsonProcessingException {
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+    public String get(@PathVariable Long id, @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) throws JsonProcessingException {
         return formService.getByIdJson(id);
     }
 
     @CrossOrigin
     @PostMapping(value = "/{id}/new-doc", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @Operation(description = "Création d'une nouvelle instance d'un formulaire")
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
     public ResponseEntity<?> startWithDoc(@PathVariable Long id,
                              @RequestParam @Parameter(description = "Multipart stream du fichier à signer") MultipartFile[] multipartFiles,
                              @RequestParam @Parameter(description = "Eppn du propriétaire du futur document") String createByEppn,
@@ -171,7 +176,8 @@ public class FormWsController {
                              @RequestParam(required = false) @Parameter(description = "Données par défaut à remplir dans le formulaire", example = "{'field1' : 'toto, 'field2' : 'tata'}") String formDatas,
                              @RequestParam(required = false) @Parameter(description = "Titre") String title,
                              @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Envoyer une alerte mail") Boolean sendEmailAlert,
-                             @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json
+                             @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json,
+                             @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken
     ) {
         if(json == null) {
             json = false;
@@ -206,14 +212,16 @@ public class FormWsController {
     @Deprecated
     @PostMapping(value = "/get-datas/{id}")
     @Operation(description = "Récupération des données d'un formulaire (POST)", deprecated = true)
-    public LinkedHashMap<String, String> postGetDatas(@PathVariable Long id) {
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+    public LinkedHashMap<String, String> postGetDatas(@PathVariable Long id, @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
         return dataExportService.getJsonDatasFromSignRequest(id);
     }
 
     @CrossOrigin
     @GetMapping(value = "/get-datas/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(description = "Récupération des données d'un formulaire")
-    public LinkedHashMap<String, String> getDatas(@PathVariable Long id) {
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+    public LinkedHashMap<String, String> getDatas(@PathVariable Long id, @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
         return dataExportService.getJsonDatasFromSignRequest(id);
     }
 

@@ -67,7 +67,10 @@
         <a title="Doc des APIs" target="_blank" type="button" href="/swagger-ui.html" class="mb-1 col-12 btn btn-light text-left">
             <i class="fa-solid fa-code"></i> <span class="sidebar-label">APIs Doc</span>
         </a>
-
+        <a th:classappend="${activeMenu == 'tokens-api'} ? 'btn-secondary' : 'btn-light'"
+            title="Tokens API" type="button" href="/admin/ws-access-token" class="mb-1 col-12 btn btn-light text-left">
+            <i class="fa-solid fa-code"></i> <span class="sidebar-label">Tokens API</span>
+        </a>
     </div>
 </nav>
 </html>
