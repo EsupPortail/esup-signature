@@ -36,7 +36,7 @@ public class WsExportController {
 
     @GetMapping(value = "/form/{name}/datas/csv", produces="text/csv")
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
-    public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken, HttpServletResponse response) {
+    public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken, HttpServletResponse response) {
         List<Form> forms = formRepository.findFormByNameAndDeletedIsNullOrDeletedIsFalse(name);
         if (!forms.isEmpty()) {
             try {
@@ -58,7 +58,7 @@ public class WsExportController {
     @ResponseBody
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
     @GetMapping(value = "/form/{name}/datas/json", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Map<String, String>> getFormDatasJson(@PathVariable String name, @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
+    public List<Map<String, String>> getFormDatasJson(@PathVariable String name, @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
         return dataExportService.getDatasToExportByFormName(name);
     }
 

@@ -15,6 +15,17 @@ import java.util.List;
 @RequestMapping("/admin/ws-access-token")
 public class WsAccessTokenController {
 
+    @ModelAttribute("adminMenu")
+    String getCurrentMenu() {
+        return "active";
+    }
+
+    @ModelAttribute("activeMenu")
+    public String getActiveMenu() {
+        return "tokens-api";
+    }
+
+
     @Resource
     private WsAccessTokenService wsAccessTokenService;
 

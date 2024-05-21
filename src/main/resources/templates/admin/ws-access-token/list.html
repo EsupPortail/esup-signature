@@ -53,7 +53,7 @@
                                 </td>
                                 <td>
                                     <input type="text" style="width: 100%;" disabled th:if="${wsAccessToken.token != null}" th:value="${wsAccessToken.token}"></input>
-                                    <p th:unless="${wsAccessToken.token != null}">Accessible sans token</p>
+                                    <p th:unless="${wsAccessToken.token != null}">Configuration par défaut : web services accessibles sans token, restriction par IP (voir application.yml).<br>Pour ajouter la sécurisation par token, vous pouvez régénérer ce token ou le supprimer puis créer vos propres tokens</p>
                                 </td>
                                 <td class="text-center">
                                     <div class="dropdown position-relative" th:if="${wsAccessToken.id != null}">

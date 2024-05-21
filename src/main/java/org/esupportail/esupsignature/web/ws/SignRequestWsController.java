@@ -91,7 +91,7 @@ public class SignRequestWsController {
                                     @RequestParam(required = false) @Parameter(description = "Envoyer la demande automatiquement") Boolean pending,
                                     @RequestParam(required = false) @Parameter(description = "Emplacement final", example = "smb://drive.univ-ville.fr/forms-archive/") String targetUrl,
                                     @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json,
-                                    @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken,
+                                    @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants") List<String> recipientsEmails,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants (ancien nom)") List<String> recipientEmails,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Tout les participants doivent-ils signer ?") Boolean allSignToComplete,
@@ -147,7 +147,7 @@ public class SignRequestWsController {
     @Operation(description = "Récupération d'une demande de signature", responses = @ApiResponse(description = "SignRequest", content = @Content(schema = @Schema(implementation = SignRequest.class))))
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #wsAccessToken)")
     public String get(@Parameter(description = "Identifiant de la demande") @PathVariable Long id,
-                      @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) throws JsonProcessingException {
+                      @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) throws JsonProcessingException {
         return signRequestService.getJson(id);
     }
 
@@ -157,7 +157,7 @@ public class SignRequestWsController {
     @ResponseBody
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #wsAccessToken)")
     public String getStatus(@Parameter(description = "Identifiant de la demande") @PathVariable Long id,
-                            @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
+                            @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
         return signRequestService.getStatus(id);
     }
 
@@ -167,7 +167,7 @@ public class SignRequestWsController {
     @ResponseBody
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #wsAccessToken)")
     public String getAuditTail(@Parameter(description = "Dossier de preuve de la demande") @PathVariable Long id,
-                               @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) throws JsonProcessingException {
+                               @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) throws JsonProcessingException {
         return signRequestService.getAuditTrailJson(id);
     }
 
@@ -176,7 +176,7 @@ public class SignRequestWsController {
     @Operation(description = "Supprimer une demande de signature définitivement")
     @PreAuthorize("@wsAccessTokenService.deleteWorkflowAccess(#id, #wsAccessToken)")
     public ResponseEntity<String> delete(@PathVariable Long id,
-                                         @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
+                                         @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
         Long signBookId = signRequestService.getParentIdIfSignRequestUnique(id);
         if(signBookId != null) {
             signBookService.deleteDefinitive(signBookId, "system");
@@ -191,7 +191,7 @@ public class SignRequestWsController {
     @Operation(description = "Supprimer une demande de signature")
     @PreAuthorize("@wsAccessTokenService.deleteWorkflowAccess(#id, #wsAccessToken)")
     public ResponseEntity<String> softDelete(@PathVariable Long id,
-                                             @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
+                                             @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
         Long signBookId = signRequestService.getParentIdIfSignRequestUnique(id);
         if(signBookId != null) {
             signBookService.delete(signBookId, "system");
@@ -206,7 +206,7 @@ public class SignRequestWsController {
     @Operation(description = "Supprimer le parapheur dans lequel se trouve la demande ciblée")
     @PreAuthorize("@wsAccessTokenService.deleteWorkflowAccess(#id, #wsAccessToken)")
     public ResponseEntity<String> deleteSignBook(@PathVariable Long id,
-                                                 @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
+                                                 @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
         SignRequest signRequest = signRequestService.getById(id);
         signBookService.deleteDefinitive(signRequest.getParentSignBook().getId(), "system");
         return ResponseEntity.ok().build();
@@ -217,7 +217,7 @@ public class SignRequestWsController {
     @Operation(description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #wsAccessToken)")
     public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id,
-                                                           @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken, HttpServletResponse httpServletResponse) {
+                                                           @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken, HttpServletResponse httpServletResponse) {
         try {
             signRequestService.getToSignFileResponse(id, "attachment", httpServletResponse);
             return ResponseEntity.ok().build();
@@ -232,7 +232,7 @@ public class SignRequestWsController {
     @Operation(description = "Récupérer le dernier fichier signé d'une demande avec un datamatrix apposé dessus", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #wsAccessToken)")
     public ResponseEntity<Void> printWithCode(@PathVariable("id") Long id,
-                                              @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken, HttpServletResponse httpServletResponse) {
+                                              @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken, HttpServletResponse httpServletResponse) {
         try {
             signRequestService.getToSignFileResponseWithCode(id, httpServletResponse);
             return ResponseEntity.ok().build();
@@ -246,7 +246,7 @@ public class SignRequestWsController {
     @ResponseBody
     @Operation(description = "Récupérer toutes les demandes", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = List.class), mediaType = "application/pdf")))
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
-    public ResponseEntity<String> getAllSignRequests(@RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
+    public ResponseEntity<String> getAllSignRequests(@RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
         try {
             return ResponseEntity.ok(signRequestService.getAllToJSon());
         } catch (Exception e) {
@@ -259,7 +259,7 @@ public class SignRequestWsController {
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
     @ResponseBody
     public ResponseEntity<Void> returnTest(@RequestParam("signRequestId") String signRequestId, @RequestParam("status") String status, @RequestParam("step") String step,
-                                           @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
+                                           @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
         logger.info(signRequestId + ", " + status + ", " + step);
         return ResponseEntity.ok().build();
     }
