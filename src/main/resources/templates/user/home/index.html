@@ -5,8 +5,8 @@
 <!--/*@thymesVar id="authUser" type="org.esupportail.esupsignature.entity.User"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
-    import {HomeUi} from '/js/modules/ui/HomeUi.js?version=[[${versionApp}]]';
-    import {HomeHelp} from '/js/modules/help/HomeHelp.js?version=[[${versionApp}]]';
+    import {HomeUi} from '/js/modules/ui/HomeUi.js?version=@[(${versionApp})]@';
+    import {HomeHelp} from '/js/modules/help/HomeHelp.js?version=@[(${versionApp})]@';
     new HomeUi([[${startFormId}]]);
     let help = new HomeHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).homeHelp)}]]);
     help.autoStart();

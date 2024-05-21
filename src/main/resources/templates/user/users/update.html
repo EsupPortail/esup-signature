@@ -3,8 +3,8 @@
 <!--/*@thymesVar id="user" type="org.esupportail.esupsignature.entity.User"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
-    import {UserUi} from '/js/modules/ui/users/UserUi.js?version=[[${versionApp}]]';
-    import {UserParamsHelp} from '/js/modules/help/UserParamsHelp.js?version=[[${versionApp}]]';
+    import {UserUi} from '/js/modules/ui/users/UserUi.js?version=@[(${versionApp})]@';
+    import {UserParamsHelp} from '/js/modules/help/UserParamsHelp.js?version=@[(${versionApp})]@';
     new UserUi([[${user.firstname + ' ' + user.name}]], [[${user.favoriteSignRequestParams}]]);
     let help = new UserParamsHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).userParamsHelp)}]], [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]);
     help.autoStart();

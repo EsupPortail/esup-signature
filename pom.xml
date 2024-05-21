@@ -812,11 +812,12 @@
 						<phase>compile</phase>
 						<configuration>
 							<target>
-								<replace token="@version@"
-										 value="${project.version}">
-									<fileset dir="target/classes/static/" includes="**/*" />
-								</replace>
-							</target>
+                                <replaceregexp flags="g"
+                                               match="[?]version=@(version|[A-Z0-9.]+)@"
+                                               replace="?version=@${project.version}@">
+                                    <fileset dir="target/classes/static/" includes="**/*.css **/*.js" />
+                                </replaceregexp>
+                            </target>
 						</configuration>
 						<goals>
 							<goal>run</goal>
