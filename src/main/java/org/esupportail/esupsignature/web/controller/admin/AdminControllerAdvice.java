@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web;
+package org.esupportail.esupsignature.web.controller.admin;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.annotation.Resource;

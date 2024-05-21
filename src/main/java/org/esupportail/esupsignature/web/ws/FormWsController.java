@@ -102,7 +102,7 @@ public class FormWsController {
                                    @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls,
                                    @RequestParam(required = false) @Parameter(description = "Données par défaut à remplir dans le formulaire", example = "{'field1' : 'toto, 'field2' : 'tata'}") String formDatas,
                                    @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Envoyer une alerte mail") Boolean sendEmailAlert,
-                                   @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken,
+                                   @ModelAttribute("wsAccessToken") String wsAccessToken,
                                    @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json,
                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants pour chaque étape (ancien nom)", example = "[stepNumber*email] ou [stepNumber*email*phone]") List<String> recipientEmails,
                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants pour chaque étape", example = "[stepNumber*email] ou [stepNumber*email*phone]") List<String> recipientsEmails,
@@ -153,7 +153,7 @@ public class FormWsController {
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(description = "Récupération d'un circuit", responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = WorkflowDto.class))))
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
-    public String get(@PathVariable Long id, @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) throws JsonProcessingException {
+    public String get(@PathVariable Long id, @ModelAttribute("wsAccessToken") String wsAccessToken) throws JsonProcessingException {
         return formService.getByIdJson(id);
     }
 
@@ -177,7 +177,7 @@ public class FormWsController {
                              @RequestParam(required = false) @Parameter(description = "Titre") String title,
                              @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Envoyer une alerte mail") Boolean sendEmailAlert,
                              @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json,
-                             @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken
+                             @ModelAttribute("wsAccessToken") String wsAccessToken
     ) {
         if(json == null) {
             json = false;
@@ -213,7 +213,7 @@ public class FormWsController {
     @PostMapping(value = "/get-datas/{id}")
     @Operation(description = "Récupération des données d'un formulaire (POST)", deprecated = true)
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
-    public LinkedHashMap<String, String> postGetDatas(@PathVariable Long id, @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
+    public LinkedHashMap<String, String> postGetDatas(@PathVariable Long id, @ModelAttribute("wsAccessToken") String wsAccessToken) {
         return dataExportService.getJsonDatasFromSignRequest(id);
     }
 
@@ -221,7 +221,7 @@ public class FormWsController {
     @GetMapping(value = "/get-datas/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(description = "Récupération des données d'un formulaire")
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
-    public LinkedHashMap<String, String> getDatas(@PathVariable Long id, @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
+    public LinkedHashMap<String, String> getDatas(@PathVariable Long id, @ModelAttribute("wsAccessToken") String wsAccessToken) {
         return dataExportService.getJsonDatasFromSignRequest(id);
     }
 

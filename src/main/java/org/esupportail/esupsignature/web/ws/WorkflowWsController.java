@@ -89,7 +89,7 @@ public class WorkflowWsController {
                                    @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
                                    @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls,
                                    @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Envoyer une alerte mail") Boolean sendEmailAlert,
-                                   @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken,
+                                   @ModelAttribute("wsAccessToken") String wsAccessToken,
                                    @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json,
                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Paramètres de signature", example = "[{\"xPos\":100, \"yPos\":100, \"signPageNumber\":1}, {\"xPos\":200, \"yPos\":200, \"signPageNumber\":1}]") String signRequestParamsJsonString,
                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants pour chaque étape", example = "[stepNumber*email] ou [stepNumber*email*phone]") List<String> recipientsEmails,
@@ -134,7 +134,7 @@ public class WorkflowWsController {
     @Operation(description = "Récupération d'un circuit", responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = WorkflowDto.class))))
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
     public String get(@PathVariable Long id,
-                      @RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) throws JsonProcessingException {
+                      @ModelAttribute("wsAccessToken") String wsAccessToken) throws JsonProcessingException {
         return workflowService.getByIdJson(id);
     }
 
@@ -142,7 +142,7 @@ public class WorkflowWsController {
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(description = "Récupération de la liste des circuits disponibles", responses = @ApiResponse(description = "List<JsonDtoWorkflow>", content = @Content(schema = @Schema(implementation = List.class))))
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
-    public String getAll(@RequestHeader(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) throws JsonProcessingException {
+    public String getAll(@ModelAttribute("wsAccessToken") String wsAccessToken) throws JsonProcessingException {
         return workflowService.getAllWorkflowsJson();
     }
 
