@@ -20,7 +20,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.WsAccessTokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -47,9 +46,6 @@ public class SignRequestWsController {
 
     @Resource
     private SignBookService signBookService;
-
-    @Resource
-    private WsAccessTokenService wsAccessTokenService;
 
     @CrossOrigin
     @PostMapping(value ="/new", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
@@ -169,7 +165,7 @@ public class SignRequestWsController {
     @GetMapping(value = "/audit-trail/{id}")
     @Operation(description = "Récupération du dossier de preuve de la demande", responses = @ApiResponse(description = "AuditTrail", content = @Content(schema = @Schema(implementation = AuditTrail.class))))
     @ResponseBody
-    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+    @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #wsAccessToken)")
     public String getAuditTail(@Parameter(description = "Dossier de preuve de la demande") @PathVariable Long id,
                                @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) throws JsonProcessingException {
         return signRequestService.getAuditTrailJson(id);
@@ -178,7 +174,7 @@ public class SignRequestWsController {
     @CrossOrigin
     @DeleteMapping("/{id}")
     @Operation(description = "Supprimer une demande de signature définitivement")
-    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+    @PreAuthorize("@wsAccessTokenService.deleteWorkflowAccess(#id, #wsAccessToken)")
     public ResponseEntity<String> delete(@PathVariable Long id,
                                          @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
         Long signBookId = signRequestService.getParentIdIfSignRequestUnique(id);
@@ -193,7 +189,7 @@ public class SignRequestWsController {
     @CrossOrigin
     @DeleteMapping("/soft/{id}")
     @Operation(description = "Supprimer une demande de signature")
-    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+    @PreAuthorize("@wsAccessTokenService.deleteWorkflowAccess(#id, #wsAccessToken)")
     public ResponseEntity<String> softDelete(@PathVariable Long id,
                                              @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
         Long signBookId = signRequestService.getParentIdIfSignRequestUnique(id);
@@ -208,7 +204,7 @@ public class SignRequestWsController {
     @CrossOrigin
     @DeleteMapping("/{id}/signbook")
     @Operation(description = "Supprimer le parapheur dans lequel se trouve la demande ciblée")
-    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+    @PreAuthorize("@wsAccessTokenService.deleteWorkflowAccess(#id, #wsAccessToken)")
     public ResponseEntity<String> deleteSignBook(@PathVariable Long id,
                                                  @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
         SignRequest signRequest = signRequestService.getById(id);
@@ -219,7 +215,7 @@ public class SignRequestWsController {
     @GetMapping(value = "/get-last-file/{id}")
     @ResponseBody
     @Operation(description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
-    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+    @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #wsAccessToken)")
     public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id,
                                                            @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken, HttpServletResponse httpServletResponse) {
         try {
@@ -234,7 +230,7 @@ public class SignRequestWsController {
     @GetMapping(value = "/print-with-code/{id}")
     @ResponseBody
     @Operation(description = "Récupérer le dernier fichier signé d'une demande avec un datamatrix apposé dessus", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
-    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+    @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #wsAccessToken)")
     public ResponseEntity<Void> printWithCode(@PathVariable("id") Long id,
                                               @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken, HttpServletResponse httpServletResponse) {
         try {

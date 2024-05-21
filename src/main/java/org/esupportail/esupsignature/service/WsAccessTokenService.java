@@ -37,6 +37,7 @@ public class WsAccessTokenService {
     public boolean createWorkflowAccess(Long id, String token) {
         if(allAccess(token)) return true;
         Workflow workflow = workflowService.getById(id);
+        if(workflow == null) return true;
         List<WsAccessToken> wsAccessToken = wsAccessTokenRepository.findByTokenAndWorkflowsContains(token, workflow);
         return !wsAccessToken.isEmpty() && wsAccessToken.stream().anyMatch(WsAccessToken::getCreateSignrequest);
     }
@@ -45,6 +46,7 @@ public class WsAccessTokenService {
     public boolean readWorkflowAccess(Long id, String token) {
         if(allAccess(token)) return true;
         SignRequest signRequest = signRequestService.getById(id);
+        if(signRequest == null) return true;
         Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
         List<WsAccessToken> wsAccessToken = wsAccessTokenRepository.findByTokenAndWorkflowsContains(token, workflow);
         return !wsAccessToken.isEmpty() && wsAccessToken.stream().anyMatch(WsAccessToken::getReadSignrequest);
@@ -54,6 +56,7 @@ public class WsAccessTokenService {
     public boolean deleteWorkflowAccess(Long id, String token) {
         if(allAccess(token)) return true;
         SignRequest signRequest = signRequestService.getById(id);
+        if(signRequest == null) return true;
         Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
         List<WsAccessToken> wsAccessToken = wsAccessTokenRepository.findByTokenAndWorkflowsContains(token, workflow);
         return !wsAccessToken.isEmpty() && wsAccessToken.stream().anyMatch(WsAccessToken::getDeleteSignrequest);
