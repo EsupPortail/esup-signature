@@ -160,12 +160,10 @@ public class SignRequestService {
 		return null;
 	}
 
-	public String getStatus(long id, String wsAccessToken) {
+	public String getStatus(long id) {
 		SignRequest signRequest = getById(id);
 		if (signRequest != null) {
-			if(!StringUtils.hasText(signRequest.getWsAccessToken()) || signRequest.getWsAccessToken().equals(wsAccessToken)) {
-				return signRequest.getStatus().name();
-			}
+			return signRequest.getStatus().name();
 		} else {
 			List<Log> logs = logService.getBySignRequest(id);
 			if (!logs.isEmpty()) {
@@ -1107,13 +1105,9 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public String getJson(Long id, String wsAccessToken) throws JsonProcessingException {
+	public String getJson(Long id) throws JsonProcessingException {
 		SignRequest signRequest = getById(id);
-		if(!StringUtils.hasText(signRequest.getWsAccessToken()) || signRequest.getWsAccessToken().equals(wsAccessToken)) {
-			return objectMapper.writeValueAsString(signRequest);
-		} else {
-			throw new EsupSignatureRuntimeException("access denied");
-		}
+		return objectMapper.writeValueAsString(signRequest);
 	}
 
 	@Transactional

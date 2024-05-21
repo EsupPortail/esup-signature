@@ -20,10 +20,13 @@ import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.WsAccessTokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,6 +48,8 @@ public class SignRequestWsController {
 
     @Resource
     private SignBookService signBookService;
+    @Autowired
+    private WsAccessTokenService wsAccessTokenService;
 
     @CrossOrigin
     @PostMapping(value ="/new", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
@@ -143,18 +148,20 @@ public class SignRequestWsController {
     @CrossOrigin
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(description = "Récupération d'une demande de signature", responses = @ApiResponse(description = "SignRequest", content = @Content(schema = @Schema(implementation = SignRequest.class))))
+    @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #wsAccessToken)")
     public String get(@Parameter(description = "Identifiant de la demande") @PathVariable Long id,
                       @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) throws JsonProcessingException {
-        return signRequestService.getJson(id, wsAccessToken);
+        return signRequestService.getJson(id);
     }
 
     @CrossOrigin
     @GetMapping(value = "/status/{id}")
     @Operation(description = "Récupération du statut d'une demande de signature")
     @ResponseBody
+    @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #wsAccessToken)")
     public String getStatus(@Parameter(description = "Identifiant de la demande") @PathVariable Long id,
                             @RequestParam(required = false) @Parameter(description = "WS Access Token (facultatif)") String wsAccessToken) {
-        return signRequestService.getStatus(id, wsAccessToken);
+        return signRequestService.getStatus(id);
     }
 
     @CrossOrigin

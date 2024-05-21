@@ -1,0 +1,84 @@
+package org.esupportail.esupsignature.entity;
+
+import jakarta.persistence.*;
+
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+public class WsAccessToken {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hibernate_sequence")
+    @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
+    private Long id;
+
+    private String appName;
+
+    private String token;
+
+    @ManyToMany
+    private Set<Workflow> workflows = new HashSet<>();
+
+    private Boolean createSignrequest = true;
+
+    private Boolean readSignrequest = true;
+
+    private Boolean deleteSignrequest = true;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public Set<Workflow> getWorkflows() {
+        return workflows;
+    }
+
+    public void setWorkflows(Set<Workflow> workflows) {
+        this.workflows = workflows;
+    }
+
+    public Boolean getCreateSignrequest() {
+        return createSignrequest;
+    }
+
+    public void setCreateSignrequest(Boolean createSignrequest) {
+        this.createSignrequest = createSignrequest;
+    }
+
+    public Boolean getReadSignrequest() {
+        return readSignrequest;
+    }
+
+    public void setReadSignrequest(Boolean readSignrequest) {
+        this.readSignrequest = readSignrequest;
+    }
+
+    public Boolean getDeleteSignrequest() {
+        return deleteSignrequest;
+    }
+
+    public void setDeleteSignrequest(Boolean deleteSignrequest) {
+        this.deleteSignrequest = deleteSignrequest;
+    }
+}
