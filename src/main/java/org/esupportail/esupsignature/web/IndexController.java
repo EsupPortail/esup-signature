@@ -17,7 +17,11 @@
  */
 package org.esupportail.esupsignature.web;
 
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -26,14 +30,11 @@ import org.esupportail.esupsignature.service.ldap.LdapPersonLightService;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.SecurityService;
-import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
@@ -43,9 +44,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 @RequestMapping("/")
@@ -84,9 +82,6 @@ public class IndexController {
 	@GetMapping
 	public String index(@ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) {
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpServletRequest.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
-		if(defaultSavedRequest != null && defaultSavedRequest.getServletPath().startsWith("/ws")) {
-			return "redirect:/denied/ws";
-		}
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if(StringUtils.hasText(authUserEppn) && !authUserEppn.equals("system")) {
 			model.asMap().clear();
@@ -116,12 +111,6 @@ public class IndexController {
 				}
 			}
 		}
-	}
-
-	@RequestMapping(value = "/denied/ws/**", method = {RequestMethod.GET, RequestMethod.POST})
-	@ResponseBody
-	public ResponseEntity<String> deniedWs() {
-		return new ResponseEntity<> (HttpStatus.UNAUTHORIZED);
 	}
 
 	@RequestMapping(value = "/denied/**", method = {RequestMethod.GET, RequestMethod.POST})

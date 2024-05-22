@@ -21,7 +21,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
-import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,9 +76,6 @@ public class SignRequestController {
 
     @Resource
     private WorkflowService workflowService;
-
-    @Resource
-    private PdfService pdfService;
 
     @Resource
     private SignBookService signBookService;
