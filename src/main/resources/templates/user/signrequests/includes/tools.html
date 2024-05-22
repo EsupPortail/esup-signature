@@ -125,7 +125,7 @@
 						class="btn btn-outline-primary ms-1">
 					<i class="fa-solid fa-comment"></i> Ajouter une annotation
 				</button>
-				<button th:if="${(signRequest.createBy.eppn == user.eppn || signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email)) && signRequest.data == null}" id="addSpotButton"
+				<button th:if="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email))) && signRequest.data == null}" id="addSpotButton"
 						class="btn btn-outline-primary ms-1">
 					<i class="fa-solid fa-map-marker-alt"></i> Ajouter un emplacement de signature
 				</button>
