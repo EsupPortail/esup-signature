@@ -24,10 +24,9 @@
                 <div class="card-body">
                     <h5 class="text-center"><b>Tokens d'API</b></h5>
                     <p class="alert alert-warning" th:if="${wsAccessTokens.isEmpty()}">
-                        Les web services sont inaccessibles, car aucun token n’a été trouvée.
-                        La configuration d’origine (accessibilité des web service restriction par IP seule) sera rétablie au prochain redémarrage.
+                        Configuration par défaut : les web services sont accessibles sans token, restriction par IP (voir application.yml).
                         <br><br>
-                        <a class="btn btn-warning" href="/admin/ws-access-token/reset">Cliquez ici pour rétablir la configuration d’origine dès maintenant</a>
+                        <a class="btn btn-warning" href="/admin/ws-access-token/reset">Cliquez ici pour générer un token global</a>
                     </p>
                     <table class="table table-sm table-borderless table-hover table-striped" th:if="${!wsAccessTokens.isEmpty()}">
                         <thead class="table-secondary">

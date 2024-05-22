@@ -48,7 +48,7 @@ public class WorkflowWsController {
 
     @CrossOrigin
     @PostMapping(value = "/{id}/new", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Dépôt d'un document dans une nouvelle instance d'un circuit")
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Dépôt d'un document dans une nouvelle instance d'un circuit")
     @PreAuthorize("@wsAccessTokenService.createWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<?> start(@PathVariable Long id,
                                    @RequestParam @Parameter(description = "Multipart stream du fichier à signer") MultipartFile[] multipartFiles,
@@ -132,7 +132,7 @@ public class WorkflowWsController {
 
     @CrossOrigin
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération d'un circuit",
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération d'un circuit",
             responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = WorkflowDto.class))))
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public String get(@PathVariable Long id,
@@ -142,7 +142,7 @@ public class WorkflowWsController {
 
     @CrossOrigin
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération de la liste des circuits disponibles", responses = @ApiResponse(description = "List<JsonDtoWorkflow>", content = @Content(schema = @Schema(implementation = List.class))))
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération de la liste des circuits disponibles", responses = @ApiResponse(description = "List<JsonDtoWorkflow>", content = @Content(schema = @Schema(implementation = List.class))))
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public String getAll(@ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
         return workflowService.getAllWorkflowsJson();

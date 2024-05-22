@@ -50,7 +50,7 @@ public class SignRequestWsController {
 
     @CrossOrigin
     @PostMapping(value ="/new", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Création d'une demande de signature")
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Création d'une demande de signature")
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public ResponseEntity<?> create(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
                                     @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example = "[{\n" +
@@ -145,7 +145,7 @@ public class SignRequestWsController {
 
     @CrossOrigin
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération d'une demande de signature",
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération d'une demande de signature",
             responses = @ApiResponse(description = "SignRequest", content = @Content(schema = @Schema(implementation = SignRequest.class))))
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public String get(@Parameter(description = "Identifiant de la demande", required = true) @PathVariable Long id,
@@ -155,7 +155,7 @@ public class SignRequestWsController {
 
     @CrossOrigin
     @GetMapping(value = "/status/{id}")
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération du statut d'une demande de signature")
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération du statut d'une demande de signature")
     @ResponseBody
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public String getStatus(@Parameter(description = "Identifiant de la demande") @PathVariable Long id,
@@ -165,7 +165,7 @@ public class SignRequestWsController {
 
     @CrossOrigin
     @GetMapping(value = "/audit-trail/{id}")
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération du dossier de preuve de la demande", responses = @ApiResponse(description = "AuditTrail", content = @Content(schema = @Schema(implementation = AuditTrail.class))))
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération du dossier de preuve de la demande", responses = @ApiResponse(description = "AuditTrail", content = @Content(schema = @Schema(implementation = AuditTrail.class))))
     @ResponseBody
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public String getAuditTail(@Parameter(description = "Dossier de preuve de la demande") @PathVariable Long id,
@@ -175,7 +175,7 @@ public class SignRequestWsController {
 
     @CrossOrigin
     @DeleteMapping("/{id}")
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Supprimer une demande de signature définitivement")
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Supprimer une demande de signature définitivement")
     @PreAuthorize("@wsAccessTokenService.deleteWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<String> delete(@PathVariable Long id,
                                          @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
@@ -190,7 +190,7 @@ public class SignRequestWsController {
 
     @CrossOrigin
     @DeleteMapping("/soft/{id}")
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Supprimer une demande de signature")
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Supprimer une demande de signature")
     @PreAuthorize("@wsAccessTokenService.deleteWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<String> softDelete(@PathVariable Long id,
                                              @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
@@ -205,7 +205,7 @@ public class SignRequestWsController {
 
     @CrossOrigin
     @DeleteMapping("/{id}/signbook")
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Supprimer le parapheur dans lequel se trouve la demande ciblée")
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Supprimer le parapheur dans lequel se trouve la demande ciblée")
     @PreAuthorize("@wsAccessTokenService.deleteWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<String> deleteSignBook(@PathVariable Long id,
                                                  @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
@@ -216,7 +216,7 @@ public class SignRequestWsController {
 
     @GetMapping(value = "/get-last-file/{id}")
     @ResponseBody
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id,
                                                            @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse httpServletResponse) {
@@ -231,7 +231,7 @@ public class SignRequestWsController {
 
     @GetMapping(value = "/print-with-code/{id}")
     @ResponseBody
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande avec un datamatrix apposé dessus", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande avec un datamatrix apposé dessus", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<Void> printWithCode(@PathVariable("id") Long id,
                                               @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse httpServletResponse) {
@@ -246,7 +246,7 @@ public class SignRequestWsController {
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer toutes les demandes", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = List.class), mediaType = "application/pdf")))
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer toutes les demandes", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = List.class), mediaType = "application/pdf")))
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public ResponseEntity<String> getAllSignRequests(@ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         try {

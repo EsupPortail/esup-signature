@@ -5,9 +5,6 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WsAccessToken;
 import org.esupportail.esupsignature.repository.WsAccessTokenRepository;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -80,17 +77,11 @@ public class WsAccessTokenService {
     public boolean createDefaultWsAccessToken() {
         if(!wsAccessTokenRepository.findAll().iterator().hasNext()) {
             WsAccessToken wsAccessToken = new WsAccessToken();
+            wsAccessToken.setToken(UUID.randomUUID().toString());
             wsAccessTokenRepository.save(wsAccessToken);
             return true;
         }
         return false;
-    }
-
-    @EventListener(ApplicationReadyEvent.class)
-    @Async
-    @Transactional
-    public void initWsAccessToken() {
-        createDefaultWsAccessToken();
     }
 
     public void createToken(String appName, List<Long> workflowIds) {
