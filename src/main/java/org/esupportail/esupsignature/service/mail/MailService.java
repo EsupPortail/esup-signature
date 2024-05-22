@@ -51,18 +51,19 @@ public class MailService {
 
     private final MailConfig mailConfig;
 
-    public MailService(GlobalProperties globalProperties, @Autowired(required = false) MailConfig mailConfig, TemplateEngine templateEngine) {
+    public MailService(GlobalProperties globalProperties, @Autowired(required = false) MailConfig mailConfig, @Autowired(required = false) JavaMailSenderImpl mailSender, TemplateEngine templateEngine) {
         this.globalProperties = globalProperties;
         this.mailConfig = mailConfig;
+        this.mailSender = mailSender;
         this.templateEngine = templateEngine;
     }
 
-    private JavaMailSenderImpl mailSender;
+    private final JavaMailSenderImpl mailSender;
 
-    @Autowired(required = false)
-    public void setMailSender(JavaMailSenderImpl mailSender) {
-        this.mailSender = mailSender;
-    }
+//    @Autowired(required = false)
+//    public void setMailSender(JavaMailSenderImpl mailSender) {
+//        this.mailSender = mailSender;
+//    }
 
     private final TemplateEngine templateEngine;
 

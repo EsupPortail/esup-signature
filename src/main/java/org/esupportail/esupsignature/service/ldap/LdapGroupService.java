@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
-@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base"})
+@ConditionalOnProperty({"spring.ldap.base"})
 @EnableConfigurationProperties({GlobalProperties.class, LdapProperties.class})
 public class LdapGroupService implements GroupService {
 
@@ -64,7 +64,11 @@ public class LdapGroupService implements GroupService {
             for(String objectClass : ldapProperties.getGroupObjectClasses()) {
                 objectClasses.append("(objectClass=").append(objectClass).append(")");
             }
-            formattedFilter = "(&(|" + objectClasses + ")(" + formattedFilter + "))";
+            if(StringUtils.hasText(objectClasses)) {
+                formattedFilter = "(&(|" + objectClasses + ")(" + formattedFilter + "))";
+            } else {
+                logger.debug("no allGroupsSearchFilter found");
+            }
             logger.debug(formattedFilter);
             groups = ldapTemplate.search(LdapQueryBuilder.query().attributes("cn", "description").base(ldapProperties.getGroupSearchBase()).filter(formattedFilter),
                     (ContextMapper<Map.Entry<String, String>>) ctx -> {
@@ -94,24 +98,34 @@ public class LdapGroupService implements GroupService {
                 });
         List<String> groups = new ArrayList<>();
         if(!dns.isEmpty()) {
-            String userDn = dns.get(0);
-            String formattedGroupSearchFilter = MessageFormat.format(ldapProperties.getGroupSearchFilter(), userDn, username);
-            LdapQuery groupSearchQuery = LdapQueryBuilder.query().attributes("cn").base(ldapProperties.getGroupSearchBase()).filter(formattedGroupSearchFilter);
-            groups = ldapTemplate.search(groupSearchQuery, (ContextMapper<String>) ctx -> {
-                        DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
-                        return searchResultContext.getStringAttribute("cn");
-                    });
+            LdapQuery groupSearchQuery;
+            try {
+                String userDn = dns.get(0);
+                String formattedGroupSearchFilter = MessageFormat.format(ldapProperties.getGroupSearchFilter(), userDn, username);
+                groupSearchQuery = LdapQueryBuilder.query().attributes("cn").base(ldapProperties.getGroupSearchBase()).filter(formattedGroupSearchFilter);
+                logQuery(groupSearchQuery);
+                groups = ldapTemplate.search(groupSearchQuery, (ContextMapper<String>) ctx -> {
+                    DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
+                    return searchResultContext.getStringAttribute("cn");
+                });
+            } catch (Exception e) {
+                logger.warn(e.getMessage(), e);
+            }
         }
-        for(String ldapFilter: ldapFiltersGroups.keySet()) {
-            String hardcodedFilter = MessageFormat.format(ldapProperties.getMemberSearchFilter(), username, ldapFilter);
-            List<String> filterDns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").filter(hardcodedFilter),
-                    (ContextMapper<String>) ctx -> {
-                        DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
-                        return searchResultContext.getNameInNamespace();
-                    });
+        for (String ldapFilter : ldapFiltersGroups.keySet()) {
+            try {
+                String hardcodedFilter = MessageFormat.format(ldapProperties.getMemberSearchFilter(), username, ldapFilter);
+                List<String> filterDns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").filter(hardcodedFilter),
+                        (ContextMapper<String>) ctx -> {
+                            DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
+                            return searchResultContext.getNameInNamespace();
+                        });
 
-            if(!filterDns.isEmpty()) {
-                groups.add(ldapFiltersGroups.get(ldapFilter));
+                if (!filterDns.isEmpty()) {
+                    groups.add(ldapFiltersGroups.get(ldapFilter));
+                }
+            } catch (Exception e) {
+                logger.warn(e.getMessage(), e);
             }
         }
         return groups;
@@ -165,5 +179,12 @@ public class LdapGroupService implements GroupService {
 
     public String getDomain() {
         return globalProperties.getDomain();
+    }
+
+    private void logQuery(LdapQuery ldapQuery) {
+        String queryStringBuilder = "Base: " + ldapQuery.base() + ", " +
+                "Filtre: " + ldapQuery.filter().encode() + ", " +
+                "Attributs: " + Arrays.toString(ldapQuery.attributes()) + ", ";
+        logger.debug("group : " + queryStringBuilder);
     }
 }

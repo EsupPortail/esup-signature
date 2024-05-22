@@ -29,7 +29,7 @@ public class SignRequest {
 
 	@Column(unique=true)
 	private String token;
-	
+
 	private String title;
 	
     @Temporal(TemporalType.TIMESTAMP)

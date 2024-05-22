@@ -188,6 +188,8 @@ export class Nexu {
                     $("#errorcontent").html(jsonResp.trace);
                 } else if (jsonResp.error != null) {
                     $("#errorcontent").html(jsonResp.error);
+                } else {
+                    $("#errorcontent").html(JSON.stringify(jsonResp));
                 }
             } else {
                 $("#errorcontent").html(error.responseText);

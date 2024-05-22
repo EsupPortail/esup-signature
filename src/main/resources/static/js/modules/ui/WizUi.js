@@ -255,6 +255,11 @@ export class WizUi {
         } else if (this.newWorkflowId !== "") {
             elementId = this.newWorkflowId;
         }
+        let selectRecipientsEmails = $("#recipientsEmails-1");
+        if(selectRecipientsEmails.attr("required") != null && selectRecipientsEmails.find(`[data-es-check-cert='true']`).prevObject[0].slim.getSelected().length === 0) {
+            $("#wiz-step-form-submit").click();
+            return;
+        }
         let successCallback = function(html) {
             self.workflowSignNextStepDisplay(html)
         };
@@ -446,6 +451,7 @@ export class WizUi {
             step.changeable = $('#changeable-' + i).is(':checked');
             step.autoSign = $('#autoSign-' + i).is(':checked');
             step.signType = $('#signType-' + i).val();
+            step.targetEmails = $('#targetEmailsSelect').val();
             step.forceAllSign = $('input[name="forceAllSign"]').is(":checked");
             steps.push(step);
         });

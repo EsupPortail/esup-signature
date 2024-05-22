@@ -107,6 +107,14 @@ public class PreAuthorizeService {
         return false;
     }
 
+    public boolean signRequestCreator(Long id, String userEppn) {
+        if(userEppn != null) {
+            SignRequest signRequest = signRequestService.getById(id);
+            return signRequest.getCreateBy().getEppn().equals(userEppn);
+        }
+        return false;
+    }
+
     public boolean signRequestOwner(Long id, String userEppn) {
         if(userEppn != null) {
             SignRequest signRequest = signRequestService.getById(id);

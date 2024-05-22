@@ -76,6 +76,7 @@ public class TargetService {
             }
         }
         if(targetEmails != null) {
+            targetEmailsToAdd = new StringBuilder();
             for (String targetEmail : targetEmails) {
                 if (!targetEmailsToAdd.toString().contains(targetEmail)) {
                     targetEmailsToAdd.append(targetEmail).append(",");

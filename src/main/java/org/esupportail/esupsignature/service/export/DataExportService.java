@@ -54,7 +54,7 @@ public class DataExportService {
     @Transactional
     public List<Map<String, String>> getDatasToExportByFormName(String name) {
         List<Form> forms = formRepository.findFormByNameAndDeletedIsNullOrDeletedIsFalse(name);
-        if (forms.size() > 0) {
+        if (!forms.isEmpty()) {
             try {
                 return getDatasToExport(forms.stream().map(Form::getWorkflow).collect(Collectors.toList()));
             } catch (Exception e) {

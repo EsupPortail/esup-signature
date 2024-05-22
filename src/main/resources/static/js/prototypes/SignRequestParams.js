@@ -30,6 +30,7 @@ export class SignRequestParams extends EventFactory {
         this.isVisa = isVisa;
         this.isElec = isElec;
         this.firstLaunch = true;
+        this.firstCrossAlert = true;
         this.cross = null;
         this.border = null;
         this.tools = null;
@@ -233,6 +234,11 @@ export class SignRequestParams extends EventFactory {
             this.isExtraText = !(this.extraText !== "");
             this.toggleText();
             this.textareaExtra.val(text);
+        } else {
+            this.extraType = true;
+            this.extraName = true;
+            this.extraDate = true;
+            this.isExtraText = true;
         }
         this.addWatermark = !this.addWatermark;
         this.toggleWatermark();
@@ -678,13 +684,17 @@ export class SignRequestParams extends EventFactory {
                 }
                 $(this).unbind("dragstop");
             });
-            this.cross.simulate("drag", {
-                handle: "corner",
-                moves: 1,
-                dx: x,
-                dy: y
-            });
+            this.simulateDrag(x, y);
         }
+    }
+
+    simulateDrag(x, y) {
+        this.cross.simulate("drag", {
+            handle: "corner",
+            moves: 1,
+            dx: x,
+            dy: y
+        });
     }
 
     displayMoreTools() {
@@ -1141,7 +1151,7 @@ export class SignRequestParams extends EventFactory {
     changeSignImage(imageNum) {
         if(imageNum != null && imageNum >= 0) {
             if(this.signImages != null) {
-                if(imageNum > this.signImages.length - 1) {
+                if(imageNum > this.signImages.length - 1 && imageNum !== 999998 && imageNum !== 999997) {
                     imageNum = 0;
                 }
                 this.signImageNumber = imageNum;
@@ -1157,8 +1167,12 @@ export class SignRequestParams extends EventFactory {
                     }
                 } else {
                     let self = this;
+                    let url = "/ws-secure/users/get-default-image-base64";
+                    if(imageNum === 999997) {
+                        url = "/ws-secure/users/get-default-paraphe-base64";
+                    }
                     $.get({
-                        url: "/ws-secure/users/get-default-image",
+                        url: url,
                         success: function(data) {
                             img = "data:image/PNG;charset=utf-8;base64, " + data;
                             self.cross.css("background-image", "url('" + img + "')");
@@ -1169,7 +1183,6 @@ export class SignRequestParams extends EventFactory {
                             }
                         }
                     });
-
                 }
             }
         } else if(imageNum < 0) {

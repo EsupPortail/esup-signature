@@ -349,40 +349,40 @@ textarea:invalid {
     display: none;
 }
 
-.textWidgetAnnotation textarea {
-    /*border: 1px solid black !important;*/
-    overflow: hidden;
-    resize: none;
-}
+/*.textWidgetAnnotation textarea {*/
+/*    !*border: 1px solid black !important;*!*/
+/*    overflow: hidden;*/
+/*    resize: none;*/
+/*}*/
 
-.textWidgetAnnotation textarea:focus {
-    background-color: #e0e0e0 !important;
-}
+/*.textWidgetAnnotation textarea:focus {*/
+/*    background-color: #e0e0e0 !important;*/
+/*}*/
 
-.choiceWidgetAnnotation {
-    border: 1px solid transparent !important;
-}
+/*.choiceWidgetAnnotation {*/
+/*    border: 1px solid transparent !important;*/
+/*}*/
 
-.choiceWidgetAnnotation select {
-    margin-top: -1px !important;
-    font-size: 14px !important;
-    /*border: 1px solid black !important;*/
-    height: 140% !important;
-}
+/*.choiceWidgetAnnotation select {*/
+/*    margin-top: -1px !important;*/
+/*    font-size: 14px !important;*/
+/*    !*border: 1px solid black !important;*!*/
+/*    height: 140% !important;*/
+/*}*/
 
-.choiceWidgetAnnotation select:focus {
-    background-color: #e0e0e0 !important;
-}
+/*.choiceWidgetAnnotation select:focus {*/
+/*    background-color: #e0e0e0 !important;*/
+/*}*/
 
-.choiceWidgetAnnotation select option {
-    font-size: 14px !important;
-}
+/*.choiceWidgetAnnotation select option {*/
+/*    font-size: 14px !important;*/
+/*}*/
 
-.annotationLayer .buttonWidgetAnnotation.radioButton input:checked:before {
-    left: 25%;
-    top: 25%;
-    border: 1px solid black;
-}
+/*.annotationLayer .buttonWidgetAnnotation.radioButton input:checked:before {*/
+/*    left: 25%;*/
+/*    top: 25%;*/
+/*    border: 1px solid black;*/
+/*}*/
 
 .annotationLayer .buttonWidgetAnnotation.checkBox input:checked:before, .annotationLayer .buttonWidgetAnnotation.checkBox input:checked:after {
     left: 45%;
@@ -390,9 +390,9 @@ textarea:invalid {
     border: 1px solid black;
 }
 
-.annotationLayer .buttonWidgetAnnotation.checkBox input, .annotationLayer .buttonWidgetAnnotation.radioButton input {
-    appearance: initial;
-}
+/*.annotationLayer .buttonWidgetAnnotation.checkBox input, .annotationLayer .buttonWidgetAnnotation.radioButton input {*/
+/*    appearance: initial;*/
+/*}*/
 
 .highlight {
     border: 1px solid red !important;

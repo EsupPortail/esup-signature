@@ -1,9 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import org.esupportail.esupsignature.entity.FieldPropertie;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.UserPropertie;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -34,6 +31,9 @@ import java.util.stream.Collectors;
 public class UserController {
 
 	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+
+	@Resource
+	private SignRequestParamsService signRequestParamsService;
 
 	@ModelAttribute("paramMenu")
 	public String getActiveMenu() {
@@ -80,6 +80,7 @@ public class UserController {
 
 	@PostMapping
 	public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
+						 @RequestParam(value = "saveSignRequestParams", required=false) Boolean saveSignRequestParams,
 						 @RequestParam(value = "returnToHomeAfterSign", required=false) Boolean returnToHomeAfterSign,
 						 @RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
 						 @RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
@@ -88,7 +89,11 @@ public class UserController {
 						 @RequestParam(value = "signRequestParamsJsonString", required=false) String signRequestParamsJsonString,
 						 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
 		if(returnToHomeAfterSign == null) returnToHomeAfterSign = false;
-		userService.updateUser(authUserEppn, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, signRequestParamsJsonString, returnToHomeAfterSign);
+		SignRequestParams signRequestParams = null;
+		if(saveSignRequestParams == null || !saveSignRequestParams) {
+			signRequestParams = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
+		}
+		userService.updateUser(authUserEppn, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, signRequestParams, returnToHomeAfterSign);
 		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Vos paramètres ont été enregistrés"));
 		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
 		return "redirect:" + referer;

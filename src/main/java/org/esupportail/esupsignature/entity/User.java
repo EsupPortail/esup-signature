@@ -105,7 +105,7 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     private Date replaceEndDate;
 
-    @OneToOne
+    @OneToOne(orphanRemoval = true)
     private SignRequestParams favoriteSignRequestParams;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -293,12 +293,8 @@ public class User {
     public Integer getDefaultSignImageNumber() {
         if(defaultSignImageNumber != null) {
             return defaultSignImageNumber;
-        } else {
-            if(!getSignImages().isEmpty()) {
-                return getSignImages().size() - 1;
-            }
         }
-        return null;
+        return 999998;
     }
 
     public void setDefaultSignImageNumber(Integer defaultSignImageNumber) {

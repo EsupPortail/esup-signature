@@ -138,7 +138,7 @@
     </div>
 </main>
 <script th:inline="javascript" type="module">
-    import {WorkflowManualAdd } from '/js/modules/ui/workflows/WorkflowManualAdd.js?version=[[${versionApp}]]';
+    import {WorkflowManualAdd } from '/js/modules/ui/workflows/WorkflowManualAdd.js?version=@[(${versionApp})]@';
     new WorkflowManualAdd();
 </script>
 <div data-bs-focus="false" class="modal fade" id="newWorkflow"  role="dialog" aria-hidden="true">
@@ -171,7 +171,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-success">Creer</button>
+                    <button type="submit" class="btn btn-success">Créer</button>
                 </div>
             </form>
         </div>
