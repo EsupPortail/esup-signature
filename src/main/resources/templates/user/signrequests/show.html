@@ -10,7 +10,7 @@
 <head th:replace="~{fragments/head :: head}"></head>
 <body>
 <script th:inline="javascript" type="module">
-    import {SignRequestHelp} from '/js/modules/help/SignRequestHelp.js?version=[[${versionApp}]]';
+    import {SignRequestHelp} from '/js/modules/help/SignRequestHelp.js?version=@[(${versionApp})]@';
     let help = new SignRequestHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]], [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]);
     help.autoStart();
 </script>
@@ -94,7 +94,7 @@
                         <a id="trashLaunchButton" role="button" class="btn-floating btn-lg bg-danger waves-effect"
                             th:title="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
                             data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
-                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-dumpster fa-2xl"></i>
+                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-dumpster-fire fa-2xl"></i>
                             <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-trash-alt fa-2xl"></i>
                         </a>
                     </li>
@@ -102,7 +102,7 @@
                         <a id="trashLaunchButton2" role="button" class="btn-floating btn-lg bg-danger waves-effect"
                            title="Supprimer définitivement de la corbeille"
                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-2-' + ${signRequest.id}">
-                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-dumpster fa-2xl"></i>
+                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-dumpster-fire fa-2xl"></i>
                             <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-trash-alt fa-2xl"></i>
                         </a>
                     </li>
@@ -218,7 +218,7 @@
                     </div>
                 </div>
                 <script th:inline="javascript" type="module">
-                    import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=[[${versionApp}]]';
+                    import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=@[(${versionApp})]@';
                     new FilesInput($("#multipartFiles"),[[${globalProperties.maxUploadSize}]], [[${_csrf}]], [[${signRequest.originalDocuments}]], true);
                     new FilesInput($("#signedFiles"),[[${globalProperties.maxUploadSize}]], [[${_csrf}]], [[${signRequest.signedDocuments}]], true);
                 </script>
@@ -634,7 +634,7 @@
     </div>
 </div>
 
-<div th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}" data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
+<div th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}" data-bs-focus="false" class="modal modal-lg modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
     <div class="modal-dialog">
         <div class="modal-content">
             <form id="command" th:action="'/user/signrequests/'+ ${signRequest.id}" th:method="delete">
@@ -645,8 +645,17 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
-                    <div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
+                    <div th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && signBook.signRequests.size() > 1}" class="alert alert-danger">Confirmez-vous la suppression définitive de ce document ? (les autres documents de la demande sont conservés)</div>
+                    <div th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && signBook.signRequests.size() == 1}" class="alert alert-danger">
+                        <h4>Confirmez-vous la mise à la corbeille de cette demande ?</h4>
+                        <div class="form-check mt-4 mb-2">
+                            <input class="form-check-input" type="checkbox" value="true" id="definitive" name="definitive" onclick="alert('Attention cette action est irreversible !')">
+                            <label class="form-check-label" for="definitive">
+                                Cocher pour supprimer <b>définitivement</b> la demande sans passer par la corbeille
+                            </label>
+                        </div>
+                    </div>
+                    <div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
@@ -929,7 +938,7 @@
 </div>
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 <script th:inline="javascript" type="module">
-    import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=[[${versionApp}]]';
+    import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=@[(${versionApp})]@';
     let signable = [[${signable}]];
     let editable = [[${editable}]];
     let currentSignType = [[${signRequest.currentSignType}]];

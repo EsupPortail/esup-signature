@@ -200,8 +200,10 @@ public class SignRequestController {
         }
         List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
         model.addAttribute("logs", logs);
+        model.addAttribute("pdfaCheck", toSignDocuments.get(0).getPdfaCheck());
         return "user/signrequests/show";
     }
+
 
     @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
     @PostMapping(value = "/refuse/{id}")
@@ -225,20 +227,21 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestDelete(#id, #authUserEppn)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
-    public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-        Long result = signRequestService.delete(id, authUserEppn);
+    public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "definitive", required = false) Boolean definitive, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+        Long result;
+        if(definitive != null && definitive) {
+            result = signRequestService.deleteDefinitive(id, true, authUserEppn);
+        } else {
+            result = signRequestService.delete(id, authUserEppn);
+        }
         if(result == 0) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression définitive effectuée"));
-            return "redirect:/user/signbooks";
         } else if(result > 0) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
-            return "redirect:/user/signbooks/" + result;
-
         } else {
             redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression impossible car la demande est en cours de signature ou déjà signée"));
-            return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
-
         }
+        return "redirect:/user/signbooks";
     }
 
 //    @PreAuthorize("@preAuthorizeService.signRequestDelete(#id, #authUserEppn)")
@@ -362,21 +365,6 @@ public class SignRequestController {
         }
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")
-    @PostMapping(value = "/postit/{id}")
-    public String postit(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                                        @RequestParam(value = "comment", required = false) String comment,
-                                        @RequestParam(value = "postit", required = false) String postit, Model model) {
-        Long commentId = signRequestService.addComment(id, comment, null, null, null, postit, null, authUserEppn, userEppn);
-        if(commentId != null) {
-            model.addAttribute("message", new JsMessage("success", "Post-it ajouté"));
-        } else {
-            model.addAttribute("message", new JsMessage("error", "Problème lors de l'ajout du post-it"));
-        }
-        return "redirect:/user/signrequests/" + id;
-
-    }
-
     @PreAuthorize("@preAuthorizeService.commentCreator(#postitId, #userEppn)")
     @PutMapping(value = "/comment/{signRequestId}/update/{postitId}")
     public String commentUpdate(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
@@ -396,6 +384,21 @@ public class SignRequestController {
         signRequestService.deleteComment(signRequestId, postitId);
         redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Postit supprimé"));
         return "redirect:/user/signrequests/" + signRequestId;
+    }
+    
+    @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")
+    @PostMapping(value = "/postit/{id}")
+    public String postit(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+                                        @RequestParam(value = "comment", required = false) String comment,
+                                        @RequestParam(value = "postit", required = false) String postit, Model model) {
+        Long commentId = signRequestService.addComment(id, comment, null, null, null, postit, null, authUserEppn, userEppn);
+        if(commentId != null) {
+            model.addAttribute("message", new JsMessage("success", "Post-it ajouté"));
+        } else {
+            model.addAttribute("message", new JsMessage("error", "Problème lors de l'ajout du post-it"));
+        }
+        return "redirect:/user/signrequests/" + id;
+
     }
 
     @PreAuthorize("@preAuthorizeService.signBookSendOtp(#id, #authUserEppn)")

@@ -192,6 +192,7 @@ public class FormService {
 				form.setDocument(newModel);
 			} catch (IOException | EsupSignatureIOException e) {
 				logger.error("unable to modif model", e);
+				throw new EsupSignatureRuntimeException("unable to modif model");
 			}
 		}
 	}

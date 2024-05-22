@@ -179,8 +179,17 @@ export class Nexu {
                         $("#errorText").html("Opération annulée par l'utilisateur");
                     }
                     $("#errorcontent").html(jsonResp.errorMessage);
+                } else if (jsonResp.trace != null) {
+                    if (jsonResp.trace.includes("is expired")) {
+                        $("#errorText").html("Votre certificat est expiré");
+                    } else if (jsonResp.trace.includes("revoked") || jsonResp.message.includes("suspended")) {
+                        $("#errorText").html("Votre certificat est révoqué");
+                    }
+                    $("#errorcontent").html(jsonResp.trace);
                 } else if (jsonResp.error != null) {
                     $("#errorcontent").html(jsonResp.error);
+                } else {
+                    $("#errorcontent").html(JSON.stringify(jsonResp));
                 }
             } else {
                 $("#errorcontent").html(error.responseText);

@@ -20,7 +20,7 @@ import java.util.Map;
 
 @Primary
 @Component
-@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base"})
+@ConditionalOnProperty({"spring.ldap.base"})
 public class LdapUserList implements UserList {
 
     @Resource

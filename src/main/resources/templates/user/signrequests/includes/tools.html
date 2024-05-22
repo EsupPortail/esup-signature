@@ -79,11 +79,18 @@
 	<div id="second-tools" class="d-flex">
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
 			<th:block th:if="${!user.userType.name.equals('external')}">
-			<div class="d-none d-xl-inline">
-				<button class="btn btn-light text-dark btn-outline-light" style="cursor: default;">Choix du mode : </button>
-			</div>
-			<div class="me-1 d-none d-lg-block">
-				<select id="changeMode" name="changeMode" class="change-mode"></select>
+			<div class="rounded-2 bg-light d-none d-xl-inline-flex mb-1 text-dark p-1" style="cursor: default;">
+				<div class="ms-2">Mode :</div>
+				<div class="ms-2 me-2 d-none d-lg-block">
+					<input class="form-check-input" type="radio" name="changeMode" id="changeMode1" th:if="${signBook.workflowName != 'Auto signature'}">
+					<label class="form-check-label" for="changeMode1" th:if="${signBook.workflowName != 'Auto signature'}">
+						Modifications
+					</label>
+					<input class="form-check-input" type="radio" name="changeMode" id="changeMode2" th:if="${signable}">
+					<label class="form-check-label" for="changeMode2" th:if="${signable}">
+						Signature
+					</label>
+				</div>
 			</div>
 			<div class="border ms-1 me-2"></div>
 			</th:block>
@@ -118,7 +125,7 @@
 						class="btn btn-outline-primary ms-1">
 					<i class="fa-solid fa-comment"></i> Ajouter une annotation
 				</button>
-				<button th:if="${signRequest.createBy.eppn == user.eppn && signRequest.data == null && signatureIds.size() == 0 && isNotSigned}" id="addSpotButton"
+				<button th:if="${(signRequest.createBy.eppn == user.eppn || signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email)) && signRequest.data == null}" id="addSpotButton"
 						class="btn btn-outline-primary ms-1">
 					<i class="fa-solid fa-map-marker-alt"></i> Ajouter un emplacement de signature
 				</button>

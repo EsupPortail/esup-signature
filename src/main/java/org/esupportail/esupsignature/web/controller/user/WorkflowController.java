@@ -17,6 +17,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -49,14 +50,19 @@ public class WorkflowController {
 
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #authUserEppn)")
     @PostMapping(value = "/add-step/{id}")
-    public String addStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,						  @RequestParam("signType") String signType,
+    public String addStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+                          @RequestParam("signType") String signType,
                           @RequestParam(name="description", required = false) String description,
                           @RequestParam(name="recipientsEmails", required = false) String[] recipientsEmails,
                           @RequestParam(name="changeable", required = false) Boolean changeable,
                           @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                           @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) throws EsupSignatureRuntimeException {
-        WorkflowStepDto workflowStepDto = new WorkflowStepDto(SignType.valueOf(signType), description, recipientService.convertRecipientEmailsToRecipientDto(List.of(recipientsEmails)), changeable, maxRecipients, allSignToComplete, attachmentRequire);
+        List<String> recipients = new ArrayList<>();
+        if(recipientsEmails != null) {
+            recipients = List.of(recipientsEmails);
+        }
+        WorkflowStepDto workflowStepDto = new WorkflowStepDto(SignType.valueOf(signType), description, recipientService.convertRecipientEmailsToRecipientDto(recipients), changeable, maxRecipients, allSignToComplete, attachmentRequire);
         workflowStepService.addStep(id, workflowStepDto, authUserEppn, false, false, null);
         return "redirect:/user/workflows/" + id;
     }

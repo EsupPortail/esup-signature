@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
@@ -24,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,7 +50,8 @@ public class SignRequestWsController {
 
     @CrossOrigin
     @PostMapping(value ="/new", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    @Operation(description = "Création d'une demande de signature")
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Création d'une demande de signature")
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public ResponseEntity<?> create(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
                                     @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example = "[{\n" +
                                             "  \"title\": \"string\",\n" +
@@ -89,6 +92,7 @@ public class SignRequestWsController {
                                     @RequestParam(required = false) @Parameter(description = "Envoyer la demande automatiquement") Boolean pending,
                                     @RequestParam(required = false) @Parameter(description = "Emplacement final", example = "smb://drive.univ-ville.fr/forms-archive/") String targetUrl,
                                     @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json,
+                                    @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants") List<String> recipientsEmails,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants (ancien nom)") List<String> recipientEmails,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Tout les participants doivent-ils signer ?") Boolean allSignToComplete,
@@ -141,31 +145,40 @@ public class SignRequestWsController {
 
     @CrossOrigin
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(description = "Récupération d'une demande de signature", responses = @ApiResponse(description = "SignRequest", content = @Content(schema = @Schema(implementation = SignRequest.class))))
-    public String get(@Parameter(description = "Identifiant de la demande") @PathVariable Long id) throws JsonProcessingException {
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération d'une demande de signature",
+            responses = @ApiResponse(description = "SignRequest", content = @Content(schema = @Schema(implementation = SignRequest.class))))
+    @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
+    public String get(@Parameter(description = "Identifiant de la demande", required = true) @PathVariable Long id,
+                      @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
         return signRequestService.getJson(id);
     }
 
     @CrossOrigin
     @GetMapping(value = "/status/{id}")
-    @Operation(description = "Récupération du statut d'une demande de signature")
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération du statut d'une demande de signature")
     @ResponseBody
-    public String getStatus(@Parameter(description = "Identifiant de la demande") @PathVariable Long id) {
+    @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
+    public String getStatus(@Parameter(description = "Identifiant de la demande") @PathVariable Long id,
+                            @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         return signRequestService.getStatus(id);
     }
 
     @CrossOrigin
     @GetMapping(value = "/audit-trail/{id}")
-    @Operation(description = "Récupération du dossier de preuve de la demande", responses = @ApiResponse(description = "AuditTrail", content = @Content(schema = @Schema(implementation = AuditTrail.class))))
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération du dossier de preuve de la demande", responses = @ApiResponse(description = "AuditTrail", content = @Content(schema = @Schema(implementation = AuditTrail.class))))
     @ResponseBody
-    public String getAuditTail(@Parameter(description = "Dossier de preuve de la demande") @PathVariable Long id) throws JsonProcessingException {
+    @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
+    public String getAuditTail(@Parameter(description = "Dossier de preuve de la demande") @PathVariable Long id,
+                               @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
         return signRequestService.getAuditTrailJson(id);
     }
 
     @CrossOrigin
     @DeleteMapping("/{id}")
-    @Operation(description = "Supprimer une demande de signature définitivement")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Supprimer une demande de signature définitivement")
+    @PreAuthorize("@wsAccessTokenService.deleteWorkflowAccess(#id, #xApiKey)")
+    public ResponseEntity<String> delete(@PathVariable Long id,
+                                         @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         Long signBookId = signRequestService.getParentIdIfSignRequestUnique(id);
         if(signBookId != null) {
             signBookService.deleteDefinitive(signBookId, "system");
@@ -177,8 +190,10 @@ public class SignRequestWsController {
 
     @CrossOrigin
     @DeleteMapping("/soft/{id}")
-    @Operation(description = "Supprimer une demande de signature")
-    public ResponseEntity<String> softDelete(@PathVariable Long id) {
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Supprimer une demande de signature")
+    @PreAuthorize("@wsAccessTokenService.deleteWorkflowAccess(#id, #xApiKey)")
+    public ResponseEntity<String> softDelete(@PathVariable Long id,
+                                             @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         Long signBookId = signRequestService.getParentIdIfSignRequestUnique(id);
         if(signBookId != null) {
             signBookService.delete(signBookId, "system");
@@ -190,8 +205,10 @@ public class SignRequestWsController {
 
     @CrossOrigin
     @DeleteMapping("/{id}/signbook")
-    @Operation(description = "Supprimer le parapheur dans lequel se trouve la demande ciblée")
-    public ResponseEntity<String> deleteSignBook(@PathVariable Long id) {
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Supprimer le parapheur dans lequel se trouve la demande ciblée")
+    @PreAuthorize("@wsAccessTokenService.deleteWorkflowAccess(#id, #xApiKey)")
+    public ResponseEntity<String> deleteSignBook(@PathVariable Long id,
+                                                 @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         SignRequest signRequest = signRequestService.getById(id);
         signBookService.deleteDefinitive(signRequest.getParentSignBook().getId(), "system");
         return ResponseEntity.ok().build();
@@ -199,8 +216,10 @@ public class SignRequestWsController {
 
     @GetMapping(value = "/get-last-file/{id}")
     @ResponseBody
-    @Operation(description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
-    public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
+    @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
+    public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id,
+                                                           @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse httpServletResponse) {
         try {
             signRequestService.getToSignFileResponse(id, "attachment", httpServletResponse);
             return ResponseEntity.ok().build();
@@ -212,8 +231,10 @@ public class SignRequestWsController {
 
     @GetMapping(value = "/print-with-code/{id}")
     @ResponseBody
-    @Operation(description = "Récupérer le dernier fichier signé d'une demande avec un datamatrix apposé dessus", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
-    public ResponseEntity<Void> printWithCode(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande avec un datamatrix apposé dessus", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
+    @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
+    public ResponseEntity<Void> printWithCode(@PathVariable("id") Long id,
+                                              @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse httpServletResponse) {
         try {
             signRequestService.getToSignFileResponseWithCode(id, httpServletResponse);
             return ResponseEntity.ok().build();
@@ -225,8 +246,9 @@ public class SignRequestWsController {
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @Operation(description = "Récupérer toutes les demandes", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = List.class), mediaType = "application/pdf")))
-    public ResponseEntity<String> getAllSignRequests() {
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer toutes les demandes", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = List.class), mediaType = "application/pdf")))
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
+    public ResponseEntity<String> getAllSignRequests(@ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         try {
             return ResponseEntity.ok(signRequestService.getAllToJSon());
         } catch (Exception e) {
@@ -236,10 +258,11 @@ public class SignRequestWsController {
     }
 
     @GetMapping(value = "/return-test")
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     @ResponseBody
-    public ResponseEntity<Void> returnTest(@RequestParam("signRequestId") String signRequestId, @RequestParam("status") String status, @RequestParam("step") String step) {
+    public ResponseEntity<Void> returnTest(@RequestParam("signRequestId") String signRequestId, @RequestParam("status") String status, @RequestParam("step") String step,
+                                           @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         logger.info(signRequestId + ", " + status + ", " + step);
-        //ici, le code à executer en fonction du statut
         return ResponseEntity.ok().build();
     }
 

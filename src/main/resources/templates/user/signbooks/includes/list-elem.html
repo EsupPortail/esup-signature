@@ -20,7 +20,7 @@
             <i th:unless="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-success" title="Le document n'a pas été lu jusqu'à la dernière page"></i>
         </td>
         <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/user/signrequests/' + ${signRequest.id}" th:text="${signBook.workflowName}"></td>
-        <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" th:if="${signBook.signRequests.size() == 1}" class="clickable-td" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px;" th:text="${signBook.subject}"></td>
+        <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" th:if="${signBook.signRequests.size() == 1}" class="clickable-td" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" th:text="${signBook.subject}"></td>
         <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" th:if="${signBook.signRequests.size() > 1}" class="d-none d-xl-table-cell">
             <div class="dropdown">
                 <button th:if="${signRequest.originalDocuments.size() > 0}" th:title="${signBook.subject}" style="max-width: 200px; overflow: clip;" onclick="event.stopPropagation();" class="btn btn-sm multi-doc-font dropdown-toggle" type="button" th:id="'dropdownFilesButton-' + ${signBook.id}" data-bs-toggle="dropdown">
@@ -32,7 +32,8 @@
                     <th:block th:each="signRequest : ${signBook.signRequests}">
                         <li class="dropdown-item" th:if="${signRequest.originalDocuments.size() > 0}" th:title="${signRequest.originalDocuments.get(0).getFileName()}">
                             <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fa-solid fa-clock text-warning"></span>
-                            <span th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fa-solid fa-circle-check text-success"></span>
+                            <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}" class="fa-solid fa-circle-check text-success"></span>
+                            <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="fa-solid fa-circle-check text-danger"></span>
                             <a th:href="'/user/signrequests/' + ${signRequest.id}" th:text="${signRequest.getOriginalDocuments().get(0).getFileName()}"></a>
                         </li>
                     </th:block>

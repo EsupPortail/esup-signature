@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dto.WorkflowDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
@@ -20,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,7 +48,8 @@ public class WorkflowWsController {
 
     @CrossOrigin
     @PostMapping(value = "/{id}/new", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    @Operation(description = "Dépôt d'un document dans une nouvelle instance d'un circuit")
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Dépôt d'un document dans une nouvelle instance d'un circuit")
+    @PreAuthorize("@wsAccessTokenService.createWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<?> start(@PathVariable Long id,
                                    @RequestParam @Parameter(description = "Multipart stream du fichier à signer") MultipartFile[] multipartFiles,
                                    @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example = "[{\n" +
@@ -87,6 +90,7 @@ public class WorkflowWsController {
                                    @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
                                    @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls,
                                    @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Envoyer une alerte mail") Boolean sendEmailAlert,
+                                   @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey,
                                    @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json,
                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Paramètres de signature", example = "[{\"xPos\":100, \"yPos\":100, \"signPageNumber\":1}, {\"xPos\":200, \"yPos\":200, \"signPageNumber\":1}]") String signRequestParamsJsonString,
                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants pour chaque étape", example = "[stepNumber*email] ou [stepNumber*email*phone]") List<String> recipientsEmails,
@@ -111,7 +115,7 @@ public class WorkflowWsController {
         }
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
         if (signRequestParamsJsonString != null) {
-            signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
+            signRequestParamses = signRequestParamsService.getSignRequestParamsesFromJson(signRequestParamsJsonString);
         }
         try {
             List<Long> signRequestIds = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, steps, targetEmails, targetUrls, signRequestParamses, scanSignatureFields, sendEmailAlert);
@@ -128,15 +132,19 @@ public class WorkflowWsController {
 
     @CrossOrigin
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(description = "Récupération d'un circuit", responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = WorkflowDto.class))))
-    public String get(@PathVariable Long id) throws JsonProcessingException {
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération d'un circuit",
+            responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = WorkflowDto.class))))
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
+    public String get(@PathVariable Long id,
+                      @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
         return workflowService.getByIdJson(id);
     }
 
     @CrossOrigin
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(description = "Récupération de la liste des circuits disponibles", responses = @ApiResponse(description = "List<JsonDtoWorkflow>", content = @Content(schema = @Schema(implementation = List.class))))
-    public String getAll() throws JsonProcessingException {
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération de la liste des circuits disponibles", responses = @ApiResponse(description = "List<JsonDtoWorkflow>", content = @Content(schema = @Schema(implementation = List.class))))
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
+    public String getAll(@ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
         return workflowService.getAllWorkflowsJson();
     }
 

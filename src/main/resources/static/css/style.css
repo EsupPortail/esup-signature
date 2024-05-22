@@ -708,6 +708,10 @@ textarea:placeholder-shown.required-field {
     transition: background-image 0.2s ease-in-out;
 }
 
+.cross-error {
+    background-color: rgba(255, 0, 0, 0.5) !important;
+}
+
 .sign-textarea {
     font-family: "LiberationSans-Regular", serif !important;
     color: black;

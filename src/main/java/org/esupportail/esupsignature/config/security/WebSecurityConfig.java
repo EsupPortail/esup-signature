@@ -96,7 +96,7 @@ public class WebSecurityConfig {
 
 	@Bean
 	@Order(1)
-	@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base", "security.cas.service"})
+	@ConditionalOnProperty({"spring.ldap.base", "security.cas.service"})
 	public CasSecurityServiceImpl casSecurityServiceImpl() {
 		if(ldapContextSource!= null && ldapContextSource.getUserDn() != null) {
 			CasSecurityServiceImpl casSecurityService = new CasSecurityServiceImpl();
@@ -173,9 +173,11 @@ public class WebSecurityConfig {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.sessionManagement(sessionManagement -> sessionManagement.sessionAuthenticationStrategy(sessionAuthenticationStrategy()).maximumSessions(5).sessionRegistry(sessionRegistry()));
-		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/")).permitAll());
 		devSecurityFilters.forEach(devSecurityFilter -> http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class));
 		http.exceptionHandling(exceptionHandling -> exceptionHandling.defaultAuthenticationEntryPointFor(new IndexEntryPoint("/"), antMatcher("/")));
+		AccessDeniedHandlerImpl accessDeniedHandlerImpl = new AccessDeniedHandlerImpl();
+		accessDeniedHandlerImpl.setErrorPage("/denied");
+		http.exceptionHandling(exceptionHandling -> exceptionHandling.accessDeniedHandler(accessDeniedHandlerImpl));
 		for(SecurityService securityService : securityServices) {
 			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher(securityService.getLoginUrl())).authenticated());
 			http.exceptionHandling(exceptionHandling -> exceptionHandling.defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), antMatcher(securityService.getLoginUrl())));
@@ -249,10 +251,7 @@ public class WebSecurityConfig {
 //	}
 
 	private void setAuthorizeRequests(HttpSecurity http) throws Exception {
-		http.logout(logout -> logout.logoutSuccessUrl("/").permitAll());
-		AccessDeniedHandlerImpl accessDeniedHandlerImpl = new AccessDeniedHandlerImpl();
-		accessDeniedHandlerImpl.setErrorPage("/denied");
-		http.exceptionHandling(exceptionHandling -> exceptionHandling.accessDeniedHandler(accessDeniedHandlerImpl));
+		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/")).permitAll());
 		StringBuilder hasIpAddresses = new StringBuilder();
 		int nbIps = 0;
 		if(webSecurityProperties.getWsAccessAuthorizeIps() != null) {

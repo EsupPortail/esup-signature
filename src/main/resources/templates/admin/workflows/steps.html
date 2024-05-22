@@ -5,7 +5,7 @@
 <head th:replace="~{fragments/head :: head}"></head>
 <body>
 <script th:inline="javascript" type="module">
-    import {WorkflowUi} from '/js/modules/ui/workflows/WorkflowUi.js?version=[[${versionApp}]]';
+    import {WorkflowUi} from '/js/modules/ui/workflows/WorkflowUi.js?version=@[(${versionApp})]@';
     new WorkflowUi();
 </script>
 <header th:replace="~{fragments/nav :: nav}"></header>
