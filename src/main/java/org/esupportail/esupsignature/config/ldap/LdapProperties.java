@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import jakarta.annotation.PostConstruct;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,7 @@ public class LdapProperties {
     /**
      * Filtre de recherche des utilisateurs
      */
-    private String usersSearchFilter;
+    private String usersSearchFilter = "(&(|(displayName={0}*)(cn={0}*)(uid={0})(mail={0}*))(mail=*))";
     /**
      * Base de recherche des groupes, ex : ou=groups
      */
@@ -27,7 +28,7 @@ public class LdapProperties {
     /**
      * Filtre utilisé pour rechercher les groupes d’un utilisateur, ex : member={0}
      */
-    private String groupSearchFilter;
+    private String groupSearchFilter = "";
     /**
      * Filtre utilisé pour rechercher des groupes, ex : cn=*{0}
      */
@@ -41,21 +42,21 @@ public class LdapProperties {
      */
     private String membersOfGroupSearchFilter;
     /**
-     * Filtre pour contrôler l’appartenance d’un utilisateur à un groupe, ex : &(uid={0})({1}))
+     * Filtre pour contrôler l’appartenance d’un utilisateur à un groupe, ex : (&(uid={0})({1}))
      */
-    private String memberSearchFilter;
+    private String memberSearchFilter = "";
     /**
      * Le champ dans lequel on trouve le login des utilisateurs récupéré au moment de l’authentification, ex : (uid={0})
      */
-    private String userIdSearchFilter;
+    private String userIdSearchFilter = "(uid={0})";
     /**
-     * Le champ dans lequel on trouve l'eppn des utilisateurs c'est ce champ qui sera utilisé comme identifiant unique en base, ex : (eduPersonPrincipalName={0})
+     * Le champ dans lequel on trouve l’eppn des utilisateurs, c’est ce champ qui sera utilisé comme identifiant unique en base, ex : (eduPersonPrincipalName={0})
      */
-    private String userEppnSearchFilter;
+    private String userEppnSearchFilter = "(eduPersonPrincipalName={0})";
     /**
      * Le champ dans lequel on trouve l'email des utilisateurs , ex : (mail={0})
      */
-    private String userMailSearchFilter;
+    private String userMailSearchFilter = "(mail={0})";
     /**
      * Le champ dans lequel on trouve la partie gauche de l’EPPN (par défaut idem userIdSearchFilter)
      */
@@ -67,19 +68,19 @@ public class LdapProperties {
     /**
      * Object classes correspondant aux utilisateurs (un "ou" est appliqué aux valeurs de cette liste)
      */
-    private List<String> userObjectClasses;
+    private List<String> userObjectClasses = new ArrayList<>();
     /**
      * Object classes correspondant aux groupes (un "ou" est appliqué aux valeurs de cette liste)
      */
-    private List<String> groupObjectClasses;
+    private List<String> groupObjectClasses = new ArrayList<>();
     /**
      * Object classes correspondant aux OU (un "ou" est appliqué aux valeurs de cette liste)
      */
-    private List<String> ouObjectClasses;
+    private List<String> ouObjectClasses = new ArrayList<>();
     /**
      * Object classes correspondant aux alias (un "ou" est appliqué aux valeurs de cette liste)
      */
-    private List<String> aliasObjectClasses;
+    private List<String> aliasObjectClasses = new ArrayList<>();
 
     @PostConstruct
     private void initEppnLeftPartSearchFilter() {

@@ -13,6 +13,8 @@ import org.springframework.ldap.query.LdapQueryBuilder;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
+import org.springframework.util.StringUtils;
+
 import java.text.MessageFormat;
 import java.util.List;
 
@@ -37,7 +39,9 @@ public class LdapAliasService {
         for(String objectClass : ldapProperties.getAliasObjectClasses()) {
             objectClasses.append("(objectClass=").append(objectClass).append(")");
         }
-        formattedFilter = "(&(|" + objectClasses + ")" + formattedFilter + ")";
+        if(StringUtils.hasText(objectClasses)) {
+            formattedFilter = "(&(|" + objectClasses + ")" + formattedFilter + ")";
+        }
         logger.debug("search AliasLdap query : " + formattedFilter);
         LdapQuery ldapQuery = LdapQueryBuilder.query().countLimit(10).filter(formattedFilter);
         List<AliasLdap> aliasLdaps = ldapTemplate.search(ldapQuery, new AliasLdapAttributesMapper());

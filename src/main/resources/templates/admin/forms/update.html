@@ -3,7 +3,7 @@
 <!--/*@thymesVar id="preFillTypes" type="java.util.List<org.esupportail.esupsignature.service.interfaces.prefill.PreFill>"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
-    import {FormUi} from '/js/modules/ui/forms/FormUi.js?version=[[${versionApp}]]';
+    import {FormUi} from '/js/modules/ui/forms/FormUi.js?version=@[(${versionApp})]@';
     new FormUi();
 </script>
 <body>

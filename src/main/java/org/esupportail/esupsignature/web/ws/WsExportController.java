@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.web.ws;
 
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
@@ -10,11 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.InputStream;
 import java.net.URLEncoder;
@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/ws/export/")
-
 public class WsExportController {
 
     private static final Logger logger = LoggerFactory.getLogger(WsExportController.class);
@@ -37,7 +36,8 @@ public class WsExportController {
     private DataExportService dataExportService;
 
     @GetMapping(value = "/form/{name}/datas/csv", produces="text/csv")
-    public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, HttpServletResponse response) {
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
+    public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse response) {
         List<Form> forms = formRepository.findFormByNameAndDeletedIsNullOrDeletedIsFalse(name);
         if (!forms.isEmpty()) {
             try {
@@ -57,8 +57,9 @@ public class WsExportController {
     }
 
     @ResponseBody
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     @GetMapping(value = "/form/{name}/datas/json", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Map<String, String>> getFormDatasJson(@PathVariable String name) {
+    public List<Map<String, String>> getFormDatasJson(@PathVariable String name, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         return dataExportService.getDatasToExportByFormName(name);
     }
 

@@ -57,7 +57,7 @@ public class OtpAccessController {
     @Resource
     AuthenticationManager authenticationManager;
 
-    final private SmsService smsService;
+    private final SmsService smsService;
 
     public OtpAccessController(@Autowired(required = false) SmsService smsService) {
         this.smsService = smsService;

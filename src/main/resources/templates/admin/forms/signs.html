@@ -4,7 +4,7 @@
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
-    import {default as FormSignsUi} from '/js/modules/ui/forms/FormSignsUi.js?version=[[${versionApp}]]';
+    import {default as FormSignsUi} from '/js/modules/ui/forms/FormSignsUi.js?version=@[(${versionApp})]@';
     new FormSignsUi("admin", [[${form.id}]], [[${_csrf}]]);
 </script>
 <body>
@@ -55,13 +55,13 @@
     </div>
 </main>
 <script th:inline="javascript" type="module">
-    import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=[[${versionApp}]]';
+    import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=@[(${versionApp})]@';
     new SignUi(
         [[${form.id}]],
         null,
         [[${form.id}]],
         null,
-        0,
+        [[${user.defaultSignImageNumber}]],
         'form',
         true,
         true,

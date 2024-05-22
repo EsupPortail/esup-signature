@@ -3,7 +3,7 @@
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
-    import {Nexu} from '/js/modules/ui/signrequests/Nexu.js?version=[[${versionApp}]]';
+    import {Nexu} from '/js/modules/ui/signrequests/Nexu.js?version=@[(${versionApp})]@';
     $(document).ready(function() {
         new Nexu([[${addExtra}]], [[${ids}]], 'nexuSign', [[${urlProfil}]]);
     });

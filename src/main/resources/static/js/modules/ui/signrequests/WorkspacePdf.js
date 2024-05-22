@@ -75,8 +75,10 @@ export class WorkspacePdf {
             if(this.wsTabs.length) {
                 this.autocollapse();
                 let self = this;
-                $(window).on('resize', function () {
-                    self.autocollapse();
+                $(window).on('resize', function (e) {
+                    if(e.target.tagName == null) {
+                        self.autocollapse();
+                    }
                 });
                 if(this.secondTools.children().length > 0) {
                     this.workspace.css("margin-top", "216px");
@@ -142,6 +144,7 @@ export class WorkspacePdf {
         $("#addCheck").on("click", e => this.signPosition.addCheckImage(this.pdfViewer.pageNum));
         $("#addTimes").on("click", e => this.signPosition.addTimesImage(this.pdfViewer.pageNum));
         $("#addCircle").on("click", e => this.signPosition.addCircleImage(this.pdfViewer.pageNum));
+        $("#addMinus").on("click", e => this.signPosition.addMinusImage(this.pdfViewer.pageNum));
         $("#addText").on("click ", e => this.signPosition.addText(this.pdfViewer.pageNum));
 
         let signImageBtn = $("#signImage");
@@ -207,9 +210,9 @@ export class WorkspacePdf {
                 signSpaceDiv.on("click", e => this.addSign(i));
                 if(currentSignRequestParams.ready == null || !currentSignRequestParams.ready) {
                     if(this.signType !== "visa") {
-                        signSpaceDiv.html("Cliquez ici pour insérer votre signature<br>" + currentSignRequestParams.comment);
+                        signSpaceDiv.html("Cliquez ici pour insérer votre signature");
                     } else {
-                        signSpaceDiv.html("Cliquez ici pour insérer votre visa<br>" + currentSignRequestParams.comment);
+                        signSpaceDiv.html("Cliquez ici pour insérer votre visa");
                     }
                 }
                 if (currentSignRequestParams.ready) {
@@ -266,10 +269,16 @@ export class WorkspacePdf {
                 localStorage.setItem('mode', this.mode);
             }
             console.info("init to " + this.mode + " mode");
-            if (localStorage.getItem('mode') === 'comment') {
-                this.enableCommentMode();
-            } else if (this.currentSignType !== 'form') {
+            if(this.signable) {
+                if (localStorage.getItem('mode') === 'comment') {
+                    this.enableCommentMode();
+                } else if (this.currentSignType !== 'form') {
+                    this.enableSignMode();
+                }
+            } else if(!this.editable) {
                 this.enableSignMode();
+            } else {
+                this.enableCommentMode();
             }
             this.wheelDetector.addEventListener("down", e => this.pdfViewer.checkCurrentPage(e));
             this.wheelDetector.addEventListener("up", e => this.pdfViewer.checkCurrentPage(e));
@@ -573,24 +582,26 @@ export class WorkspacePdf {
                         signDiv.css("font-size", 12 * self.pdfViewer.scale);
                     }
                     spotDiv.unbind('mouseup');
-                    spotDiv.on('mouseup', function (e) {
-                        e.stopPropagation();
-                        bootbox.confirm("Supprimer cet emplacement de signature ?", function (result) {
-                            if (result) {
-                                let url = "/ws-secure/global/delete-comment/" + self.signRequestId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
-                                if(self.currentSignType === "form") {
-                                    url = "/admin/forms/delete-spot/" + self.formId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
-                                }
-                                $.ajax({
-                                    method: 'DELETE',
-                                    url: url,
-                                    success: function () {
-                                        spotDiv.remove();
+                    if(signDiv.attr("data-es-delete")) {
+                        spotDiv.on('mouseup', function (e) {
+                            e.stopPropagation();
+                            bootbox.confirm("Supprimer cet emplacement de signature ?", function (result) {
+                                if (result) {
+                                    let url = "/ws-secure/global/delete-comment/" + self.signRequestId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
+                                    if (self.currentSignType === "form") {
+                                        url = "/admin/forms/delete-spot/" + self.formId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
                                     }
-                                });
-                            }
+                                    $.ajax({
+                                        method: 'DELETE',
+                                        url: url,
+                                        success: function () {
+                                            spotDiv.remove();
+                                        }
+                                    });
+                                }
+                            });
                         });
-                    });
+                    }
                 }
                 index++;
             }
@@ -768,6 +779,7 @@ export class WorkspacePdf {
         localStorage.setItem('mode', 'comment');
         $("#postitHelp").remove();
         this.disableAllModes();
+        $("#changeMode1").attr("checked", true);
         $("#postit").removeClass("d-none");
         $("#commentHelp").removeClass("d-none");
         this.mode = 'comment';
@@ -800,6 +812,7 @@ export class WorkspacePdf {
         console.info("enable sign mode");
         localStorage.setItem('mode', 'sign');
         this.disableAllModes();
+        $("#changeMode2").attr("checked", true);
         this.mode = 'sign';
         this.signPosition.pointItEnable = false;
         if (this.status === 'pending') {
@@ -1004,34 +1017,23 @@ export class WorkspacePdf {
         //     text: 'Lecture',
         //     value: 'read'
         // });
-
-        if($("#changeMode").length) {
-            this.changeModeSelector = new SlimSelect({
-                select: '#changeMode',
-                settings: {
-                    showSearch: false,
-                    valuesUseText: false,
-                },
-                events: {
-                    afterChange: (val) => {
-                        this.changeMode(val)
-                    }
-                },
-            });
-            this.changeModeSelector.setData(data);
-        }
+        let self = this;
+        $("#changeMode1").on("click", function(e) {
+            self.changeMode("comment");
+        });
+        $("#changeMode2").on("click", function(e) {
+            self.changeMode("sign");
+        });
         if(this.changeModeSelector != null) {
-            if(this.signable) {
-                this.changeModeSelector.setSelected("sign");
-            } else {
-                this.changeModeSelector.setSelected("read");
+            if(!this.signable) {
+                this.enableCommentMode();
             }
         }
     }
 
     changeMode(e) {
         if(this.ready) {
-            let mode = e[0].value;
+            let mode = e;
             console.info("change mode to : " + mode);
             if (mode === "sign" && this.signable) {
                 this.enableSignMode();

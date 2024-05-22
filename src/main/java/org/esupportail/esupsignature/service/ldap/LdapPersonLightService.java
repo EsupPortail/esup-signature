@@ -13,6 +13,8 @@ import org.springframework.ldap.query.LdapQueryBuilder;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
+import org.springframework.util.StringUtils;
+
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
@@ -53,7 +55,11 @@ public class LdapPersonLightService {
         for(String objectClass : ldapProperties.getUserObjectClasses()) {
             objectClasses.append("(objectClass=").append(objectClass).append(")");
         }
-        formattedFilter = "(&(|" + objectClasses + ")" + formattedFilter + ")";
+        if(StringUtils.hasText(objectClasses)) {
+            formattedFilter = "(&(|" + objectClasses + ")" + formattedFilter + ")";
+        } else {
+            logger.debug("no userObjectClasses found");
+        }
         LdapQuery ldapQuery = LdapQueryBuilder.query().countLimit(10).base(ldapProperties.getSearchBase()).filter(formattedFilter);
         logQuery(ldapQuery);
         return ldapTemplate.search(ldapQuery, new PersonLightLdapAttributesMapper());

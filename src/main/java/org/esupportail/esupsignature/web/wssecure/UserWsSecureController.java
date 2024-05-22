@@ -87,7 +87,7 @@ public class UserWsSecureController {
     public ResponseEntity<Void> getSignature(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
         Map<String, Object> signature = userService.getSignatureByUserAndId(userEppn, id);
         if(signature != null) {
-            return getDocumentResponseEntity(response, (byte[]) signature.get("bytes"), signature.get("fileName").toString(), (String) signature.get("contentType"));
+            return getDocumentResponseEntity(response, (byte[]) signature.get("bytes"), (String) signature.get("fileName"), (String) signature.get("contentType"));
         } else {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -95,8 +95,26 @@ public class UserWsSecureController {
 
     @GetMapping(value = "/get-default-image")
     @ResponseBody
-    public String getDefaultImage(@ModelAttribute("authUserEppn") String authUserEppn) throws IOException {
-        return userService.getDefaultImage(authUserEppn);
+    public ResponseEntity<Void> getDefaultImage(@ModelAttribute("authUserEppn") String authUserEppn, HttpServletResponse response) throws IOException {
+        return getDocumentResponseEntity(response, userService.getDefaultImage(authUserEppn).readAllBytes(), "default.png", "image/png");
+    }
+
+    @GetMapping(value = "/get-default-image-base64")
+    @ResponseBody
+    public String getDefaultImageBase64(@ModelAttribute("authUserEppn") String authUserEppn) throws IOException {
+        return userService.getDefaultImage64(authUserEppn);
+    }
+
+    @GetMapping(value = "/get-default-paraphe")
+    @ResponseBody
+    public ResponseEntity<Void> getDefaultParaphe(@ModelAttribute("authUserEppn") String authUserEppn, HttpServletResponse response) throws IOException {
+        return getDocumentResponseEntity(response, userService.getDefaultParaphe(authUserEppn).readAllBytes(), "default.png", "image/png");
+    }
+
+    @GetMapping(value = "/get-default-paraphe-base64")
+    @ResponseBody
+    public String getDefaultParapheBase64(@ModelAttribute("authUserEppn") String authUserEppn) throws IOException {
+        return userService.getDefaultParaphe64(authUserEppn);
     }
 
     @GetMapping(value = "/get-keystore")

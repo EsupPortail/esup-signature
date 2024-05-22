@@ -39,7 +39,7 @@ export class SignPosition extends EventFactory {
 
     initListeners() {
         let self = this;
-        $(window).on('scroll', function() {
+        $(window).on('scroll', function(e) {
             self.scrollTop = $(this).scrollTop();
         });
     }
@@ -147,6 +147,10 @@ export class SignPosition extends EventFactory {
 
     addCircleImage(page) {
         this.addSign(page, false, -3);
+    }
+
+    addMinusImage(page) {
+        this.addSign(page, false, -4);
     }
 
     addText(page) {

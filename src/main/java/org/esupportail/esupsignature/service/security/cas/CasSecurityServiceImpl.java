@@ -11,6 +11,8 @@ import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.SpelGroupService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -27,11 +29,14 @@ import org.springframework.security.ldap.search.LdapUserSearch;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsService;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CasSecurityServiceImpl implements SecurityService {
+
+	private static final Logger logger = LoggerFactory.getLogger(CasSecurityServiceImpl.class);
 
 	@Resource
 	private WebSecurityProperties webSecurityProperties;
@@ -62,6 +67,8 @@ public class CasSecurityServiceImpl implements SecurityService {
 
 	@Resource
 	private RegisterSessionAuthenticationStrategy registerSessionAuthenticationStrategy;
+
+	private LdapUserDetailsService ldapUserDetailsService;
 
 	@Override
 	public String getTitle() {
@@ -134,7 +141,11 @@ public class CasSecurityServiceImpl implements SecurityService {
 	}
 
 	public LdapUserDetailsService ldapUserDetailsService() {
+		if(this.ldapUserDetailsService != null) return this.ldapUserDetailsService;
 		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getUserIdSearchFilter(), ldapContextSource);
+		if(!StringUtils.hasText(ldapProperties.getGroupSearchBase())) {
+			logger.warn("no groupSearchBase found, unable to get users groups automatically");
+		}
 		CasLdapAuthoritiesPopulator casLdapAuthoritiesPopulator = new CasLdapAuthoritiesPopulator(ldapContextSource, ldapProperties.getGroupSearchBase());
 		casLdapAuthoritiesPopulator.setMappingFiltersGroupsRepository(mappingFiltersGroupsRepository);
 		casLdapAuthoritiesPopulator.setMappingGroupsRolesRepository(mappingGroupsRolesRepository);
@@ -151,6 +162,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 		LdapUserDetailsMapper ldapUserDetailsMapper = new LdapUserDetailsMapper();
 		ldapUserDetailsMapper.setRoleAttributes(new String[] {});
 		ldapUserDetailsService.setUserDetailsMapper(ldapUserDetailsMapper);
+		this.ldapUserDetailsService = ldapUserDetailsService;
 		return ldapUserDetailsService;
 	}
 

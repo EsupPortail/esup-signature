@@ -120,7 +120,7 @@ public class UserService {
 
     @Transactional
     public User getSystemUser() {
-        return createUser("system", "Esup-Signature", "Automate", "system", UserType.system, false);
+        return createUser("system", globalProperties.getSystemUserName(), globalProperties.getSystemUserFirstName(), "system", UserType.system, false);
     }
 
     @Transactional
@@ -135,7 +135,7 @@ public class UserService {
 
     @Transactional
     public User getSchedulerUser() {
-        return createUser("scheduler", "Esup-Signature", "Automate", globalProperties.getApplicationEmail(), UserType.system, false);
+        return createUser("scheduler", globalProperties.getSystemUserName(), globalProperties.getSystemUserFirstName(), globalProperties.getApplicationEmail(), UserType.system, false);
     }
 
     @Transactional
@@ -189,8 +189,8 @@ public class UserService {
                 user.setKeystoreFileName(user.getKeystore().getFileName());
             }
             user.setSignImagesIds(user.getSignImages().stream().map(Document::getId).collect(Collectors.toList()));
-            if (user.getDefaultSignImageNumber() == null || user.getDefaultSignImageNumber() < 0 || user.getDefaultSignImageNumber() >= user.getSignImages().size()) {
-                user.setDefaultSignImageNumber(0);
+            if (user.getDefaultSignImageNumber() == null || user.getDefaultSignImageNumber() < 0 || (user.getDefaultSignImageNumber() != 999997 && user.getDefaultSignImageNumber() >= user.getSignImages().size())) {
+                user.setDefaultSignImageNumber(999998);
             }
             return user;
         }
@@ -370,33 +370,16 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUser(String authUserEppn, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, String signRequestParamsJsonString, Boolean returnToHomeAfterSign) throws IOException {
+    public void updateUser(String authUserEppn, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, SignRequestParams signRequestParams, Boolean returnToHomeAfterSign) throws IOException {
         User authUser = getByEppn(authUserEppn);
-        if(signRequestParamsJsonString != null && !signRequestParamsJsonString.isEmpty()) {
-            SignRequestParams signRequestParams = objectMapper.readValue(signRequestParamsJsonString, SignRequestParams.class);
+        if(signRequestParams != null) {
             signRequestParams.setxPos(0);
             signRequestParams.setyPos(0);
             signRequestParams.setSignWidth(300);
             signRequestParams.setSignHeight(150);
-            if(authUser.getFavoriteSignRequestParams() == null) {
-                signRequestParamsRepository.save(signRequestParams);
-                authUser.setFavoriteSignRequestParams(signRequestParams);
-            } else {
-                authUser.getFavoriteSignRequestParams().setAddExtra(signRequestParams.getAddExtra());
-                authUser.getFavoriteSignRequestParams().setAddWatermark(signRequestParams.getAddWatermark());
-                authUser.getFavoriteSignRequestParams().setExtraType(signRequestParams.getExtraType());
-                authUser.getFavoriteSignRequestParams().setExtraDate(signRequestParams.getExtraDate());
-                authUser.getFavoriteSignRequestParams().setExtraName(signRequestParams.getExtraName());
-                authUser.getFavoriteSignRequestParams().setExtraText(signRequestParams.getExtraText());
-                authUser.getFavoriteSignRequestParams().setExtraOnTop(signRequestParams.getExtraOnTop());
-            }
-        } else {
-            if(authUser.getFavoriteSignRequestParams() != null) {
-                SignRequestParams signRequestParams = authUser.getFavoriteSignRequestParams();
-                authUser.setFavoriteSignRequestParams(null);
-                signRequestParamsRepository.delete(signRequestParams);
-            }
+
         }
+        authUser.setFavoriteSignRequestParams(signRequestParams);
         if(multipartKeystore != null && !multipartKeystore.isEmpty() && !globalProperties.getDisableCertStorage()) {
             if(authUser.getKeystore() != null) {
                 documentService.delete(authUser.getKeystore());
@@ -406,7 +389,7 @@ public class UserService {
         if(signImageBase64 != null && !signImageBase64.isEmpty()) {
             authUser.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signImageBase64), authUser, authUser.getEppn() + "_sign.png", "image/png"));
             if(authUser.getSignImages().size() == 1) {
-                authUser.setDefaultSignImageNumber(0);
+                authUser.setDefaultSignImageNumber(999998);
             }
         }
         authUser.setEmailAlertFrequency(emailAlertFrequency);
@@ -701,8 +684,10 @@ public class UserService {
             signature.put("bytes", signImage.get().getInputStream().readAllBytes());
             signature.put("fileName", "sign_" + signImage.get().getFileName());
             signature.put("contentType", signImage.get().getContentType());
+            return signature;
+        } else {
+            return null;
         }
-        return signature;
     }
 
     @Transactional
@@ -711,7 +696,7 @@ public class UserService {
         Document signDocument = documentService.getById(id);
         int test = authUser.getSignImages().indexOf(signDocument);
         if (authUser.getDefaultSignImageNumber().equals(test)) {
-            authUser.setDefaultSignImageNumber(0);
+            authUser.setDefaultSignImageNumber(999998);
         } else {
             if(test < authUser.getDefaultSignImageNumber()) {
                 authUser.setDefaultSignImageNumber(authUser.getDefaultSignImageNumber() - 1);
@@ -862,9 +847,25 @@ public class UserService {
     }
 
     @Transactional
-    public String getDefaultImage(String eppn) throws IOException {
+    public InputStream getDefaultImage(String eppn) throws IOException {
         User user = getByEppn(eppn);
-        return fileService.getBase64Image(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), false), "default");
+        return fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), false);
+    }
+
+    @Transactional
+    public String getDefaultImage64(String eppn) throws IOException {
+        return fileService.getBase64Image(getDefaultImage(eppn), "default");
+    }
+
+    @Transactional
+    public InputStream getDefaultParaphe(String eppn) throws IOException {
+        User user = getByEppn(eppn);
+        return fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail(), false);
+    }
+
+    @Transactional
+    public String getDefaultParaphe64(String eppn) throws IOException {
+        return fileService.getBase64Image(getDefaultParaphe(eppn), "default");
     }
 
     @Transactional

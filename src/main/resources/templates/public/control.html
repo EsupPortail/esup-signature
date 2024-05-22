@@ -19,15 +19,18 @@
             </ul>
         </div>
         <th:block th:if="${auditTrail != null && (auditTrailChecked != null && auditTrailChecked) || (viewAccess != null && viewAccess) || signRequest != null}">
-            <th:block th:if="${auditTrail != null && auditTrail.getDocumentCheckSum() != null}">
-                <div class="alert alert-success mb-1 text-center">
+            <th:block th:if="${auditTrail != null}">
+                <div class="alert alert-success mb-1 text-center" th:if="${auditTrail.getDocumentCheckSum() != null}">
                     <h5>Le document est conforme.</h5>
+                </div>
+                <div class="alert alert-success mb-1 text-center" th:if="${simpleReport != null}">
+                    <h5>Le document contient une signature électronique.</h5>
                 </div>
                 <div class="alert alert-info mb-1" th:if="${signRequest != null && viewAccess != null && viewAccess}">
                     Vous avez accès à cette demande : <a th:href="'/user/signrequests/' + ${signRequest.id}">Voir la demande</a>
                 </div>
                 <div class="row">
-                    <div class="alert alert-light border-secondary mx-auto mb-1">
+                    <div class="alert alert-light border-secondary mx-auto mb-1" th:if="${auditTrail.getDocumentCheckSum() != null}">
                         <h4>Informations générales sur le document</h4>
                         <dl class="row border-bottom m-0">
                             <dt class="col-3">Nom de document : </dt>
@@ -56,7 +59,7 @@
                             </thead>
                             <tbody>
                             <th:block th:each="auditStep, iterator : ${auditTrail.auditSteps}">
-                                <tr data-bs-toggle="collapse" data-bs-target="#collapseExample" style="cursor: pointer;" title="Cliquez ici pour afficher le detail">
+                                <tr data-bs-toggle="collapse" th:data-bs-target="'#collapse-' + ${iterator.index}" style="cursor: pointer;" title="Cliquez ici pour afficher le detail">
                                     <td><i class="fa-solid fa-plus"></i></td>
                                     <td class="text-left"><span
                                             th:text="${#dates.format(auditStep.timeStampDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
@@ -64,7 +67,7 @@
                                     <td class="text-left"><span th:text="${auditStep.email}"></span></td>
                                     <td class="text-left" th:text="${auditStep.getAllScrolled()} ? 'lu' : 'non lu'"></td>
                                 </tr>
-                                <tr class="collapse" id="collapseExample">
+                                <tr class="collapse" th:id="'collapse-' + ${iterator.index}">
                                     <td colspan="6">
                                         <dl class="row border-bottom m-0">
                                             <dt class="col-lg-5">Login : </dt>
@@ -87,14 +90,14 @@
                             </th:block>
                             </tbody>
                         </table>
-                        <div th:utext="${simpleReport}" class="mt-2"></div>
+                        <div th:if="${simpleReport != null}" th:utext="${simpleReport}" class="mt-2"></div>
                     </div>
                 </div>
                 <div class="alert alert-success mb-1 text-center" th:if="${signRequest == null}">
                     <h5>Le document a bien été signé sur cette plateforme</h5>
                 </div>
             </th:block>
-            <th:block th:if="${auditTrail == null || auditTrail.getDocumentCheckSum() == null}">
+            <th:block th:if="${auditTrail == null}">
                 <div class="alert alert-warning mb-1">
                     <h5>Le document est en cours de signature</h5>
                 </div>
