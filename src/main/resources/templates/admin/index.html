@@ -50,6 +50,9 @@
                         <a title="Gestion des certificats" type="button" href="/admin/certificats" class="btn text-center col-2">
                             <i class="fa-solid fa-certificate fa-2xl"  th:classappend="${expiredCertificat == true} ? 'text-danger' : 'text-success'"></i><br><span th:classappend="${expiredCertificat == true} ? 'text-danger' : 'text-success'">Gestion des certificats</span>
                         </a>
+                        <a title="Tokens API" type="button" href="/admin/ws-access-token" class="btn text-center col-2">
+                            <i class="fa-solid fa-key fa-2xl"></i><br>Tokens API
+                        </a>
                     </div>
                     <hr class="newHr">
                     <h5>Outils</h5>

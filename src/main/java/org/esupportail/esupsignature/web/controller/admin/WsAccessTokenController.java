@@ -22,9 +22,8 @@ public class WsAccessTokenController {
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
-        return "tokens-api";
+        return "tokensApi";
     }
-
 
     @Resource
     private WsAccessTokenService wsAccessTokenService;
