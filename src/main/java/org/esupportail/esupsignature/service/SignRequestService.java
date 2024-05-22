@@ -401,7 +401,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public SignRequest createSignRequest(String name, SignBook signBook, String userEppn, String authUserEppn, String wsAccessToken) {
+	public SignRequest createSignRequest(String name, SignBook signBook, String userEppn, String authUserEppn) {
 		String token = UUID.randomUUID().toString();
 		while (signRequestRepository.findByToken(token).isPresent()) {
 			token = UUID.randomUUID().toString();

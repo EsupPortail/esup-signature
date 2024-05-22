@@ -9,14 +9,16 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dto.RecipientWsDto;
+import org.esupportail.esupsignature.dto.WorkflowDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
-import org.esupportail.esupsignature.dto.WorkflowDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -25,7 +27,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.annotation.Resource;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,8 +61,8 @@ public class FormWsController {
 
     @CrossOrigin
     @PostMapping(value = "/{id}/new")
-    @Operation(description = "Création d'une nouvelle instance d'un formulaire")
-    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Création d'une nouvelle instance d'un formulaire")
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public ResponseEntity<?> start(@PathVariable Long id,
                                    @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example = "[{\n" +
                                            "  \"title\": \"string\",\n" +
@@ -102,7 +103,7 @@ public class FormWsController {
                                    @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls,
                                    @RequestParam(required = false) @Parameter(description = "Données par défaut à remplir dans le formulaire", example = "{'field1' : 'toto, 'field2' : 'tata'}") String formDatas,
                                    @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Envoyer une alerte mail") Boolean sendEmailAlert,
-                                   @ModelAttribute("wsAccessToken") String wsAccessToken,
+                                   @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey,
                                    @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json,
                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants pour chaque étape (ancien nom)", example = "[stepNumber*email] ou [stepNumber*email*phone]") List<String> recipientEmails,
                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants pour chaque étape", example = "[stepNumber*email] ou [stepNumber*email*phone]") List<String> recipientsEmails,
@@ -151,16 +152,16 @@ public class FormWsController {
 
     @CrossOrigin
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(description = "Récupération d'un circuit", responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = WorkflowDto.class))))
-    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
-    public String get(@PathVariable Long id, @ModelAttribute("wsAccessToken") String wsAccessToken) throws JsonProcessingException {
+     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération d'un circuit", responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = WorkflowDto.class))))
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
+    public String get(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
         return formService.getByIdJson(id);
     }
 
     @CrossOrigin
     @PostMapping(value = "/{id}/new-doc", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    @Operation(description = "Création d'une nouvelle instance d'un formulaire")
-    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Création d'une nouvelle instance d'un formulaire")
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public ResponseEntity<?> startWithDoc(@PathVariable Long id,
                              @RequestParam @Parameter(description = "Multipart stream du fichier à signer") MultipartFile[] multipartFiles,
                              @RequestParam @Parameter(description = "Eppn du propriétaire du futur document") String createByEppn,
@@ -177,7 +178,7 @@ public class FormWsController {
                              @RequestParam(required = false) @Parameter(description = "Titre") String title,
                              @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Envoyer une alerte mail") Boolean sendEmailAlert,
                              @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json,
-                             @ModelAttribute("wsAccessToken") String wsAccessToken
+                             @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey
     ) {
         if(json == null) {
             json = false;
@@ -211,17 +212,17 @@ public class FormWsController {
     @CrossOrigin
     @Deprecated
     @PostMapping(value = "/get-datas/{id}")
-    @Operation(description = "Récupération des données d'un formulaire (POST)", deprecated = true)
-    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
-    public LinkedHashMap<String, String> postGetDatas(@PathVariable Long id, @ModelAttribute("wsAccessToken") String wsAccessToken) {
+     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération des données d'un formulaire (POST)", deprecated = true)
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
+    public LinkedHashMap<String, String> postGetDatas(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         return dataExportService.getJsonDatasFromSignRequest(id);
     }
 
     @CrossOrigin
     @GetMapping(value = "/get-datas/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(description = "Récupération des données d'un formulaire")
-    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
-    public LinkedHashMap<String, String> getDatas(@PathVariable Long id, @ModelAttribute("wsAccessToken") String wsAccessToken) {
+     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération des données d'un formulaire")
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
+    public LinkedHashMap<String, String> getDatas(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         return dataExportService.getJsonDatasFromSignRequest(id);
     }
 

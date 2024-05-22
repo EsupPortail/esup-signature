@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.ws;
 
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
@@ -35,8 +36,8 @@ public class WsExportController {
     private DataExportService dataExportService;
 
     @GetMapping(value = "/form/{name}/datas/csv", produces="text/csv")
-    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
-    public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, @ModelAttribute("wsAccessToken") String wsAccessToken, HttpServletResponse response) {
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
+    public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse response) {
         List<Form> forms = formRepository.findFormByNameAndDeletedIsNullOrDeletedIsFalse(name);
         if (!forms.isEmpty()) {
             try {
@@ -56,9 +57,9 @@ public class WsExportController {
     }
 
     @ResponseBody
-    @PreAuthorize("@wsAccessTokenService.isAllAccess(#wsAccessToken)")
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     @GetMapping(value = "/form/{name}/datas/json", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Map<String, String>> getFormDatasJson(@PathVariable String name, @ModelAttribute("wsAccessToken") String wsAccessToken) {
+    public List<Map<String, String>> getFormDatasJson(@PathVariable String name, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         return dataExportService.getDatasToExportByFormName(name);
     }
 

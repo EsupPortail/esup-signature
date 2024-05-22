@@ -14,12 +14,8 @@ public class WsControllerAdvice {
 
     private static final List<String> API_KEY_HEADERS = Arrays.asList("x-api-key", "x-apikey", "xapikey");
 
-    @ModelAttribute("wsAccessToken")
-    public String getWsAccessToken(HttpServletRequest request) {
-        return getApiKey(request);
-    }
-
-    public String getApiKey(HttpServletRequest request) {
+    @ModelAttribute("xApiKey")
+    public String getXApiKey(HttpServletRequest request) {
         Optional<String> headerName = Collections.list(request.getHeaderNames()).stream().filter(name -> API_KEY_HEADERS.contains(name.toLowerCase())).findFirst();
         return headerName.map(request::getHeader).orElse(null);
     }

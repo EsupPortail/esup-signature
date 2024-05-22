@@ -1,10 +1,12 @@
 package org.esupportail.esupsignature.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import jakarta.servlet.MultipartConfigElement;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -84,7 +86,13 @@ public class WebAppConfig implements WebMvcConfigurer {
 						.license(new License().name("Apache 2.0").url("http://www.apache.org/licenses/LICENSE-2.0")))
 				.externalDocs(new ExternalDocumentation()
 						.description("Wiki Esup Signature")
-						.url("https://www.esup-portail.org/wiki/display/SIGN/Accueil"));
+						.url("https://www.esup-portail.org/wiki/display/SIGN/Accueil"))
+				.components(new Components()
+						.addSecuritySchemes("x-api-key", new SecurityScheme()
+								.type(SecurityScheme.Type.APIKEY)
+								.name("x-api-key")
+								.description("Nécessaire ou facultatif en fonction de la configuration")
+								.in(SecurityScheme.In.HEADER)));
 	}
 
 }
