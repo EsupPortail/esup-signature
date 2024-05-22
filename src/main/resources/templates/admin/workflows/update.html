@@ -3,7 +3,7 @@
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
-    import {WorkflowUi} from '/js/modules/ui/workflows/WorkflowUi.js?version=[[${versionApp}]]';
+    import {WorkflowUi} from '/js/modules/ui/workflows/WorkflowUi.js?version=@[(${versionApp})]@';
     new WorkflowUi();
 </script>
 <body>

@@ -7,7 +7,7 @@
 <!--/*@thymesVar id="infiniteScrolling" type="java.lang.Boolean"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
-    import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=[[${versionApp}]]';
+    import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=@[(${versionApp})]@';
     new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${creatorFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "admin");
 </script>
 <body>

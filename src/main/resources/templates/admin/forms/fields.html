@@ -5,7 +5,7 @@
 <!--/*@thymesVar id="preFillTypes" type="java.util.Map<String, java.util.List<String>>"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
-    import {FormFieldsUi} from '/js/modules/ui/forms/FormFieldsUi.js?version=[[${versionApp}]]';
+    import {FormFieldsUi} from '/js/modules/ui/forms/FormFieldsUi.js?version=@[(${versionApp})]@';
     new FormFieldsUi("admin", [[${form.id}]], [[${preFillTypes}]]);
 </script>
 <body>
@@ -182,7 +182,7 @@
             </div>
             <div class="modal-body">
                 <script th:inline="javascript" type="module">
-                    import {FormManualAdd } from '/js/modules/ui/forms/FormManualAdd.js?version=[[${versionApp}]]';
+                    import {FormManualAdd } from '/js/modules/ui/forms/FormManualAdd.js?version=@[(${versionApp})]@';
                     new FormManualAdd();
                 </script>
                 <form th:action="'/admin/forms/add-field/' + ${form.id}" method="post">

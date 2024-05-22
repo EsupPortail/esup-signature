@@ -162,11 +162,11 @@ public class SignRequestService {
 
 	public String getStatus(long id) {
 		SignRequest signRequest = getById(id);
-		if(signRequest != null){
+		if (signRequest != null) {
 			return signRequest.getStatus().name();
 		} else {
 			List<Log> logs = logService.getBySignRequest(id);
-			if(!logs.isEmpty()) {
+			if (!logs.isEmpty()) {
 				return "fully-deleted";
 			}
 		}

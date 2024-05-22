@@ -200,7 +200,7 @@
                 </div>
             </form>
             <script th:inline="javascript" type="module">
-                import {default as SelectUser} from '/js/modules/utils/SelectUser.js?version=[[${versionApp}]]';
+                import {default as SelectUser} from '/js/modules/utils/SelectUser.js?version=@[(${versionApp})]@';
                 new SelectUser("recipientsEmails2", null, null, [[${_csrf}]]);
             </script>
         </div>

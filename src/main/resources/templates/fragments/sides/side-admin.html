@@ -47,6 +47,10 @@
             title="Gestion des certificats" type="button" href="/admin/certificats" class="mb-1 col-12 btn text-left">
             <i class="fa-solid fa-certificate" th:classappend="${expiredCertificat == true} ? 'text-danger' : 'text-success'"></i> <span th:classappend="${expiredCertificat == true} ? 'text-danger' : ''" class="sidebar-label">Gestion des certificats</span>
         </a>
+        <a th:classappend="${activeMenu == 'tokensApi'} ? 'btn-secondary' : 'btn-light'"
+            title="Tokens API" href="/admin/ws-access-token" class="mb-1 col-12 btn text-left">
+            <i class="fa-solid fa-key"></i> <span class="sidebar-label">Tokens API</span>
+        </a>
         <div class="hr"><i class="fa-solid fa-tools me-1"></i><span class="sidebar-label"> Outils</span></div>
         <a th:classappend="${activeMenu == 'currentSessions'} ? 'btn-secondary' : 'btn-light'"
             title="Sessions courantes" href="/admin/currentsessions" class="btn col-12 mb-1 text-left">
@@ -67,7 +71,6 @@
         <a title="Doc des APIs" target="_blank" type="button" href="/swagger-ui.html" class="mb-1 col-12 btn btn-light text-left">
             <i class="fa-solid fa-code"></i> <span class="sidebar-label">APIs Doc</span>
         </a>
-
     </div>
 </nav>
 </html>

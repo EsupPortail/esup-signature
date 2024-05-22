@@ -4,7 +4,7 @@
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
-    import {default as ShareUi} from '/js/modules/ui/users/ShareUi.js?version=[[${versionApp}]]';
+    import {default as ShareUi} from '/js/modules/ui/users/ShareUi.js?version=@[(${versionApp})]@';
     new ShareUi();
 </script>
 <body>
