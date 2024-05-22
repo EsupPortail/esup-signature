@@ -69,7 +69,7 @@ public class LdapPersonLightService {
         String queryStringBuilder = "Base: " + ldapQuery.base() + ", " +
                 "Filtre: " + ldapQuery.filter().encode() + ", " +
                 "Attributs: " + Arrays.toString(ldapQuery.attributes()) + ", ";
-        logger.debug("person : " + queryStringBuilder);
+        logger.debug("personLight : " + queryStringBuilder);
     }
 
 }
