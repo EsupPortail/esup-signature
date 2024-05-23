@@ -128,6 +128,8 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
 
     List<SignBook> findByStatus(SignRequestStatus signRequestStatus);
 
+    List<SignBook> findByStatusAndLiveWorkflowTargetsNotEmpty(SignRequestStatus signRequestStatus);
+
     Page<SignBook> findByStatus(SignRequestStatus signRequestStatus, Pageable pageable);
 
     @Query("select sb from SignBook sb where sb.liveWorkflow.workflow.id = :workflowId")
