@@ -632,7 +632,7 @@
 		<dependency>
 			<groupId>eu.agno3.jcifs</groupId>
 			<artifactId>jcifs-ng</artifactId>
-			<version>2.1.9</version>
+			<version>2.1.10</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>bcprov-jdk15to18</artifactId>
@@ -640,6 +640,10 @@
 				</exclusion>
 				<exclusion>
 					<artifactId>bcprov-jdk15on</artifactId>
+					<groupId>org.bouncycastle</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>bcprov-jdk18on</artifactId>
 					<groupId>org.bouncycastle</groupId>
 				</exclusion>
 			</exclusions>
