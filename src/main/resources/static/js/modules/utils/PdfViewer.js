@@ -43,7 +43,7 @@ export class PdfViewer extends EventFactory {
         this.initListeners();
         let self = this;
         $(document).ready(function() {
-            if (!pdfjsLib || !Promise.withResolvers) {
+            if (!pdfjsLib) {
                 bootbox.alert("Votre navigateur ne support pas pdfJs pour l'affichage des PDF.<br>Version minimales : Firefox 121, Chrome 119, Safari 17.4", function () {
                     document.location = "https://www.mozilla.org/fr/firefox/new/"
                 });

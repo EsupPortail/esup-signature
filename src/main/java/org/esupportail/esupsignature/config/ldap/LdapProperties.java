@@ -30,7 +30,7 @@ public class LdapProperties {
      */
     private String groupSearchFilter = "";
     /**
-     * Filtre utilisé pour rechercher des groupes, ex : cn=*{0}
+     * Filtre utilisé pour rechercher des groupes, ex : (|(cn=*{0}*))
      */
     private String allGroupsSearchFilter;
     /**
