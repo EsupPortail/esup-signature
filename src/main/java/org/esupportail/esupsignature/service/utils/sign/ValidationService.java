@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.service.utils.sign;
 
+import eu.europa.esig.dss.AbstractSignatureParameters;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.TokenExtractionStrategy;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.x509.CertificateToken;
@@ -82,15 +84,21 @@ public class ValidationService {
         return null;
     }
 
-    public Boolean checkRevocation(CertificateToken certificateToken) {
-        if(!certificateVerifier.isCheckRevocationForUntrustedChains()) return null;
-        try {
-            RevocationToken<OCSP> revocationToken = certificateVerifier.getOcspSource().getRevocationToken(certificateToken, certificateToken);
-            return revocationToken != null && certificateVerifier.getRevocationDataVerifier().isAcceptable(revocationToken);
-        } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
-            return false;
+    public void checkRevocation(CertificateToken certificateToken, AbstractSignatureParameters<?> parameters) {
+        RevocationToken<OCSP> revocationToken = null;
+        if(certificateVerifier.isCheckRevocationForUntrustedChains()) {
+            revocationToken = certificateVerifier.getOcspSource().getRevocationToken(certificateToken, certificateToken);
         }
+        if(revocationToken != null && !certificateVerifier.getRevocationDataVerifier().isAcceptable(revocationToken)
+            && parameters.isSignWithExpiredCertificate()) {
+            logger.info("LT or LTA signature level not supported, switching to T level");
+            if(parameters.getSignatureLevel().name().contains("_LT") || parameters.getSignatureLevel().name().contains("_LTA")) {
+                String newLevel = parameters.getSignatureLevel().name().replace("_LTA", "_T");
+                newLevel = newLevel.replace("_LT", "_T");
+                parameters.setSignatureLevel(SignatureLevel.valueOf(newLevel));
+            }
+        }
+
     }
 
 }
