@@ -134,8 +134,11 @@ public class SignRequestController {
             model.addAttribute("toSignDocument", toSignDocuments.get(0));
         }
         model.addAttribute("attachments", signRequestService.getAttachments(id));
-        model.addAttribute("nextSignBook", signBookService.getNextSignBook(signRequest.getId(), userEppn));
-        model.addAttribute("nextSignRequest", signRequestService.getNextSignRequest(signRequest.getId(), userEppn));
+        SignRequest nextSignRequest = signBookService.getNextSignRequest(signRequest.getId(), userEppn);
+        if(nextSignRequest != null) {
+            model.addAttribute("nextSignBook", nextSignRequest.getParentSignBook());
+            model.addAttribute("nextSignRequest", nextSignRequest);
+        }
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
         model.addAttribute("favoriteSignRequestParamsJson", userService.getFavoriteSignRequestParamsJson(userEppn));

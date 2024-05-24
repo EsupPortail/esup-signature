@@ -225,7 +225,7 @@ public class MailService {
             }
         }
         if(!signBook.getLiveWorkflow().getLiveWorkflowSteps().isEmpty()) {
-            viewersArray.remove(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() - 1).getRecipients().stream().filter(Recipient::getSigned).map(Recipient::getUser).findAny().get());
+            viewersArray.removeAll(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() - 1).getRecipients().stream().filter(Recipient::getSigned).map(Recipient::getUser).toList());
             return viewersArray;
         } else {
             return new ArrayList<>();

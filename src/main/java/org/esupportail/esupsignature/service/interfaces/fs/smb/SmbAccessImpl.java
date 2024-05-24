@@ -30,13 +30,11 @@ import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.fs.UploadActionType;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.util.FileCopyUtils;
 
-import jakarta.annotation.Resource;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
@@ -48,12 +46,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 
 	private static final Logger logger = LoggerFactory.getLogger(SmbAccessImpl.class);
 
-	@Resource
-	FileService fileService;
-
-	private NtlmPasswordAuthenticator userAuthenticator;
-
-	protected SmbFile root;
+    protected SmbFile root;
 
 	private String domain;
 
@@ -86,7 +79,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 			}
 
 			try {
-				userAuthenticator = new NtlmPasswordAuthenticator(domain, login, password);
+                NtlmPasswordAuthenticator userAuthenticator = new NtlmPasswordAuthenticator(domain, login, password);
 				cifsContext = cifsContext.withCredentials(userAuthenticator);
 				SmbFile smbFile = new SmbFile(this.getUri(), cifsContext);
 				if (smbFile.exists()) {
