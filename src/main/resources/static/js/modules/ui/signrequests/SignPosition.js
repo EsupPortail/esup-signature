@@ -27,6 +27,7 @@ export class SignPosition extends EventFactory {
         this.signType = signType;
         this.forwardButton = $("#forward-btn");
         this.addSignButton = $("#addSignButton")
+        this.addSignButton.focus();
         this.faImages = ["check-solid", "times-solid", "circle-regular", "minus-solid"];
         if(localStorage.getItem("scale") != null) {
             this.currentScale = localStorage.getItem("scale");

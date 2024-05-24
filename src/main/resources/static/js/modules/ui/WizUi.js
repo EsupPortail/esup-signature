@@ -234,6 +234,7 @@ export class WizUi {
         $("#end-workflow-sign").on('click', function (){
             self.end = true;
             self.start = true;
+            $("#recipientsEmails-1").removeAttr("required");
             self.workflowSignSubmitStepData();
         });
         $("#wiz-end").on('click', e => this.wizardEnd());
