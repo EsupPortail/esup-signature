@@ -177,20 +177,6 @@ public class SignRequestService {
 		return signRequestRepository.findByToken(token);
 	}
 
-	public SignRequest getNextSignRequest(Long signRequestId, String userEppn) {
-		SignRequest currentSignRequest = getById(signRequestId);
-		Optional<SignRequest> inSameSignBookSignRequest = currentSignRequest.getParentSignBook().getSignRequests().stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.equals(currentSignRequest)).findAny();
-		if(inSameSignBookSignRequest.isPresent()) {
-			return inSameSignBookSignRequest.get();
-		}
-		List<SignRequest> signRequests = getToSignRequests(userEppn).stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getId().equals(signRequestId)).sorted(Comparator.comparingLong(SignRequest::getId)).collect(Collectors.toList());
-		if(!signRequests.isEmpty()) {
-			return signRequests.get(0);
-		} else {
-			return null;
-		}
-	}
-
 	@Transactional
 	public boolean isEditable(long id, String userEppn) {
 		SignRequest signRequest = getById(id);

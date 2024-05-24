@@ -126,6 +126,8 @@ public class SignBookController {
         model.addAttribute("docTitles", docTitles);
         model.addAttribute("workflowNames", workflowNames);
         model.addAttribute("signRequestRecipients", signBookService.getRecipientsNames(userEppn).stream().filter(Objects::nonNull).collect(Collectors.toList()));
+        model.addAttribute("nbFollowByMe", signRequestService.nbFollowedByMe(userEppn));
+        model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
         return "user/signbooks/list";
     }
 

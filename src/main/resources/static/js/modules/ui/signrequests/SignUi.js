@@ -253,7 +253,10 @@ export class SignUi {
         }
         signModal.on('shown.bs.modal', function () {
             $("#checkValidateSignButtonEnd").focus();
-            $("#checkValidateSignButtonNext").focus();
+            let checkValidateSignButtonNext = $("#checkValidateSignButtonNext");
+            if(checkValidateSignButtonNext != null) {
+                checkValidateSignButtonNext.focus();
+            }
         });
         signModal.modal('show');
     }
