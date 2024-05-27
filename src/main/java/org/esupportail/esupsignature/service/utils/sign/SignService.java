@@ -332,15 +332,25 @@ public class SignService {
 	}
 
 	@Transactional
-	public boolean isSigned(SignRequest signRequest) {
+	public Reports validate(long signRequestId) throws IOException {
+		List<Document> documents = getToSignDocuments(signRequestId);
+		if(!documents.isEmpty()) {
+			byte[] bytes = documents.get(0).getInputStream().readAllBytes();
+			return validationService.validate(new ByteArrayInputStream(bytes), null);
+		} else {
+			return null;
+		}
+	}
+
+	@Transactional
+	public boolean isSigned(SignRequest signRequest, Reports reports) {
 		try {
+			if(reports == null) {
+				reports = validate(signRequest.getId());
+			}
 			List<Document> documents = getToSignDocuments(signRequest.getId());
 			if (!documents.isEmpty() && (signRequest.getParentSignBook().getLiveWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null)) {
-				byte[] bytes = getToSignDocuments(signRequest.getId()).get(0).getInputStream().readAllBytes();
-				Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
-				return (reports != null
-						&&
-						!reports.getSimpleReport().getSignatureIdList().isEmpty());
+				return (reports != null && !reports.getSimpleReport().getSignatureIdList().isEmpty());
 			}
 		} catch (Exception e) {
 			logger.error("error while checking if signRequest is signed", e);
@@ -349,9 +359,9 @@ public class SignService {
 	}
 
 	@Transactional
-	public boolean isSigned(SignBook signBook) {
+	public boolean isSigned(SignBook signBook, Reports reports) {
 		for (SignRequest signRequest : signBook.getSignRequests()) {
-			if (isSigned(signRequest)) {
+			if (isSigned(signRequest, reports)) {
 				return true;
 			}
 		}
@@ -385,7 +395,7 @@ public class SignService {
 					inputStream = toSignFile.getInputStream();
 				}
 				bytes = inputStream.readAllBytes();
-				if(!isSigned(signRequest) && !pdfService.isPdfAComplient(bytes)) {
+				if(!isSigned(signRequest, null) && !pdfService.isPdfAComplient(bytes)) {
 					bytes = pdfService.convertGS(pdfService.writeMetadatas(bytes, toSignFile.getFileName(), signRequest, new ArrayList<>()));
 				}
 			} else {

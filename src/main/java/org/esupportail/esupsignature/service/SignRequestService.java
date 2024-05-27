@@ -478,7 +478,7 @@ public class SignRequestService {
 	public void pendingSignRequest(SignRequest signRequest, String authUserEppn) {
 		for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
 			signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
-			if (signService.isSigned(signRequest) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
+			if (signService.isSigned(signRequest, null) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
 				signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signTypeService.getLessSignType(3));
 			}
 		}
@@ -1043,17 +1043,6 @@ public class SignRequestService {
 			attachmentRequire = true;
 		}
 		return attachmentRequire;
-	}
-
-	@Transactional
-	public Reports validate(long signRequestId) throws IOException {
-		List<Document> documents = signService.getToSignDocuments(signRequestId);
-		if(!documents.isEmpty()) {
-			byte[] bytes = documents.get(0).getInputStream().readAllBytes();
-			return validationService.validate(new ByteArrayInputStream(bytes), null);
-		} else {
-			return null;
-		}
 	}
 
 	@Transactional

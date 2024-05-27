@@ -15,6 +15,7 @@ import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.security.core.Authentication;
@@ -51,6 +52,9 @@ public class PublicController {
     private UserService userService;
 
     @Resource
+    private SignService signService;
+
+    @Resource
     private XSLTService xsltService;
 
     @Resource
@@ -72,7 +76,7 @@ public class PublicController {
         Optional<SignRequest> signRequest = signRequestService.getSignRequestByToken(token);
         if(signRequest.isPresent()) {
             if (auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
-                Reports reports = signRequestService.validate(signRequest.get().getId());
+                Reports reports = signService.validate(signRequest.get().getId());
                 if (reports != null) {
                     model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
                 } else {
@@ -127,7 +131,7 @@ public class PublicController {
             if(signRequest.isPresent()) {
                 setControlValues(model, signRequest.get(), auditTrail, eppn);
                 if(auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
-                    Reports reports = signRequestService.validate(signRequest.get().getId());
+                    Reports reports = signService.validate(signRequest.get().getId());
                     model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
                 }
             }
