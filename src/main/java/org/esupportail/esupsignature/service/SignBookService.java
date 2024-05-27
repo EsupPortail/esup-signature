@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.annotation.Resource;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,7 +11,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.model.DssMultipartFile;
-import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.dto.RecipientWsDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
@@ -171,9 +169,6 @@ public class SignBookService {
 
     @Resource
     private ActionService actionService;
-
-    @Resource
-    private FOPService fopService;
 
     @Resource
     private SignRequestParamsRepository signRequestParamsRepository;
@@ -1422,62 +1417,6 @@ public class SignBookService {
     }
 
     @Transactional
-    public void getToSignFileReportResponse(Long signRequestId, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
-        SignRequest signRequest = signRequestService.getById(signRequestId);
-        webUtilsService.copyFileStreamToHttpResponse(signRequest.getTitle() + "-avec_rapport", "application/zip; charset=utf-8", "attachment", new ByteArrayInputStream(getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse)), httpServletResponse);
-    }
-
-    public byte[] getZipWithDocAndReport(SignRequest signRequest, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
-        String name = "";
-        InputStream inputStream = null;
-        if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
-            if(signService.getToSignDocuments(signRequest.getId()).size() == 1) {
-                List<Document> documents = signService.getToSignDocuments(signRequest.getId());
-                name = documents.get(0).getFileName();
-                inputStream = documents.get(0).getInputStream();
-            }
-        } else {
-            FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
-            name = fsFile.getName();
-            inputStream = fsFile.getInputStream();
-        }
-
-        if(inputStream != null) {
-            int i = 0;
-            for(Document document : signRequest.getAttachments()) {
-                zipOutputStream.putNextEntry(new ZipEntry(i + "_" + document.getFileName()));
-                IOUtils.copy(document.getInputStream(), zipOutputStream);
-                zipOutputStream.write(document.getInputStream().readAllBytes());
-                zipOutputStream.closeEntry();
-                i++;
-            }
-
-            byte[] fileBytes = inputStream.readAllBytes();
-            zipOutputStream.putNextEntry(new ZipEntry(name));
-            IOUtils.copy(new ByteArrayInputStream(fileBytes), zipOutputStream);
-            zipOutputStream.closeEntry();
-
-            ByteArrayOutputStream auditTrail = auditTrailService.generateAuditTrailPdf(signRequest, httpServletRequest, httpServletResponse);
-            zipOutputStream.putNextEntry(new ZipEntry("dossier-de-preuve.pdf"));
-            auditTrail.writeTo(zipOutputStream);
-            zipOutputStream.closeEntry();
-
-            Reports reports = validationService.validate(new ByteArrayInputStream(fileBytes), null);
-            if(reports != null) {
-                ByteArrayOutputStream reportByteArrayOutputStream = new ByteArrayOutputStream();
-                fopService.generateSimpleReport(reports.getXmlSimpleReport(), reportByteArrayOutputStream);
-                zipOutputStream.putNextEntry(new ZipEntry("rapport-signature.pdf"));
-                IOUtils.copy(new ByteArrayInputStream(reportByteArrayOutputStream.toByteArray()), zipOutputStream);
-            }
-            zipOutputStream.closeEntry();
-        }
-        zipOutputStream.close();
-        return outputStream.toByteArray();
-    }
-
-    @Transactional
     public void getMultipleSignedDocuments(List<Long> ids, HttpServletResponse response) throws IOException, EsupSignatureFsException {
         response.setContentType("application/zip; charset=utf-8");
         response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode("alldocs", StandardCharsets.UTF_8) + ".zip");
@@ -1514,7 +1453,7 @@ public class SignBookService {
             SignBook signBook = getById(id);
             for (SignRequest signRequest : signBook.getSignRequests()) {
                 if(signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived))
-                    documents.put(getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse), signBook.getSubject());
+                    documents.put(signRequestService.getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse), signBook.getSubject());
             }
         }
         ZipOutputStream zipOutputStream = new ZipOutputStream(httpServletResponse.getOutputStream());

@@ -8,9 +8,11 @@ import eu.europa.esig.dss.diagnostic.DiagnosticData;
 import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.dto.RecipientWsDto;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.*;
@@ -51,6 +53,8 @@ import java.io.InputStream;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 @EnableConfigurationProperties(GlobalProperties.class)
@@ -136,6 +140,9 @@ public class SignRequestService {
 
 	@Resource
 	private ValidationService validationService;
+
+	@Resource
+	private FOPService fopService;
 
 	@Resource
 	private ObjectMapper objectMapper;
@@ -918,6 +925,63 @@ public class SignRequestService {
 			InputStream inputStream = pdfService.addQrCode(signRequest, fsFile.getInputStream());
 			webUtilsService.copyFileStreamToHttpResponse(fsFile.getName(), fsFile.getContentType(), "attachment", inputStream, httpServletResponse);
 		}
+	}
+
+
+	@Transactional
+	public void getSignedFileAndReportResponse(Long signRequestId, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
+		SignRequest signRequest = getById(signRequestId);
+		webUtilsService.copyFileStreamToHttpResponse(signRequest.getTitle() + "-avec_rapport", "application/zip; charset=utf-8", "attachment", new ByteArrayInputStream(getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse)), httpServletResponse);
+	}
+
+	public byte[] getZipWithDocAndReport(SignRequest signRequest, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
+		String name = "";
+		InputStream inputStream = null;
+		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
+			if(signService.getToSignDocuments(signRequest.getId()).size() == 1) {
+				List<Document> documents = signService.getToSignDocuments(signRequest.getId());
+				name = documents.get(0).getFileName();
+				inputStream = documents.get(0).getInputStream();
+			}
+		} else {
+			FsFile fsFile = getLastSignedFsFile(signRequest);
+			name = fsFile.getName();
+			inputStream = fsFile.getInputStream();
+		}
+
+		if(inputStream != null) {
+			int i = 0;
+			for(Document document : signRequest.getAttachments()) {
+				zipOutputStream.putNextEntry(new ZipEntry(i + "_" + document.getFileName()));
+				IOUtils.copy(document.getInputStream(), zipOutputStream);
+				zipOutputStream.write(document.getInputStream().readAllBytes());
+				zipOutputStream.closeEntry();
+				i++;
+			}
+
+			byte[] fileBytes = inputStream.readAllBytes();
+			zipOutputStream.putNextEntry(new ZipEntry(name));
+			IOUtils.copy(new ByteArrayInputStream(fileBytes), zipOutputStream);
+			zipOutputStream.closeEntry();
+
+			ByteArrayOutputStream auditTrail = auditTrailService.generateAuditTrailPdf(signRequest, httpServletRequest, httpServletResponse);
+			zipOutputStream.putNextEntry(new ZipEntry("dossier-de-preuve.pdf"));
+			auditTrail.writeTo(zipOutputStream);
+			zipOutputStream.closeEntry();
+
+			Reports reports = validationService.validate(new ByteArrayInputStream(fileBytes), null);
+			if(reports != null) {
+				ByteArrayOutputStream reportByteArrayOutputStream = new ByteArrayOutputStream();
+				fopService.generateSimpleReport(reports.getXmlSimpleReport(), reportByteArrayOutputStream);
+				zipOutputStream.putNextEntry(new ZipEntry("rapport-signature.pdf"));
+				IOUtils.copy(new ByteArrayInputStream(reportByteArrayOutputStream.toByteArray()), zipOutputStream);
+			}
+			zipOutputStream.closeEntry();
+		}
+		zipOutputStream.close();
+		return outputStream.toByteArray();
 	}
 
 	@Transactional

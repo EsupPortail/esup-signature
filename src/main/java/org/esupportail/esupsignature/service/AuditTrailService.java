@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import com.openhtmltopdf.util.XRLog;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -143,6 +144,7 @@ public class AuditTrailService {
             webContext.setVariable(entry.getKey(), entry.getValue());
         }
         String html = templateEngine.process("public/control", webContext);
+        XRLog.listRegisteredLoggers().forEach(logger -> XRLog.setLevel(logger, java.util.logging.Level.OFF));
         PdfRendererBuilder builder = new PdfRendererBuilder();
         builder.useFastMode();
         builder.withHtmlContent(html, findBaseUrl(httpServletRequest));
