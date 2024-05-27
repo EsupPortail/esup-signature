@@ -219,15 +219,7 @@ public class SignService {
 			}
 			parameters.setSigningCertificate(certificateToken);
 			parameters.setCertificateChain(certificateTokenChain);
-			Boolean revocationValid = validationService.checkRevocation(certificateToken);
-			if(revocationValid == null || !revocationValid) {
-				logger.info("LT or LTA signature level not supported, switching to T level");
-				if(parameters.getSignatureLevel().name().contains("_LT") || parameters.getSignatureLevel().name().contains("_LTA")) {
-					String newLevel = parameters.getSignatureLevel().name().replace("_LTA", "_T");
-					newLevel = newLevel.replace("_LT", "_T");
-					parameters.setSignatureLevel(SignatureLevel.valueOf(newLevel));
-				}
-			}
+			validationService.checkRevocation(certificateToken, parameters);
 			DSSDocument dssDocument;
 			if (signatureDocumentForm instanceof SignatureMultipleDocumentsForm) {
 				dssDocument = certSignDocument((SignatureMultipleDocumentsForm) signatureDocumentForm, parameters, abstractKeyStoreTokenConnection);
@@ -410,7 +402,7 @@ public class SignService {
 				((SignatureDocumentForm) abstractSignatureForm).setContainerType(signProperties.getContainerType());
 			}
 		}
-		if(signProperties.getSignWithExpiredCertificate() || (environment.getActiveProfiles().length > 0 && List.of(environment.getActiveProfiles()).contains("dev"))) {
+		if(signProperties.getSignWithExpiredCertificate()) {
 			abstractSignatureForm.setSignWithExpiredCertificate(true);
 		}
 		abstractSignatureForm.setSignatureForm(signatureForm);
