@@ -77,6 +77,7 @@
                                     <small title="" th:if="${liveWorkflowStep.getAutoSign()}">Étape automatique</small>
                                     <span title="Une signature suffit" th:unless="${liveWorkflowStep.allSignToComplete}" class="float-end text-muted"><i class="fa-solid fa-users-slash"></i></span>
                                     <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="float-end"><i class="fa-solid fa-users"></i></span>
+                                    <span title="Étape infinie" th:if="${liveWorkflowStep.repeatable}" class="float-end me-1 text-dark"><i class="fa-solid fa-infinity"></i></span>
                                 </div>
                             </div>
                             <div th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
