@@ -538,7 +538,7 @@ public class PdfService {
 
     public byte[] normalizeGS(byte[] originalBytes) throws IOException, EsupSignatureRuntimeException {
         Reports reports = validationService.validate(new ByteArrayInputStream(originalBytes), null);
-        if (!isAcroForm(new ByteArrayInputStream(originalBytes)) && (reports == null || reports.getSimpleReport() == null || reports.getSimpleReport().getSignatureIdList().size() == 0)) {
+        if (!isAcroForm(new ByteArrayInputStream(originalBytes)) && (reports == null || reports.getSimpleReport() == null || reports.getSimpleReport().getSignatureIdList().isEmpty())) {
             String params = "";
             if(!pdfConfig.getPdfProperties().isAutoRotate()) {
                 params = params + " -dAutoRotatePages=/None";
@@ -687,8 +687,8 @@ public class PdfService {
                             if (!(pdField instanceof PDSignatureField)) {
                                 String value = datas.get(filedName);
                                 pdField.getCOSObject().setNeedToBeUpdated(true);
-                                pdField.getCOSObject().removeItem(COSName.AA);
-                                pdField.getCOSObject().removeItem(COSName.AP);
+//                                pdField.getCOSObject().removeItem(COSName.AA);
+//                                pdField.getCOSObject().removeItem(COSName.AP);
                                 pdField.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
                                 pdField.setValue(value);
                             }
@@ -819,15 +819,13 @@ public class PdfService {
         return bufferedImage;
     }
 
-    private InputStream bufferedImageToInputStream(BufferedImage image, String type) throws IOException {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ImageIO.write(image, type, os);
-        return new ByteArrayInputStream(os.toByteArray());
+    private InputStream bufferedImageToInputStream(BufferedImage image) throws IOException {
+        return fileService.bufferedImageToInputStream(image, "png");
     }
 
     public InputStream pageAsInputStream(InputStream pdfFile, int page) throws Exception {
         BufferedImage bufferedImage = pageAsBufferedImage(pdfFile, page);
-        InputStream inputStream = bufferedImageToInputStream(bufferedImage, "png");
+        InputStream inputStream = bufferedImageToInputStream(bufferedImage);
         bufferedImage.flush();
         return inputStream;
     }
