@@ -9,6 +9,9 @@ import java.util.Date;
 
 @Entity
 @Configurable
+@Table(indexes = {
+        @Index(name = "log_sign_request_id", columnList = "sign_request_id")
+})
 public class Log {
 
 	@Id

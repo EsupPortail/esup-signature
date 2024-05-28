@@ -134,7 +134,7 @@ public class OtpSignRequestController {
             }
         }
         model.addAttribute("signatureIds", new ArrayList<>());
-        Reports reports = signRequestService.validate(id);
+        Reports reports = signService.validate(id);
         if(reports != null) {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
         }
@@ -142,7 +142,7 @@ public class OtpSignRequestController {
         boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
         model.addAttribute("signable", signable);
         model.addAttribute("editable", false);
-        model.addAttribute("isNotSigned", !signService.isSigned(signRequest));
+        model.addAttribute("isNotSigned", !signService.isSigned(signRequest, reports));
         model.addAttribute("isTempUsers", false);
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
             model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, userEppn));

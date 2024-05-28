@@ -47,7 +47,7 @@ public class LiveWorkflowStepService {
         liveWorkflowStep.setAllSignToComplete(Objects.requireNonNullElse(step.getAllSignToComplete(), false));
         if(step.getSignType() == null) {
             int minLevel = 2;
-            if(signService.isSigned(signBook)) {
+            if(signService.isSigned(signBook, null)) {
                 minLevel = 3;
             }
             liveWorkflowStep.setSignType(signTypeService.getLessSignType(minLevel));

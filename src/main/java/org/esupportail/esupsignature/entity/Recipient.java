@@ -6,6 +6,9 @@ import jakarta.persistence.*;
 
 @Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(indexes =  {
+        @Index(name = "recipient_user_id", columnList = "user_id")
+})
 public class Recipient {
 
     @Id

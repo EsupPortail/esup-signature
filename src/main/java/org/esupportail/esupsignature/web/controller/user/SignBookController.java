@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
@@ -369,6 +370,9 @@ public class SignBookController {
         httpServletResponse.setStatus(HttpServletResponse.SC_OK);
         httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
         try {
+            for(Long id : ids) {
+                if(!preAuthorizeService.signBookView(id, authUserEppn, authUserEppn)) throw new EsupSignatureException("access denied");
+            }
             signBookService.getMultipleSignedDocuments(ids, httpServletResponse);
         } catch (Exception e) {
             logger.error("error while downloading multiple documents", e);
