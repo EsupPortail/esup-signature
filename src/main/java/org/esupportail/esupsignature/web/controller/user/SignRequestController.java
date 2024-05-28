@@ -154,7 +154,7 @@ public class SignRequestController {
             model.addAttribute("message", new JsMessage("warn", e.getMessage()));
         }
         model.addAttribute("signatureIds", new ArrayList<>());
-        Reports reports = signRequestService.validate(id);
+        Reports reports = signService.validate(id);
         if (reports != null) {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
         }
@@ -177,7 +177,7 @@ public class SignRequestController {
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signable);
         model.addAttribute("editable", signRequestService.isEditable(id, userEppn));
-        model.addAttribute("isNotSigned", !signService.isSigned(signRequest));
+        model.addAttribute("isNotSigned", !signService.isSigned(signRequest, reports));
         model.addAttribute("isTempUsers", signRequestService.isTempUsers(signRequest.getParentSignBook().getId()));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
             model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, userEppn));
