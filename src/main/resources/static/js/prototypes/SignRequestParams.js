@@ -376,7 +376,7 @@ export class SignRequestParams extends EventFactory {
                 this.toggleName();
                 this.addExtra = !this.globalProperties.externalSignatureParams.addExtra;
                 this.toggleExtra();
-                this.extraText = this.globalProperties.externalSignatureParams.extraText == null;
+                this.isExtraText = (this.globalProperties.externalSignatureParams.extraText === null);
                 this.toggleText();
                 if(this.globalProperties.externalSignatureParams.extraText != null) {
                     this.extraText = this.globalProperties.externalSignatureParams.extraText;

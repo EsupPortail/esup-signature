@@ -29,7 +29,7 @@ global:
         extra-name: false
         extra-date: true
         extra-on-top: true
-        extra-text: "toto"
+#        extra-text: ""
 
 #tomcat:
 #    ajp:

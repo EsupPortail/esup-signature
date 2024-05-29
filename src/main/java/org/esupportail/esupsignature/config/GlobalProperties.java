@@ -270,7 +270,7 @@ public class GlobalProperties {
     private Float fixFactor = .75f;
 
     /**
-     * Activer le watermark pour les utilisateurs externes
+     * @deprecated Activer le watermark pour les utilisateurs externes
      */
     @Deprecated
     private Boolean watermarkForExternals;
@@ -284,6 +284,9 @@ public class GlobalProperties {
 
     private String systemUserFirstName = "Automate";
 
+    /**
+     * Configuration des signatures des externes
+     */
     private SignRequestParams externalSignatureParams = new SignRequestParams();
 
     public String getRootUrl() {
