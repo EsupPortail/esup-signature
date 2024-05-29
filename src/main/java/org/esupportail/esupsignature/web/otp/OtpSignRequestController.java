@@ -112,8 +112,11 @@ public class OtpSignRequestController {
             model.addAttribute("toSignDocument", toSignDocuments.get(0));
         }
         model.addAttribute("attachments", signRequestService.getAttachments(id));
-        model.addAttribute("nextSignBook", signBookService.getNextSignBook(signRequest.getId(), userEppn));
-        model.addAttribute("nextSignRequest", signRequestService.getNextSignRequest(signRequest.getId(), userEppn));
+        SignRequest nextSignRequest = signBookService.getNextSignRequest(signRequest.getId(), userEppn);
+        if(nextSignRequest != null) {
+            model.addAttribute("nextSignBook", nextSignRequest.getParentSignBook());
+            model.addAttribute("nextSignRequest", nextSignRequest);
+        }
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
         model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest));
@@ -131,7 +134,7 @@ public class OtpSignRequestController {
             }
         }
         model.addAttribute("signatureIds", new ArrayList<>());
-        Reports reports = signRequestService.validate(id);
+        Reports reports = signService.validate(id);
         if(reports != null) {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
         }
@@ -139,7 +142,7 @@ public class OtpSignRequestController {
         boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
         model.addAttribute("signable", signable);
         model.addAttribute("editable", false);
-        model.addAttribute("isNotSigned", !signService.isSigned(signRequest));
+        model.addAttribute("isNotSigned", !signService.isSigned(signRequest, reports));
         model.addAttribute("isTempUsers", false);
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
             model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, userEppn));

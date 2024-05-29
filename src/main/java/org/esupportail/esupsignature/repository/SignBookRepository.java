@@ -99,6 +99,12 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             "and (sb.hidedBy) is empty")
     Page<SignBook> findToSign(String userEppn, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
+    @Query("select distinct count(sb) from SignBook sb " +
+            "left join sb.liveWorkflow.currentStep.recipients r " +
+            "where sb.status = 'pending' and size(sb.signRequests) > 0 and r.user.eppn = :userEppn and r.signed = false " +
+            "and (sb.hidedBy) is empty")
+    Long countToSign(String userEppn);
+
     @Query("select distinct sb from SignBook sb join sb.liveWorkflow.currentStep.recipients r where size(sb.signRequests) = 0 and (r.user = :user or sb.createBy = :user)")
     Page<SignBook> findEmpty(User user, Pageable pageable);
 
@@ -127,6 +133,8 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     Page<SignBook> findByCreateByIdAndStatusAndSignRequestsNotNull(User user, SignRequestStatus status, Pageable pageable);
 
     List<SignBook> findByStatus(SignRequestStatus signRequestStatus);
+
+    List<SignBook> findByStatusAndLiveWorkflowTargetsNotEmpty(SignRequestStatus signRequestStatus);
 
     Page<SignBook> findByStatus(SignRequestStatus signRequestStatus, Pageable pageable);
 

@@ -36,6 +36,9 @@ public class GlobalAttributsControllerAdvice {
     private SignRequestService signRequestService;
 
     @Resource
+    private SignBookService signBookService;
+
+    @Resource
     private WorkflowService workflowService;
 
     @Resource
@@ -116,9 +119,7 @@ public class GlobalAttributsControllerAdvice {
             }
             model.addAttribute("signTypes", signTypeService.getAuthorizedSignTypes(roles));
             model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
-            model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
-            model.addAttribute("nbToSign", signRequestService.nbToSignSignRequests(userEppn));
-            model.addAttribute("nbFollowByMe", signRequestService.nbFollowedByMe(userEppn));
+            model.addAttribute("nbToSign", signBookService.nbToSignSignBooks(userEppn));
         }
         model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
         model.addAttribute("maxInactiveInterval", httpSession.getMaxInactiveInterval());

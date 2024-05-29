@@ -21,7 +21,6 @@ public class WsAccessTokenService {
     @Resource
     private SignRequestService signRequestService;
 
-
     @Resource
     private WorkflowService workflowService;
 

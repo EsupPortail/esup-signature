@@ -81,7 +81,7 @@ public class ScheduledTaskService {
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	public void scanAllSignbooksTargets() {
 		logger.debug("scan all signRequest to export");
-		List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
+		List<SignBook> signBooks = signBookRepository.findByStatusAndLiveWorkflowTargetsNotEmpty(SignRequestStatus.completed);
 		for(SignBook signBook : signBooks) {
 			try {
 				signBookService.sendSignRequestsToTarget(signBook.getId(), "scheduler");

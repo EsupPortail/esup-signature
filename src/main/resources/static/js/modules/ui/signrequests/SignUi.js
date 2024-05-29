@@ -253,7 +253,10 @@ export class SignUi {
         }
         signModal.on('shown.bs.modal', function () {
             $("#checkValidateSignButtonEnd").focus();
-            $("#checkValidateSignButtonNext").focus();
+            let checkValidateSignButtonNext = $("#checkValidateSignButtonNext");
+            if(checkValidateSignButtonNext != null) {
+                checkValidateSignButtonNext.focus();
+            }
         });
         signModal.modal('show');
     }
@@ -472,6 +475,7 @@ export class SignUi {
         step.multiSign = $('#multiSign').is(':checked');
         step.autoSign = $('#autoSign').is(':checked');
         step.signType = $('#signType').val();
+        step.repeatable = true;
         $.ajax({
             url: "/user/signbooks/add-repeatable-step/" + signRequestId + "?" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',

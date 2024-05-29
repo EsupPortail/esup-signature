@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.annotation.Resource;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,7 +11,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.model.DssMultipartFile;
-import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.dto.RecipientWsDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
@@ -173,9 +171,6 @@ public class SignBookService {
     private ActionService actionService;
 
     @Resource
-    private FOPService fopService;
-
-    @Resource
     private SignRequestParamsRepository signRequestParamsRepository;
 
     @Resource
@@ -196,6 +191,11 @@ public class SignBookService {
     public int countSignBooksByWorkflow(Long workflowId) {
         Workflow workflow = workflowRepository.findById(workflowId).get();
         return signBookRepository.countByLiveWorkflowWorkflow(workflow);
+    }
+
+    @Transactional
+    public Long nbToSignSignBooks(String userEppn) {
+        return signBookRepository.countToSign(userEppn);
     }
 
     @Transactional
@@ -1392,84 +1392,28 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignBook getNextSignBook(Long signRequestId, String userEppn) {
-        List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(userEppn);
-        if(signRequestsToSign.size() > 1) {
+    public SignRequest getNextSignRequest(Long signRequestId, String userEppn) {
+        List<SignBook> signBooksToSign = getSignBooks(userEppn, userEppn, "toSign", null, null, null, null, null, Pageable.unpaged()).toList();
+        if(signBooksToSign.size() > 1) {
             SignRequest currentSignRequest = signRequestService.getById(signRequestId);
-            List<SignRequest> signRequests = signRequestsToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).sorted(Comparator.comparingLong(SignRequest::getId)).collect(Collectors.toList());
-            int indexOfSignRequest = signRequests.indexOf(currentSignRequest);
-            if (indexOfSignRequest + 1 >= signRequests.size()) {
-                return signRequests.stream().filter(signRequest -> !signRequest.getId().equals(signRequestId)).min(Comparator.comparingLong(SignRequest::getId)).orElseThrow().getParentSignBook();
+            List<SignBook> signBooks = signBooksToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).sorted(Comparator.comparingLong(SignBook::getId)).collect(Collectors.toList());
+            int indexOfSignRequest = signBooks.indexOf(currentSignRequest.getParentSignBook());
+            if (indexOfSignRequest + 1 >= signBooks.size()) {
+                return signBooks.stream().filter(signRequest -> !signRequest.getId().equals(signRequestId)).min(Comparator.comparingLong(SignBook::getId)).orElseThrow().getSignRequests().get(0);
             } else {
                 if (currentSignRequest.getParentSignBook().getSignRequests().size() == 1) {
-                    return signRequests.get(indexOfSignRequest + 1).getParentSignBook();
+                    return signBooks.get(indexOfSignRequest + 1).getSignRequests().get(0);
                 } else {
-                    if (indexOfSignRequest + currentSignRequest.getParentSignBook().getSignRequests().size() + 1 >= signRequests.size()) {
-                        return signRequests.get(0).getParentSignBook();
+                    if (indexOfSignRequest + currentSignRequest.getParentSignBook().getSignRequests().size() + 1 >= signBooks.size()) {
+                        return signBooks.get(0).getSignRequests().get(0);
                     } else {
-                        return signRequests.get(indexOfSignRequest + currentSignRequest.getParentSignBook().getSignRequests().size() + 1).getParentSignBook();
+                        return signBooks.get(indexOfSignRequest + currentSignRequest.getParentSignBook().getSignRequests().size() + 1).getSignRequests().get(0);
                     }
                 }
             }
         } else {
             return null;
         }
-    }
-
-    @Transactional
-    public void getToSignFileReportResponse(Long signRequestId, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
-        SignRequest signRequest = signRequestService.getById(signRequestId);
-        webUtilsService.copyFileStreamToHttpResponse(signRequest.getTitle() + "-avec_rapport", "application/zip; charset=utf-8", "attachment", new ByteArrayInputStream(getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse)), httpServletResponse);
-    }
-
-    public byte[] getZipWithDocAndReport(SignRequest signRequest, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
-        String name = "";
-        InputStream inputStream = null;
-        if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
-            if(signService.getToSignDocuments(signRequest.getId()).size() == 1) {
-                List<Document> documents = signService.getToSignDocuments(signRequest.getId());
-                name = documents.get(0).getFileName();
-                inputStream = documents.get(0).getInputStream();
-            }
-        } else {
-            FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
-            name = fsFile.getName();
-            inputStream = fsFile.getInputStream();
-        }
-
-        if(inputStream != null) {
-            int i = 0;
-            for(Document document : signRequest.getAttachments()) {
-                zipOutputStream.putNextEntry(new ZipEntry(i + "_" + document.getFileName()));
-                IOUtils.copy(document.getInputStream(), zipOutputStream);
-                zipOutputStream.write(document.getInputStream().readAllBytes());
-                zipOutputStream.closeEntry();
-                i++;
-            }
-
-            byte[] fileBytes = inputStream.readAllBytes();
-            zipOutputStream.putNextEntry(new ZipEntry(name));
-            IOUtils.copy(new ByteArrayInputStream(fileBytes), zipOutputStream);
-            zipOutputStream.closeEntry();
-
-            ByteArrayOutputStream auditTrail = auditTrailService.generateAuditTrailPdf(signRequest, httpServletRequest, httpServletResponse);
-            zipOutputStream.putNextEntry(new ZipEntry("dossier-de-preuve.pdf"));
-            auditTrail.writeTo(zipOutputStream);
-            zipOutputStream.closeEntry();
-
-            Reports reports = validationService.validate(new ByteArrayInputStream(fileBytes), null);
-            if(reports != null) {
-                ByteArrayOutputStream reportByteArrayOutputStream = new ByteArrayOutputStream();
-                fopService.generateSimpleReport(reports.getXmlSimpleReport(), reportByteArrayOutputStream);
-                zipOutputStream.putNextEntry(new ZipEntry("rapport-signature.pdf"));
-                IOUtils.copy(new ByteArrayInputStream(reportByteArrayOutputStream.toByteArray()), zipOutputStream);
-            }
-            zipOutputStream.closeEntry();
-        }
-        zipOutputStream.close();
-        return outputStream.toByteArray();
     }
 
     @Transactional
@@ -1509,7 +1453,7 @@ public class SignBookService {
             SignBook signBook = getById(id);
             for (SignRequest signRequest : signBook.getSignRequests()) {
                 if(signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived))
-                    documents.put(getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse), signBook.getSubject());
+                    documents.put(signRequestService.getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse), signBook.getSubject());
             }
         }
         ZipOutputStream zipOutputStream = new ZipOutputStream(httpServletResponse.getOutputStream());
