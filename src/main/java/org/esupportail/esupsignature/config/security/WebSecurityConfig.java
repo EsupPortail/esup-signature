@@ -32,7 +32,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.core.session.SessionRegistryImpl;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
@@ -293,7 +292,7 @@ public class WebSecurityConfig {
 	@ConditionalOnProperty(value="global.enable-su",havingValue = "true")
 	public SwitchUserFilter switchUserFilter() {
 		SwitchUserFilter switchUserFilter = new SwitchUserFilter();
-		switchUserFilter.setUserDetailsService(userDetailsService());
+		switchUserFilter.setUserDetailsService(new InMemoryUserDetailsManager());
 		switchUserFilter.setSwitchUserUrl("/admin/su-login");
 		switchUserFilter.setExitUserUrl("/su-logout");
 		switchUserFilter.setSuccessHandler(new SuAuthenticationSuccessHandler());
@@ -304,11 +303,6 @@ public class WebSecurityConfig {
 	@Bean
 	public AuthenticationManager authenticationManagerBean() {
 		return new ProviderManager(List.of(new OtpAuthenticationProvider()));
-	}
-
-	@Bean
-	public UserDetailsService userDetailsService() {
-		return new InMemoryUserDetailsManager();
 	}
 
 	@Bean
