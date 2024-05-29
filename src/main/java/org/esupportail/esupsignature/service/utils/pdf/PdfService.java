@@ -77,6 +77,7 @@ import javax.xml.transform.TransformerException;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -271,7 +272,7 @@ public class PdfService {
 
     public ByteArrayOutputStream createQR(String data) throws WriterException, IOException {
         BitMatrix matrix = new MultiFormatWriter().encode(
-                new String(data.getBytes("UTF-8"), "UTF-8"),
+                new String(data.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8),
                 BarcodeFormat.DATA_MATRIX, 500, 500);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         MatrixToImageWriter.writeToStream(matrix, "png", outputStream);
@@ -429,7 +430,7 @@ public class PdfService {
             xmpBasicSchema.addIdentifier(signRequest.getToken());
             xmpBasicSchema.addIdentifier(globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken());
 
-            PDFAIdentificationSchema pdfaIdentificationSchema = xmpMetadata.createAndAddPFAIdentificationSchema();
+            PDFAIdentificationSchema pdfaIdentificationSchema = xmpMetadata.createAndAddPDFAIdentificationSchema();
             pdfaIdentificationSchema.setConformance("B");
             pdfaIdentificationSchema.setPart(2);
 
@@ -620,6 +621,7 @@ public class PdfService {
     }
 
     public byte[] fill(InputStream pdfFile, Map<String, String> datas, boolean isLastStep, boolean isForm) {
+        ByteArrayOutputStream interimOut = new ByteArrayOutputStream();
         try {
             PDDocument pdDocument = PDDocument.load(pdfFile);
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
@@ -687,8 +689,8 @@ public class PdfService {
                             if (!(pdField instanceof PDSignatureField)) {
                                 String value = datas.get(filedName);
                                 pdField.getCOSObject().setNeedToBeUpdated(true);
-//                                pdField.getCOSObject().removeItem(COSName.AA);
-//                                pdField.getCOSObject().removeItem(COSName.AP);
+                                pdField.getCOSObject().removeItem(COSName.AA);
+                                pdField.getCOSObject().removeItem(COSName.AP);
                                 pdField.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
                                 pdField.setValue(value);
                             }
@@ -698,15 +700,23 @@ public class PdfService {
                         pdField.setReadOnly(true);
                     }
                 }
-                if(isLastStep) {
-                    pdAcroForm.flatten();
-                }
             }
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
             pdDocument.setAllSecurityToBeRemoved(true);
-            pdDocument.save(out);
+            pdDocument.save(interimOut);
             pdDocument.close();
-            return out.toByteArray();
+
+            ByteArrayInputStream interimInput = new ByteArrayInputStream(interimOut.toByteArray());
+            PDDocument pdDocument2 = PDDocument.load(interimInput);
+            PDAcroForm pdAcroForm2 = pdDocument2.getDocumentCatalog().getAcroForm();
+            if (isLastStep && pdAcroForm2 != null) {
+                pdDocument.getDocumentCatalog().getCOSObject().setNeedToBeUpdated(true);
+                pdAcroForm2.flatten();
+            }
+            ByteArrayOutputStream finalOut = new ByteArrayOutputStream();
+            pdDocument2.setAllSecurityToBeRemoved(true);
+            pdDocument2.save(finalOut);
+            pdDocument2.close();
+            return finalOut.toByteArray();
         } catch (IOException e) {
             logger.error("file read error", e);
         }
@@ -790,12 +800,7 @@ public class PdfService {
 
     public PdfParameters getPdfParameters(PDDocument pdDocument, int pageNumber) {
         PDPage pdPage = pdDocument.getPage(pageNumber - 1);
-        PdfParameters pdfParameters = new PdfParameters(
-                (int) pdPage.getMediaBox().getWidth(),
-                (int) pdPage.getMediaBox().getHeight(),
-                pdPage.getRotation(),
-                pdDocument.getNumberOfPages());
-        return pdfParameters;
+        return new PdfParameters((int) pdPage.getMediaBox().getWidth(), (int) pdPage.getMediaBox().getHeight(), pdPage.getRotation(), pdDocument.getNumberOfPages());
     }
 
     public BufferedImage pageAsBufferedImage(InputStream pdfFile, int page) {
