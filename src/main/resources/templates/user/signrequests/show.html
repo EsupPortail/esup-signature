@@ -49,7 +49,7 @@
                 <li class="breadcrumb-item active" aria-current="page">Demande : <span
                         th:text="${signRequest.parentSignBook.subject}"></span>&nbsp;du&nbsp;<span
                         th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
-                    <span class="not-viewed fw-bold" th:unless="${signRequest.viewedBy.contains(user)}">(non lu)</span>
+                    <span class="not-viewed fw-bold" th:unless="${signRequest.viewedBy != null && signRequest.viewedBy.contains(user)}">(non lu)</span>
                 </li>
             </ol>
         </nav>
@@ -612,7 +612,7 @@
                             </th:block>
                         </th:block>
                         <th:block th:each="target : ${signRequest.parentSignBook.liveWorkflow.targets}">
-                        <div th:if="${target.targetUri.contains('mailto:')}" class="form-group mb-3">
+                        <div th:if="${target != null && target.targetUri != null && target.targetUri.contains('mailto:')}" class="form-group mb-3">
                             <label>Etape finale : Envoi par mail à </label>
                             <select class="auto-select-users" id="targetEmailsSelect" multiple="multiple" name="targetEmails" required>
                                 <th:block th:each="targetEmail : ${target.targetUri.replace('mailto:', '').split(',')}">
