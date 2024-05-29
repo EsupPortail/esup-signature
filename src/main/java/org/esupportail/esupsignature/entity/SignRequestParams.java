@@ -27,7 +27,7 @@ public class SignRequestParams {
 
 	private Integer yPos = 0;
 
-	private String extraText = "";
+	private String extraText;
 
     private Boolean addWatermark = false;
 

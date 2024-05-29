@@ -238,14 +238,16 @@ public class FileService {
 					}
 					lineCount++;
 				}
-				List<String> text = List.of(signRequestParams.getExtraText().split("\\s*\n\\s*"));
-				for (String line : text) {
-					if(lineCount == 0) {
-						graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), widthOffset, fm.getHeight());
-					} else {
-						graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), widthOffset, fm.getHeight() + lineHeight * lineCount);
+				if(StringUtils.hasText(signRequestParams.getExtraText())) {
+					List<String> text = List.of(signRequestParams.getExtraText().split("\\s*\n\\s*"));
+					for (String line : text) {
+						if (lineCount == 0) {
+							graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), widthOffset, fm.getHeight());
+						} else {
+							graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), widthOffset, fm.getHeight() + lineHeight * lineCount);
+						}
+						lineCount++;
 					}
-					lineCount++;
 				}
 				graphics2D.dispose();
 				ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
