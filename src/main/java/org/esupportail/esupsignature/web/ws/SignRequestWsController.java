@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.AuditTrail;
@@ -222,6 +223,21 @@ public class SignRequestWsController {
                                                            @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse httpServletResponse) {
         try {
             signRequestService.getToSignFileResponse(id, "attachment", httpServletResponse);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return ResponseEntity.internalServerError().build();
+    }
+
+    @GetMapping(value = "/get-last-file-and-report/{id}")
+    @ResponseBody
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
+    @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
+    public ResponseEntity<Void> getLastFileAndReport(@PathVariable("id") Long id,
+                                                     @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+        try {
+            signRequestService.getSignedFileAndReportResponse(id, httpServletRequest, httpServletResponse);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

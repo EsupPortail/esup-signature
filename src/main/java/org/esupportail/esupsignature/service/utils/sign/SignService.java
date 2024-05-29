@@ -219,15 +219,7 @@ public class SignService {
 			}
 			parameters.setSigningCertificate(certificateToken);
 			parameters.setCertificateChain(certificateTokenChain);
-			Boolean revocationValid = validationService.checkRevocation(certificateToken);
-			if(revocationValid == null || !revocationValid) {
-				logger.info("LT or LTA signature level not supported, switching to T level");
-				if(parameters.getSignatureLevel().name().contains("_LT") || parameters.getSignatureLevel().name().contains("_LTA")) {
-					String newLevel = parameters.getSignatureLevel().name().replace("_LTA", "_T");
-					newLevel = newLevel.replace("_LT", "_T");
-					parameters.setSignatureLevel(SignatureLevel.valueOf(newLevel));
-				}
-			}
+			validationService.checkRevocation(certificateToken, parameters);
 			DSSDocument dssDocument;
 			if (signatureDocumentForm instanceof SignatureMultipleDocumentsForm) {
 				dssDocument = certSignDocument((SignatureMultipleDocumentsForm) signatureDocumentForm, parameters, abstractKeyStoreTokenConnection);
@@ -340,15 +332,25 @@ public class SignService {
 	}
 
 	@Transactional
-	public boolean isSigned(SignRequest signRequest) {
+	public Reports validate(long signRequestId) throws IOException {
+		List<Document> documents = getToSignDocuments(signRequestId);
+		if(!documents.isEmpty()) {
+			byte[] bytes = documents.get(0).getInputStream().readAllBytes();
+			return validationService.validate(new ByteArrayInputStream(bytes), null);
+		} else {
+			return null;
+		}
+	}
+
+	@Transactional
+	public boolean isSigned(SignRequest signRequest, Reports reports) {
 		try {
+			if(reports == null) {
+				reports = validate(signRequest.getId());
+			}
 			List<Document> documents = getToSignDocuments(signRequest.getId());
 			if (!documents.isEmpty() && (signRequest.getParentSignBook().getLiveWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null)) {
-				byte[] bytes = getToSignDocuments(signRequest.getId()).get(0).getInputStream().readAllBytes();
-				Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
-				return (reports != null
-						&&
-						!reports.getSimpleReport().getSignatureIdList().isEmpty());
+				return (reports != null && !reports.getSimpleReport().getSignatureIdList().isEmpty());
 			}
 		} catch (Exception e) {
 			logger.error("error while checking if signRequest is signed", e);
@@ -357,9 +359,9 @@ public class SignService {
 	}
 
 	@Transactional
-	public boolean isSigned(SignBook signBook) {
+	public boolean isSigned(SignBook signBook, Reports reports) {
 		for (SignRequest signRequest : signBook.getSignRequests()) {
-			if (isSigned(signRequest)) {
+			if (isSigned(signRequest, reports)) {
 				return true;
 			}
 		}
@@ -393,7 +395,7 @@ public class SignService {
 					inputStream = toSignFile.getInputStream();
 				}
 				bytes = inputStream.readAllBytes();
-				if(!isSigned(signRequest) && !pdfService.isPdfAComplient(bytes)) {
+				if(!isSigned(signRequest, null) && !pdfService.isPdfAComplient(bytes)) {
 					bytes = pdfService.convertGS(pdfService.writeMetadatas(bytes, toSignFile.getFileName(), signRequest, new ArrayList<>()));
 				}
 			} else {
@@ -410,7 +412,7 @@ public class SignService {
 				((SignatureDocumentForm) abstractSignatureForm).setContainerType(signProperties.getContainerType());
 			}
 		}
-		if(signProperties.getSignWithExpiredCertificate() || (environment.getActiveProfiles().length > 0 && List.of(environment.getActiveProfiles()).contains("dev"))) {
+		if(signProperties.getSignWithExpiredCertificate()) {
 			abstractSignatureForm.setSignWithExpiredCertificate(true);
 		}
 		abstractSignatureForm.setSignatureForm(signatureForm);

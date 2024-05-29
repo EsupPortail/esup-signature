@@ -14,6 +14,7 @@ export class Step {
         this.changeable = false;
         this.recipients = [];
         this.recipientsCCEmails = [];
+        this.repeatable = false;
         this.targetEmails = [];
         Object.assign(this, step);
     }
