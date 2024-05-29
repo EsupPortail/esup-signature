@@ -15,16 +15,14 @@ import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dss.DssUtilsService;
 import org.esupportail.esupsignature.dss.model.DssMultipartFile;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class ValidationService {
@@ -86,19 +84,23 @@ public class ValidationService {
 
     public void checkRevocation(CertificateToken certificateToken, AbstractSignatureParameters<?> parameters) {
         RevocationToken<OCSP> revocationToken = null;
-        if(certificateVerifier.isCheckRevocationForUntrustedChains()) {
+        try {
             revocationToken = certificateVerifier.getOcspSource().getRevocationToken(certificateToken, certificateToken);
+        } catch (Exception e) {
+            logger.warn("revocation check fail " + e.getMessage());
+            if(certificateVerifier.isCheckRevocationForUntrustedChains()) {
+                throw new EsupSignatureRuntimeException("Impossible de signer avec ce certificat. Détails : " + e.getMessage());
+            }
         }
         if(revocationToken != null && !certificateVerifier.getRevocationDataVerifier().isAcceptable(revocationToken)
-            && parameters.isSignWithExpiredCertificate()) {
-            logger.info("LT or LTA signature level not supported, switching to T level");
+            || (!certificateToken.isValidOn(new Date()) && parameters.isSignWithExpiredCertificate())) {
+            logger.warn("LT or LTA signature level not supported, switching to T level");
             if(parameters.getSignatureLevel().name().contains("_LT") || parameters.getSignatureLevel().name().contains("_LTA")) {
                 String newLevel = parameters.getSignatureLevel().name().replace("_LTA", "_T");
                 newLevel = newLevel.replace("_LT", "_T");
                 parameters.setSignatureLevel(SignatureLevel.valueOf(newLevel));
             }
         }
-
     }
 
 }
