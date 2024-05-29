@@ -365,9 +365,25 @@ export class SignRequestParams extends EventFactory {
             }
             $("#extraTools_" + this.id).remove();
             $("#crossTools_" + this.id).css("top", "-45px");
-            if(!this.globalProperties.watermarkForExternals) {
-                this.addWatermark = true;
+            if(this.globalProperties.externalSignatureParams != null) {
+                this.addWatermark = !this.globalProperties.externalSignatureParams.addWatermark;
                 this.toggleWatermark();
+                this.extraDate = !this.globalProperties.externalSignatureParams.extraDate;
+                this.toggleDate();
+                this.extraType = !this.globalProperties.externalSignatureParams.extraType;
+                this.toggleType();
+                this.extraName = !this.globalProperties.externalSignatureParams.extraName;
+                this.toggleName();
+                this.addExtra = !this.globalProperties.externalSignatureParams.addExtra;
+                this.toggleExtra();
+                this.extraText = this.globalProperties.externalSignatureParams.extraText == null;
+                this.toggleText();
+                if(this.globalProperties.externalSignatureParams.extraText != null) {
+                    this.extraText = this.globalProperties.externalSignatureParams.extraText;
+                    this.textareaExtra.val(this.globalProperties.externalSignatureParams.extraText);
+                }
+                this.extraOnTop = !this.globalProperties.externalSignatureParams.extraOnTop;
+                this.toggleExtraOnTop();
             }
         }
         this.cross.attr("page", this.signPageNumber);
@@ -830,7 +846,7 @@ export class SignRequestParams extends EventFactory {
             } else {
                 this.divExtra.removeClass("d-none");
             }
-            if(!this.isVisa) {
+            if(!this.isVisa && !this.isOtp) {
                 $("#extraTools_" + this.id).removeClass("d-none");
                 $("#crossTools_" + this.id).css("top", "-75px");
             }

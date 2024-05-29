@@ -22,6 +22,14 @@ global:
     trash-keep-delay: -1
     disable-cert-storage: false
     export-attachements: true
+    external-signature-params:
+        add-watermark: false
+        add-extra: true
+        extra-type: false
+        extra-name: false
+        extra-date: true
+        extra-on-top: true
+        extra-text: "toto"
 
 #tomcat:
 #    ajp:

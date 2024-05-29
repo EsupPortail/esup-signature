@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.config;
 
+import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -271,7 +272,8 @@ public class GlobalProperties {
     /**
      * Activer le watermark pour les utilisateurs externes
      */
-    private Boolean watermarkForExternals = true;
+    @Deprecated
+    private Boolean watermarkForExternals;
 
     /**
      * Delai d’alerte avant expiration des certificats serveur
@@ -281,6 +283,8 @@ public class GlobalProperties {
     private String systemUserName = "Esup-Signature";
 
     private String systemUserFirstName = "Automate";
+
+    private SignRequestParams externalSignatureParams = new SignRequestParams();
 
     public String getRootUrl() {
         return rootUrl;
@@ -702,10 +706,6 @@ public class GlobalProperties {
         this.fixFactor = fixFactor;
     }
 
-    public Boolean getWatermarkForExternals() {
-        return watermarkForExternals;
-    }
-
     public void setWatermarkForExternals(Boolean watermarkForExternals) {
         this.watermarkForExternals = watermarkForExternals;
     }
@@ -732,5 +732,16 @@ public class GlobalProperties {
 
     public void setSystemUserFirstName(String systemUserFirstName) {
         this.systemUserFirstName = systemUserFirstName;
+    }
+
+    public SignRequestParams getExternalSignatureParams() {
+        if(watermarkForExternals != null) {
+            externalSignatureParams.setAddWatermark(watermarkForExternals);
+        }
+        return externalSignatureParams;
+    }
+
+    public void setExternalSignatureParams(SignRequestParams externalSignatureParams) {
+        this.externalSignatureParams = externalSignatureParams;
     }
 }
