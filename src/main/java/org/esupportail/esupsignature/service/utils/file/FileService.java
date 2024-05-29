@@ -104,7 +104,7 @@ public class FileService {
         return out;
 	}
 
-	public static InputStream bufferedImageToInputStream(BufferedImage image, String type) throws IOException {
+	public InputStream bufferedImageToInputStream(BufferedImage image, String type) throws IOException {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		ImageIO.write(image, type, os);
 		return new ByteArrayInputStream(os.toByteArray());
