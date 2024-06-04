@@ -28,7 +28,7 @@ global:
     max-upload-size: 62428800
     pdf-only: false
     seal-all-docs: false
-    rest-ext-value-url: http://api.univ-ville.fr
+#    rest-ext-value-url: http://api.univ-ville.fr
     send-postit-by-email: false
     send-creation-mail-to-viewers: false
     sms-required: false
