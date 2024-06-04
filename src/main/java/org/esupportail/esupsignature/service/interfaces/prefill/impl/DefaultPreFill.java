@@ -51,6 +51,8 @@ public class DefaultPreFill implements PreFill {
 		resources.put(COSName.getPDFName("Helvetica"), font);
 		ExtValue extDefaultValue = extValueService.getExtValueServiceByName("default");
 		Map<String, Object> defaultValues = extDefaultValue.initValues(user, signRequest);
+		ExtValue extRestValue = extValueService.getExtValueServiceByName("rest");
+		Map<String, Object> restValues = extRestValue.initValues(user, signRequest);
 		ExtValue extLdapValue = extValueService.getExtValueServiceByName("ldap");
 		Map<String, Object> ldapValues = new HashMap<>();
 		if(extLdapValue != null) {
@@ -69,7 +71,7 @@ public class DefaultPreFill implements PreFill {
 								result.append(extLdapValue.getValueByName("schacDateOfBirth", user, signRequest));
 							} else if (returnValue.equals("supannEntiteAffectationPrincipale")) {
 								List<Map<String, Object>> ouList = extLdapValue.search("organizationalUnit", ldapValues.get(returnValue.trim()).toString(), "description");
-								if(ouList.size() > 0) {
+								if(!ouList.isEmpty()) {
 									result.append(ouList.get(0).get("value"));
 								}
 							} else {
@@ -90,6 +92,10 @@ public class DefaultPreFill implements PreFill {
 				} else if(field.getExtValueServiceName().equals("default")) {
 					if(defaultValues.containsKey(field.getExtValueReturn())) {
 						field.setDefaultValue(defaultValues.get(field.getExtValueReturn()).toString());
+					}
+				} else if(field.getExtValueServiceName().equals("rest")) {
+					if(restValues.containsKey(field.getExtValueReturn())) {
+						field.setDefaultValue(restValues.get(field.getExtValueReturn()).toString());
 					}
 				}
 			}
