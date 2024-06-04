@@ -47,11 +47,11 @@
             </div>
             </div>
         </td>
-        <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" class="clickable-td d-none d-xxl-table-cell text-nowrap" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
+        <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" class="clickable-td d-none d-xxxxl-table-cell text-nowrap" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
         <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" class="clickable-td d-none d-xl-table-cell">
             <span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
         </td>
-        <td class="d-none d-xl-table-cell">
+        <td class="d-none d-xxxl-table-cell">
             <div th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0 && signBook.liveWorkflow.currentStepNumber > 0}">
                 <div class="dropdown">
                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" th:id="'dropdownMenuButton-' + ${signBook.id}" data-bs-toggle="dropdown">
@@ -84,12 +84,10 @@
             <br>
             <span th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" th:text="'Supprimé le : ' + ${#dates.format(signBook.updateDate, 'dd/MM/yyyy HH:mm')}"></span>
         </td>
-        <td class="clickable-td d-none d-md-table-cell"
-            style="width: 150px;">
+        <td class="clickable-td d-none d-xxl-table-cell">
             <div th:replace="~{user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})}"></div>
         </td>
-        <td class="clickable-td d-md-none"
-            style="width: 150px;">
+        <td class="clickable-td d-xxl-none">
             <div th:replace="~{user/signbooks/includes/status-sm :: status(signBook=${signRequest.parentSignBook})}"></div>
         </td>
         <td>
@@ -209,8 +207,7 @@
             </div>
         </td>
         <td></td>
-        <td class="d-none d-md-table-cell"
-            style="width: 150px;">
+        <td class="d-none d-md-table-cell" style="width: 100px;">
             <div th:replace="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
         </td>
         <td>
