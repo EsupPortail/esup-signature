@@ -1508,12 +1508,12 @@ public class SignBookService {
     @Transactional
     public List<String> getSignImagesForSignRequest(Long id, String userEppn, String authUserEppn, Long userShareId) throws EsupSignatureUserException, IOException {
         SignRequest signRequest = signRequestService.getById(id);
+        User user = userService.getByEppn(userEppn);
         LinkedList<String> signImages = new LinkedList<>();
         if (!signRequest.getSignedDocuments().isEmpty() || !signRequest.getOriginalDocuments().isEmpty()) {
             List<Document> toSignDocuments = signService.getToSignDocuments(signRequest.getId());
             if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
                 if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
-                    User user = userService.getByEppn(userEppn);
                     if(userShareId != null) {
                         try {
                             UserShare userShare = userShareService.getById(userShareId);
@@ -1533,7 +1533,9 @@ public class SignBookService {
             }
         }
         signImages.add(fileService.getBase64Image(userService.getDefaultImage(authUserEppn), "default-image.png"));
-        signImages.add(fileService.getBase64Image(userService.getDefaultParaphe(authUserEppn), "default-paraphe.png"));
+        if(StringUtils.hasText(user.getName()) && StringUtils.hasText(user.getFirstname())) {
+            signImages.add(fileService.getBase64Image(userService.getDefaultParaphe(authUserEppn), "default-paraphe.png"));
+        }
         return signImages;
     }
 
