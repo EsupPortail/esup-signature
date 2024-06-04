@@ -32,7 +32,6 @@ import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
-import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.support.MutableSortDefinition;
@@ -151,9 +150,6 @@ public class SignBookService {
 
     @Resource
     private RecipientService recipientService;
-
-    @Resource
-    private ValidationService validationService;
 
     @Resource
     private DocumentService documentService;
@@ -706,7 +702,7 @@ public class SignBookService {
                         signBook.getViewers().add(user);
                         addToTeam(signBook, user.getEppn());
                         if (globalProperties.getSendCreationMailToViewers() && !signBook.getStatus().equals(SignRequestStatus.draft) && !signBook.getStatus().equals(SignRequestStatus.uploading)) {
-                            mailService.sendCCAlert(signBook, recipientsCCEmails);
+                            mailService.sendCCAlert(signBook, Collections.singletonList(recipientCCEmail));
                         }
                     }
                 }
