@@ -10,6 +10,12 @@
     }
 }
 
+@media (min-width: 1800px) {
+    .d-xxxxl-table-cell {
+        display: table-cell !important;
+    }
+}
+
 @media (max-width: 1200px) {
     .new-max-w {
         width: 100%;

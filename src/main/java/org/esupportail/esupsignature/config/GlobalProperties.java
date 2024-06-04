@@ -255,7 +255,7 @@ public class GlobalProperties {
     private Integer otpValidity = 10;
 
     /**
-     * Liste des types de signature autorisés
+     * Liste des types de signature autorisés (par défault tous les types)
      */
     private List<SignType> authorizedSignTypes = List.of(SignType.values());
 
