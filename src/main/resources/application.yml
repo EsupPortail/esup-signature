@@ -15,12 +15,28 @@ global:
     application-email: esup.signature@univ-ville.fr
     hours-before-refresh-notif: 24
     share-mode: 1
-    infinite-scrolling: true
     return-to-home-after-sign: true
-    naming-template: "[title]"
+    infinite-scrolling: true
     signed-suffix: "_signé"
+    naming-template: "[title]"
+    enable-scheduled-cleanup: false
     trash-keep-delay: -1
     disable-cert-storage: false
+    nb-days-before-deleting: -1
+    nb-days-before-warning: -1
+    enable-captcha: false
+    max-upload-size: 62428800
+    pdf-only: false
+    seal-all-docs: false
+#    rest-ext-value-url: http://api.univ-ville.fr
+    send-postit-by-email: false
+    send-creation-mail-to-viewers: false
+    sms-required: false
+    file-name-spaces-replace-by: " "
+    csv-quote: "\""
+    csv-separator: ";"
+    otp-validity: 1
+#    authorized-sign-types: certsign
     export-attachements: true
     external-signature-params:
         add-watermark: false

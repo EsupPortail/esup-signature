@@ -15,7 +15,9 @@
                     Suivi par :
                         <ul>
                             <li th:each="user : ${signBook.viewers}" >
-                                <span th:text="${user.firstname + ' ' + user.name}"></span>
+
+                                <span th:if="${user.firstname != '' && user.name != ''}" th:text="${user.firstname + ' ' + user.name}"></span>
+                                <span th:unless="${user.firstname != '' && user.name != ''}" th:text="${user.email}"></span>
 
                             </li>
                         </ul>

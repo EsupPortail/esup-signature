@@ -1,6 +1,6 @@
 build:
   stage: deploy
-  script: 
+  script:
     - mvn clean package -Dspring.config.location=/opt/esup-signature-test-work/application.yml -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp
     - sudo systemctl stop esup-signature-test.service
     - rm -f /opt/esup-signature-test-work/esup-signature.war
@@ -13,7 +13,7 @@ build:
 
 build3:
   stage: deploy
-  script: 
+  script:
     - mvn clean package -DskipTests -Dspring.config.location=/opt/esup-signature/application.yml
     - sudo systemctl stop esup-signature.service
     - rm -f /opt/esup-signature/esup-signature.war

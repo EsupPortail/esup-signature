@@ -32,7 +32,6 @@ import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
-import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.support.MutableSortDefinition;
@@ -151,9 +150,6 @@ public class SignBookService {
 
     @Resource
     private RecipientService recipientService;
-
-    @Resource
-    private ValidationService validationService;
 
     @Resource
     private DocumentService documentService;
@@ -706,7 +702,7 @@ public class SignBookService {
                         signBook.getViewers().add(user);
                         addToTeam(signBook, user.getEppn());
                         if (globalProperties.getSendCreationMailToViewers() && !signBook.getStatus().equals(SignRequestStatus.draft) && !signBook.getStatus().equals(SignRequestStatus.uploading)) {
-                            mailService.sendCCAlert(signBook, recipientsCCEmails);
+                            mailService.sendCCAlert(signBook, Collections.singletonList(recipientCCEmail));
                         }
                     }
                 }
@@ -1508,12 +1504,12 @@ public class SignBookService {
     @Transactional
     public List<String> getSignImagesForSignRequest(Long id, String userEppn, String authUserEppn, Long userShareId) throws EsupSignatureUserException, IOException {
         SignRequest signRequest = signRequestService.getById(id);
+        User user = userService.getByEppn(userEppn);
         LinkedList<String> signImages = new LinkedList<>();
         if (!signRequest.getSignedDocuments().isEmpty() || !signRequest.getOriginalDocuments().isEmpty()) {
             List<Document> toSignDocuments = signService.getToSignDocuments(signRequest.getId());
             if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
                 if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
-                    User user = userService.getByEppn(userEppn);
                     if(userShareId != null) {
                         try {
                             UserShare userShare = userShareService.getById(userShareId);
@@ -1533,7 +1529,9 @@ public class SignBookService {
             }
         }
         signImages.add(fileService.getBase64Image(userService.getDefaultImage(authUserEppn), "default-image.png"));
-        signImages.add(fileService.getBase64Image(userService.getDefaultParaphe(authUserEppn), "default-paraphe.png"));
+        if(StringUtils.hasText(user.getName()) && StringUtils.hasText(user.getFirstname())) {
+            signImages.add(fileService.getBase64Image(userService.getDefaultParaphe(authUserEppn), "default-paraphe.png"));
+        }
         return signImages;
     }
 

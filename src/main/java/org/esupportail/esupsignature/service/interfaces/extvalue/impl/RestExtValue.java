@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.interfaces.extvalue.impl;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import jakarta.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
