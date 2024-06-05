@@ -103,8 +103,6 @@ public class SignBookController {
         model.addAttribute("statusFilter", statusFilter);
         Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("signBooks", signBooks);
-        List<User> creators = signBookService.getCreators(userEppn, workflowFilter, docTitleFilter, creatorFilter);
-        model.addAttribute("creators", creators);
         model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
@@ -124,6 +122,8 @@ public class SignBookController {
             docTitles.addAll(signBooks.stream().map(SignBook::getSubject).toList());
             workflowNames.addAll(signBooks.stream().map(SignBook::getWorkflowName).toList());
         }
+        List<User> creators = signBookService.getCreators(userEppn, workflowFilter, docTitleFilter, creatorFilter);
+        model.addAttribute("creators", creators);
         model.addAttribute("docTitles", docTitles);
         model.addAttribute("workflowNames", workflowNames);
         model.addAttribute("signRequestRecipients", signBookService.getRecipientsNames(userEppn).stream().filter(Objects::nonNull).collect(Collectors.toList()));

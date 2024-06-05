@@ -737,7 +737,7 @@ public class SignBookService {
 
     public List<String> getWorkflowNames(String userEppn) {
         User user = userService.getByEppn(userEppn);
-        List<String> workflowNames = signBookRepository.findWorkflowNames(user);
+        List<String> workflowNames = signBookRepository.findAllWorkflowNames(user);
         return workflowNames.stream().filter(s -> s != null && !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
@@ -1830,12 +1830,8 @@ public class SignBookService {
         if(creatorFilter != null) {
             creatorFilterUser = userService.getByEppn(creatorFilter);
         }
-        if(userEppn != null) {
-            User user = userService.getByEppn(userEppn);
-            return signBookRepository.findUserByRecipientAndCreateBy(user, workflowFilter, docTitleFilter, creatorFilterUser);
-        } else {
-            return signBookRepository.findSignBookAllUserByRecipientAndCreateBy(workflowFilter, docTitleFilter, creatorFilterUser);
-        }
+        User user = userService.getByEppn(userEppn);
+        return signBookRepository.findUserByRecipientAndCreateBy(user, workflowFilter, docTitleFilter, creatorFilterUser);
     }
 
     public Page<SignBook> getSignBookByWorkflow(Workflow workflow, String statusFilter, String recipientsFilter, String creatorFilter, String dateFilter, Pageable pageable) {
