@@ -948,4 +948,37 @@ public class UserService {
         User authUser = getByEppn(authUserEppn);
         authUser.setKeystore(null);
     }
+
+    @Transactional
+    public void createRole(String role, List<String> rolesManagers) {
+        if(rolesManagers != null) {
+            for (String mail : rolesManagers) {
+                User user = getUserByEmail(mail);
+                user.getManagersRoles().add(role);
+            }
+        } else {
+            for (User user : getByManagersRoles(role)) {
+                user.getManagersRoles().remove(role);
+            }
+        }
+    }
+
+    @Transactional
+    public void updateRole(String role, List<String> rolesManagers) {
+        if(rolesManagers != null) {
+            for (User user : getByManagersRoles(role)) {
+                if (!rolesManagers.contains(user.getEmail())) {
+                    user.getManagersRoles().remove(role);
+                }
+            }
+            for (String mail : rolesManagers) {
+                User user = getUserByEmail(mail);
+                user.getManagersRoles().add(role);
+            }
+        } else {
+            for (User user : getByManagersRoles(role)) {
+                user.getManagersRoles().remove(role);
+            }
+        }
+    }
 }
