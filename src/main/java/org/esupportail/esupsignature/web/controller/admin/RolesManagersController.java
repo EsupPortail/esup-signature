@@ -27,7 +27,7 @@ public class RolesManagersController {
     }
 
     @Resource
-    UserService userService;
+    private UserService userService;
 
     @GetMapping
     public String getRoles(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
@@ -51,36 +51,15 @@ public class RolesManagersController {
 
     @PostMapping("/create-role")
     public String createRoles(@RequestParam String role, @RequestParam(required = false) List<String> rolesManagers) {
-        if(rolesManagers != null) {
-            for (String mail : rolesManagers) {
-                User user = userService.getUserByEmail(mail);
-                user.getManagersRoles().add(role);
-            }
-        } else {
-            for (User user : userService.getByManagersRoles(role)) {
-                user.getManagersRoles().remove(role);
-            }
-        }
+        userService.createRole(role, rolesManagers);
         return "redirect:/admin/roles-managers";
     }
 
     @PostMapping("/edit-role")
     public String editRoles(@RequestParam String role, @RequestParam(required = false) List<String> rolesManagers) {
-        if(rolesManagers != null) {
-            for (User user : userService.getByManagersRoles(role)) {
-                if (!rolesManagers.contains(user.getEmail())) {
-                    user.getManagersRoles().remove(role);
-                }
-            }
-            for (String mail : rolesManagers) {
-                User user = userService.getUserByEmail(mail);
-                user.getManagersRoles().add(role);
-            }
-        } else {
-            for (User user : userService.getByManagersRoles(role)) {
-                user.getManagersRoles().remove(role);
-            }
-        }
+        userService.updateRole(role, rolesManagers);
         return "redirect:/admin/roles-managers";
     }
+
+
 }
