@@ -49,10 +49,16 @@ public class DefaultPreFill implements PreFill {
 		PDFont font = PDType1Font.HELVETICA;
 		PDResources resources = new PDResources();
 		resources.put(COSName.getPDFName("Helvetica"), font);
+		Map<String, Object> defaultValues = new HashMap<>();
 		ExtValue extDefaultValue = extValueService.getExtValueServiceByName("default");
-		Map<String, Object> defaultValues = extDefaultValue.initValues(user, signRequest);
+		if(extDefaultValue != null) {
+			defaultValues = extDefaultValue.initValues(user, signRequest);
+		}
+		Map<String, Object> restValues = new HashMap<>();
 		ExtValue extRestValue = extValueService.getExtValueServiceByName("rest");
-		Map<String, Object> restValues = extRestValue.initValues(user, signRequest);
+		if(extRestValue != null) {
+			restValues = extRestValue.initValues(user, signRequest);
+		}
 		ExtValue extLdapValue = extValueService.getExtValueServiceByName("ldap");
 		Map<String, Object> ldapValues = new HashMap<>();
 		if(extLdapValue != null) {
