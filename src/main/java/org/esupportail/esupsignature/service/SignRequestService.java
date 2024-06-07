@@ -371,16 +371,14 @@ public class SignRequestService {
 		signRequest.getSignedDocuments().add(document);
 	}
 
-	public Long nbToSignSignRequests(String userEppn) {
-		return signRequestRepository.countByRecipientUserToSign(userEppn);
-	}
-
 	public Long nbFollowedByMe(String userEppn) {
 		return signBookRepository.countByViewersContaining(userEppn);
 	}
 
+	@Transactional
 	public List<SignRequest> getToSignRequests(String userEppn) {
-		List<SignRequest> signRequestsToSign = signRequestRepository.findByRecipientUserToSign(userEppn);
+		User user = userService.getByEppn(userEppn);
+		List<SignRequest> signRequestsToSign = signRequestRepository.findByRecipientUserToSign(user);
 		signRequestsToSign = signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
 		return  signRequestsToSign;
 	}
