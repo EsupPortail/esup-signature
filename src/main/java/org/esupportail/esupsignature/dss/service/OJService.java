@@ -48,7 +48,7 @@ public class OJService {
 	public void getCertificats() {
 		ojContentKeyStore.addAllCertificatesToKeyStore(myTrustedCertificateSource.getCertificates());
 		job.offlineRefresh();
-		job.onlineRefresh();
+		refresh();
 	}
 	
 	public void refresh() {

@@ -203,7 +203,9 @@ public class SignRequestController {
         }
         List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
         model.addAttribute("logs", logs);
-        model.addAttribute("pdfaCheck", toSignDocuments.get(0).getPdfaCheck());
+        if(!toSignDocuments.isEmpty()) {
+            model.addAttribute("pdfaCheck", toSignDocuments.get(0).getPdfaCheck());
+        }
         return "user/signrequests/show";
     }
 

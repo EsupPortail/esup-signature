@@ -50,6 +50,11 @@ public class DatabaseIndexInitializer {
         } catch (Exception e) {
             logger.warn(e.getMessage());
         }
+        try {
+            jdbcTemplate.execute("create index if not exists sign_book_team_team_id_index on sign_book_team (team_id);");
+        } catch (Exception e) {
+            logger.warn(e.getMessage());
+        }
     }
 
 }
