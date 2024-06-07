@@ -17,7 +17,7 @@
         <div id="content" class="content">
             <div class="fixed-action-simple-btn" >
                 <a title="Créer un nouveau circuit" data-bs-toggle="modal" data-bs-target="#newWorkflow" type="button"
-                   class="btn-floating btn-lg bg-primary wave-effect">
+                    class="btn-floating btn-lg bg-primary wave-effect">
                     <i class="fa-solid fa-plus fa-2xl"></i>
                 </a>
             </div>
@@ -77,19 +77,19 @@
                                         <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${workflow.id}">
                                             <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
-                                                   th:href="'/admin/workflows/update/' + ${workflow.id}">
+                                                    th:href="'/admin/workflows/update/' + ${workflow.id}">
                                                     <i class="fa-solid fa-pencil-alt pr-2"></i> Modifier les paramètres
                                                 </a>
                                             </li>
                                             <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
-                                                   th:href="'/admin/workflows/steps/' + ${workflow.id}">
+                                                    th:href="'/admin/workflows/steps/' + ${workflow.id}">
                                                     <i class="fa-solid fa-shoe-prints pr-2"></i> Modifier les étapes
                                                 </a>
                                             </li>
                                             <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Exporter le circuit" role="button"
-                                                   th:href="'/admin/workflows/export/' + ${workflow.id}">
+                                                    th:href="'/admin/workflows/export/' + ${workflow.id}">
                                                     <i class="fa-solid fa-file-export pr-2"></i> Exporter le circuit
                                                 </a>
                                             </li>
@@ -100,7 +100,7 @@
                                             </li>
                                             <li>
                                                 <a th:if="${workflow.fromCode == null || !workflow.fromCode}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${workflow.id}" role="button" title="Supprimer"
-                                                   data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${workflow.id}">
+                                                    data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${workflow.id}">
                                                     <i class="fa-solid fa-trash-alt pr-2"></i> Supprimer
                                                 </a>
                                             </li>

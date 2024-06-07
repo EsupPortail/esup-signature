@@ -191,7 +191,8 @@ public class SignBookService {
 
     @Transactional
     public Long nbToSignSignBooks(String userEppn) {
-        return signBookRepository.countToSign(userEppn);
+        User user = userService.getByEppn(userEppn);
+        return signBookRepository.countToSign(user);
     }
 
     @Transactional
@@ -230,7 +231,7 @@ public class SignBookService {
                 signBooks = signBookRepository.findByRecipientAndCreateByEppnIndexed(user, workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
             }
         } else if(statusFilter.equals("toSign"))  {
-            signBooks = signBookRepository.findToSign(user.getEppn(), workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
+            signBooks = signBookRepository.findToSign(user, workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
         } else if(statusFilter.equals("signedByMe")) {
             signBooks = signBookRepository.findByRecipientAndActionTypeNotDeleted(user, ActionType.signed, workflowFilter, docTitleFilter, creatorFilterUser, pageable);
         } else if(statusFilter.equals("refusedByMe")) {
@@ -737,7 +738,7 @@ public class SignBookService {
 
     public List<String> getWorkflowNames(String userEppn) {
         User user = userService.getByEppn(userEppn);
-        List<String> workflowNames = signBookRepository.findWorkflowNames(user);
+        List<String> workflowNames = signBookRepository.findAllWorkflowNames(user);
         return workflowNames.stream().filter(s -> s != null && !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
@@ -1830,12 +1831,8 @@ public class SignBookService {
         if(creatorFilter != null) {
             creatorFilterUser = userService.getByEppn(creatorFilter);
         }
-        if(userEppn != null) {
-            User user = userService.getByEppn(userEppn);
-            return signBookRepository.findUserByRecipientAndCreateBy(user, workflowFilter, docTitleFilter, creatorFilterUser);
-        } else {
-            return signBookRepository.findSignBookAllUserByRecipientAndCreateBy(workflowFilter, docTitleFilter, creatorFilterUser);
-        }
+        User user = userService.getByEppn(userEppn);
+        return signBookRepository.findUserByRecipientAndCreateBy(user, workflowFilter, docTitleFilter, creatorFilterUser);
     }
 
     public Page<SignBook> getSignBookByWorkflow(Workflow workflow, String statusFilter, String recipientsFilter, String creatorFilter, String dateFilter, Pageable pageable) {
