@@ -135,7 +135,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("select sb from SignBook sb where sb.liveWorkflow.workflow.id = :workflowId")
     List<SignBook> findByWorkflowId(Long workflowId);
 
-    @Query("select sb from SignBook sb where sb.liveWorkflow.workflow = :workflow and :user not member of sb.hidedBy order by sb.id")
+    @Query("select sb from SignBook sb where sb.liveWorkflow.workflow = :workflow and (sb.hidedBy) is empty order by sb.id")
     List<SignBook> findByLiveWorkflowWorkflow(Workflow workflow);
 
     @Query("select count(sb) from SignBook sb where sb.liveWorkflow.workflow = :workflow and (sb.hidedBy) is empty")

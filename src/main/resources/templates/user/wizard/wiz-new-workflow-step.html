@@ -49,7 +49,7 @@
                             </table>
                             <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}" class="float-end"><i class="fa-solid fa-users"></i></span>
                             <span title="Une signature suffit" th:unless="${workflowStep.allSignToComplete}" class="float-end text-muted"><i class="fa-solid fa-users-slash"></i></span>
-                            <span title="Étape infinie" th:if="${liveWorkflowStep.repeatable}" class="float-end me-1 text-dark"><i class="fa-solid fa-infinity"></i></span>
+                            <span title="Étape infinie" th:if="${workflowStep.repeatable}" class="float-end me-1 text-dark"><i class="fa-solid fa-infinity"></i></span>
                         </div>
                     </div>
                     <div th:if="${workflow.workflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
