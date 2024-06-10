@@ -329,7 +329,6 @@ public class DSSBeanConfig {
 		return service;
 	}
 
-
 	public TLAlert tlSigningAlert() {
 		TLSignatureErrorDetection signingDetection = new TLSignatureErrorDetection();
 		LogTLSignatureErrorAlertHandler handler = new LogTLSignatureErrorAlertHandler();

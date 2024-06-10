@@ -24,6 +24,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -136,9 +137,9 @@ public class ScheduledTaskService {
 	}
 
 	@Scheduled(initialDelay = 86400000, fixedRate = 86400000)
-	public void refreshOJKeystore() {
+	public void refreshOJKeystore() throws IOException {
 		if(oJService != null) {
-			oJService.refresh();
+			oJService.getCertificats();
 		}
 	}
 

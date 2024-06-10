@@ -16,6 +16,7 @@
 	<name>esup-signature</name>
 	<properties>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
+		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
 		<java.version>17</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dss.framework.version>6.0</dss.framework.version>
@@ -114,18 +115,13 @@
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-jdbc</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
-			<version>2.7.1</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.zaxxer</groupId>
-			<artifactId>HikariCP</artifactId>
+			<version>2.7.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
