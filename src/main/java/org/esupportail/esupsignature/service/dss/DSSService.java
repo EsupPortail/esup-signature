@@ -1,32 +1,31 @@
 package org.esupportail.esupsignature.service.dss;
 
 import eu.europa.esig.dss.model.identifier.Identifier;
-import eu.europa.esig.dss.spi.tsl.*;
-import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
-import eu.europa.esig.dss.tsl.source.LOTLSource;
+import eu.europa.esig.dss.spi.tsl.LOTLInfo;
+import eu.europa.esig.dss.spi.tsl.ParsingInfoRecord;
+import eu.europa.esig.dss.spi.tsl.TLInfo;
+import eu.europa.esig.dss.spi.tsl.TLValidationJobSummary;
+import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.utils.Utils;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.esupportail.esupsignature.dss.config.DSSProperties;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
 import java.util.List;
 
 @Service
 public class DSSService {
 
-    @Resource
-    private CommonTrustedCertificateSource myTrustedCertificateSource;
+    private final TLValidationJob job;
 
-    @Resource
-    @Qualifier("european-trusted-list-certificate-source")
-    private TrustedListsCertificateSource trustedListsCertificateSource;
+    private final DSSProperties dssProperties;
 
-    @Resource
-    @Qualifier("european-lotl-source")
-    private LOTLSource lotlSource;
+    public DSSService(TLValidationJob job, DSSProperties dssProperties) {
+        this.job = job;
+        this.dssProperties = dssProperties;
+    }
 
     public LOTLInfo getLOTLInfoById(String lotlId) {
-        TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
+        TLValidationJobSummary summary = job.getSummary();
         List<LOTLInfo> lotlInfos = summary.getLOTLInfos();
         for (LOTLInfo lotlInfo : lotlInfos) {
             Identifier identifier = lotlInfo.getDSSId();
@@ -39,7 +38,7 @@ public class DSSService {
     }
 
     public TLInfo getTLInfoById(String tlId) {
-        TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
+        TLValidationJobSummary summary = job.getSummary();
         List<LOTLInfo> lotlInfos = summary.getLOTLInfos();
         for (LOTLInfo lotlInfo : lotlInfos) {
             TLInfo tlInfo = getTLInfoByIdFromList(tlId, lotlInfo.getTLInfos());
@@ -65,11 +64,11 @@ public class DSSService {
     }
 
     public String getActualOjUrl() {
-        TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
+        TLValidationJobSummary summary = job.getSummary();
         if (summary != null) {
             List<LOTLInfo> lotlInfos = summary.getLOTLInfos();
             for (LOTLInfo lotlInfo : lotlInfos) {
-                if (Utils.areStringsEqual(lotlSource.getUrl(), lotlInfo.getUrl())) {
+                if (Utils.areStringsEqual(dssProperties.getLotlUrl(), lotlInfo.getUrl())) {
                     ParsingInfoRecord parsingCacheInfo = lotlInfo.getParsingCacheInfo();
                     if (parsingCacheInfo != null) {
                         return parsingCacheInfo.getSigningCertificateAnnouncementUrl();
@@ -79,16 +78,8 @@ public class DSSService {
         }
         return null;
     }
-
-    public TrustedListsCertificateSource getTrustedListsCertificateSource() {
-        return trustedListsCertificateSource;
+    public String getCurrentOjUrl() {
+        return dssProperties.getOjUrl();
     }
 
-    public LOTLSource getLotlSource() {
-        return lotlSource;
-    }
-
-    public CommonTrustedCertificateSource getMyTrustedCertificateSource() {
-        return myTrustedCertificateSource;
-    }
 }

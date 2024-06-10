@@ -4,23 +4,21 @@ package org.esupportail.esupsignature.dss.service;
 import eu.europa.esig.dss.spi.tsl.LOTLInfo;
 import eu.europa.esig.dss.spi.tsl.TLInfo;
 import eu.europa.esig.dss.spi.tsl.TLValidationJobSummary;
-import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dss.config.DSSBeanConfig;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
 import java.io.IOException;
 
 @Service
@@ -36,54 +34,37 @@ public class OJService {
 	private TLValidationJob job;
 
 	@Resource
-	@Qualifier("european-trusted-list-certificate-source")
-	private TrustedListsCertificateSource trustedListsCertificateSource;
-
-	@Resource
 	private KeyStoreCertificateSource ojContentKeyStore;
 
 	@Resource
 	private CommonTrustedCertificateSource myTrustedCertificateSource;
 
-	public void getCertificats() {
+	public void getCertificats() throws IOException {
 		ojContentKeyStore.addAllCertificatesToKeyStore(myTrustedCertificateSource.getCertificates());
 		job.offlineRefresh();
-		job.onlineRefresh();
-	}
-	
-	public void refresh() {
-		try {
-			if(checkOjFreshness()) {
-				logger.info("start online refreshing oj keystore");
-				job.onlineRefresh();
-			} else {
-				logger.info("no online refresh needed for trusted lists");
-			}
-		} catch(IOException e) {
-			logger.error("Error refreshing dss", e);
+		if(refreshIsNeeded()) {
+			job.onlineRefresh();
 		}
-	}	
+	}
 
-	public boolean checkOjFreshness() throws IOException {
-		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
+	public boolean refreshIsNeeded() throws IOException {
+		TLValidationJobSummary summary = job.getSummary();
 		if(summary == null) return true;
 		boolean checkTl = false;
-		for (LOTLInfo lotlInfo : trustedListsCertificateSource.getSummary().getLOTLInfos()) {
-			if(lotlInfo.getValidationCacheInfo().isRefreshNeeded()) {
-				checkTl = !lotlInfo.getValidationCacheInfo().isValid()
-						|| lotlInfo.getValidationCacheInfo().isRefreshNeeded()
-						|| lotlInfo.getParsingCacheInfo().isRefreshNeeded()
-						|| lotlInfo.getDownloadCacheInfo().isRefreshNeeded();
-				break;
+		for (LOTLInfo lotlInfo : summary.getLOTLInfos()) {
+			if(!lotlInfo.getValidationCacheInfo().isValid()
+					|| lotlInfo.getValidationCacheInfo().isRefreshNeeded()
+					|| lotlInfo.getParsingCacheInfo().isRefreshNeeded()
+					|| lotlInfo.getDownloadCacheInfo().isRefreshNeeded()) {
+				checkTl = true;
 			}
 		}
-		for (TLInfo tlInfo : trustedListsCertificateSource.getSummary().getOtherTLInfos()) {
-			if(tlInfo.getValidationCacheInfo().isRefreshNeeded()) {
-				checkTl = !tlInfo.getValidationCacheInfo().isValid()
-						|| tlInfo.getValidationCacheInfo().isRefreshNeeded()
-						|| tlInfo.getParsingCacheInfo().isRefreshNeeded()
-						|| tlInfo.getDownloadCacheInfo().isRefreshNeeded();
-				break;
+		for (TLInfo tlInfo : summary.getOtherTLInfos()) {
+			if(!tlInfo.getValidationCacheInfo().isValid()
+					|| tlInfo.getValidationCacheInfo().isRefreshNeeded()
+					|| tlInfo.getParsingCacheInfo().isRefreshNeeded()
+					|| tlInfo.getDownloadCacheInfo().isRefreshNeeded()) {
+				checkTl = true;
 			}
 		}
 		return checkTl;
@@ -91,7 +72,7 @@ public class OJService {
 
 	@Async
 	@EventListener(ApplicationReadyEvent.class)
-	public void init() throws EsupSignatureRuntimeException {
+	public void init() throws EsupSignatureRuntimeException, IOException {
 		logger.info("Checking Workflow classes...");
 		workflowService.copyClassWorkflowsIntoDatabase();
 		logger.info("Check done.");

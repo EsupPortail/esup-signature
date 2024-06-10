@@ -34,7 +34,7 @@ public class AdminControllerAdvice {
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) throws JsonProcessingException {
         model.addAttribute("nbSessions", sessionRegistry.getAllPrincipals().size());
         try {
-            model.addAttribute("dssStatus", ojService.checkOjFreshness());
+            model.addAttribute("dssStatus", ojService.refreshIsNeeded());
         } catch (IOException e) {
             logger.debug("enable to get dss status");
         }
