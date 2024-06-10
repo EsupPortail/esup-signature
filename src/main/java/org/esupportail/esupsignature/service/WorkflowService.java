@@ -113,13 +113,13 @@ public class WorkflowService {
     @Transactional
     public void copyClassWorkflowsIntoDatabase() throws EsupSignatureRuntimeException {
         for (Workflow classWorkflow : getClassesWorkflows()) {
-            logger.info("workflow class found : " + classWorkflow.getName());
+            logger.debug("workflow class found : " + classWorkflow.getName());
             if (!isWorkflowExist(classWorkflow.getName(), "system")) {
                 logger.info("create " + classWorkflow.getName() + " on database : ");
                 Workflow newWorkflow = createWorkflow(classWorkflow.getName(), classWorkflow.getDescription(), userService.getSystemUser());
                 newWorkflow.setFromCode(true);
             } else {
-                logger.info("update " + classWorkflow.getName() + " on database");
+                logger.debug("update " + classWorkflow.getName() + " on database");
                 Workflow toUpdateWorkflow = workflowRepository.findByName(classWorkflow.getName());
                 toUpdateWorkflow.setPublicUsage(classWorkflow.getPublicUsage());
                 toUpdateWorkflow.getRoles().clear();
