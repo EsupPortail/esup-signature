@@ -136,7 +136,7 @@ public class ScheduledTaskService {
 		taskService.initCleanUploadingSignBooks();
 	}
 
-	@Scheduled(initialDelay = 86400000, fixedRate = 86400000)
+	@Scheduled(cron="00 02 02 * * *")
 	public void refreshOJKeystore() throws IOException {
 		if(oJService != null) {
 			oJService.getCertificats();

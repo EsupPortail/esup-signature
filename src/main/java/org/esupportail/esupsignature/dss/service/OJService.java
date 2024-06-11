@@ -7,14 +7,11 @@ import eu.europa.esig.dss.spi.tsl.TLValidationJobSummary;
 import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
-import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dss.config.DSSBeanConfig;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -27,24 +24,29 @@ public class OJService {
 
 	private static final Logger logger = LoggerFactory.getLogger(OJService.class);
 
-	@Resource
-	private WorkflowService workflowService;
+	private final TLValidationJob job;
 
-	@Resource
-	private TLValidationJob job;
+	private final KeyStoreCertificateSource ojContentKeyStore;
 
-	@Resource
-	private KeyStoreCertificateSource ojContentKeyStore;
+	private final CommonTrustedCertificateSource myTrustedCertificateSource;
 
-	@Resource
-	private CommonTrustedCertificateSource myTrustedCertificateSource;
+	public OJService(TLValidationJob job, KeyStoreCertificateSource ojContentKeyStore, CommonTrustedCertificateSource myTrustedCertificateSource) {
+		this.job = job;
+		this.ojContentKeyStore = ojContentKeyStore;
+		this.myTrustedCertificateSource = myTrustedCertificateSource;
+	}
 
 	public void getCertificats() throws IOException {
+		logger.info("Updating DSS OJ...");
 		ojContentKeyStore.addAllCertificatesToKeyStore(myTrustedCertificateSource.getCertificates());
 		job.offlineRefresh();
+		logger.info("Updating DSS OJ offline done.");
 		if(refreshIsNeeded()) {
 			job.onlineRefresh();
+			logger.info("Updating DSS OJ online done.");
 		}
+		logger.info("Updating DSS OJ done.");
+
 	}
 
 	public boolean refreshIsNeeded() throws IOException {
@@ -71,14 +73,12 @@ public class OJService {
 	}
 
 	@Async
-	@EventListener(ApplicationReadyEvent.class)
-	public void init() throws EsupSignatureRuntimeException, IOException {
-		logger.info("Checking Workflow classes...");
-		workflowService.copyClassWorkflowsIntoDatabase();
-		logger.info("Check done.");
-		logger.info("Updating DSS OJ...");
-		getCertificats();
-		logger.info("Update done.");
-	}
+	@EventListener(ContextRefreshedEvent.class)
+	public void onApplicationEvent(ContextRefreshedEvent event) {
+		try {
+			getCertificats();
+		} catch (IOException e) {
+			logger.error("Error updating certificates", e);
+		}	}
 
 }

@@ -142,7 +142,6 @@ public class CasSecurityServiceImpl implements SecurityService {
 
 	public LdapUserDetailsService ldapUserDetailsService() {
 		if(this.ldapUserDetailsService != null) return this.ldapUserDetailsService;
-		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getUserIdSearchFilter(), ldapContextSource);
 		if(!StringUtils.hasText(ldapProperties.getGroupSearchBase())) {
 			logger.warn("no groupSearchBase found, unable to get users groups automatically");
 		}
@@ -158,6 +157,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 		group2UserRoleService.setMappingGroupesRoles(webSecurityProperties.getMappingGroupsRoles());
 		group2UserRoleService.setGroupService(spelGroupService);
 		casLdapAuthoritiesPopulator.setGroup2UserRoleService(group2UserRoleService);
+		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getUserIdSearchFilter(), ldapContextSource);
 		LdapUserDetailsService ldapUserDetailsService = new LdapUserDetailsService(ldapUserSearch, casLdapAuthoritiesPopulator);
 		LdapUserDetailsMapper ldapUserDetailsMapper = new LdapUserDetailsMapper();
 		ldapUserDetailsMapper.setRoleAttributes(new String[] {});
