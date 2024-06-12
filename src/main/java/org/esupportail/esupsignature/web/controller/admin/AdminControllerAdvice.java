@@ -1,12 +1,10 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dss.service.OJService;
+import org.esupportail.esupsignature.dss.service.DSSService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.ui.Model;
@@ -21,20 +19,22 @@ public class AdminControllerAdvice {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminControllerAdvice.class);
 
-    private final OJService ojService;
+    private final DSSService dssService;
 
-    @Resource
-    private SessionRegistry sessionRegistry;
+    private final SessionRegistry sessionRegistry;
 
-    public AdminControllerAdvice(OJService ojService) {
-        this.ojService = ojService;
+    public AdminControllerAdvice(@Autowired(required = false) DSSService dssService, SessionRegistry sessionRegistry) {
+        this.dssService = dssService;
+        this.sessionRegistry = sessionRegistry;
     }
 
     @ModelAttribute
-    public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) throws JsonProcessingException {
+    public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) {
         model.addAttribute("nbSessions", sessionRegistry.getAllPrincipals().size());
         try {
-            model.addAttribute("dssStatus", ojService.refreshIsNeeded());
+            if(dssService != null) {
+                model.addAttribute("dssStatus", dssService.refreshIsNeeded());
+            }
         } catch (IOException e) {
             logger.debug("enable to get dss status");
         }
