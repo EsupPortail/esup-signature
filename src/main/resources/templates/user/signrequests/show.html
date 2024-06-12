@@ -9,7 +9,7 @@
 <!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <body>
-<script th:inline="javascript" type="module">
+<script th:inline="javascript" type="module" th:if="${globalProperties.enableHelp}">
     import {SignRequestHelp} from '/js/modules/help/SignRequestHelp.js?version=@[(${versionApp})]@';
     let help = new SignRequestHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]], [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]);
     help.autoStart();

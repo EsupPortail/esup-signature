@@ -275,7 +275,7 @@ public class SignService {
 			imageParameters.setImage(fileDocumentImage);
 			SignatureFieldParameters signatureFieldParameters = imageParameters.getFieldParameters();
 			signatureFieldParameters.setPage(signRequestParams.getSignPageNumber());
-			imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
+			imageParameters.getFieldParameters().setRotation(VisualSignatureRotation.AUTOMATIC);
 			PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile, signRequestParams.getSignPageNumber());
 
 			int widthAdjusted = Math.round(signRequestParams.getSignWidth() * globalProperties.getFixFactor());

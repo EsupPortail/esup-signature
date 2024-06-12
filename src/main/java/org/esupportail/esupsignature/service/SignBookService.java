@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.Resource;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -76,111 +75,107 @@ public class SignBookService {
 
     private final GlobalProperties globalProperties;
 
-    @Resource
-    private MessageSource messageSource;
+    private final MessageSource messageSource;
 
-    @Resource
-    private AuditTrailService auditTrailService;
+    private final AuditTrailService auditTrailService;
 
-    @Resource
-    private SignBookRepository signBookRepository;
+    private final SignBookRepository signBookRepository;
 
-    @Resource
-    private SignRequestService signRequestService;
+    private final SignRequestService signRequestService;
 
-    @Resource
-    private UserService userService;
+    private final UserService userService;
 
-    @Resource
-    private FsAccessFactoryService fsAccessFactoryService;
+    private final FsAccessFactoryService fsAccessFactoryService;
 
-    @Resource
-    private WebUtilsService webUtilsService;
+    private final WebUtilsService webUtilsService;
 
-    @Resource
-    private FileService fileService;
+    private final FileService fileService;
 
-    @Resource
-    private PdfService pdfService;
+    private final PdfService pdfService;
 
-    @Resource
-    private WorkflowService workflowService;
+    private final WorkflowService workflowService;
 
-    @Resource
-    private MailService mailService;
+    private final MailService mailService;
 
-    @Resource
-    private WorkflowStepService workflowStepService;
+    private final WorkflowStepService workflowStepService;
 
-    @Resource
-    private LiveWorkflowService liveWorkflowService;
+    private final LiveWorkflowService liveWorkflowService;
 
-    @Resource
-    private LiveWorkflowStepService liveWorkflowStepService;
+    private final LiveWorkflowStepService liveWorkflowStepService;
 
-    @Resource
-    private DataService dataService;
+    private final DataService dataService;
 
-    @Resource
-    private LogService logService;
+    private final LogService logService;
 
-    @Resource
-    private TargetService targetService;
+    private final TargetService targetService;
 
-    @Resource
-    private UserPropertieService userPropertieService;
+    private final UserPropertieService userPropertieService;
 
-    @Resource
-    private CommentService commentService;
+    private final CommentService commentService;
 
-    @Resource
-    private OtpService otpService;
+    private final OtpService otpService;
 
-    @Resource
-    private DataRepository dataRepository;
+    private final DataRepository dataRepository;
 
-    @Resource
-    private WorkflowRepository workflowRepository;
+    private final WorkflowRepository workflowRepository;
 
-    @Resource
-    private UserShareService userShareService;
+    private final UserShareService userShareService;
 
-    @Resource
-    private SignService signService;
+    private final SignService signService;
 
-    @Resource
-    private RecipientService recipientService;
+    private final RecipientService recipientService;
 
-    @Resource
-    private DocumentService documentService;
+    private final DocumentService documentService;
 
-    @Resource
-    private SignRequestParamsService signRequestParamsService;
+    private final SignRequestParamsService signRequestParamsService;
 
-    @Resource
-    private PreFillService preFillService;
+    private final PreFillService preFillService;
 
-    @Resource
-    private ReportService reportService;
+    private final ReportService reportService;
 
-    @Resource
-    private ActionService actionService;
+    private final ActionService actionService;
 
-    @Resource
-    private SignRequestParamsRepository signRequestParamsRepository;
+    private final SignRequestParamsRepository signRequestParamsRepository;
 
-    @Resource
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
-    @Resource
-    private SignWithService signWithService;
+    private final SignWithService signWithService;
 
-    public GlobalProperties getGlobalProperties() {
-        return globalProperties;
-    }
-
-    public SignBookService(GlobalProperties globalProperties) {
+    public SignBookService(GlobalProperties globalProperties, MessageSource messageSource, AuditTrailService auditTrailService, SignBookRepository signBookRepository, SignRequestService signRequestService, UserService userService, FsAccessFactoryService fsAccessFactoryService, WebUtilsService webUtilsService, FileService fileService, PdfService pdfService, WorkflowService workflowService, MailService mailService, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, DataService dataService, LogService logService, TargetService targetService, UserPropertieService userPropertieService, CommentService commentService, OtpService otpService, DataRepository dataRepository, WorkflowRepository workflowRepository, UserShareService userShareService, SignService signService, RecipientService recipientService, DocumentService documentService, SignRequestParamsService signRequestParamsService, PreFillService preFillService, ReportService reportService, ActionService actionService, SignRequestParamsRepository signRequestParamsRepository, ObjectMapper objectMapper, SignWithService signWithService) {
         this.globalProperties = globalProperties;
+        this.messageSource = messageSource;
+        this.auditTrailService = auditTrailService;
+        this.signBookRepository = signBookRepository;
+        this.signRequestService = signRequestService;
+        this.userService = userService;
+        this.fsAccessFactoryService = fsAccessFactoryService;
+        this.webUtilsService = webUtilsService;
+        this.fileService = fileService;
+        this.pdfService = pdfService;
+        this.workflowService = workflowService;
+        this.mailService = mailService;
+        this.workflowStepService = workflowStepService;
+        this.liveWorkflowService = liveWorkflowService;
+        this.liveWorkflowStepService = liveWorkflowStepService;
+        this.dataService = dataService;
+        this.logService = logService;
+        this.targetService = targetService;
+        this.userPropertieService = userPropertieService;
+        this.commentService = commentService;
+        this.otpService = otpService;
+        this.dataRepository = dataRepository;
+        this.workflowRepository = workflowRepository;
+        this.userShareService = userShareService;
+        this.signService = signService;
+        this.recipientService = recipientService;
+        this.documentService = documentService;
+        this.signRequestParamsService = signRequestParamsService;
+        this.preFillService = preFillService;
+        this.reportService = reportService;
+        this.actionService = actionService;
+        this.signRequestParamsRepository = signRequestParamsRepository;
+        this.objectMapper = objectMapper;
+        this.signWithService = signWithService;
     }
 
     @Transactional

@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web;
 
+import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,16 +9,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpSession;
-
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller", "org.esupportail.esupsignature.web.otp", "org.esupportail.esupsignature.web.wssecure"})
 public class SecurityControllerAdvice {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityControllerAdvice.class);
 
-    @Resource
-    private UserService userService;
+    private final UserService userService;
+
+    public SecurityControllerAdvice(UserService userService) {
+        this.userService = userService;
+    }
 
     @ModelAttribute(value = "userEppn")
     public String getUserEppn(HttpSession httpSession) {

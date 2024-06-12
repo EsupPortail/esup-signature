@@ -289,6 +289,11 @@ public class GlobalProperties {
      */
     private SignRequestParams externalSignatureParams = new SignRequestParams();
 
+    /**
+     * Activation de l'intro d'aide
+     */
+    private Boolean enableHelp = true;
+
     public String getRootUrl() {
         return rootUrl;
     }
@@ -746,5 +751,13 @@ public class GlobalProperties {
 
     public void setExternalSignatureParams(SignRequestParams externalSignatureParams) {
         this.externalSignatureParams = externalSignatureParams;
+    }
+
+    public Boolean getEnableHelp() {
+        return enableHelp;
+    }
+
+    public void setEnableHelp(Boolean enableHelp) {
+        this.enableHelp = enableHelp;
     }
 }
