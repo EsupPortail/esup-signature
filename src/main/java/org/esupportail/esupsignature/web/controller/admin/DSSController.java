@@ -7,7 +7,7 @@ import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dss.config.DSSBeanConfig;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.service.dss.DSSService;
+import org.esupportail.esupsignature.dss.service.DSSService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -39,11 +39,11 @@ public class DSSController {
 	private DSSService dssService;
 
 	@Resource
-	private TLValidationJob job;
+	private TLValidationJob tlValidationJob;
 
 	@GetMapping
 	public String tlInfoPage(Model model) {
-		TLValidationJobSummary summary = job.getSummary();
+		TLValidationJobSummary summary = tlValidationJob.getSummary();
 		model.addAttribute("summary", summary);
 		model.addAttribute("keystoreCertificates", summary.getLOTLInfos().stream()
 				.flatMap(lotlInfo -> lotlInfo.getTLInfos().stream())

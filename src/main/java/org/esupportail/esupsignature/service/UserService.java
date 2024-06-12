@@ -584,7 +584,7 @@ public class UserService {
     public InputStream getDomainsWhiteList() {
         try {
             return fileService.getFileFromUrl(shibProperties.getDomainsWhiteListUrl());
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error(e.getMessage());
         }
         return null;

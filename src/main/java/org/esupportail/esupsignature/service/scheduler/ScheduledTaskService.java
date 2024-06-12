@@ -1,8 +1,6 @@
 package org.esupportail.esupsignature.service.scheduler;
 
-import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dss.service.OJService;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
@@ -15,8 +13,10 @@ import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.dss.service.DSSService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -39,32 +39,33 @@ public class ScheduledTaskService {
 
 	private final GlobalProperties globalProperties;
 
-	@Resource
-	private SignBookRepository signBookRepository;
+	private final SignBookRepository signBookRepository;
 
-	@Resource
-	private SignBookService signBookService;
+	private final SignBookService signBookService;
 
-	@Resource
-	private TaskService taskService;
+	private final TaskService taskService;
 
-	@Resource
-	private WorkflowService workflowService;
+	private final WorkflowService workflowService;
 
-	@Resource
-	private UserService userService;
+	private final UserService userService;
 
-	@Resource
-	private SignRequestRepository signRequestRepository;
+	private final SignRequestRepository signRequestRepository;
 
-	private final OJService oJService;
+	private final DSSService dssService;
 
-	public ScheduledTaskService(GlobalProperties globalProperties, OJService oJService) {
-		this.globalProperties = globalProperties;
-		this.oJService = oJService;
-	}
+    public ScheduledTaskService(GlobalProperties globalProperties, SignBookRepository signBookRepository, SignBookService signBookService, TaskService taskService, WorkflowService workflowService, UserService userService, SignRequestRepository signRequestRepository, @Autowired(required = false)  DSSService dssService) {
+        this.globalProperties = globalProperties;
+        this.signBookRepository = signBookRepository;
+        this.signBookService = signBookService;
+        this.taskService = taskService;
+        this.workflowService = workflowService;
+        this.userService = userService;
+        this.signRequestRepository = signRequestRepository;
+        this.dssService = dssService;
+    }
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+
+    @Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void scanAllWorkflowsSources() {
 		logger.debug("scan workflows sources");
@@ -138,8 +139,8 @@ public class ScheduledTaskService {
 
 	@Scheduled(cron="00 02 02 * * *")
 	public void refreshOJKeystore() throws IOException {
-		if(oJService != null) {
-			oJService.getCertificats();
+		if(dssService != null) {
+			dssService.getCertificats();
 		}
 	}
 
