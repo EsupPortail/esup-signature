@@ -2,12 +2,16 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.esupportail.esupsignature.dto.RecipientWsDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
@@ -17,14 +21,12 @@ import org.esupportail.esupsignature.service.interfaces.listsearch.UserListServi
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.util.StringUtils;
 
 import java.io.ByteArrayInputStream;
@@ -112,14 +114,15 @@ public class WorkflowService {
 
     @Transactional
     public void copyClassWorkflowsIntoDatabase() throws EsupSignatureRuntimeException {
+        logger.info("Checking Workflow classes...");
         for (Workflow classWorkflow : getClassesWorkflows()) {
-            logger.info("workflow class found : " + classWorkflow.getName());
+            logger.debug("workflow class found : " + classWorkflow.getName());
             if (!isWorkflowExist(classWorkflow.getName(), "system")) {
                 logger.info("create " + classWorkflow.getName() + " on database : ");
                 Workflow newWorkflow = createWorkflow(classWorkflow.getName(), classWorkflow.getDescription(), userService.getSystemUser());
                 newWorkflow.setFromCode(true);
             } else {
-                logger.info("update " + classWorkflow.getName() + " on database");
+                logger.debug("update " + classWorkflow.getName() + " on database");
                 Workflow toUpdateWorkflow = workflowRepository.findByName(classWorkflow.getName());
                 toUpdateWorkflow.setPublicUsage(classWorkflow.getPublicUsage());
                 toUpdateWorkflow.getRoles().clear();
@@ -167,6 +170,7 @@ public class WorkflowService {
             }
         }
         workflowRepository.deleteAll(toRemoveWorkflows);
+        logger.info("Checking Workflow classes done");
     }
 
     public boolean isWorkflowExist(String name, String userEppn) {
@@ -638,4 +642,10 @@ public class WorkflowService {
         return messsage;
     }
 
+    @Async
+    @EventListener(ContextRefreshedEvent.class)
+    @Transactional
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        copyClassWorkflowsIntoDatabase();
+    }
 }

@@ -12,9 +12,10 @@
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.29.7-SNAPSHOT</version>
+	<version>1.29.8-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
+		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
 		<java.version>17</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -36,10 +37,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.boot</groupId>-->
+<!--			<artifactId>spring-boot-starter-actuator</artifactId>-->
+<!--		</dependency>-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -78,7 +79,17 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+<!--			<exclusions>-->
+<!--				<exclusion>-->
+<!--					<artifactId>spring-boot-starter-tomcat</artifactId>-->
+<!--					<groupId>org.springframework.boot</groupId>-->
+<!--				</exclusion>-->
+<!--			</exclusions>-->
 		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.boot</groupId>-->
+<!--			<artifactId>spring-boot-starter-jetty</artifactId>-->
+<!--		</dependency>-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
@@ -107,25 +118,16 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-tomcat</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-jdbc</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
-			<version>2.7.1</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.zaxxer</groupId>
-			<artifactId>HikariCP</artifactId>
+			<version>2.7.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
@@ -338,6 +340,10 @@
 					<artifactId>joda-time</artifactId>
 					<groupId>joda-time</groupId>
 				</exclusion>
+				<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -428,11 +434,6 @@
 
 		<!-- SEDA dependencies -->
 		<dependency>
-			<groupId>net.byteseek</groupId>
-			<artifactId>byteseek</artifactId>
-			<version>2.0.3</version>
-		</dependency>
-		<dependency>
 			<groupId>com.github.ProgrammeVitam.sedatools</groupId>
 			<artifactId>sedalib</artifactId>
 			<version>2.7.0</version>
@@ -489,11 +490,6 @@
 			<version>5.2.1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-core</artifactId>
-			<version>2.5.0</version>
-		</dependency>
-		<dependency>
 			<groupId>de.schlichtherle.truezip</groupId>
 			<artifactId>truezip</artifactId>
 			<version>7.7.10</version>
@@ -507,21 +503,11 @@
 
 		<!-- Other dependencies -->
 
-<!--		<dependency>-->
-<!--			<groupId>org.apache.poi</groupId>-->
-<!--			<artifactId>poi</artifactId>-->
-<!--			<version>5.2.2</version>-->
-<!--		</dependency>-->
 		<dependency>
 			<groupId>com.github.jai-imageio</groupId>
 			<artifactId>jai-imageio-core</artifactId>
 			<version>1.4.0</version>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.imgscalr</groupId>
-			<artifactId>imgscalr-lib</artifactId>
-			<version>4.2</version>
 		</dependency>
 		<dependency>
 			<groupId>io.github.jpenren</groupId>
@@ -563,17 +549,6 @@
 			<artifactId>commons-collections4</artifactId>
 			<version>4.4</version>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>commons-fileupload</groupId>-->
-<!--			<artifactId>commons-fileupload</artifactId>-->
-<!--			<version>1.5</version>-->
-<!--		</dependency>-->
-		<dependency>
-			<groupId>javax.el</groupId>
-			<artifactId>el-api</artifactId>
-			<version>2.2</version>
-			<scope>provided</scope>
-		</dependency>
 		<dependency>
 			<groupId>javax.activation</groupId>
 			<artifactId>activation</artifactId>
@@ -583,6 +558,12 @@
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
 			<version>2.0.31</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
@@ -598,6 +579,12 @@
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>xmpbox</artifactId>
 			<version>2.0.31</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.verapdf</groupId>
@@ -618,16 +605,6 @@
 			<groupId>com.googlecode.libphonenumber</groupId>
 			<artifactId>libphonenumber</artifactId>
 			<version>8.13.4</version>
-		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>joda-time</groupId>-->
-<!--			<artifactId>joda-time</artifactId>-->
-<!--			<version>2.12.0</version>-->
-<!--		</dependency>-->
-		<dependency>
-			<groupId>net.sf.supercsv</groupId>
-			<artifactId>super-csv</artifactId>
-			<version>2.4.0</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.agno3.jcifs</groupId>
@@ -687,17 +664,18 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-vfs2</artifactId>
 			<version>2.9.0</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
 			<version>3.9.0</version>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>ognl</groupId>-->
-<!--			<artifactId>ognl</artifactId>-->
-<!--			<version>3.3.3</version>-->
-<!--		</dependency>-->
 		<dependency>
 			<groupId>com.openhtmltopdf</groupId>
 			<artifactId>openhtmltopdf-core</artifactId>
@@ -717,11 +695,6 @@
 					<groupId>org.apache.pdfbox</groupId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>com.jcraft</groupId>
-			<artifactId>jsch</artifactId>
-			<version>0.1.55</version>
 		</dependency>
 		<dependency>
 			<groupId>de.codecentric</groupId>
@@ -747,26 +720,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>org.springdoc</groupId>-->
-<!--			<artifactId>springdoc-openapi-ui</artifactId>-->
-<!--			<version>1.6.14</version>-->
-<!--			<exclusions>-->
-<!--				<exclusion>-->
-<!--					<groupId>io.github.classgraph</groupId>-->
-<!--					<artifactId>classgraph</artifactId>-->
-<!--				</exclusion>-->
-<!--				<exclusion>-->
-<!--					<groupId>org.webjars</groupId>-->
-<!--					<artifactId>webjars-locator-core</artifactId>-->
-<!--				</exclusion>-->
-<!--			</exclusions>-->
-<!--		</dependency>-->
-<!--		<dependency>-->
-<!--			<groupId>org.springdoc</groupId>-->
-<!--			<artifactId>springdoc-openapi-security</artifactId>-->
-<!--			<version>1.6.14</version>-->
-<!--		</dependency>-->
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
@@ -829,7 +782,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -841,6 +793,18 @@
 					<execution>
 						<goals>
 							<goal>build-info</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>analyze</goal>
 						</goals>
 					</execution>
 				</executions>

@@ -3,13 +3,11 @@ package org.esupportail.esupsignature.web.controller.admin;
 import eu.europa.esig.dss.spi.tsl.LOTLInfo;
 import eu.europa.esig.dss.spi.tsl.TLInfo;
 import eu.europa.esig.dss.spi.tsl.TLValidationJobSummary;
-import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
-import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
+import eu.europa.esig.dss.tsl.job.TLValidationJob;
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dss.config.DSSBeanConfig;
-import org.esupportail.esupsignature.dss.service.KeystoreService;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.service.dss.DSSService;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.esupportail.esupsignature.dss.service.DSSService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -19,7 +17,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import jakarta.annotation.Resource;
 import java.util.Collections;
 
 @Controller
@@ -42,19 +39,18 @@ public class DSSController {
 	private DSSService dssService;
 
 	@Resource
-	private KeystoreService keystoreService;
-
-	@Resource
-	@Qualifier("european-trusted-list-certificate-source")
-	private TrustedListsCertificateSource trustedListsCertificateSource;
+	private TLValidationJob tlValidationJob;
 
 	@GetMapping
 	public String tlInfoPage(Model model) {
-		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
+		TLValidationJobSummary summary = tlValidationJob.getSummary();
 		model.addAttribute("summary", summary);
-		model.addAttribute("keystoreCertificates", keystoreService.getCertificatesDTOFromKeyStore(dssService.getTrustedListsCertificateSource().getCertificates()));
-		OfficialJournalSchemeInformationURI ojUriInfo = (OfficialJournalSchemeInformationURI) dssService.getLotlSource().getSigningCertificatesAnnouncementPredicate();
-		model.addAttribute("currentOjUrl", ojUriInfo.getUri());
+		model.addAttribute("keystoreCertificates", summary.getLOTLInfos().stream()
+				.flatMap(lotlInfo -> lotlInfo.getTLInfos().stream())
+				.flatMap(tlInfo -> tlInfo.getParsingCacheInfo().getTrustServiceProviders().stream())
+				.flatMap(trustServiceProvider -> trustServiceProvider.getServices().stream())
+				.flatMap(service -> service.getCertificates().stream()).distinct().count());
+		model.addAttribute("currentOjUrl", dssService.getCurrentOjUrl());
 		model.addAttribute("actualOjUrl", dssService.getActualOjUrl());
 		return "admin/dss/tl-summary";
 	}

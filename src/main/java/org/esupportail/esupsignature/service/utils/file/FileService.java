@@ -22,7 +22,8 @@ import java.awt.*;
 import java.awt.font.TextAttribute;
 import java.awt.image.*;
 import java.io.*;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -294,8 +295,8 @@ public class FileService {
 		}
 	}
 
-	public InputStream getFileFromUrl(String url) throws IOException {
-		return new URL(url).openStream();
+	public InputStream getFileFromUrl(String url) throws IOException, URISyntaxException {
+		return new URI(url).toURL().openStream();
 	}
 
 	public boolean isFileContainsText(InputStream file, String text) {

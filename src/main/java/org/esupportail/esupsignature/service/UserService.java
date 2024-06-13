@@ -584,7 +584,7 @@ public class UserService {
     public InputStream getDomainsWhiteList() {
         try {
             return fileService.getFileFromUrl(shibProperties.getDomainsWhiteListUrl());
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error(e.getMessage());
         }
         return null;
@@ -947,5 +947,38 @@ public class UserService {
     public void removeKeystore(String authUserEppn) {
         User authUser = getByEppn(authUserEppn);
         authUser.setKeystore(null);
+    }
+
+    @Transactional
+    public void createRole(String role, List<String> rolesManagers) {
+        if(rolesManagers != null) {
+            for (String mail : rolesManagers) {
+                User user = getUserByEmail(mail);
+                user.getManagersRoles().add(role);
+            }
+        } else {
+            for (User user : getByManagersRoles(role)) {
+                user.getManagersRoles().remove(role);
+            }
+        }
+    }
+
+    @Transactional
+    public void updateRole(String role, List<String> rolesManagers) {
+        if(rolesManagers != null) {
+            for (User user : getByManagersRoles(role)) {
+                if (!rolesManagers.contains(user.getEmail())) {
+                    user.getManagersRoles().remove(role);
+                }
+            }
+            for (String mail : rolesManagers) {
+                User user = getUserByEmail(mail);
+                user.getManagersRoles().add(role);
+            }
+        } else {
+            for (User user : getByManagersRoles(role)) {
+                user.getManagersRoles().remove(role);
+            }
+        }
     }
 }

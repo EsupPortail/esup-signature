@@ -124,19 +124,16 @@ export class PdfViewer extends EventFactory {
                 drop: function( event, ui ) {
                     if($(event.originalEvent.target).attr("id") != null && $(event.originalEvent.target).attr("id").includes("cross_")) {
                         $(event.originalEvent.target).addClass("cross-error");
-                        $("#signLaunchButton").addClass("disabled");
                     }
                 },
                 over: function( event, ui ) {
                     if($(event.originalEvent.target).attr("id") != null && $(event.originalEvent.target).attr("id").includes("cross_")) {
                         $(event.originalEvent.target).addClass("cross-error");
-                        $("#signLaunchButton").addClass("disabled");
                     }
                 },
                 out: function( event, ui ) {
                     if($(event.originalEvent.target).attr("id") != null && $(event.originalEvent.target).attr("id").includes("cross_")) {
                         $(event.originalEvent.target).removeClass("cross-error");
-                        $("#signLaunchButton").removeClass("disabled");
                     }
                 }
             });

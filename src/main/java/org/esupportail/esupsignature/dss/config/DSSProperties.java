@@ -24,6 +24,7 @@ public class DSSProperties {
     private String postalCode;
     private String locality;
     private Boolean checkRevocationForUntrustedChains = true;
+    private Boolean multiThreadTlValidation = true;
 
     public String getCacheUsername() {
         return cacheUsername;
@@ -159,5 +160,13 @@ public class DSSProperties {
 
     public void setCheckRevocationForUntrustedChains(Boolean checkRevocationForUntrustedChains) {
         this.checkRevocationForUntrustedChains = checkRevocationForUntrustedChains;
+    }
+
+    public Boolean getMultiThreadTlValidation() {
+        return multiThreadTlValidation;
+    }
+
+    public void setMultiThreadTlValidation(Boolean multiThreadTlValidation) {
+        this.multiThreadTlValidation = multiThreadTlValidation;
     }
 }
