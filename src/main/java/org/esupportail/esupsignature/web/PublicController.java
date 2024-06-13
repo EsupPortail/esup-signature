@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.web;
 
 import eu.europa.esig.dss.validation.reports.Reports;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.FileUtils;
 import org.esupportail.esupsignature.dss.service.XSLTService;
@@ -36,32 +35,32 @@ public class PublicController {
 
     private final BuildProperties buildProperties;
 
-    @Resource
-    private LogService logService;
+    private final LogService logService;
 
-    @Resource
-    private SignRequestService signRequestService;
+    private final SignRequestService signRequestService;
 
-    @Resource
-    private AuditTrailService auditTrailService;
+    private final AuditTrailService auditTrailService;
 
-    @Resource
-    private FileService fileService;
+    private final FileService fileService;
 
-    @Resource
-    private UserService userService;
+    private final UserService userService;
 
-    @Resource
-    private SignService signService;
+    private final SignService signService;
 
-    @Resource
-    private XSLTService xsltService;
+    private final XSLTService xsltService;
 
-    @Resource
-    private PreAuthorizeService preAuthorizeService;
+    private final PreAuthorizeService preAuthorizeService;
 
-    public PublicController(@Autowired(required = false) BuildProperties buildProperties) {
+    public PublicController(@Autowired(required = false) BuildProperties buildProperties, LogService logService, SignRequestService signRequestService, AuditTrailService auditTrailService, FileService fileService, UserService userService, SignService signService, XSLTService xsltService, PreAuthorizeService preAuthorizeService) {
         this.buildProperties = buildProperties;
+        this.logService = logService;
+        this.signRequestService = signRequestService;
+        this.auditTrailService = auditTrailService;
+        this.fileService = fileService;
+        this.userService = userService;
+        this.signService = signService;
+        this.xsltService = xsltService;
+        this.preAuthorizeService = preAuthorizeService;
     }
 
     @GetMapping(value = "/control/{token}")

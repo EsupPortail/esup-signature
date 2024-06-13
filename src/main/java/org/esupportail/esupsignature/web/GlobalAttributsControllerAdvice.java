@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -32,32 +31,23 @@ public class GlobalAttributsControllerAdvice {
 
     private final GlobalProperties globalProperties;
 
-    @Resource
-    private SignRequestService signRequestService;
+    private final SignRequestService signRequestService;
 
-    @Resource
-    private SignBookService signBookService;
+    private final SignBookService signBookService;
 
-    @Resource
-    private WorkflowService workflowService;
+    private final WorkflowService workflowService;
 
-    @Resource
-    private UserShareService userShareService;
+    private final UserShareService userShareService;
 
-    @Resource
-    private UserService userService;
+    private final UserService userService;
 
-    @Resource
-    private ReportService reportService;
+    private final ReportService reportService;
 
-    @Resource
-    private SignTypeService signTypeService;
+    private final SignTypeService signTypeService;
 
-    @Resource
-    private PreAuthorizeService preAuthorizeService;
+    private final PreAuthorizeService preAuthorizeService;
 
-    @Resource
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     private final Environment environment;
 
@@ -67,11 +57,20 @@ public class GlobalAttributsControllerAdvice {
 
     private final CertificatService certificatService;
 
-    public GlobalAttributsControllerAdvice(GlobalProperties globalProperties,
+    public GlobalAttributsControllerAdvice(GlobalProperties globalProperties, SignRequestService signRequestService, SignBookService signBookService, WorkflowService workflowService, UserShareService userShareService, UserService userService, ReportService reportService, SignTypeService signTypeService, PreAuthorizeService preAuthorizeService, ObjectMapper objectMapper,
                                            @Autowired(required = false) BuildProperties buildProperties,
                                            ValidationService validationService,
                                            Environment environment, CertificatService certificatService) {
         this.globalProperties = globalProperties;
+        this.signRequestService = signRequestService;
+        this.signBookService = signBookService;
+        this.workflowService = workflowService;
+        this.userShareService = userShareService;
+        this.userService = userService;
+        this.reportService = reportService;
+        this.signTypeService = signTypeService;
+        this.preAuthorizeService = preAuthorizeService;
+        this.objectMapper = objectMapper;
         this.buildProperties = buildProperties;
         this.validationService = validationService;
         this.environment = environment;

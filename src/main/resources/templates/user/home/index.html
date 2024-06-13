@@ -4,12 +4,14 @@
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="authUser" type="org.esupportail.esupsignature.entity.User"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
-<script th:inline="javascript" type="module">
-    import {HomeUi} from '/js/modules/ui/HomeUi.js?version=@[(${versionApp})]@';
+<script th:inline="javascript" type="module" th:if="${globalProperties.enableHelp}">
     import {HomeHelp} from '/js/modules/help/HomeHelp.js?version=@[(${versionApp})]@';
-    new HomeUi([[${startFormId}]]);
     let help = new HomeHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).homeHelp)}]]);
     help.autoStart();
+</script>
+<script th:inline="javascript" type="module">
+    import {HomeUi} from '/js/modules/ui/HomeUi.js?version=@[(${versionApp})]@';
+    new HomeUi([[${startFormId}]]);
 </script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>

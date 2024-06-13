@@ -56,17 +56,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 
 import javax.xml.XMLConstants;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
-@Component
+@Configuration
 @EnableConfigurationProperties(DSSProperties.class)
 public class DSSBeanConfig {
 
@@ -227,7 +229,7 @@ public class DSSBeanConfig {
 	@Bean
 	public DSSFileLoader offlineLoader(File tlCacheDirectory) {
 		FileCacheDataLoader offlineFileLoader = new FileCacheDataLoader();
-		offlineFileLoader.setCacheExpirationTime(Long.MAX_VALUE);
+		offlineFileLoader.setCacheExpirationTime(-1);
 		offlineFileLoader.setDataLoader(new IgnoreDataLoader());
 		offlineFileLoader.setFileCacheDirectory(tlCacheDirectory);
 		return offlineFileLoader;
@@ -239,14 +241,19 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public TLValidationJob job(TrustedListsCertificateSource trustedListSource, LOTLSource europeanLOTL, DSSFileLoader offlineLoader, DSSFileLoader onlineLoader) {
-		TLValidationJob job = new TLValidationJob();
-		job.setTrustedListCertificateSource(trustedListSource);
-		job.setListOfTrustedListSources(europeanLOTL);
-		job.setOfflineDataLoader(offlineLoader);
-		job.setOnlineDataLoader(onlineLoader);
-		job.setDebug(false);
-		return job;
+	public TLValidationJob tlValidationJob(TrustedListsCertificateSource trustedListSource, LOTLSource europeanLOTL, DSSFileLoader offlineLoader, DSSFileLoader onlineLoader) {
+		TLValidationJob tlValidationJob = new TLValidationJob();
+		if(!dssProperties.getMultiThreadTlValidation()) {
+			tlValidationJob.setExecutorService(Executors.newSingleThreadExecutor());
+		}
+		tlValidationJob.setTrustedListCertificateSource(trustedListSource);
+		tlValidationJob.setListOfTrustedListSources(europeanLOTL);
+		tlValidationJob.setOfflineDataLoader(offlineLoader);
+		tlValidationJob.setOnlineDataLoader(onlineLoader);
+		tlValidationJob.setLOTLAlerts(Arrays.asList(ojUrlAlert(europeanLOTL), lotlLocationAlert(europeanLOTL)));
+		tlValidationJob.setTLAlerts(Arrays.asList(tlSigningAlert(), tlExpirationDetection()));
+		tlValidationJob.setDebug(false);
+		return tlValidationJob;
 	}
 
 	@Bean
@@ -328,7 +335,6 @@ public class DSSBeanConfig {
 		service.setTspSource(tspSource);
 		return service;
 	}
-
 
 	public TLAlert tlSigningAlert() {
 		TLSignatureErrorDetection signingDetection = new TLSignatureErrorDetection();

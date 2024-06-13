@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.interfaces.sms.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.sms.SmsProperties;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
@@ -8,9 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -37,24 +39,24 @@ public class OVHSmsService implements SmsService {
         String METHOD = "POST";
         try {
             String ServiceName = objectMapper.readValue(getSmsAccount(), String[].class)[0];
-            URL    QUERY  = new URL("https://eu.api.ovh.com/1.0/sms/"+ServiceName+"/jobs");
+            URL    QUERY  = new URI("https://eu.api.ovh.com/1.0/sms/"+ServiceName+"/jobs").toURL();
             String BODY   = "{\"receivers\":[\"+33" + phoneNumber.substring(1, 10) + "\"],\"message\":\""+ message + "\",\"priority\":\"high\",\"senderForResponse\":true}";
             StringBuffer response = getStringBuffer(METHOD, QUERY, BODY,  true);
             logger.info("sms sended : " + response.toString());
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             throw new EsupSignatureRuntimeException(e.getMessage(), e);
         }
 
     }
 
     @Override
-    public boolean testSms() throws IOException {
+    public boolean testSms() throws IOException, URISyntaxException {
         return objectMapper.readValue(getSmsAccount(), String[].class).length > 0;
     }
 
-    private String getSmsAccount() throws IOException {
+    private String getSmsAccount() throws IOException, URISyntaxException {
         String METHOD = "GET";
-        URL    QUERY  = new URL("https://eu.api.ovh.com/1.0/sms/");
+        URL    QUERY  = new URI("https://eu.api.ovh.com/1.0/sms/").toURL();
         StringBuffer response = getStringBuffer(METHOD, QUERY, "", false);
         return  response.toString();
     }

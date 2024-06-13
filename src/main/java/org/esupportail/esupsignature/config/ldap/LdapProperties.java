@@ -46,9 +46,13 @@ public class LdapProperties {
      */
     private String memberSearchFilter = "";
     /**
-     * Le champ dans lequel on trouve le login des utilisateurs récupéré au moment de l’authentification, ex : (uid={0})
+     * Filtre pour rechercher les utilisateurs en utilisant la partir gauche du @ , ex : (uid={0})
      */
     private String userIdSearchFilter = "(uid={0})";
+    /**
+     * Le champ dans lequel on trouve le login des utilisateurs récupéré au moment de l’authentification, ex : (uid={0}). Par défaut, c’est le même que userIdSearchFilter
+     */
+    private String casUserSearchFilter;
     /**
      * Le champ dans lequel on trouve l’eppn des utilisateurs, c’est ce champ qui sera utilisé comme identifiant unique en base, ex : (eduPersonPrincipalName={0})
      */
@@ -161,6 +165,16 @@ public class LdapProperties {
 
     public void setUserIdSearchFilter(String userIdSearchFilter) {
         this.userIdSearchFilter = userIdSearchFilter;
+    }
+
+    public String getCasUserSearchFilter() {
+        if(casUserSearchFilter == null || casUserSearchFilter.isEmpty())
+            return userIdSearchFilter;
+        return casUserSearchFilter;
+    }
+
+    public void setCasUserSearchFilter(String casUserSearchFilter) {
+        this.casUserSearchFilter = casUserSearchFilter;
     }
 
     public String getUserEppnSearchFilter() {

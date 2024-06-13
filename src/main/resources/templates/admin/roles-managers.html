@@ -38,7 +38,7 @@
                                     <td th:text="${role}"></td>
                                     <input name="role" type="hidden" th:value="${role}">
                                     <td>
-                                        <select th:id="${'rolesManagersSelect' + status.index}" class="select-users"
+                                        <select th:id="${'rolesManagersSelect' + status.index}" class="auto-select-users"
                                                 multiple="multiple" name="rolesManagers">
                                             <option data-placeholder="true"></option>
                                             <th:block th:each="user : ${roleManagers.get(role)}">
@@ -52,7 +52,7 @@
                                         <div class="text-center">
                                             <button id="saveButton" title="Enregistrer" type="submit"
                                                     class="btn btn-sm btn-success">
-                                                <i class="fa-solid fa-save fa-2xl"></i>
+                                                <i class="fa-solid fa-save"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -61,7 +61,6 @@
                         </th:block>
                         </tbody>
                     </table>
-
                 </div>
             </div>
         </div>
@@ -85,8 +84,7 @@
                         </th:block>
                     </select>
                     <label for="role">Choix des managers</label>
-                    <select id="rolesManagersSelect" class="select-users"
-                            multiple="multiple" name="rolesManagers">
+                    <select id="rolesManagersSelect" class="auto-select-users" multiple="multiple" name="rolesManagers">
                         <option data-placeholder="true"></option>
                     </select>
                 </div>

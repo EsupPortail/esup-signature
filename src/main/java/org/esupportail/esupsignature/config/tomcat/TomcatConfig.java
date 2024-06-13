@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.config.tomcat;
 
+import jakarta.annotation.Resource;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.webresources.ExtractingRoot;
 import org.apache.coyote.ajp.AbstractAjpProtocol;
@@ -14,7 +15,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
-import jakarta.annotation.Resource;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;

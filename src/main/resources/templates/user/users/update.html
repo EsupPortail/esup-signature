@@ -2,12 +2,14 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="user" type="org.esupportail.esupsignature.entity.User"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
-<script th:inline="javascript" type="module">
-    import {UserUi} from '/js/modules/ui/users/UserUi.js?version=@[(${versionApp})]@';
+<script th:inline="javascript" type="module" th:if="${globalProperties.enableHelp}">
     import {UserParamsHelp} from '/js/modules/help/UserParamsHelp.js?version=@[(${versionApp})]@';
-    new UserUi([[${user.firstname + ' ' + user.name}]], [[${user.favoriteSignRequestParams}]]);
     let help = new UserParamsHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).userParamsHelp)}]], [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]);
     help.autoStart();
+</script>
+<script th:inline="javascript" type="module">
+    import {UserUi} from '/js/modules/ui/users/UserUi.js?version=@[(${versionApp})]@';
+    new UserUi([[${user.firstname + ' ' + user.name}]], [[${user.favoriteSignRequestParams}]]);
 </script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
