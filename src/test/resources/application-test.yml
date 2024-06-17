@@ -214,7 +214,10 @@ sign:
 
 logging:
     file:
-        name: logs/esup-signature.log
+        name: temp/esup-signature.log
+    pattern:
+        console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5level) %clr(${PID:- }){magenta} %highlight(%X{userId:-system}){cyan} %yellow([%15.15t]) %100clr(%C{1}.%method\\(%file:%line\\)){cyan} %clr(:) %m%n%wEx"
+        file: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5level) %clr(${PID:- }){magenta} %highlight(%X{userId:-system}){cyan} %yellow([%15.15t]) %100clr(%C{1}.%method\\(%file:%line\\)){cyan} %clr(:) %m%n%wEx"
     level:
         root: info
         org.esupportail.esupsignature: info
@@ -222,7 +225,9 @@ logging:
         org.apache.pdfbox: error
         eu.europa.esig.dss: error
         org.springframework.web.filter.CommonsRequestLoggingFilter: error
-    #    config: classpath:logback-prod.xml
+        eu.europa.esig.dss.pdf.AbstractPDFSignatureService: fatal
+        eu.europa.esig.dss.pades.PAdESUtils: fatal
+#        org.hibernate.stat: debug
 
 springdoc:
     api-docs:

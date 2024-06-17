@@ -804,16 +804,36 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
+				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.0.0</version>
 				<configuration>
-					<forkCount>0</forkCount>
-					<argLine>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=*:5005</argLine>
+					<excludes>
+						<exclude>**/Selenium*.java</exclude>
+					</excludes>
 				</configuration>
 				<executions>
 					<execution>
 						<goals>
-							<goal>integration-test</goal>
+							<goal>test</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<includes>
+						<include>**/Selenium*.java</include>
+					</includes>
+					<systemPropertyVariables>
+						<spring.config.location>src/test/resources/application-test.yml</spring.config.location>
+					</systemPropertyVariables>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
 							<goal>verify</goal>
 						</goals>
 					</execution>
