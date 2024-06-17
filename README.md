@@ -44,6 +44,16 @@ mvn clean package
 ```
 Un jeu de test est exécuté au moment de la compilation, tous les prérequis et paramètres doivent être correctes pour que le projet compile.
 
+# Tests selenium
+
+Prérequis :
+ * chromium
+ * python3-selenium
+ 
+```
+mvn clean verify -Dspring.config.location=src/test/resources/application-test.yml -Dspring.profiles.active=test -Ptest
+```
+
 # Démarrage
 
 ```

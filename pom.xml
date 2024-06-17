@@ -805,7 +805,11 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>3.0.0-M5</version>
+				<version>3.0.0</version>
+				<configuration>
+					<forkCount>0</forkCount>
+					<argLine>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=*:5005</argLine>
+				</configuration>
 				<executions>
 					<execution>
 						<goals>

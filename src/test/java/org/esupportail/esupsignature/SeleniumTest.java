@@ -35,7 +35,8 @@ public class SeleniumTest {
         driver = new ChromeDriver();
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         js = (JavascriptExecutor) driver;
-        driver.manage().window().maximize();    }
+        driver.manage().window().setSize(new  org.openqa.selenium.Dimension(1920, 1016));
+    }
 
     @After
     public void tearDown() {
@@ -56,7 +57,6 @@ public class SeleniumTest {
     @Order(2)
     public void esupSignatureAutoSignImage() throws IOException {
         driver.get("http://localhost:8080/user");
-        driver.manage().window().setSize(new  org.openqa.selenium.Dimension(1920, 1016));
 
         // Click "new-self-sign" button
         wait.until(ExpectedConditions.elementToBeClickable(By.id("new-self-sign"))).click();
@@ -82,6 +82,10 @@ public class SeleniumTest {
 
         // Click "checkValidateSignButtonEnd" button
         wait.until(ExpectedConditions.elementToBeClickable(By.id("checkValidateSignButtonEnd"))).click();
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("wait")));
+
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(By.id("wait")));
 
         // Click "link-dashboard" button
         wait.until(ExpectedConditions.elementToBeClickable(By.id("link-dashboard"))).click();
@@ -109,7 +113,6 @@ public class SeleniumTest {
     @Order(3)
     public void esupSignatureFastSignRequest() throws IOException {
         driver.get("http://localhost:8080/user");
-        driver.manage().window().setSize(new  org.openqa.selenium.Dimension(1920, 1016));
 
         // Click "new-fast-sign" button
         wait.until(ExpectedConditions.elementToBeClickable(By.id("new-fast-sign"))).click();
@@ -146,7 +149,11 @@ public class SeleniumTest {
         // Click "checkValidateSignButtonEnd"
         wait.until(ExpectedConditions.elementToBeClickable(By.id("checkValidateSignButtonEnd"))).click();
 
-        // Click "link-dashboard"
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("wait")));
+
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(By.id("wait")));
+
+        // Click "link-dashboard" button
         wait.until(ExpectedConditions.elementToBeClickable(By.id("link-dashboard"))).click();
 
         // Wait for element present "signbook-${signBookId}"
