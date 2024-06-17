@@ -1,0 +1,239 @@
+global:
+    root-url: http://localhost:8080
+    domain: univ-ville.fr
+    nexu-url: http://localhost:9795
+    nexu-version: 1.23-SNAPSHOT
+    nexu-download-url: /downloads/nexu-bundle.zip
+    hide-wizard: false
+    hide-auto-sign: false
+    hide-send-sign-request: false
+    hide-wizard-except-roles:
+    hide-auto-sign-except-roles:
+    hide-send-sign-except-roles:
+    #   archive-uri: smb://serveur_fichier/archives
+    #   delay-before-cleaning : 0
+    enable-su: false
+    enable-splash: false
+    application-email: esup.signature@univ-ville.fr
+    hours-before-refresh-notif: 24
+    share-mode: 1
+    infinite-scrolling: true
+    return-to-home-after-sign: false
+    naming-template: "[title]"
+    signed-suffix: "_signé"
+    trash-keep-delay: -1
+    disable-cert-storage: false
+    bouncycastel-max-mr-tests: 0
+    enable-help: false
+
+    #tomcat:
+    #    ajp:
+    #        port: 6009
+
+info:
+    app:
+        name: esup-signature
+        description: Instance de production
+    tags:
+        environment: PROD
+
+management:
+    endpoints:
+        jmx:
+            exposure:
+                include: '*'
+        web:
+            exposure:
+                include: '*'
+    endpoint:
+        health:
+            show-details: always
+
+spring:
+    session:
+        jdbc:
+            initialize-schema: always
+            save-mode: always
+    data:
+        ldap:
+            repositories:
+                enabled: true
+    datasource:
+        driver-class-name: org.postgresql.Driver
+        url: jdbc:postgresql://localhost:5432/esupsignature
+        password: esup
+        username: esupsignature
+        jdbc-url: ${spring.datasource.url}
+        hikari:
+            auto-commit: false
+    jpa:
+        hibernate:
+            ddl-auto: update
+        properties:
+            hibernate:
+                jdbc:
+                    lob:
+                        non_contextual_creation: true
+        show-sql: false
+        open-in-view: false
+    ldap:
+    #        base: dc=univ-ville,dc=fr
+    #        password: ldap-password
+    #        urls: ldap://ldap.univ-ville.fr
+    #        username: cn=consult,dc=univ-ville,dc=fr
+    #mail:
+    #    host: smtp.univ-ville.fr
+    messages:
+        basename: i18n/messages
+        encoding: UTF-8
+        fallback-to-system-locale: false
+    servlet:
+        multipart:
+            enabled: true
+            max-file-size: 1280KB
+            max-request-size: 1280KB
+            resolve-lazily: true
+    thymeleaf:
+        cache: false
+        encoding: UTF-8
+        mode: HTML
+        servlet:
+            produce-partial-output-while-processing: false
+    web:
+        resources:
+            cache:
+                cachecontrol:
+                    max-age: 1d
+                    cache-public: true
+            static-locations: classpath:/static
+    mvc:
+        static-path-pattern: /**
+
+ldap:
+#    search-base: ou=people
+#    group-search-base: ou=groups
+#    group-search-filter: member={0}
+#    user-id-search-filter: (uid={0})
+#    member-search-filter: (&(uid={0})({1}))
+#    mapping-filters-groups:
+#        student : "(eduPersonAffiliation:=student)"
+#        staff : "(eduPersonAffiliation:=staff)"
+#        affiliate : "(eduPersonAffiliation:=affiliate)"
+
+mail:
+    from: no-reply.esup-signature@univ-ville.fr
+
+sms:
+    enable-sms : false
+    #    service-name: SMSU
+    #    url: https://smsu-api.univ-ville.fr/
+    #    username: sms-account
+    #    password: sms-password
+
+dss:
+    cache-data-source-driver-class-name: org.hsqldb.jdbc.JDBCDriver
+    cache-data-source-url: jdbc:hsqldb:mem:cachedb
+    cache-password:
+    cache-username: sa
+    default-validation-policy: policy/constraint.xml
+    server-signing-keystore-filename: validate_service.p12
+    server-signing-keystore-password: password
+    server-signing-keystore-type: PKCS12
+    tsp-server: http://timestamp.sectigo.com
+    lotl-country-code: EU
+    lotl-url: https://ec.europa.eu/tools/lotl/eu-lotl.xml
+    oj-url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG
+
+fs:
+    #    smb-login: esup-signature
+    #    smb-password: password
+    #    smb-test-uri: smb://smb.univ-ville.fr
+    vfs-test-uri: /tmp
+    #    cmis-test-uri: https://esup-signature.univ-ville.fr/nuxeo
+    #    cmis-login: Administrator
+    #    cmis-password: Administrator
+    #    cmis-respository-id: default
+    #    cmis-root-path: /default-domain/workspaces
+
+pdf:
+    convert-to-pdf-a: true
+    pdf-a-level: 3
+    path-to-g-s: /usr/bin/gs
+    path-to-fonts : /usr/share/fonts
+    pdf-to-image-dpi: 72
+
+security:
+    cas:
+    #        service: https://esup-signature.univ-ville.fr/login/cas
+    #        title: Compte Université (CAS)
+    #        url: https://cas.univ-ville.fr
+    shib:
+        dev:
+            enable: true
+        credentials-request-header: MEMBER
+        idp-url: https://idp.univ-ville.fr
+        principal-request-header: REMOTE_USER
+        title: Compte d’un autre établissement (Shibboleth)
+        domains-white-list-url: https://eduspot.renater.fr/eduspot/whitelist-eduspot.txt
+    web:
+        group-to-role-filter-pattern: for.esup-signature.role.(\w*)
+        mapping-groups-roles:
+            for.esup-signature.admin: ROLE_ADMIN
+            for.esup-signature.user: ROLE_USER
+        ws-access-authorize-ips: 127.0.0.1
+        group-mapping-spel:
+            for.esup-signature.user: "true"
+            for.esup-signature.admin: "true"
+
+server:
+    servlet:
+        session:
+            tracking-modes: COOKIE
+    error:
+        include-stacktrace: always
+    port: 8080
+    tomcat:
+        mbeanregistry:
+            enabled: true
+        remoteip:
+            remote-ip-header: X-Forwarded-For
+        basedir: ./temp
+
+sign:
+    aes-key : "0000000000000000"
+    cades-digest-algorithm: SHA256
+    cades-signature-level: CAdES_BASELINE_T
+    container-type: ASiC_E
+    default-signature-form: XAdES
+    pades-digest-algorithm: SHA256
+    pades-signature-level: PAdES_BASELINE_T
+    password-timeout: 60000
+    signature-packaging: ENVELOPED
+    xades-digest-algorithm: SHA256
+    xades-signature-level: XAdES_BASELINE_T
+
+logging:
+    file:
+        name: temp/esup-signature.log
+    pattern:
+        console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5level) %clr(${PID:- }){magenta} %highlight(%X{userId:-system}){cyan} %yellow([%15.15t]) %100clr(%C{1}.%method\\(%file:%line\\)){cyan} %clr(:) %m%n%wEx"
+        file: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5level) %clr(${PID:- }){magenta} %highlight(%X{userId:-system}){cyan} %yellow([%15.15t]) %100clr(%C{1}.%method\\(%file:%line\\)){cyan} %clr(:) %m%n%wEx"
+    level:
+        root: info
+        org.esupportail.esupsignature: info
+        org.verapdf: error
+        org.apache.pdfbox: error
+        eu.europa.esig.dss: error
+        org.springframework.web.filter.CommonsRequestLoggingFilter: error
+        eu.europa.esig.dss.pdf.AbstractPDFSignatureService: fatal
+        eu.europa.esig.dss.pades.PAdESUtils: fatal
+#        org.hibernate.stat: debug
+
+springdoc:
+    api-docs:
+        enabled: true
+    swagger-ui:
+        enabled: true
+        supported-submit-methods: []
+        disable-swagger-default-url: true
+    packages-to-scan: org.esupportail.esupsignature.web.ws

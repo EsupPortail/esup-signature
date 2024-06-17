@@ -43,11 +43,33 @@ Voir : https://www.esup-portail.org/wiki/display/SIGN/Sources+et+configuration#S
 mvn clean package
 ```
 Un jeu de test est exécuté au moment de la compilation, tous les prérequis et paramètres doivent être correctes pour que le projet compile.
+Pour l'éviter :
+
+```
+mvn clean package -DskipTests
+```
+
+# Tests
+
+## Selenium
+
+Prérequis :
+ * chromium
+ * python3-selenium
+ 
+```
+mvn failsafe:integration-test
+```
+## Tests d'intégration seuls
+
+```
+mvn surefire:test
+```
 
 # Démarrage
 
 ```
-mvn spring-boot:run
+mvn spring-boot:run -DskipTests
 ```
 
 # Esup-DSS-Client

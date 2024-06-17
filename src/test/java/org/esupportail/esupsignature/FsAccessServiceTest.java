@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
@@ -11,8 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import jakarta.annotation.Resource;
 
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
