@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,8 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import jakarta.annotation.Resource;
 
 import static org.junit.Assert.fail;
 
