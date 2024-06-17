@@ -49,7 +49,7 @@ public class SeleniumTest {
 
     @Test
     public void testA_esupSignatureTitle() {
-        driver.get("http://localhost:8080");
+        driver.get("http://localhost:7070");
         String title = driver.getTitle();
         assertEquals("Esup Signature", title);
     }
@@ -57,7 +57,7 @@ public class SeleniumTest {
     @Test
     public void testB_esupSignatureAutoSignImage() throws IOException {
         // Naviguer vers la page utilisateur
-        driver.get("http://localhost:8080/user");
+        driver.get("http://localhost:7070/user");
 
         // Cliquer sur le bouton "new-self-sign"
         wait.until(ExpectedConditions.elementToBeClickable(By.id("new-self-sign"))).click();
@@ -120,7 +120,7 @@ public class SeleniumTest {
 
     @Test
     public void testC_esupSignatureFastSignRequest() throws IOException {
-        driver.get("http://localhost:8080/user");
+        driver.get("http://localhost:7070/user");
 
         // Click "new-fast-sign" button
         wait.until(ExpectedConditions.elementToBeClickable(By.id("new-fast-sign"))).click();

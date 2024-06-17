@@ -191,7 +191,7 @@ server:
             tracking-modes: COOKIE
     error:
         include-stacktrace: always
-    port: 8080
+    port: 7070
     tomcat:
         mbeanregistry:
             enabled: true
