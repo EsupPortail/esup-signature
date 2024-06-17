@@ -11,8 +11,11 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -27,6 +30,8 @@ import static org.junit.Assert.assertEquals;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SeleniumTest {
 
+    private static final Logger logger = LoggerFactory.getLogger(SeleniumTest.class);
+
     private WebDriver driver;
     private WebDriverWait wait;
     private JavascriptExecutor js;
@@ -34,7 +39,18 @@ public class SeleniumTest {
     @Before
     public void setUp() {
         System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver");
-        driver = new ChromeDriver();
+        ChromeOptions chromeOptions = new ChromeOptions();
+        String display = System.getenv("DISPLAY");
+        if (display == null || display.isEmpty()) {
+            logger.warn("Headless mode activated");
+            chromeOptions.addArguments("--remote-debugging-port=9222");
+            chromeOptions.addArguments("--headless");
+            chromeOptions.addArguments("--no-sandbox");
+            chromeOptions.addArguments("--disable-dev-shm-usage");
+            driver = new ChromeDriver(chromeOptions);
+        } else {
+            driver = new ChromeDriver();
+        }
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         js = (JavascriptExecutor) driver;
         driver.manage().window().setSize(new  org.openqa.selenium.Dimension(1920, 1016));

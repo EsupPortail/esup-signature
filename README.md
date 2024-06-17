@@ -58,6 +58,7 @@ Prérequis :
  * python3-selenium
  
 ```
+mvn package -DskipTests
 mvn failsafe:integration-test
 ```
 ## Tests d'intégration seuls
