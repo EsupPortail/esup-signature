@@ -742,6 +742,11 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-java</artifactId>
+			<version>4.21.0</version>
+		</dependency>
+		<dependency>
 			<groupId>com.xdev-software</groupId>
 			<artifactId>chartjs-java-model</artifactId>
 			<version>1.1.0</version>
@@ -793,6 +798,19 @@
 					<execution>
 						<goals>
 							<goal>build-info</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>3.0.0-M5</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
 						</goals>
 					</execution>
 				</executions>
