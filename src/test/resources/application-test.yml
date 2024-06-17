@@ -81,8 +81,8 @@ spring:
     #        password: ldap-password
     #        urls: ldap://ldap.univ-ville.fr
     #        username: cn=consult,dc=univ-ville,dc=fr
-    mail:
-        host: smtp.univ-ville.fr
+    #mail:
+    #    host: smtp.univ-ville.fr
     messages:
         basename: i18n/messages
         encoding: UTF-8
