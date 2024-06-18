@@ -189,31 +189,33 @@ export class ListSignBooksUi {
 
         if(ids.length > 0) {
             let self = this;
-            bootbox.confirm("Attention, les demandes au statut 'Supprimé' seront définitivement perdues. Les autres seront placées dans la corbeille.<br/>Confirmez vous l'opération ?", function(result) {
-                if(result) {
-                    bootbox.dialog({
-                        closeButton : false,
-                        message : "<h5>Suppression en cours</h5>" +
-                            "<div class=\"text-center\">" +
-                            "<div id=\"signSpinner\" class=\"justify-content-center mx-auto\">\n" +
-                            "   <div class=\"spinner-border mx-auto\" role=\"status\" style=\"width: 3rem; height: 3rem;\">\n" +
-                            "       <span class=\"sr-only\">En cours...</span>\n" +
-                            "   </div>\n" +
-                            "</div> " +
-                            "</div> "
-                    });
-                    $.ajax({
-                        url: "/" + self.mode + "/signbooks/delete-multiple?" + self.csrf.parameterName + "=" + self.csrf.token,
-                        type: 'POST',
-                        dataType: 'json',
-                        contentType: "application/json",
-                        data: JSON.stringify(ids),
-                        success: function () {
-                            location.reload();
-                        }
-                    });
+            bootbox.confirm("Attention, les demandes au statut 'Supprimé' seront définitivement perdues. Les autres seront placées dans la corbeille.<br/>Confirmez vous l'opération ?",
+                function(result) {
+                    if(result) {
+                        bootbox.dialog({
+                            closeButton : false,
+                            message : "<h5>Suppression en cours</h5>" +
+                                "<div class=\"text-center\">" +
+                                "<div id=\"signSpinner\" class=\"justify-content-center mx-auto\">\n" +
+                                "   <div class=\"spinner-border mx-auto\" role=\"status\" style=\"width: 3rem; height: 3rem;\">\n" +
+                                "       <span class=\"sr-only\">En cours...</span>\n" +
+                                "   </div>\n" +
+                                "</div> " +
+                                "</div> "
+                        });
+                        $.ajax({
+                            url: "/" + self.mode + "/signbooks/delete-multiple?" + self.csrf.parameterName + "=" + self.csrf.token,
+                            type: 'POST',
+                            dataType: 'json',
+                            contentType: "application/json",
+                            data: JSON.stringify(ids),
+                            success: function () {
+                                location.reload();
+                            }
+                        });
+                    }
                 }
-            });
+            );
         }
     }
 
