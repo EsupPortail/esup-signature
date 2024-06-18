@@ -830,6 +830,7 @@
 					<systemPropertyVariables>
 						<spring.config.location>src/test/resources/application-test.yml</spring.config.location>
 					</systemPropertyVariables>
+					<testFailureIgnore>false</testFailureIgnore>
 				</configuration>
 				<executions>
 					<execution>
