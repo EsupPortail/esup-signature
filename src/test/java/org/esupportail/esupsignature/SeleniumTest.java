@@ -67,7 +67,7 @@ public class SeleniumTest {
     public void testA_esupSignatureTitle() {
         driver.get("http://localhost:7070");
         String title = driver.getTitle();
-        assertEquals("Intentional failure to test pipeline behavior", title);
+        assertEquals("Esup Signature", title);
     }
 
     @Test
