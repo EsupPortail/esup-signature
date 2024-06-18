@@ -1411,7 +1411,11 @@ public class SignBookService {
         if(nextSignRequest.isPresent()) {
             return nextSignRequest.get();
         }
-    return getNextSignBook(signRequestId, userEppn).getSignRequests().get(0);
+        SignBook signBook = getNextSignBook(signRequestId, userEppn);
+        if(signBook != null) {
+            return signBook.getSignRequests().get(0);
+        }
+        return null;
     }
 
     @Transactional
