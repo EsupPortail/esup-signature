@@ -1390,7 +1390,7 @@ public class SignBookService {
         List<SignBook> signBooks = signBooksToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).sorted(Comparator.comparingLong(SignBook::getId)).collect(Collectors.toList());
         int indexOfSignRequest = signBooks.indexOf(currentSignRequest.getParentSignBook());
         if (indexOfSignRequest + 1 >= signBooks.size()) {
-            return signBooks.stream().filter(signRequest -> !signRequest.getId().equals(signRequestId)).min(Comparator.comparingLong(SignBook::getId)).orElseThrow();
+            return signBooks.stream().filter(signRequest -> !signRequest.getId().equals(signRequestId)).min(Comparator.comparingLong(SignBook::getId)).orElse(null);
         } else {
             if (currentSignRequest.getParentSignBook().getSignRequests().size() == 1) {
                 return signBooks.get(indexOfSignRequest + 1);
