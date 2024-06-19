@@ -5,18 +5,18 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = EsupSignatureApplication.class)
 @TestPropertySource(properties = {"app.scheduling.enable=false"})
 public class FsAccessServiceTest {
@@ -32,7 +32,7 @@ public class FsAccessServiceTest {
     @Test
     public void testSmbAccessImpl() throws EsupSignatureFsException {
         FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService("smb://test");
-        assumeTrue("SMB not configured", fsAccessService != null && fsAccessService.getUri() != null && !fsAccessService.getUri().isEmpty());
+        assumeTrue(fsAccessService != null && fsAccessService.getUri() != null && !fsAccessService.getUri().isEmpty(), "SMB not configured");
         try {
             if (fsAccessService.cd(fsAccessService.getUri()) == null) {
                 logger.error(fsAccessService.getDriveName() + " unable to change to / directory. Please check configuration");
@@ -50,7 +50,7 @@ public class FsAccessServiceTest {
     @Test
     public void testCmisAccessImpl() throws EsupSignatureFsException {
         FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService("cmis://test");
-        assumeTrue("cmis not configured", fsAccessService != null && fsAccessService.getUri() != null && !fsAccessService.getUri().isEmpty());
+        assumeTrue(fsAccessService != null && fsAccessService.getUri() != null && !fsAccessService.getUri().isEmpty(), "cmis not configured");
         try {
             if (fsAccessService.cd("/") == null) {
                 logger.error(fsAccessService.getDriveName() + " unable to change to / directory. Please check configuration");
@@ -67,7 +67,7 @@ public class FsAccessServiceTest {
     @Test
     public void testVfsAccessImpl() throws EsupSignatureFsException {
         FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService("ftp://test");
-        assumeTrue("vfs not configured", fsAccessService != null && fsAccessService.getUri() != null && !fsAccessService.getUri().isEmpty());
+        assumeTrue(fsAccessService != null && fsAccessService.getUri() != null && !fsAccessService.getUri().isEmpty(), "vfs not configured");
         try {
             if (fsAccessService.cd(fsAccessService.getUri()) == null) {
                 logger.error(fsAccessService.getDriveName() + " unable to change to / directory. Please check configuration");
@@ -83,7 +83,7 @@ public class FsAccessServiceTest {
 
     @Test
     public void testArchiveUri() throws EsupSignatureFsException {
-        assumeTrue("archive url not configured", globalProperties.getArchiveUri() != null);
+        assumeTrue(globalProperties.getArchiveUri() != null, "archive url not configured");
         FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(globalProperties.getArchiveUri());
         fsAccessService.createURITree(globalProperties.getArchiveUri());
     }
