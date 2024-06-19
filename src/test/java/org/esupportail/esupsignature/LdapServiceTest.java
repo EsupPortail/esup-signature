@@ -1,17 +1,17 @@
 package org.esupportail.esupsignature;
 
 import org.esupportail.esupsignature.service.ldap.LdapOrganizationalUnitService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = EsupSignatureApplication.class)
 @TestPropertySource(properties = {"app.scheduling.enable=false"})
 public class LdapServiceTest {
@@ -22,9 +22,9 @@ public class LdapServiceTest {
     @Autowired(required = false)
     private LdapOrganizationalUnitService ldapOrganizationalUnitService;
 
-    @Test(timeout = 5000)
+    @Test
     public void testLdap() {
-        assumeTrue("LDAP not configured", ldapContextSource.getUserDn() != null && !ldapContextSource.getUserDn().equals(""));
+        assumeTrue(ldapContextSource.getUserDn() != null && !ldapContextSource.getUserDn().isEmpty(), "LDAP not configured");
         ldapOrganizationalUnitService.getOrganizationalUnitLdap("0");
     }
 
