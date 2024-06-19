@@ -63,7 +63,11 @@ public class RecipientService {
         signRequest.getRecipientHasSigned().get(validateRecipient).setActionType(ActionType.signed);
         signRequest.getRecipientHasSigned().get(validateRecipient).setUserIp(webUtilsService.getClientIp());
         signRequest.getRecipientHasSigned().get(validateRecipient).setDate(new Date());
-        validateRecipient.setSigned(true);
+        allSigned(signRequest, validateRecipient);
+    }
+
+    public void allSigned(SignRequest signRequest, Recipient recipient) {
+        recipient.setSigned(signRequest.getParentSignBook().getSignRequests().stream().noneMatch(signRequest1 -> signRequest1.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none)));
     }
 
     public long recipientsContainsUser(List<Recipient> recipients, String userEppn) {

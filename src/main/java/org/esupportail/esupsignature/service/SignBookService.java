@@ -337,7 +337,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignBook createSignBook(String subject, Workflow workflow, String workflowName, String userEppn, boolean geneateName) {
+    public SignBook createSignBook(String subject, Workflow workflow, String workflowName, String userEppn, boolean geneateName, String comment) {
         User user = userService.getByEppn(userEppn);
         SignBook signBook = new SignBook();
         if(!StringUtils.hasText(workflowName)) {
@@ -359,6 +359,7 @@ public class SignBookService {
         addToTeam(signBook, user.getEppn());
         signBook.setCreateDate(new Date());
         signBook.setLiveWorkflow(liveWorkflowService.create(workflowName, workflow));
+        signBook.setDescription(comment);
         signBook.setSubject(subject);
         signBookRepository.save(signBook);
         if(geneateName) {
@@ -771,7 +772,7 @@ public class SignBookService {
         if(title == null || title.isEmpty()) {
             title = form.getTitle();
         }
-        SignBook signBook = createSignBook(title, modelWorkflow, null, user.getEppn(), true);
+        SignBook signBook = createSignBook(title, modelWorkflow, null, user.getEppn(), true, null);
         SignRequest signRequest = signRequestService.createSignRequest(signBook.getSubject(), signBook, user.getEppn(), authUser.getEppn());
         if(form.getWorkflow().getOwnerSystem() != null && form.getWorkflow().getOwnerSystem()) {
             User systemUser = userService.getSystemUser();
@@ -873,7 +874,7 @@ public class SignBookService {
                 }
             }
         }
-        SignBook signBook = createSignBook(title, null, "Demande générée", createByEppn, true);
+        SignBook signBook = createSignBook(title, null, "Demande générée", createByEppn, true, null);
         addDocumentsToSignBook(signBook.getId(), multipartFiles, createByEppn);
         signBook.setForceAllDocsSign(forceAllSign);
         addViewers(signBook.getId(), steps.stream().map(WorkflowStepDto::getRecipientsCCEmails).filter(Objects::nonNull).flatMap(List::stream).toList());
@@ -1188,7 +1189,7 @@ public class SignBookService {
                     action.setActionType(ActionType.refused);
                     action.setUserIp(webUtilsService.getClientIp());
                     action.setDate(new Date());
-                    recipient.setSigned(true);
+                    recipientService.allSigned(signRequest, recipient);
                 }
             }
         }
@@ -1213,7 +1214,7 @@ public class SignBookService {
                     action.setActionType(ActionType.refused);
                     action.setUserIp(webUtilsService.getClientIp());
                     action.setDate(new Date());
-                    recipient.setSigned(true);
+                    recipientService.allSigned(signRequest, recipient);
                 }
             }
             List<SignRequest> signRequests = new ArrayList<>(signBook.getSignRequests());
@@ -1245,7 +1246,7 @@ public class SignBookService {
         logger.info("starting workflow " + id + " by " + createByEppn);
         Workflow workflow = workflowService.getById(id);
         User user = userService.createUserWithEppn(createByEppn);
-        SignBook signBook = createSignBook(title, workflow, "", user.getEppn(), true);
+        SignBook signBook = createSignBook(title, workflow, "", user.getEppn(), true, null);
         signBook.getLiveWorkflow().setWorkflow(workflow);
         for(MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(multipartFile.getOriginalFilename(), signBook, createByEppn, createByEppn);
@@ -1313,7 +1314,7 @@ public class SignBookService {
                         if (metadatas.get("Title") != null && !metadatas.get("Title").isEmpty()) {
                             documentName = metadatas.get("Title");
                         }
-                        SignBook signBook = createSignBook(fileService.getNameOnly(documentName), workflow, "", user.getEppn(), true);
+                        SignBook signBook = createSignBook(fileService.getNameOnly(documentName), workflow, "", user.getEppn(), true, null);
                         signBook.getLiveWorkflow().setWorkflow(workflow);
                         SignRequest signRequest = signRequestService.createSignRequest(null, signBook, user.getEppn(), authUser.getEppn());
                         if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
