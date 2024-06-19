@@ -93,7 +93,7 @@ public class WizardController {
         if(type.equals("self")) {
             workflowName = "Auto signature";
         }
-        SignBook signBook = signBookService.createSignBook(null, null, workflowName, userEppn, false);
+        SignBook signBook = signBookService.createSignBook(null, null, workflowName, userEppn, false, null);
         return ResponseEntity.ok().body(signBook.getId());
     }
 
@@ -125,14 +125,15 @@ public class WizardController {
     @PostMapping(value = "/wiz-create-workflow-sign")
     public ResponseEntity<Long> wizCreateWorkflowSign(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                                       @RequestParam(value = "workflowId", required = false) Long workflowId,
-                                                      @RequestParam(value = "title", required = false, defaultValue = "") String title) {
+                                                      @RequestParam(value = "title", required = false, defaultValue = "") String title,
+                                                      @RequestParam(value = "comment", required = false, defaultValue = "") String comment) {
         Workflow workflow = null;
         String name = "Demande personnalisée";
         if (workflowId != null) {
             workflow = workflowService.getById(workflowId);
             name = workflow.getDescription();
         }
-        SignBook signBook = signBookService.createSignBook(title, workflow, name, userEppn, false);
+        SignBook signBook = signBookService.createSignBook(title, workflow, name, userEppn, false, comment);
         return ResponseEntity.ok().body(signBook.getId());
     }
 

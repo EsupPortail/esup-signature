@@ -83,7 +83,7 @@
                                         <th:block th:each="signImageId, iterator : ${userImagesIds}">
                                             <tr>
                                                 <td class="text-left w-100" style="position: relative;height: 74px;" >
-                                                    <img class="thumbnail" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}"  th:alt="'Image de la signature' + ${iterator.index}"/>
+                                                    <img th:id="'sign-image-' + ${iterator.index}" class="thumbnail" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}"  th:alt="'Image de la signature ' + ${iterator.index}"/>
                                                 </td>
                                                 <td>
                                                     <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/' + ${iterator.index}" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == iterator.index} ? 'text-warning' : 'text-secondary'">

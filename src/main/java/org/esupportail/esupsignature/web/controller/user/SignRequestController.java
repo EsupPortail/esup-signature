@@ -134,11 +134,8 @@ public class SignRequestController {
             model.addAttribute("toSignDocument", toSignDocuments.get(0));
         }
         model.addAttribute("attachments", signRequestService.getAttachments(id));
-        SignRequest nextSignRequest = signBookService.getNextSignRequest(signRequest.getId(), userEppn);
-        if(nextSignRequest != null) {
-            model.addAttribute("nextSignBook", nextSignRequest.getParentSignBook());
-            model.addAttribute("nextSignRequest", nextSignRequest);
-        }
+        model.addAttribute("nextSignRequest", signBookService.getNextSignRequest(signRequest.getId(), userEppn));
+        model.addAttribute("nextSignBook", signBookService.getNextSignBook(signRequest.getId(), userEppn));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
         model.addAttribute("favoriteSignRequestParamsJson", userService.getFavoriteSignRequestParamsJson(userEppn));
@@ -239,12 +236,14 @@ public class SignRequestController {
         } else {
             result = signRequestService.delete(id, authUserEppn);
         }
-        if(result == 0) {
+        if(result == 0L) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression définitive effectuée"));
-        } else if(result > 0) {
+        } else if(result > 0L) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
+            return "redirect:/user/signbooks/" + result;
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression impossible car la demande est en cours de signature ou déjà signée"));
+            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Suppression impossible car la demande à démarrée et contient encore des documents en cours de signature"));
+            return "redirect:/user/signrequests/" + id;
         }
         return "redirect:/user/signbooks";
     }

@@ -1,22 +1,21 @@
 package org.esupportail.esupsignature;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import jakarta.annotation.Resource;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import static org.junit.Assume.assumeTrue;
-
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = EsupSignatureApplication.class)
 @TestPropertySource(properties = {"app.scheduling.enable=false"})
 public class WorkflowServiceTest {
@@ -26,7 +25,7 @@ public class WorkflowServiceTest {
     @Resource
     private WorkflowService workflowService;
 
-    @Test(timeout = 5000)
+    @Test
     public void testWorkflows() {
         boolean workflowTest = true;
         for(Workflow defaultWorkflow : workflowService.getClassesWorkflows()) {
@@ -39,7 +38,7 @@ public class WorkflowServiceTest {
             }
         }
         if(!workflowTest) {
-            assumeTrue("Attention, un des workflows est mal configuré", workflowTest);
+            assumeTrue(workflowTest, "Attention, un des workflows est mal configuré");
         }
     }
 
