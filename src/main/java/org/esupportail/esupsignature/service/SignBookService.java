@@ -1189,7 +1189,7 @@ public class SignBookService {
                     action.setActionType(ActionType.refused);
                     action.setUserIp(webUtilsService.getClientIp());
                     action.setDate(new Date());
-                    recipient.setSigned(true);
+                    recipientService.allSigned(signRequest, recipient);
                 }
             }
         }
@@ -1214,7 +1214,7 @@ public class SignBookService {
                     action.setActionType(ActionType.refused);
                     action.setUserIp(webUtilsService.getClientIp());
                     action.setDate(new Date());
-                    recipient.setSigned(true);
+                    recipientService.allSigned(signRequest, recipient);
                 }
             }
             List<SignRequest> signRequests = new ArrayList<>(signBook.getSignRequests());
