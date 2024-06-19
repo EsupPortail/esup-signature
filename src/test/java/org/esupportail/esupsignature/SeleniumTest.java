@@ -2,6 +2,7 @@ package org.esupportail.esupsignature;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.By;
@@ -68,14 +69,16 @@ public class SeleniumTest {
     }
 
     @Test
-    public void testA_esupSignatureTitle() {
+    @Order(1)
+    public void esupSignatureTitle() {
         driver.get("http://localhost:7070");
         String title = driver.getTitle();
         assertEquals("Esup Signature", title);
     }
 
     @Test
-    public void testB_esupSignatureAutoSignImage() throws IOException {
+    @Order(2)
+    public void esupSignatureAutoSignImage() throws IOException {
         // Naviguer vers la page utilisateur
         driver.get("http://localhost:7070/user");
         // Cliquer sur le bouton "new-self-sign"
@@ -122,7 +125,8 @@ public class SeleniumTest {
 
 
     @Test
-    public void testC_esupSignatureFastSignRequest() throws IOException {
+    @Order(3)
+    public void esupSignatureFastSignRequest() throws IOException {
         driver.get("http://localhost:7070/user");
         // Click "new-fast-sign" button
         wait.until(ExpectedConditions.elementToBeClickable(By.id("new-fast-sign"))).click();
@@ -174,7 +178,8 @@ public class SeleniumTest {
     }
 
     @Test
-    public void testC_esupSignatureCreateSignImage() {
+    @Order(4)
+    public void esupSignatureCreateSignImage() {
         driver.get("http://localhost:7070/user");
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("user-toggle"))).click();
