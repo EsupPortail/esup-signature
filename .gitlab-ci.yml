@@ -1,0 +1,52 @@
+stages:
+  - test
+  - deploy
+
+# Job pour exécuter les tests d'intégration
+integration_test:
+  stage: test
+  script:
+    - set -e
+    - mvn clean package -Dspring.config.location=/opt/esup-signature-test-work/application.yml -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp
+    - mvn clean package verify -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp -DskipSurefire=true
+  only:
+    - test
+  tags:
+    - test
+
+# Job pour le déploiement en environnement de test
+deploy_test:
+  stage: deploy
+  script:
+    - set -e
+    - mvn clean package -DskipTests -Dspring.config.location=/opt/esup-signature-test-work/application.yml -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp
+    - sudo systemctl stop esup-signature-test.service
+    - rm -f /opt/esup-signature-test-work/esup-signature.war
+    - cp target/esup-signature.war /opt/esup-signature-test-work/
+    - sudo systemctl restart esup-signature-test.service
+  only:
+    - test
+  tags:
+    - test
+  dependencies:
+    - integration_test
+
+# Job pour le déploiement en production (sans exécution des tests)
+deploy_prod:
+  stage: deploy
+  script:
+    - set -e
+    - mvn clean package -DskipTests -Dspring.config.location=/opt/esup-signature/application.yml
+    - sudo systemctl stop esup-signature.service
+    - rm -f /opt/esup-signature/esup-signature.war
+    - cp target/esup-signature.war /opt/esup-signature/
+    - sudo systemctl restart esup-signature.service
+  only:
+    - tags
+  except:
+    - dev
+    - prod
+    - test
+    - master
+  tags:
+    - prod2
