@@ -236,12 +236,14 @@ public class SignRequestController {
         } else {
             result = signRequestService.delete(id, authUserEppn);
         }
-        if(result == 0) {
+        if(result == 0L) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression définitive effectuée"));
-        } else if(result > 0) {
+        } else if(result > 0L) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
+            return "redirect:/user/signbooks/" + result;
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression impossible car la demande est en cours de signature ou déjà signée"));
+            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Suppression impossible car la demande à démarrée et contient encore des documents en cours de signature"));
+            return "redirect:/user/signrequests/" + id;
         }
         return "redirect:/user/signbooks";
     }

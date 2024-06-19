@@ -44,12 +44,19 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
 			<exclusions>
 				<exclusion>
-					<artifactId>android-json</artifactId>
-					<groupId>com.vaadin.external.google</groupId>
+					<groupId>org.junit.vintage</groupId>
+					<artifactId>junit-vintage-engine</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>5.10.2</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -731,25 +738,19 @@
 			<version>2.3.0</version>
 		</dependency>
 		<dependency>
-			<groupId>org.junit.vintage</groupId>
-			<artifactId>junit-vintage-engine</artifactId>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.hamcrest</groupId>
-					<artifactId>hamcrest-core</artifactId>
-				</exclusion>
-			</exclusions>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-java</artifactId>
+			<version>4.18.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-java</artifactId>
-			<version>4.21.0</version>
+			<artifactId>selenium-devtools-v120</artifactId>
+			<version>4.18.1</version>
 		</dependency>
 		<dependency>
-			<groupId>com.xdev-software</groupId>
+			<groupId>software.xdev</groupId>
 			<artifactId>chartjs-java-model</artifactId>
-			<version>1.1.0</version>
+			<version>2.0.1</version>
 		</dependency>
 
 		<!-- Plugins dependencies -->
@@ -762,6 +763,11 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
         </dependency>
+		<dependency>
+			<groupId>com.dkanejs.maven.plugins</groupId>
+			<artifactId>docker-compose-maven-plugin</artifactId>
+			<version>4.0.0</version>
+		</dependency>
     </dependencies>
 	<build>
 		<finalName>esup-signature</finalName>
@@ -810,11 +816,38 @@
 					<excludes>
 						<exclude>**/Selenium*.java</exclude>
 					</excludes>
+					<skip>${skipSurefire}</skip>
 				</configuration>
 				<executions>
 					<execution>
 						<goals>
 							<goal>test</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.dkanejs.maven.plugins</groupId>
+				<artifactId>docker-compose-maven-plugin</artifactId>
+				<version>4.0.0</version>
+				<configuration>
+					<composeFile>${project.basedir}/src/test/resources/docker-compose.yml</composeFile>
+					<detachedMode>true</detachedMode>
+					<removeOrphans>true</removeOrphans>
+				</configuration>
+				<executions>
+					<execution>
+						<id>pre-integration-test</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>up</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>post-integration-test</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>down</goal>
 						</goals>
 					</execution>
 				</executions>
@@ -830,6 +863,7 @@
 					<systemPropertyVariables>
 						<spring.config.location>src/test/resources/application-test.yml</spring.config.location>
 					</systemPropertyVariables>
+					<testFailureIgnore>false</testFailureIgnore>
 				</configuration>
 				<executions>
 					<execution>

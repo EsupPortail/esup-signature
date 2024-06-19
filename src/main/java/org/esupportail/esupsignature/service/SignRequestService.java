@@ -631,7 +631,6 @@ public class SignRequestService {
 			throw new EsupSignatureRuntimeException("Interdiction de supprimer les demandes de ce circuit");
 		}
 		if(signRequest.getStatus().equals(SignRequestStatus.deleted) || signRequest.getStatus().equals(SignRequestStatus.draft) || (signRequest.getParentSignBook().getSignRequests().size() > 1 && signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending))) {
-			logger.info("suppression définitive");
 			return deleteDefinitive(signRequestId, false, userEppn);
 		} else {
 			logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Mise à la corbeille du document par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
@@ -659,7 +658,7 @@ public class SignRequestService {
 		logger.info("start definitive delete of signrequest " + signRequestId);
 		SignRequest signRequest = getById(signRequestId);
 		if(!force && !signRequest.getStatus().equals(SignRequestStatus.deleted) && !signRequest.getRecipientHasSigned().values().stream().allMatch(a -> a.getActionType().equals(ActionType.none))) {
-			throw new EsupSignatureRuntimeException("Suppression impossible, la demande est déjà démarrée");
+			return -1L;
 		}
 		nexuService.delete(signRequestId);
 		logService.create(signRequestId, signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Suppression définitive", null, "SUCCESS", null, null, null,null, userEppn, userEppn);
