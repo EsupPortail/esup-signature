@@ -8,12 +8,22 @@ integration_test:
   script:
     - set -e
     - mvn clean package -Dspring.config.location=/opt/esup-signature-test-work/application.yml -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp
+  only:
+    - test
+  tags:
+    - test
+  dependencies:
+    - integration_test
+# Job pour exécuter les tests selenium
+selenium_test:
+  stage: test
+  script:
+    - set -e
     - mvn verify -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp -DskipSurefire=true -DskipDockerCompose=false
   only:
     - test
   tags:
     - test
-
 # Job pour le déploiement en environnement de test
 deploy_test:
   stage: deploy
@@ -29,6 +39,7 @@ deploy_test:
   tags:
     - test
   dependencies:
+    - selenium_test
     - integration_test
 
 # Job pour le déploiement en production (sans exécution des tests)
