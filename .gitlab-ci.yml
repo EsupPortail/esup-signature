@@ -8,7 +8,7 @@ integration_test:
   script:
     - set -e
     - mvn clean package -Dspring.config.location=/opt/esup-signature-test-work/application.yml -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp
-    - mvn clean package verify -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp -DskipSurefire=true
+    - mvn verify -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp -DskipSurefire=true -DskipDockerCompose=false
   only:
     - test
   tags:

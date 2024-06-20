@@ -21,6 +21,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dss.framework.version>6.0</dss.framework.version>
 		<dss.framework.safeVersion>5.4.3</dss.framework.safeVersion>
+		<skipDockerCompose>true</skipDockerCompose>
+		<skipSurefire>false</skipSurefire>
 	</properties>
 	<repositories>
 		<repository>
@@ -832,13 +834,13 @@
 				<version>4.0.0</version>
 				<configuration>
 					<composeFile>${project.basedir}/src/test/resources/docker-compose.yml</composeFile>
-					<detachedMode>true</detachedMode>
 					<removeOrphans>true</removeOrphans>
+					<skip>${skipDockerCompose}</skip>
 				</configuration>
 				<executions>
 					<execution>
 						<id>pre-integration-test</id>
-						<phase>pre-integration-test</phase>
+						<phase>compile</phase>
 						<goals>
 							<goal>up</goal>
 						</goals>
