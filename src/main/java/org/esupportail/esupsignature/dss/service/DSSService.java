@@ -102,16 +102,15 @@ public DSSService(DSSProperties dssProperties, TLValidationJob tlValidationJob, 
     }
 
     public void getCertificats() throws IOException {
-        logger.info("Updating DSS OJ...");
+        logger.info("Updating DSS OJ offline...");
         ojContentKeyStore.addAllCertificatesToKeyStore(myTrustedCertificateSource.getCertificates());
         tlValidationJob.offlineRefresh();
         logger.info("Updating DSS OJ offline done.");
         if(refreshIsNeeded()) {
+            logger.info("Updating DSS OJ online...");
             tlValidationJob.onlineRefresh();
             logger.info("Updating DSS OJ online done.");
         }
-        logger.info("Updating DSS OJ done.");
-
     }
 
     public boolean refreshIsNeeded() throws IOException {
