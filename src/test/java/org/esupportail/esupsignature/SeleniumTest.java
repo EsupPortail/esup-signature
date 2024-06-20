@@ -1,9 +1,6 @@
 package org.esupportail.esupsignature;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -29,6 +26,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(SpringExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SeleniumTest {
 
     private static final Logger logger = LoggerFactory.getLogger(SeleniumTest.class);
@@ -87,7 +85,9 @@ public class SeleniumTest {
         WebElement fileInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("multipartFiles")));
         fileInput.sendKeys(new ClassPathResource("/dummy.pdf").getFile().getAbsolutePath());
         // Cliquer sur le bouton "fast-sign-button"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("fast-sign-button"))).click();
+        WebElement fastSignButton = wait.until(ExpectedConditions.elementToBeClickable(By.id("fast-sign-button")));
+        fastSignButton.click();
+        wait.until(ExpectedConditions.invisibilityOf(fastSignButton));
         // Cliquer sur le bouton "addSignButton"
         wait.until(ExpectedConditions.elementToBeClickable(By.id("addSignButton"))).click();
         // Exécuter du JavaScript pour récupérer "signRequestId"
@@ -141,7 +141,9 @@ public class SeleniumTest {
         // Select the recipient from the list
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".ss-list > .ss-option"))).click();
         // Click "send-pending-button"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("send-pending-button"))).click();
+        WebElement sendPendingButton = wait.until(ExpectedConditions.elementToBeClickable(By.id("send-pending-button")));
+        sendPendingButton.click();
+        wait.until(ExpectedConditions.invisibilityOf(sendPendingButton));
         // Click "addSignButton"
         wait.until(ExpectedConditions.elementToBeClickable(By.id("addSignButton"))).click();
         // Execute JavaScript to store "signRequestId"
