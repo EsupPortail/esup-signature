@@ -7,20 +7,21 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.0</version>
+		<version>3.3.1</version>
 		<relativePath />
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.29.8-SNAPSHOT</version>
+	<version>1.29.10-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
-		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
 		<java.version>17</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dss.framework.version>6.0</dss.framework.version>
 		<dss.framework.safeVersion>5.4.3</dss.framework.safeVersion>
+		<skipDockerCompose>true</skipDockerCompose>
+		<skipSurefire>false</skipSurefire>
 	</properties>
 	<repositories>
 		<repository>
@@ -156,7 +157,7 @@
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>webjars-locator-core</artifactId>
-			<version>0.58</version>
+			<version>0.59</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars.bower</groupId>
@@ -832,13 +833,14 @@
 				<version>4.0.0</version>
 				<configuration>
 					<composeFile>${project.basedir}/src/test/resources/docker-compose.yml</composeFile>
-					<detachedMode>true</detachedMode>
 					<removeOrphans>true</removeOrphans>
+					<detachedMode>true</detachedMode>
+					<skip>${skipDockerCompose}</skip>
 				</configuration>
 				<executions>
 					<execution>
 						<id>pre-integration-test</id>
-						<phase>pre-integration-test</phase>
+						<phase>compile</phase>
 						<goals>
 							<goal>up</goal>
 						</goals>

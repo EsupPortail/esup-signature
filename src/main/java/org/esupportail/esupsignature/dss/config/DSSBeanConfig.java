@@ -260,9 +260,9 @@ public class DSSBeanConfig {
 	public File tlCacheDirectory() {
 		String tmpDirectory = System.getProperty("java.io.tmpdir");
 		File tslCache = new File(tmpDirectory, "dss-tsl-loader");
-		logger.info("dssPath : " + tslCache.getAbsolutePath());
+        logger.info("dss cache path : {}", tslCache.getAbsolutePath());
 		if (tslCache.mkdirs()) {
-			logger.info("TL Cache folder : {}", tslCache.getAbsolutePath());
+            logger.info("creating non existing cache folder : {}", tslCache.getAbsolutePath());
 		}
 		return tslCache;
 	}

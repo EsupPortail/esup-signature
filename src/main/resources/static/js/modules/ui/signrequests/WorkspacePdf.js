@@ -250,7 +250,6 @@ export class WorkspacePdf {
         if((this.signType === "nexuSign" || this.signType === "certSign") && !this.notSigned) {
             $("#addSignButton").attr("disabled", true);
         }
-        $("#signLaunchButton").addClass("pulse-success");
     }
 
     initWorkspace() {
@@ -835,6 +834,7 @@ export class WorkspacePdf {
             let signTools = $('#sign-tools');
             signTools.removeClass("d-none");
             signTools.addClass("d-flex");
+            $("#addSignButton").focus();
         }
 
         $('#infos').show();
