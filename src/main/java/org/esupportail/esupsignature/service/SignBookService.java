@@ -1385,13 +1385,16 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignBook getNextSignBook(Long signRequestId, String userEppn) {
+    public SignBook getNextSignBook(Long signRequestId, String userEppn, String authUserEppn) {
         SignRequest currentSignRequest = signRequestService.getById(signRequestId);
         List<SignBook> signBooksToSign = getSignBooks(userEppn, userEppn, "toSign", null, null, null, null, null, Pageable.unpaged()).toList();
         List<SignBook> signBooks = signBooksToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).sorted(Comparator.comparingLong(SignBook::getId)).collect(Collectors.toList());
+        if(!userEppn.equals(authUserEppn)) {
+            signBooks = signBooks.stream().filter(signRequest -> userShareService.checkShareForSignRequest(userEppn, authUserEppn, signRequest, ShareType.sign)).toList();
+        }
         int indexOfSignRequest = signBooks.indexOf(currentSignRequest.getParentSignBook());
         if (indexOfSignRequest + 1 >= signBooks.size()) {
-            return signBooks.stream().filter(signRequest -> !signRequest.getId().equals(signRequestId)).min(Comparator.comparingLong(SignBook::getId)).orElse(null);
+            return signBooks.stream().filter(signBook -> !signBook.getId().equals(currentSignRequest.getParentSignBook().getId())).min(Comparator.comparingLong(SignBook::getId)).orElse(null);
         } else {
             if (currentSignRequest.getParentSignBook().getSignRequests().size() == 1) {
                 return signBooks.get(indexOfSignRequest + 1);
@@ -1406,15 +1409,14 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignRequest getNextSignRequest(Long signRequestId, String userEppn) {
+    public SignRequest getNextSignRequest(Long signRequestId, String userEppn, String authUserEppn, SignBook nextSignBook) {
         SignRequest currentSignRequest = signRequestService.getById(signRequestId);
         Optional<SignRequest> nextSignRequest = currentSignRequest.getParentSignBook().getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending) && !s.getId().equals(signRequestId)).findAny();
         if(nextSignRequest.isPresent()) {
             return nextSignRequest.get();
         }
-        SignBook signBook = getNextSignBook(signRequestId, userEppn);
-        if(signBook != null) {
-            return signBook.getSignRequests().get(0);
+        if(nextSignBook != null) {
+            return nextSignBook.getSignRequests().get(0);
         }
         return null;
     }
