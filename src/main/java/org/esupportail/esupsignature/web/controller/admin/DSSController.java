@@ -45,11 +45,15 @@ public class DSSController {
 	public String tlInfoPage(Model model) {
 		TLValidationJobSummary summary = tlValidationJob.getSummary();
 		model.addAttribute("summary", summary);
-		model.addAttribute("keystoreCertificates", summary.getLOTLInfos().stream()
-				.flatMap(lotlInfo -> lotlInfo.getTLInfos().stream())
-				.flatMap(tlInfo -> tlInfo.getParsingCacheInfo().getTrustServiceProviders().stream())
-				.flatMap(trustServiceProvider -> trustServiceProvider.getServices().stream())
-				.flatMap(service -> service.getCertificates().stream()).distinct().count());
+		try {
+			model.addAttribute("keystoreCertificates", summary.getLOTLInfos().stream()
+					.flatMap(lotlInfo -> lotlInfo.getTLInfos().stream())
+					.flatMap(tlInfo -> tlInfo.getParsingCacheInfo().getTrustServiceProviders().stream())
+					.flatMap(trustServiceProvider -> trustServiceProvider.getServices().stream())
+					.flatMap(service -> service.getCertificates().stream()).distinct().count());
+		} catch (Exception e) {
+			model.addAttribute("keystoreCertificates", 0);
+		}
 		model.addAttribute("currentOjUrl", dssService.getCurrentOjUrl());
 		model.addAttribute("actualOjUrl", dssService.getActualOjUrl());
 		return "admin/dss/tl-summary";
