@@ -53,6 +53,7 @@ export class SignPosition extends EventFactory {
             $("#addSignButton").removeAttr("disabled");
             $(window).unbind("beforeunload");
             this.enableForwardButton();
+            this.addSignButton.focus();
         }
     }
 

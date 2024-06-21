@@ -95,18 +95,20 @@
 			<div class="border ms-1 me-2"></div>
 			</th:block>
 			<div id="sign-tools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="d-none me-1 mb-1">
-				<a th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp
+				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp
 				||
 				signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign
 				||
 				signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign
 				}"
 						id="addSignButton"
+						role="button"
 						class="btn btn-light btn-outline-primary pulse-primary">
 					<i class="fa-solid fa-file-signature"></i> <span class="d-inline">Insérer une signature</span>
-				</a>
+				</button>
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
 						id="addSignButton"
+						role="button"
 						class="btn btn-light btn-outline-primary pulse-primary">
 					<i class="fa-solid fa-file-signature"></i> <span class="d-inline">Insérer un visa</span>
 				</button>

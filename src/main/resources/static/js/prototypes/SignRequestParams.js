@@ -549,6 +549,11 @@ export class SignRequestParams extends EventFactory {
                 } else {
                     self.dropped = false;
                 }
+                let signLaunchButton = $("#signLaunchButton");
+                if(signLaunchButton.length) {
+                    signLaunchButton.focus();
+                    signLaunchButton.addClass("pulse-success");
+                }
             }
         });
     }
@@ -631,11 +636,18 @@ export class SignRequestParams extends EventFactory {
         if(this.textareaExtra != null) {
             this.textareaExtra.addClass("sign-textarea-lock");
         }
+        $(document).unbind('keydown');
     }
 
     wantUnlock() {
         this.fireEvent("unlock", ["ok"]);
         this.unlock();
+    }
+
+    handleKeydown(event) {
+        if (event.key === "Delete" || event.keyCode === 46) {
+            this.deleteSign();
+        }
     }
 
     unlock() {
@@ -645,6 +657,7 @@ export class SignRequestParams extends EventFactory {
         if(this.textareaExtra != null) {
             this.textareaExtra.removeClass("sign-textarea-lock");
         }
+        $(document).on('keydown', e => this.handleKeydown(e));
     }
 
     prevSignImage() {

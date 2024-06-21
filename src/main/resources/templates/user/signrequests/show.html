@@ -57,19 +57,18 @@
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                        <a id="addSignButton2" role="button" class="btn-floating btn-lg bg-white waves-effect pulse-primary" title="Inserer une signature" style="border: 1px solid #0d6efd;">
-                            <i class="fa-solid fa-file-signature fa-2xl text-primary"></i>
-                        </a>
+                        <button id="addSignButton2" role="button" class="btn-floating btn-lg bg-white waves-effect pulse-primary" title="Inserer une signature" style="border: 1px solid #0d6efd;">
+                            <i class="fa-solid fa-file-signature fa-2xl text-primary" style="margin-top: -8px;"></i>
+                        </button>
                     </li>
                     <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                        <a id="signLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
-                            title="Enregister la signature et passer à l'étape suivante">
-                            <span class="fa-stack fa-1x">
-                                <i class="fas fa-save fa-stack-1x" style="margin-top: 27px; margin-left: 10px"></i>
-                                <i class="fas fa-signature fa-stack-2x" style="margin-top: 8px; margin-left: -5px"></i>
+                        <button id="signLaunchButton" role="button" class="btn btn-floating btn-lg bg-success waves-effect" title="Enregister la signature et passer à l'étape suivante">
+                            <span class="fa-stack fa-sm">
+                                <i class="fas fa-save fa-stack-1x" style="margin-top: 14px; margin-left: 10px"></i>
+                                <i class="fas fa-signature fa-stack-2x" style="margin-top: -8px; margin-left: -5px"></i>
                             </span>
 <!--                            <i class="fa-solid fa-file-signature fa-2xl"></i>-->
-                        </a>
+                        </button>
                     </li>
                     <li th:unless="${!signable || signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <a id="visaLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
@@ -81,9 +80,9 @@
                         </a>
                     </li>
                     <li th:if="${signRequest.createBy.eppn != userEppn && signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-                        <a id="refuseLaunchButton" role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Refuser"
+                        <button id="refuseLaunchButton" class="btn-floating btn-lg bg-danger waves-effect" title="Refuser"
                             th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"><i
-                                class="fa-solid fa-file-excel fa-2xl"></i></a>
+                                class="fa-solid fa-file-excel fa-2xl"></i></button>
                     </li>
                     <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}">
                         <a th:href="'/user/signrequests/restore/' + ${signRequest.id}" role="button" class="btn-floating btn-lg bg-primary waves-effect" title="Restaurer">
@@ -91,20 +90,20 @@
                         </a>
                     </li>
                     <li th:if="${signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && @preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn) && (!signRequest.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || signBook.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}">
-                        <a id="trashLaunchButton" role="button" class="btn-floating btn-lg bg-danger waves-effect"
+                        <button id="trashLaunchButton" class="btn btn-floating btn-lg bg-danger waves-effect"
                             th:title="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
                             data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
-                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-dumpster-fire fa-2xl"></i>
-                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-trash-alt fa-2xl"></i>
-                        </a>
+                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-dumpster-fire fa-xl" style="margin-top: -8px;"></i>
+                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-trash-alt fa-xl" style="margin-top: -8px;"></i>
+                        </button>
                     </li>
                     <li th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && @preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn) && (!signRequest.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || signBook.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}">
-                        <a id="trashLaunchButton2" role="button" class="btn-floating btn-lg bg-danger waves-effect"
-                           title="Supprimer définitivement de la corbeille"
-                           data-bs-toggle="modal" th:data-bs-target="'#modal-warning-2-' + ${signRequest.id}">
+                        <button id="trashLaunchButton2" class="btn btn-floating btn-lg bg-danger waves-effect"
+                            title="Supprimer définitivement de la corbeille"
+                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-2-' + ${signRequest.id}">
                             <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-dumpster-fire fa-2xl"></i>
                             <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-trash-alt fa-2xl"></i>
-                        </a>
+                        </button>
                     </li>
                     <li th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a class="btn-lg btn-floating bg-primary waves-effect"
