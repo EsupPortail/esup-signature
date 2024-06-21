@@ -49,23 +49,17 @@ Pour l'éviter :
 mvn clean package -DskipTests
 ```
 
-# Tests
+# Tests Selenium
 
-## Selenium
+Prérequis suplémentaires :
 
-Prérequis :
  * chromium
  * python3-selenium
  
 ```
-mvn package -DskipTests
-mvn failsafe:integration-test
+mvn verify -Dspring.config.location=src/test/resources/application-test.yml -DskipDockerCompose=false -DskipSurefire=true
 ```
-## Tests d'intégration seuls
 
-```
-mvn surefire:test
-```
 
 # Démarrage
 
