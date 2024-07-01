@@ -101,8 +101,8 @@
                         <button id="trashLaunchButton2" class="btn btn-floating btn-lg bg-danger waves-effect"
                             title="Supprimer définitivement de la corbeille"
                             data-bs-toggle="modal" th:data-bs-target="'#modal-warning-2-' + ${signRequest.id}">
-                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-dumpster-fire fa-2xl"></i>
-                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-trash-alt fa-2xl"></i>
+                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-dumpster-fire fa-2xl" style="margin-top: -8px;"></i>
+                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-trash-alt fa-2xl" style="margin-top: -8px;"></i>
                         </button>
                     </li>
                     <li th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
