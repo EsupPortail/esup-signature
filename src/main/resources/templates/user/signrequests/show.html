@@ -84,25 +84,25 @@
                             th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"><i
                                 class="fa-solid fa-file-excel fa-2xl"></i></button>
                     </li>
-                    <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}">
+                    <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.deleted}">
                         <a th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button" class="btn-floating btn-lg bg-primary waves-effect" title="Restaurer">
                             <i class="fa-solid fa-trash-restore fa-2xl"></i>
                         </a>
                     </li>
-                    <li th:if="${signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && @preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn) && (!signRequest.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || signBook.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}">
+                    <li th:if="${@preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn) && (!signRequest.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || signBook.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}">
                         <button id="trashLaunchButton" class="btn btn-floating btn-lg bg-danger waves-effect"
-                            th:title="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
+                            th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
                             data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
-                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-dumpster-fire fa-xl" style="margin-top: -8px;"></i>
-                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-trash-alt fa-xl" style="margin-top: -8px;"></i>
+                            <i th:if="${signRequest.deleted}" class="fa-solid fa-dumpster-fire fa-xl" style="margin-top: -8px;"></i>
+                            <i th:if="${!signRequest.deleted}" class="fa-solid fa-trash-alt fa-xl" style="margin-top: -8px;"></i>
                         </button>
                     </li>
-                    <li th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && @preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn) && (!signRequest.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || signBook.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}">
+                    <li th:if="${signRequest.parentSignBook.deleted && @preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn) && (!signRequest.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || signBook.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}">
                         <button id="trashLaunchButton2" class="btn btn-floating btn-lg bg-danger waves-effect"
                             title="Supprimer définitivement de la corbeille"
                             data-bs-toggle="modal" th:data-bs-target="'#modal-warning-2-' + ${signRequest.id}">
-                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-dumpster-fire fa-2xl" style="margin-top: -8px;"></i>
-                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-trash-alt fa-2xl" style="margin-top: -8px;"></i>
+                            <i th:if="${signRequest.deleted}" class="fa-solid fa-dumpster-fire fa-2xl" style="margin-top: -8px;"></i>
+                            <i th:if="${!signRequest.deleted}" class="fa-solid fa-trash-alt fa-2xl" style="margin-top: -8px;"></i>
                         </button>
                     </li>
                     <li th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
@@ -135,7 +135,7 @@
 <!--                        </li>-->
                     </th:block>
                     <th:block id="openButtons" class="fixed-action-btns active"
-                        th:if="${viewRight && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}"
+                        th:if="${viewRight && (signRequest.deleted || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}"
                         onmouseover="$('#openButtons').toggleClass('active');"
                         onmouseout="$('#openButtons').toggleClass('active');">
                         <li>
@@ -159,10 +159,10 @@
                         <a id="nextSignBookButton" role="button" th:href="'/user/signbooks/' + ${nextSignBook.id}"class="btn-lg btn-floating bg-primary waves-effect" title="Demande suivante">
                             <i class="fa-solid fa-arrow-right fa-2xl"></i>
                         </a>
-                        <a th:if="${otp == null}" id="nextSignRequest" th:href="'/user/signrequests/' + ${nextSignRequest.id}" class="d-none"></a>
-                        <a th:unless="${otp == null}" id="nextSignRequest" th:href="'/otp/signrequests/' + ${nextSignRequest.id}" class="d-none"></a>
                     </li>
                 </ul>
+                <a th:if="${nextSignRequest != null && otp == null}" id="nextSignRequest" th:href="'/user/signrequests/' + ${nextSignRequest.id}" class="d-none"></a>
+                <a th:if="${nextSignRequest != null && otp != null}" id="nextSignRequest" th:href="'/otp/signrequests/' + ${nextSignRequest.id}" class="d-none"></a>
             </div>
             <div th:replace="~{user/signrequests/includes/tools :: tools}"></div>
             <div style="position: absolute;top: 200px;">
@@ -225,7 +225,7 @@
             <div th:if="${!signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" class="workspace alert alert-danger">
                 Un document de cette demande est corrompu. Merci de supprimer la demande et d'en émettre une nouvelle à l'aide d'un fichier valide.
             </div>
-            <div th:if="${toSignDocument == null && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="alert alert-danger">
+            <div th:if="${toSignDocument == null && signRequest.deleted}" class="alert alert-danger">
                 <h4>La demande de signature a été supprimée</h4>
                 <p th:if="${signRequest.exportedDocumentURI != null}">
                     Vous trouverez une copie du document signé ici : <a th:href="${signRequest.exportedDocumentURI}" th:text="${signRequest.exportedDocumentURI}"></a>
@@ -348,7 +348,7 @@
                         <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer</span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>
                     </button>
-                    <button id="checkValidateSignButtonNext" th:if="${nextSignBook != null}"
+                    <button id="checkValidateSignButtonNext" th:if="${nextSignRequest != null}"
                             class="btn btn-success" title="Signer/viser et aller à la suivante" th:value="${signRequest.id}" autofocus>
                         <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer et aller à la suivante </span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser et aller à la suivante </span>
@@ -643,8 +643,8 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && signBook.signRequests.size() > 1}" class="alert alert-danger">Confirmez-vous la suppression définitive de ce document ? (les autres documents de la demande sont conservés)</div>
-                    <div th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && signBook.signRequests.size() == 1}" class="alert alert-danger">
+                    <div th:if="${!signRequest.deleted && signBook.signRequests.size() > 1}" class="alert alert-danger">Confirmez-vous la suppression définitive de ce document ? (les autres documents de la demande sont conservés)</div>
+                    <div th:if="${!signRequest.deleted && signBook.signRequests.size() == 1}" class="alert alert-danger">
                         <h4>Confirmez-vous la mise à la corbeille de cette demande ?</h4>
                         <div class="form-check mt-4 mb-2">
                             <input class="form-check-input" type="checkbox" value="true" id="definitive" name="definitive" onclick="alert('Attention cette action est irreversible !')">
@@ -653,7 +653,7 @@
                             </label>
                         </div>
                     </div>
-                    <div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
+                    <div th:if="${signRequest.deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
@@ -704,7 +704,7 @@
                                 class="btn btn-danger me-1" title="Refuser" autofocus>
                             <span>Refuser</span>
                         </button>
-                        <button type="submit" id="refuseNext" th:if="${nextSignBook != null && otp == null}" name="redirect" th:value="${nextSignRequest.id}"
+                        <button type="submit" id="refuseNext" th:if="${nextSignRequest != null && otp == null}" name="redirect" th:value="${nextSignRequest.id}"
                                 class="btn btn-danger" title="Refuser et aller à la suivante" autofocus>
                             <span>Refuser et aller à la suivante </span>
                             <i class="fa-solid fa-arrow-alt-circle-right"></i>

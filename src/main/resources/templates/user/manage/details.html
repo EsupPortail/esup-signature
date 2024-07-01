@@ -156,12 +156,12 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="btn btn-transparent text-dark text-left col-12" th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button" title="Restaurer">
+                                                    <a th:if="${signBook.deleted}" class="btn btn-transparent text-dark text-left col-12" th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button" title="Restaurer">
                                                         <i class="fa-solid fa-trash-restore pr-2"></i> Restaurer
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a th:if="${signBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
+                                                    <a th:if="${!signBook.deleted}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
                                                         <i class="fa-solid fa-trash-alt pr-2"></i> Supprimer
                                                     </a>
                                                 </li>

@@ -239,6 +239,8 @@ public class SignBookService {
             signBooks = signBookRepository.findByHidedById(user, pageable);
         } else if(statusFilter.equals("empty")) {
             signBooks = signBookRepository.findEmpty(user, pageable);
+        } else if(statusFilter.equals("deleted")) {
+            signBooks = signBookRepository.findByCreateByIdDeleted(user, pageable);
         } else {
             signBooks = signBookRepository.findByCreateByIdAndStatusAndSignRequestsNotNull(user, SignRequestStatus.valueOf(statusFilter), pageable);
         }
@@ -247,7 +249,7 @@ public class SignBookService {
             signBooks = new PageImpl<>(sharedSignBooks, pageable, sharedSignBooks.size());
         }
         for (SignBook signBook : signBooks.getContent()) {
-            if(signBook.getSignRequests().size() > 0) {
+            if(!signBook.getSignRequests().isEmpty()) {
                 signBook.setDeleteableByCurrentUser(signRequestService.isDeletetable(signBook.getSignRequests().get(0), userEppn) && (signBook.getCreateBy().getEppn().equals(userEppn)));
             }
         }
@@ -555,7 +557,7 @@ public class SignBookService {
     public Boolean delete(Long signBookId, String userEppn) {
         SignBook signBook = getById(signBookId);
         if(signBook == null) return false;
-        if(signBook.getStatus().equals(SignRequestStatus.deleted)) {
+        if(signBook.getDeleted()) {
             deleteDefinitive(signBookId, userEppn);
             return true;
         }
@@ -563,7 +565,7 @@ public class SignBookService {
         for(Long signRequestId : signRequestsIds) {
             signRequestService.delete(signRequestId, userEppn);
         }
-        signBook.setStatus(SignRequestStatus.deleted);
+        signBook.setDeleted(true);
         signBook.setUpdateDate(new Date());
         signBook.setUpdateBy(userEppn);
         logger.info("delete signbook : " + signBookId);
@@ -574,13 +576,10 @@ public class SignBookService {
     public void restore(Long signBookId, String userEppn) {
         SignBook signBook = getById(signBookId);
         for(SignRequest signRequest : signBook.getSignRequests()) {
-            if (signRequest.getStatus().equals(SignRequestStatus.deleted)) {
-                List<Log> logs = logService.getBySignRequest(signRequest.getId());
-                logs = logs.stream().filter(log -> !log.getFinalStatus().equals("deleted")).sorted(Comparator.comparing(Log::getLogDate).reversed()).toList();
-                SignRequestStatus restoreStatus = SignRequestStatus.valueOf(logs.get(0).getFinalStatus());
-                signRequest.setStatus(restoreStatus);
-                signRequest.getParentSignBook().setStatus(restoreStatus);
-                logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), restoreStatus, "Restauration par l'utilisateur", null, "SUCCESS", null, null, null, null, userEppn, userEppn);
+            if (signRequest.getDeleted()) {
+                signRequest.setDeleted(false);
+                signRequest.getParentSignBook().setDeleted(false);
+                logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), signRequest.getStatus(), "Restauration par l'utilisateur", null, "SUCCESS", null, null, null, null, userEppn, userEppn);
             }
         }
     }
@@ -1564,6 +1563,7 @@ public class SignBookService {
         SignRequest signRequest = signRequestService.getById(id);
         boolean signable = false;
         if (signRequest.getStatus().equals(SignRequestStatus.pending)
+                && !signRequest.getDeleted()
                 && checkUserSignRights(signRequest, userEppn, authUserEppn)
                 && !signRequest.getOriginalDocuments().isEmpty()
                 && needToSign(signRequest, userEppn)) {
@@ -1998,7 +1998,7 @@ public class SignBookService {
         if(otp != null) {
             SignBook signBook = otp.getSignBook();
             if (signBook != null) {
-                SignRequest signRequest = signBook.getSignRequests().stream().filter(s -> !s.getStatus().equals(SignRequestStatus.cleaned) || !s.getStatus().equals(SignRequestStatus.deleted)).findFirst().orElse(null);
+                SignRequest signRequest = signBook.getSignRequests().stream().filter(s -> !s.getStatus().equals(SignRequestStatus.cleaned) || !s.getDeleted()).findFirst().orElse(null);
                 if (signRequest != null) {
                     List<Recipient> recipients = signRequest.getRecipientHasSigned().keySet().stream().filter(r -> r.getUser().getUserType().equals(UserType.external)).toList();
                     for (Recipient recipient : recipients) {

@@ -83,7 +83,7 @@
         <td class="clickable-td d-none d-xxxl-table-cell">
             <span th:if="${signBook.endDate != null}" th:text="${#dates.format(signBook.endDate, 'dd/MM/yyyy HH:mm')}"></span>
             <br>
-            <span th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" th:text="'Supprimé le : ' + ${#dates.format(signBook.updateDate, 'dd/MM/yyyy HH:mm')}"></span>
+            <span th:if="${signBook.deleted}" th:text="'Supprimé le : ' + ${#dates.format(signBook.updateDate, 'dd/MM/yyyy HH:mm')}"></span>
         </td>
         <td class="clickable-td d-none d-xxl-table-cell">
             <div th:replace="~{user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})}"></div>
@@ -139,13 +139,13 @@
                         </a>
                     </li>
                     <li>
-                        <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && signBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button" title="Restaurer">
+                        <a th:if="${signBook.createBy.eppn == userEppn && signBook.deleted}" class="btn btn-transparent text-dark text-left col-12" th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button" title="Restaurer">
                             <i class="fa-solid fa-trash-restore pr-2"></i> Restaurer
                         </a>
                     </li>
                     <li th:if="${signBook.deleteableByCurrentUser}">
                         <a th:if="${signBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
-                            <i class="fa-solid fa-trash-alt text-danger pr-2"></i> <span th:text="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
+                            <i class="fa-solid fa-trash-alt text-danger pr-2"></i> <span th:text="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
                         </a>
                     </li>
                 </ul>
@@ -226,7 +226,7 @@
 <!--                        </a>-->
                     <li>
                         <a th:if="${signBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
-                            <i class="fa-solid fa-trash-alt pr-2"></i> <span th:text="${signBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
+                            <i class="fa-solid fa-trash-alt pr-2"></i> <span th:text="${!signBook.deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
                         </a>
                     </li>
                 </ul>

@@ -190,6 +190,7 @@ public class SignRequestService {
 		User user = userService.getByEppn(userEppn);
 		SignBook signBook = signRequest.getParentSignBook();
 		if ((signRequest.getStatus().equals(SignRequestStatus.pending)
+				&& !signRequest.getDeleted()
 				&& (isUserInRecipients(signRequest, userEppn)
 				|| signRequest.getCreateBy().getEppn().equals(userEppn)
 				|| signBook.getViewers().contains(user)))
@@ -617,7 +618,7 @@ public class SignRequestService {
 		if(!isDeletetable(signRequest, userEppn)) {
 			throw new EsupSignatureRuntimeException("Interdiction de supprimer les demandes de ce circuit");
 		}
-		if(signRequest.getStatus().equals(SignRequestStatus.deleted) || signRequest.getStatus().equals(SignRequestStatus.draft) || (signRequest.getParentSignBook().getSignRequests().size() > 1 && signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending))) {
+		if(signRequest.getDeleted() || signRequest.getStatus().equals(SignRequestStatus.draft) || (signRequest.getParentSignBook().getSignRequests().size() > 1 && signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending))) {
 			return deleteDefinitive(signRequestId, false, userEppn);
 		} else {
 			logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Mise à la corbeille du document par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
@@ -629,13 +630,13 @@ public class SignRequestService {
 			}
 			otpService.deleteOtpBySignRequestId(signRequestId);
 			nexuService.delete(signRequestId);
-			if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.deleted))) {
-				signRequest.getParentSignBook().setStatus(SignRequestStatus.deleted);
+			if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(SignRequest::getDeleted)) {
+				signRequest.getParentSignBook().setDeleted(true);
 				signRequest.getParentSignBook().setUpdateDate(new Date());
 				signRequest.getParentSignBook().setUpdateBy(userEppn);
 				logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Mise à la corbeille de la demande par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			}
-			signRequest.setStatus(SignRequestStatus.deleted);
+			signRequest.setDeleted(true);
 			return signRequest.getParentSignBook().getId();
 		}
 	}
@@ -644,7 +645,7 @@ public class SignRequestService {
 	public Long deleteDefinitive(Long signRequestId, boolean force, String userEppn) {
 		logger.info("start definitive delete of signrequest " + signRequestId);
 		SignRequest signRequest = getById(signRequestId);
-		if(!force && !signRequest.getStatus().equals(SignRequestStatus.deleted) && !signRequest.getRecipientHasSigned().values().stream().allMatch(a -> a.getActionType().equals(ActionType.none))) {
+		if(!force && !signRequest.getDeleted() && !signRequest.getRecipientHasSigned().values().stream().allMatch(a -> a.getActionType().equals(ActionType.none))) {
 			return -1L;
 		}
 		nexuService.delete(signRequestId);

@@ -27,17 +27,17 @@
         <div id="content" class="content">
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
-                    <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}">
+                    <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.deleted}">
                         <a th:href="'/admin/signbooks/restore/' + ${signBook.id}" role="button" class="btn-floating btn-lg bg-primary waves-effect" title="Restaurer">
                             <i class="fa-solid fa-trash-restore fa-2xl"></i>
                         </a>
                     </li>
                     <li th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}">
                         <a id="trashLaunchButton" role="button" class="btn-floating btn-lg bg-danger waves-effect"
-                           th:title="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
+                           th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
-                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-dumpster-fire fa-2xl"></i>
-                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-solid fa-trash-alt fa-2xl"></i>
+                            <i th:if="${signRequest.deleted}" class="fa-solid fa-dumpster-fire fa-2xl"></i>
+                            <i th:if="${!signRequest.deleted}" class="fa-solid fa-trash-alt fa-2xl"></i>
                         </a>
                     </li>
                 </ul>
@@ -132,8 +132,8 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
-                    <div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
+                    <div th:unless="${signRequest.deleted}" class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
+                    <div th:if="${signRequest.deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
