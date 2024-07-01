@@ -670,7 +670,13 @@ public class SignRequestService {
 			signBookRepository.delete(signRequest.getParentSignBook());
 		}
 		if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.signed) || s.getStatus().equals(SignRequestStatus.completed) || s.getStatus().equals(SignRequestStatus.refused))) {
-			signRequest.getParentSignBook().setStatus(SignRequestStatus.completed);
+			for(SignRequest signRequest1 : signRequest.getParentSignBook().getSignRequests()) {
+				if(!signRequest1.equals(signRequest)) {
+					if(nextWorkFlowStep(signRequest1.getParentSignBook())) {
+						pendingSignRequest(signRequest1, userEppn);
+					}
+				}
+			}
 		}
 		if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.refused))) {
 			signRequest.getParentSignBook().setStatus(SignRequestStatus.refused);
