@@ -13,12 +13,15 @@
                         <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" th:each="liveWorkflowStep, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
                             <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-dark bg-white rounded p-1" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} ? 'div-disable'">
                                 <th:block th:if="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
-                                        <span title="Étape à venir" class="bs-stepper-circle">
-                                            <i th:if="${!liveWorkflowStep.getAutoSign()}" class="fa-solid fa-clock"></i>
-                                            <i th:if="${liveWorkflowStep.getAutoSign()}" class="fa-solid fa-robot"></i>
-                                        </span>
+                                    <span title="Étape à venir" class="bs-stepper-circle">
+                                        <i th:if="${!liveWorkflowStep.getAutoSign()}" class="fa-solid fa-clock"></i>
+                                        <i th:if="${liveWorkflowStep.getAutoSign()}" class="fa-solid fa-robot"></i>
+                                    </span>
                                 </th:block>
                                 <th:block th:if="${iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
+                                    <span title="Étape refusée" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="bs-stepper-circle bg-danger">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </span>
                                     <span title="Étape en cours" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="bs-stepper-circle bg-warning">
                                         <!--<i class="fa-solid fa-spinner fa-pulse"></i>-->
                                         <i class="fa-solid fa-hourglass-half"></i>
@@ -26,7 +29,7 @@
                                     <span title="Étape refusée" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="bs-stepper-circle bg-danger">
                                         <i class="fa-solid fa-times"></i>
                                     </span>
-                                    <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}" class="bs-stepper-circle bg-success">
+                                    <span th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="bs-stepper-circle bg-success">
                                         <i title="Étape terminée" th:if="${!liveWorkflowStep.getAutoSign()}" class="fa-solid fa-check"></i>
                                         <i title="Étape automatique" th:if="${liveWorkflowStep.getAutoSign()}" class="fa-solid fa-robot"></i>
                                     </span>

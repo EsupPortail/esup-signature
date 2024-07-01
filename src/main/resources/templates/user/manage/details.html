@@ -156,7 +156,7 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="btn btn-transparent text-dark text-left col-12" th:href="'/user/signrequests/restore/' + ${signBook.signRequests.get(0)}" role="button" title="Restaurer">
+                                                    <a th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="btn btn-transparent text-dark text-left col-12" th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button" title="Restaurer">
                                                         <i class="fa-solid fa-trash-restore pr-2"></i> Restaurer
                                                     </a>
                                                 </li>

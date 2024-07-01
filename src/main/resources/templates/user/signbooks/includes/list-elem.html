@@ -139,7 +139,7 @@
                         </a>
                     </li>
                     <li>
-                        <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && signBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'/user/signrequests/restore/' + ${signRequest.id}" role="button" title="Restaurer">
+                        <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && signBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button" title="Restaurer">
                             <i class="fa-solid fa-trash-restore pr-2"></i> Restaurer
                         </a>
                     </li>

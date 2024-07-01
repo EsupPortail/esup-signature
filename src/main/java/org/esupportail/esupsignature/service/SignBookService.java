@@ -571,6 +571,21 @@ public class SignBookService {
     }
 
     @Transactional
+    public void restore(Long signBookId, String userEppn) {
+        SignBook signBook = getById(signBookId);
+        for(SignRequest signRequest : signBook.getSignRequests()) {
+            if (signRequest.getStatus().equals(SignRequestStatus.deleted)) {
+                List<Log> logs = logService.getBySignRequest(signRequest.getId());
+                logs = logs.stream().filter(log -> !log.getFinalStatus().equals("deleted")).sorted(Comparator.comparing(Log::getLogDate).reversed()).toList();
+                SignRequestStatus restoreStatus = SignRequestStatus.valueOf(logs.get(0).getFinalStatus());
+                signRequest.setStatus(restoreStatus);
+                signRequest.getParentSignBook().setStatus(restoreStatus);
+                logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), restoreStatus, "Restauration par l'utilisateur", null, "SUCCESS", null, null, null, null, userEppn, userEppn);
+            }
+        }
+    }
+
+    @Transactional
     public boolean deleteDefinitive(Long signBookId, String userEppn) {
         User user = userService.getByEppn(userEppn);
         SignBook signBook = getById(signBookId);

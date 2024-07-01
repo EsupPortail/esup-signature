@@ -186,6 +186,14 @@ public class SignBookController {
         }
     }
 
+    @PreAuthorize("@preAuthorizeService.signBookOwner(#id, #authUserEppn)")
+    @GetMapping(value = "/restore/{id}", produces = "text/html")
+    public String restore(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        signBookService.restore(id, authUserEppn);
+        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Restauration effectuée"));
+        return "redirect:/user/signbooks/" + id;
+    }
+
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {

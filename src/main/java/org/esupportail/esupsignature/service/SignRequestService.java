@@ -611,19 +611,6 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void restore(Long signRequestId, String userEppn) {
-		SignRequest signRequest = getById(signRequestId);
-		if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
-			List<Log> logs = logService.getBySignRequest(signRequestId);
-			logs = logs.stream().filter(log -> !log.getFinalStatus().equals("deleted")).sorted(Comparator.comparing(Log::getLogDate).reversed()).toList();
-			SignRequestStatus restoreStatus = SignRequestStatus.valueOf(logs.get(0).getFinalStatus());
-			signRequest.setStatus(restoreStatus);
-			signRequest.getParentSignBook().setStatus(restoreStatus);
-			logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), restoreStatus, "Restauration par l'utilisateur", null, "SUCCESS", null, null, null, null, userEppn, userEppn);
-		}
-	}
-
-	@Transactional
 	public Long delete(Long signRequestId, String userEppn) {
 		logger.info("start delete of signrequest " + signRequestId);
 		SignRequest signRequest = getById(signRequestId);

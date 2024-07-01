@@ -28,7 +28,7 @@
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}">
-                        <a th:href="'/admin/signrequests/restore/' + ${signRequest.id}" role="button" class="btn-floating btn-lg bg-primary waves-effect" title="Restaurer">
+                        <a th:href="'/admin/signbooks/restore/' + ${signBook.id}" role="button" class="btn-floating btn-lg bg-primary waves-effect" title="Restaurer">
                             <i class="fa-solid fa-trash-restore fa-2xl"></i>
                         </a>
                     </li>
