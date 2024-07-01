@@ -619,7 +619,7 @@ public class SignRequestService {
 			throw new EsupSignatureRuntimeException("Interdiction de supprimer les demandes de ce circuit");
 		}
 		if(signRequest.getDeleted() || signRequest.getStatus().equals(SignRequestStatus.draft) || (signRequest.getParentSignBook().getSignRequests().size() > 1 && signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending))) {
-			return deleteDefinitive(signRequestId, false, userEppn);
+			return deleteDefinitive(signRequestId, true, userEppn);
 		} else {
 			logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Mise à la corbeille du document par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
