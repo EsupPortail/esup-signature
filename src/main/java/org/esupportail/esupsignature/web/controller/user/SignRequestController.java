@@ -222,10 +222,10 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestDelete(#id, #authUserEppn)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
-    public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "definitive", required = false) Boolean definitive, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+    public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "definitive", required = false) Boolean definitive, RedirectAttributes redirectAttributes) {
         Long result;
         if(definitive != null && definitive) {
-            result = signRequestService.deleteDefinitive(id, true, authUserEppn);
+            result = signRequestService.deleteDefinitive(id, authUserEppn);
         } else {
             result = signRequestService.delete(id, authUserEppn);
         }
