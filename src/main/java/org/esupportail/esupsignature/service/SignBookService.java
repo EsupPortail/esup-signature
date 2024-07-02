@@ -597,7 +597,7 @@ public class SignBookService {
             }
             List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).toList();
             for (Long signRequestId : signRequestsIds) {
-                signRequestService.deleteDefinitive(signRequestId, true, userEppn);
+                signRequestService.deleteDefinitive(signRequestId, userEppn);
             }
             dataService.deleteBySignBook(signBook);
             signBookRepository.delete(signBook);
