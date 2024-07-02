@@ -156,7 +156,7 @@ public class SignRequestController {
         if (reports != null) {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
         }
-        if(!signRequest.getStatus().equals(SignRequestStatus.draft) && !signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getStatus().equals(SignRequestStatus.refused) && !signRequest.getStatus().equals(SignRequestStatus.deleted)) {
+        if(!signRequest.getStatus().equals(SignRequestStatus.draft) && !signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getStatus().equals(SignRequestStatus.refused) && !signRequest.getDeleted()) {
             if (reports != null) {
                 model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
             }
@@ -220,14 +220,6 @@ public class SignRequestController {
         }
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
-    @GetMapping(value = "/restore/{id}", produces = "text/html")
-    public String restore(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-        signRequestService.restore(id, authUserEppn);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Restauration effectuée"));
-        return "redirect:/user/signrequests/" + id;
-    }
-
     @PreAuthorize("@preAuthorizeService.signRequestDelete(#id, #authUserEppn)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "definitive", required = false) Boolean definitive, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
@@ -248,34 +240,6 @@ public class SignRequestController {
         }
         return "redirect:/user/signbooks";
     }
-
-//    @PreAuthorize("@preAuthorizeService.signRequestDelete(#id, #authUserEppn)")
-//    @DeleteMapping(value = "/force-delete/{id}", produces = "text/html")
-//    public String forceDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-//        SignRequest signRequest = signRequestService.getById(id);
-//        String referer = httpServletRequest.getHeader("referer");
-//        if(signRequest.getParentSignBook().getSignRequests().size() > 1) {
-//            try {
-//                signRequestService.deleteDefinitive(id);
-//                redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
-//            } catch (EsupSignatureRuntimeException e) {
-//                redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
-//            }
-//            if(referer.contains("signrequests")) {
-//                return "redirect:/user/signbooks";
-//            } else {
-//                return "redirect:" + referer;
-//            }
-//        } else {
-//            signBookService.deleteDefinitive(signRequest.getParentSignBook().getId(), authUserEppn);
-//            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
-//            if(referer.contains("signrequests")) {
-//                return "redirect:/user";
-//            } else {
-//                return "redirect:" + referer;
-//            }
-//        }
-//    }
 
     @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
     @PostMapping(value = "/add-attachment/{id}")

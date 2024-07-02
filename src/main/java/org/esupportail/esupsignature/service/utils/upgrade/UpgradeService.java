@@ -122,7 +122,7 @@ public class UpgradeService {
                     || signBook.getStatus().equals(SignRequestStatus.refused)
                     || signBook.getStatus().equals(SignRequestStatus.signed)
                     || signBook.getStatus().equals(SignRequestStatus.archived)
-                    || signBook.getStatus().equals(SignRequestStatus.deleted))) {
+                    || signBook.getDeleted())) {
                 List<Action> actions = signBook.getSignRequests().stream().map(SignRequest::getRecipientHasSigned).map(Map::values).flatMap(Collection::stream).filter(action -> action.getDate() != null).sorted(Comparator.comparing(Action::getDate).reversed()).collect(Collectors.toList());
                 if(!actions.isEmpty()) {
                     signBook.setEndDate(actions.get(0).getDate());
