@@ -50,7 +50,7 @@ public class LiveWorkflowStepService {
             if(signService.isSigned(signBook, null)) {
                 minLevel = 3;
             }
-            if(liveWorkflowStep.getSignType().getValue() < minLevel) {
+            if(liveWorkflowStep.getSignType() == null || liveWorkflowStep.getSignType().getValue() < minLevel) {
                 liveWorkflowStep.setSignType(signTypeService.getLessSignType(minLevel));
             }
         } else {

@@ -647,9 +647,12 @@ public class SignRequestService {
 	public Long deleteDefinitive(Long signRequestId, String userEppn) {
 		logger.info("start definitive delete of signrequest " + signRequestId);
 		SignRequest signRequest = getById(signRequestId);
-		if(!signRequest.getDeleted() && !signRequest.getRecipientHasSigned().values().stream().allMatch(a -> a.getActionType().equals(ActionType.none))) {
-			return -1L;
-		}
+		SignBook signBook = signRequest.getParentSignBook();
+//		boolean testAllNone = signRequest.getRecipientHasSigned().values().stream().allMatch(a -> a.getActionType().equals(ActionType.none));
+//		int step = signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(signBook.getLiveWorkflow().getCurrentStep());
+//		if(testAllNone && !signRequest.getDeleted() && step > 0) {
+//			return -1L;
+//		}
 		nexuService.delete(signRequestId);
 		logService.create(signRequestId, signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Suppression définitive", null, "SUCCESS", null, null, null,null, userEppn, userEppn);
 		signRequest.getRecipientHasSigned().clear();
@@ -663,20 +666,19 @@ public class SignRequestService {
 		for (Long commentId : commentsIds) {
 			commentService.deleteComment(commentId, signRequest);
 		}
-		signRequest.getParentSignBook().getSignRequests().remove(signRequest);
+		signBook.getSignRequests().remove(signRequest);
 		signRequestRepository.delete(signRequest);
 		long signBookId = 0;
-		if(!signRequest.getParentSignBook().getSignRequests().isEmpty()) {
-			signBookId = signRequest.getParentSignBook().getId();
+		if(!signBook.getSignRequests().isEmpty()) {
+			signBookId = signBook.getId();
 		} else {
-			signBookRepository.delete(signRequest.getParentSignBook());
+			signBookRepository.delete(signBook);
 		}
-		if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.signed) || s.getStatus().equals(SignRequestStatus.completed) || s.getStatus().equals(SignRequestStatus.refused))) {
+		if(!signBook.getDeleted() && signBook.getStatus().equals(SignRequestStatus.pending) && signBook.getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.signed) || s.getStatus().equals(SignRequestStatus.completed) || s.getStatus().equals(SignRequestStatus.refused))) {
+			nextWorkFlowStep(signBook);
 			for(SignRequest signRequest1 : signRequest.getParentSignBook().getSignRequests()) {
-				if(!signRequest1.equals(signRequest)) {
-					if(nextWorkFlowStep(signRequest1.getParentSignBook())) {
-						pendingSignRequest(signRequest1, userEppn);
-					}
+				if(!signRequest1.equals(signRequest) && !signRequest1.getStatus().equals(SignRequestStatus.refused)) {
+					pendingSignRequest(signRequest1, userEppn);
 				}
 			}
 		}

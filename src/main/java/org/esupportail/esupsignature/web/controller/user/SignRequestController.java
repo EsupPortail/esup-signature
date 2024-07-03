@@ -214,6 +214,10 @@ public class SignRequestController {
         signBookService.refuse(id, comment, userEppn, authUserEppn);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes a bien été refusée");
         if(redirect.equals("end")) {
+            User user = userService.getByEppn(userEppn);
+            if(!user.getReturnToHomeAfterSign()) {
+                return "redirect:/user/signrequests/" + id;
+            }
             return "redirect:/user";
         } else {
             return "redirect:/user/signrequests/" + redirect;
