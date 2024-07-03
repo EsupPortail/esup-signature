@@ -485,7 +485,9 @@ public class SignRequestService {
 		for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
 			signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
 			if (signService.isSigned(signRequest, null) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
-				signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signTypeService.getLessSignType(3));
+				if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().getValue() < 3) {
+					signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signTypeService.getLessSignType(3));
+				}
 			}
 		}
 		updateStatus(signRequest.getId(), SignRequestStatus.pending, "Envoyé pour signature", null, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
