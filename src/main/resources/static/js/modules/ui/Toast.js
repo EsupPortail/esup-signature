@@ -44,7 +44,7 @@ export default class Toast {
         console.info("display toast : " + message.type + " " + message.text);
         $(".toast-es").each(function(e) {
             $(this).toast('hide');
-        })
+        });
         let toast = $("#toast-" + message.type);
         let toastMessage = $("#message-" + message.type);
         if(message.type === "custom") {

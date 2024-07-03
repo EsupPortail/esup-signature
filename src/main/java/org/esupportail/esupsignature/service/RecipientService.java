@@ -67,7 +67,7 @@ public class RecipientService {
     }
 
     public void allSigned(SignRequest signRequest, Recipient recipient) {
-        recipient.setSigned(signRequest.getParentSignBook().getSignRequests().stream().noneMatch(signRequest1 -> signRequest1.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none)));
+        recipient.setSigned(signRequest.getParentSignBook().getSignRequests().stream().noneMatch(signRequest1 -> signRequest1.getRecipientHasSigned().get(recipient) == null || signRequest1.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none)));
     }
 
     public long recipientsContainsUser(List<Recipient> recipients, String userEppn) {

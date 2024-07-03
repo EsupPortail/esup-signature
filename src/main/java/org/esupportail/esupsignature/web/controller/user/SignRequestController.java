@@ -214,6 +214,10 @@ public class SignRequestController {
         signBookService.refuse(id, comment, userEppn, authUserEppn);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes a bien été refusée");
         if(redirect.equals("end")) {
+            User user = userService.getByEppn(userEppn);
+            if(!user.getReturnToHomeAfterSign()) {
+                return "redirect:/user/signrequests/" + id;
+            }
             return "redirect:/user";
         } else {
             return "redirect:/user/signrequests/" + redirect;
@@ -367,7 +371,6 @@ public class SignRequestController {
             model.addAttribute("message", new JsMessage("error", "Problème lors de l'ajout du post-it"));
         }
         return "redirect:/user/signrequests/" + id;
-
     }
 
     @PreAuthorize("@preAuthorizeService.signBookSendOtp(#id, #authUserEppn)")

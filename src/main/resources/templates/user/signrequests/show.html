@@ -80,9 +80,9 @@
                         </a>
                     </li>
                     <li th:if="${signRequest.createBy.eppn != userEppn && signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-                        <button id="refuseLaunchButton" class="btn-floating btn-lg bg-danger waves-effect" title="Refuser"
+                        <button id="refuseLaunchButton" class="btn-floating btn-lg bg-danger waves-effect border-0" title="Refuser"
                             th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"><i
-                                class="fa-solid fa-file-excel fa-2xl"></i></button>
+                                class="fa-solid fa-file-excel fa-2xl" style="margin-top: -8px;"></i></button>
                     </li>
                     <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.deleted}">
                         <a th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button" class="btn-floating btn-lg bg-primary waves-effect" title="Restaurer">

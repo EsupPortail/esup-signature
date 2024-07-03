@@ -28,7 +28,9 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
 
     List<SignRequest> findByCreateByEppnAndStatus(String createByEppn, SignRequestStatus status);
 
-    @Query("select count(distinct s.parentSignBook) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = :status and s.deleted != true and s.parentSignBook.createBy.eppn = :createByEppn")
+    @Query("""
+            select count(distinct s.parentSignBook) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = :status and (s.parentSignBook.deleted is null or s.parentSignBook.deleted != true) and s.parentSignBook.createBy.eppn = :createByEppn
+            """)
     Long countByCreateByEppnAndStatus(String createByEppn, SignRequestStatus status);
 
     Page<SignRequest> findById(Long id, Pageable pageable);
