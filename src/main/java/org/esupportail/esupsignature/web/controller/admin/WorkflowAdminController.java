@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.web.controller.admin;
 
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.dto.RecipientWsDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
@@ -141,7 +140,7 @@ public class WorkflowAdminController {
 
     @PostMapping(value = "/update")
     public String update(@ModelAttribute("authUserEppn") String authUserEppn,
-						 @Valid Workflow workflow,
+						 @ModelAttribute Workflow workflow,
 						 @RequestParam(value = "types", required = false) String[] types,
 						 @RequestParam(required = false) List<String> viewersEmails,
 						 @RequestParam(required = false) Set<String> managers, RedirectAttributes redirectAttributes) {

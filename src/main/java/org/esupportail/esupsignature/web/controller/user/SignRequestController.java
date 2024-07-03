@@ -367,7 +367,6 @@ public class SignRequestController {
             model.addAttribute("message", new JsMessage("error", "Problème lors de l'ajout du post-it"));
         }
         return "redirect:/user/signrequests/" + id;
-
     }
 
     @PreAuthorize("@preAuthorizeService.signBookSendOtp(#id, #authUserEppn)")

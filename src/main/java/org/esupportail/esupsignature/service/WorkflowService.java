@@ -636,7 +636,7 @@ public class WorkflowService {
                 sendMessage = false;
             }
         }
-        if(sendMessage && workflow.getMessage() != null && !workflow.getMessage().isEmpty()) {
+        if(sendMessage && StringUtils.hasText(workflow.getMessage())) {
             messsage = workflow.getMessage();
         }
         return messsage;

@@ -55,6 +55,7 @@ Prérequis suplémentaires :
 
  * chromium
  * python3-selenium
+ * docker-compose
  
 ```
 mvn verify -Dspring.config.location=src/test/resources/application-test.yml -DskipDockerCompose=false -DskipSurefire=true
