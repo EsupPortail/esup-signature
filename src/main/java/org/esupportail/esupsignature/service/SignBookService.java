@@ -1943,6 +1943,7 @@ public class SignBookService {
                 }
             }
         }
+        mailService.sendSignRequestAlert(Collections.singletonList(replacedByUser.getEmail()), signRequest.getParentSignBook());
         if(keepFollow) {
             addViewers(signRequest.getParentSignBook().getId(), Collections.singletonList(user.getEmail()));
         }
