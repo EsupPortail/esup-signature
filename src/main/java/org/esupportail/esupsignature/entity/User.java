@@ -346,6 +346,7 @@ public class User {
     }
 
     public Boolean getReturnToHomeAfterSign() {
+        if(returnToHomeAfterSign == null) return false;
         return returnToHomeAfterSign;
     }
 
