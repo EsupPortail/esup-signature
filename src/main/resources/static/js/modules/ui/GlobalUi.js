@@ -517,6 +517,13 @@ export class GlobalUi {
                     summernote.val('');
                 }
             });
+            $('workflow').on('submit',function(){
+                if (summernote.summernote('isEmpty')) {
+                    summernote.val('');
+                }else if(summernote.val()==='<p><br></p>'){
+                    summernote.val('');
+                }
+            });
         });
     }
 

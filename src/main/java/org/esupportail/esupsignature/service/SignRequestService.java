@@ -190,6 +190,7 @@ public class SignRequestService {
 		User user = userService.getByEppn(userEppn);
 		SignBook signBook = signRequest.getParentSignBook();
 		if ((signRequest.getStatus().equals(SignRequestStatus.pending)
+				&& !signRequest.getDeleted()
 				&& (isUserInRecipients(signRequest, userEppn)
 				|| signRequest.getCreateBy().getEppn().equals(userEppn)
 				|| signBook.getViewers().contains(user)))
@@ -484,7 +485,9 @@ public class SignRequestService {
 		for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
 			signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
 			if (signService.isSigned(signRequest, null) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
-				signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signTypeService.getLessSignType(3));
+				if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().getValue() < 3) {
+					signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signTypeService.getLessSignType(3));
+				}
 			}
 		}
 		updateStatus(signRequest.getId(), SignRequestStatus.pending, "Envoyé pour signature", null, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
@@ -611,27 +614,14 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void restore(Long signRequestId, String userEppn) {
-		SignRequest signRequest = getById(signRequestId);
-		if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
-			List<Log> logs = logService.getBySignRequest(signRequestId);
-			logs = logs.stream().filter(log -> !log.getFinalStatus().equals("deleted")).sorted(Comparator.comparing(Log::getLogDate).reversed()).toList();
-			SignRequestStatus restoreStatus = SignRequestStatus.valueOf(logs.get(0).getFinalStatus());
-			signRequest.setStatus(restoreStatus);
-			signRequest.getParentSignBook().setStatus(restoreStatus);
-			logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), restoreStatus, "Restauration par l'utilisateur", null, "SUCCESS", null, null, null, null, userEppn, userEppn);
-		}
-	}
-
-	@Transactional
 	public Long delete(Long signRequestId, String userEppn) {
 		logger.info("start delete of signrequest " + signRequestId);
 		SignRequest signRequest = getById(signRequestId);
 		if(!isDeletetable(signRequest, userEppn)) {
 			throw new EsupSignatureRuntimeException("Interdiction de supprimer les demandes de ce circuit");
 		}
-		if(signRequest.getStatus().equals(SignRequestStatus.deleted) || signRequest.getStatus().equals(SignRequestStatus.draft) || (signRequest.getParentSignBook().getSignRequests().size() > 1 && signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending))) {
-			return deleteDefinitive(signRequestId, false, userEppn);
+		if(signRequest.getDeleted() || signRequest.getStatus().equals(SignRequestStatus.draft) || (signRequest.getParentSignBook().getSignRequests().size() > 1 && signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending))) {
+			return deleteDefinitive(signRequestId, userEppn);
 		} else {
 			logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Mise à la corbeille du document par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
@@ -642,24 +632,27 @@ public class SignRequestService {
 			}
 			otpService.deleteOtpBySignRequestId(signRequestId);
 			nexuService.delete(signRequestId);
-			if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.deleted))) {
-				signRequest.getParentSignBook().setStatus(SignRequestStatus.deleted);
+			if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(SignRequest::getDeleted)) {
+				signRequest.getParentSignBook().setDeleted(true);
 				signRequest.getParentSignBook().setUpdateDate(new Date());
 				signRequest.getParentSignBook().setUpdateBy(userEppn);
 				logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Mise à la corbeille de la demande par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			}
-			signRequest.setStatus(SignRequestStatus.deleted);
+			signRequest.setDeleted(true);
 			return signRequest.getParentSignBook().getId();
 		}
 	}
 
 	@Transactional
-	public Long deleteDefinitive(Long signRequestId, boolean force, String userEppn) {
+	public Long deleteDefinitive(Long signRequestId, String userEppn) {
 		logger.info("start definitive delete of signrequest " + signRequestId);
 		SignRequest signRequest = getById(signRequestId);
-		if(!force && !signRequest.getStatus().equals(SignRequestStatus.deleted) && !signRequest.getRecipientHasSigned().values().stream().allMatch(a -> a.getActionType().equals(ActionType.none))) {
-			return -1L;
-		}
+		SignBook signBook = signRequest.getParentSignBook();
+//		boolean testAllNone = signRequest.getRecipientHasSigned().values().stream().allMatch(a -> a.getActionType().equals(ActionType.none));
+//		int step = signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(signBook.getLiveWorkflow().getCurrentStep());
+//		if(testAllNone && !signRequest.getDeleted() && step > 0) {
+//			return -1L;
+//		}
 		nexuService.delete(signRequestId);
 		logService.create(signRequestId, signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Suppression définitive", null, "SUCCESS", null, null, null,null, userEppn, userEppn);
 		signRequest.getRecipientHasSigned().clear();
@@ -673,16 +666,21 @@ public class SignRequestService {
 		for (Long commentId : commentsIds) {
 			commentService.deleteComment(commentId, signRequest);
 		}
-		signRequest.getParentSignBook().getSignRequests().remove(signRequest);
+		signBook.getSignRequests().remove(signRequest);
 		signRequestRepository.delete(signRequest);
 		long signBookId = 0;
-		if(!signRequest.getParentSignBook().getSignRequests().isEmpty()) {
-			signBookId = signRequest.getParentSignBook().getId();
+		if(!signBook.getSignRequests().isEmpty()) {
+			signBookId = signBook.getId();
 		} else {
-			signBookRepository.delete(signRequest.getParentSignBook());
+			signBookRepository.delete(signBook);
 		}
-		if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.signed) || s.getStatus().equals(SignRequestStatus.completed) || s.getStatus().equals(SignRequestStatus.refused))) {
-			signRequest.getParentSignBook().setStatus(SignRequestStatus.completed);
+		if(!signBook.getDeleted() && signBook.getStatus().equals(SignRequestStatus.pending) && signBook.getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.signed) || s.getStatus().equals(SignRequestStatus.completed) || s.getStatus().equals(SignRequestStatus.refused))) {
+			nextWorkFlowStep(signBook);
+			for(SignRequest signRequest1 : signRequest.getParentSignBook().getSignRequests()) {
+				if(!signRequest1.equals(signRequest) && !signRequest1.getStatus().equals(SignRequestStatus.refused)) {
+					pendingSignRequest(signRequest1, userEppn);
+				}
+			}
 		}
 		if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.refused))) {
 			signRequest.getParentSignBook().setStatus(SignRequestStatus.refused);

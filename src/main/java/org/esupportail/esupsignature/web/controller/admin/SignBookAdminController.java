@@ -183,4 +183,10 @@ public class SignBookAdminController {
 		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
 
+	@GetMapping(value = "/restore/{id}", produces = "text/html")
+	public String restore(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+		signBookService.restore(id, authUserEppn);
+		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Restauration effectuée"));
+		return "redirect:/admin/signbooks/" + id;
+	}
 }

@@ -47,7 +47,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             and (sb.createBy = :user or sb.status <> 'draft')
             and size(sb.signRequests) > 0
             and :user not member of sb.hidedBy
-            and sb.status <> 'deleted'
+            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             and (sb.createDate between :startDateFilter and :endDateFilter)
             """)
     Page<SignBook> findByRecipientAndCreateByEppnIndexed(User user, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
@@ -70,7 +70,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             and (sb.createBy = :user or sb.status <> 'draft')
             and size(sb.signRequests) > 0
             and :user not member of sb.hidedBy
-            and sb.status <> 'deleted'
+            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             and (sb.createDate between :startDateFilter and :endDateFilter)
             """)
     Page<SignBook> findByRecipientAndCreateByEppnIndexed(User recipientUser, User user, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
@@ -81,6 +81,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             where (:workflowFilter is null or sb.workflowName = :workflowFilter)
             and (:docTitleFilter is null or sb.subject = :docTitleFilter)
             and sb.status = 'pending' and size(sb.signRequests) > 0 and r.user = :user and r.signed = false
+            and (sb.deleted is null or sb.deleted != true)
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
             and (sb.createDate between :startDateFilter and :endDateFilter)
             and :user not member of sb.hidedBy
@@ -91,6 +92,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             select distinct count(sb) from SignBook sb
             left join sb.liveWorkflow.currentStep.recipients r
             where sb.status = 'pending' and size(sb.signRequests) > 0 and r.user = :user and r.signed = false
+            and (sb.deleted is null or sb.deleted != true)
             and :user not member of sb.hidedBy
             """)
     Long countToSign(User user);
@@ -108,7 +110,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             where key(rhs).user = :user and rhs.actionType = :actionType
             and (sb.workflowName = :workflowFilter or :workflowFilter is null)
             and (sb.subject = :docTitleFilter or :docTitleFilter is null)
-            and sb.status <> 'deleted'
+            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             and :user not member of sb.hidedBy
             and (sb.createBy = :creatorFilter or :creatorFilter is null)
             """)
@@ -123,10 +125,22 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             and :user not member of sb.hidedBy
             and size(sb.signRequests) > 0
             and sb.status = :status
+            and (sb.deleted is null or sb.deleted != true)
             """)
     Page<SignBook> findByCreateByIdAndStatusAndSignRequestsNotNull(User user, SignRequestStatus status, Pageable pageable);
 
+    @Query("""
+            select distinct sb from SignBook sb
+            where sb.createBy = :user
+            and :user not member of sb.hidedBy
+            and size(sb.signRequests) > 0
+            and sb.deleted = true
+            """)
+    Page<SignBook> findByCreateByIdDeleted(User user, Pageable pageable);
+
     List<SignBook> findByStatus(SignRequestStatus signRequestStatus);
+
+    List<SignBook> findByDeletedIsTrue();
 
     List<SignBook> findByStatusAndLiveWorkflowTargetsNotEmpty(SignRequestStatus signRequestStatus);
 
@@ -153,7 +167,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             where (team = :user)
             and :user not member of sb.hidedBy
             and size(sb.signRequests) > 0
-            and sb.status <> 'deleted'
+            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             """)
     List<String> findAllWorkflowNames(User user);
 
@@ -166,7 +180,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             where (team = :user)
             and :user not member of sb.hidedBy
             and size(sb.signRequests) > 0
-            and sb.status <> 'deleted'
+            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             """)
     List<String> findSubjects(User user);
 
@@ -178,7 +192,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             and (team = :user)
             and :user not member of sb.hidedBy
             and size(sb.signRequests) > 0
-            and sb.status <> 'deleted'
+            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             and (sb.createBy = :creatorFilter or :creatorFilter is null)
             """)
     List<User> findUserByRecipientAndCreateBy(User user, String workflowFilter, String docTitleFilter, User creatorFilter);
@@ -194,7 +208,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             left join r.user u
             where (team = :user)
             and :user not member of sb.hidedBy
-            and sb.status <> 'deleted'
+            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             """)
     List<User> findRecipientNames(User user);
 
