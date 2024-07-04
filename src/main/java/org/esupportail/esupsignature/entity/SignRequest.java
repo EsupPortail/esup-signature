@@ -39,6 +39,8 @@ public class SignRequest {
     @ManyToOne
     private User createBy;
 
+    private Boolean deleted;
+
     @Column(columnDefinition = "TEXT")
     private String exportedDocumentURI;
 
@@ -131,6 +133,17 @@ public class SignRequest {
         this.createBy = createBy;
     }
 
+    public Boolean getDeleted() {
+        if(deleted == null) {
+            return this.status.equals(SignRequestStatus.deleted);
+        }
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+
     public String getExportedDocumentURI() {
         return exportedDocumentURI;
     }
@@ -176,7 +189,11 @@ public class SignRequest {
     }
 
     public void setStatus(SignRequestStatus status) {
-        this.status = status;
+        if(status.equals(SignRequestStatus.deleted)) {
+            this.deleted = true;
+        } else {
+            this.status = status;
+        }
     }
 
     public SignBook getParentSignBook() {

@@ -150,11 +150,4 @@ public class SignRequestAdminController {
 		}
 	}
 
-	@GetMapping(value = "/restore/{id}", produces = "text/html")
-	public String restore(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		signRequestService.restore(id, authUserEppn);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Restauration effectuée"));
-		return "redirect:/admin/signrequests/" + id;
-	}
-
 }

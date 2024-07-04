@@ -81,7 +81,18 @@ public class IndexController {
 
 	@GetMapping
 	public String index(@ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) {
-		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpServletRequest.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+		String savedQueryString = null;
+		HttpSession httpSession = httpServletRequest.getSession(false);
+		if(httpSession != null) {
+			DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpSession.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+			if (defaultSavedRequest != null) {
+				if (StringUtils.hasText(defaultSavedRequest.getQueryString())) {
+					savedQueryString = defaultSavedRequest.getRequestURL() + "?" + defaultSavedRequest.getQueryString();
+				} else {
+					savedQueryString = defaultSavedRequest.getRequestURL();
+				}
+			}
+		}
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if(StringUtils.hasText(authUserEppn) && !authUserEppn.equals("system")) {
 			model.asMap().clear();
@@ -91,21 +102,17 @@ public class IndexController {
 				logger.trace("auth user : " + auth.getName());
 				model.addAttribute("securityServices", securityServices);
 				model.addAttribute("globalProperties", globalProperties);
-				if(defaultSavedRequest != null) {
-					if(defaultSavedRequest.getQueryString() != null) {
-						model.addAttribute("redirect", defaultSavedRequest.getRequestURL() + "?" + defaultSavedRequest.getQueryString());
-					} else {
-						model.addAttribute("redirect", defaultSavedRequest.getRequestURL());
-					}
-					if(!defaultSavedRequest.getRequestURL().contains("/casentry") && securityServices.size() == 1 && securityServices.get(0) instanceof CasSecurityServiceImpl) {
-						return "redirect:/login/casentry?redirect=" + defaultSavedRequest.getRequestURL();
+				if(StringUtils.hasText(savedQueryString)) {
+					model.addAttribute("redirect", savedQueryString);
+					if(!savedQueryString.contains("/casentry") && securityServices.size() == 1 && securityServices.get(0) instanceof CasSecurityServiceImpl) {
+						return "redirect:/login/casentry?redirect=" + savedQueryString;
 					}
 				}
 				return "signin";
 			} else {
 				logger.info("auth user : " + auth.getName());
-				if(defaultSavedRequest != null && !defaultSavedRequest.getRequestURI().equals("/login/casentry")) {
-					return "redirect:" + defaultSavedRequest.getServletPath();
+				if(StringUtils.hasText(savedQueryString) && !savedQueryString.equals("/login/casentry")) {
+					return "redirect:" + savedQueryString;
 				} else {
 					return "redirect:/user";
 				}

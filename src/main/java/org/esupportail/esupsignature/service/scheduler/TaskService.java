@@ -89,7 +89,7 @@ public class TaskService {
         }
         if(globalProperties.getTrashKeepDelay() > -1) {
             logger.info("start cleanning trashes");
-            List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.deleted);
+            List<SignBook> signBooks = signBookRepository.findByDeletedIsTrue();
             int i = 0;
             for (SignBook signBook : signBooks) {
                 Date date = signBook.getCreateDate();
