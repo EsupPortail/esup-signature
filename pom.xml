@@ -707,7 +707,7 @@
 		<dependency>
 			<groupId>de.codecentric</groupId>
 			<artifactId>spring-boot-admin-client</artifactId>
-			<version>3.2.3</version>
+			<version>3.3.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
