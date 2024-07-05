@@ -1,6 +1,8 @@
 package org.esupportail.esupsignature.service.utils.upgrade;
 
 import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.AppliVersionRepository;
@@ -23,6 +25,9 @@ public class UpgradeService {
 
     private static final Logger logger = LoggerFactory.getLogger(UpgradeService.class);
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Resource
     private SignBookRepository signBookRepository;
 
@@ -32,7 +37,7 @@ public class UpgradeService {
     @Resource
     private FileService fileService;
 
-    private final String[] updates = new String[] {"1.19", "1.22", "1.23"};
+    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10"};
 
     @Resource
     private FormService formService;
@@ -122,7 +127,7 @@ public class UpgradeService {
                     || signBook.getStatus().equals(SignRequestStatus.refused)
                     || signBook.getStatus().equals(SignRequestStatus.signed)
                     || signBook.getStatus().equals(SignRequestStatus.archived)
-                    || signBook.getStatus().equals(SignRequestStatus.deleted))) {
+                    || signBook.getDeleted())) {
                 List<Action> actions = signBook.getSignRequests().stream().map(SignRequest::getRecipientHasSigned).map(Map::values).flatMap(Collection::stream).filter(action -> action.getDate() != null).sorted(Comparator.comparing(Action::getDate).reversed()).collect(Collectors.toList());
                 if(!actions.isEmpty()) {
                     signBook.setEndDate(actions.get(0).getDate());
@@ -230,7 +235,14 @@ public class UpgradeService {
         } else {
             logger.info("#### Update subjets and workflowNames skipped ####");
         }
+    }
 
+    @SuppressWarnings("unused")
+    public void update_1_29_10() {
+        logger.info("#### Starting update deleted flag ####");
+        entityManager.createNativeQuery("update sign_request set deleted = true where status = 'deleted'").executeUpdate();
+        entityManager.createNativeQuery("update sign_book set deleted = true where status = 'deleted'").executeUpdate();
+        logger.info("#### Update deleted flag completed ####");
     }
 
 }

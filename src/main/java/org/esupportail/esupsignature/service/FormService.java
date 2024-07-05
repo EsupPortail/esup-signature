@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.annotation.Resource;
@@ -436,7 +437,7 @@ public class FormService {
 				sendMessage = false;
 			}
 		}
-		if(sendMessage && form.getMessage() != null && !form.getMessage().isEmpty()) {
+		if(sendMessage && StringUtils.hasText(form.getMessage())) {
 			messsage = form.getMessage();
 		}
 		return messsage;

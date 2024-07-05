@@ -214,7 +214,9 @@ public class PreAuthorizeService {
     public boolean workflowOwner(Long id, String userEppn) {
         if(userEppn != null) {
             Workflow workflow = workflowService.getById(id);
-            return userEppn.equals(workflow.getCreateBy().getEppn()) || workflow.getCreateBy().equals(userService.getSystemUser());
+            if(workflow != null) {
+                return userEppn.equals(workflow.getCreateBy().getEppn()) || workflow.getCreateBy().equals(userService.getSystemUser());
+            }
         }
         return false;
     }

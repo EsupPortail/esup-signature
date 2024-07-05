@@ -1,13 +1,18 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
-import eu.europa.esig.dss.spi.tsl.LOTLInfo;
-import eu.europa.esig.dss.spi.tsl.TLInfo;
-import eu.europa.esig.dss.spi.tsl.TLValidationJobSummary;
+import eu.europa.esig.dss.spi.tsl.*;
+import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
+import eu.europa.esig.dss.tsl.source.LOTLSource;
+import eu.europa.esig.dss.utils.Utils;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import org.esupportail.esupsignature.dss.config.DSSBeanConfig;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.dss.service.DSSService;
+import org.esupportail.esupsignature.dss.service.KeystoreService;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -18,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.Collections;
+import java.util.List;
 
 @Controller
 @RequestMapping(value = "/admin/dss" )
@@ -40,6 +46,17 @@ public class DSSController {
 
 	@Resource
 	private TLValidationJob tlValidationJob;
+
+	@Autowired
+	@Qualifier("european-lotl-source")
+	private LOTLSource lotlSource;
+
+	@Autowired
+	@Qualifier("european-trusted-list-certificate-source")
+	private TrustedListsCertificateSource trustedCertificateSource;
+
+	@Autowired
+	private KeystoreService keystoreService;
 
 	@GetMapping
 	public String tlInfoPage(Model model) {
@@ -93,5 +110,33 @@ public class DSSController {
 		}
 	}
 
+	@GetMapping(value = "/oj-certificates")
+	public String showCertificates(Model model, HttpServletRequest request) {
+		// From Config
+		model.addAttribute("keystoreCertificates", keystoreService.getCertificatesDTOFromKeyStore(lotlSource.getCertificateSource().getCertificates()));
 
+		OfficialJournalSchemeInformationURI ojUriInfo = (OfficialJournalSchemeInformationURI) lotlSource.getSigningCertificatesAnnouncementPredicate();
+		model.addAttribute("currentOjUrl", ojUriInfo.getUri());
+
+		// From Job
+		model.addAttribute("actualOjUrl", getActualOjUrl());
+
+		return "admin/dss/oj-certificates";
+	}
+
+	private String getActualOjUrl() {
+		TLValidationJobSummary summary = trustedCertificateSource.getSummary();
+		if (summary != null) {
+			List<LOTLInfo> lotlInfos = summary.getLOTLInfos();
+			for (LOTLInfo lotlInfo : lotlInfos) {
+				if (Utils.areStringsEqual(lotlSource.getUrl(), lotlInfo.getUrl())) {
+					ParsingInfoRecord parsingCacheInfo = lotlInfo.getParsingCacheInfo();
+					if (parsingCacheInfo != null) {
+						return parsingCacheInfo.getSigningCertificateAnnouncementUrl();
+					}
+				}
+			}
+		}
+		return null;
+	}
 }

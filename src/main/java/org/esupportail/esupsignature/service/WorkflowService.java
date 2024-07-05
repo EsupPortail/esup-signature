@@ -411,7 +411,7 @@ public class WorkflowService {
         List<SignBook> signBooks = signBookRepository.findByLiveWorkflowWorkflow(workflow);
         List<Form> forms = formRepository.findByWorkflowIdEquals(workflow.getId());
         if(forms.isEmpty()) {
-            if (signBooks.stream().allMatch(signBook -> signBook.getStatus() == SignRequestStatus.uploading || signBook.getStatus() == SignRequestStatus.draft || signBook.getStatus() == SignRequestStatus.deleted)) {
+            if (signBooks.stream().allMatch(signBook -> signBook.getStatus().equals(SignRequestStatus.uploading) || signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getDeleted())) {
                 List<LiveWorkflow> liveWorkflows = liveWorkflowService.getByWorkflow(workflow);
                 for (LiveWorkflow liveWorkflow : liveWorkflows) {
                     liveWorkflow.setWorkflow(null);
@@ -636,7 +636,7 @@ public class WorkflowService {
                 sendMessage = false;
             }
         }
-        if(sendMessage && workflow.getMessage() != null && !workflow.getMessage().isEmpty()) {
+        if(sendMessage && StringUtils.hasText(workflow.getMessage())) {
             messsage = workflow.getMessage();
         }
         return messsage;

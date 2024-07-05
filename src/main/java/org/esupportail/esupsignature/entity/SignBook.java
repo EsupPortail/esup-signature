@@ -47,6 +47,8 @@ public class SignBook {
     @ManyToOne
     private User createBy;
 
+    private Boolean deleted;
+
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date updateDate;
@@ -149,6 +151,17 @@ public class SignBook {
         this.createBy = createBy;
     }
 
+    public Boolean getDeleted() {
+        if(deleted == null) {
+            return this.status.equals(SignRequestStatus.deleted);
+        }
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+
     public Date getUpdateDate() {
         return updateDate;
     }
@@ -170,7 +183,11 @@ public class SignBook {
     }
 
     public void setStatus(SignRequestStatus status) {
-        this.status = status;
+        if(status.equals(SignRequestStatus.deleted)) {
+            this.deleted = true;
+        } else {
+            this.status = status;
+        }
     }
 
     public LiveWorkflow getLiveWorkflow() {
@@ -266,7 +283,7 @@ public class SignBook {
     }
 
     public boolean isEditable() {
-        return getSignRequests().stream().noneMatch(s -> !s.getStatus().equals(SignRequestStatus.pending) && !s.getStatus().equals(SignRequestStatus.deleted) && !s.getStatus().equals(SignRequestStatus.draft) && !s.getStatus().equals(SignRequestStatus.uploading));
+        return getSignRequests().stream().noneMatch(s -> !s.getStatus().equals(SignRequestStatus.pending) && !s.getDeleted() && !s.getStatus().equals(SignRequestStatus.draft) && !s.getStatus().equals(SignRequestStatus.uploading));
     }
 
 }
