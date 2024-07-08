@@ -61,7 +61,20 @@
                     </form>
                 </div>
             </div>
-
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-body">
+                    <form th:action="@{/admin/tasks/run-dss-refresh}" method="POST">
+                        <button class="btn btn-lg btn-primary btn-block" type="submit">
+                            <div th:if="${isEnableDssRefreshTask}" class="justify-content-center">
+                                Stopper la synchronisation DSS
+                                <div class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
+                                </div>
+                            </div>
+                            <span th:unless="${isEnableDssRefreshTask}">Lancer la synchronisation DSS</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </main>

@@ -101,16 +101,20 @@ public DSSService(DSSProperties dssProperties, TLValidationJob tlValidationJob, 
         return dssProperties.getOjUrl();
     }
 
-    public void getCertificats() throws IOException {
+    public void initializeOj() throws IOException {
         logger.info("Updating DSS OJ offline...");
         ojContentKeyStore.addAllCertificatesToKeyStore(myTrustedCertificateSource.getCertificates());
         tlValidationJob.offlineRefresh();
         logger.info("Updating DSS OJ offline done.");
         if(refreshIsNeeded()) {
-            logger.info("Updating DSS OJ online...");
-            tlValidationJob.onlineRefresh();
-            logger.info("Updating DSS OJ online done.");
+            refreshOj();
         }
+    }
+
+    public void refreshOj() {
+        logger.info("Updating DSS OJ online...");
+        tlValidationJob.onlineRefresh();
+        logger.info("Updating DSS OJ online done.");
     }
 
     public boolean refreshIsNeeded() throws IOException {
@@ -119,17 +123,15 @@ public DSSService(DSSProperties dssProperties, TLValidationJob tlValidationJob, 
         boolean checkTl = false;
         for (LOTLInfo lotlInfo : summary.getLOTLInfos()) {
             if(!lotlInfo.getValidationCacheInfo().isValid()
-                    || lotlInfo.getValidationCacheInfo().isRefreshNeeded()
-                    || lotlInfo.getParsingCacheInfo().isRefreshNeeded()
-                    || lotlInfo.getDownloadCacheInfo().isRefreshNeeded()) {
+                    || !lotlInfo.getParsingCacheInfo().isSynchronized()
+                    || !lotlInfo.getDownloadCacheInfo().isSynchronized()) {
                 checkTl = true;
             }
         }
         for (TLInfo tlInfo : summary.getOtherTLInfos()) {
             if(!tlInfo.getValidationCacheInfo().isValid()
-                    || tlInfo.getValidationCacheInfo().isRefreshNeeded()
-                    || tlInfo.getParsingCacheInfo().isRefreshNeeded()
-                    || tlInfo.getDownloadCacheInfo().isRefreshNeeded()) {
+                    || !tlInfo.getParsingCacheInfo().isSynchronized()
+                    || !tlInfo.getDownloadCacheInfo().isSynchronized()) {
                 checkTl = true;
             }
         }
@@ -140,7 +142,7 @@ public DSSService(DSSProperties dssProperties, TLValidationJob tlValidationJob, 
     @EventListener(ContextRefreshedEvent.class)
     public void onApplicationEvent(ContextRefreshedEvent event) {
         try {
-            getCertificats();
+            initializeOj();
         } catch (IOException e) {
             logger.error("Error updating certificates", e);
         }
