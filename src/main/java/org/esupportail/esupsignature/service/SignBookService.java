@@ -1260,13 +1260,14 @@ public class SignBookService {
         logger.info("starting workflow " + id + " by " + createByEppn);
         Workflow workflow = workflowService.getById(id);
         User user = userService.createUserWithEppn(createByEppn);
-        SignBook signBook = createSignBook(title, workflow, "", user.getEppn(), true, null);
+        SignBook signBook = createSignBook(title, workflow, "", user.getEppn(), false, null);
         signBook.getLiveWorkflow().setWorkflow(workflow);
         for(MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(multipartFile.getOriginalFilename(), signBook, createByEppn, createByEppn);
             signRequest.getSignRequestParams().addAll(signRequestParamses);
             signRequestService.addDocsToSignRequest(signRequest, scanSignatureFields, 0, new ArrayList<>(), multipartFile);
         }
+        signBook.setSubject(generateName(signBook.getId(), workflow, user, false));
         if (targetUrls != null) {
             for (String targetUrl : targetUrls) {
                 if (signBook.getLiveWorkflow().getTargets().stream().noneMatch(t -> t != null && t.getTargetUri().equals(targetUrl))) {
