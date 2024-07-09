@@ -17,6 +17,7 @@
  */
 package org.esupportail.esupsignature.web.controller.admin;
 
+import org.esupportail.esupsignature.service.security.HttpSessionsListenerService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
@@ -44,15 +45,23 @@ public class CurrentSessionsController {
 
 	private final SessionRegistry sessionRegistry;
 
-	public CurrentSessionsController(SessionRegistry sessionRegistry) {
+	private final HttpSessionsListenerService httpSessionsListenerService;
+
+	public CurrentSessionsController(SessionRegistry sessionRegistry, HttpSessionsListenerService httpSessionsListenerService) {
 		this.sessionRegistry = sessionRegistry;
-	}
+        this.httpSessionsListenerService = httpSessionsListenerService;
+    }
 
 	@GetMapping
 	public String getCurrentSessions(Model model) {
+		;
 		List<SessionInformation> sessions = new ArrayList<>();
 		for(Object principal : sessionRegistry.getAllPrincipals()) {
-			sessions.addAll(sessionRegistry.getAllSessions(principal, false));
+			for(SessionInformation sessionInformation: sessionRegistry.getAllSessions(principal, false)) {
+				if (httpSessionsListenerService.getSessions().contains(sessionInformation.getSessionId())) {
+					sessions.add(sessionInformation);
+				}
+			}
 		}
 		sessions.sort((s1, s2) -> s2.getLastRequest().compareTo(s1.getLastRequest()));
 		model.addAttribute("currentSessions", sessions);
