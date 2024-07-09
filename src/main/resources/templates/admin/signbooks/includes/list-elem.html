@@ -115,7 +115,18 @@
                         <th:block th:each="liveWorkflowStep : ${signBook.liveWorkflow.liveWorkflowSteps}">
                             <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
                                 <li class="dropdown-item" th:title="${recipient.user.email}" style="display: inline-flex;">
-                                    <span class="me-1" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                    <span class="me-1" th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                    <span class="me-1" th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.email}"></span>
+                                    <div th:switch="${recipient.signed}" th:if="${signBook.signRequests.size() == 1}">
+                                        <th:block th:case="true">
+                                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" title="A signé le document" class="fa-solid fa-check-circle text-success"></i>
+                                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}"  title="A refusé le document" class="fa-solid fa-times-circle text-danger"></i>
+                                        </th:block>
+                                        <th:block th:case="false">
+                                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="En attente de signature" class="fa-solid fa-clock text-warning"></i>
+                                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="N'a pas signé le document" class="fa-solid fa-minus-circle text-secondary"></i>
+                                        </th:block>
+                                    </div>
                                 </li>
                             </th:block>
                         </th:block>

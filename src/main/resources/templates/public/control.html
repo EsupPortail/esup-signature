@@ -60,7 +60,7 @@
                             <tbody>
                             <th:block th:each="auditStep, iterator : ${auditTrail.auditSteps}">
                                 <tr data-bs-toggle="collapse" th:data-bs-target="'#collapse-' + ${iterator.index}" style="cursor: pointer;" title="Cliquez ici pour afficher le detail">
-                                    <td><i class="fa-solid fa-plus"></i></td>
+                                    <td><i class="fa-solid fa-signature"></i></td>
                                     <td class="text-left"><span
                                             th:text="${#dates.format(auditStep.timeStampDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
                                     <td class="text-left"><span th:text="${auditStep.firstname} + ' ' + ${auditStep.name}"></span></td>

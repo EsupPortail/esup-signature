@@ -131,7 +131,7 @@ public class ScheduledTaskService {
 		taskService.initCleanUploadingSignBooks();
 	}
 
-	@Scheduled(cron="00 02 02 * * *")
+	@Scheduled(cron="0 0 * * * *")
 	public void refreshOJKeystore() {
 		taskService.initDssRefresh();
 	}
