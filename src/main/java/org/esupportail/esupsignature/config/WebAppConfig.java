@@ -34,7 +34,7 @@ public class WebAppConfig implements WebMvcConfigurer {
 
 	public WebAppConfig(GlobalProperties globalProperties) {
 		this.globalProperties = globalProperties;
-	}
+    }
 
 	@Bean
 	public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
