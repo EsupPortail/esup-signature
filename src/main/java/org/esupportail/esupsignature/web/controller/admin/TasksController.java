@@ -36,6 +36,7 @@ public class TasksController {
         model.addAttribute("isEnableArchiveTask", taskService.isEnableArchiveTask());
         model.addAttribute("isEnableCleanTask", taskService.isEnableCleanTask());
         model.addAttribute("isEnableCleanUploadingSignBookTask", taskService.isEnableCleanUploadingSignBookTask());
+        model.addAttribute("isEnableDssRefreshTask", taskService.isEnableDssRefreshTask());
         return "admin/tasks";
     }
 
@@ -75,4 +76,12 @@ public class TasksController {
         return "redirect:/admin/tasks";
     }
 
+    @PostMapping("/run-dss-refresh")
+    public String runDssRefresh(RedirectAttributes redirectAttributes) {
+        if(!taskService.isEnableDssRefreshTask()) {
+            taskService.initDssRefresh();
+            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Synchro DSS démarré"));
+        }
+        return "redirect:/admin/tasks";
+    }
 }

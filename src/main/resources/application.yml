@@ -287,6 +287,7 @@ logging:
         org.esupportail.esupsignature: info
         org.verapdf: error
         org.apache.pdfbox: error
+        org.apache.fop: error
         eu.europa.esig.dss: error
 #        org.springframework.web.filter.CommonsRequestLoggingFilter: error
 #    config: classpath:logback-prod.xml

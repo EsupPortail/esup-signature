@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.scheduler;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dss.service.DSSService;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -8,6 +9,7 @@ import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +27,11 @@ public class TaskService {
 
     private final GlobalProperties globalProperties;
 
-    public TaskService(GlobalProperties globalProperties) {
+    private final DSSService dssService;
+
+    public TaskService(GlobalProperties globalProperties, @Autowired(required = false) DSSService dssService) {
         this.globalProperties = globalProperties;
+        this.dssService = dssService;
     }
 
     @Resource
@@ -41,6 +46,7 @@ public class TaskService {
 
     private boolean enableCleanUploadingSignBookTask = false;
 
+    private boolean enableDssRefreshTask = false;
 
     public boolean isEnableArchiveTask() {
         return enableArchiveTask;
@@ -65,6 +71,14 @@ public class TaskService {
 
     public void setEnableCleanUploadingSignBookTask(boolean enableCleanUploadingSignBookTask) {
         this.enableCleanUploadingSignBookTask = enableCleanUploadingSignBookTask;
+    }
+
+    public boolean isEnableDssRefreshTask() {
+        return enableDssRefreshTask;
+    }
+
+    public void setEnableDssRefreshTask(boolean enableDssRefreshTask) {
+        this.enableDssRefreshTask = enableDssRefreshTask;
     }
 
     @Async
@@ -146,6 +160,21 @@ public class TaskService {
             setEnableCleanUploadingSignBookTask(false);
         }
 
+    }
+
+    @Async
+    public void initDssRefresh() {
+        if(!isEnableDssRefreshTask()) {
+            setEnableDssRefreshTask(true);
+            try {
+                if(dssService != null) {
+                    dssService.refreshOj();
+                }
+            } catch (Exception e) {
+                logger.error("Error updating certificates", e);
+            }
+            setEnableDssRefreshTask(false);
+        }
     }
 
 }
