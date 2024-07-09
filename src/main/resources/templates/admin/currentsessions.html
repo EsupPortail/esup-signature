@@ -30,6 +30,7 @@
                             <th>Remote Ip</th>
                             <th>Url d'origine</th>
                             <th>Last access time</th>
+                            <th>Inactif depuis</th>
                             <th>Alive</th>
                             <th>Delete</th>
                         </tr>
@@ -42,6 +43,7 @@
                             <td th:text="${currentSession.remoteIp}"></td>
                             <td th:text="${currentSession.originRequestUri}"></td>
                             <td th:text="${#dates.format(currentSession.lastRequest, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                            <td><span th:if="${currentSession.lastRequest != null}" th:text="${(#dates.createNow().toInstant().toEpochMilli() - currentSession.lastRequest.toInstant().toEpochMilli()) / 1000 / 60 + ' mins'}"></span></td>
                             <td>
                                 <i th:class="${currentSession.expired} ? 'text-danger fa-solid fa-times-circle' : 'text-success fa-solid fa-check-circle'"></i>
                             </td>
