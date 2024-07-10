@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="currentSessions" type="java.util.Map<org.springframework.security.core.session.SessionInformation>"*/-->
+<!--/*@thymesVar id="httpSessions" type="java.util.Map<org.esupportail.esupsignature.dto.HttpSession>"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
@@ -17,7 +17,7 @@
             <div class="card col-lg-10 mx-auto mb-1">
                 <div class="card-body">
                     <h5 class="text-center"><b>Utilisateurs connectés</b></h5>
-                    <span th:text="${currentSessions.size()} + ' utilisateur(s) connecté(s)'"></span>, poids total des sessions : <span th:text="${sessionSize}"></span>
+                    <span th:text="${httpSessions.size()} + ' utilisateur(s) connecté(s)'"></span>
                 </div>
             </div>
             <div class="card mb-1 col-10 mx-auto">
@@ -34,22 +34,22 @@
                             <th>Alive</th>
                             <th>Delete</th>
                         </tr>
-                        <tr th:if="${currentSession != null}" th:each="currentSession : ${httpSessions}" th:class="${currentSession.userEppn == null && currentSession.originRequestUri != '/login/casentry'} ? 'table-danger' : ''">
-                            <!--/*@thymesVar id="currentSession" type="org.springframework.session.MapSession"*/-->
-                            <td th:if="${currentSession.userEppn != null}" th:text="${currentSession.userEppn}"></td>
-                            <td th:unless="${currentSession.userEppn != null}">Anonyme</td>
-                            <td th:text="${currentSession.sessionId}"></td>
-                            <td th:text="${#dates.format(currentSession.createdDate, 'dd/MM/yyyy HH:mm:ss')}"></td>
-                            <td th:text="${currentSession.remoteIp}"></td>
-                            <td th:text="${currentSession.originRequestUri}"></td>
-                            <td th:text="${#dates.format(currentSession.lastRequest, 'dd/MM/yyyy HH:mm:ss')}"></td>
-                            <td><span th:if="${currentSession.lastRequest != null}" th:text="${(#dates.createNow().toInstant().toEpochMilli() - currentSession.lastRequest.toInstant().toEpochMilli()) / 1000 / 60 + ' mins'}"></span></td>
+                        <tr th:each="httpSession : ${httpSessions}" th:class="${httpSession.userEppn == null && httpSession.originRequestUri != '/login/casentry'} ? 'table-danger' : ''">
+                            <!--/*@thymesVar id="httpSession" type="org.springframework.session.MapSession"*/-->
+                            <td th:if="${httpSession.userEppn != null}" th:text="${httpSession.userEppn}"></td>
+                            <td th:unless="${httpSession.userEppn != null}">Anonyme</td>
+                            <td th:text="${httpSession.sessionId}"></td>
+                            <td th:text="${#dates.format(httpSession.createdDate, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                            <td th:text="${httpSession.remoteIp}"></td>
+                            <td th:text="${httpSession.originRequestUri}"></td>
+                            <td th:text="${#dates.format(httpSession.lastRequest, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                            <td><span th:if="${httpSession.lastRequest != null}" th:text="${(#dates.createNow().toInstant().toEpochMilli() - httpSession.lastRequest.toInstant().toEpochMilli()) / 1000 / 60 + ' mins'}"></span></td>
                             <td>
-                                <i th:class="${currentSession.expired} ? 'text-danger fa-solid fa-times-circle' : 'text-success fa-solid fa-check-circle'"></i>
+                                <i th:class="${httpSession.expired} ? 'text-danger fa-solid fa-times-circle' : 'text-success fa-solid fa-check-circle'"></i>
                             </td>
                             <td>
                                 <form th:action="'/admin/currentsessions'" th:method="'delete'">
-                                    <input type="hidden" name="sessionId" th:value="${currentSession.sessionId}"/>
+                                    <input type="hidden" name="sessionId" th:value="${httpSession.sessionId}"/>
                                     <button type="submit" class="btn btn-sm btn-danger"><i
                                             class="fa-solid fa-trash-alt"></i></button>
                                 </form>
