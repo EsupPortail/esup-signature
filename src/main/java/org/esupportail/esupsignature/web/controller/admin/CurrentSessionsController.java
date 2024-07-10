@@ -77,7 +77,10 @@ public class CurrentSessionsController {
 			}
 		}
 		sessions.sort((s1, s2) -> s2.getLastRequest().compareTo(s1.getLastRequest()));
-		model.addAttribute("httpSessions", allSessions.values().stream().sorted(Comparator.comparing(HttpSession::getLastRequest).reversed()).toList());
+		model.addAttribute("httpSessions",
+				allSessions.values().stream()
+						.sorted(Comparator.comparing(HttpSession::getLastRequest, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+						.toList());
 		model.addAttribute("active", "sessions");
 		return "admin/currentsessions";
 	}
