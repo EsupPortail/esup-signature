@@ -28,6 +28,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -76,7 +77,7 @@ public class CurrentSessionsController {
 			}
 		}
 		sessions.sort((s1, s2) -> s2.getLastRequest().compareTo(s1.getLastRequest()));
-		model.addAttribute("httpSessions", allSessions.values().stream().toList());
+		model.addAttribute("httpSessions", allSessions.values().stream().sorted(Comparator.comparing(HttpSession::getLastRequest).reversed()).toList());
 		model.addAttribute("active", "sessions");
 		return "admin/currentsessions";
 	}
