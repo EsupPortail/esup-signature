@@ -77,8 +77,6 @@ public class CurrentSessionsController {
 		}
 		sessions.sort((s1, s2) -> s2.getLastRequest().compareTo(s1.getLastRequest()));
 		model.addAttribute("httpSessions", allSessions.values().stream().toList());
-		model.addAttribute("currentSessions", sessions);
-		model.addAttribute("sessionSize", 0);
 		model.addAttribute("active", "sessions");
 		return "admin/currentsessions";
 	}
