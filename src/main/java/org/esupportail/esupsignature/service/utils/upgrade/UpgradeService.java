@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service.utils.upgrade;
 import jakarta.annotation.Resource;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.AppliVersionRepository;
@@ -11,9 +12,14 @@ import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -29,10 +35,16 @@ public class UpgradeService {
     private EntityManager entityManager;
 
     @Resource
+    private GlobalProperties globalProperties;
+
+    @Resource
     private SignBookRepository signBookRepository;
 
     @Resource
     private AppliVersionRepository appliVersionRepository;
+
+    @Resource
+    private BuildProperties buildProperties;
 
     @Resource
     private FileService fileService;
@@ -45,6 +57,23 @@ public class UpgradeService {
     @Transactional
     public void launch() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         logger.info("##### Esup-signature Upgrade #####");
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Referer", globalProperties.getDomain());
+            HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
+            String version = restTemplate.postForObject("https://esup-signature-demo.univ-rouen.fr/webhook", requestEntity, String.class);
+            logger.debug("##### Esup-signature version : " + buildProperties.getVersion() + " #####");
+            logger.debug("##### Esup-signature  last version : " + version + " #####");
+            if (version != null && buildProperties.getVersion().contains(version.trim())) {
+                logger.debug("##### Esup-signature is up-to-date #####");
+            } else {
+                logger.debug("##### Esup-signature is not up-to-date #####");
+            }
+        } catch (Exception e) {
+            logger.info("##### Unable to get last version #####", e);
+        }
         for(String update : updates) {
             if(checkVersionUpToDate(update) < 0) {
                 logger.info("#### Starting update : " + update + " ####");

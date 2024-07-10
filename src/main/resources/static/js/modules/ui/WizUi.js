@@ -16,6 +16,7 @@ export class WizUi {
         this.input = null;
         this.fileInput = null;
         this.recipientCCSelect = null;
+        this.recipientsEmailsSelect = null;
         this.form = null;
         this.close = false;
         this.end = false;
@@ -98,9 +99,8 @@ export class WizUi {
         this.input = $("#multipartFiles");
         let self = this;
         this.fileInput = new FilesInput(this.input, this.maxSize, this.csrf, null, false, null);
-        let recipientsEmails;
         if($("#recipientsEmails-1").length) {
-            recipientsEmails = new SelectUser("recipientsEmails-1", null, null, this.csrf);
+            this.recipientsEmailsSelect = new SelectUser("recipientsEmails-1", null, null, this.csrf);
         }
         if($("#recipientsCCEmails").length) {
             this.recipientCCSelect = new SelectUser("recipientsCCEmails", null, null, this.csrf);
@@ -110,7 +110,7 @@ export class WizUi {
             self.wizCreateSign("fast");
         });
         $("#send-pending-button").on('click', function() {
-            if(recipientsEmails.slimSelect.getSelected().length > 0) {
+            if(this.recipientsEmailsSelect.slimSelect.getSelected().length > 0) {
                 self.pending = true;
                 self.wizCreateSign("fast");
             } else {
@@ -219,7 +219,7 @@ export class WizUi {
         $('[id^="recipientsEmails-"]').each(function (){
             if($(this).is('select')) {
                 let maxRecipient = $(this).attr('data-es-max-recipient');
-                new SelectUser($(this).attr('id'), maxRecipient, null, self.csrf);
+                self.recipientsEmailsSelect = new SelectUser($(this).attr('id'), maxRecipient, null, self.csrf);
             }
         });
         if($("#targetEmailsSelect").length) {
@@ -358,7 +358,7 @@ export class WizUi {
                             cache: false
                         });
                     }
-
+                    self.closeModal();
                 } else {
                     self.modal.modal('show');
                 }
@@ -366,18 +366,25 @@ export class WizUi {
         } else {
             this.closeModal();
         }
-   }
+    }
 
-   closeModal() {
-       this.modal.modal('hide');
-       this.modal.unbind();
-       this.div.html("");
-   }
+    closeModal() {
+        if(this.recipientCCSelect != null) this.recipientCCSelect.slimSelect.destroy();
+        if(this.recipientsEmailsSelect != null) {
+            this.recipientsEmailsSelect.slimSelect.destroy();
+        }
+        this.modal.modal('hide');
+        this.modal.unbind();
+        this.div.html("");
+    }
 
     startFormDisplayForm(html) {
         let self = this;
         this.div.html(html);
         $('[id^="recipientsEmails-"]').each(function (){
+            if($(this).slimSelect != null) {
+                $(this).slimSelect.destroy();
+            }
             let maxRecipient = $(this).attr('data-es-max-recipient');
             new SelectUser($(this).attr('id'), maxRecipient, null, self.csrf);
         });
