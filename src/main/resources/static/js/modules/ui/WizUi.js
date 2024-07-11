@@ -103,7 +103,7 @@ export class WizUi {
             self.recipientsEmailsSelect = new SelectUser("recipientsEmails-1", null, null, this.csrf);
         }
         if($("#recipientsCCEmails").length) {
-            this.recipientCCSelect = new SelectUser("recipientsCCEmails", null, null, this.csrf);
+            self.recipientCCSelect = new SelectUser("recipientsCCEmails", null, null, this.csrf);
         }
         this.input.on("filebatchuploadsuccess", e => this.fastSignSubmitDatas());
         $("#send-draft-button").on('click', function() {
