@@ -57,23 +57,26 @@ public class UpgradeService {
     @Transactional
     public void launch() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         logger.info("##### Esup-signature Upgrade #####");
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Referer", globalProperties.getDomain());
-            HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
-            String version = restTemplate.postForObject("https://esup-signature-demo.univ-rouen.fr/webhook", requestEntity, String.class);
-            logger.debug("##### Esup-signature version : " + buildProperties.getVersion() + " #####");
-            logger.debug("##### Esup-signature  last version : " + version + " #####");
-            if (version != null && buildProperties.getVersion().contains(version.trim())) {
-                logger.debug("##### Esup-signature is up-to-date #####");
-            } else {
-                logger.debug("##### Esup-signature is not up-to-date #####");
+        Thread checkVersion = new Thread(() -> {
+            try {
+                RestTemplate restTemplate = new RestTemplate();
+                LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+                HttpHeaders headers = new HttpHeaders();
+                headers.add("Referer", globalProperties.getDomain());
+                HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
+                String version = restTemplate.postForObject("https://esup-signature-demo.univ-rouen.fr/webhook", requestEntity, String.class);
+                logger.debug("##### Esup-signature version : " + buildProperties.getVersion() + " #####");
+                logger.debug("##### Esup-signature  last version : " + version + " #####");
+                if (version != null && buildProperties.getVersion().contains(version.trim())) {
+                    logger.debug("##### Esup-signature version is up-to-date #####");
+                } else {
+                    logger.debug("##### Esup-signature version is not up-to-date #####");
+                }
+            } catch (Exception e) {
+                logger.info("##### Unable to get last version #####", e);
             }
-        } catch (Exception e) {
-            logger.info("##### Unable to get last version #####", e);
-        }
+        });
+        checkVersion.start();
         for(String update : updates) {
             if(checkVersionUpToDate(update) < 0) {
                 logger.info("#### Starting update : " + update + " ####");
