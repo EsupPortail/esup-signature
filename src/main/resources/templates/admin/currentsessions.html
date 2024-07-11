@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="currentSessions" type="java.util.Map<org.springframework.security.core.session.SessionInformation>"*/-->
+<!--/*@thymesVar id="httpSessions" type="java.util.Map<org.esupportail.esupsignature.dto.HttpSession>"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
@@ -17,47 +17,49 @@
             <div class="card col-lg-10 mx-auto mb-1">
                 <div class="card-body">
                     <h5 class="text-center"><b>Utilisateurs connectés</b></h5>
-                    <span th:text="${currentSessions.size()} + ' utilisateur(s) connecté(s)'"></span>, poids total des sessions : <span th:text="${sessionSize}"></span>
+                    <span th:text="${httpSessions.size()} + ' utilisateur(s) connecté(s)'"></span>
                 </div>
             </div>
-            <th:block th:each="currentSession : ${currentSessions}">
-                <div class="card mb-1 col-10 mx-auto">
-                    <div class="card-body">
-                        <h5><i class="fa-solid fa-user"></i>
-                            <a data-bs-toggle="collapse" th:href="'#sess-' + ${currentSession.sessionId}" role="button"
-                                aria-expanded="false"
-                                th:aria-controls="'sess-' + ${currentSession.sessionId}">
-                                <span th:text="${currentSession.principal.username}"></span>
-                            </a> : <span th:text="${'inactif depuis ' + (#dates.createNow().toInstant().toEpochMilli() - currentSession.lastRequest.toInstant().toEpochMilli()) / 1000 / 60 + ' mins'}"></span>
-                        </h5>
-                        <div class="collapse" th:id="'sess-' + ${currentSession.sessionId}">
-                            <table class="table table-hover table-responsive">
-                                <tr class="table-secondary">
-                                    <th>Session ID</th>
-                                    <th>Last access time</th>
-                                    <th>Alive</th>
-                                    <th>Delete</th>
-                                </tr>
-                                <tr th:if="${currentSession != null}">
-                                    <!--/*@thymesVar id="currentSession" type="org.springframework.session.MapSession"*/-->
-                                    <td th:text="${currentSession.sessionId}"></td>
-                                    <td th:text="${#dates.format(currentSession.lastRequest, 'dd/MM/yyyy HH:mm:ss')}"></td>
-                                    <td>
-                                        <i th:class="${currentSession.expired} ? 'text-danger fa-solid fa-times-circle' : 'text-success fa-solid fa-check-circle'"></i>
-                                    </td>
-                                    <td>
-                                        <form th:action="'/admin/currentsessions'" th:method="'delete'">
-                                            <input type="hidden" name="sessionId" th:value="${currentSession.sessionId}"/>
-                                            <button type="submit" class="btn btn-sm btn-danger"><i
-                                                    class="fa-solid fa-trash-alt"></i></button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
+            <div class="card mb-1 col-10 mx-auto">
+                <div class="card-body">
+                    <table class="table table-hover table-responsive">
+                        <tr class="table-secondary">
+                            <th>EPPN</th>
+                            <th>Session ID</th>
+                            <th>Creation time</th>
+                            <th>Remote Ip</th>
+                            <th>Url d'origine</th>
+                            <th>Last access time</th>
+                            <th>Inactif depuis</th>
+                            <th>Alive</th>
+                            <th>Delete</th>
+                        </tr>
+                        <tr th:each="httpSession : ${httpSessions}" th:class="${httpSession.userEppn == null && httpSession.originRequestUri != '/login/casentry'} ? 'table-danger' : ''">
+                            <!--/*@thymesVar id="httpSession" type="org.springframework.session.MapSession"*/-->
+                            <td th:if="${httpSession.userEppn != null}">
+                                <input type="text" th:value="${httpSession.userEppn}" disabled>
+                            </td>
+                            <td th:unless="${httpSession.userEppn != null}">Anonyme</td>
+                            <td th:text="${httpSession.sessionId}"></td>
+                            <td th:text="${#dates.format(httpSession.createdDate, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                            <td th:text="${httpSession.remoteIp}"></td>
+                            <td th:text="${httpSession.originRequestUri}"></td>
+                            <td th:text="${#dates.format(httpSession.lastRequest, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                            <td><span th:if="${httpSession.lastRequest != null}" th:text="${(#dates.createNow().toInstant().toEpochMilli() - httpSession.lastRequest.toInstant().toEpochMilli()) / 1000 / 60 + ' mins'}"></span></td>
+                            <td>
+                                <i th:class="${httpSession.expired} ? 'text-danger fa-solid fa-times-circle' : 'text-success fa-solid fa-check-circle'"></i>
+                            </td>
+                            <td>
+                                <form th:action="'/admin/currentsessions'" th:method="'delete'">
+                                    <input type="hidden" name="sessionId" th:value="${httpSession.sessionId}"/>
+                                    <button type="submit" class="btn btn-sm btn-danger"><i
+                                            class="fa-solid fa-trash-alt"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
-            </th:block>
+            </div>
         </div>
     </div>
 </main>

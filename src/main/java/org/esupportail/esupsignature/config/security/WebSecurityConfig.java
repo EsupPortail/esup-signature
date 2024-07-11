@@ -263,8 +263,10 @@ public class WebSecurityConfig {
 			}
 			String finalHasIpAddresses = hasIpAddresses.toString();
 			if(StringUtils.hasText(finalHasIpAddresses)) {
-				http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/ws/**")).access(new WebExpressionAuthorizationManager(finalHasIpAddresses)));
-				http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/actuator/**")).access(new WebExpressionAuthorizationManager(finalHasIpAddresses)));
+				http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/ws/**"))
+						.access(new WebExpressionAuthorizationManager(finalHasIpAddresses)));
+				http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/actuator/**"))
+						.access(new WebExpressionAuthorizationManager(finalHasIpAddresses)));
 			}
 //			http.authorizeRequests().requestMatchers("/ws/**").access("hasRole('WS')").and().addFilter(apiKeyFilter());
 		} else {

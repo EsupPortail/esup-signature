@@ -38,6 +38,7 @@ import eu.europa.esig.dss.tsl.alerts.handlers.log.LogLOTLLocationChangeAlertHand
 import eu.europa.esig.dss.tsl.alerts.handlers.log.LogOJUrlChangeAlertHandler;
 import eu.europa.esig.dss.tsl.alerts.handlers.log.LogTLExpirationAlertHandler;
 import eu.europa.esig.dss.tsl.alerts.handlers.log.LogTLSignatureErrorAlertHandler;
+import eu.europa.esig.dss.tsl.cache.CacheCleaner;
 import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
@@ -241,7 +242,7 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public TLValidationJob tlValidationJob(TrustedListsCertificateSource trustedListSource, LOTLSource europeanLOTL, DSSFileLoader offlineLoader, DSSFileLoader onlineLoader) {
+	public TLValidationJob tlValidationJob(TrustedListsCertificateSource trustedListSource, LOTLSource europeanLOTL, DSSFileLoader offlineLoader, DSSFileLoader onlineLoader, CacheCleaner cacheCleaner) {
 		TLValidationJob tlValidationJob = new TLValidationJob();
 		if(!dssProperties.getMultiThreadTlValidation()) {
 			tlValidationJob.setExecutorService(Executors.newSingleThreadExecutor());
@@ -253,7 +254,18 @@ public class DSSBeanConfig {
 		tlValidationJob.setLOTLAlerts(Arrays.asList(ojUrlAlert(europeanLOTL), lotlLocationAlert(europeanLOTL)));
 		tlValidationJob.setTLAlerts(Arrays.asList(tlSigningAlert(), tlExpirationDetection()));
 		tlValidationJob.setDebug(false);
+		tlValidationJob.setCacheCleaner(cacheCleaner);
 		return tlValidationJob;
+	}
+
+	@Bean
+	public CacheCleaner cacheCleaner(DSSFileLoader offlineLoader) {
+		CacheCleaner cacheCleaner = new CacheCleaner();
+		cacheCleaner.setCleanMemory(true);
+		cacheCleaner.setCleanFileSystem(true);
+		cacheCleaner.setDSSFileLoader(offlineLoader);
+
+		return cacheCleaner;
 	}
 
 	@Bean
