@@ -29,10 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @RequestMapping({"/manager/workflows", "/admin/workflows"})
 @Controller
@@ -236,7 +233,7 @@ public class WorkflowAdminController {
 								   @PathVariable("id") Long id,
 								   @PathVariable("workflowStepId") Long workflowStepId,
 								   @RequestParam String recipientsEmails, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
-		WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientService.convertRecipientEmailsToRecipientDto(Collections.singletonList(recipientsEmails)));
+		WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientService.convertRecipientEmailsToRecipientDto(Arrays.stream(recipientsEmails.split(",")).toList()));
 		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Participant ajouté"));
 		return "redirect:/admin/workflows/steps/" + id + "#" + workflowStep.getId();
 	}
