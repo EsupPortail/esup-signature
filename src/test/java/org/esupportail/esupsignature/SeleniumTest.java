@@ -43,6 +43,8 @@ public class SeleniumTest {
         }
         System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver");
         ChromeOptions chromeOptions = new ChromeOptions();
+        chromeOptions.addArguments("--disk-cache-dir=/dev/null");
+        chromeOptions.addArguments("--disk-cache-size=1");
         String display = System.getenv("DISPLAY");
         if (display == null || display.isEmpty()) {
             logger.warn("Headless mode activated");
