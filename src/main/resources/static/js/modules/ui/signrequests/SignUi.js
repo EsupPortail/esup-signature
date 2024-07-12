@@ -47,7 +47,8 @@ export class SignUi {
         $("#checkValidateSignButtonEnd").on('click', e => this.launchSign(false));
         $("#checkValidateSignButtonNext").on('click', e => this.launchSign(true));
         $("#launch-infinite-sign-button").on('click', e => this.insertStep());
-        $("#launchNoInfiniteSignButton").on('click', e => this.launchNoInfiniteSign());
+        $("#launchNoInfiniteSignButtonEnd").on('click', e => this.launchNoInfiniteSign(false));
+        $("#launchNoInfiniteSignButtonNext").on('click', e => this.launchNoInfiniteSign(true));
         $("#refresh-certType").on('click', e => this.checkSignOptions());
         $("#refresh-certType2").on('click', e => this.checkSignOptions());
         let self = this;
@@ -185,7 +186,6 @@ export class SignUi {
             let signModal;
             if (self.stepRepeatable) {
                 signModal = $('#stepRepeatableModal');
-                // $('#launchNoInfiniteSignButton').hide();
             } else {
                 signModal = $("#signModal");
             }
@@ -241,13 +241,13 @@ export class SignUi {
         enableInfinite.unbind();
         enableInfinite.on("click", function () {
             $("#infiniteForm").toggleClass("d-none");
-            $("#launchNoInfiniteSignButton").toggle();
+            $("#launchNoInfiniteSignButtonEnd").toggle();
+            $("#launchNoInfiniteSignButtonNext").toggle();
             $("#signCommentNoInfinite").toggle();
         });
         let signModal;
         if (this.stepRepeatable) {
             signModal = $('#stepRepeatableModal');
-            // $('#launchNoInfiniteSignButton').hide();
         } else {
             signModal = $("#signModal");
         }
@@ -279,10 +279,10 @@ export class SignUi {
         }
     }
 
-    launchNoInfiniteSign() {
+    launchNoInfiniteSign(next) {
         this.signComment = $("#signCommentNoInfinite");
         $("#password").val($("#passwordInfinite").val());
-        this.launchSign(false);
+        this.launchSign(next);
     }
 
     launchSign(gotoNext) {
