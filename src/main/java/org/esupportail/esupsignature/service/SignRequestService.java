@@ -704,6 +704,8 @@ public class SignRequestService {
 				||
 				!signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getDisableDeleteByCreator()
 				||
+				signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail())
+				||
 				user.getRoles().contains("ROLE_ADMIN");
 	}
 
