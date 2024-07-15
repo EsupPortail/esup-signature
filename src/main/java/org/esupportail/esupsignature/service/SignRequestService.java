@@ -7,7 +7,6 @@ import com.google.zxing.WriterException;
 import eu.europa.esig.dss.diagnostic.DiagnosticData;
 import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
@@ -64,92 +63,92 @@ public class SignRequestService {
 
 	private final GlobalProperties globalProperties;
 
-	@Resource
-	private TargetService targetService;
+	private final TargetService targetService;
 
-	@Resource
-	private NexuService nexuService;
+	private final NexuService nexuService;
 
-	public SignRequestService(GlobalProperties globalProperties, SignBookRepository signBookRepository) {
-		this.globalProperties = globalProperties;
-		this.signBookRepository = signBookRepository;
-	}
+	private final WebUtilsService webUtilsService;
 
-	@Resource
-	private WebUtilsService webUtilsService;
+	private final SignRequestRepository signRequestRepository;
 
-	@Resource
-	private SignRequestRepository signRequestRepository;
+	private final ActionService actionService;
 
-	@Resource
-	private ActionService actionService;
+	private final PdfService pdfService;
 
-	@Resource
-	private PdfService pdfService;
+	private final DocumentService documentService;
 
-	@Resource
-	private DocumentService documentService;
+	private final CustomMetricsService customMetricsService;
 
-	@Resource
-	private CustomMetricsService customMetricsService;
+	private final SignService signService;
 
-	@Resource
-	private SignService signService;
+	private final SignTypeService signTypeService;
 
-	@Resource
-	private SignTypeService signTypeService;
+	private final UserService userService;
 
-	@Resource
-	private UserService userService;
+	private final DataService dataService;
 
-	@Resource
-	private DataService dataService;
+	private final CommentService commentService;
 
-	@Resource
-	private CommentService commentService;
+	private final MailService mailService;
 
-	@Resource
-	private MailService mailService;
+	private final AuditTrailService auditTrailService;
 
-	@Resource
-	private AuditTrailService auditTrailService;
+	private final UserShareService userShareService;
 
-	@Resource
-	private UserShareService userShareService;
+	private final RecipientService recipientService;
 
-	@Resource
-	private RecipientService recipientService;
+	private final FsAccessFactoryService fsAccessFactoryService;
 
-	@Resource
-	private FsAccessFactoryService fsAccessFactoryService;
+	private final OtpService otpService;
 
-	@Resource
-	private OtpService otpService;
+	private final FileService fileService;
 
-	@Resource
-	private FileService fileService;
+	private final PreFillService preFillService;
 
-	@Resource
-	private PreFillService preFillService;
+	private final LogService logService;
 
-	@Resource
-	private LogService logService;
+	private final SignRequestParamsService signRequestParamsService;
 
-	@Resource
-	private SignRequestParamsService signRequestParamsService;
+	private final ValidationService validationService;
 
-	@Resource
-	private ValidationService validationService;
+	private final FOPService fopService;
 
-	@Resource
-	private FOPService fopService;
-
-	@Resource
-	private ObjectMapper objectMapper;
+	private final ObjectMapper objectMapper;
 
 	private final SignBookRepository signBookRepository;
 
-	@PostConstruct
+    public SignRequestService(GlobalProperties globalProperties, TargetService targetService, NexuService nexuService, WebUtilsService webUtilsService, SignRequestRepository signRequestRepository, ActionService actionService, PdfService pdfService, DocumentService documentService, CustomMetricsService customMetricsService, SignService signService, SignTypeService signTypeService, UserService userService, DataService dataService, CommentService commentService, MailService mailService, AuditTrailService auditTrailService, UserShareService userShareService, RecipientService recipientService, FsAccessFactoryService fsAccessFactoryService, OtpService otpService, FileService fileService, PreFillService preFillService, LogService logService, SignRequestParamsService signRequestParamsService, ValidationService validationService, FOPService fopService, ObjectMapper objectMapper, SignBookRepository signBookRepository) {
+        this.globalProperties = globalProperties;
+        this.targetService = targetService;
+        this.nexuService = nexuService;
+        this.webUtilsService = webUtilsService;
+        this.signRequestRepository = signRequestRepository;
+        this.actionService = actionService;
+        this.pdfService = pdfService;
+        this.documentService = documentService;
+        this.customMetricsService = customMetricsService;
+        this.signService = signService;
+        this.signTypeService = signTypeService;
+        this.userService = userService;
+        this.dataService = dataService;
+        this.commentService = commentService;
+        this.mailService = mailService;
+        this.auditTrailService = auditTrailService;
+        this.userShareService = userShareService;
+        this.recipientService = recipientService;
+        this.fsAccessFactoryService = fsAccessFactoryService;
+        this.otpService = otpService;
+        this.fileService = fileService;
+        this.preFillService = preFillService;
+        this.logService = logService;
+        this.signRequestParamsService = signRequestParamsService;
+        this.validationService = validationService;
+        this.fopService = fopService;
+        this.objectMapper = objectMapper;
+        this.signBookRepository = signBookRepository;
+    }
+
+    @PostConstruct
 	public void initSignrequestMetrics() {
 		customMetricsService.registerValue("esup-signature.signrequests", "new");
 		customMetricsService.registerValue("esup-signature.signrequests", "signed");
@@ -703,6 +702,8 @@ public class SignRequestService {
 				signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getDisableDeleteByCreator() == null
 				||
 				!signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getDisableDeleteByCreator()
+				||
+				signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail())
 				||
 				user.getRoles().contains("ROLE_ADMIN");
 	}

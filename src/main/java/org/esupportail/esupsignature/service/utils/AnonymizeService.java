@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service.utils;
 
-import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.UserShare;
@@ -15,47 +14,53 @@ import java.util.List;
 @Service
 public class AnonymizeService {
 
-    @Resource
-    private SignBookService signBookService;
+    private final SignBookService signBookService;
+    
+    private final UserService userService;
+    
+    private final WorkflowService workflowService;
+    
+    private final WorkflowStepService workflowStepService;
+    
+    private final LogService logService;
+    
+    private final UserPropertieService userPropertieService;
+    
+    private final CommentService commentService;
+    
+    private final DataService dataService;
+    
+    private final UserShareService userShareService;
+    
+    private final RecipientService recipientService;
+    
+    private final ReportService reportService;
+    
+    private final FieldPropertieService fieldPropertieService;
+    
+    private final SignRequestService signRequestService;
+    
+    private final MessageService messageService;
+    
+    private final DocumentService documentService;
 
-    @Resource
-    private UserService userService;
-
-    @Resource
-    private WorkflowService workflowService;
-
-    @Resource
-    private WorkflowStepService workflowStepService;
-
-    @Resource
-    private LogService logService;
-
-    @Resource
-    private UserPropertieService userPropertieService;
-
-    @Resource
-    private CommentService commentService;
-
-    @Resource
-    private DataService dataService;
-
-    @Resource
-    private UserShareService userShareService;
-
-    @Resource
-    private RecipientService recipientService;
-
-    @Resource
-    private ReportService reportService;
-
-    @Resource
-    private FieldPropertieService fieldPropertieService;
-
-    @Resource
-    private SignRequestService signRequestService;
-
-    @Resource
-    private MessageService messageService;
+    public AnonymizeService(SignBookService signBookService, UserService userService, WorkflowService workflowService, WorkflowStepService workflowStepService, LogService logService, UserPropertieService userPropertieService, CommentService commentService, DataService dataService, UserShareService userShareService, RecipientService recipientService, ReportService reportService, FieldPropertieService fieldPropertieService, SignRequestService signRequestService, MessageService messageService, DocumentService documentService) {
+        this.signBookService = signBookService;
+        this.userService = userService;
+        this.workflowService = workflowService;
+        this.workflowStepService = workflowStepService;
+        this.logService = logService;
+        this.userPropertieService = userPropertieService;
+        this.commentService = commentService;
+        this.dataService = dataService;
+        this.userShareService = userShareService;
+        this.recipientService = recipientService;
+        this.reportService = reportService;
+        this.fieldPropertieService = fieldPropertieService;
+        this.signRequestService = signRequestService;
+        this.messageService = messageService;
+        this.documentService = documentService;
+    }
 
     @Transactional
     public void anonymize(Long id, Boolean force) throws EsupSignatureUserException {
@@ -74,6 +79,7 @@ public class AnonymizeService {
         }
         signBookService.anonymize(user.getEppn(), anonymous);
         signRequestService.anonymize(user.getEppn(), anonymous);
+        documentService.anoymize(user.getEppn(), anonymous);
         dataService.anonymize(user.getEppn(), anonymous);
         commentService.anonymizeComment(id);
         workflowStepService.anonymize(user.getEppn());

@@ -11,7 +11,6 @@ import org.esupportail.esupsignature.dss.config.DSSBeanConfig;
 import org.esupportail.esupsignature.dss.service.DSSService;
 import org.esupportail.esupsignature.dss.service.KeystoreService;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -47,16 +46,19 @@ public class DSSController {
 	@Resource
 	private TLValidationJob tlValidationJob;
 
-	@Autowired
 	@Qualifier("european-lotl-source")
-	private LOTLSource lotlSource;
+	private final LOTLSource lotlSource;
 
-	@Autowired
 	@Qualifier("european-trusted-list-certificate-source")
-	private TrustedListsCertificateSource trustedCertificateSource;
+	private final TrustedListsCertificateSource trustedCertificateSource;
 
-	@Autowired
-	private KeystoreService keystoreService;
+	private final KeystoreService keystoreService;
+
+	public DSSController(LOTLSource lotlSource, TrustedListsCertificateSource trustedCertificateSource, KeystoreService keystoreService) {
+		this.lotlSource = lotlSource;
+		this.trustedCertificateSource = trustedCertificateSource;
+		this.keystoreService = keystoreService;
+	}
 
 	@GetMapping
 	public String tlInfoPage(Model model) {

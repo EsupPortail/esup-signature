@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.service.utils.CustomErrorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ public class CustomErrorController implements ErrorController {
     }
 
     @RequestMapping(produces = MediaType.TEXT_HTML_VALUE)
-    public String errorHtml(HttpServletRequest request, HttpServletResponse response, Model model) {
+    public String errorHtml(HttpServletRequest request, HttpServletResponse response, HttpSession httpSession, Model model) {
         HttpStatus status = customErrorService.getStatus(request);
         Map<String, Object> errors = new java.util.HashMap<>(Collections
                 .unmodifiableMap(customErrorService.getErrorAttributes(request, customErrorService.getErrorAttributeOptions(request))));
@@ -41,6 +42,9 @@ public class CustomErrorController implements ErrorController {
                 errors.put("path", "error");
             }
             logger.warn(errors.get("path").toString() + " : " + errors.get("status") + " " + errors.get("error").toString());
+        }
+        if(httpSession != null && httpSession.getId() != null) {
+            model.addAttribute("userEppn", httpSession.getAttribute("userEppn"));
         }
         model.addAllAttributes(errors);
         return "error";
