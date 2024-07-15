@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service;
 
-import jakarta.annotation.Resource;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.BigFile;
@@ -39,23 +38,24 @@ public class DocumentService {
 
 	private final GlobalProperties globalProperties;
 
-	@Resource
-	private DocumentRepository documentRepository;
+	private final DocumentRepository documentRepository;
 
-	@Resource
-	private FileService fileService;
+	private final FileService fileService;
 
-	@Resource
-	private BigFileService bigFileService;
+	private final BigFileService bigFileService;
 
-	@Resource
-	private FsAccessFactoryService fsAccessFactoryService;
+	private final FsAccessFactoryService fsAccessFactoryService;
 
-	public DocumentService(GlobalProperties globalProperties) {
-		this.globalProperties = globalProperties;
-	}
+    public DocumentService(GlobalProperties globalProperties, DocumentRepository documentRepository, FileService fileService, BigFileService bigFileService, FsAccessFactoryService fsAccessFactoryService) {
+        this.globalProperties = globalProperties;
+        this.documentRepository = documentRepository;
+        this.fileService = fileService;
+        this.bigFileService = bigFileService;
+        this.fsAccessFactoryService = fsAccessFactoryService;
+    }
 
-	public List<Document> getAll() {
+
+    public List<Document> getAll() {
 		List<Document> documents = new ArrayList<>();
 		documentRepository.findAll().forEach(documents::add);
 		return documents;
@@ -176,4 +176,12 @@ public class DocumentService {
 		}
 		return 0;
 	}
+
+	@Transactional
+    public void anoymize(String eppn, User anonymous) {
+		List<Document> documents = documentRepository.findByCreateByEppn(eppn);
+		for(Document document : documents) {
+			document.setCreateBy(anonymous);
+		}
+    }
 }
