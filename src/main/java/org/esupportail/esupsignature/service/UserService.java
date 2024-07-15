@@ -603,6 +603,7 @@ public class UserService {
                     }
                 }
             } catch (EsupSignatureRuntimeException e) {
+                logger.error(e.getMessage(), e);
                 return null;
             }
         }
