@@ -59,6 +59,7 @@
 
 		<script th:inline="javascript" type="module" th:if="${versionApp != null}">
 			sessionStorage.setItem("globalProperties", [[${globalPropertiesJson}]]);
+			sessionStorage.setItem("enableSms", [[${enableSms}]]);
 			import {GlobalUi} from '/js/modules/ui/GlobalUi.js?version=@[(${versionApp})]@';
 			new GlobalUi([[${authUserEppn}]], [[${_csrf}]], [[${applicationEmail}]], [[${globalProperties.maxUploadSize}]], [[${maxInactiveInterval}]]);
 		</script>
