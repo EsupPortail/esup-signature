@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.sms.SmsProperties;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.service.*;
@@ -30,6 +31,8 @@ public class GlobalAttributsControllerAdvice {
     private static final Logger logger = LoggerFactory.getLogger(GlobalAttributsControllerAdvice.class);
 
     private final GlobalProperties globalProperties;
+
+    private final SmsProperties smsProperties;
 
     private final SignRequestService signRequestService;
 
@@ -57,11 +60,12 @@ public class GlobalAttributsControllerAdvice {
 
     private final CertificatService certificatService;
 
-    public GlobalAttributsControllerAdvice(GlobalProperties globalProperties, SignRequestService signRequestService, SignBookService signBookService, WorkflowService workflowService, UserShareService userShareService, UserService userService, ReportService reportService, SignTypeService signTypeService, PreAuthorizeService preAuthorizeService, ObjectMapper objectMapper,
+    public GlobalAttributsControllerAdvice(GlobalProperties globalProperties, SmsProperties smsProperties, SignRequestService signRequestService, SignBookService signBookService, WorkflowService workflowService, UserShareService userShareService, UserService userService, ReportService reportService, SignTypeService signTypeService, PreAuthorizeService preAuthorizeService, ObjectMapper objectMapper,
                                            @Autowired(required = false) BuildProperties buildProperties,
                                            ValidationService validationService,
                                            Environment environment, CertificatService certificatService) {
         this.globalProperties = globalProperties;
+        this.smsProperties = smsProperties;
         this.signRequestService = signRequestService;
         this.signBookService = signBookService;
         this.workflowService = workflowService;
@@ -105,6 +109,7 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("validationToolsEnabled", validationService != null);
             model.addAttribute("globalProperties", myGlobalProperties);
             model.addAttribute("globalPropertiesJson", objectMapper.writer().writeValueAsString(myGlobalProperties));
+            model.addAttribute("enableSms", smsProperties.getEnableSms());
             model.addAttribute("reportNumber", reportService.countByUser(authUserEppn));
             model.addAttribute("hoursBeforeRefreshNotif", myGlobalProperties.getHoursBeforeRefreshNotif());
             model.addAttribute("myUiParams", userService.getUiParams(authUserEppn));
