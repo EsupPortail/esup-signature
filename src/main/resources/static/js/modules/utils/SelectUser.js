@@ -8,6 +8,7 @@ export default class SelectUser {
             this.stepNumber = selectName.split("-")[1];
         }
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
+        this.enableSms = JSON.parse(sessionStorage.getItem("enableSms"));
         this.slimSelect = null;
         this.checkList = this.selectField.attr("data-es-check-list");
         this.signRequestId = signRequestId;
@@ -284,19 +285,21 @@ export default class SelectUser {
                 "<input id=\"phones\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + e.phone + "\" required></div>" +
                 "</div>");
         } else {
-            tempUsersDiv.append(
-                "<div class='alert alert-primary' id='recipient_" + e.email + "'>" +
+            let html ="<div class='alert alert-primary' id='recipient_" + e.email + "'>" +
                 "<b>Destinataire externe : <span>" + e.email + "</span></b>" +
                 "<input id=\"emails\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\"" + e.email + "\">" +
                 "<div class=\"d-flex col-12\"><label for=\"name\" class='col-3'>Nom</label>" +
                 "<input id=\"names\" class=\"form-control \" type=\"text\" name=\"names\" value=\"" + e.name + "\" required></div>" +
                 "<div class=\"d-flex col-12\"><label for=\"firstname\" class='col-3'>Prénom</label>" +
-                "<input id=\"firstnames\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + e.firstname + "\" required></div>" +
-                "<div class=\"d-flex col-12\"><label for=\"phones\" class='col-3'>Mobile</label>" +
-                "<input id=\"phones\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + e.phone + "\"></div>" +
-                "<div class=\"d-flex col-12\"><label for=\"forcesms\" class='col-3'>Autentification SMS</label>" +
-                "<input id=\"forcesmses\" class=\"form-check-input \" type=\"checkbox\" name=\"forcesmses\" value='1'></div>" +
-                "</div>");
+                "<input id=\"firstnames\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + e.firstname + "\" required></div>";
+            if(this.enableSms) {
+                html += "<div class=\"d-flex col-12\"><label for=\"phones\" class='col-3'>Mobile</label>" +
+                    "<input id=\"phones\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + e.phone + "\"></div>" +
+                    "<div class=\"d-flex col-12\"><label for=\"forcesms\" class='col-3'>Autentification SMS</label>" +
+                    "<input id=\"forcesmses\" class=\"form-check-input \" type=\"checkbox\" name=\"forcesmses\" value='1'></div>";
+            }
+            html += "</div>";
+            tempUsersDiv.append(html);
         }
     }
 
