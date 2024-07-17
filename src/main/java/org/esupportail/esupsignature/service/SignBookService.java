@@ -1200,9 +1200,17 @@ public class SignBookService {
             for(Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
                 if(recipient.getUser().getEppn().equals(userEppn)) {
                     Action action = signRequest.getRecipientHasSigned().get(recipient);
-                    action.setActionType(ActionType.refused);
-                    action.setUserIp(webUtilsService.getClientIp());
-                    action.setDate(new Date());
+                    if(action != null) {
+                        action.setActionType(ActionType.refused);
+                        action.setUserIp(webUtilsService.getClientIp());
+                        action.setDate(new Date());
+                    } else {
+                        action = actionService.getEmptyAction();
+                        action.setActionType(ActionType.refused);
+                        action.setUserIp(webUtilsService.getClientIp());
+                        action.setDate(new Date());
+                        signRequest.getRecipientHasSigned().put(recipient, action);
+                    }
                     recipientService.allSigned(signRequest, recipient);
                 }
             }
