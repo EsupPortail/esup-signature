@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service.utils.upgrade;
 
-import jakarta.annotation.Resource;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -12,6 +11,7 @@ import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
@@ -32,27 +32,31 @@ public class UpgradeService {
     private static final Logger logger = LoggerFactory.getLogger(UpgradeService.class);
 
     @PersistenceContext
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
-    @Resource
-    private GlobalProperties globalProperties;
+    private final GlobalProperties globalProperties;
 
-    @Resource
-    private SignBookRepository signBookRepository;
+    private final SignBookRepository signBookRepository;
 
-    @Resource
-    private AppliVersionRepository appliVersionRepository;
+    private final AppliVersionRepository appliVersionRepository;
 
-    @Resource
-    private BuildProperties buildProperties;
+    private final BuildProperties buildProperties;
 
-    @Resource
-    private FileService fileService;
+    private final FileService fileService;
+
+    private final FormService formService;
 
     private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10"};
 
-    @Resource
-    private FormService formService;
+    public UpgradeService(EntityManager entityManager, GlobalProperties globalProperties, SignBookRepository signBookRepository, AppliVersionRepository appliVersionRepository, @Autowired(required = false) BuildProperties buildProperties, FileService fileService, FormService formService) {
+        this.entityManager = entityManager;
+        this.globalProperties = globalProperties;
+        this.signBookRepository = signBookRepository;
+        this.appliVersionRepository = appliVersionRepository;
+        this.buildProperties = buildProperties;
+        this.fileService = fileService;
+        this.formService = formService;
+    }
 
     @Transactional
     public void launch() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
@@ -63,11 +67,15 @@ public class UpgradeService {
                 LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
                 HttpHeaders headers = new HttpHeaders();
                 headers.add("Referer", globalProperties.getDomain());
+                String currentVersion = "0.0.0";
+                if(buildProperties != null) {
+                    currentVersion = buildProperties.getVersion();
+                }
+                headers.add("X-API-Version", currentVersion);
                 HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
                 String version = restTemplate.postForObject("https://esup-signature-demo.univ-rouen.fr/webhook", requestEntity, String.class);
-                logger.debug("##### Esup-signature version : " + buildProperties.getVersion() + " #####");
                 logger.debug("##### Esup-signature  last version : " + version + " #####");
-                if (version != null && buildProperties.getVersion().contains(version.trim())) {
+                if (version != null && currentVersion.contains(version.trim())) {
                     logger.debug("##### Esup-signature version is up-to-date #####");
                 } else {
                     logger.debug("##### Esup-signature version is not up-to-date #####");

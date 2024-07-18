@@ -619,7 +619,7 @@ public class SignRequestService {
 		if(!isDeletetable(signRequest, userEppn)) {
 			throw new EsupSignatureRuntimeException("Interdiction de supprimer les demandes de ce circuit");
 		}
-		if(signRequest.getDeleted() || signRequest.getStatus().equals(SignRequestStatus.draft) || (signRequest.getParentSignBook().getSignRequests().size() > 1 && signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending))) {
+		if(signRequest.getDeleted() || signRequest.getStatus().equals(SignRequestStatus.draft)) {
 			return deleteDefinitive(signRequestId, userEppn);
 		} else {
 			logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Mise à la corbeille du document par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
@@ -629,8 +629,6 @@ public class SignRequestService {
 				signRequest.getSignedDocuments().clear();
 				logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Nettoyage des documents déjà archivés", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			}
-			otpService.deleteOtpBySignRequestId(signRequestId);
-			nexuService.delete(signRequestId);
 			if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(SignRequest::getDeleted)) {
 				signRequest.getParentSignBook().setDeleted(true);
 				signRequest.getParentSignBook().setUpdateDate(new Date());
@@ -666,6 +664,11 @@ public class SignRequestService {
 			commentService.deleteComment(commentId, signRequest);
 		}
 		signBook.getSignRequests().remove(signRequest);
+		for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
+			for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+				liveWorkflowStep.getSignRequestParams().remove(signRequestParams);
+			}
+		}
 		signRequestRepository.delete(signRequest);
 		long signBookId = 0;
 		if(!signBook.getSignRequests().isEmpty()) {
@@ -674,10 +677,18 @@ public class SignRequestService {
 			signBookRepository.delete(signBook);
 		}
 		if(!signBook.getDeleted() && signBook.getStatus().equals(SignRequestStatus.pending) && signBook.getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.signed) || s.getStatus().equals(SignRequestStatus.completed) || s.getStatus().equals(SignRequestStatus.refused))) {
-			nextWorkFlowStep(signBook);
-			for(SignRequest signRequest1 : signRequest.getParentSignBook().getSignRequests()) {
-				if(!signRequest1.equals(signRequest) && !signRequest1.getStatus().equals(SignRequestStatus.refused)) {
-					pendingSignRequest(signRequest1, userEppn);
+			boolean isNextWorkflow = nextWorkFlowStep(signBook);
+			if(isNextWorkflow) {
+				for(SignRequest signRequest1 : signRequest.getParentSignBook().getSignRequests()) {
+					if(!signRequest1.equals(signRequest) && !signRequest1.getStatus().equals(SignRequestStatus.refused)) {
+						pendingSignRequest(signRequest1, userEppn);
+					}
+				}
+			} else {
+				if(signBook.getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.refused))) {
+					signBook.setStatus(SignRequestStatus.refused);
+				} else {
+					signBook.setStatus(SignRequestStatus.completed);
 				}
 			}
 		}
