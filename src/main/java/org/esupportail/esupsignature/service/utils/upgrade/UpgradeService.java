@@ -63,6 +63,7 @@ public class UpgradeService {
                 LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
                 HttpHeaders headers = new HttpHeaders();
                 headers.add("Referer", globalProperties.getDomain());
+                headers.add("X-API-Version", buildProperties.getVersion());
                 HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
                 String version = restTemplate.postForObject("https://esup-signature-demo.univ-rouen.fr/webhook", requestEntity, String.class);
                 logger.debug("##### Esup-signature version : " + buildProperties.getVersion() + " #####");
