@@ -666,6 +666,11 @@ public class SignRequestService {
 			commentService.deleteComment(commentId, signRequest);
 		}
 		signBook.getSignRequests().remove(signRequest);
+		for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
+			for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+				liveWorkflowStep.getSignRequestParams().remove(signRequestParams);
+			}
+		}
 		signRequestRepository.delete(signRequest);
 		long signBookId = 0;
 		if(!signBook.getSignRequests().isEmpty()) {
