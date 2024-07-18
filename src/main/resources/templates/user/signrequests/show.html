@@ -637,7 +637,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <form id="command" th:action="'/user/signrequests/'+ ${signRequest.id}" th:method="delete">
-                <input type="hidden" name="definitive" value="true">
+                <input th:if="${!signRequest.deleted && signBook.signRequests.size() > 1}" type="hidden" name="definitive" value="true">
                 <div class="modal-header">
                     <h2>Attention</h2>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
