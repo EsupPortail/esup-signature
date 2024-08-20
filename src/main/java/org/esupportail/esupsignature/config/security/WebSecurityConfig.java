@@ -4,7 +4,7 @@ import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
-import org.esupportail.esupsignature.config.security.shib.DevClientRequestFilter;
+import org.esupportail.esupsignature.service.security.shib.DevShibRequestFilter;
 import org.esupportail.esupsignature.config.security.shib.DevShibProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
 import org.esupportail.esupsignature.service.security.*;
@@ -87,7 +87,7 @@ public class WebSecurityConfig {
 
 	private final List<SecurityService> securityServices = new ArrayList<>();
 
-	private final List<DevSecurityFilter> devSecurityFilters = new ArrayList<>();
+	private DevShibRequestFilter devShibRequestFilter;
 
 	public WebSecurityConfig(@Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository) {
 		this.clientRegistrationRepository = clientRegistrationRepository;
@@ -148,10 +148,9 @@ public class WebSecurityConfig {
 	@Bean
 	@Order(4)
 	@ConditionalOnProperty(prefix = "security.shib.dev", name = "enable", havingValue = "true")
-	public DevClientRequestFilter devClientRequestFilter() {
-		DevClientRequestFilter devClientRequestFilter = new DevClientRequestFilter();
-		devSecurityFilters.add(devClientRequestFilter);
-		return devClientRequestFilter;
+	public DevShibRequestFilter devClientRequestFilter() {
+		devShibRequestFilter = new DevShibRequestFilter();
+		return devShibRequestFilter;
 	}
 
 	@Bean
@@ -172,7 +171,9 @@ public class WebSecurityConfig {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.sessionManagement(sessionManagement -> sessionManagement.sessionAuthenticationStrategy(sessionAuthenticationStrategy()).maximumSessions(5).sessionRegistry(sessionRegistry()));
-		devSecurityFilters.forEach(devSecurityFilter -> http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class));
+		if(devShibRequestFilter != null) {
+			http.addFilterBefore(devShibRequestFilter, OAuth2AuthorizationRequestRedirectFilter.class);
+		}
 		http.exceptionHandling(exceptionHandling -> exceptionHandling.defaultAuthenticationEntryPointFor(new IndexEntryPoint("/"), antMatcher("/")));
 		AccessDeniedHandlerImpl accessDeniedHandlerImpl = new AccessDeniedHandlerImpl();
 		accessDeniedHandlerImpl.setErrorPage("/denied");
