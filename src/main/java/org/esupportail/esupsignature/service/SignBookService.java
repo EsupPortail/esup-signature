@@ -771,7 +771,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignBook sendForSign(Long dataId, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas, InputStream formReplaceInputStream, String signRequestParamsJsonString, String title, boolean sendEmailAlert) throws EsupSignatureRuntimeException {
+    public SignBook sendForSign(Long dataId, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas, InputStream formReplaceInputStream, String signRequestParamsJsonString, String title, Boolean sendEmailAlert, String comment) throws EsupSignatureRuntimeException {
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
         if (signRequestParamsJsonString != null) {
             signRequestParamses = signRequestParamsService.getSignRequestParamsesFromJson(signRequestParamsJsonString);
@@ -786,7 +786,7 @@ public class SignBookService {
         if(title == null || title.isEmpty()) {
             title = form.getTitle();
         }
-        SignBook signBook = createSignBook(title, modelWorkflow, null, user.getEppn(), true, null);
+        SignBook signBook = createSignBook(title, modelWorkflow, null, user.getEppn(), true, comment);
         SignRequest signRequest = signRequestService.createSignRequest(signBook.getSubject(), signBook, user.getEppn(), authUser.getEppn());
         if(form.getWorkflow().getOwnerSystem() != null && form.getWorkflow().getOwnerSystem()) {
             User systemUser = userService.getSystemUser();
@@ -1264,11 +1264,11 @@ public class SignBookService {
     }
 
     @Transactional
-    public List<Long> startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String title, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, List<SignRequestParams> signRequestParamses, Boolean scanSignatureFields, Boolean sendEmailAlert) throws EsupSignatureRuntimeException {
+    public List<Long> startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String title, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, List<SignRequestParams> signRequestParamses, Boolean scanSignatureFields, Boolean sendEmailAlert, String comment) throws EsupSignatureRuntimeException {
         logger.info("starting workflow " + id + " by " + createByEppn);
         Workflow workflow = workflowService.getById(id);
         User user = userService.createUserWithEppn(createByEppn);
-        SignBook signBook = createSignBook(title, workflow, "", user.getEppn(), false, null);
+        SignBook signBook = createSignBook(title, workflow, "", user.getEppn(), false, comment);
         signBook.getLiveWorkflow().setWorkflow(workflow);
         for(MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(multipartFile.getOriginalFilename(), signBook, createByEppn, createByEppn);
