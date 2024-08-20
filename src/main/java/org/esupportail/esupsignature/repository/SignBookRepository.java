@@ -80,7 +80,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             left join sb.liveWorkflow.currentStep.recipients r
             where (:workflowFilter is null or sb.workflowName = :workflowFilter)
             and (:docTitleFilter is null or sb.subject = :docTitleFilter)
-            and sb.status = 'pending' and size(sb.signRequests) > 0 and r.user = :user and r.signed = false
+            and sb.status = 'pending' and size(sb.signRequests) > 0 and r.user = :user
             and (sb.deleted is null or sb.deleted != true)
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
             and (sb.createDate between :startDateFilter and :endDateFilter)
@@ -91,7 +91,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("""
             select distinct count(sb) from SignBook sb
             left join sb.liveWorkflow.currentStep.recipients r
-            where sb.status = 'pending' and size(sb.signRequests) > 0 and r.user = :user and r.signed = false
+            where sb.status = 'pending' and size(sb.signRequests) > 0 and r.user = :user
             and (sb.deleted is null or sb.deleted != true)
             and :user not member of sb.hidedBy
             """)
