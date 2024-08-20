@@ -26,6 +26,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -127,6 +130,7 @@ public class DocumentService {
 						name = name + "." + fileService.getExtension(signedFile.getFileName());
 					}
 				}
+				name = sanitizeFileName(name);
 				logger.info("send to " + documentIOType.name() + " in " + targetUrl + name);
 				if (fsAccessService.putFile(targetUrl, name, inputStream, UploadActionType.OVERRIDE)) {
 					if(!targetUrl.endsWith("/")) {
@@ -145,12 +149,19 @@ public class DocumentService {
 		}
 	}
 
+	public String sanitizeFileName(String fileName) {
+        String decodedFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
+        return URLEncoder.encode(decodedFileName, StandardCharsets.UTF_8)
+                .replace("+", "%20")
+                .replace("%2F", "/");
+    }
+
 	public Document getById(Long id) {
-		return documentRepository.findById(id).get();
+		return documentRepository.findById(id).orElseThrow();
 	}
 
 	public void delete(Long id) {
-		Document document = documentRepository.findById(id).get();
+		Document document = documentRepository.findById(id).orElseThrow();
 		delete(document);
 	}
 

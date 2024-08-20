@@ -90,6 +90,7 @@ public class WorkflowWsController {
                                    @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
                                    @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls,
                                    @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Envoyer une alerte mail") Boolean sendEmailAlert,
+                                   @RequestParam(required = false) @Parameter(description = "commentaire") String comment,
                                    @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey,
                                    @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json,
                                    @RequestParam(required = false) @Parameter(description = "Paramètres de signature", example = "[{\"xPos\":100, \"yPos\":100, \"signPageNumber\":1}, {\"xPos\":200, \"yPos\":200, \"signPageNumber\":1}]") String signRequestParamsJsonString,
@@ -107,10 +108,10 @@ public class WorkflowWsController {
         if(recipientEmails == null && recipientsEmails != null && !recipientsEmails.isEmpty()) {
             recipientEmails = recipientsEmails;
         }
-        List<WorkflowStepDto> steps;
+        List<WorkflowStepDto> steps = new ArrayList<>();
         if(stepsJsonString == null && recipientEmails != null) {
             steps = recipientService.convertRecipientEmailsToStep(recipientEmails);
-        } else {
+        } else if(stepsJsonString != null) {
             steps = recipientService.convertRecipientJsonStringToWorkflowStepDtos(stepsJsonString);
         }
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
@@ -118,7 +119,7 @@ public class WorkflowWsController {
             signRequestParamses = signRequestParamsService.getSignRequestParamsesFromJson(signRequestParamsJsonString);
         }
         try {
-            List<Long> signRequestIds = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, steps, targetEmails, targetUrls, signRequestParamses, scanSignatureFields, sendEmailAlert);
+            List<Long> signRequestIds = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, steps, targetEmails, targetUrls, signRequestParamses, scanSignatureFields, sendEmailAlert, comment);
             if(json) {
                 return ResponseEntity.ok(signRequestIds);
             } else {
