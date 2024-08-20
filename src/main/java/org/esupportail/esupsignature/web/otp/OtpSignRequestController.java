@@ -215,8 +215,10 @@ public class OtpSignRequestController {
                           @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
                           @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
                           @RequestParam(value = "commentPosY", required = false) Integer commentPosY,
-                          @RequestParam(value = "postit", required = false) String postit, Model model) {
-        if(signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, postit, spotStepNumber, authUserEppn, userEppn) != null) {
+                          @RequestParam(value = "postit", required = false) String postit,
+                          @RequestParam(value = "forceSend", required = false, defaultValue = "false") Boolean forceSend,
+                          Model model) {
+        if(signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, postit, spotStepNumber, authUserEppn, userEppn, forceSend) != null) {
             model.addAttribute("message", new JsMessage("success", "Annotation ajoutée"));
         } else {
             model.addAttribute("message", new JsMessage("error", "Ajout d'emplacement non autorisé"));
