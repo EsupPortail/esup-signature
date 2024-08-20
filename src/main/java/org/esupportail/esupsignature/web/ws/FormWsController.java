@@ -61,7 +61,7 @@ public class FormWsController {
 
     @CrossOrigin
     @PostMapping(value = "/{id}/new")
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Création d'une nouvelle instance d'un formulaire")
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Création d'une nouvelle instance d'un formulaire")
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public ResponseEntity<?> start(@PathVariable Long id,
                                    @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example = "[{\n" +
@@ -153,7 +153,7 @@ public class FormWsController {
 
     @CrossOrigin
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération d'un circuit", responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = WorkflowDto.class))))
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération d'un circuit", responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = WorkflowDto.class))))
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public String get(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
         return formService.getByIdJson(id);
@@ -161,7 +161,7 @@ public class FormWsController {
 
     @CrossOrigin
     @PostMapping(value = "/{id}/new-doc", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Création d'une nouvelle instance d'un formulaire")
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Création d'une nouvelle instance d'un formulaire")
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public ResponseEntity<?> startWithDoc(@PathVariable Long id,
                                           @RequestParam @Parameter(description = "Multipart stream du fichier à signer") MultipartFile[] multipartFiles,
