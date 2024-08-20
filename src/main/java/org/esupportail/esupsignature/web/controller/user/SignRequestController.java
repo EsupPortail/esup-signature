@@ -324,13 +324,15 @@ public class SignRequestController {
     @PostMapping(value = "/comment/{id}")
     @ResponseBody
     public ResponseEntity<Long> comment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                                          @RequestParam(value = "comment", required = false) String comment,
-                                          @RequestParam(value = "spotStepNumber", required = false) Integer spotStepNumber,
-                                          @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
-                                          @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
-                                          @RequestParam(value = "commentPosY", required = false) Integer commentPosY,
-                                          @RequestParam(value = "postit", required = false) String postit, Model model) {
-        Long commentId = signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, postit, spotStepNumber, authUserEppn, userEppn);
+                                        @RequestParam(value = "comment", required = false) String comment,
+                                        @RequestParam(value = "spotStepNumber", required = false) Integer spotStepNumber,
+                                        @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
+                                        @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
+                                        @RequestParam(value = "commentPosY", required = false) Integer commentPosY,
+                                        @RequestParam(value = "postit", required = false) String postit,
+                                        @RequestParam(value = "forceSend", required = false, defaultValue = "false") Boolean forceSend,
+                                        Model model) {
+        Long commentId = signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, postit, spotStepNumber, authUserEppn, userEppn, forceSend);
         if(commentId != null) {
             return ResponseEntity.ok().body(commentId);
         } else {
@@ -362,9 +364,10 @@ public class SignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")
     @PostMapping(value = "/postit/{id}")
     public String postit(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                                        @RequestParam(value = "comment", required = false) String comment,
-                                        @RequestParam(value = "postit", required = false) String postit, Model model) {
-        Long commentId = signRequestService.addComment(id, comment, null, null, null, postit, null, authUserEppn, userEppn);
+                         @RequestParam(value = "comment", required = false) String comment,
+                         @RequestParam(value = "postit", required = false) String postit,
+                         @RequestParam(value = "forceSend", required = false, defaultValue = "false") Boolean forceSend, Model model) {
+        Long commentId = signRequestService.addComment(id, comment, null, null, null, postit, null, authUserEppn, userEppn, forceSend);
         if(commentId != null) {
             model.addAttribute("message", new JsMessage("success", "Post-it ajouté"));
         } else {
