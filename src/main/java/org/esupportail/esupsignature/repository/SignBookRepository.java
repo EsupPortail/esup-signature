@@ -78,7 +78,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("""
             select distinct sb from SignBook sb
             left join sb.liveWorkflow.currentStep.recipients r
-            where sb.status = 'pending' and size(sb.signRequests) > 0 and (size(sb.signRequests) = 1 and r.user = :user and r.signed = false) or (size(sb.signRequests) > 1 and r.user = :user)
+            where sb.status = 'pending' and size(sb.signRequests) > 0 and ((size(sb.signRequests) = 1 and r.user = :user and r.signed = false) or (size(sb.signRequests) > 1 and r.user = :user))
             and (:workflowFilter is null or sb.workflowName = :workflowFilter)
             and (:docTitleFilter is null or sb.subject = :docTitleFilter)
             and (sb.deleted is null or sb.deleted != true)
@@ -91,8 +91,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("""
             select distinct count(sb) from SignBook sb
             left join sb.liveWorkflow.currentStep.recipients r
-            where sb.status = 'pending' and size(sb.signRequests) > 0 and (size(sb.signRequests) = 1 and r.user = :user and r.signed = false) or (size(sb.signRequests) > 1 and r.user = :user)
-            and (sb.deleted is null or sb.deleted != true)
+            where sb.status = 'pending' and size(sb.signRequests) > 0 and ((size(sb.signRequests) = 1 and r.user = :user and r.signed = false) or (size(sb.signRequests) > 1 and r.user = :user))            and (sb.deleted is null or sb.deleted != true)
             and :user not member of sb.hidedBy
             """)
     Long countToSign(User user);
