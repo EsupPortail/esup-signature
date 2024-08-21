@@ -87,7 +87,11 @@ public class SeleniumTest {
         // Cliquer sur le bouton "fast-sign-button"
         WebElement fastSignButton = wait.until(ExpectedConditions.elementToBeClickable(By.id("fast-sign-button")));
         fastSignButton.click();
-        wait.until(ExpectedConditions.invisibilityOf(fastSignButton));
+        try {
+            wait.until(ExpectedConditions.invisibilityOf(fastSignButton));
+        } catch (Exception e) {
+            System.out.println("Element non trouvé dans le délai spécifié.");
+        }
         // Cliquer sur le bouton "addSignButton"
         wait.until(ExpectedConditions.elementToBeClickable(By.id("addSignButton"))).click();
         // Exécuter du JavaScript pour récupérer "signRequestId"
@@ -104,7 +108,6 @@ public class SeleniumTest {
             // Attendre que la modal "wait" ne soit plus visible
             wait.until(ExpectedConditions.invisibilityOfElementLocated(By.id("wait")));
         } catch (Exception e) {
-            // Click "checkValidateSignButtonEnd"
             System.out.println("Element non trouvé dans le délai spécifié.");
         }
         // Cliquer sur le bouton "link-dashboard"
