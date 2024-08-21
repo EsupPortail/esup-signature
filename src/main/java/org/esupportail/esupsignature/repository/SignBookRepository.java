@@ -78,20 +78,27 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("""
             select distinct sb from SignBook sb
             left join sb.liveWorkflow.currentStep.recipients r
-            where sb.status = 'pending' and size(sb.signRequests) > 0 and ((size(sb.signRequests) = 1 and r.user = :user and r.signed = false) or (size(sb.signRequests) > 1 and r.user = :user))
+            left join sb.signRequests sr
+            left join sr.recipientHasSigned rhs
+            where sb.status = 'pending' and size(sb.signRequests) > 0 and r.user = :user
+            and rhs.actionType = 'none' and key(rhs).user = :user
+            and (sb.deleted is null or sb.deleted != true)
+            and :user not member of sb.hidedBy
             and (:workflowFilter is null or sb.workflowName = :workflowFilter)
             and (:docTitleFilter is null or sb.subject = :docTitleFilter)
-            and (sb.deleted is null or sb.deleted != true)
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
             and (sb.createDate between :startDateFilter and :endDateFilter)
-            and :user not member of sb.hidedBy
             """)
     Page<SignBook> findToSign(User user, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     @Query("""
             select distinct count(sb) from SignBook sb
             left join sb.liveWorkflow.currentStep.recipients r
-            where sb.status = 'pending' and size(sb.signRequests) > 0 and ((size(sb.signRequests) = 1 and r.user = :user and r.signed = false) or (size(sb.signRequests) > 1 and r.user = :user))            and (sb.deleted is null or sb.deleted != true)
+            left join sb.signRequests sr
+            left join sr.recipientHasSigned rhs
+            where sb.status = 'pending' and size(sb.signRequests) > 0 and r.user = :user
+            and rhs.actionType = 'none' and key(rhs).user = :user
+            and (sb.deleted is null or sb.deleted != true)
             and :user not member of sb.hidedBy
             """)
     Long countToSign(User user);
