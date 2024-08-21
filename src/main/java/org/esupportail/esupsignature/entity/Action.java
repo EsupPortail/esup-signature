@@ -22,8 +22,6 @@ public class Action {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-    
-
     @Enumerated(EnumType.STRING)
     private ActionType actionType = ActionType.none;
 
@@ -40,10 +38,6 @@ public class Action {
     public void setId(Long id) {
         this.id = id;
     }
-
-    
-
-    
 
     public ActionType getActionType() {
         return actionType;
