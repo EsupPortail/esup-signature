@@ -39,6 +39,7 @@ import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -378,7 +379,8 @@ public class SignRequestService {
 	@Transactional
 	public List<SignRequest> getToSignRequests(String userEppn) {
 		User user = userService.getByEppn(userEppn);
-		List<SignRequest> signRequestsToSign = signRequestRepository.findByRecipientUserToSign(user);
+		List<SignRequest> signRequestsToSign = signBookRepository.findToSign(user, null, null, null, new Date(0), new Date(), Pageable.unpaged()).getContent()
+				.stream().map(SignBook::getSignRequests).flatMap(Collection::stream).collect(Collectors.toList());
 		signRequestsToSign = signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
 		return  signRequestsToSign;
 	}
@@ -846,7 +848,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Long addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, String postit, Integer spotStepNumber, String authUserEppn, String userEppn) {
+	public Long addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, String postit, Integer spotStepNumber, String authUserEppn, String userEppn, boolean forceSend) {
 		SignRequest signRequest = getById(id);
 		User user = userService.getByEppn(userEppn);
 		if(spotStepNumber == null || signRequest.getCreateBy().equals(user) || signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail())) {
@@ -861,7 +863,7 @@ public class SignRequestService {
 			Comment comment = commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, "on".equals(postit), null, authUserEppn);
 			if (!(spotStepNumber != null && spotStepNumber > 0)) {
 				updateStatus(signRequest.getId(), null, "Ajout d'un commentaire", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
-				if (globalProperties.getSendPostitByEmail() && !authUserEppn.equals(signRequest.getCreateBy().getEppn())) {
+				if ((globalProperties.getSendPostitByEmail() || forceSend) && !authUserEppn.equals(signRequest.getCreateBy().getEppn())) {
 					try {
 						mailService.sendPostit(signRequest.getParentSignBook(), comment);
 					} catch (EsupSignatureMailException e) {

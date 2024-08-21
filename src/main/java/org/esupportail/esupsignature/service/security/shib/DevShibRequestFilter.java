@@ -1,8 +1,4 @@
-package org.esupportail.esupsignature.config.security.shib;
-
-import org.esupportail.esupsignature.service.security.DevSecurityFilter;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.web.filter.GenericFilterBean;
+package org.esupportail.esupsignature.service.security.shib;
 
 import jakarta.annotation.Resource;
 import jakarta.servlet.FilterChain;
@@ -11,17 +7,24 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
+import org.esupportail.esupsignature.config.security.shib.DevShibProperties;
+import org.springframework.web.filter.GenericFilterBean;
+
 import java.io.IOException;
 
-public class DevClientRequestFilter extends GenericFilterBean  implements DevSecurityFilter {
+public class DevShibRequestFilter extends GenericFilterBean {
 	
 	@Resource
 	private DevShibProperties devShibProperties;
 
 	@Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-
-        HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper((HttpServletRequest) request) {
+		HttpServletRequest httpRequest = (HttpServletRequest) request;
+		if(httpRequest.getRequestURI().contains("/ws/") || httpRequest.getRequestURI().contains("/actuator/")) {
+			chain.doFilter(request, response);
+			return;
+		}
+		HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper((HttpServletRequest) request) {
 			@Override
 			public String getHeader(String name) {
 	            if ("REMOTE_USER".equals(name)) {

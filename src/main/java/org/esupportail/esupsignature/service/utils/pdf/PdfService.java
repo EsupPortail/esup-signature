@@ -213,14 +213,14 @@ public class PdfService {
                 addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted);
             }
         } else if (StringUtils.hasText(signRequestParams.getTextPart())) {
-            int fontSize = (int) (signRequestParams.getFontSize() * signRequestParams.getSignScale() * fixFactor);
+            float fontSize = signRequestParams.getFontSize() * fixFactor;
             PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), WinAnsiEncoding.INSTANCE);
             contentStream.beginText();
             contentStream.setFont(pdFont, fontSize);
             String[] lines = signRequestParams.getTextPart().split("\n");
             float fontHeight = (pdFont.getFontDescriptor().getCapHeight()) / 1000 * signRequestParams.getFontSize();
-            yAdjusted = yAdjusted + (fontHeight * lines.length / fixFactor);
-            contentStream.newLineAtOffset(xAdjusted + 2, yAdjusted);
+            yAdjusted = yAdjusted + (fontHeight * lines.length * fixFactor);
+            contentStream.newLineAtOffset(xAdjusted + 1, yAdjusted);
             for (String line : lines) {
                 contentStream.showText(line);
                 contentStream.newLineAtOffset(0, -fontSize / fixFactor);

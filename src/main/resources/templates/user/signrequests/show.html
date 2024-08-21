@@ -779,6 +779,10 @@
                 <div class="modal-body">
                     <textarea name="comment" class="form-control" rows="3" style="background-color: #FFF740;"></textarea>
                     <input type="hidden" name="postit" value="on" />
+                    <div class="form-check mb-3" th:if="${globalProperties.sendPostitByEmail == false}">
+                        <label for="forceSend" class="form-check-label">Forcer l'envoi par mail</label>
+                        <input type="checkbox" class="form-check-input" id="forceSend" name="forceSend">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>

@@ -157,7 +157,7 @@
                         <input id="description" name="description" class="form-control" type="text" value="" required="required">
                     </div>
                     <div class="form-group mb-3">
-                        <label for="title"><strong>Prefix (utilisé lors de l’import de documents dans le circuit)</strong></label>
+                        <label for="title"><strong>Titre technique</strong> (sans espaces, utilisé lors de l’import/export de documents)</label>
                         <input id="title" name="title" class="form-control" type="text" value="" required>
                     </div>
                     <div class="form-group mb-3" th:unless="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
