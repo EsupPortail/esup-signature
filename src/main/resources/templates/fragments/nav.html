@@ -69,12 +69,12 @@
                             <i class="fa-solid fa-tasks"></i> <span class="nav-item-label d-inline">Espace superviseur</span>
                         </a>
                         <div th:if="${managedWorkflowsSize > 0}" class="dropdown-divider"></div>
-                        <a id="start-wizard-button" th:unless="${globalProperties.hideWizard}" role="button" class="btn text-white btn-transparent text-left m-1" data-bs-toggle="modal"
+                        <a id="start-wizard-button" th:unless="${globalProperties.hideWizardWorkflow}" role="button" class="btn text-white btn-transparent text-left m-1" data-bs-toggle="modal"
                             data-bs-target="#wiz-modal"
                             title="Créez un nouveau circuit à l'aide de l'assistant">
                                 <i class="fa-solid fa-magic"></i> Assistant de création de circuit
                         </a>
-                        <div th:unless="${globalProperties.hideWizard}" class="dropdown-divider"></div>
+                        <div th:unless="${globalProperties.hideWizardWorkflow}" class="dropdown-divider"></div>
                         <a class="btn text-white btn-transparent text-left m-1" id="link-user" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users'">
                             <i class="fa-solid fa-user-cog"></i> Modifier mes paramètres
                         </a>

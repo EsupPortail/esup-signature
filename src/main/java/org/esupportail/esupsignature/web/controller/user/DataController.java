@@ -70,7 +70,7 @@ public class DataController {
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			Data data = dataService.addData(id, userEppn);
 			try {
-				SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, null, userEppn, authUserEppn, false, null, null, null, null, true);
+				SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, null, userEppn, authUserEppn, false, null, null, null, null, true, null);
 				return ResponseEntity.ok().body(signBook.getId().toString());
 			} catch (EsupSignatureRuntimeException e) {
 				logger.warn(e.getMessage() + " for " + id);
