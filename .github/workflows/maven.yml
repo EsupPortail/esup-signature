@@ -17,7 +17,7 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
-    - name: Install ghostscript
+    - name: Install docker-compose
       run: sudo apt-get update && sudo apt-get install -y docker-compose --fix-missing
     - name: Install ghostscript
       run: sudo apt-get update && sudo apt-get install -y ghostscript --fix-missing
