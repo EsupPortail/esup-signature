@@ -18,6 +18,8 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Install ghostscript
+      run: sudo apt-get update && sudo apt-get install -y docker-compose --fix-missing
+    - name: Install ghostscript
       run: sudo apt-get update && sudo apt-get install -y ghostscript --fix-missing
     - name: Maven Surefire tests
       run: mvn -B clean package -Dspring.config.location=src/test/resources/application-test.yml -Djava.io.tmpdir=/tmp -DskipDockerCompose=false
