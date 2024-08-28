@@ -57,7 +57,9 @@ public class Workflow {
     private Boolean sendAlertToAllRecipients = false;
 
     private String documentsSourceUri;
-    
+
+    private Boolean forbidDownloadsBeforeEnd = true;
+
     @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
     private Set<String> managers = new HashSet<>();
 
@@ -322,5 +324,13 @@ public class Workflow {
 
     public void setMessageToDisplay(String messageToDisplay) {
         this.messageToDisplay = messageToDisplay;
+    }
+
+    public Boolean getForbidDownloadsBeforeEnd() {
+        return forbidDownloadsBeforeEnd;
+    }
+
+    public void setForbidDownloadsBeforeEnd(Boolean forbidDownloadsBeforeEnd) {
+        this.forbidDownloadsBeforeEnd = forbidDownloadsBeforeEnd;
     }
 }

@@ -75,7 +75,7 @@
                                             </td>
                                             <td>
                                                 <a class="btn btn-sm btn-outline-primary"
-                                                    th:if="${signRequest.signedDocuments.size() > iterator.index && signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}"
+                                                    th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.signedDocuments.size() > iterator.index && signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}"
                                                     th:href="@{'/ws-secure/global/get-file/' + ${signRequest.signedDocuments.get(iterator.index).id}}"
                                                     title="Récupérer le document signé à cette étape">
                                                     <i class="fa-solid fa-download"></i></a>
