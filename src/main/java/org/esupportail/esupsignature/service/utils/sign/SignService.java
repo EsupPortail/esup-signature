@@ -219,7 +219,7 @@ public class SignService {
 			}
 			parameters.setSigningCertificate(certificateToken);
 			parameters.setCertificateChain(certificateTokenChain);
-			validationService.checkRevocation(certificateToken, parameters);
+			validationService.checkRevocation(signatureDocumentForm, certificateToken, parameters);
 			DSSDocument dssDocument;
 			if (signatureDocumentForm instanceof SignatureMultipleDocumentsForm) {
 				dssDocument = certSignDocument((SignatureMultipleDocumentsForm) signatureDocumentForm, parameters, abstractKeyStoreTokenConnection);
