@@ -126,7 +126,7 @@ public class NexuService {
 		SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(signatureDocumentForm.getEncryptionAlgorithm(), signatureDocumentForm.getDigestAlgorithm());
 		SignatureValue signatureValue = new SignatureValue(sigAlgorithm, signatureDocumentForm.getSignatureValue());
 		AbstractSignatureParameters parameters = getSignatureParameters(signRequest, userEppn, signatureDocumentForm, documentsToSign);
-		validationService.checkRevocation(DSSUtils.loadCertificate(signatureDocumentForm.getCertificate()), parameters);
+		validationService.checkRevocation(signatureDocumentForm, DSSUtils.loadCertificate(signatureDocumentForm.getCertificate()), parameters);
 		try {
 			logger.info("End signDocument with one document");
 			return service.signDocument(toSignDssDocument, parameters, signatureValue);
