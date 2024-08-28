@@ -7,12 +7,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.1</version>
+		<version>3.3.3</version>
 		<relativePath />
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.29.15</version>
+	<version>1.29.16-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
@@ -781,7 +781,8 @@
 						<phase>compile</phase>
 						<configuration>
 							<target>
-                                <replaceregexp flags="g"
+                                <!--suppress UnresolvedMavenProperty -->
+								<replaceregexp flags="g"
                                                match="[?]version=@(version|[A-Z0-9.]+)@"
                                                replace="?version=@${project.version}@">
                                     <fileset dir="target/classes/static/" includes="**/*.css **/*.js" />
