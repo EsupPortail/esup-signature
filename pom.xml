@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.2</version>
+		<version>3.3.3</version>
 		<relativePath />
 	</parent>
 	<groupId>org.esupportail</groupId>
@@ -781,7 +781,8 @@
 						<phase>compile</phase>
 						<configuration>
 							<target>
-                                <replaceregexp flags="g"
+                                <!--suppress UnresolvedMavenProperty -->
+								<replaceregexp flags="g"
                                                match="[?]version=@(version|[A-Z0-9.]+)@"
                                                replace="?version=@${project.version}@">
                                     <fileset dir="target/classes/static/" includes="**/*.css **/*.js" />
