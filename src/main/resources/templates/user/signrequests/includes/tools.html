@@ -6,7 +6,8 @@
 		<a th:unless="${user.userType.name() == 'external'}" class="btn btn-light btn-outline-dark d-none d-lg-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
 			<i class="fa-solid fa-info-circle"></i>
 		</a>
-		<a class="btn btn-light btn-outline-dark d-none d-lg-block ms-1 me-1"
+		<a th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
+		   class="btn btn-light btn-outline-dark d-none d-lg-block ms-1 me-1"
 		   onclick="printIt()" target="_blank"
 		   title="Imprimer le document"><i class="fa-solid fa-print"></i></a>
 		<script th:inline="javascript">
