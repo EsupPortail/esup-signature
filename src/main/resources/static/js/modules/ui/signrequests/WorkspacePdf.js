@@ -47,7 +47,7 @@ export class WorkspacePdf {
             if(currentSignType === "form") {
                 this.pdfViewer = new PdfViewer('/admin/forms/get-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, true);
             } else {
-                this.pdfViewer = new PdfViewer('/ws-secure/global/get-last-file-inline/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, false);
+                this.pdfViewer = new PdfViewer('/ws-secure/global/get-last-file-pdf/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, false);
             }
         }
         this.signPosition = new SignPosition(
