@@ -939,8 +939,11 @@ public class SignRequestService {
 
 
 	@Transactional
-	public void getSignedFileAndReportResponse(Long signRequestId, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
+	public void getSignedFileAndReportResponse(Long signRequestId, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, boolean force) throws Exception {
 		SignRequest signRequest = getById(signRequestId);
+		if(!force && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null &&  BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd()) && !signRequest.getStatus().equals(SignRequestStatus.completed)) {
+			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit");
+		}
 		webUtilsService.copyFileStreamToHttpResponse(signRequest.getTitle() + "-avec_rapport", "application/zip; charset=utf-8", "attachment", new ByteArrayInputStream(getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse)), httpServletResponse);
 	}
 

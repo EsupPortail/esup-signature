@@ -146,7 +146,7 @@ public class GlobalWsSecureController {
     @GetMapping(value = "/get-last-file-report/{id}")
     public ResponseEntity<Void> getLastFileReport(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         try {
-            signRequestService.getSignedFileAndReportResponse(id, httpServletRequest, httpServletResponse);
+            signRequestService.getSignedFileAndReportResponse(id, httpServletRequest, httpServletResponse, false);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("get file error", e);
