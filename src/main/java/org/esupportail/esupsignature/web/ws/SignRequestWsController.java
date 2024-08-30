@@ -222,7 +222,7 @@ public class SignRequestWsController {
     public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id,
                                                            @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse httpServletResponse) {
         try {
-            signRequestService.getToSignFileResponse(id, "attachment", httpServletResponse);
+            signRequestService.getToSignFileResponse(id, "form-data", httpServletResponse);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
