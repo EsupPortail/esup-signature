@@ -237,7 +237,7 @@ public class SignRequestWsController {
     public ResponseEntity<Void> getLastFileAndReport(@PathVariable("id") Long id,
                                                      @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         try {
-            signRequestService.getSignedFileAndReportResponse(id, httpServletRequest, httpServletResponse);
+            signRequestService.getSignedFileAndReportResponse(id, httpServletRequest, httpServletResponse, true);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
