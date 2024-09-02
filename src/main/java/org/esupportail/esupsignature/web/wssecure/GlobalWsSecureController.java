@@ -131,10 +131,22 @@ public class GlobalWsSecureController {
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/get-last-file-pdf/{id}")
+    public ResponseEntity<Void> getLastFileFromSignRequestPdf(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
+        try {
+            signRequestService.getToSignFileResponse(id, "form-data", httpServletResponse);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return ResponseEntity.internalServerError().build();
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/get-last-file-report/{id}")
     public ResponseEntity<Void> getLastFileReport(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         try {
-            signRequestService.getSignedFileAndReportResponse(id, httpServletRequest, httpServletResponse);
+            signRequestService.getSignedFileAndReportResponse(id, httpServletRequest, httpServletResponse, false);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("get file error", e);
