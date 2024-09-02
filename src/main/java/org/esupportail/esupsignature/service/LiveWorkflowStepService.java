@@ -42,7 +42,7 @@ public class LiveWorkflowStepService {
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
         liveWorkflowStep.setWorkflowStep(workflowStep);
         liveWorkflowStep.setRepeatable(Objects.requireNonNullElse(step.getRepeatable(), false));
-        liveWorkflowStep.setMultiSign(Objects.requireNonNullElse(step.getMultiSign(), false));
+        liveWorkflowStep.setMultiSign(Objects.requireNonNullElse(step.getMultiSign(), true));
         liveWorkflowStep.setAutoSign(Objects.requireNonNullElse(step.getAutoSign(), false));
         liveWorkflowStep.setAllSignToComplete(Objects.requireNonNullElse(step.getAllSignToComplete(), false));
         if(step.getSignType() == null) {

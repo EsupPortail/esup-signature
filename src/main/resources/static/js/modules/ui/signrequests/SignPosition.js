@@ -3,13 +3,14 @@ import {EventFactory} from "../../utils/EventFactory.js?version=@version@";
 
 export class SignPosition extends EventFactory {
 
-    constructor(signType, currentSignRequestParamses, signImageNumber, signImages, userName, authUserName, signable, forceResetSignPos, isOtp, phone, csrf) {
+    constructor(signType, currentSignRequestParamses, currentStepMultiSign, signImageNumber, signImages, userName, authUserName, signable, forceResetSignPos, isOtp, phone, csrf) {
         super();
         console.info("Starting sign positioning tools");
         this.userName = userName;
         this.authUserName = authUserName;
         this.pdf = $("#pdf");
         this.signImages = signImages;
+        this.currentStepMultiSign = currentStepMultiSign;
         this.isOtp = isOtp;
         this.phone = phone;
         this.csrf = csrf;
@@ -110,6 +111,10 @@ export class SignPosition extends EventFactory {
                 id = 999999;
                 this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, false, false, false, signImageNumber, this.scrollTop, this.csrf, this.signType));
             } else if(signImageNumber >= 0) {
+                if(this.currentStepMultiSign === false && this.signRequestParamses.size > 0) {
+                    alert("Impossible d'ajouter plusieurs signatures sur cette étape");
+                    return;
+                }
                 if(JSON.parse(sessionStorage.getItem("favoriteSignRequestParams")) != null) {
                     favoriteSignRequestParams = JSON.parse(sessionStorage.getItem("favoriteSignRequestParams"));
                     if(currentSignRequestParams != null) {
@@ -119,10 +124,18 @@ export class SignPosition extends EventFactory {
                 }
                 this.signRequestParamses.set(id, new SignRequestParams(favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, this.signImages, this.scrollTop));
             } else {
+                if(this.currentStepMultiSign === false) {
+                    alert("Impossible d'ajouter des annotations sur cette étape");
+                    return;
+                }
                 this.signRequestParamses.set(id, new SignRequestParams(favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, null, this.scrollTop));
             }
             this.signRequestParamses.get(id).changeSignImage(signImageNumber);
         } else {
+            if(this.currentStepMultiSign === false) {
+                alert("Impossible d'ajouter des annotations sur cette étape");
+                return;
+            }
             this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page, this.userName, this.authUserName, restore, signImageNumber != null && signImageNumber >= 0, false, this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, null, this.scrollTop));
         }
         this.signRequestParamses.get(id).addEventListener("unlock", e => this.lockSigns());
@@ -157,8 +170,10 @@ export class SignPosition extends EventFactory {
 
     addText(page) {
         let signRequestParams = this.addSign(page, false, null);
-        signRequestParams.turnToText();
-        signRequestParams.cross.css("background-image", "");
-        signRequestParams.changeSignSize(null);
+        if(signRequestParams != null) {
+            signRequestParams.turnToText();
+            signRequestParams.cross.css("background-image", "");
+            signRequestParams.changeSignSize(null);
+        }
     }
 }

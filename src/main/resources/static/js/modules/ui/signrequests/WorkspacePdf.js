@@ -5,7 +5,7 @@ import {UserUi} from '../users/UserUi.js?version=@version@';
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
+    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepMultiSign, workflow, signImages, userName, authUserName, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
         console.info("Starting workspace UI");
         this.ready = false;
         this.formInitialized = false;
@@ -17,14 +17,13 @@ export class WorkspacePdf {
         this.dataId = dataId;
         this.formId = formId;
         this.signImageNumber = signImageNumber;
-        this.currentSignType = currentSignType;
         this.restore = restore;
         this.postits = postits;
         this.notSigned = notSigned;
         this.signable = signable;
         this.editable = editable;
         this.signRequestId = id;
-        this.signType = signType;
+        this.currentSignType = currentSignType;
         this.stepRepeatable = stepRepeatable;
         this.status = status;
         this.csrf = csrf;
@@ -51,8 +50,9 @@ export class WorkspacePdf {
             }
         }
         this.signPosition = new SignPosition(
-            signType,
+            currentSignType,
             currentSignRequestParamses,
+            currentStepMultiSign,
             signImageNumber,
             signImages,
             userName, authUserName, signable, this.forcePageNum, this.isOtp, this.phone, this.csrf);
@@ -71,7 +71,7 @@ export class WorkspacePdf {
         this.workspace = $("#workspace");
         this.secondTools = $("#second-tools");
         this.addSignButton = $("#addSignButton")
-        if (signType === "form" || (formId == null && !workflow) || currentSignRequestParamses.length === 0) {
+        if (currentSignType === "form" || (formId == null && !workflow) || currentSignRequestParamses.length === 0) {
             if(this.wsTabs.length) {
                 this.autocollapse();
                 let self = this;
@@ -209,7 +209,7 @@ export class WorkspacePdf {
                 signSpaceDiv = $("#signSpace_" + i);
                 signSpaceDiv.on("click", e => this.addSign(i));
                 if(currentSignRequestParams.ready == null || !currentSignRequestParams.ready) {
-                    if(this.signType !== "visa") {
+                    if(this.currentSignType !== "visa") {
                         signSpaceDiv.html("Cliquez ici pour insérer votre signature");
                     } else {
                         signSpaceDiv.html("Cliquez ici pour insérer votre visa");
@@ -247,7 +247,7 @@ export class WorkspacePdf {
             this.signImageNumber = localStorage.getItem('signNumber');
         }
         this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, forceSignNumber);
-        if((this.signType === "nexuSign" || this.signType === "certSign") && !this.notSigned) {
+        if((this.currentSignType === "nexuSign" || this.currentSignType === "certSign") && !this.notSigned) {
             $("#addSignButton").attr("disabled", true);
         }
     }
@@ -830,7 +830,7 @@ export class WorkspacePdf {
         $('#signButtons').removeClass('d-none');
         $('#signModeButton').toggleClass('btn-outline-success');
 
-        if(this.signType !== 'hiddenVisa') {
+        if(this.currentSignType !== 'hiddenVisa') {
             let signTools = $('#sign-tools');
             signTools.removeClass("d-none");
             signTools.addClass("d-flex");
