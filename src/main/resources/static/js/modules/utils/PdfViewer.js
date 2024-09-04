@@ -43,16 +43,16 @@ export class PdfViewer extends EventFactory {
         this.initListeners();
         let self = this;
         $(document).ready(function() {
-            if (!pdfjsLib || !Promise.withResolvers) {
-                bootbox.alert("Votre navigateur ne support pas pdfJs pour l'affichage des PDF.<br>Version minimales : Firefox 121, Chrome 119, Safari 17.4", function () {
+            if (!globalThis.pdfjsLib || !Promise.withResolvers) {
+                bootbox.alert("Votre navigateur ne support pas pdfJs pour l’affichage des PDF.<br>Version minimales : Firefox 121, Chrome 119, Safari 17.4", function () {
                     document.location = "https://www.mozilla.org/fr/firefox/new/"
                 });
             } else {
-                pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-                    '/webjars/pdfjs-dist/4.2.67/legacy/build/pdf.worker.min.mjs',
+                globalThis.pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+                    '/webjars/pdfjs-dist/4.6.82/legacy/build/pdf.worker.min.mjs',
                     import.meta.url
-                ).toString()
-                pdfjsLib.getDocument(self.url).promise.then(pdf => self.startRender(pdf));
+                ).toString();
+                globalThis.pdfjsLib.getDocument(self.url).promise.then(pdf => self.startRender(pdf));
 
             }
         });
