@@ -160,9 +160,9 @@
 			<version>0.59</version>
 		</dependency>
 		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>google-code-prettify</artifactId>
-			<version>1.0.5</version>
+			<groupId>org.webjars</groupId>
+			<artifactId>prettify</artifactId>
+			<version>4-Mar-2013-1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
@@ -236,9 +236,9 @@
 			<version>3.2.5</version>
 		</dependency>
 		<dependency>
-			<groupId>org.webjars.bowergithub.ajaxorg</groupId>
+			<groupId>org.webjars.npm</groupId>
 			<artifactId>ace-builds</artifactId>
-			<version>1.4.13</version>
+			<version>1.35.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
