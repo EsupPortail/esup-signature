@@ -110,7 +110,7 @@
 <!--                                               th:data-es-signbook-id="${signBook.id}">-->
 <!--                                    </td>-->
                                     <td class="clickable-td text-break"><span th:text="${signBook.subject}"></span></td>
-                                    <td class="clickable-td d-none d-lg-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
+                                        <td class="clickable-td d-none d-lg-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
                                     <td class="clickable-td d-none d-xl-table-cell"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                     </td>
                                     <td class="clickable-td d-none d-lg-table-cell">
@@ -118,8 +118,8 @@
                                             <tbody th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0 && signBook.liveWorkflow.currentStepNumber > 0}">
                                             <th:block th:each="recipient : ${signBook.liveWorkflow.currentStep.recipients}">
                                                 <tr>
-                                                    <td class="w-100" th:title="${recipient.user.email}"
-                                                        th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
+                                                    <span class="me-1" th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                                    <span class="me-1" th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.email}"></span>
                                                     <td class="align-content-center">
                                                         <div th:switch="${recipient.signed}">
                                                             <th:block th:case="true">
