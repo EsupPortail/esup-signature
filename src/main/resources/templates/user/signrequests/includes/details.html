@@ -8,7 +8,7 @@
         <a th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="Export SEDA" class="btn btn-primary m-1" th:href="'/ws-secure/global/get-seda/' + ${signRequest.id}">
             <i class="fa-solid fa-archive"></i> Export SEDA
         </a>
-        <a th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="btn btn-primary waves-effect m-1" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
+        <a th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="btn btn-primary m-1" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
             <i class="fa-solid fa-shield-alt"></i> Contrôler le document
         </a>
     </div>
