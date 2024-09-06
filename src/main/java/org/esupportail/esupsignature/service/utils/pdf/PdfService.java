@@ -75,6 +75,7 @@ import org.verapdf.pdfa.results.ValidationResult;
 import javax.imageio.ImageIO;
 import javax.xml.transform.TransformerException;
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -767,6 +768,37 @@ public class PdfService {
                         pdAcroForm.getFields().remove(pdField);
                     }
                 }
+            }
+            try {
+                PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
+                PDPageTree pdPages = docCatalog.getPages();
+                for (PDPage pdPage : pdPages) {
+                    List<PDAnnotation> annotationsToRemove = new ArrayList<>();
+                    List<PDAnnotation> pdAnnotations = pdPage.getAnnotations();
+                    for (PDAnnotation pdAnnotation : pdAnnotations) {
+                        if (pdAnnotation instanceof PDAnnotationLink pdAnnotationLink) {
+                            String signFieldName = pdAnnotationLink.getContents().toLowerCase();
+                            if (signFieldName.toLowerCase(Locale.ROOT).startsWith("signature")) {
+                                annotationsToRemove.add(pdAnnotation);
+                                PDRectangle linkPosition = pdAnnotationLink.getRectangle();
+                                Rectangle2D.Float rect = new Rectangle2D.Float(
+                                        linkPosition.getLowerLeftX(),
+                                        linkPosition.getLowerLeftY(),
+                                        linkPosition.getWidth(),
+                                        linkPosition.getHeight()
+                                );
+                                try (PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true)) {
+                                    contentStream.setNonStrokingColor(1f, 1f, 1f);
+                                    contentStream.addRect(rect.x, rect.y, rect.width, rect.height);
+                                    contentStream.fill();
+                                }
+                            }
+                        }
+                    }
+                    pdAnnotations.removeAll(annotationsToRemove);
+                }
+            } catch (IOException e) {
+                logger.warn("error on remove sign field fake link", e);
             }
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             pdDocument.setAllSecurityToBeRemoved(true);

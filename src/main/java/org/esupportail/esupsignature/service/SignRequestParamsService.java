@@ -6,6 +6,9 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageTree;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -46,15 +49,15 @@ public class SignRequestParamsService {
         return signRequestParamsRepository.findById(id).orElseThrow();
     }
 
-    public SignRequestParams createFromPdf(PDTerminalField pdSignatureField, int signPageNumber, PDPage pdPage) {
+    public SignRequestParams createFromPdf(String name, PDRectangle pdRectangle, int signPageNumber, PDPage pdPage) {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignImageNumber(0);
-        signRequestParams.setPdSignatureFieldName(pdSignatureField.getPartialName());
-        signRequestParams.setxPos(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX() / globalProperties.getFixFactor()));
-        signRequestParams.setyPos(Math.round((pdPage.getBBox().getHeight() - pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - pdSignatureField.getWidgets().get(0).getRectangle().getHeight()) / globalProperties.getFixFactor()));
+        signRequestParams.setPdSignatureFieldName(name);
+        signRequestParams.setxPos(Math.round(pdRectangle.getLowerLeftX() / globalProperties.getFixFactor()));
+        signRequestParams.setyPos(Math.round((pdPage.getBBox().getHeight() - pdRectangle.getLowerLeftY() - pdRectangle.getHeight()) / globalProperties.getFixFactor()));
         signRequestParams.setSignPageNumber(signPageNumber);
-        signRequestParams.setSignWidth(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getWidth() / globalProperties.getFixFactor()));
-        signRequestParams.setSignHeight(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getHeight() / globalProperties.getFixFactor()));
+//        signRequestParams.setSignWidth(Math.round(pdRectangle.getWidth() / globalProperties.getFixFactor()));
+//        signRequestParams.setSignHeight(Math.round(pdRectangle.getHeight() / globalProperties.getFixFactor()));
         signRequestParamsRepository.save(signRequestParams);
         return signRequestParams;
     }
@@ -106,8 +109,7 @@ public class SignRequestParamsService {
             if(acroForm != null) {
                 Map<String, Integer> pageNrByAnnotDict = pdfService.getPageNumberByAnnotDict(pdDocument);
                 for (PDField pdField : acroForm.getFields()) {
-                    if (pdField instanceof PDSignatureField) {
-                        PDSignatureField pdSignatureField = (PDSignatureField) pdField;
+                    if (pdField instanceof PDSignatureField pdSignatureField) {
                         PDSignature pdSignature = pdSignatureField.getSignature();
                         if(pdSignature != null) {
                             continue;
@@ -116,22 +118,35 @@ public class SignRequestParamsService {
                         if(pageNrByAnnotDict.containsKey(signFieldName) && pageNrByAnnotDict.get(signFieldName) != null) {
                             int pageNum = pageNrByAnnotDict.get(signFieldName);
                             PDPage pdPage = pdPages.get(pageNum);
-                            SignRequestParams signRequestParams = createFromPdf(pdSignatureField, pageNrByAnnotDict.get(signFieldName) + 1, pdPage);
+                            SignRequestParams signRequestParams = createFromPdf(signFieldName, pdSignatureField.getWidgets().get(0).getRectangle(), pageNrByAnnotDict.get(signFieldName) + 1, pdPage);
                             signRequestParamsList.add(signRequestParams);
                         }
                     }
                     //Un bouton dont le nom commence par signature est considéré comme un champ signature
-                    if(pdField instanceof PDPushButton) {
-                        PDPushButton pdSignatureField = (PDPushButton) pdField;
+                    if(pdField instanceof PDPushButton pdSignatureField) {
                         String signFieldName = pdSignatureField.getPartialName();
                         if(signFieldName.toLowerCase(Locale.ROOT).startsWith("signature")) {
                             int pageNum = pageNrByAnnotDict.get(signFieldName);
                             PDPage pdPage = pdPages.get(pageNum);
-                            SignRequestParams signRequestParams = createFromPdf(pdSignatureField, pageNrByAnnotDict.get(signFieldName) + 1, pdPage);
+                            SignRequestParams signRequestParams = createFromPdf(signFieldName, pdSignatureField.getWidgets().get(0).getRectangle(), pageNrByAnnotDict.get(signFieldName) + 1, pdPage);
                             signRequestParamsList.add(signRequestParams);
                         }
                     }
                 }
+            }
+            int i = 1;
+            for(PDPage pdPage : pdPages) {
+                List<PDAnnotation> pdAnnotations = pdPage.getAnnotations();
+                for (PDAnnotation pdAnnotation : pdAnnotations) {
+                    if(pdAnnotation instanceof PDAnnotationLink pdAnnotationLink) {
+                        String signFieldName = pdAnnotationLink.getContents().toLowerCase();
+                        if(signFieldName.toLowerCase(Locale.ROOT).startsWith("signature")) {
+                            SignRequestParams signRequestParams = createFromPdf(signFieldName, pdAnnotationLink.getRectangle(), i, pdPage);
+                            signRequestParamsList.add(signRequestParams);
+                        }
+                    }
+                }
+                i++;
             }
             pdDocument.close();
         } catch (Exception e) {
