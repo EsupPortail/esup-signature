@@ -777,7 +777,7 @@ public class PdfService {
                     List<PDAnnotation> pdAnnotations = pdPage.getAnnotations();
                     for (PDAnnotation pdAnnotation : pdAnnotations) {
                         if (pdAnnotation instanceof PDAnnotationLink pdAnnotationLink) {
-                            String signFieldName = pdAnnotationLink.getContents().toLowerCase();
+                            String signFieldName = ((PDActionURI) pdAnnotationLink.getAction()).getURI();
                             if (signFieldName.toLowerCase(Locale.ROOT).startsWith("signature")) {
                                 annotationsToRemove.add(pdAnnotation);
                                 PDRectangle linkPosition = pdAnnotationLink.getRectangle();

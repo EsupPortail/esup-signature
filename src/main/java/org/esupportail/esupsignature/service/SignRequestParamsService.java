@@ -2,15 +2,20 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.Resource;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageTree;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
-import org.apache.pdfbox.pdmodel.interactive.form.*;
+import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDPushButton;
+import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
@@ -22,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -139,10 +143,12 @@ public class SignRequestParamsService {
                 List<PDAnnotation> pdAnnotations = pdPage.getAnnotations();
                 for (PDAnnotation pdAnnotation : pdAnnotations) {
                     if(pdAnnotation instanceof PDAnnotationLink pdAnnotationLink) {
-                        String signFieldName = pdAnnotationLink.getContents().toLowerCase();
-                        if(signFieldName.toLowerCase(Locale.ROOT).startsWith("signature")) {
-                            SignRequestParams signRequestParams = createFromPdf(signFieldName, pdAnnotationLink.getRectangle(), i, pdPage);
-                            signRequestParamsList.add(signRequestParams);
+                        if(pdAnnotationLink.getAction() instanceof PDActionURI pdActionURI) {
+                            String signFieldName = pdActionURI.getURI();
+                            if (signFieldName.toLowerCase(Locale.ROOT).startsWith("signature")) {
+                                SignRequestParams signRequestParams = createFromPdf(signFieldName, pdAnnotationLink.getRectangle(), i, pdPage);
+                                signRequestParamsList.add(signRequestParams);
+                            }
                         }
                     }
                 }
