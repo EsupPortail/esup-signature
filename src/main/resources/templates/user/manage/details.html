@@ -118,8 +118,10 @@
                                             <tbody th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0 && signBook.liveWorkflow.currentStepNumber > 0}">
                                             <th:block th:each="recipient : ${signBook.liveWorkflow.currentStep.recipients}">
                                                 <tr>
-                                                    <span class="me-1" th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
-                                                    <span class="me-1" th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.email}"></span>
+                                                    <td class="w-100" th:title="${recipient.user.email}">
+                                                        <span class="me-1" th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                                        <span class="me-1" th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.email}"></span>
+                                                    </td>
                                                     <td class="align-content-center">
                                                         <div th:switch="${recipient.signed}">
                                                             <th:block th:case="true">
