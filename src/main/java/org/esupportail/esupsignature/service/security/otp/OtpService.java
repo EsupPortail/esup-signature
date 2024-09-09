@@ -212,6 +212,7 @@ public class OtpService {
         otps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.refused));
         otps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.exported));
         otps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.archived));
+        logger.info(otps.size() + " otps to clean");
         for(Otp otp : otps) {
             clearOTP(otp.getUrlId());
             otpRepository.delete(otp);
