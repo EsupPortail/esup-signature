@@ -392,7 +392,10 @@ public class FileService {
 		rect.setRect(0, 0, 600 / factor, 300 / factor);
 		graphics2D.fillRect(0, 0, Math.round(600 / factor), Math.round(300 / factor));
 		setQualityParams(graphics2D);
-		String word = (firstname.charAt(0)  + "" + name.charAt(0)).toUpperCase();
+		String word = email;
+		if(StringUtils.hasText(firstname) && StringUtils.hasText(name)) {
+			word = (firstname.charAt(0)  + "" + name.charAt(0)).toUpperCase();
+		}
 		try {
 			Font font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/Signature.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(12f);
 			int fontSize = findFontSize(word, Math.round(250 / factor), font);
