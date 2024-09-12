@@ -19,10 +19,15 @@ import eu.europa.esig.dss.service.ocsp.JdbcCacheOCSPSource;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.service.x509.aia.JdbcCacheAIASource;
+import eu.europa.esig.dss.spi.client.http.DSSCacheFileLoader;
 import eu.europa.esig.dss.spi.client.http.DSSFileLoader;
 import eu.europa.esig.dss.spi.client.http.IgnoreDataLoader;
 import eu.europa.esig.dss.spi.client.jdbc.JdbcCacheConnector;
+import eu.europa.esig.dss.spi.policy.SignaturePolicyProvider;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
+import eu.europa.esig.dss.spi.validation.CertificateVerifier;
+import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.spi.validation.RevocationDataVerifier;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.spi.x509.aia.AIASource;
 import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
@@ -42,9 +47,6 @@ import eu.europa.esig.dss.tsl.cache.CacheCleaner;
 import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
-import eu.europa.esig.dss.validation.CertificateVerifier;
-import eu.europa.esig.dss.validation.CommonCertificateVerifier;
-import eu.europa.esig.dss.validation.SignaturePolicyProvider;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 import eu.europa.esig.dss.xml.common.DocumentBuilderFactoryBuilder;
 import eu.europa.esig.dss.xml.common.SchemaFactoryBuilder;
@@ -263,7 +265,7 @@ public class DSSBeanConfig {
 		CacheCleaner cacheCleaner = new CacheCleaner();
 		cacheCleaner.setCleanMemory(true);
 		cacheCleaner.setCleanFileSystem(true);
-		cacheCleaner.setDSSFileLoader(offlineLoader);
+		cacheCleaner.setDSSFileLoader((DSSCacheFileLoader) offlineLoader);
 
 		return cacheCleaner;
 	}
@@ -290,12 +292,18 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public CertificateVerifier certificateVerifier(JdbcCacheOCSPSource jdbcCacheOCSPSource, JdbcCacheCRLSource jdbcCacheCRLSource, JdbcCacheAIASource jdbcCacheAIASource, TrustedListsCertificateSource trustedListSource) {
+	public RevocationDataVerifier revocationDataVerifier() {
+		return RevocationDataVerifier.createDefaultRevocationDataVerifier();
+	}
+
+	@Bean
+	public CertificateVerifier certificateVerifier(JdbcCacheOCSPSource jdbcCacheOCSPSource, JdbcCacheCRLSource jdbcCacheCRLSource, JdbcCacheAIASource jdbcCacheAIASource, TrustedListsCertificateSource trustedListSource, RevocationDataVerifier revocationDataVerifier) {
 		CommonCertificateVerifier certificateVerifier = new CommonCertificateVerifier();
 		certificateVerifier.setCrlSource(jdbcCacheCRLSource);
 		certificateVerifier.setOcspSource(jdbcCacheOCSPSource);
 		certificateVerifier.setAIASource(jdbcCacheAIASource);
 		certificateVerifier.setTrustedCertSources(trustedListSource);
+		certificateVerifier.setRevocationDataVerifier(revocationDataVerifier);
 		certificateVerifier.setAlertOnMissingRevocationData(new ExceptionOnStatusAlert());
 		certificateVerifier.setCheckRevocationForUntrustedChains(dssProperties.getCheckRevocationForUntrustedChains());
 		return certificateVerifier;

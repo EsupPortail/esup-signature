@@ -15,8 +15,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.utils.StepStatus;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -169,12 +167,12 @@ public class GlobalWsSecureController {
     @PreAuthorize("@preAuthorizeService.documentCreator(#documentId, #authUserEppn)")
     @ResponseBody
     @PostMapping(value = "/remove-doc/{documentId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String removeDocument(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("documentId") Long documentId) throws JSONException {
+    public String removeDocument(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("documentId") Long documentId) {
         logger.info("remove document " + documentId);
         Document document = documentService.getById(documentId);
         SignRequest signRequest = signRequestService.getById(document.getParentId());
         signRequest.getOriginalDocuments().remove(document);
-        return new JSONObject().toString();
+        return "{}";
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
