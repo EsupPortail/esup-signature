@@ -435,7 +435,7 @@ public class SignRequestService {
 						bytes = pdfService.normalizeGS(bytes);
 						List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
 						if(signRequestParamses.isEmpty()) {
-							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), docNumber);
+							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), docNumber, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow());
 						} else {
 							for (SignRequestParams signRequestParams : signRequestParamses) {
 								toAddSignRequestParams.add(signRequestParamsService.createSignRequestParams(signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequestParams.getSignWidth(), signRequestParams.getSignHeight()));
@@ -444,7 +444,7 @@ public class SignRequestService {
 						signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
 						Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
 						if(reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty()) {
-							inputStream = pdfService.removeSignField(new ByteArrayInputStream(bytes));
+							inputStream = pdfService.removeSignField(new ByteArrayInputStream(bytes), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow());
 						}
 					} else if(contentType != null && contentType.contains("image")){
 						bytes = pdfService.jpegToPdf(multipartFile.getInputStream(), multipartFile.getName()).readAllBytes();

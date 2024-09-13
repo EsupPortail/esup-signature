@@ -27,6 +27,7 @@ import eu.europa.esig.dss.spi.policy.SignaturePolicyProvider;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.spi.validation.CertificateVerifier;
 import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.spi.validation.OCSPFirstRevocationDataLoadingStrategyFactory;
 import eu.europa.esig.dss.spi.validation.RevocationDataVerifier;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.spi.x509.aia.AIASource;
@@ -305,6 +306,7 @@ public class DSSBeanConfig {
 		certificateVerifier.setTrustedCertSources(trustedListSource);
 		certificateVerifier.setRevocationDataVerifier(revocationDataVerifier);
 		certificateVerifier.setAlertOnMissingRevocationData(new ExceptionOnStatusAlert());
+		certificateVerifier.setRevocationDataLoadingStrategyFactory(new OCSPFirstRevocationDataLoadingStrategyFactory());
 		certificateVerifier.setCheckRevocationForUntrustedChains(dssProperties.getCheckRevocationForUntrustedChains());
 		return certificateVerifier;
 	}

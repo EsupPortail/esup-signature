@@ -85,6 +85,8 @@ public class Workflow {
 
     private Boolean sealAtEnd = false;
 
+    private String signRequestParamsDetectionPattern;
+
     @Transient
     private String messageToDisplay;
 
@@ -332,5 +334,13 @@ public class Workflow {
 
     public void setForbidDownloadsBeforeEnd(Boolean forbidDownloadsBeforeEnd) {
         this.forbidDownloadsBeforeEnd = forbidDownloadsBeforeEnd;
+    }
+
+    public String getSignRequestParamsDetectionPattern() {
+        return signRequestParamsDetectionPattern;
+    }
+
+    public void setSignRequestParamsDetectionPattern(String signRequestParamsDetectionPattern) {
+        this.signRequestParamsDetectionPattern = signRequestParamsDetectionPattern;
     }
 }
