@@ -48,10 +48,7 @@ import org.apache.xmpbox.xml.DomXmpParser;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.pdf.PdfConfig;
-import org.esupportail.esupsignature.entity.Log;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.SignRequestParams;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
@@ -78,11 +75,14 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @Service
@@ -738,7 +738,7 @@ public class PdfService {
         return null;
     }
 
-    public InputStream removeSignField(InputStream pdfFile) {
+    public InputStream removeSignField(InputStream pdfFile, Workflow workflow) {
         try {
             PDDocument pdDocument = PDDocument.load(pdfFile);
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
@@ -749,64 +749,95 @@ public class PdfService {
                 pdAcroForm.setDefaultResources(resources);
                 List<PDField> fields = pdAcroForm.getFields();
                 for(PDField pdField : fields) {
-                    if(pdField instanceof PDSignatureField || (pdField instanceof PDPushButton && pdField.getPartialName().toLowerCase(Locale.ROOT).startsWith("signature"))) {
-                        List<PDAnnotationWidget> widgets = pdField.getWidgets();
-                        for (PDAnnotationWidget widget : widgets) {
-                            for(PDPage page : pdDocument.getPages()) {
-                                List<PDAnnotation> annotations = page.getAnnotations();
-                                boolean removed = false;
-                                for (PDAnnotation annotation : annotations) {
-                                    if (annotation.getCOSObject().equals(widget.getCOSObject())) {
-                                        removed = annotations.remove(annotation);
-                                        break;
-                                    }
+                    if(pdField instanceof PDSignatureField) {
+                        removeField(pdField, pdDocument, pdAcroForm);
+                    } else if(workflow != null && StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern())) {
+                        String className = "org.apache.pdfbox.pdmodel.interactive.form.PD" + extractTextInBrackets(workflow.getSignRequestParamsDetectionPattern());
+                        try {
+                            Class<?> pdFieldClass = Class.forName(className);
+                            if (pdFieldClass.isInstance(pdField)) {
+                                Method getPartialNameMethod = pdFieldClass.getMethod("getPartialName");
+                                String signFieldName = (String) getPartialNameMethod.invoke(pdField);
+                                Pattern pattern = Pattern.compile(workflow.getSignRequestParamsDetectionPattern().split("]")[1], Pattern.CASE_INSENSITIVE);
+                                if (pattern.matcher(signFieldName).find()) {
+                                    removeField(pdField, pdDocument, pdAcroForm);
                                 }
-                                if (!removed)
-                                    System.out.println("Inconsistent annotation definition: Page annotations do not include the target widget.");
                             }
+                        } catch (ClassNotFoundException e) {
+                            logger.warn("error on remove sign field", e);
                         }
-                        pdAcroForm.getFields().remove(pdField);
                     }
                 }
             }
-            try {
-                PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
-                PDPageTree pdPages = docCatalog.getPages();
-                for (PDPage pdPage : pdPages) {
-                    List<PDAnnotation> annotationsToRemove = new ArrayList<>();
-                    List<PDAnnotation> pdAnnotations = pdPage.getAnnotations();
-                    for (PDAnnotation pdAnnotation : pdAnnotations) {
-                        if (pdAnnotation instanceof PDAnnotationLink pdAnnotationLink) {
-                            String signFieldName = ((PDActionURI) pdAnnotationLink.getAction()).getURI();
-                            if (signFieldName.toLowerCase(Locale.ROOT).startsWith("signature")) {
-                                annotationsToRemove.add(pdAnnotation);
-                                PDRectangle linkPosition = pdAnnotationLink.getRectangle();
-                                Rectangle2D.Float rect = new Rectangle2D.Float(
-                                        linkPosition.getLowerLeftX(),
-                                        linkPosition.getLowerLeftY(),
-                                        linkPosition.getWidth(),
-                                        linkPosition.getHeight()
-                                );
-                                try (PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true)) {
-                                    contentStream.setNonStrokingColor(1f, 1f, 1f);
-                                    contentStream.addRect(rect.x, rect.y, rect.width, rect.height);
-                                    contentStream.fill();
+            if(workflow != null && StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern()) && workflow.getSignRequestParamsDetectionPattern().contains("AnnotationLink")) {
+                try {
+                    PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
+                    PDPageTree pdPages = docCatalog.getPages();
+                    for (PDPage pdPage : pdPages) {
+                        List<PDAnnotation> annotationsToRemove = new ArrayList<>();
+                        List<PDAnnotation> pdAnnotations = pdPage.getAnnotations();
+                        for (PDAnnotation pdAnnotation : pdAnnotations) {
+                            if (pdAnnotation instanceof PDAnnotationLink pdAnnotationLink) {
+                                String signFieldName = ((PDActionURI) pdAnnotationLink.getAction()).getURI();
+                                Pattern pattern = Pattern.compile(workflow.getSignRequestParamsDetectionPattern().split("]")[1], Pattern.CASE_INSENSITIVE);
+                                if(pattern.matcher(signFieldName).find()) {
+                                    annotationsToRemove.add(pdAnnotation);
+                                    PDRectangle linkPosition = pdAnnotationLink.getRectangle();
+                                    Rectangle2D.Float rect = new Rectangle2D.Float(
+                                            linkPosition.getLowerLeftX(),
+                                            linkPosition.getLowerLeftY(),
+                                            linkPosition.getWidth(),
+                                            linkPosition.getHeight()
+                                    );
+                                    try (PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true)) {
+                                        contentStream.setNonStrokingColor(1f, 1f, 1f);
+                                        contentStream.addRect(rect.x-1, rect.y-1, rect.width+1, rect.height+1);
+                                        contentStream.fill();
+                                    }
                                 }
                             }
                         }
+                        pdAnnotations.removeAll(annotationsToRemove);
                     }
-                    pdAnnotations.removeAll(annotationsToRemove);
+                } catch (IOException e) {
+                    logger.warn("error on remove sign field fake link", e);
                 }
-            } catch (IOException e) {
-                logger.warn("error on remove sign field fake link", e);
             }
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             pdDocument.setAllSecurityToBeRemoved(true);
             pdDocument.save(out);
             pdDocument.close();
             return new ByteArrayInputStream(out.toByteArray());
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("file read error", e);
+        }
+        return null;
+    }
+
+    private static void removeField(PDField pdField, PDDocument pdDocument, PDAcroForm pdAcroForm) throws IOException {
+        List<PDAnnotationWidget> widgets = pdField.getWidgets();
+        for (PDAnnotationWidget widget : widgets) {
+            for(PDPage page : pdDocument.getPages()) {
+                List<PDAnnotation> annotations = page.getAnnotations();
+                boolean removed = false;
+                for (PDAnnotation annotation : annotations) {
+                    if (annotation.getCOSObject().equals(widget.getCOSObject())) {
+                        removed = annotations.remove(annotation);
+                        break;
+                    }
+                }
+                if (!removed)
+                    logger.debug("Inconsistent annotation definition: Page annotations do not include the target widget.");
+            }
+        }
+        pdAcroForm.getFields().remove(pdField);
+    }
+
+    private String extractTextInBrackets(String input) {
+        Pattern pattern = Pattern.compile("\\[(.*?)\\]");
+        Matcher matcher = pattern.matcher(input);
+        if (matcher.find()) {
+            return matcher.group(1);
         }
         return null;
     }
