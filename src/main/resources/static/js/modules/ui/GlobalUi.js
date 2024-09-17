@@ -113,6 +113,11 @@ export class GlobalUi {
             wizUi.wizardWorkflowStart();
         });
 
+        $("#start-wizard-button-3").on('click', function(e) {
+            let wizUi = new WizUi("", $("#wiz-div"), self.csrf, self.maxSize);
+            wizUi.wizardWorkflowStart();
+        });
+
         $(".start-form-button").on('click', function() {
             let wizUi = new WizUi("", $("#wiz-start-form-div"), self.csrf, self.maxSize);
             wizUi.wizardFormStart($(this).attr("data-es-form-id"));
