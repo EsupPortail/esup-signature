@@ -211,7 +211,7 @@ public class UserService {
 
     @Transactional
     public User createUserWithEppn(String eppn) throws EsupSignatureUserException {
-        if(eppn.equals("system")) {
+        if(eppn == null || eppn.equals("system")) {
             return getSystemUser();
         }
         User user = getByEppn(eppn);

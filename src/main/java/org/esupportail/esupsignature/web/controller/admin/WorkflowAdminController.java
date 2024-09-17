@@ -250,7 +250,7 @@ public class WorkflowAdminController {
 
 	@GetMapping(value = "/get-files-from-source/{id}")
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
-	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
+	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
 		User user = userService.getByEppn(authUserEppn);
 		int nbImportedFiles = signBookService.importFilesFromSource(id, user, user);
 		if (nbImportedFiles == 0) {
@@ -258,7 +258,7 @@ public class WorkflowAdminController {
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("info", nbImportedFiles + " ficher(s) importé(s)"));
 		}
-		return "redirect:/admin/workflows/steps/" + id;
+		return "redirect:/admin/workflows";
 	}
 
 	@PostMapping(value = "/add-target/{id}")

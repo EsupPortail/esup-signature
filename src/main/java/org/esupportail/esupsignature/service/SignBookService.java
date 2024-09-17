@@ -1291,7 +1291,7 @@ public class SignBookService {
     @Transactional
     public void addWorkflowToSignBook(SignBook signBook, String authUserEppn, Long workflowSignBookId) throws EsupSignatureRuntimeException {
         Workflow workflow = workflowService.getById(workflowSignBookId);
-        importWorkflow(signBook, workflow, null);
+        importWorkflow(signBook, workflow, new ArrayList<>());
         signRequestService.nextWorkFlowStep(signBook);
         pendingSignBook(signBook.getId(), null, authUserEppn, authUserEppn, false, true);
     }
@@ -1344,8 +1344,6 @@ public class SignBookService {
                             user = userService.getByEppn(fsFile.getCreateBy());
                         }
                         signRequestService.addDocsToSignRequest(signRequest, true, j, new ArrayList<>(), new DssMultipartFile(fsFile.getName(), fsFile.getName(), fsFile.getContentType(), baos.toByteArray()));
-                        fsAccessService.remove(fsFile);
-                        j++;
                         if (workflow.getScanPdfMetadatas()) {
                             String signType = metadatas.get("sign_type_default_val");
                             User creator = userService.createUserWithEppn(metadatas.get("Creator"));
@@ -1389,9 +1387,11 @@ public class SignBookService {
                                     logger.info("target set to : " + new ArrayList<>(signBook.getLiveWorkflow().getTargets()).get(0).getTargetUri());
                                 }
                             }
+                            fsAccessService.remove(fsFile);
+                            j++;
                         } else {
                             targetService.copyTargets(workflow.getTargets(), signBook, null);
-                            importWorkflow(signBook, workflow, null);
+                            importWorkflow(signBook, workflow, new ArrayList<>());
                         }
                         nextStepAndPending(signBook.getId(), null, user.getEppn(), authUser.getEppn());
                         nbImportedFiles++;
