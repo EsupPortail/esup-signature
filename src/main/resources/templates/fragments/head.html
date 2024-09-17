@@ -20,7 +20,6 @@
 		<link rel="stylesheet" th:href="@{/webjars/intro.js/minified/introjs.min.css}" />
 		<link rel="stylesheet" th:href="@{/webjars/spectrum-seballot/spectrum.min.css}" />
 		<link rel="stylesheet" th:href="@{/webjars/bs-stepper/dist/css/bs-stepper.css}" />
-		<link rel="stylesheet" th:href="@{/webjars/google-code-prettify/bin/prettify.min.css}" />
 		<link rel="stylesheet" th:href="'/css/app.css?version=' + ${versionApp}" />
 
 		<script th:if="${globalProperties != null && globalProperties.enableCaptcha}" src="https://cdn.jsdelivr.net/npm/js-captcha@1.3.0/dist/js/index.min.js"></script>
@@ -54,7 +53,6 @@
 		<script th:src="@{/webjars/signature_pad/dist/signature_pad.umd.js}"></script>
 		<script th:src="@{/webjars/bs-stepper/dist/js/bs-stepper.js}"></script>
 		<script th:src="@{/webjars/flatted/es.js}"></script>
-		<script th:src="@{/webjars/google-code-prettify/bin/prettify.min.js}"></script>
 		<script th:src="@{/webjars/chart.js/dist/chart.umd.js}"></script>
 
 		<script th:inline="javascript" type="module" th:if="${versionApp != null}">

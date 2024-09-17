@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -48,7 +49,9 @@ public class ScheduledTaskService {
 
 	private final SignRequestRepository signRequestRepository;
 
-    public ScheduledTaskService(GlobalProperties globalProperties, SignBookRepository signBookRepository, SignBookService signBookService, TaskService taskService, WorkflowService workflowService, UserService userService, SignRequestRepository signRequestRepository) {
+	private final OtpService otpService;
+
+	public ScheduledTaskService(GlobalProperties globalProperties, SignBookRepository signBookRepository, SignBookService signBookService, TaskService taskService, WorkflowService workflowService, UserService userService, SignRequestRepository signRequestRepository, OtpService otpService) {
         this.globalProperties = globalProperties;
         this.signBookRepository = signBookRepository;
         this.signBookService = signBookService;
@@ -56,7 +59,8 @@ public class ScheduledTaskService {
         this.workflowService = workflowService;
         this.userService = userService;
         this.signRequestRepository = signRequestRepository;
-    }
+		this.otpService = otpService;
+	}
 
 
     @Scheduled(initialDelay = 12000, fixedRate = 300000)
@@ -145,6 +149,12 @@ public class ScheduledTaskService {
 				signBookService.delete(signRequest.getParentSignBook().getId(), "scheduler");
 			}
 		}
+	}
+
+	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+	@Transactional
+	public void cleanOtps() {
+		otpService.cleanEndedOtp();
 	}
 
 }

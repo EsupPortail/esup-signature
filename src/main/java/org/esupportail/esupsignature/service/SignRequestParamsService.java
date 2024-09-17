@@ -2,15 +2,23 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.Resource;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageTree;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
-import org.apache.pdfbox.pdmodel.interactive.form.*;
+import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
@@ -18,11 +26,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
-import jakarta.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,15 +57,15 @@ public class SignRequestParamsService {
         return signRequestParamsRepository.findById(id).orElseThrow();
     }
 
-    public SignRequestParams createFromPdf(PDTerminalField pdSignatureField, int signPageNumber, PDPage pdPage) {
+    public SignRequestParams createFromPdf(String name, PDRectangle pdRectangle, int signPageNumber, PDPage pdPage) {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignImageNumber(0);
-        signRequestParams.setPdSignatureFieldName(pdSignatureField.getPartialName());
-        signRequestParams.setxPos(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX() / globalProperties.getFixFactor()));
-        signRequestParams.setyPos(Math.round((pdPage.getBBox().getHeight() - pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - pdSignatureField.getWidgets().get(0).getRectangle().getHeight()) / globalProperties.getFixFactor()));
+        signRequestParams.setPdSignatureFieldName(name);
+        signRequestParams.setxPos(Math.round(pdRectangle.getLowerLeftX() / globalProperties.getFixFactor()));
+        signRequestParams.setyPos(Math.round((pdPage.getBBox().getHeight() - pdRectangle.getLowerLeftY() - pdRectangle.getHeight()) / globalProperties.getFixFactor()));
         signRequestParams.setSignPageNumber(signPageNumber);
-        signRequestParams.setSignWidth(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getWidth() / globalProperties.getFixFactor()));
-        signRequestParams.setSignHeight(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getHeight() / globalProperties.getFixFactor()));
+//        signRequestParams.setSignWidth(Math.round(pdRectangle.getWidth() / globalProperties.getFixFactor()));
+//        signRequestParams.setSignHeight(Math.round(pdRectangle.getHeight() / globalProperties.getFixFactor()));
         signRequestParamsRepository.save(signRequestParams);
         return signRequestParams;
     }
@@ -82,10 +93,10 @@ public class SignRequestParamsService {
         return null;
     }
 
-    public List<SignRequestParams> scanSignatureFields(InputStream inputStream, int docNumber) throws EsupSignatureIOException {
+    public List<SignRequestParams> scanSignatureFields(InputStream inputStream, int docNumber, Workflow workflow) throws EsupSignatureIOException {
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
-            List<SignRequestParams> signRequestParamses = getSignRequestParamsFromPdf(pdDocument);
+            List<SignRequestParams> signRequestParamses = getSignRequestParamsFromPdf(pdDocument, workflow);
             for(SignRequestParams signRequestParams : signRequestParamses) {
                 signRequestParams.setSignDocumentNumber(docNumber);
                 signRequestParamsRepository.save(signRequestParams);
@@ -97,7 +108,7 @@ public class SignRequestParamsService {
         }
     }
 
-    public List<SignRequestParams> getSignRequestParamsFromPdf(PDDocument pdDocument) throws EsupSignatureIOException {
+    public List<SignRequestParams> getSignRequestParamsFromPdf(PDDocument pdDocument, Workflow workflow) throws EsupSignatureIOException {
         List<SignRequestParams> signRequestParamsList = new ArrayList<>();
         try {
             PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
@@ -106,8 +117,7 @@ public class SignRequestParamsService {
             if(acroForm != null) {
                 Map<String, Integer> pageNrByAnnotDict = pdfService.getPageNumberByAnnotDict(pdDocument);
                 for (PDField pdField : acroForm.getFields()) {
-                    if (pdField instanceof PDSignatureField) {
-                        PDSignatureField pdSignatureField = (PDSignatureField) pdField;
+                    if (pdField instanceof PDSignatureField pdSignatureField) {
                         PDSignature pdSignature = pdSignatureField.getSignature();
                         if(pdSignature != null) {
                             continue;
@@ -116,29 +126,75 @@ public class SignRequestParamsService {
                         if(pageNrByAnnotDict.containsKey(signFieldName) && pageNrByAnnotDict.get(signFieldName) != null) {
                             int pageNum = pageNrByAnnotDict.get(signFieldName);
                             PDPage pdPage = pdPages.get(pageNum);
-                            SignRequestParams signRequestParams = createFromPdf(pdSignatureField, pageNrByAnnotDict.get(signFieldName) + 1, pdPage);
+                            SignRequestParams signRequestParams = createFromPdf(signFieldName, pdSignatureField.getWidgets().get(0).getRectangle(), pageNrByAnnotDict.get(signFieldName) + 1, pdPage);
                             signRequestParamsList.add(signRequestParams);
                         }
                     }
-                    //Un bouton dont le nom commence par signature est considéré comme un champ signature
-                    if(pdField instanceof PDPushButton) {
-                        PDPushButton pdSignatureField = (PDPushButton) pdField;
-                        String signFieldName = pdSignatureField.getPartialName();
-                        if(signFieldName.toLowerCase(Locale.ROOT).startsWith("signature")) {
-                            int pageNum = pageNrByAnnotDict.get(signFieldName);
-                            PDPage pdPage = pdPages.get(pageNum);
-                            SignRequestParams signRequestParams = createFromPdf(pdSignatureField, pageNrByAnnotDict.get(signFieldName) + 1, pdPage);
-                            signRequestParamsList.add(signRequestParams);
+                    if(workflow != null && StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern())) {
+                        String className = "org.apache.pdfbox.pdmodel.interactive.form.PD" + extractTextInBrackets(workflow.getSignRequestParamsDetectionPattern());
+                        try {
+                            Class<?> pdFieldClass = Class.forName(className);
+                            if (pdFieldClass.isInstance(pdField)) {
+                                Method getPartialNameMethod = pdFieldClass.getMethod("getPartialName");
+                                String signFieldName = (String) getPartialNameMethod.invoke(pdField);
+                                Pattern pattern = Pattern.compile(workflow.getSignRequestParamsDetectionPattern().split("]")[1], Pattern.CASE_INSENSITIVE);
+                                if (pattern.matcher(signFieldName).find()) {
+                                    int pageNum = pageNrByAnnotDict.get(signFieldName);
+                                    PDPage pdPage = pdPages.get(pageNum);
+                                    Method getWidgetsMethod = pdFieldClass.getMethod("getWidgets");
+                                    List<?> widgets = (List<?>) getWidgetsMethod.invoke(pdField);
+                                    Method getRectangleMethod = widgets.get(0).getClass().getMethod("getRectangle");
+                                    Object rectangle = getRectangleMethod.invoke(widgets.get(0));
+                                    SignRequestParams signRequestParams = createFromPdf(signFieldName, (PDRectangle) rectangle, pageNrByAnnotDict.get(signFieldName) + 1, pdPage);
+                                    signRequestParamsList.add(signRequestParams);
+                                }
+                            }
+                        } catch (ClassNotFoundException e) {
+                            logger.warn("error on get sign fields");
                         }
                     }
+                }
+            }
+            if(workflow != null && StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern()) && workflow.getSignRequestParamsDetectionPattern().contains("AnnotationLink")) {
+                int i = 1;
+                for(PDPage pdPage : pdPages) {
+                    List<PDAnnotation> pdAnnotations = pdPage.getAnnotations();
+                    for (PDAnnotation pdAnnotation : pdAnnotations) {
+                        if (pdAnnotation instanceof PDAnnotationLink pdAnnotationLink) {
+                            if (pdAnnotationLink.getAction() instanceof PDActionURI pdActionURI) {
+                                String signFieldName = pdActionURI.getURI();
+                                Pattern pattern = Pattern.compile(workflow.getSignRequestParamsDetectionPattern().split("]")[1], Pattern.CASE_INSENSITIVE);
+                                if (pattern.matcher(signFieldName).find()) {
+                                    SignRequestParams signRequestParams = createFromPdf(signFieldName, pdAnnotationLink.getRectangle(), i, pdPage);
+                                    signRequestParamsList.add(signRequestParams);
+                                }
+                            }
+                        }
+                    }
+                    i++;
                 }
             }
             pdDocument.close();
         } catch (Exception e) {
             logger.error("error on get sign fields", e);
-            throw new EsupSignatureIOException(e.getMessage());
+            throw new EsupSignatureIOException(e.getMessage(), e);
         }
         return signRequestParamsList.stream().sorted(Comparator.comparingInt(SignRequestParams::getxPos)).sorted(Comparator.comparingInt(SignRequestParams::getyPos)).sorted(Comparator.comparingInt(SignRequestParams::getSignPageNumber)).collect(Collectors.toList());
+    }
+
+    private String extractTextInBrackets(String input) {
+        Pattern pattern = Pattern.compile("\\[(.*?)\\]");
+        Matcher matcher = pattern.matcher(input);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
+
+    private List<String> convertStringToList(String input) {
+        String trimmedInput = input.replace("[", "");
+        trimmedInput = trimmedInput.replace("]", "");
+        return Arrays.asList(StringUtils.split(trimmedInput, ","));
     }
 
     public void copySignRequestParams(SignRequest signRequest, List<SignRequestParams> signRequestParamses) {
