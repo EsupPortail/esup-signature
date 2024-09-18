@@ -35,7 +35,9 @@ export class UserUi {
                 e.preventDefault();
                 let target = e.currentTarget;
                 bootbox.confirm("Voulez-vous vraiment supprimer cette signature ?", function(result){
-                    if(result) $('#deleteForm-' + $(target).attr("data-es-id")).submit();
+                    if(result) {
+                        $('#deleteForm-' + $(target).attr("data-es-id")).submit();
+                    }
                 });
             });
         });
@@ -70,6 +72,10 @@ export class UserUi {
         this.userSignaturePad.checkSignatureUpdate();
         if(!this.saveSignRequestParams) {
             $("#sign-request-params").val(JSON.stringify(this.signRequestParams));
+        }
+        if($("#name").val() === "" || $("#firstname").val() === "") {
+            $("#submitUserParamsForm").click();
+            return;
         }
         $("#userParamsForm").submit();
     }

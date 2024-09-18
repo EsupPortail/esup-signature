@@ -20,8 +20,7 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
-import org.apache.pdfbox.pdmodel.font.encoding.WinAnsiEncoding;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
@@ -215,7 +214,7 @@ public class PdfService {
             }
         } else if (StringUtils.hasText(signRequestParams.getTextPart())) {
             float fontSize = signRequestParams.getFontSize() * fixFactor;
-            PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), WinAnsiEncoding.INSTANCE);
+            PDFont pdFont = PDType0Font.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), true);
             contentStream.beginText();
             contentStream.setFont(pdFont, fontSize);
             String[] lines = signRequestParams.getTextPart().split("\n");
@@ -627,8 +626,7 @@ public class PdfService {
             PDDocument pdDocument = PDDocument.load(pdfFile);
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
             if(pdAcroForm != null) {
-                byte[] ttfBytes = new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream().readAllBytes();
-                PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ByteArrayInputStream(ttfBytes), WinAnsiEncoding.INSTANCE);
+                PDType0Font pdFont = PDType0Font.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), false);
                 PDResources resources = pdAcroForm.getDefaultResources();
                 resources.put(COSName.getPDFName("LiberationSans"), pdFont);
                 pdAcroForm.setDefaultResources(resources);
@@ -743,7 +741,7 @@ public class PdfService {
             PDDocument pdDocument = PDDocument.load(pdfFile);
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
             if(pdAcroForm != null) {
-                PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), WinAnsiEncoding.INSTANCE);
+                PDFont pdFont = PDType0Font.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), true);
                 PDResources resources = pdAcroForm.getDefaultResources();
                 resources.put(COSName.getPDFName("LiberationSans"), pdFont);
                 pdAcroForm.setDefaultResources(resources);

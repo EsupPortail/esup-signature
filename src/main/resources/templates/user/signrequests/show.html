@@ -801,7 +801,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="text-center">
+                <div>
                     <div th:unless="${signImages == null || signImages.size() < 2}">
                         <label><strong>Mes signatures</strong></label>
                         <table class="table table-borderless table-striped">
@@ -824,8 +824,8 @@
                                         </a>
                                     </td>
                                     <td>
-                                        <form th:id="'form-deleteSign_' + ${signImageId}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users/delete-sign/' + ${signImageId}" th:method="'delete'">
-                                            <button type="submit" th:id="'deleteSign_' + ${signImageId}" class="btn btn-sm btn-danger text-white">
+                                        <form th:id="'deleteForm-' + ${signImageId}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users/delete-sign/' + ${signImageId}" th:method="'delete'">
+                                            <button type="submit" th:id="'deleteSign_' + ${signImageId}" th:data-es-id="${signImageId}" class="btn btn-sm btn-danger text-white">
                                                 <i class="fa-solid fa-trash-alt"></i>
                                             </button>
                                         </form>
@@ -836,10 +836,22 @@
                         </table>
                     </div>
                     <div class="alert alert-warning" th:if="${signImages == null || signImages.size() < 2}">
-                        Vous n’avez pas encore d’image de signature dans votre profil. Merci de retenter l’opération après l’enregistrement de votre image.
+                        Vous n’avez pas encore d’image de signature dans votre profil. Merci de saisir à minima vos nom et prénom pour en ajouter une. Vous pouvez aussi dessiner une signature ci-dessous ou importer une image.
+                        <br>
+                        Après l'enregistrement, vous devrez cliquer de nouveau sur "Inserer une signature" pour la voir apparaître.
                     </div>
                     <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
                         <input type="hidden" name="id" th:value="${authUser.id}"/>
+                        <input type="submit" class="d-none" id="submitUserParamsForm" />
+                        <label class="col-form-label">
+                            <strong>Nom</strong>
+                        </label>
+                        <input type="text" class="form-control" id="name" name="name" th:value="${authUser.name}" required="required"/>
+                        <label class="col-form-label">
+                            <strong>Prénom</strong>
+                        </label>
+                        <input type="text" class="form-control" id="firstname" name="firstname" th:value="${authUser.firstname}" required="required"/>
+                        <div class="text-center">
                         <label class="col-form-label">
                             <strong>Vous pouvez choisir une image provenant de votre ordinateur</strong>
                             <button data-bs-target="#collapseHelpSignImage" data-bs-toggle="collapse"
@@ -882,8 +894,7 @@
                             <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
                                 Réinitialiser
                             </button>
-                            <div>
-                            </div>
+                        </div>
                         </div>
                         <div id="sign-crop" class="mx-auto">
                             <div id="crop-div" class="alert alert-light text-dark text-center" style="display: none;">

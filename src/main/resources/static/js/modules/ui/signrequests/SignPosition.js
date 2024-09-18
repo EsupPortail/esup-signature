@@ -1,5 +1,6 @@
 import {SignRequestParams} from "../../../prototypes/SignRequestParams.js?version=@version@";
 import {EventFactory} from "../../utils/EventFactory.js?version=@version@";
+import {UserUi} from '../users/UserUi.js?version=@version@';
 
 export class SignPosition extends EventFactory {
 
@@ -44,6 +45,11 @@ export class SignPosition extends EventFactory {
         $(window).on('scroll', function(e) {
             self.scrollTop = $(this).scrollTop();
         });
+        $(document).ready(function() {
+            if(self.signImages.length === 1) {
+                self.popUserUi();
+            }
+        });
     }
 
     removeSign(id) {
@@ -84,7 +90,18 @@ export class SignPosition extends EventFactory {
         }
     }
 
+    popUserUi() {
+        if (this.userUI == null) {
+            this.userUI = new UserUi();
+        }
+        $("#add-sign-image").modal("show");
+    }
+
     addSign(page, restore, signImageNumber, forceSignNumber) {
+        if(this.signImages.length === 1) {
+            this.popUserUi();
+            return;
+        }
         this.disableForwardButton();
         $(window).bind("beforeunload",function(event) {
             return "You have some unsaved changes";

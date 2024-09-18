@@ -131,10 +131,10 @@
                     </a>
                 </li>
             </ul>
-            <ul id="user-buttons" class="navbar-nav" th:if="${user.name != null}">
+            <ul id="user-buttons" class="navbar-nav">
                 <li class="nav-item" th:if="${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')')}" title="Logout SU">
                     <form th:action="'/su-logout'" method="POST">
-                        <button id="link-su" type="submit" class="btn bg-dark text-white m-1"><i class="fa-solid fa-user-secret"></i></button>
+                        <button id="link-su" type="submit" class="btn bg-dark text-white me-1"><i class="fa-solid fa-user-secret"></i></button>
                     </form>
                 </li>
 <!--                <li class="nav-item text-white" >-->
@@ -150,8 +150,8 @@
                         aria-expanded="false"
                         aria-controls="user-infos"
                         data-bs-toggle="collapse">
-                        <b class="nav-item-label d-none d-md-inline"
-                            th:text="${user.firstname} + ' ' + ${user.name}"></b>
+                        <b th:if="${!#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" class="nav-item-label d-none d-md-inline" th:text="${user.firstname} + ' ' + ${user.name}"></b>
+                        <b th:unless="${!#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" class="nav-item-label d-none d-md-inline" th:text="${user.email}"></b>
                         <div class="user-toggle align-middle ms-2"><i class="fa-solid fa-user"></i></div>
                     </a>
                 </li>
