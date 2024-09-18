@@ -93,7 +93,7 @@ public class UserController {
 		if(saveSignRequestParams == null || !saveSignRequestParams) {
 			signRequestParams = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
 		}
-		userService.updateUser(authUserEppn, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, signRequestParams, returnToHomeAfterSign);
+		userService.updateUser(authUserEppn, null, null, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, signRequestParams, returnToHomeAfterSign);
 		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Vos paramètres ont été enregistrés"));
 		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
 		return "redirect:" + referer;

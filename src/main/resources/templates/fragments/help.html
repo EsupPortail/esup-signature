@@ -8,32 +8,21 @@
     </div>
     <br>
     <ul>
-        <li class="mb-2">
+        <li class="mb-2" th:if="${user.userType.name() != 'external'}">
             Pour effectuer des signatures calligraphiques sur un PDF, il faut au préalable déposer un fichier image de votre
             signature dans vos paramètres : <a href='user/users' target='_blank'>Mes paramètres</a>
             <br>
             Un tutoriel video est disponible à cette adresse : <a href="https://drive.univ-rouen.fr/f/9f0f4b96e2c34ca2a10c/" target="_blank">Insérer sa signature</a>
         </li>
-        <li>
-            <a href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur#Documentationutilisateur-Lessignatures%C3%A9lectroniques" target="_blank">Cliquez ici pour en savoir plus sur les autres types de signature</a>
-            <div class="collapse">
-        <ul>
-                <li class="mb-2">
-                    Pour utiliser un certificat électronique pour signer, vous pouvez importer un certificat au format PKCS12 dans votre profil.
-                </li>
-                <li class="mb-2">
-                    Enfin, il est possible de signer électroniquement des documents à l'aide d'un support cryptographique USB (agréé eIDAS, ex RGS **).
-                    <br>
-                    Pour cela, vous devez installer l’application
-                    Esup-DSS-Client disponible ici : <a target="_blank" href="https://github.com/EsupPortail/esup-dss-client/releases/latest">Esup-DSS-Client</a>
-                    <br>
-                    Cette application se lancera automatiquement lors du processus de "signature avec clé matérielle"
-                </li>
-        </ul>
-            </div>
-
+        <li class="mb-2">
+            Il est possible de signer électroniquement des documents à l'aide d'un support cryptographique USB (agréé eIDAS, ex RGS **).
+            <br>
+            Pour cela, vous devez installer l’application
+            Esup-DSS-Client disponible ici : <a target="_blank" href="https://github.com/EsupPortail/esup-dss-client/releases/latest">Esup-DSS-Client</a>
+            <br>
+            Une fois l’application installée et lancée, vous pourrez choisir "Certificat présent sur mon poste ou sur clé USB" comme mode de signature au moment de la validation.
         </li>
-
+        <a href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur#Documentationutilisateur-Lessignatures%C3%A9lectroniques" target="_blank">Cliquez ici pour en savoir plus sur les autres types de signature</a>
     </ul>
     <hr>
     <p>

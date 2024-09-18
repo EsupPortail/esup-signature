@@ -343,10 +343,14 @@ public class FileService {
 		graphics2D.fillRect(0, 0, Math.round(600 / factor), Math.round(300 / factor));
 		setQualityParams(graphics2D);
 		String word;
-		if (name.length() >= firstname.length()) {
-			word = name;
+		if(StringUtils.hasText(firstname) && StringUtils.hasText(name)) {
+			if (name.length() >= firstname.length()) {
+				word = name;
+			} else {
+				word = firstname;
+			}
 		} else {
-			word = firstname;
+			word = email;
 		}
 		try {
 			Font font;

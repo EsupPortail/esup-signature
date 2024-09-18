@@ -370,8 +370,14 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUser(String authUserEppn, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, SignRequestParams signRequestParams, Boolean returnToHomeAfterSign) throws IOException {
+    public void updateUser(String authUserEppn, String name, String firstName, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, SignRequestParams signRequestParams, Boolean returnToHomeAfterSign) throws IOException {
         User authUser = getByEppn(authUserEppn);
+        if(StringUtils.hasText(name)) {
+            authUser.setName(name);
+        }
+        if(StringUtils.hasText(firstName)) {
+            authUser.setFirstname(firstName);
+        }
         if(signRequestParams != null) {
             signRequestParams.setxPos(0);
             signRequestParams.setyPos(0);
