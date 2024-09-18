@@ -349,6 +349,10 @@ textarea:invalid {
     display: none;
 }
 
+.textWidgetAnnotation * {
+    font-size: calc(10px* var(--scale-factor)) !important;
+}
+
 /*.textWidgetAnnotation textarea {*/
 /*    !*border: 1px solid black !important;*!*/
 /*    overflow: hidden;*/

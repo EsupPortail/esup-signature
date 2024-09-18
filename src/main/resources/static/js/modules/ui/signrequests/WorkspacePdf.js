@@ -1,7 +1,6 @@
 import {PdfViewer} from "../../utils/PdfViewer.js?version=@version@";
 import {SignPosition} from "./SignPosition.js?version=@version@";
 import {WheelDetector} from "../../utils/WheelDetector.js?version=@version@";
-import {UserUi} from '../users/UserUi.js?version=@version@';
 
 export class WorkspacePdf {
 
@@ -148,13 +147,11 @@ export class WorkspacePdf {
         $("#addMinus").on("click", e => this.signPosition.addMinusImage(this.pdfViewer.pageNum));
         $("#addText").on("click ", e => this.signPosition.addText(this.pdfViewer.pageNum));
 
-        let signImageBtn = $("#signImage");
+        let signImageBtn = $("#signImageBtn");
         signImageBtn.unbind();
+        let self = this;
         signImageBtn.on('click', function () {
-            if (this.userUI == null) {
-                this.userUI = new UserUi();
-            }
-            $("#add-sign-image").modal("show");
+            self.signPosition.popUserUi();
         });
         this.notviewedAnim();
     }
@@ -291,6 +288,7 @@ export class WorkspacePdf {
         this.refreshAfterPageChange();
         this.initForm();
         this.pdfViewer.pdfDiv.on('mousedown', e => this.clickAction(e));
+
     }
 
     initForm() {
