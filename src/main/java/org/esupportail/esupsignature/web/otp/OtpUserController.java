@@ -48,11 +48,14 @@ public class OtpUserController {
 
     @PostMapping
     public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
+                         @RequestParam(value = "name") String name,
+                         @RequestParam(value = "firstname") String firstname,
                          @RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
                          @RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
                          @RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
-                         @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
-        userService.updateUser(authUserEppn, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, null, false);
+                         @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore,
+                         RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
+        userService.updateUser(authUserEppn, name, firstname, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, null, false);
         redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Vos paramètres ont été enregistrés"));
         String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
         return "redirect:" + referer;

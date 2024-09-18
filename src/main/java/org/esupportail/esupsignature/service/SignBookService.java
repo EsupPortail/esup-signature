@@ -1387,12 +1387,12 @@ public class SignBookService {
                                     logger.info("target set to : " + new ArrayList<>(signBook.getLiveWorkflow().getTargets()).get(0).getTargetUri());
                                 }
                             }
-                            fsAccessService.remove(fsFile);
                             j++;
                         } else {
                             targetService.copyTargets(workflow.getTargets(), signBook, null);
                             importWorkflow(signBook, workflow, new ArrayList<>());
                         }
+                        fsAccessService.remove(fsFile);
                         nextStepAndPending(signBook.getId(), null, user.getEppn(), authUser.getEppn());
                         nbImportedFiles++;
                     }

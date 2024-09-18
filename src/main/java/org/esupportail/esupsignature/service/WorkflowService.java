@@ -500,6 +500,7 @@ public class WorkflowService {
         workflowToUpdate.setUpdateBy(user.getEppn());
         workflowToUpdate.setUpdateDate(new Date());
         workflowToUpdate.setMessage(workflow.getMessage());
+        workflowToUpdate.setMailFrom(workflow.getMailFrom());
         workflowToUpdate.setSignRequestParamsDetectionPattern(workflow.getSignRequestParamsDetectionPattern());
         workflowRepository.save(workflowToUpdate);
         return workflowToUpdate;

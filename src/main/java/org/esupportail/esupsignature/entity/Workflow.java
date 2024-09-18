@@ -27,6 +27,8 @@ public class Workflow {
     @Column(columnDefinition = "TEXT")
     private String message;
 
+    private String mailFrom;
+
     private Integer counter;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -128,6 +130,14 @@ public class Workflow {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getMailFrom() {
+        return mailFrom;
+    }
+
+    public void setMailFrom(String mailFrom) {
+        this.mailFrom = mailFrom;
     }
 
     public Integer getCounter() {

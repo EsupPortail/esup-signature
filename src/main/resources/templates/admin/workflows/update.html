@@ -199,6 +199,10 @@
                                 class="form-control" type="text" th:value="${workflow.signRequestParamsDetectionPattern}" autocomplete="on">
                         </div>
                         <div class="form-group mb-3">
+                            <label for="mailFrom"><strong>Adresse email from</strong></label>
+                            <input id="mailFrom" class="form-control" type="text" th:field="*{mailFrom}" value="">
+                        </div>
+                        <div class="form-group mb-3">
                             <label><strong>Types de délégation autorisés</strong></label>
                             <th:block th:each="shareType : ${T(org.esupportail.esupsignature.entity.enums.ShareType).values()}">
                                 <div class="form-check text-left">
