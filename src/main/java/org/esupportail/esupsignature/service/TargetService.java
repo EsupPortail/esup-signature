@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.Target;
@@ -7,7 +8,9 @@ import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.repository.TargetRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
-import org.springframework.http.ResponseEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -18,6 +21,8 @@ import java.util.List;
 
 @Service
 public class TargetService {
+
+    private static final Logger logger = LoggerFactory.getLogger(TargetService.class);
 
     @Resource
     private TargetRepository targetRepository;
@@ -37,17 +42,40 @@ public class TargetService {
         return target;
     }
 
-    public ResponseEntity<String> sendRest(String target, String signRequestId, String status, String step) throws EsupSignatureFsException {
+    public ResponseEntity<String> sendRest(String target, String signRequestId, String status, String step, String userEppn, String comment) throws EsupSignatureFsException {
         RestTemplate restTemplate = new RestTemplate();
         UriComponents targetUri = UriComponentsBuilder.fromUriString(target)
                 .queryParam("signRequestId", signRequestId)
                 .queryParam("status", status)
                 .queryParam("step", step)
+                .queryParam("userEppn", userEppn)
+                .queryParam("comment", comment)
                 .build();
+        boolean sendOk = false;
         try {
-            return restTemplate.getForEntity(targetUri.toUri(), String.class);
+            ResponseEntity<String> getResponse = restTemplate.getForEntity(targetUri.toUri(), String.class);
+            if(getResponse.getStatusCode().equals(HttpStatus.OK)) {
+                sendOk = true;
+            }
         } catch (Exception e) {
-            throw new EsupSignatureFsException(e.getMessage());
+            logger.warn(e.getMessage());
+        }
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            ObjectMapper objectMapper = new ObjectMapper();
+            HttpEntity<String> postRequest = new HttpEntity<>(objectMapper.writeValueAsString(targetUri.getQueryParams().toSingleValueMap()), headers);
+            ResponseEntity<String> postResponse = restTemplate.exchange(target, HttpMethod.POST, postRequest, String.class);
+            if(postResponse.getStatusCode().equals(HttpStatus.OK)) {
+                sendOk = true;
+            }
+        }catch (Exception e) {
+            logger.warn(e.getMessage());
+        }
+        if(sendOk) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
