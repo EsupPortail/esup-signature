@@ -42,8 +42,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -1616,14 +1614,9 @@ public class SignBookService {
                                         status = SignRequestStatus.refused;
                                     }
                                     try {
-                                        ResponseEntity<String> response = targetService.sendRest(target.getTargetUri(), signRequest.getId().toString(), status.name(), "end", authUserEppn, "");
-                                        if (response.getStatusCode().equals(HttpStatus.OK)) {
-                                            target.setTargetOk(true);
-                                            signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Exporté vers " + targetUrl, null, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
-                                        } else {
-                                            logger.error("rest export fail : " + target.getTargetUri() + " return is : " + response.getStatusCode());
-                                            allTargetsDone = false;
-                                        }
+                                        targetService.sendRest(target.getTargetUri(), signRequest.getId().toString(), status.name(), "end", authUserEppn, "");
+                                        target.setTargetOk(true);
+                                        signRequestService.updateStatus(signRequest.getId(), signRequest.getStatus(), "Exporté vers " + targetUrl, null, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
                                     } catch (Exception e) {
                                         logger.error("rest export fail : " + target.getTargetUri(), e);
                                         allTargetsDone = false;
