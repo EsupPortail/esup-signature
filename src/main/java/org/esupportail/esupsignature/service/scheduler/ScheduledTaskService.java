@@ -17,7 +17,6 @@ import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -28,7 +27,7 @@ import java.util.Date;
 import java.util.List;
 
 @EnableScheduling
-@Profile("!dev")
+//@Profile("!dev")
 @Component
 @EnableConfigurationProperties(GlobalProperties.class)
 public class ScheduledTaskService {
@@ -63,7 +62,7 @@ public class ScheduledTaskService {
 	}
 
 
-    @Scheduled(initialDelay = 12000, fixedRate = 300000)
+    //@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void scanAllWorkflowsSources() {
 		logger.debug("scan workflows sources");
@@ -91,7 +90,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+	//@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	public void scanAllSignbooksToArchive() {
 		if(globalProperties.getEnableScheduledCleanup()) {
 			SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
@@ -105,7 +104,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+	//@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	public void scanAllSignbooksToClean() {
 		if(globalProperties.getEnableScheduledCleanup()) {
 			SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
@@ -118,7 +117,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+	//@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void sendAllEmailAlerts() throws EsupSignatureMailException {
 		List<User> users = userService.getAllUsers();
@@ -130,17 +129,17 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(cron="00 02 02 * * *")
+	//@Scheduled(cron="00 02 02 * * *")
 	public void cleanUploadingSignBooks() {
 		taskService.initCleanUploadingSignBooks();
 	}
 
-	@Scheduled(cron="0 0 * * * *")
+	//@Scheduled(cron="0 0 * * * *")
 	public void refreshOJKeystore() {
 		taskService.initDssRefresh();
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+	//@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void cleanWarningReadSignRequests() {
 		if(globalProperties.getNbDaysBeforeDeleting() > -1) {
@@ -151,7 +150,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+	//@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void cleanOtps() {
 		otpService.cleanEndedOtp();

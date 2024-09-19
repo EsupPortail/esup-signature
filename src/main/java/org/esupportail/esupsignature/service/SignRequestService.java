@@ -495,7 +495,7 @@ public class SignRequestService {
 		updateStatus(signRequest.getId(), SignRequestStatus.pending, "Envoyé pour signature", null, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
 		customMetricsService.incValue("esup-signature.signrequests", "new");
 		for (Target target : signRequest.getParentSignBook().getLiveWorkflow().getTargets().stream().filter(t -> t != null && fsAccessFactoryService.getPathIOType(t.getTargetUri()).equals(DocumentIOType.rest)).collect(Collectors.toList())) {
-			targetService.sendRest(target.getTargetUri(), signRequest.getId().toString(), "pending", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString());
+			targetService.sendRest(target.getTargetUri(), signRequest.getId().toString(), "pending", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString(), authUserEppn, "");
 		}
 	}
 
@@ -639,6 +639,9 @@ public class SignRequestService {
 				logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Mise à la corbeille de la demande par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			}
 			signRequest.setDeleted(true);
+			for (Target target : signRequest.getParentSignBook().getLiveWorkflow().getTargets().stream().filter(t -> t != null && fsAccessFactoryService.getPathIOType(t.getTargetUri()).equals(DocumentIOType.rest)).collect(Collectors.toList())) {
+				targetService.sendRest(target.getTargetUri(), signRequest.getId().toString(), "deleted", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString(), userEppn, "");
+			}
 			return signRequest.getParentSignBook().getId();
 		}
 	}
@@ -673,6 +676,9 @@ public class SignRequestService {
 			}
 		}
 		signRequestRepository.delete(signRequest);
+		for (Target target : signRequest.getParentSignBook().getLiveWorkflow().getTargets().stream().filter(t -> t != null && fsAccessFactoryService.getPathIOType(t.getTargetUri()).equals(DocumentIOType.rest)).collect(Collectors.toList())) {
+			targetService.sendRest(target.getTargetUri(), signRequest.getId().toString(), "cleaned", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString(), userEppn, "");
+		}
 		long signBookId = 0;
 		if(!signBook.getSignRequests().isEmpty()) {
 			signBookId = signBook.getId();
