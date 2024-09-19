@@ -42,7 +42,8 @@ public class TargetService {
         return target;
     }
 
-    public ResponseEntity<String> sendRest(String target, String signRequestId, String status, String step, String userEppn, String comment) throws EsupSignatureFsException {
+    public void sendRest(String target, String signRequestId, String status, String step, String userEppn, String comment) throws EsupSignatureFsException {
+        ResponseEntity<String> response;
         RestTemplate restTemplate = new RestTemplate();
         UriComponents targetUri = UriComponentsBuilder.fromUriString(target)
                 .queryParam("signRequestId", signRequestId)
@@ -53,8 +54,8 @@ public class TargetService {
                 .build();
         boolean sendOk = false;
         try {
-            ResponseEntity<String> getResponse = restTemplate.getForEntity(targetUri.toUri(), String.class);
-            if(getResponse.getStatusCode().equals(HttpStatus.OK)) {
+            response = restTemplate.getForEntity(targetUri.toUri(), String.class);
+            if(response.getStatusCode().equals(HttpStatus.OK)) {
                 sendOk = true;
             }
         } catch (Exception e) {
@@ -65,17 +66,15 @@ public class TargetService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             ObjectMapper objectMapper = new ObjectMapper();
             HttpEntity<String> postRequest = new HttpEntity<>(objectMapper.writeValueAsString(targetUri.getQueryParams().toSingleValueMap()), headers);
-            ResponseEntity<String> postResponse = restTemplate.exchange(target, HttpMethod.POST, postRequest, String.class);
-            if(postResponse.getStatusCode().equals(HttpStatus.OK)) {
+            response = restTemplate.exchange(target, HttpMethod.POST, postRequest, String.class);
+            if(response.getStatusCode().equals(HttpStatus.OK)) {
                 sendOk = true;
             }
         }catch (Exception e) {
             logger.warn(e.getMessage());
         }
-        if(sendOk) {
-            return new ResponseEntity<>(HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        if(!sendOk) {
+            throw new EsupSignatureFsException("error sending to target " + target);
         }
     }
 
