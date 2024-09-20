@@ -6,6 +6,10 @@
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
+<script th:inline="javascript" type="module">
+    import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=@[(${versionApp})]@';
+    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[creatorFilter]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user/manage/workflow/[[${workflow.id}]]");
+</script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
@@ -14,7 +18,7 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/manage">Espace superviseurs</a></li>
-                <li class="breadcrumb-item active"><a th:href="'/user/manage/workflow/' + ${workflow.id}" th:text="${workflow.name}"></a></li>
+                <li class="breadcrumb-item active"><a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks'" th:text="${workflow.name}"></a></li>
             </ol>
         </nav>
         <div id="content" class="content">
@@ -102,7 +106,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <th:block th:each="signBook : ${listManagedSignBooks}">
+                            <th:block th:each="signBook : ${signBooks}">
                                 <tr th:data-href="'/user/signbooks/' + ${signBook.id}">
 <!--                                    <td class="w-20 d-none d-lg-table-cell">-->
 <!--                                        <input type="checkbox" class="form-check-input" class="sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-es-signrequest-status="${signRequest.status}"-->
