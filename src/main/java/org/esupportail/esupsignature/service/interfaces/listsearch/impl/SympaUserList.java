@@ -1,6 +1,8 @@
 package org.esupportail.esupsignature.service.interfaces.listsearch.impl;
 
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.extdb.ExtDbService;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserList;
@@ -9,8 +11,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
 import java.sql.ResultSet;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -23,8 +23,14 @@ public class SympaUserList implements UserList {
 
     private JdbcTemplate jdbcTemplate;
 
-    @Resource
-    private ExtDbService extDbService;
+    private final ExtDbService extDbService;
+
+    private final GlobalProperties globalProperties;
+
+    public SympaUserList(ExtDbService extDbService, GlobalProperties globalProperties) {
+        this.extDbService = extDbService;
+        this.globalProperties = globalProperties;
+    }
 
     @PostConstruct
     public void initJdbcTemplate() {
@@ -39,13 +45,16 @@ public class SympaUserList implements UserList {
     @Override
     public List<String> getUsersEmailFromList(String listName) throws DataAccessException {
         List<String> userEmails = new ArrayList<>();
-        jdbcTemplate.query("select user_subscriber from subscriber_table where list_subscriber=" + "'" + listName.split("@")[0] + "'", (ResultSet rs) -> {
-            userEmails.add(rs.getString("user_subscriber"));
-            while (rs.next()) {
+        if(listName.contains(globalProperties.getDomain())) {
+            jdbcTemplate.query("select user_subscriber from subscriber_table where list_subscriber=" + "'" + listName.split("@")[0] + "'", (ResultSet rs) -> {
                 userEmails.add(rs.getString("user_subscriber"));
-            }
-        });
-        return userEmails;
+                while (rs.next()) {
+                    userEmails.add(rs.getString("user_subscriber"));
+                }
+            });
+            return userEmails;
+        }
+        return new ArrayList<>();
     }
 
     @Override
