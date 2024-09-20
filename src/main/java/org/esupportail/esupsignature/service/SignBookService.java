@@ -185,6 +185,36 @@ public class SignBookService {
     }
 
     @Transactional
+    public Page<SignBook> getSignBooksForManagers(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
+        User creatorFilterUser = null;
+        if(creatorFilter != null) {
+            creatorFilterUser = userService.getByEppn(creatorFilter);
+        }
+        User userFilter = null;
+        if(recipientsFilter != null && !recipientsFilter.equals("%") && !recipientsFilter.isEmpty()) {
+            userFilter = userService.getByEppn(recipientsFilter);
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(9999, Calendar.DECEMBER, 31);
+        Date startDateFilter = new Date(0);
+        Date endDateFilter = calendar.getTime();
+        if(dateFilter != null && !dateFilter.isEmpty()) {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            try {
+                Date formattedDate = formatter.parse(dateFilter);
+                LocalDateTime nowLocalDateTime = formattedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                LocalDateTime startLocalDateTime = nowLocalDateTime.with(LocalTime.of(0, 0, 0));
+                LocalDateTime endLocalDateTime = nowLocalDateTime.with(LocalTime.of(23, 59, 59));
+                startDateFilter = Timestamp.valueOf(startLocalDateTime);
+                endDateFilter = Timestamp.valueOf(endLocalDateTime);
+            } catch (ParseException e) {
+                logger.error("unable to parse date : " + dateFilter);
+            }
+        }
+        return signBookRepository.findByWorkflowName(userFilter, workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
+    }
+
+    @Transactional
     public Page<SignBook> getSignBooks(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
         User user = userService.getByEppn(userEppn);
         Calendar calendar = Calendar.getInstance();
