@@ -95,8 +95,7 @@ public class ManageController {
         model.addAttribute("creatorFilter", creatorFilter);
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("workflow", workflow);
-        logger.info("get for workflow " + workflow.getDescription());
-        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflow.getDescription(), docTitleFilter, creatorFilter, dateFilter, pageable);
+        Page<SignBook> signBooks = signBookService.getSignBooksForManagers(userEppn, authUserEppn, statusFilter, recipientsFilter, workflow.getDescription(), docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("signBooks", signBooks);
         LinkedHashSet<String> docTitles = new LinkedHashSet<>();
         if(statusFilter.isEmpty() && docTitleFilter == null && recipientsFilter == null) {
