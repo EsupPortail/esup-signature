@@ -294,6 +294,10 @@ public class GlobalProperties {
      */
     private Boolean enableHelp = true;
 
+
+    private String testEmail;
+
+
     public String getRootUrl() {
         return rootUrl;
     }
@@ -759,5 +763,13 @@ public class GlobalProperties {
 
     public void setEnableHelp(Boolean enableHelp) {
         this.enableHelp = enableHelp;
+    }
+
+    public String getTestEmail() {
+        return testEmail;
+    }
+
+    public void setTestEmail(String testEmail) {
+        this.testEmail = testEmail;
     }
 }

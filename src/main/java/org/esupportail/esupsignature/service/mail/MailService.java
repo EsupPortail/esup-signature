@@ -461,9 +461,13 @@ public class MailService {
             }
             String[] toHeader =  mimeMessage.getHeader("To");
             List<String> tos = new ArrayList<>();
-            for(String to : toHeader) {
-                if(!to.equals("system") && !to.equals("system@" + globalProperties.getDomain())) {
-                    tos.add(to);
+            if(org.springframework.util.StringUtils.hasText(globalProperties.getTestEmail())) {
+                tos.add(globalProperties.getTestEmail());
+            } else {
+                for(String to : toHeader) {
+                    if (!to.equals("system") && !to.equals("system@" + globalProperties.getDomain())) {
+                        tos.add(to);
+                    }
                 }
             }
             if(!tos.isEmpty()) {
