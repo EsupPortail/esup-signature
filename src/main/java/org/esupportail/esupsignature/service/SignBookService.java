@@ -2037,4 +2037,16 @@ public class SignBookService {
             signBook.getTeam().add(user);
         }
     }
+
+    public List<String> getSignBooksForManagersSubjects(String workflowFilter) {
+        return signBookRepository.findByWorkflowNameSubjects(workflowFilter);
+    }
+
+    public List<User> getSignBooksForManagersCreators(String workflowFilter) {
+        return signBookRepository.findByWorkflowNameCreators(workflowFilter);
+    }
+
+    public List<User> getSignBooksForManagersRecipientsUsers(String workflowFilter) {
+        return signBookRepository.findByWorkflowNameRecipientsUsers(workflowFilter);
+    }
 }
