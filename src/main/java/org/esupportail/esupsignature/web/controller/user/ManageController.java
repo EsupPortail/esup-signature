@@ -95,17 +95,11 @@ public class ManageController {
         model.addAttribute("creatorFilter", creatorFilter);
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("workflow", workflow);
-        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflow.getName(), docTitleFilter, creatorFilter, dateFilter, pageable);
+        Page<SignBook> signBooks = signBookService.getSignBooksForManagers(userEppn, authUserEppn, statusFilter, recipientsFilter, workflow.getDescription(), docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("signBooks", signBooks);
-        LinkedHashSet<String> docTitles = new LinkedHashSet<>();
-        if(statusFilter.isEmpty() && docTitleFilter == null && recipientsFilter == null) {
-            docTitles.addAll(signBookService.getAllDocTitles(userEppn));
-        } else {
-            docTitles.addAll(signBooks.stream().map(SignBook::getSubject).toList());
-        }
-        model.addAttribute("docTitles", docTitles);
-        model.addAttribute("creators", signBooks.stream().map(SignBook::getCreateBy).distinct().collect(Collectors.toList()));
-        model.addAttribute("signRequestRecipients", signBookService.getRecipientsNames(userEppn).stream().filter(Objects::nonNull).collect(Collectors.toList()));
+        model.addAttribute("docTitles", signBookService.getSignBooksForManagersSubjects(workflow.getDescription()));
+        model.addAttribute("creators", signBookService.getSignBooksForManagersCreators(workflow.getDescription()));
+        model.addAttribute("signRequestRecipients", signBookService.getSignBooksForManagersRecipientsUsers(workflow.getDescription()));
         return "user/manage/details";
     }
 

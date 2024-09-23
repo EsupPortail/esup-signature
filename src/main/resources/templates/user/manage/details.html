@@ -80,7 +80,8 @@
                                         <option data-placeholder="true"></option>
                                         <option value="all">Tout</option>
                                         <th:block th:each="signRequestRecipient : ${signRequestRecipients}">
-                                            <option th:value="${signRequestRecipient.eppn}" th:selected="${recipientsFilter == signRequestRecipient.eppn}" th:text="${signRequestRecipient.firstname + ' ' + signRequestRecipient.name}"></option>
+                                            <option th:unless="${#strings.isEmpty(signRequestRecipient.firstname) && #strings.isEmpty(signRequestRecipient.name)}" th:value="${signRequestRecipient.eppn}" th:selected="${recipientsFilter == signRequestRecipient.eppn}" th:text="${signRequestRecipient.firstname + ' ' + signRequestRecipient.name}"></option>
+                                            <option th:if="${#strings.isEmpty(signRequestRecipient.firstname) && #strings.isEmpty(signRequestRecipient.name)}" th:value="${signRequestRecipient.eppn}" th:selected="${recipientsFilter == signRequestRecipient.eppn}" th:text="${signRequestRecipient.email}"></option>
                                         </th:block>
                                     </select>
                                 </th>
