@@ -45,6 +45,8 @@ import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -211,7 +213,7 @@ public class UserService {
 
     @Transactional
     public User createUserWithEppn(String eppn) throws EsupSignatureUserException {
-        if(eppn.equals("system")) {
+        if(eppn == null || eppn.equals("system")) {
             return getSystemUser();
         }
         User user = getByEppn(eppn);
@@ -370,8 +372,14 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUser(String authUserEppn, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, SignRequestParams signRequestParams, Boolean returnToHomeAfterSign) throws IOException {
+    public void updateUser(String authUserEppn, String name, String firstName, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, SignRequestParams signRequestParams, Boolean returnToHomeAfterSign) throws IOException {
         User authUser = getByEppn(authUserEppn);
+        if(StringUtils.hasText(name)) {
+            authUser.setName(name);
+        }
+        if(StringUtils.hasText(firstName)) {
+            authUser.setFirstname(firstName);
+        }
         if(signRequestParams != null) {
             signRequestParams.setxPos(0);
             signRequestParams.setyPos(0);
@@ -767,11 +775,15 @@ public class UserService {
             }
         }
         if(ldapGroupService != null && webSecurityProperties.getGroupToRoleFilterPattern() != null) {
-            List<String> prefixGroups = ldapGroupService.getAllPrefixGroups(webSecurityProperties.getGroupToRoleFilterPattern());
-            for (String prefixGroup : prefixGroups) {
-                String prefixRole = "ROLE_" + prefixGroup.split("\\.")[prefixGroup.split("\\.").length - 1].toUpperCase();
-                if(!roles.contains(prefixRole)) {
-                    roles.add(prefixRole);
+            List<String> groupsNames = ldapGroupService.getAllPrefixGroups(webSecurityProperties.getGroupToRoleFilterPattern());
+            for (String groupName : groupsNames) {
+                Pattern pattern = Pattern.compile(webSecurityProperties.getGroupToRoleFilterPattern());
+                Matcher matcher = pattern.matcher(groupName);
+                if(matcher.find()) {
+                    String roleName = "ROLE_" + matcher.group(1).toUpperCase();
+                    if (!roles.contains(roleName)) {
+                        roles.add(roleName);
+                    }
                 }
             }
         }

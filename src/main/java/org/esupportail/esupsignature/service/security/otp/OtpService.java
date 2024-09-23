@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Otp;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.repository.OtpRepository;
@@ -29,10 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -109,7 +107,7 @@ public class OtpService {
         }
     }
 
-    public void deleteOtpBySignRequestId(Long id) {
+    public void deleteOtpBySignBookId(Long id) {
         for (Map.Entry<String, Otp> otpEntry : otpCache.asMap().entrySet()) {
             if(otpEntry.getValue().getSignBook().getId().equals(id)) {
                 clearOTP(otpEntry.getKey());
@@ -205,6 +203,20 @@ public class OtpService {
         }
         byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
         return new String(Hex.encode(hash));
+    }
+
+    @Transactional
+    public void cleanEndedOtp(){
+        List<Otp> otps = otpRepository.findBySignBookStatus(SignRequestStatus.completed);
+        otps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.deleted));
+        otps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.refused));
+        otps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.exported));
+        otps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.archived));
+        logger.info(otps.size() + " otps to clean");
+        for(Otp otp : otps) {
+            clearOTP(otp.getUrlId());
+            otpRepository.delete(otp);
+        }
     }
 
 }

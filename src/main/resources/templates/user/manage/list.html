@@ -34,8 +34,7 @@
                                 </td>
                                 <td th:text="${workflow.description}"></td>
                                 <td>
-                                    <a type="button" th:href="'user/manage/workflow/' + ${workflow.id}"
-                                       class="btn btn-sm btn-primary"><i class="fa-solid fa-list"></i> Liste des demandes</a>
+                                    <a type="button" th:href="'user/manage/workflow/' + ${workflow.id} + '/signbooks'" class="btn btn-sm btn-primary"><i class="fa-solid fa-list"></i> Liste des demandes</a>
                                 </td>
                                 <td>
                                     <a th:if="${managedForms.contains(workflow)}" type="button" th:href="'user/manage/form/' + ${workflow.id} + '/datas/csv'"

@@ -20,8 +20,7 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
-import org.apache.pdfbox.pdmodel.font.encoding.WinAnsiEncoding;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
@@ -48,10 +47,7 @@ import org.apache.xmpbox.xml.DomXmpParser;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.pdf.PdfConfig;
-import org.esupportail.esupsignature.entity.Log;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.SignRequestParams;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
@@ -75,13 +71,17 @@ import org.verapdf.pdfa.results.ValidationResult;
 import javax.imageio.ImageIO;
 import javax.xml.transform.TransformerException;
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @Service
@@ -115,7 +115,7 @@ public class PdfService {
             PDDocument pdDocument = PDDocument.load(inputStream);
             pdDocument.setAllSecurityToBeRemoved(true);
             pdfParameters = getPdfParameters(pdDocument, signRequestParams.getSignPageNumber());
-            if(signRequestParams.getAllPages() != null && signRequestParams.getAllPages()) {
+            if(signRequestParams.getAllPages() != null && signRequestParams.getAllPages() && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign()) {
                 int i = 1;
                 for(PDPage pdPage : pdDocument.getPages()) {
                     if(i != signRequestParams.getSignPageNumber() || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp)) {
@@ -214,7 +214,7 @@ public class PdfService {
             }
         } else if (StringUtils.hasText(signRequestParams.getTextPart())) {
             float fontSize = signRequestParams.getFontSize() * fixFactor;
-            PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), WinAnsiEncoding.INSTANCE);
+            PDFont pdFont = PDType0Font.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), true);
             contentStream.beginText();
             contentStream.setFont(pdFont, fontSize);
             String[] lines = signRequestParams.getTextPart().split("\n");
@@ -626,8 +626,7 @@ public class PdfService {
             PDDocument pdDocument = PDDocument.load(pdfFile);
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
             if(pdAcroForm != null) {
-                byte[] ttfBytes = new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream().readAllBytes();
-                PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ByteArrayInputStream(ttfBytes), WinAnsiEncoding.INSTANCE);
+                PDType0Font pdFont = PDType0Font.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), false);
                 PDResources resources = pdAcroForm.getDefaultResources();
                 resources.put(COSName.getPDFName("LiberationSans"), pdFont);
                 pdAcroForm.setDefaultResources(resources);
@@ -737,35 +736,69 @@ public class PdfService {
         return null;
     }
 
-    public InputStream removeSignField(InputStream pdfFile) {
+    public InputStream removeSignField(InputStream pdfFile, Workflow workflow) {
         try {
             PDDocument pdDocument = PDDocument.load(pdfFile);
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
             if(pdAcroForm != null) {
-                PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), WinAnsiEncoding.INSTANCE);
+                PDFont pdFont = PDType0Font.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), true);
                 PDResources resources = pdAcroForm.getDefaultResources();
                 resources.put(COSName.getPDFName("LiberationSans"), pdFont);
                 pdAcroForm.setDefaultResources(resources);
                 List<PDField> fields = pdAcroForm.getFields();
                 for(PDField pdField : fields) {
-                    if(pdField instanceof PDSignatureField || (pdField instanceof PDPushButton && pdField.getPartialName().toLowerCase(Locale.ROOT).startsWith("signature"))) {
-                        List<PDAnnotationWidget> widgets = pdField.getWidgets();
-                        for (PDAnnotationWidget widget : widgets) {
-                            for(PDPage page : pdDocument.getPages()) {
-                                List<PDAnnotation> annotations = page.getAnnotations();
-                                boolean removed = false;
-                                for (PDAnnotation annotation : annotations) {
-                                    if (annotation.getCOSObject().equals(widget.getCOSObject())) {
-                                        removed = annotations.remove(annotation);
-                                        break;
+                    if(pdField instanceof PDSignatureField) {
+                        removeField(pdField, pdDocument, pdAcroForm);
+                    } else if(workflow != null && StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern())) {
+                        String className = "org.apache.pdfbox.pdmodel.interactive.form.PD" + extractTextInBrackets(workflow.getSignRequestParamsDetectionPattern());
+                        try {
+                            Class<?> pdFieldClass = Class.forName(className);
+                            if (pdFieldClass.isInstance(pdField)) {
+                                Method getPartialNameMethod = pdFieldClass.getMethod("getPartialName");
+                                String signFieldName = (String) getPartialNameMethod.invoke(pdField);
+                                Pattern pattern = Pattern.compile(workflow.getSignRequestParamsDetectionPattern().split("]")[1], Pattern.CASE_INSENSITIVE);
+                                if (pattern.matcher(signFieldName).find()) {
+                                    removeField(pdField, pdDocument, pdAcroForm);
+                                }
+                            }
+                        } catch (ClassNotFoundException e) {
+                            logger.warn("error on remove sign field", e);
+                        }
+                    }
+                }
+            }
+            if(workflow != null && StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern()) && workflow.getSignRequestParamsDetectionPattern().contains("AnnotationLink")) {
+                try {
+                    PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
+                    PDPageTree pdPages = docCatalog.getPages();
+                    for (PDPage pdPage : pdPages) {
+                        List<PDAnnotation> annotationsToRemove = new ArrayList<>();
+                        List<PDAnnotation> pdAnnotations = pdPage.getAnnotations();
+                        for (PDAnnotation pdAnnotation : pdAnnotations) {
+                            if (pdAnnotation instanceof PDAnnotationLink pdAnnotationLink) {
+                                String signFieldName = ((PDActionURI) pdAnnotationLink.getAction()).getURI();
+                                Pattern pattern = Pattern.compile(workflow.getSignRequestParamsDetectionPattern().split("]")[1], Pattern.CASE_INSENSITIVE);
+                                if(pattern.matcher(signFieldName).find()) {
+                                    annotationsToRemove.add(pdAnnotation);
+                                    PDRectangle linkPosition = pdAnnotationLink.getRectangle();
+                                    Rectangle2D.Float rect = new Rectangle2D.Float(
+                                            linkPosition.getLowerLeftX(),
+                                            linkPosition.getLowerLeftY(),
+                                            linkPosition.getWidth(),
+                                            linkPosition.getHeight()
+                                    );
+                                    try (PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true)) {
+                                        contentStream.setNonStrokingColor(1f, 1f, 1f);
+                                        contentStream.addRect(rect.x-1, rect.y-1, rect.width+1, rect.height+1);
+                                        contentStream.fill();
                                     }
                                 }
-                                if (!removed)
-                                    System.out.println("Inconsistent annotation definition: Page annotations do not include the target widget.");
                             }
                         }
-                        pdAcroForm.getFields().remove(pdField);
+                        pdAnnotations.removeAll(annotationsToRemove);
                     }
+                } catch (IOException e) {
+                    logger.warn("error on remove sign field fake link", e);
                 }
             }
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -773,8 +806,36 @@ public class PdfService {
             pdDocument.save(out);
             pdDocument.close();
             return new ByteArrayInputStream(out.toByteArray());
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("file read error", e);
+        }
+        return null;
+    }
+
+    private static void removeField(PDField pdField, PDDocument pdDocument, PDAcroForm pdAcroForm) throws IOException {
+        List<PDAnnotationWidget> widgets = pdField.getWidgets();
+        for (PDAnnotationWidget widget : widgets) {
+            for(PDPage page : pdDocument.getPages()) {
+                List<PDAnnotation> annotations = page.getAnnotations();
+                boolean removed = false;
+                for (PDAnnotation annotation : annotations) {
+                    if (annotation.getCOSObject().equals(widget.getCOSObject())) {
+                        removed = annotations.remove(annotation);
+                        break;
+                    }
+                }
+                if (!removed)
+                    logger.debug("Inconsistent annotation definition: Page annotations do not include the target widget.");
+            }
+        }
+        pdAcroForm.getFields().remove(pdField);
+    }
+
+    private String extractTextInBrackets(String input) {
+        Pattern pattern = Pattern.compile("\\[(.*?)\\]");
+        Matcher matcher = pattern.matcher(input);
+        if (matcher.find()) {
+            return matcher.group(1);
         }
         return null;
     }

@@ -27,6 +27,8 @@ public class Workflow {
     @Column(columnDefinition = "TEXT")
     private String message;
 
+    private String mailFrom;
+
     private Integer counter;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -85,6 +87,8 @@ public class Workflow {
 
     private Boolean sealAtEnd = false;
 
+    private String signRequestParamsDetectionPattern;
+
     @Transient
     private String messageToDisplay;
 
@@ -126,6 +130,14 @@ public class Workflow {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getMailFrom() {
+        return mailFrom;
+    }
+
+    public void setMailFrom(String mailFrom) {
+        this.mailFrom = mailFrom;
     }
 
     public Integer getCounter() {
@@ -332,5 +344,13 @@ public class Workflow {
 
     public void setForbidDownloadsBeforeEnd(Boolean forbidDownloadsBeforeEnd) {
         this.forbidDownloadsBeforeEnd = forbidDownloadsBeforeEnd;
+    }
+
+    public String getSignRequestParamsDetectionPattern() {
+        return signRequestParamsDetectionPattern;
+    }
+
+    public void setSignRequestParamsDetectionPattern(String signRequestParamsDetectionPattern) {
+        this.signRequestParamsDetectionPattern = signRequestParamsDetectionPattern;
     }
 }

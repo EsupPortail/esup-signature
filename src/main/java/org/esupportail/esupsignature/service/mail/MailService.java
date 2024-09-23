@@ -134,10 +134,9 @@ public class MailService {
                 String htmlContent = templateEngine.process("mail/email-completed.html", ctx);
                 addInLineImages(mimeMessage, htmlContent);
                 mimeMessage.setSubject("Votre demande de signature est terminée");
-                mimeMessage.setFrom(mailConfig.getMailFrom());
                 mimeMessage.setTo(toEmails.toArray(String[]::new));
                 logger.info("send email completed to : " + StringUtils.join(toEmails.toArray(String[]::new), ";"));
-                sendMail(mimeMessage.getMimeMessage());
+                sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
             } catch (MailSendException | MessagingException e) {
                 logger.error("unable to send COMPLETE email", e);
                 throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
@@ -162,10 +161,9 @@ public class MailService {
             String htmlContent = templateEngine.process("mail/email-postit.html", ctx);
             addInLineImages(mimeMessage, htmlContent);
             mimeMessage.setSubject("Un postit a été déposé sur votre demande");
-            mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(toEmails.toArray(String[]::new));
-            logger.info("send email completed to : " + StringUtils.join(toEmails.toArray(String[]::new), ";"));
-            sendMail(mimeMessage.getMimeMessage());
+            logger.info("send postit to : " + StringUtils.join(toEmails.toArray(String[]::new), ";"));
+            sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
         } catch (MailSendException | MessagingException e) {
             logger.error("unable to send COMPLETE email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
@@ -188,7 +186,6 @@ public class MailService {
             String htmlContent = templateEngine.process("mail/email-completed-cc.html", ctx);
             addInLineImages(mimeMessage, htmlContent);
             mimeMessage.setSubject("Une demande de signature que vous suivez est terminée");
-            mimeMessage.setFrom(mailConfig.getMailFrom());
             List<User> viewersArray = getViewers(signBook);
             if (!viewersArray.isEmpty()) {
                 String[] to = new String[viewersArray.size()];
@@ -199,7 +196,7 @@ public class MailService {
                 }
                 mimeMessage.setTo(to);
                 logger.info("send email completes cc for " + user.getEppn());
-                sendMail(mimeMessage.getMimeMessage());
+                sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
             } else {
                 logger.debug("no viewers to send mail");
             }
@@ -260,7 +257,6 @@ public class MailService {
             String htmlContent = templateEngine.process("mail/email-refused.html", ctx);
             addInLineImages(mimeMessage, htmlContent);
             mimeMessage.setSubject("Votre demande de signature a été refusée");
-            mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(toEmails.toArray(String[]::new));
             String[] viewersArray = new String[signBook.getViewers().size()];
             for (int i = 0 ;  i < signBook.getViewers().size() ; i++) {
@@ -268,7 +264,7 @@ public class MailService {
             }
             mimeMessage.setCc(viewersArray);
             logger.info("send email refused to : " + StringUtils.join(toEmails.toArray(String[]::new), ";"));
-            sendMail(mimeMessage.getMimeMessage());
+            sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
         } catch (MessagingException e) {
             logger.error("unable to send REFUSE email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
@@ -295,11 +291,10 @@ public class MailService {
             String htmlContent = templateEngine.process("mail/email-alert.html", ctx);
             addInLineImages(mimeMessage, htmlContent);
             mimeMessage.setSubject("Vous avez une nouvelle demande de signature");
-            mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             logger.info("send email alert for " + recipientsEmails.get(0));
 //            sendMail(signMessage(mimeMessage.getMimeMessage()));
-            sendMail(mimeMessage.getMimeMessage());
+            sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
             signBook.setLastNotifDate(new Date());
         } catch (Exception e) {
             logger.error("unable to send ALERT email", e);
@@ -327,10 +322,9 @@ public class MailService {
             String htmlContent = templateEngine.process("mail/email-replay-alert.html", ctx);
             addInLineImages(mimeMessage, htmlContent);
             mimeMessage.setSubject("Relance pour la signature d'un document");
-            mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             logger.info("send email replay alert for " + recipientsEmails.get(0));
-            sendMail(mimeMessage.getMimeMessage());
+            sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
             signBook.setLastNotifDate(new Date());
         } catch (MessagingException e) {
             logger.error("unable to send ALERT email", e);
@@ -363,10 +357,9 @@ public class MailService {
             addInLineImages(mimeMessage, htmlContent);
             User creator = signBook.getCreateBy();
             mimeMessage.setSubject("Vous êtes en copie d'une demande de signature crée par " + creator.getFirstname() + " " + creator.getName());
-            mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(recipientsCCEmails.toArray(String[]::new));
             logger.info("send email cc for " + String.join(";", recipientsCCEmails));
-            sendMail(mimeMessage.getMimeMessage());
+            sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
         } catch (MessagingException e) {
             logger.error("unable to send CC ALERT email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
@@ -388,11 +381,10 @@ public class MailService {
             String htmlContent = templateEngine.process("mail/email-alert-summary.html", ctx);
             addInLineImages(mimeMessage, htmlContent);
             mimeMessage.setSubject("Liste des demandes à signer");
-            mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             mimeMessage.setText(htmlContent, true);
             logger.info("send email alert for " + recipientsEmails.get(0));
-            sendMail(mimeMessage.getMimeMessage());
+            sendMail(mimeMessage.getMimeMessage(), null);
         } catch (MessagingException e) {
             logger.error("unable to send SUMMARY email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
@@ -412,10 +404,9 @@ public class MailService {
             String htmlContent = templateEngine.process("mail/email-otp.html", ctx);
             addInLineImages(mimeMessage, htmlContent);
             mimeMessage.setSubject("Vous avez un document à signer émanant de " + messageSource.getMessage("application.footer", null, Locale.FRENCH));
-            mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(otp.getUser().getEmail());
             logger.info("send email alert for " + otp.getUser().getEmail());
-            sendMail(mimeMessage.getMimeMessage());
+            sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
         } catch (MessagingException e) {
             logger.error("unable to send OTP email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
@@ -437,9 +428,8 @@ public class MailService {
         String htmlContent = templateEngine.process("mail/email-file.html", ctx);
         addInLineImages(mimeMessage, htmlContent);
         mimeMessage.setSubject("Nouveau document signé à télécharger : " + title);
-        mimeMessage.setFrom(mailConfig.getMailFrom());
         mimeMessage.setTo(targetUri.replace("mailto:", "").split(","));
-        sendMail(mimeMessage.getMimeMessage());
+        sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
 
     }
 
@@ -454,20 +444,21 @@ public class MailService {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
-        final MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper message;
-        message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-        message.setSubject("esup-signature test mail");
-        message.setFrom(mailConfig.getMailFrom());
-        message.setTo(recipientsEmails.toArray(String[]::new));
+        MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
+        mimeMessage.setSubject("esup-signature test mail");
+        mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
         String htmlContent = templateEngine.process("mail/email-test.html", ctx);
-        message.setText(htmlContent, true);
+        mimeMessage.setText(htmlContent, true);
         logger.info("send test email for " + recipientsEmails.get(0));
-        sendMail(mimeMessage);
+        sendMail(mimeMessage.getMimeMessage(), null);
     }
 
-    private void sendMail(MimeMessage mimeMessage) {
+    private void sendMail(MimeMessage mimeMessage, Workflow workflow) {
         try {
+            mimeMessage.setFrom(mailConfig.getMailFrom());
+            if(workflow != null && org.springframework.util.StringUtils.hasText(workflow.getMailFrom())) {
+                mimeMessage.setFrom(workflow.getMailFrom());
+            }
             String[] toHeader =  mimeMessage.getHeader("To");
             List<String> tos = new ArrayList<>();
             for(String to : toHeader) {

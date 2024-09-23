@@ -13,10 +13,10 @@ import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -27,7 +27,7 @@ import java.util.Date;
 import java.util.List;
 
 @EnableScheduling
-@Profile("!dev")
+//@Profile("!dev")
 @Component
 @EnableConfigurationProperties(GlobalProperties.class)
 public class ScheduledTaskService {
@@ -48,7 +48,9 @@ public class ScheduledTaskService {
 
 	private final SignRequestRepository signRequestRepository;
 
-    public ScheduledTaskService(GlobalProperties globalProperties, SignBookRepository signBookRepository, SignBookService signBookService, TaskService taskService, WorkflowService workflowService, UserService userService, SignRequestRepository signRequestRepository) {
+	private final OtpService otpService;
+
+	public ScheduledTaskService(GlobalProperties globalProperties, SignBookRepository signBookRepository, SignBookService signBookService, TaskService taskService, WorkflowService workflowService, UserService userService, SignRequestRepository signRequestRepository, OtpService otpService) {
         this.globalProperties = globalProperties;
         this.signBookRepository = signBookRepository;
         this.signBookService = signBookService;
@@ -56,10 +58,11 @@ public class ScheduledTaskService {
         this.workflowService = workflowService;
         this.userService = userService;
         this.signRequestRepository = signRequestRepository;
-    }
+		this.otpService = otpService;
+	}
 
 
-    @Scheduled(initialDelay = 12000, fixedRate = 300000)
+    //@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void scanAllWorkflowsSources() {
 		logger.debug("scan workflows sources");
@@ -87,7 +90,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+	//@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	public void scanAllSignbooksToArchive() {
 		if(globalProperties.getEnableScheduledCleanup()) {
 			SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
@@ -101,7 +104,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+	//@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	public void scanAllSignbooksToClean() {
 		if(globalProperties.getEnableScheduledCleanup()) {
 			SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
@@ -114,7 +117,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+	//@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void sendAllEmailAlerts() throws EsupSignatureMailException {
 		List<User> users = userService.getAllUsers();
@@ -126,17 +129,17 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(cron="00 02 02 * * *")
+	//@Scheduled(cron="00 02 02 * * *")
 	public void cleanUploadingSignBooks() {
 		taskService.initCleanUploadingSignBooks();
 	}
 
-	@Scheduled(cron="0 0 * * * *")
+	//@Scheduled(cron="0 0 * * * *")
 	public void refreshOJKeystore() {
 		taskService.initDssRefresh();
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+	//@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void cleanWarningReadSignRequests() {
 		if(globalProperties.getNbDaysBeforeDeleting() > -1) {
@@ -145,6 +148,12 @@ public class ScheduledTaskService {
 				signBookService.delete(signRequest.getParentSignBook().getId(), "scheduler");
 			}
 		}
+	}
+
+	//@Scheduled(initialDelay = 12000, fixedRate = 300000)
+	@Transactional
+	public void cleanOtps() {
+		otpService.cleanEndedOtp();
 	}
 
 }

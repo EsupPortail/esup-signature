@@ -2,7 +2,9 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
@@ -315,8 +317,10 @@ public class FormService {
 						PDAnnotationAdditionalActions pdAnnotationAdditionalActions = pdAnnotationWidget.getActions();
 						if (pdAnnotationAdditionalActions != null && pdAnnotationAdditionalActions.getCOSObject().size() > 0) {
 							if (pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K) != null) {
-								COSString cosString = (COSString) pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K).getItem(COSName.JS);
-								type = cosString.toString();
+								COSObject cosObject = pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K);
+								if(cosObject.getObject() instanceof COSDictionary cosDictionary) {
+									type = ((COSString) cosDictionary.getDictionaryObject(COSName.JS)).toString();
+								}
 							}
 						}
 						if (type == null || type.equals("text")) {
@@ -466,7 +470,7 @@ public class FormService {
 	@Transactional
 	public void updateSignRequestParams(Long formId, InputStream inputStream) {
 		Form form = getById(formId);
-		List<SignRequestParams> findedSignRequestParams = signRequestParamsService.scanSignatureFields(inputStream, 0);
+		List<SignRequestParams> findedSignRequestParams = signRequestParamsService.scanSignatureFields(inputStream, 0, form.getWorkflow());
 		if(!findedSignRequestParams.isEmpty()) {
 			form.getSignRequestParams().clear();
 			int i = 0;

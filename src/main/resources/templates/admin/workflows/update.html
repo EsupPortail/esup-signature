@@ -46,16 +46,12 @@
                             <input id="description" class="form-control" type="text" th:field="*{description}" value="" autocomplete="on">
                         </div>
                         <div class="form-group mb-3">
-                            <label for="message"><strong>Message d’accueil</strong></label>
-                            <textarea id="message" class="summer-note" th:field="*{message}"></textarea>
-                        </div>
-                        <div class="form-group mb-3">
                             <label for="title"><strong>Titre technique</strong> (sans espaces, utilisé lors de l’import/export de documents)</label>
                             <input id="title" class="form-control" type="text" th:field="*{title}" value="" autocomplete="on">
                         </div>
                         <div class="form-group mb-3">
                             <label>
-                                <strong>Modèle de nommage</strong>
+                                <strong>Modèle de nommage des demandes</strong> (généré au moment de la création)
                                 <button class="btn btn-sm btn-transparent" data-bs-target="#help-naming-template" data-bs-toggle="collapse"
                                         type="button">
                                     <span class="fa-solid fa-info-circle text-info"></span>
@@ -87,20 +83,8 @@
                             </div>
                             <input class="form-control" type="text" th:field="*{namingTemplate}" value="" autocomplete="off">
                         </div>
-                        <div class="form-check" th:if="${globalProperties.sealCertificatDriver != null}">
-                            <input id="sealAtEnd" type="checkbox" class="form-check-input" th:field="*{sealAtEnd}"/>
-                            <label for="sealAtEnd">Signature avec cachet en fin de circuit ?</label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <input id="ownerSystem" type="checkbox" class="form-check-input" th:field="*{ownerSystem}"/>
-                            <label for="ownerSystem" class="form-check-label">Le compte système est propriétaire des demandes de ce circuit (les créateurs ne pourront pas supprimer les demandes)</label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <input id="disableDeleteByCreator" type="checkbox" class="form-check-input" th:field="*{disableDeleteByCreator}"/>
-                            <label for="disableDeleteByCreator" class="form-check-label">Le propriétaire ne peut pas supprimer la demande</label>
-                        </div>
                         <div class="form-group mb-2">
-                            <label><strong>Autorisations</strong></label>
+                            <label><strong>Diffusion</strong></label>
                             <div class="form-check mb-2">
                                 <input id="publicUsage" type="checkbox" class="form-check-input" th:field="*{publicUsage}"/>
                                 <label for="publicUsage" class="form-check-label">Visibilité publique ?</label>
@@ -151,6 +135,19 @@
                                 </th:block>
                             </select>
                         </div>
+                        <strong>Options</strong>
+                        <div class="form-check mb-2" th:if="${globalProperties.sealCertificatDriver != null}">
+                            <input id="sealAtEnd" type="checkbox" class="form-check-input" th:field="*{sealAtEnd}"/>
+                            <label for="sealAtEnd">Signature avec cachet en fin de circuit ?</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input id="ownerSystem" type="checkbox" class="form-check-input" th:field="*{ownerSystem}"/>
+                            <label for="ownerSystem" class="form-check-label">Le compte système est propriétaire des demandes de ce circuit (les créateurs ne pourront pas supprimer les demandes)</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input id="disableDeleteByCreator" type="checkbox" class="form-check-input" th:field="*{disableDeleteByCreator}"/>
+                            <label for="disableDeleteByCreator" class="form-check-label">Le propriétaire ne peut pas supprimer la demande</label>
+                        </div>
                         <div class="form-check mb-2">
                             <input id="sendAlertToAllRecipients" type="checkbox" class="form-check-input" th:field="*{sendAlertToAllRecipients}"/>
                             <label for="sendAlertToAllRecipients" class="form-check-label">Avertir tous les participants à la fin du circuit ?</label>
@@ -174,6 +171,37 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="form-group mb-3" id="signRequestParamsDetectionPatternDiv">
+                            <label for="signRequestParamsDetectionPattern"> <strong>Pattern de detection des champs signature</strong>
+                                <button class="btn btn-sm btn-transparent" data-bs-target="#help-detection-pattern" data-bs-toggle="collapse"
+                                        type="button">
+                                    <span class="fa-solid fa-info-circle text-info"></span>
+                                </button>
+                            </label>
+                            <div class="collapse" id="help-detection-pattern">
+                                <div class="alert alert-info mb-1">
+                                    Le modèle est construit à l’aide du type d’élément entre crochets suivi d’une regex pour le nom de l’attribut.
+                                    Voici la liste des éléments pris en charge :
+                                    <ul>
+                                        <li>[TextField]</li>
+                                        <li>[PushButton]</li>
+                                        <li>[AnnotationLink]</li>
+                                    </ul>
+                                    Exemples :
+                                    <ul>
+                                        <li>[TextField]^(SIG_SIGNATURE|SIG_CACHET)$ : pour détecter les champs de type TextField avec les attributs SIG_SIGNATURE ou SIG_CACHET</li>
+                                        <li>[AnnotationLink]^signature : pour détecter les champs de type AnnotationLink commençant par "signature"</li>
+                                    </ul>
+
+                                </div>
+                            </div>
+                            <input id="signRequestParamsDetectionPattern" name="signRequestParamsDetectionPattern"
+                                class="form-control" type="text" th:value="${workflow.signRequestParamsDetectionPattern}" autocomplete="on">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="mailFrom"><strong>Adresse email from</strong></label>
+                            <input id="mailFrom" class="form-control" type="text" th:field="*{mailFrom}" value="">
+                        </div>
                         <div class="form-group mb-3">
                             <label><strong>Types de délégation autorisés</strong></label>
                             <th:block th:each="shareType : ${T(org.esupportail.esupsignature.entity.enums.ShareType).values()}">
@@ -184,14 +212,14 @@
                             </th:block>
                         </div>
                         <div class="form-group mb-3" id="documentsSourceUriDiv">
-                            <label for="documentsSourceUri"> <strong>Lien pour la source des documents</strong></label>
+                            <label for="documentsSourceUri"> <strong>Lien pour l’import automatique des documents</strong></label>
                             <input id="documentsSourceUri" name="documentsSourceUri"
-                                   placeholder="Si autre que la valeur par défaut" class="form-control" type="text"
-                                   th:value="${workflow.documentsSourceUri}"
-                                   autocomplete="on">
+                                class="form-control" type="text"
+                                th:value="${workflow.documentsSourceUri}"
+                                autocomplete="on">
                         </div>
                         <div class="form-group mb-3">
-                            <label for="documentsSourceUri"> <strong>Destination des documents</strong></label>
+                            <label for="documentsSourceUri"> <strong>Destination des documents en fin de circuit</strong></label>
                             <table class="table table-borderless table-striped">
                                 <thead class="table-secondary">
                                 <tr>
@@ -224,24 +252,53 @@
                         </div>
                         <div class="form-group mb-3">
                             <label>
-                                <strong>Modèle de nommage pour l'export des documents</strong>
+                                <strong>Modèle de nommage pour l’export des documents</strong>
+                                <button class="btn btn-sm btn-transparent" data-bs-target="#help-naming-template2" data-bs-toggle="collapse"
+                                        type="button">
+                                    <span class="fa-solid fa-info-circle text-info"></span>
+                                </button>
                             </label>
+                            <div class="collapse" id="help-naming-template2">
+                                <div class="alert alert-info mb-1">
+                                    Le modèle est construit à l'aide d'attributs entre crochets.
+                                    Si vide, se réfere à l'attribut namingTemplate de la configuration générale
+                                    Les attributs disponibles sont :
+                                    <ul>
+                                        <li>[originalFileName] : nom original du document</li>
+                                        <li>[signedFileName] : nom original du document</li>
+                                        <li>[fileNameOnly] : nom document sans extension</li>
+                                        <li>[fileExtension] : extension du document</li>
+                                        <li>[title] : titre du parapheur</li>
+                                        <li>[id] : identifiant du parapheur</li>
+                                        <li>[worflowName] : nom du circuit</li>
+                                        <li>[user.name] : nom prénom de l'utilisateur courant</li>
+                                        <li>[user.eppn] : eppn de l'utilisateur courant</li>
+                                        <li>[user.initials] : initiales de l'utilisateur courant</li>
+                                        <li>[UUID] : un identifiant unique</li>
+                                        <li>[order] : le numéro d'ordre de création pour un même circuit</li>
+                                        <li>[timestamp] : timestamp sous forme de long</li>
+                                        <li>[date-fr] : date dd/MM/yyyy hh:mm</li>
+                                        <li>[date-en] : date yyyy-MM-dd hh:mm</li>
+                                    </ul>
+                                </div>
+                            </div>
                             <input class="form-control" type="text" th:field="*{targetNamingTemplate}" value="" autocomplete="off">
-
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="message"><strong>Message d’accueil</strong></label>
+                            <textarea id="message" class="summer-note" th:field="*{message}"></textarea>
                         </div>
                     </form>
                     <form id="importFormSetup" th:action="'/admin/workflows/import/' + ${workflow.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
                         <label class="form-label">Importer une configuration</label>
                         <div class="form-group mb-3">
                             <div class="custom-file">
-                                <input id="multipartFormSetup" type="file" class="form-control" name="multipartFormSetup" value="Choisir un fichier"
-                                       aria-describedby="multipartFormSetup"/>
+                                <input id="multipartFormSetup" type="file" class="form-control" name="multipartFormSetup" value="Choisir un fichier" aria-describedby="multipartFormSetup"/>
                                 <label for="multipartFormSetup" class="custom-file-label"> Choisir un fichier de configuration au format JSON</label>
                             </div>
                         </div>
                         <button id="submitFormSetup" type="submit" class="btn btn-primary">Importer le circuit</button>
-                        <a class="btn btn-primary" title="Exporter le circuit" role="button"
-                           th:href="'/admin/workflows/export/' + ${workflow.id}">
+                        <a class="btn btn-primary" title="Exporter le circuit" role="button" th:href="'/admin/workflows/export/' + ${workflow.id}">
                             Exporter le circuit
                         </a>
                     </form>

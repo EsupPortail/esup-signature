@@ -137,7 +137,7 @@ public class SeleniumTest {
         WebElement fileInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("multipartFiles")));
         fileInput.sendKeys(new ClassPathResource("/dummy.pdf").getFile().getAbsolutePath());
         // Click the recipient field
-        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#recipientsEmails-1 + div"))).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#recipientsEmails-1 + div"))).click();
         // Type "justin"
         WebElement searchInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".ss-search > input")));
         searchInput.sendKeys("justin");

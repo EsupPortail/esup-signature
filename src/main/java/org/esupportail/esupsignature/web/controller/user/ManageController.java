@@ -69,7 +69,7 @@ public class ManageController {
     }
 
     @PreAuthorize("@preAuthorizeService.workflowManage(#id, #authUserEppn)")
-    @GetMapping(value = "/workflow/{id}", produces="text/csv")
+    @GetMapping(value = "/workflow/{id}/signbooks", produces="text/csv")
     public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                        @RequestParam(value = "statusFilter", required = false) String statusFilter,
                        @RequestParam(value = "recipientsFilter", required = false) String recipientsFilter,
@@ -81,11 +81,11 @@ public class ManageController {
         if(creatorFilter == null || creatorFilter.isEmpty() || creatorFilter.equals("all")) {
             creatorFilter = "%";
         }
-        if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
-            docTitleFilter = "%";
+        if(docTitleFilter != null && (docTitleFilter.isEmpty() || docTitleFilter.equals("all"))) {
+            docTitleFilter = null;
         }
-        if(recipientsFilter == null || recipientsFilter.isEmpty() || recipientsFilter.equals("all")) {
-            recipientsFilter = "%";
+        if(recipientsFilter != null && (recipientsFilter.isEmpty() || recipientsFilter.equals("all"))) {
+            recipientsFilter = null;
         }
         Workflow workflow = workflowService.getById(id);
         model.addAttribute("statuses", SignRequestStatus.values());
@@ -95,10 +95,11 @@ public class ManageController {
         model.addAttribute("creatorFilter", creatorFilter);
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("workflow", workflow);
-        Page<SignBook> signBooks = signBookService.getSignBookByWorkflow(workflow, statusFilter, recipientsFilter, creatorFilter, dateFilter, pageable);
-        model.addAttribute("listManagedSignBooks", signBooks);
-        model.addAttribute("creators", signBooks.stream().map(SignBook::getCreateBy).distinct().collect(Collectors.toList()));
-        model.addAttribute("signRequestRecipients", signBookService.getRecipientsNames(userEppn).stream().filter(Objects::nonNull).collect(Collectors.toList()));
+        Page<SignBook> signBooks = signBookService.getSignBooksForManagers(userEppn, authUserEppn, statusFilter, recipientsFilter, workflow.getDescription(), docTitleFilter, creatorFilter, dateFilter, pageable);
+        model.addAttribute("signBooks", signBooks);
+        model.addAttribute("docTitles", signBookService.getSignBooksForManagersSubjects(workflow.getDescription()));
+        model.addAttribute("creators", signBookService.getSignBooksForManagersCreators(workflow.getDescription()));
+        model.addAttribute("signRequestRecipients", signBookService.getSignBooksForManagersRecipientsUsers(workflow.getDescription()));
         return "user/manage/details";
     }
 
