@@ -66,10 +66,34 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             and (:recipientUser is null or key(rhs).user = :recipientUser or :recipientUser in (u))
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
             and size(sb.signRequests) > 0
-            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             and (sb.createDate between :startDateFilter and :endDateFilter)
             """)
     Page<SignBook> findByWorkflowName(User recipientUser, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
+
+    @Query("""
+            select distinct sb.subject from SignBook sb
+            where (:workflowFilter is null or sb.workflowName = :workflowFilter)
+            """)
+    List<String> findByWorkflowNameSubjects(String workflowFilter);
+
+    @Query("""
+            select distinct sb.createBy from SignBook sb
+            where (:workflowFilter is null or sb.workflowName = :workflowFilter)
+            """)
+    List<User> findByWorkflowNameCreators(String workflowFilter);
+
+    @Query("""
+            select distinct u from SignBook sb
+            left join sb.team team
+            left join sb.signRequests sr
+            left join sr.recipientHasSigned rhs
+            left join sb.liveWorkflow lw
+            left join lw.liveWorkflowSteps lws
+            left join lws.recipients r
+            left join r.user u
+            where (:workflowFilter is null or sb.workflowName = :workflowFilter) and u is not null
+            """)
+    List<User> findByWorkflowNameRecipientsUsers(String workflowFilter);
 
     @Query("""
             select distinct sb from SignBook sb
@@ -255,6 +279,5 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     Page<SignBook> findOnShareByEppn(String eppn, User recipientUser, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     List<SignBook> findByCreateByEppn(String userEppn);
-
 }
 

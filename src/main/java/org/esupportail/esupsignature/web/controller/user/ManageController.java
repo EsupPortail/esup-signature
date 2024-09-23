@@ -96,14 +96,10 @@ public class ManageController {
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("workflow", workflow);
         Page<SignBook> signBooks = signBookService.getSignBooksForManagers(userEppn, authUserEppn, statusFilter, recipientsFilter, workflow.getDescription(), docTitleFilter, creatorFilter, dateFilter, pageable);
-        List<SignBook> allSignBooks = signBookService.getSignBooksForManagers(userEppn, authUserEppn, statusFilter, recipientsFilter, workflow.getDescription(), docTitleFilter, creatorFilter, dateFilter, Pageable.unpaged()).getContent();
         model.addAttribute("signBooks", signBooks);
-        model.addAttribute("docTitles", allSignBooks.stream().map(SignBook::getSubject).distinct().toList());
-        model.addAttribute("creators", allSignBooks.stream().map(SignBook::getCreateBy).distinct().collect(Collectors.toList()));
-        List<SignRequest> signRequests = allSignBooks.stream().map(SignBook::getSignRequests).flatMap(Collection::stream).toList();
-        List<Map<Recipient, Action>> recipientHasSigned = signRequests.stream().map(SignRequest::getRecipientHasSigned).toList();
-        List<Recipient> recipients = recipientHasSigned.stream().map(Map::keySet).flatMap(Collection::stream).toList();
-        model.addAttribute("signRequestRecipients", recipients.stream().map(Recipient::getUser).distinct().toList());
+        model.addAttribute("docTitles", signBookService.getSignBooksForManagersSubjects(workflow.getDescription()));
+        model.addAttribute("creators", signBookService.getSignBooksForManagersCreators(workflow.getDescription()));
+        model.addAttribute("signRequestRecipients", signBookService.getSignBooksForManagersRecipientsUsers(workflow.getDescription()));
         return "user/manage/details";
     }
 
