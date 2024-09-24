@@ -363,7 +363,7 @@ public class WorkflowService {
                 for(String realUserEmail : recipientService.getCompleteRecipientList(Collections.singletonList(new RecipientWsDto(userEmail)))) {
                     User user = userService.getUserByEmail(realUserEmail);
                     if(StringUtils.hasText(recipient.getPhone())) {
-                        user.setPhone(recipient.getPhone());
+                        userService.updatePhone(user.getEppn(), recipient.getPhone());
                     }
                     if(StringUtils.hasText(recipient.getName())) {
                         user.setName(recipient.getName());
@@ -501,6 +501,7 @@ public class WorkflowService {
         workflowToUpdate.setUpdateDate(new Date());
         workflowToUpdate.setMessage(workflow.getMessage());
         workflowToUpdate.setMailFrom(workflow.getMailFrom());
+        workflowToUpdate.setDisableEmailAlerts(workflow.getDisableEmailAlerts());
         workflowToUpdate.setSignRequestParamsDetectionPattern(workflow.getSignRequestParamsDetectionPattern());
         workflowRepository.save(workflowToUpdate);
         return workflowToUpdate;

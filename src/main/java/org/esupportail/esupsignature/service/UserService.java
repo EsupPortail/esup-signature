@@ -2,6 +2,9 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
 import jakarta.annotation.Resource;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -764,7 +767,17 @@ public class UserService {
     @Transactional
     public void updatePhone(String userEppn, String phone) {
         User user = getByEppn(userEppn);
-        user.setPhone(phone);
+        if(globalProperties.getFrenchPhoneNumberOnly()) {
+            try {
+                Phonenumber.PhoneNumber phoneNumber = PhoneNumberUtil.getInstance().parse(phone, "FR");
+                if(phoneNumber.getCountryCode() != 33) {
+                    throw new EsupSignatureRuntimeException("Le numéro de téléphone doit être un numéro français");
+                }
+            } catch (NumberParseException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        user.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(phone));
     }
 
     public List<String> getAllRoles() {

@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.zxing.WriterException;
 import eu.europa.esig.dss.diagnostic.DiagnosticData;
 import eu.europa.esig.dss.validation.reports.Reports;
@@ -494,7 +493,7 @@ public class SignRequestService {
 		}
 		updateStatus(signRequest.getId(), SignRequestStatus.pending, "Envoyé pour signature", null, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
 		customMetricsService.incValue("esup-signature.signrequests", "new");
-		for (Target target : signRequest.getParentSignBook().getLiveWorkflow().getTargets().stream().filter(t -> t != null && fsAccessFactoryService.getPathIOType(t.getTargetUri()).equals(DocumentIOType.rest)).collect(Collectors.toList())) {
+		for (Target target : signRequest.getParentSignBook().getLiveWorkflow().getTargets().stream().filter(t -> t != null && fsAccessFactoryService.getPathIOType(t.getTargetUri()).equals(DocumentIOType.rest)).toList()) {
 			targetService.sendRest(target.getTargetUri(), signRequest.getId().toString(), "pending", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString(), authUserEppn, "");
 		}
 	}
@@ -639,8 +638,13 @@ public class SignRequestService {
 				logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Mise à la corbeille de la demande par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			}
 			signRequest.setDeleted(true);
-			for (Target target : signRequest.getParentSignBook().getLiveWorkflow().getTargets().stream().filter(t -> t != null && fsAccessFactoryService.getPathIOType(t.getTargetUri()).equals(DocumentIOType.rest)).collect(Collectors.toList())) {
-				targetService.sendRest(target.getTargetUri(), signRequest.getId().toString(), "deleted", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString(), userEppn, "");
+			for (Target target : signRequest.getParentSignBook().getLiveWorkflow().getTargets().stream().filter(t -> t != null && fsAccessFactoryService.getPathIOType(t.getTargetUri()).equals(DocumentIOType.rest)).toList()) {
+				try {
+					targetService.sendRest(target.getTargetUri(), signRequest.getId().toString(), "deleted", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString(), userEppn, "");
+				} catch (Exception e) {
+					logger.error("error on sending deleted on rest " + target.getTargetUri());
+				}
+
 			}
 			return signRequest.getParentSignBook().getId();
 		}
@@ -676,8 +680,12 @@ public class SignRequestService {
 			}
 		}
 		signRequestRepository.delete(signRequest);
-		for (Target target : signRequest.getParentSignBook().getLiveWorkflow().getTargets().stream().filter(t -> t != null && fsAccessFactoryService.getPathIOType(t.getTargetUri()).equals(DocumentIOType.rest)).collect(Collectors.toList())) {
-			targetService.sendRest(target.getTargetUri(), signRequest.getId().toString(), "cleaned", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString(), userEppn, "");
+		for (Target target : signRequest.getParentSignBook().getLiveWorkflow().getTargets().stream().filter(t -> t != null && fsAccessFactoryService.getPathIOType(t.getTargetUri()).equals(DocumentIOType.rest)).toList()) {
+			try {
+				targetService.sendRest(target.getTargetUri(), signRequest.getId().toString(), "cleaned", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString(), userEppn, "");
+			} catch (Exception e) {
+				logger.error("error on sending deleted on rest " + target.getTargetUri());
+			}
 		}
 		long signBookId = 0;
 		if(!signBook.getSignRequests().isEmpty()) {
@@ -749,7 +757,7 @@ public class SignRequestService {
 						tempUser.setFirstname(recipientWsDto.getFirstName());
 						tempUser.setName(recipientWsDto.getName());
 						if(StringUtils.hasText(recipientWsDto.getPhone())) {
-							tempUser.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(recipientWsDto.getPhone()));
+							userService.updatePhone(tempUser.getEppn(), recipientWsDto.getPhone());
 						}
 					}
 				}
