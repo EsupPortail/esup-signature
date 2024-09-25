@@ -454,6 +454,10 @@ public class MailService {
     }
 
     private void sendMail(MimeMessage mimeMessage, Workflow workflow) {
+        if(workflow != null && workflow.getDisableEmailAlerts()) {
+            logger.debug("email alerts are disabled for this workflow " + workflow.getName());
+            return;
+        }
         try {
             mimeMessage.setFrom(mailConfig.getMailFrom());
             if(workflow != null && org.springframework.util.StringUtils.hasText(workflow.getMailFrom())) {

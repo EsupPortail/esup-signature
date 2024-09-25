@@ -1,19 +1,21 @@
 package org.esupportail.esupsignature.web.otp;
 
+import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.entity.Otp;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
-import org.esupportail.esupsignature.entity.Otp;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
-import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +66,7 @@ public class OtpAccessController {
     }
 
     @GetMapping(value = "/first/{urlId}")
-    public String signin(@PathVariable String urlId, Model model, HttpServletRequest httpServletRequest) {
+    public String signin(@PathVariable String urlId, Model model, HttpServletRequest httpServletRequest) throws NumberParseException {
         model.addAttribute("urlId", urlId);
         Otp otp = otpService.getOtpFromDatabase(urlId);
         if(otp != null) {
@@ -72,9 +74,8 @@ public class OtpAccessController {
             if(globalProperties.getSmsRequired() || otp.isForceSms()) {
                 if (!otp.getSmsSended() && smsService != null) {
                     if (user.getPhone() != null && !user.getPhone().isEmpty()) {
-                        Pattern pattern = Pattern.compile("^(\\d{2}[- .]?){5}$");
-                        Matcher matcher = pattern.matcher(user.getPhone());
-                        if (matcher.matches()) {
+                        Phonenumber.PhoneNumber number = PhoneNumberUtil.getInstance().parse(user.getPhone(), null);
+                        if (PhoneNumberUtil.getInstance().isValidNumber(number)) {
                             String password = otpService.generateOtpPassword(urlId);
                             logger.info("sending password by sms : " + password + " to " + otp.getPhoneNumber());
                             try {
@@ -160,7 +161,7 @@ public class OtpAccessController {
                 logger.info("otp success for : " + urlId);
                 User user = otp.getUser();
                 if(StringUtils.hasText(otp.getPhoneNumber())) {
-                    userService.updatePhone(user.getEppn(), PhoneNumberUtil.normalizeDiallableCharsOnly(otp.getPhoneNumber()));
+                    userService.updatePhone(user.getEppn(), otp.getPhoneNumber());
                 }
                 authOtp(model, httpServletRequest, user);
                 return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();

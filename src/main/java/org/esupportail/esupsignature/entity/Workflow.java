@@ -27,6 +27,8 @@ public class Workflow {
     @Column(columnDefinition = "TEXT")
     private String message;
 
+    private Boolean disableEmailAlerts = false;
+
     private String mailFrom;
 
     private Integer counter;
@@ -130,6 +132,14 @@ public class Workflow {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public Boolean getDisableEmailAlerts() {
+        return disableEmailAlerts;
+    }
+
+    public void setDisableEmailAlerts(Boolean disableEmailAlerts) {
+        this.disableEmailAlerts = disableEmailAlerts;
     }
 
     public String getMailFrom() {
