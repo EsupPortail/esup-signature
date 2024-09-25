@@ -300,7 +300,7 @@ public class WizardController {
             } else {
                 logger.warn(e.getMessage());
             }
-            return ResponseEntity.internalServerError().body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
         return ResponseEntity.ok().body(signBookId);
     }
