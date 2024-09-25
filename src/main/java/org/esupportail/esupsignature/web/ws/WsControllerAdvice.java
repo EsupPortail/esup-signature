@@ -52,6 +52,6 @@ public class WsControllerAdvice implements ResponseBodyAdvice<Object> {
     public String getXApiKey(HttpServletRequest request) {
         Optional<String> headerName = Collections.list(request.getHeaderNames()).stream().filter(name -> API_KEY_HEADERS.contains(name.toLowerCase())).findFirst();
         return headerName.map(request::getHeader).orElse(null);
-    }   
+    }
 
 }
