@@ -79,7 +79,7 @@ public class OtpAccessController {
                             String password = otpService.generateOtpPassword(urlId);
                             logger.info("sending password by sms : " + password + " to " + otp.getPhoneNumber());
                             try {
-                                smsService.sendSms(user.getPhone(), "Votre code de connexion esup-signature " + password);
+                                smsService.sendSms(user.getPhone(), "Votre code de connexion esup_signature " + password);
                             } catch (EsupSignatureRuntimeException e) {
                                 logger.error(e.getMessage(), e);
                             }
