@@ -14,6 +14,7 @@ export class WizUi {
         this.maxSize = maxSize;
         this.pending = false;
         this.input = null;
+        this.files = null;
         this.fileInput = null;
         this.recipientCCSelect = null;
         this.recipientsEmailsSelect = null;
@@ -57,7 +58,7 @@ export class WizUi {
         this.div.html(html);
         this.input = $("#multipartFiles");
         this.fileInput = new FilesInput(this.input, this.maxSize, this.csrf, null, false, null);
-        this.input.on("filebatchuploadsuccess", function() {
+        this.input.on("filebatchuploadcomplete", function() {
             $.ajax({
                 url: "/user/wizard/start-self-sign/" + self.newSignBookId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
                 type: 'POST',
@@ -78,7 +79,18 @@ export class WizUi {
             success: function(signBookId) {
                 self.newSignBookId = signBookId
                 self.fileInput.signBookId = self.newSignBookId;
-                self.input.fileinput("upload")
+                let fileCount = self.input.fileinput('getFilesCount');
+                if(fileCount > 0) {
+                    self.files = self.input.fileinput('getFileList');
+                    self.input.fileinput('upload');
+                } else {
+                    self.input.on('filebatchselected', function(event) {
+                        self.input.fileinput('upload');
+                    });
+                    self.input.fileinput('clear');
+                    self.input.fileinput('clearFileStack');
+                    self.input.fileinput('readFiles', self.files);
+                }
             }
         });
     }
@@ -105,9 +117,12 @@ export class WizUi {
         if($("#recipientsCCEmails").length) {
             self.recipientCCSelect = new SelectUser("recipientsCCEmails", null, null, this.csrf);
         }
-        this.input.on("filebatchuploadsuccess", e => this.fastSignSubmitDatas());
+        this.input.on("filebatchuploadcomplete", e => this.fastSignSubmitDatas());
         $("#send-draft-button").on('click', function() {
             self.wizCreateSign("fast");
+        });
+        this.input.on("fileuploaderror", e => function (e) {
+            alert(e);
         });
         $("#send-pending-button").on('click', function() {
             if(self.recipientsEmailsSelect.slimSelect.getSelected().length > 0) {
@@ -125,9 +140,19 @@ export class WizUi {
             location.href = "/user/signbooks/" + self.newSignBookId;
         }
         let errorCallback = function(e) {
-
-            $("#update-fast-sign-submit").click();
-
+            if(e.responseText !== "") {
+                self.input.fileinput('cancel');
+                bootbox.alert("Une erreur s’est produite lors du démarrage du circuit :<br>" + e.responseText, function () {
+                    $.ajax({
+                        method: "DELETE",
+                        url: "/ws-secure/global/silent-delete-signbook/" + self.newSignBookId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
+                        cache: false
+                    });
+                    $("#update-fast-sign-submit").click();
+                });
+            } else {
+                $("#update-fast-sign-submit").click();
+            }
         }
         this.sendSteps('/user/wizard/update-fast-sign/' + this.newSignBookId + '?pending=' + self.pending, $("#update-fast-sign"), successCallback, errorCallback);
 
@@ -154,7 +179,7 @@ export class WizUi {
         if($("#recipientsCCEmails").length) {
             this.recipientCCSelect = new SelectUser("recipientsCCEmails", null, null, this.csrf);
         }
-        this.input.on("filebatchuploadsuccess", function() {
+        this.input.on("filebatchuploadcomplete", function() {
             self.workflowSignNextStep();
         });
         $("#wiz-start-button").on('click', function (){
@@ -279,10 +304,8 @@ export class WizUi {
             location.href = "/user/signbooks/" + self.newSignBookId;
         }
         let errorCallback = function(e) {
-            if(e.responseText.startsWith('400'))  {
-                bootbox.alert("Une erreur s’est produite lors du démarrage du circuit<br>" + e.responseText, function() {
-                    self.closeModal();
-                });
+            if(e.responseText !== "")  {
+                bootbox.alert("Une erreur s’est produite lors du démarrage du circuit :<br>" + e.responseText, function () {});
             } else {
                 $("#send-sign-submit").click();
             }

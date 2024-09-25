@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.mail;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.mail.MailConfig;
@@ -454,7 +455,7 @@ public class MailService {
     }
 
     private void sendMail(MimeMessage mimeMessage, Workflow workflow) {
-        if(workflow != null && workflow.getDisableEmailAlerts()) {
+        if(workflow != null && BooleanUtils.isTrue(workflow.getDisableEmailAlerts())) {
             logger.debug("email alerts are disabled for this workflow " + workflow.getName());
             return;
         }
