@@ -454,6 +454,10 @@ public class MailService {
     }
 
     private void sendMail(MimeMessage mimeMessage, Workflow workflow) {
+        if(workflow != null && workflow.getDisableEmailAlerts()) {
+            logger.debug("email alerts are disabled for this workflow " + workflow.getName());
+            return;
+        }
         try {
             mimeMessage.setFrom(mailConfig.getMailFrom());
             if(workflow != null && org.springframework.util.StringUtils.hasText(workflow.getMailFrom())) {
@@ -461,9 +465,13 @@ public class MailService {
             }
             String[] toHeader =  mimeMessage.getHeader("To");
             List<String> tos = new ArrayList<>();
-            for(String to : toHeader) {
-                if(!to.equals("system") && !to.equals("system@" + globalProperties.getDomain())) {
-                    tos.add(to);
+            if(org.springframework.util.StringUtils.hasText(globalProperties.getTestEmail())) {
+                tos.add(globalProperties.getTestEmail());
+            } else {
+                for(String to : toHeader) {
+                    if (!to.equals("system") && !to.equals("system@" + globalProperties.getDomain())) {
+                        tos.add(to);
+                    }
                 }
             }
             if(!tos.isEmpty()) {

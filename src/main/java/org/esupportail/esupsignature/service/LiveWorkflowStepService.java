@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service;
 
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dto.RecipientWsDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
@@ -73,7 +72,7 @@ public class LiveWorkflowStepService {
                     recipientUser.setName(recipientWsDto.getName());
                     recipientUser.setFirstname(recipientWsDto.getFirstName());
                     if(StringUtils.hasText(recipientWsDto.getPhone())) {
-                        recipientUser.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(recipientWsDto.getPhone()));
+                        userService.updatePhone(recipientUser.getEppn(), recipientWsDto.getPhone());
                     }
                     recipientUser.setForceSms(recipientWsDto.getForceSms() != null && recipientWsDto.getForceSms());
 
