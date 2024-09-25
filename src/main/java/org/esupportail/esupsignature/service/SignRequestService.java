@@ -430,7 +430,7 @@ public class SignRequestService {
 				String contentType = multipartFile.getContentType();
 				InputStream inputStream = new ByteArrayInputStream(bytes);
 				if (multipartFiles.length == 1 && bytes.length > 0) {
-					if("application/pdf".equals(multipartFiles[0].getContentType()) && (scanSignatureFields || (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getScanPdfMetadatas()))) {
+					if("application/pdf".equals(multipartFiles[0].getContentType()) && (scanSignatureFields || (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && StringUtils.hasText(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSignRequestParamsDetectionPattern())))) {
 						bytes = pdfService.normalizeGS(bytes);
 						List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
 						if(signRequestParamses.isEmpty()) {
