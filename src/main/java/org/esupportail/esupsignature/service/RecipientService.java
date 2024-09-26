@@ -116,7 +116,7 @@ public class RecipientService {
                     recipientWsDto.setEmail(realUserEmail);
                     User user = userService.getUserByEmail(realUserEmail);
                     if(user.getUserType().equals(UserType.external) && userStrings.length > 2) {
-                        user.setPhone(userStrings[2]);
+                        userService.updatePhone(user.getEppn(), userStrings[2]);
                     }
                     recipientWsDtos.add(recipientWsDto);
                 }

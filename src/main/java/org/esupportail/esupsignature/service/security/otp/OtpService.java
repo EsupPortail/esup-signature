@@ -4,7 +4,6 @@ import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import org.bouncycastle.util.encoders.Hex;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Otp;
@@ -88,7 +87,7 @@ public class OtpService {
             removeOtpFromCache(extUser.getEmail());
             otpCache.put(urlId, otp);
             if(StringUtils.hasText(phone)) {
-                extUser.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(phone));
+                userService.updatePhone(extUser.getEppn(), phone);
             }
             otpRepository.save(otp);
             mailService.sendOtp(otp, urlId, signBook);

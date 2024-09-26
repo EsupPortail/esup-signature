@@ -109,7 +109,18 @@ export class WorkspacePdf {
             this.pdfViewer.addEventListener('change', e => this.saveData(localStorage.getItem('disableFormAlert') === "true"));
 
             $(".postit-global-close").on('click', function () {
+                if($(this).parent().hasClass("postit-small")) {
+                    $(this).parent().resizable("enable");
+                } else {
+                    $(this).parent().resizable("disable");
+                }
                 $(this).parent().toggleClass("postit-small");
+                const buttons = $(this).parent().find('button');
+                buttons.each(function() {
+                    if(!$(this).hasClass("postit-global-close")) {
+                        $(this).toggle();
+                    }
+                });
             });
 
             $(".postit-copy").on('click', function (e) {
@@ -905,6 +916,16 @@ export class WorkspacePdf {
         $(".postit-global").each(function () {
             $(this).removeClass("d-none");
             $(this).draggable();
+            $(this).on('mousedown', function (e) {
+                let postit = $(this).attr('id');
+                $(".postit-global").each(function () {
+                    if($(this).attr('id') === postit) {
+                        $(this).css('z-index', 1001);
+                    }else {
+                        $(this).css('z-index', 1000);
+                    }
+                });
+            });
             $(this).resizable({
                 aspectRatio: true
             });
