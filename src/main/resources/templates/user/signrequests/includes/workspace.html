@@ -13,18 +13,6 @@
             <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
             <span th:text="${signRequest.parentSignBook.description}"></span>
         </div>
-        <div class="postit-global d-none overflow-hidden"
-            th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}"
-            style="cursor: move;background-color: #FFF740;position: fixed; left: 278px; top : 178px;z-index: 0;">
-            <button type="button" class="postit-global-close close">
-                <i class="fa-solid fa-eye"></i>
-            </button>
-            <b>Note</b>
-            <button es-postit-id="comment" type="button" title="Copier le texte du postit" class="postit-copy btn btn-sm btn-transparent text-dark">
-                <i es-postit-id="comment" class="fa-regular fa-copy"></i>
-            </button>
-            <p class="postitarea" th:text="${signRequest.parentSignBook.description}"></p>
-        </div>
         <div id="alertSign" class="alert alert-primary border-dark" th:if="${signatureIds.size() > 0}" style="width: 100%;">
             <span th:if="${signatureIds.size() > 1}">Ce document contient des signatures électroniques
             <button id="reportModalBtn" class="btn btn-sm btn-secondary d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir les signatures</button></span>
