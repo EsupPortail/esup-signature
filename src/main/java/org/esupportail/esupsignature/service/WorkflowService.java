@@ -57,6 +57,9 @@ public class WorkflowService {
     private LiveWorkflowService liveWorkflowService;
 
     @Resource
+    private LiveWorkflowStepService liveWorkflowStepService;
+
+    @Resource
     private FsAccessFactoryService fsAccessFactoryService;
 
     @Resource
@@ -308,6 +311,16 @@ public class WorkflowService {
         } else {
             throw new EsupSignatureRuntimeException("You are not authorized to update this workflow");
         }
+    }
+
+
+    @Transactional
+    public void computeWorkflow(List<WorkflowStepDto> steps, SignBook signBook) {
+        for (WorkflowStepDto step : steps) {
+            LiveWorkflowStep newWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, null, step);
+            signBook.getLiveWorkflow().getLiveWorkflowSteps().add(newWorkflowStep);
+        }
+        signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
     }
 
     @Transactional
@@ -651,5 +664,35 @@ public class WorkflowService {
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) {
         copyClassWorkflowsIntoDatabase();
+    }
+
+    @Transactional
+    public void importWorkflow(SignBook signBook, Workflow workflow, List<WorkflowStepDto> steps) {
+        logger.info("try import workflow steps in signBook " + signBook.getSubject() + " - " + signBook.getId());
+        int i = 0;
+        for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
+            i++;
+            WorkflowStepDto step = new WorkflowStepDto();
+            int finalI = i;
+            Optional<WorkflowStepDto> optionalStep = steps.stream().filter(s -> s.getStepNumber() == finalI).findFirst();
+            if(optionalStep.isPresent()) step = optionalStep.get();
+            for (User user : workflowStep.getUsers()) {
+                if (user.equals(userService.getCreatorUser())) {
+                    user = signBook.getCreateBy();
+                }
+                recipientService.addRecipientInStep(step, user.getEmail());
+            }
+            step.setRepeatable(workflowStep.getRepeatable());
+            step.setRepeatableSignType(workflowStep.getRepeatableSignType());
+            step.setMultiSign(workflowStep.getMultiSign());
+            step.setAutoSign(workflowStep.getAutoSign());
+            step.setAllSignToComplete(workflowStep.getAllSignToComplete());
+            step.setSignType(workflowStep.getSignType());
+            LiveWorkflowStep newWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, workflowStep, step);
+            signBook.getLiveWorkflow().getLiveWorkflowSteps().add(newWorkflowStep);
+        }
+        if(!(workflow instanceof DefaultWorkflow)) {
+            signBook.getLiveWorkflow().setWorkflow(workflow);
+        }
     }
 }

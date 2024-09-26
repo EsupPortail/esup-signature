@@ -62,8 +62,7 @@ public class ScheduledTaskService {
 		this.otpService = otpService;
 	}
 
-
-    @Scheduled(initialDelay = 12000, fixedRate = 300000)
+	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void scanAllWorkflowsSources() {
 		logger.debug("scan workflows sources");
