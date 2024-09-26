@@ -1881,7 +1881,7 @@ public class SignBookService {
         if(replacedByUser != null) {
             List<SignRequest> signRequests = getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).flatMap(signBook -> signBook.getSignRequests().stream().distinct()).collect(Collectors.toList());
             for(SignRequest signRequest : signRequests) {
-                transfertSignRequest(signRequest.getId(), user, replacedByUser, false);
+                transfertSignRequest(signRequest.getId(), true, user, replacedByUser, false);
                 i++;
             }
         }
@@ -1896,25 +1896,26 @@ public class SignBookService {
             if (user.equals(replacedByUser)) {
                 throw new EsupSignatureRuntimeException("Transfer impossible");
             }
-            transfertSignRequest(signRequestId, user, replacedByUser, keepFollow);
+            transfertSignRequest(signRequestId, false, user, replacedByUser, keepFollow);
         } else {
             throw new EsupSignatureRuntimeException("Transfer impossible");
         }
     }
 
     @Transactional
-    public void transfertSignRequest(Long signRequestId, User user, User replacedByUser, boolean keepFollow) {
+    public void transfertSignRequest(Long signRequestId, boolean transfertAll, User user, User replacedByUser, boolean keepFollow) {
         SignRequest signRequest = signRequestService.getById(signRequestId);
         signRequest.getParentSignBook().getTeam().remove(user);
         addToTeam(signRequest.getParentSignBook(), user.getEppn());
-        for(LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
+        List<LiveWorkflowStep> liveWorkflowSteps = new ArrayList<>();
+        if(transfertAll) {
+            liveWorkflowSteps.addAll(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps());
+        } else {
+            liveWorkflowSteps.add(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep());
+        }
+        for(LiveWorkflowStep liveWorkflowStep : liveWorkflowSteps) {
             for(Recipient recipient : liveWorkflowStep.getRecipients()) {
-                if(recipient.getUser().equals(user)) {
-                    recipient.setUser(replacedByUser);
-                }
-            }
-            for(Recipient recipient : signRequest.getRecipientHasSigned().keySet()) {
-                if(recipient.getUser().equals(user)) {
+                if(recipient.getUser().equals(user) && signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none)) {
                     recipient.setUser(replacedByUser);
                 }
             }
