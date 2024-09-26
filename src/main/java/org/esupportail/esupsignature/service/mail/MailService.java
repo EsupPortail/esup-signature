@@ -384,7 +384,7 @@ public class MailService {
             mimeMessage.setSubject("Liste des demandes à signer");
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             mimeMessage.setText(htmlContent, true);
-            logger.info("send email alert for " + recipientsEmails.get(0));
+            logger.info("send email summary for " + recipientsEmails.get(0));
             sendMail(mimeMessage.getMimeMessage(), null);
         } catch (MessagingException e) {
             logger.error("unable to send SUMMARY email", e);
@@ -406,7 +406,7 @@ public class MailService {
             addInLineImages(mimeMessage, htmlContent);
             mimeMessage.setSubject("Vous avez un document à signer émanant de " + messageSource.getMessage("application.footer", null, Locale.FRENCH));
             mimeMessage.setTo(otp.getUser().getEmail());
-            logger.info("send email alert for " + otp.getUser().getEmail());
+            logger.info("send email otp for " + otp.getUser().getEmail());
             sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
         } catch (MessagingException e) {
             logger.error("unable to send OTP email", e);
@@ -465,6 +465,9 @@ public class MailService {
                 mimeMessage.setFrom(workflow.getMailFrom());
             }
             String[] toHeader =  mimeMessage.getHeader("To");
+            if(toHeader == null) {
+                return;
+            }
             List<String> tos = new ArrayList<>();
             if(org.springframework.util.StringUtils.hasText(globalProperties.getTestEmail())) {
                 tos.add(globalProperties.getTestEmail());

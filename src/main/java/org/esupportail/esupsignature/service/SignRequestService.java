@@ -592,6 +592,7 @@ public class SignRequestService {
 			documents.addAll(signRequest.getSignedDocuments());
 			signRequest.getOriginalDocuments().clear();
 			signRequest.getSignedDocuments().clear();
+			nexuService.delete(signRequest.getId());
 			for(Document document : documents) {
 				documentService.delete(document);
 			}

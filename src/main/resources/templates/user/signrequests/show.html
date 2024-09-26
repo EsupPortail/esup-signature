@@ -159,7 +159,7 @@
             <div th:replace="~{user/signrequests/includes/tools :: tools}"></div>
             <div style="position: absolute;top: 200px;">
                 <th:block th:each="postit, iterate : ${postits}">
-                    <div class="postit-global d-none overflow-hidden" th:style="'cursor: move;background-color: ' + ${postit.postitColor} + ';position: fixed; left: ' + ${275 + (iterate.index * 10)} + 'px; top : ' + ${220 + (iterate.index * 70)} + 'px;'">
+                    <div class="postit-global d-none overflow-hidden" th:style="'cursor: move;background-color: ' + ${postit.postitColor} + ';position: fixed; left: ' + ${290 + (iterate.index * 15)} + 'px; top : ' + ${230 + (iterate.index * 70)} + 'px;'">
                         <button type="button" class="postit-global-close close">
                             <i class="fa-solid fa-eye"></i>
                         </button>

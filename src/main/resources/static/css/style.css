@@ -277,9 +277,9 @@ dd {
     height:200px;
     width:220px;
     float:left;
-    -moz-box-shadow: 5px 5px 4px rgba(0, 0, 0, 0.3);
-    -webkit-box-shadow: 5px 5px 4px rgba(0, 0, 0, 0.3);
-    box-shadow: 5px 5px 4px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 1px 1px 6px 3px rgba(0, 0, 0, 0.5);
+    -webkit-box-shadow: 1px 1px 6px 3px rgba(0, 0, 0, 0.5);
+    box-shadow: 1px 1px 6px 3px rgba(0, 0, 0, 0.5);
     position:relative;
     top:-5px;
     z-index: 10000 !important;

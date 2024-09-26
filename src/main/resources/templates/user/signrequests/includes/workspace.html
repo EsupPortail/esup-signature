@@ -9,9 +9,21 @@
         <div id="warningSelectDiv" class="alert alert-danger border-dark" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}">
             Aucun type de signature n’est disponible pour signer ce document.
         </div>
-        <div id="signBookDesc" class="alert alert-warning border-dark" th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}" style="width: 100%;">
+        <div id="signBookDesc" class="d-none alert alert-warning border-dark" th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}" style="width: 100%;">
             <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
             <span th:text="${signRequest.parentSignBook.description}"></span>
+        </div>
+        <div class="postit-global d-none overflow-hidden"
+            th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}"
+            style="cursor: move;background-color: #FFF740;position: fixed; left: 278px; top : 178px;z-index: 0;">
+            <button type="button" class="postit-global-close close">
+                <i class="fa-solid fa-eye"></i>
+            </button>
+            <b>Note</b>
+            <button es-postit-id="comment" type="button" title="Copier le texte du postit" class="postit-copy btn btn-sm btn-transparent text-dark">
+                <i es-postit-id="comment" class="fa-regular fa-copy"></i>
+            </button>
+            <p class="postitarea" th:text="${signRequest.parentSignBook.description}"></p>
         </div>
         <div id="alertSign" class="alert alert-primary border-dark" th:if="${signatureIds.size() > 0}" style="width: 100%;">
             <span th:if="${signatureIds.size() > 1}">Ce document contient des signatures électroniques

@@ -109,7 +109,18 @@ export class WorkspacePdf {
             this.pdfViewer.addEventListener('change', e => this.saveData(localStorage.getItem('disableFormAlert') === "true"));
 
             $(".postit-global-close").on('click', function () {
+                if($(this).parent().hasClass("postit-small")) {
+                    $(this).parent().resizable("enable");
+                } else {
+                    $(this).parent().resizable("disable");
+                }
                 $(this).parent().toggleClass("postit-small");
+                const buttons = $(this).parent().find('button');
+                buttons.each(function() {
+                    if(!$(this).hasClass("postit-global-close")) {
+                        $(this).toggle();
+                    }
+                });
             });
 
             $(".postit-copy").on('click', function (e) {
