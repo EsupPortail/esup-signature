@@ -46,6 +46,8 @@ global:
         extra-date: true
         extra-on-top: true
 #        extra-text: ""
+    french-phone-number-only: false
+#    test-email: toto@univ-ville.fr
 
 #tomcat:
 #    ajp:
