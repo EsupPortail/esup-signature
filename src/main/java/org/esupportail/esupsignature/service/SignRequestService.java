@@ -754,7 +754,7 @@ public class SignRequestService {
 						logger.warn("TODO Envoi Mail SHIBBOLETH ");
 						//TODO envoi mail spécifique
 					} else if (tempUser.getUserType().equals(UserType.external)) {
-						RecipientWsDto recipientWsDto = recipients.stream().filter(recipientWsDto1 -> recipientWsDto1.getEmail().equals(tempUser.getEmail())).findFirst().get();
+						RecipientWsDto recipientWsDto = recipients.stream().filter(recipientWsDto1 -> recipientWsDto1.getEmail().toLowerCase().equals(tempUser.getEmail().toLowerCase(Locale.ROOT))).findFirst().get();
 						tempUser.setFirstname(recipientWsDto.getFirstName());
 						tempUser.setName(recipientWsDto.getName());
 						if(StringUtils.hasText(recipientWsDto.getPhone())) {
