@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import jakarta.annotation.Resource;
 import jakarta.mail.MessagingException;
+import org.esupportail.esupsignature.dto.RecipientWsDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.Form;
@@ -107,7 +108,7 @@ public class WizardController {
     @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
     @ResponseBody
     @PostMapping(value = "/update-fast-sign/{signBookId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> updateFastSign(@PathVariable("signBookId") Long signBookId,
+    public ResponseEntity<String> updateFastSign(@PathVariable("signBookId") Long signBookId,
                                          @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                          @RequestBody List<WorkflowStepDto> steps,
                                          @RequestParam(value = "pending", required = false) Boolean pending) throws EsupSignatureRuntimeException {
@@ -115,7 +116,22 @@ public class WizardController {
         try {
             signBookService.startFastSignBook(signBookId, pending, steps, userEppn, authUserEppn, false);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
+    @ResponseBody
+    @PostMapping(value = "/check-users/{signBookId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> checkUsers(@PathVariable("signBookId") Long signBookId,
+                                                 @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                                                 @RequestBody List<WorkflowStepDto> steps) throws EsupSignatureRuntimeException {
+        try {
+            List<RecipientWsDto> recipients = steps.stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).toList();
+            signRequestService.checkTempUsers(signBookId, recipients);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
         return ResponseEntity.ok().build();
     }
@@ -284,7 +300,7 @@ public class WizardController {
             } else {
                 logger.warn(e.getMessage());
             }
-            return ResponseEntity.internalServerError().body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
         return ResponseEntity.ok().body(signBookId);
     }

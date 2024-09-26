@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.mail;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.mail.MailConfig;
@@ -383,7 +384,7 @@ public class MailService {
             mimeMessage.setSubject("Liste des demandes à signer");
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             mimeMessage.setText(htmlContent, true);
-            logger.info("send email alert for " + recipientsEmails.get(0));
+            logger.info("send email summary for " + recipientsEmails.get(0));
             sendMail(mimeMessage.getMimeMessage(), null);
         } catch (MessagingException e) {
             logger.error("unable to send SUMMARY email", e);
@@ -405,7 +406,7 @@ public class MailService {
             addInLineImages(mimeMessage, htmlContent);
             mimeMessage.setSubject("Vous avez un document à signer émanant de " + messageSource.getMessage("application.footer", null, Locale.FRENCH));
             mimeMessage.setTo(otp.getUser().getEmail());
-            logger.info("send email alert for " + otp.getUser().getEmail());
+            logger.info("send email otp for " + otp.getUser().getEmail());
             sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
         } catch (MessagingException e) {
             logger.error("unable to send OTP email", e);
@@ -454,16 +455,27 @@ public class MailService {
     }
 
     private void sendMail(MimeMessage mimeMessage, Workflow workflow) {
+        if(workflow != null && BooleanUtils.isTrue(workflow.getDisableEmailAlerts())) {
+            logger.debug("email alerts are disabled for this workflow " + workflow.getName());
+            return;
+        }
         try {
             mimeMessage.setFrom(mailConfig.getMailFrom());
             if(workflow != null && org.springframework.util.StringUtils.hasText(workflow.getMailFrom())) {
                 mimeMessage.setFrom(workflow.getMailFrom());
             }
             String[] toHeader =  mimeMessage.getHeader("To");
+            if(toHeader == null) {
+                return;
+            }
             List<String> tos = new ArrayList<>();
-            for(String to : toHeader) {
-                if(!to.equals("system") && !to.equals("system@" + globalProperties.getDomain())) {
-                    tos.add(to);
+            if(org.springframework.util.StringUtils.hasText(globalProperties.getTestEmail())) {
+                tos.add(globalProperties.getTestEmail());
+            } else {
+                for(String to : toHeader) {
+                    if (!to.equals("system") && !to.equals("system@" + globalProperties.getDomain())) {
+                        tos.add(to);
+                    }
                 }
             }
             if(!tos.isEmpty()) {

@@ -8,7 +8,7 @@
     </div>
     <br>
     <ul>
-        <li class="mb-2" th:if="${user.userType.name() != 'external'}">
+        <li class="mb-2" th:if="${user != null && user.userType != null && user.userType.name() != 'external'}">
             Pour effectuer des signatures calligraphiques sur un PDF, il faut au préalable déposer un fichier image de votre
             signature dans vos paramètres : <a href='user/users' target='_blank'>Mes paramètres</a>
             <br>

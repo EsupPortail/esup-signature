@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.web.ws;
 
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
@@ -25,9 +24,9 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/ws/export/")
-public class WsExportController {
+public class ExportWsController {
 
-    private static final Logger logger = LoggerFactory.getLogger(WsExportController.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExportWsController.class);
 
     @Resource
     private FormRepository formRepository;
