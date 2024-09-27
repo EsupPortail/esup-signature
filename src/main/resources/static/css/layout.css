@@ -73,7 +73,7 @@ header {
 
 .table-fix-head {
     overflow-y: auto;
-    height: calc(100vh - 250px);
+    height: calc(100vh - 150px);
 }
 
 .table-fix-head thead th {

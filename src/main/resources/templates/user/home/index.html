@@ -30,10 +30,10 @@
                 </div>
                 <div id="listSignRequestTable" class="div-scrollable scrollbar-style">
                     <div id="to-sign-list" class="d-flex col-12 mb-1">
-                        <div class="col-12 card mx-auto">
+                        <div class="col-12 card text-bg-light border-light mx-auto">
                             <div class="card-body">
                             <h5 class="text-center"><b>Demandes à signer</b></h5>
-                            <table th:if="${signBooksToSign.size() > 0}" class="table table-sm table-borderless table-hover">
+                            <table th:if="${signBooksToSign.size() > 0}" class="table table-sm table-hover table-light">
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksToSign}">
                                     <tr th:if="${signBook.signRequests.size() > 0}" th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}" th:with="signRequest = ${signBook.signRequests.get(0)}">
@@ -109,10 +109,10 @@
                         </div>
                     </div>
                     <div id="pendingList" class="d-flex col-12" th:if="${userEppn == authUserEppn}">
-                        <div class="col-12 card mx-auto">
+                        <div class="col-12 card text-bg-light border-light mx-auto">
                             <div class="card-body">
                             <h5 class="text-center"><b>Demandes en attente de signature</b></h5>
-                            <table th:if="${signBooksPending.size() > 0}" class="table table-sm table-borderless table-hover">
+                            <table th:if="${signBooksPending.size() > 0}" class="table table-sm table-borderless table-hover table-light">
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksPending}">
                                     <tr th:title="${signBook.description}" th:data-href="'/user/signbooks/' + ${signBook.id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}" th:with="signRequest = ${signBook.signRequests.get(0)}">
