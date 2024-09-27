@@ -4,20 +4,20 @@
 <nav th:fragment="side-user" id="sidebar">
     <div th:unless="${user.userType.name() == 'external'}" class="ms-1 mt-2">
         <h5 class="text-center sidebar-label"><b>Paramètres</b></h5>
-        <a class="btn col-12 mb-1 text-left"
+        <a class="btn col-12 mb-1 text-left border-light-subtle"
            th:classappend="${activeMenu == 'settings'} ? 'btn-secondary' : 'btn-light'"
            href="/user/users?form" title="Paramètres de signature">
             <i class="fa-solid fa-user-cog"></i> <span class="sidebar-label">Paramètres de signature</span>
         </a>
-        <a th:if="${globalProperties.shareMode > 0}" class="btn col-12 mb-1 text-left" href="/user/users/replace"
+        <a th:if="${globalProperties.shareMode > 0}" class="btn col-12 mb-1 text-left border-light-subtle" href="/user/users/replace"
            th:classappend="${activeMenu == 'replace'} ? 'btn-secondary' : 'btn-light'" title="Délégations">
             <i class="fa-solid fa-people-arrows"></i> <span class="sidebar-label">Remplacement</span>
         </a>
-        <a th:if="${globalProperties.shareMode > 0}" class="btn col-12 mb-1 text-left" href="/user/users/shares"
+        <a th:if="${globalProperties.shareMode > 0}" class="btn col-12 mb-1 text-left border-light-subtle" href="/user/users/shares"
            th:classappend="${activeMenu == 'shares'} ? 'btn-secondary' : 'btn-light'" title="Délégations">
             <i class="fa-solid fa-share-alt"></i> <span class="sidebar-label">Délégations</span>
         </a>
-        <a class="btn col-12 mb-1 text-left" href="/user/users/properties"
+        <a class="btn col-12 mb-1 text-left border-light-subtle" href="/user/users/properties"
            th:classappend="${activeMenu == 'properties'} ? 'btn-secondary' : 'btn-light'" title="Favoris">
             <i class="fa-solid fa-bookmark"></i> <span class="sidebar-label">Favoris</span>
         </a>

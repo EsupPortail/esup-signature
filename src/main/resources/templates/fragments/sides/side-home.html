@@ -4,23 +4,23 @@
 <nav th:fragment="side-home" id="sidebar">
     <div class="ms-1 mt-2">
         <h5 class="text-center sidebar-label"><b>Outils</b></h5>
-        <a th:unless="${globalProperties.hideWizardWorkflow}" id="start-wizard-button-2" role="button" class="btn btn-light mb-1 col-12 text-left" data-bs-toggle="modal" data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant">
+        <a th:unless="${globalProperties.hideWizardWorkflow}" id="start-wizard-button-2" role="button" class="btn btn-light mb-1 col-12 text-left border-light-subtle" data-bs-toggle="modal" data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant">
             <i class="fa-solid fa-magic"></i> Assistant de création de circuit
         </a>
-        <a title="Valider la signature d'un document" href="/user/validation" class="btn btn-light mb-1 col-12 text-left" style="width: 250px;">
+        <a title="Valider la signature d'un document" href="/user/validation" class="btn btn-light mb-1 col-12 text-left border-light-subtle" style="width: 250px;">
             <i class="fa-solid fa-shield-alt"></i> <span class="nav-item-label d-inline">Contrôler un document</span>
         </a>
         <h5 class="text-center sidebar-label"><b>Filtres</b></h5>
-        <button id="noFilterButton" title="Tout voir" type="button" class="btn btn-light mb-1 col-12 text-left">
+        <button id="noFilterButton" title="Tout voir" type="button" class="btn btn-light mb-1 col-12 text-left border-light-subtle">
             <i class="fa-solid fa-eye"></i> <span class="sidebar-label">Tout voir</span>
         </button>
-        <button id="globalFilterButton" title="Outils" type="button" class="btn btn-light mb-1 col-12 text-left">
+        <button id="globalFilterButton" title="Outils" type="button" class="btn btn-light mb-1 col-12 text-left border-light-subtle">
             <i class="fa-solid fa-tools"></i> <span class="sidebar-label">Outils de signature</span>
         </button>
-        <button id="workflowFilterButton" title="Circuits" type="button" class="btn btn-light mb-1 col-12 text-left">
+        <button id="workflowFilterButton" title="Circuits" type="button" class="btn btn-light mb-1 col-12 text-left border-light-subtle">
             <i class="fa-solid fa-project-diagram project-diagram-color"></i> <span class="sidebar-label">Circuits</span>
         </button>
-        <button id="formFilterButton" th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Formulaires" class="btn btn-light mb-1 col-12 text-left">
+        <button id="formFilterButton" th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Formulaires" class="btn btn-light mb-1 col-12 text-left border-light-subtle">
             <i class="fa-solid fa-file-alt file-alt-color"></i> <span class="sidebar-label">Formulaires</span>
         </button>
     </div>
