@@ -440,6 +440,10 @@ textarea:invalid {
     max-height: 80%;
 }
 
+.card {
+    border: 0;
+}
+
 .card-header {
     font-weight: bold;
 }
