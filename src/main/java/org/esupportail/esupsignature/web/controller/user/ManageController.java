@@ -77,7 +77,10 @@ public class ManageController {
                        @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
                        @RequestParam(value = "dateFilter", required = false) String dateFilter,
                        @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, @PathVariable Long id, Model model) {
-        if(statusFilter == null || statusFilter.equals("all")) statusFilter = "";
+        SignRequestStatus signRequestStatus = null;
+        if(statusFilter != null && !statusFilter.equals("all")) {
+            signRequestStatus = SignRequestStatus.valueOf(statusFilter);
+        }
         if(creatorFilter == null || creatorFilter.isEmpty() || creatorFilter.equals("all")) {
             creatorFilter = "%";
         }
@@ -95,7 +98,7 @@ public class ManageController {
         model.addAttribute("creatorFilter", creatorFilter);
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("workflow", workflow);
-        Page<SignBook> signBooks = signBookService.getSignBooksForManagers(userEppn, authUserEppn, statusFilter, recipientsFilter, workflow.getDescription(), docTitleFilter, creatorFilter, dateFilter, pageable);
+        Page<SignBook> signBooks = signBookService.getSignBooksForManagers(userEppn, authUserEppn, signRequestStatus, recipientsFilter, workflow.getDescription(), docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("signBooks", signBooks);
         model.addAttribute("docTitles", signBookService.getSignBooksForManagersSubjects(workflow.getDescription()));
         model.addAttribute("creators", signBookService.getSignBooksForManagersCreators(workflow.getDescription()));
