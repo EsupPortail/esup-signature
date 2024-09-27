@@ -4,7 +4,7 @@
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <div id="new-fragment" th:fragment="new" class="clear" th:with="isUserOnSu = ${userEppn != authUserEppn}">
     <div class="card border-0 w-100 h-100" th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')') || #authorization.expression('hasRole(''ROLE_FRANCECONNECT'')')}">
-        <div class="card-body bg-light">
+        <div class="card-body">
             <button id="toggle-new-grid" class="btn btn-transparent text-dark float-end"><i class="fa-solid fa-th"></i> Affichage</button>
             <h5 class="text-center"><b>Nouveau</b></h5>
             <div id="new-scroll" class="text-center text-nowrap col-12 text-wrap scrollbar-lite scrollbar-style">
