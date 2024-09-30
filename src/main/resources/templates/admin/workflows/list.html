@@ -21,9 +21,7 @@
                     <i class="fa-solid fa-plus fa-2xl"></i>
                 </a>
             </div>
-            <div class="card col-lg-10 mx-auto">
-                <div class="card-body">
-                    <h5 class="text-center"><b>Circuits</b></h5>
+            <div class="col-sm-9 col-md-10 col-xl-11 p-0 m-2">
                     <div class="input-group mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
                     <span class="input-group-text">Filtrer</span>
                     <select name="displayWorkflowType" class="form-select" onchange="document.location.href = '/admin/workflows?displayWorkflowType=' + this.value">
@@ -33,7 +31,8 @@
                         <option value="users" th:selected="${displayWorkflowType.name() == 'users'}">Workflows Utilisateurs (définis pas les utilisateurs)</option>
                     </select>
                     </div>
-                    <table class="table table-sm table-borderless table-hover table-striped">
+                    <div class="table-fix-head scrollbar-style rounded-3">
+                    <table class="table table-light table-sm table-borderless table-hover table-striped">
                         <thead class="table-secondary">
                         <tr>
                             <th>Id</th>

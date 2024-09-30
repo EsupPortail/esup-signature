@@ -16,7 +16,6 @@
         <div id="content" class="content">
             <div class="card mb-1 col-lg-10 mx-auto">
                 <div class="card-body">
-                    <h5 class="text-center"><b>Utilisateurs</b></h5>
                     <form method="get">
                         <div class="input-group">
                             <input class="form-control" type="text" name="searchText" placeholder="Recherche par email, eppn ou numéro de mobile" th:value="${searchText}">
@@ -25,7 +24,8 @@
                         </div>
                     </form>
                     <br>
-                    <table class="table table-sm table-borderless table-hover">
+                    <div class="table-fix-head scrollbar-style rounded-3 ">
+                    <table class="table table-light table-sm table-borderless table-hover">
                         <thead class="table-secondary">
                         <tr>
                             <th>Id</th>
@@ -108,6 +108,7 @@
                         </tbody>
                     </table>
                     <nav th:replace="~{fragments/pagination :: pagination}"></nav>
+                    </div>
                 </div>
             </div>
         </div>

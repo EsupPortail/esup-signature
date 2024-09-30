@@ -147,7 +147,7 @@ public class FormWsController {
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return ResponseEntity.ok("-1");
+            return ResponseEntity.internalServerError().body("-1");
         }
     }
 
@@ -207,7 +207,7 @@ public class FormWsController {
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return ResponseEntity.ok("-1");
+            return ResponseEntity.internalServerError().body("-1");
         }
     }
 

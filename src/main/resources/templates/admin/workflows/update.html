@@ -34,8 +34,7 @@
                     <a class="nav-link" th:href="'/admin/workflows/steps/' + ${workflow.id}">Étapes</a>
                 </li>
             </ul>
-            <br>
-            <div class="card col-lg-10 mx-auto">
+            <div class="card text-bg-light col-lg-11 m-2">
                 <div class="card-body">
                     <h3>WORKFLOW ID : <input type="text" readonly disabled th:value="${workflow.id}"></h3>
                     <div class="alert alert-info">Nombre de demandes pour ce circuit : <span th:text="${nbWorkflowSignRequests}"></span></div>
