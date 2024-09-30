@@ -31,8 +31,10 @@
                 <div id="listSignRequestTable" class="div-scrollable scrollbar-style">
                     <div id="to-sign-list" class="d-flex col-12 mb-2">
                         <div class="col-12 card text-bg-light border-light mx-auto">
+                            <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+                                <h5 class="ms-4"><b>Demandes à signer</b></h5>
+                            </div>
                             <div class="card-body">
-                            <h5 class="text-center"><b>Demandes à signer</b></h5>
                             <table th:if="${signBooksToSign.size() > 0}" class="table table-sm table-borderless table-hover table-light">
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksToSign}">
@@ -110,9 +112,11 @@
                     </div>
                     <div id="pendingList" class="d-flex col-12" th:if="${userEppn == authUserEppn}">
                         <div class="col-12 card text-bg-light border-light mx-auto">
+                            <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+                                <h5 class="ms-4"><b>Demandes en attente de signature</b></h5>
+                            </div>
                             <div class="card-body">
-                            <h5 class="text-center"><b>Demandes en attente de signature</b></h5>
-                            <table th:if="${signBooksPending.size() > 0}" class="table table-sm table-borderless table-hover table-light">
+                                <table th:if="${signBooksPending.size() > 0}" class="table table-sm table-borderless table-hover table-light">
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksPending}">
                                     <tr th:title="${signBook.description}" th:data-href="'/user/signbooks/' + ${signBook.id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}" th:with="signRequest = ${signBook.signRequests.get(0)}">

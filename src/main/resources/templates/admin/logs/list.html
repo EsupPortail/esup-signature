@@ -14,10 +14,8 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div class="card mb-1 col-lg-10 mx-auto">
-                <div class="card-body">
-                    <h5 class="text-center"><b>Logs</b></h5>
-                    <table class="table table-sm table-borderless table-hover">
+            <div class="table-fix-head scrollbar-style rounded-3 col-sm-9 col-md-10 col-xl-11 p-0 m-2">
+                    <table class="table table-light table-borderless table-hover">
                         <thead class="table-secondary">
                         <tr>
                             <th>Date</th>
@@ -47,7 +45,6 @@
                     </table>
                     <nav th:replace="~{fragments/pagination :: pagination}"></nav>
                 </div>
-            </div>
         </div>
     </div>
 </main>
