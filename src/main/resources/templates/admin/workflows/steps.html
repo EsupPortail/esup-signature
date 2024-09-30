@@ -50,10 +50,8 @@
                     <a class="nav-link active" href="#" onclick="return false;">Étapes</a>
                 </li>
             </ul>
-            <br>
-            <div class="card col-lg-10 mx-auto">
+            <div class="card text-bg-light col-lg-11 m-2">
                 <div class="card-body text-center">
-                    <h5>Circuit de signatures</h5>
                     <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="~{admin/workflows/cards/stepscard}"></div>
                     <div th:unless="${workflow.workflowSteps.size() > 0}" class="alert alert-secondary">
                         Vous pouvez ajouter des étapes
