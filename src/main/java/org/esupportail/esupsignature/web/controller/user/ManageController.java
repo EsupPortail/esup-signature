@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -78,7 +79,7 @@ public class ManageController {
                        @RequestParam(value = "dateFilter", required = false) String dateFilter,
                        @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, @PathVariable Long id, Model model) {
         SignRequestStatus signRequestStatus = null;
-        if(statusFilter != null && !statusFilter.equals("all")) {
+        if(StringUtils.hasText(statusFilter) && !statusFilter.equals("all")) {
             signRequestStatus = SignRequestStatus.valueOf(statusFilter);
         }
         if(creatorFilter == null || creatorFilter.isEmpty() || creatorFilter.equals("all")) {

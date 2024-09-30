@@ -46,7 +46,7 @@ export class SignPosition extends EventFactory {
             self.scrollTop = $(this).scrollTop();
         });
         $(document).ready(function() {
-            if(self.signImages.length === 1) {
+            if(self.signImages != null && self.signImages.length === 1) {
                 self.popUserUi();
             }
         });

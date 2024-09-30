@@ -127,7 +127,7 @@ public class WorkflowWsController {
             }
         } catch (EsupSignatureRuntimeException e) {
             logger.error(e.getMessage(), e);
-            return ResponseEntity.ok("-1");
+            return ResponseEntity.internalServerError().body("-1");
         }
     }
 

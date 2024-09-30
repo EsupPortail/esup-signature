@@ -138,10 +138,10 @@ public class SignRequestWsController {
                 }
             } catch (EsupSignatureException e) {
                 logger.error(e.getMessage(), e);
-                return ResponseEntity.ok("-1");
+                return ResponseEntity.internalServerError().body("-1");
             }
         }
-        return ResponseEntity.ok("-1");
+        return ResponseEntity.internalServerError().body("-1");
     }
 
     @CrossOrigin
