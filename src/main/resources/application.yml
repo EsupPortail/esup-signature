@@ -263,7 +263,9 @@ server:
         mbeanregistry:
             enabled: true
         remoteip:
+            protocol-header: X-Forwarded-Proto
             remote-ip-header: X-Forwarded-For
+#            internal-proxies: 192\\.168\\.\\d{1,3}\\.\\d{1,3}
         basedir: ./temp
         max-swallow-size: -1
 sign:
