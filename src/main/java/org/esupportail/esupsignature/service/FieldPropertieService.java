@@ -43,6 +43,7 @@ public class FieldPropertieService {
         fieldPropertieRepository.save(fieldPropertie);
     }
 
+    @Transactional
     public List<String> getFavoritesValues(String userEppn, Long id) {
         List<String> favoriteValues = new ArrayList<>();
         FieldPropertie fieldPropertie = getFieldPropertie(id, userEppn);
