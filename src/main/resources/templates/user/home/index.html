@@ -31,8 +31,10 @@
                 <div id="listSignRequestTable" class="div-scrollable scrollbar-style">
                     <div id="to-sign-list" class="d-flex col-12 mb-2">
                         <div class="col-12 card text-bg-light border-light mx-auto">
+                            <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+                                <h5 class="ms-4"><b>Demandes à signer</b></h5>
+                            </div>
                             <div class="card-body">
-                            <h5 class="text-center"><b>Demandes à signer</b></h5>
                             <table th:if="${signBooksToSign.size() > 0}" class="table table-sm table-borderless table-hover table-light">
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksToSign}">
@@ -110,14 +112,18 @@
                     </div>
                     <div id="pendingList" class="d-flex col-12" th:if="${userEppn == authUserEppn}">
                         <div class="col-12 card text-bg-light border-light mx-auto">
+                            <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+                                <h5 class="ms-4"><b>Demandes en attente de signature</b></h5>
+                            </div>
                             <div class="card-body">
-                            <h5 class="text-center"><b>Demandes en attente de signature</b></h5>
-                            <table th:if="${signBooksPending.size() > 0}" class="table table-sm table-borderless table-hover table-light">
+                                <table th:if="${signBooksPending.size() > 0}" class="table table-sm table-borderless table-hover table-light">
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksPending}">
                                     <tr th:title="${signBook.description}" th:data-href="'/user/signbooks/' + ${signBook.id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}" th:with="signRequest = ${signBook.signRequests.get(0)}">
                                         <td style="width: 15px;">
                                             <div class="d-lg-inline-flex align-items-center gap-1">
+                                                <i th:unless="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-success" title="Le document n'a pas été lu jusqu'à la dernière page"></i>
+                                                <i th:if="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-light" title="Le document a été lu jusqu'à la dernière page"></i>
                                                 <i th:unless="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-dark" title="La demande contient des pièces jointes"></i>
                                                 <i th:if="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-light"></i>
                                                 <button th:if="${signBook.postits.isEmpty()}" type="button" class="badge bg-light text-light border-0">0</button>
@@ -131,7 +137,6 @@
                                                     </th:block>
                                                 </ul>
                                             </div>
-
                                         </td>
                                         <td class="text-break w-5 d-none d-md-table-cell" style="width: 25px;"><a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fa-solid fa-plus"></i></a></td>
                                         <td class="text-break w-5 d-none d-md-table-cell" style="width: 25px;">

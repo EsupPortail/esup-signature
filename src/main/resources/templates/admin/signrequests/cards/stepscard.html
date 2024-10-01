@@ -2,9 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <div id="stepscard" th:fragment="stepscard" class="d-none d-lg-block">
-    <div class="card col-lg-10 mx-auto">
+    <div class="card text-bg-light col-lg-11 m-2">
+        <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+            <h5 class="ms-4">Circuit</h5>
+        </div>
         <div class="card-body">
-            <h5>Circuit</h5>
             <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps != null}">
                 <div id="stepper" class="bs-stepper vertical">
                     <div class="bs-stepper-header" role="tablist">
@@ -43,18 +45,29 @@
                                                 <i title="a signé le document" th:case="true" class="fa-solid fa-check-circle text-success"></i>
                                                 <i title="En attente de signature" th:case="false" class="fa-solid fa-clock text-warning"></i>
                                             </td>
+                                            <td>
+                                                <button class="btn btn-sm"
+                                                        title="Envoyer un nouveau lien d'accès"
+                                                        th:onclick="'$(\'#menu-' + ${recipient.id} + '\').toggle();'"
+                                                        th:if="${(userEppn == signRequest.createBy.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email)) || user.roles.contains('ROLE_ADMIN')) && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                                                    <i class="fa-solid fa-key"></i></button>
+                                            </td>
                                         </tr>
-                                        <div th:if="${recipient.user.userType.name() == 'external'}" class="card position-absolute collapse mini-menu" th:id="'menu-' + ${recipient.id}" style="    width: 200px">
-                                            <div class="card-header" style="height: 40px;">
-                                                <button type="button" class="btn-close" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').hide();'"></button>
+                                        <div th:if="${(userEppn == signRequest.createBy.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email)) || user.roles.contains('ROLE_ADMIN')) && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" data-bs-focus="false" class="modal " th:id="'menu-' + ${recipient.id}">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header"><h3>Envoyer un nouveau lien d’accès</h3></div>
+                                                    <div class="modal-body">
+                                                        <p>Confirmer l’envoi un nouveau lien d’accès</p>
+                                                        <form th:action="'/user/signrequests/send-otp/' + ${signRequest.parentSignBook.id} + '/' + ${recipient.user.id}" method="post">
+                                                            <input type="text" name="phone" class="form-control" placeholder="Numéro de mobile" th:value="${recipient.user.phone}" th:if="${globalProperties.smsRequired}">
+                                                            <br>
+                                                            <button type="submit" class="btn btn-success float-end mb-2" title="Envoyer un nouveau lien d'accès">Confirmer</button>
+                                                        </form>
+                                                        <button class="btn btn-secondary float-start" title="Fermer" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').hide();'">Annuler</button>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class=" card-body">
-                                                Envoyer un nouveau lien d’accès
-                                                <br>
-                                                <a type="button" class="btn btn-success float-end mb-2" title="Envoyer un nouveau lien d'accès" th:href="'/user/signrequests/send-otp/' + ${signRequest.id} + '/' + ${recipient.user.id}"><i class="fa-solid fa-key"></i></a>
-                                                <button class="btn btn-secondary float-start" title="Fermer" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').hide();'"></button>
-                                            </div>
-                                        </div>
                                     </th:block>
                                     </table>
                                 </div>

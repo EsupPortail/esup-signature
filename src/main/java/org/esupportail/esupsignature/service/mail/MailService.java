@@ -1,7 +1,12 @@
 package org.esupportail.esupsignature.service.mail;
 
+import jakarta.annotation.Resource;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.transaction.Transactional;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.angus.mail.smtp.SMTPAddressFailedException;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.mail.MailConfig;
 import org.esupportail.esupsignature.entity.*;
@@ -13,7 +18,6 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLdap;
-import org.esupportail.esupsignature.entity.Otp;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -30,10 +34,6 @@ import org.springframework.util.FileCopyUtils;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import jakarta.annotation.Resource;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -483,7 +483,9 @@ public class MailService {
                 mailSender.send(mimeMessage);
             }
         } catch (MessagingException e) {
-            throw new RuntimeException(e);
+            if(!(e instanceof SMTPAddressFailedException)) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

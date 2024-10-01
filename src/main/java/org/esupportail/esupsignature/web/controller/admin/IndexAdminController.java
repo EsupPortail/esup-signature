@@ -43,4 +43,8 @@ public class IndexAdminController {
 		return "admin/index";
 	}
 
+	@GetMapping("/trigger-error")
+	public String triggerError() {
+		throw new RuntimeException("Test error 500");
+	}
 }
