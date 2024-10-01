@@ -83,8 +83,8 @@ public class OtpService {
             String urlId = UUID.randomUUID().toString();
             otp.setUrlId(urlId);
             signBook.setLastOtp(urlId);
-            removeOtpFromCache(extUser.getEppn());
-            removeOtpFromCache(extUser.getEmail());
+            removeOtpFromCache(extUser.getEppn(), signBook);
+            removeOtpFromCache(extUser.getEmail(), signBook);
             otpCache.put(urlId, otp);
             if(StringUtils.hasText(phone)) {
                 userService.updatePhone(extUser.getEppn(), phone);
@@ -98,9 +98,9 @@ public class OtpService {
         }
     }
 
-    public void removeOtpFromCache(String searchString) {
+    public void removeOtpFromCache(String searchString, SignBook signBook) {
         for (Map.Entry<String, Otp> otpEntry : otpCache.asMap().entrySet()) {
-            if(otpEntry.getValue().getUser().getEmail().equals(searchString) || (otpEntry.getValue().getPhoneNumber() != null && otpEntry.getValue().getPhoneNumber().equals(searchString))) {
+            if(otpEntry.getValue().getSignBook().equals(signBook) && (otpEntry.getValue().getUser().getEmail().equals(searchString) || (otpEntry.getValue().getPhoneNumber() != null && otpEntry.getValue().getPhoneNumber().equals(searchString)))) {
                 clearOTP(otpEntry.getKey());
             }
         }
