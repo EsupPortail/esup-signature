@@ -53,7 +53,7 @@
                     </a>
                     <div class="d-inline-flex" id="newWorkflow">
                         <th:block th:each="workflow : ${workflows}">
-                            <div>
+                            <div th:id="'btn-workflow-' + ${workflow.id}" class="workflow-button" style="height: 184px;">
                                 <a role="button" class="workflow-btn start-wizard-workflow-button btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0 workflow-button"
                                     data-bs-toggle="modal"
                                     data-bs-target="#wiz-workflow-sign-modal"
@@ -71,15 +71,15 @@
                                         th:data-bs-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-bs-toggle="collapse">
                                     <i class="fa-solid fa-ellipsis-h" style="float: right;"></i>
                                 </button>
-                                <div style="margin-top: -62px;" data-bs-backdrop="false" class="collapse rounded-0 border-0" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
+                                <div style="margin-top: -62px;" data-bs-backdrop="false" class="collapse rounded-0 border-0 text-start" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
                                     <div class="inline-flex">
                                         <form th:id="${'deleteWorkflow_' + workflow.id}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'">
                                         </form>
-                                        <button  class="btn btn-sm workflow-button workflow-update-button" title="Modifier" th:data-id="${workflow.id}" type="button">
-                                            <i class="fa-solid fa-cog"></i>
-                                        </button>
-                                        <button role="button" class="btn btn-sm workflow-button workflow-delete-button" title="Supprimer" type="button" th:data-id="${workflow.id}">
+                                        <button role="button" class="btn btn-sm workflow-button workflow-delete-button ms-1" title="Supprimer" type="button" th:data-id="${workflow.id}">
                                             <i class="fa-solid fa-trash-alt"></i>
+                                        </button>
+                                        <button  class="btn btn-sm workflow-button workflow-update-button ms-2" title="Modifier" th:data-id="${workflow.id}" type="button">
+                                            <i class="fa-solid fa-cog"></i>
                                         </button>
                                     </div>
                                 </div>
