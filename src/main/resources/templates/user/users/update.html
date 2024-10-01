@@ -31,18 +31,68 @@
             <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
                 <input type="hidden" name="id" th:value="${authUser.id}"/>
                 <input type="hidden" id="sign-request-params" name="signRequestParamsJsonString" />
-                <div class="card mb-1 col-lg-10 mx-auto">
+                <div class="card text-bg-light mb-1 col-lg-11 m-2">
+                    <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+                        <h5 class="ms-4"><b>Paramètres généraux</b></h5>
+                    </div>
                     <div class="card-body">
-                        <h5 class="text-center mb-3"><b>Paramètres généraux</b></h5>
                         <div class="form-check form-switch form-switch-md">
                             <input id="returnToHomeAfterSign" class="form-check-input" type="checkbox" name="returnToHomeAfterSign" th:checked="${(user.returnToHomeAfterSign != null && user.returnToHomeAfterSign) || (user.returnToHomeAfterSign == null && globalProperties.returnToHomeAfterSign)}">
                             <label class="form-check-label" for="returnToHomeAfterSign">Retourner à l’accueil après chaque signature</label>
                         </div>
+                        <div id="emailAlertFrequency" th:unless="${user.userType.name() == 'external'}">
+                            <label class="col-form-label" for="emailAlertFrequency_id"> <strong>Fréquence
+                                d'alerte</strong>
+                                <button data-bs-target="#collapseHelpEmailAlertFrequency" data-bs-toggle="collapse"
+                                        type="button" class="btn btn-sm btn-transparent">
+                                    <span class="fa-solid fa-info-circle text-info"></span>
+                                </button>
+                                <div class="collapse" id="collapseHelpEmailAlertFrequency">
+                                    <div class="alert alert-info">
+                                        <small>Vous pouvez choisir une fréquence pour les alertes</small>
+                                    </div>
+                                </div>
+                            </label>
+                            <select class="slim-select-simple" id="emailAlertFrequency_id" name="emailAlertFrequency"
+                                    size="1">
+                                <option data-placeholder="true" value="">Choisir votre préférence d'alerte</option>
+                                <th:block th:each="emailAlertFrequency : ${emailAlertFrequencies}">
+                                    <option th:if="${emailAlertFrequency == user.emailAlertFrequency}"
+                                            selected="selected" th:value="${emailAlertFrequency}"
+                                            th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
+                                    <option th:unless="${emailAlertFrequency == user.emailAlertFrequency}"
+                                            th:value="${emailAlertFrequency}"
+                                            th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <div class="form-group d-none" id="emailAlertHourDiv" th:unless="${user.userType.name() == 'external'}">
+                            <label class="col-form-label" for="emailAlertHour"> <strong>Heure d’alerte</strong>
+                            </label>
+                            <select class="slim-select-simple" name="emailAlertHour" id="emailAlertHour">
+                                <option th:each="i : ${#numbers.sequence(0, 23)}" th:value="${i}" th:text="${i} + ':00'" th:selected="${i==authUser.emailAlertHour}"></option>
+                            </select>
+                        </div>
+                        <div class="form-group d-none" id="emailAlertDayDiv" th:unless="${user.userType.name() == 'external'}">
+                            <label class="col-form-label" for="emailAlertDay"> <strong>Jour de l’alerte</strong></label>
+                            <select class="slim-select-simple" id="emailAlertDay" name="emailAlertDay">
+                                <th:block th:each="emailAlertDay : ${daysOfWeek}" var="emailAlertDay">
+                                    <option th:if="${emailAlertDay == user.emailAlertDay}" selected="selected"
+                                            th:value="${emailAlertDay}"
+                                            th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
+                                    <option th:unless="${emailAlertDay == user.emailAlertDay}"
+                                            th:value="${emailAlertDay}"
+                                            th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <div class="card mb-1 col-lg-10 mx-auto">
+                <div class="card text-bg-light mb-1 col-lg-11 m-2">
+                    <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+                        <h5 class="ms-4"><b>Paramètres de signature calligraphique</b></h5>
+                    </div>
                     <div class="card-body">
-                        <h5 class="text-center mb-3"><b>Paramètres de signature calligraphique</b></h5>
                         <div id="signImageForm">
                             <div class="row">
                                 <div id="mySigns" class="col-12 col-xxl-4 mb-2 text-center">
@@ -174,25 +224,29 @@
                     </div>
                 </div>
 
-                <div class="card  mb-1 col-lg-10 mx-auto">
-                    <div class="card-header bg-white mx-auto">
-                        <h5 class="text-center"><b>Configuration de la signature par défaut</b></h5>
-                        <div class="form-check form-switch form-switch-md">
+                <div class="card text-bg-light mb-1 col-lg-11 m-2">
+                    <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+                        <h5 class="ms-4"><b>Configuration de la signature par défaut</b></h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-switch form-switch-md mx-auto">
                             <input id="saveSignRequestParams" class="form-check-input" type="checkbox" name="saveSignRequestParams" th:checked="${user.favoriteSignRequestParams == null}">
                             <label class="form-check-label" for="saveSignRequestParams">Enregistrer automatiquement mes paramètres après chaque signature</label>
                         </div>
-                    </div>
-                    <div id="signRequestParamsCleanDiv" class="card-body mx-auto">
-                        <button type="button" id="signRequestParamsClean" class="btn btn-warning">Nettoyer mes paramètres enregistrés</button>
-                    </div>
-                    <div id="signRequestParamsFormDiv" class="card-body mx-auto" style="min-height: 400px;">
-                        <div th:replace="~{fragments/signrequestparams :: signrequestparam}"></div>
+                        <div id="signRequestParamsCleanDiv" class="mx-auto">
+                            <button type="button" id="signRequestParamsClean" class="btn btn-warning">Nettoyer mes paramètres enregistrés</button>
+                        </div>
+                        <div id="signRequestParamsFormDiv" class="card-body mx-auto" style="width:400px; min-height: 400px;">
+                            <div th:replace="~{fragments/signrequestparams :: signrequestparam}"></div>
+                        </div>
                     </div>
                 </div>
 
-                <div th:unless="${user.userType.name() == 'external'}" class="card mb-1 col-lg-10 mx-auto" th:if="${validationToolsEnabled && !globalProperties.disableCertStorage}">
+                <div th:unless="${user.userType.name() == 'external'}" class="card text-bg-light mb-1 col-lg-11 m-2" th:if="${validationToolsEnabled && !globalProperties.disableCertStorage}">
+                    <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+                        <h5 class="ms-4"><b>Paramètres de signature électronique (Facultatif)</b></h5>
+                    </div>
                     <div class="card-body">
-                        <h5 class="text-center"><b>Paramètres de signature électronique (Facultatif)</b></h5>
                         <div id="keyForm" class="form-group col-10 mx-auto">
                             <label class="col-form-label"><strong>Magasin de certificats</strong>
                                 <button data-bs-target="#collapseHelpKeyStore" data-bs-toggle="collapse" type="button"
@@ -228,66 +282,13 @@
                             <div class="form-group mb-3">
                                 <div class="custom-file">
                                     <input id="inputGroupFile03" type="file" accept="application/x-pkcs12"
-                                           class="form-control" name="multipartKeystore" value="Choose a file"
-                                           aria-describedby="inputGroupFileAddon02"/>
+                                        class="form-control" name="multipartKeystore" value="Choose a file"
+                                        aria-describedby="inputGroupFileAddon02"/>
                                     <label for="inputGroupFile03" class="custom-file-label"> Choisir un fichier au
                                         format pkcs12 (.P12)
                                     </label>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div th:unless="${user.userType.name() == 'external'}" class="card col-lg-10 mx-auto mb-5">
-                    <div class="card-body">
-                        <h5 class="text-center"><b>Fréquence des alertes</b></h5>
-                        <div class="form-group col-10 mx-auto" id="emailAlertFrequency">
-                            <label class="col-form-label" for="emailAlertFrequency_id"> <strong>Fréquence
-                                d'alerte</strong>
-                                <button data-bs-target="#collapseHelpEmailAlertFrequency" data-bs-toggle="collapse"
-                                        type="button" class="btn btn-sm btn-transparent">
-									<span class="fa-solid fa-info-circle text-info"> <!--  -->
-									</span>
-                                </button>
-                                <div class="collapse" id="collapseHelpEmailAlertFrequency">
-                                    <div class="alert alert-info">
-                                        <small>Vous pouvez choisir une fréquence pour les alertes</small>
-                                    </div>
-                                </div>
-                            </label>
-                            <select class="slim-select-simple" id="emailAlertFrequency_id" name="emailAlertFrequency"
-                                    size="1">
-                                <option data-placeholder="true" value="">Choisir votre préférence d'alerte</option>
-                                <th:block th:each="emailAlertFrequency : ${emailAlertFrequencies}">
-                                    <option th:if="${emailAlertFrequency == user.emailAlertFrequency}"
-                                            selected="selected" th:value="${emailAlertFrequency}"
-                                            th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
-                                    <option th:unless="${emailAlertFrequency == user.emailAlertFrequency}"
-                                            th:value="${emailAlertFrequency}"
-                                            th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
-                                </th:block>
-                            </select>
-                        </div>
-                        <div class="form-group col-10 mx-auto d-none" id="emailAlertHourDiv">
-                            <label class="col-form-label" for="emailAlertHour"> <strong>Heure d’alerte</strong>
-                            </label>
-                            <select class="slim-select-simple" name="emailAlertHour" id="emailAlertHour">
-                                <option th:each="i : ${#numbers.sequence(0, 23)}" th:value="${i}" th:text="${i} + ':00'" th:selected="${i==authUser.emailAlertHour}"></option>
-                            </select>
-                        </div>
-                        <div class="form-group col-10 mb-3 d-none" id="emailAlertDayDiv">
-                            <label class="col-form-label" for="emailAlertDay"> <strong>Jour de l’alerte</strong></label>
-                            <select class="slim-select-simple" id="emailAlertDay" name="emailAlertDay">
-                                <th:block th:each="emailAlertDay : ${daysOfWeek}" var="emailAlertDay">
-                                    <option th:if="${emailAlertDay == user.emailAlertDay}" selected="selected"
-                                            th:value="${emailAlertDay}"
-                                            th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
-                                    <option th:unless="${emailAlertDay == user.emailAlertDay}"
-                                            th:value="${emailAlertDay}"
-                                            th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
-                                </th:block>
-                            </select>
                         </div>
                     </div>
                 </div>
