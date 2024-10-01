@@ -19,9 +19,10 @@
                 aria-controls="navbar_toggle" aria-expanded="false" aria-label="Toggle navigation">
             <span class="fa-solid fa-bars text-white"></span>
         </button>
-        <a href="/" class="navbar-brand" aria-label="Esup-Signature" title="Esup-Signature">
+        <a th:unless="${user.userType.name() == 'external'}" href="/" class="navbar-brand" aria-label="Esup-Signature" title="Esup-Signature">
             <img id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/>
         </a>
+        <img th:if="${user.userType.name() == 'external'}" id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/>
         <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between">
             <ul id="navbar-buttons" class="navbar-nav" th:if="${#authorization.expression('isAuthenticated()')}">
                 <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}">
@@ -75,7 +76,7 @@
                                 <i class="fa-solid fa-magic"></i> Assistant de création de circuit
                         </a>
                         <div th:unless="${globalProperties.hideWizardWorkflow}" class="dropdown-divider"></div>
-                        <a class="btn text-white btn-transparent text-left m-1" id="link-user" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users'">
+                        <a class="btn text-white btn-transparent text-left m-1" id="link-user" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" th:href="'/'+ ${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users'">
                             <i class="fa-solid fa-user-cog"></i> Modifier mes paramètres
                         </a>
                         <div class="dropdown-divider"></div>
