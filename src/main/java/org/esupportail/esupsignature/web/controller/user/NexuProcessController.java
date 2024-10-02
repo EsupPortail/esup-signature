@@ -103,25 +103,20 @@ public class NexuProcessController implements Serializable {
 	@ResponseBody
 	public ResponseEntity<?> signDocument(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 										  @RequestBody @Valid SignResponse signatureValue,
-										  @RequestParam("id") Long id) throws EsupSignatureRuntimeException, IOException {
+										  @RequestParam("id") Long id) throws EsupSignatureRuntimeException, IOException, EsupSignatureException {
 		NexuSignature nexuSignature = nexuService.getNexuSignature(id);
 		AbstractSignatureForm abstractSignatureForm = nexuService.getAbstractSignatureFormFromNexuSignature(nexuSignature);
 		abstractSignatureForm.setSignatureValue(signatureValue.getSignatureValue());
-        SignDocumentResponse responseJson = null;
-        try {
-            responseJson = nexuService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn, nexuSignature.getDocumentToSign());
-			signRequestService.updateStatus(id, SignRequestStatus.signed, "Signature", null, "SUCCESS", null,null,null,null, userEppn, authUserEppn);
-			StepStatus stepStatus = signRequestService.applyEndOfSignRules(id, userEppn, authUserEppn, SignType.nexuSign, "");
-			if(stepStatus.equals(StepStatus.last_end)) {
-				signBookService.completeSignRequest(id, authUserEppn, "Tous les documents sont signés");
-			} else if (stepStatus.equals(StepStatus.completed)){
-				signBookService.pendingSignRequest(id, null, userEppn, authUserEppn, false);
-			}
-			nexuService.delete(id);
-			return ResponseEntity.ok().body(responseJson);
-        } catch (EsupSignatureException e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
-        }
+        SignDocumentResponse responseJson = nexuService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn, nexuSignature.getDocumentToSign());
+		signRequestService.updateStatus(id, SignRequestStatus.signed, "Signature", null, "SUCCESS", null,null,null,null, userEppn, authUserEppn);
+		StepStatus stepStatus = signRequestService.applyEndOfSignRules(id, userEppn, authUserEppn, SignType.nexuSign, "");
+		if(stepStatus.equals(StepStatus.last_end)) {
+			signBookService.completeSignRequest(id, authUserEppn, "Tous les documents sont signés");
+		} else if (stepStatus.equals(StepStatus.completed)){
+			signBookService.pendingSignRequest(id, null, userEppn, authUserEppn, false);
+		}
+		nexuService.delete(id);
+		return ResponseEntity.ok().body(responseJson);
 	}
 
 	@PostMapping(value = "/error")

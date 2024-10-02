@@ -190,7 +190,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public Workflow addStepToWorkflow(Long id, SignType signType, Boolean allSignToComplete, Boolean changeable, WorkflowStepDto step, User user, boolean recipientsRequired) throws EsupSignatureRuntimeException {
+    public Workflow addStepToWorkflow(Long id, SignType signType, Boolean allSignToComplete, Boolean changeable, WorkflowStepDto step, User user, boolean recipientsRequired) {
         Workflow workflow;
         if (id != null && id != -1) {
             workflow = getById(id);
