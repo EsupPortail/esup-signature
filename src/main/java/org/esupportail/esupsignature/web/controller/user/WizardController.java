@@ -193,12 +193,7 @@ public class WizardController {
                 if(steps.get(0).getUserSignFirst() != null && steps.get(0).getUserSignFirst()) {
                     signBookService.addUserSignFirstStep(signBookId, userEppn);
                 }
-                try {
-                    signBookService.addNewStepToSignBook(signBookId, steps, authUserEppn);
-                } catch (EsupSignatureRuntimeException e) {
-                    logger.debug(e.getMessage());
-                    return ResponseEntity.internalServerError().build();
-                }
+                signBookService.addNewStepToSignBook(signBookId, steps, authUserEppn);
             }
             model.addAttribute("signBook", signBook);
             model.addAttribute("close", close);
@@ -242,12 +237,7 @@ public class WizardController {
         User user = (User) model.getAttribute("user");
         final Context context = new Context(Locale.FRENCH);
         Workflow workflow;
-        try {
-            workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0).getSignType(), steps.get(0).getAllSignToComplete(), steps.get(0).getChangeable(), steps.get(0), user, false);
-        } catch (EsupSignatureRuntimeException e) {
-            logger.debug(e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
+        workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0).getSignType(), steps.get(0).getAllSignToComplete(), steps.get(0).getChangeable(), steps.get(0), user, false);
         model.addAttribute("workflow", workflow);
         model.asMap().forEach(context::setVariable);
         if(end != null && end) {

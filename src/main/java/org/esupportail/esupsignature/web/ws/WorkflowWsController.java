@@ -12,13 +12,13 @@ import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dto.WorkflowDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.SignRequestParams;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestParamsService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -103,7 +103,7 @@ public class WorkflowWsController {
             json = false;
         }
         if(createByEppn == null) {
-            throw new EsupSignatureRuntimeException("Required request parameter 'createByEppn' for method parameter type String is not present");
+            return ResponseEntity.badRequest().body("Required request parameter 'createByEppn' for method parameter type String is not present");
         }
         if(recipientEmails == null && recipientsEmails != null && !recipientsEmails.isEmpty()) {
             recipientEmails = recipientsEmails;
@@ -118,16 +118,14 @@ public class WorkflowWsController {
         if (signRequestParamsJsonString != null) {
             signRequestParamses = signRequestParamsService.getSignRequestParamsesFromJson(signRequestParamsJsonString);
         }
-        try {
-            List<Long> signRequestIds = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, steps, targetEmails, targetUrls, signRequestParamses, scanSignatureFields, sendEmailAlert, comment);
-            if(json) {
-                return ResponseEntity.ok(signRequestIds);
-            } else {
-                return ResponseEntity.ok(org.apache.commons.lang.StringUtils.join(signRequestIds, ","));
-            }
-        } catch (EsupSignatureRuntimeException e) {
-            logger.error(e.getMessage(), e);
-            return ResponseEntity.internalServerError().body("-1");
+        List<Long> signRequestIds = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, steps, targetEmails, targetUrls, signRequestParamses, scanSignatureFields, sendEmailAlert, comment);
+        if(signRequestIds.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("-1");
+        }
+        if(json) {
+            return ResponseEntity.ok(signRequestIds);
+        } else {
+            return ResponseEntity.ok(org.apache.commons.lang.StringUtils.join(signRequestIds, ","));
         }
     }
 
