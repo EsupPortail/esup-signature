@@ -118,7 +118,7 @@ public class UserShareService {
         }
         Date beginDateDate = null;
         Date endDateDate = null;
-        if (beginDate != null && endDate != null) {
+        if (StringUtils.hasText(beginDate) && StringUtils.hasText(endDate)) {
             try {
                 beginDateDate = new SimpleDateFormat(DATE_PATTERN).parse(beginDate);
                 endDateDate = new SimpleDateFormat(DATE_PATTERN).parse(endDate);

@@ -69,17 +69,11 @@ public class DataController {
 		logger.info("create form " + id);
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			Data data = dataService.addData(id, userEppn);
-			try {
-				SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, null, userEppn, authUserEppn, false, null, null, null, null, true, null);
-				return ResponseEntity.ok().body(signBook.getId().toString());
-			} catch (EsupSignatureRuntimeException e) {
-				logger.warn(e.getMessage() + " for " + id);
-			}
-		} else {
-			logger.warn("form id " + id + " not autorized");
+			SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, null, userEppn, authUserEppn, false, null, null, null, null, true, null);
+			return ResponseEntity.ok().body(signBook.getId().toString());
 		}
-		return ResponseEntity.internalServerError().body("Formulaire non autorisé");
-
+		logger.warn("form id " + id + " not autorized");
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Formulaire non autorisé");
 	}
 
 	@PostMapping("/form/{id}")
@@ -111,7 +105,7 @@ public class DataController {
 		httpServletResponse.setContentType(MediaType.IMAGE_PNG_VALUE);
 		IOUtils.copy(in, httpServletResponse.getOutputStream());
 		in.close();
-		return new ResponseEntity<>(HttpStatus.OK);
+		return ResponseEntity.ok().build();
 	}
 
 }
