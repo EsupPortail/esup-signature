@@ -54,7 +54,7 @@
                 <div class="card-body text-center">
                     <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="~{admin/workflows/cards/stepscard}"></div>
                     <div th:unless="${workflow.workflowSteps.size() > 0}" class="alert alert-secondary">
-                        Vous pouvez ajouter des étapes
+                        Vous pouvez ajouter des étapes ou laisser le circuit vide pour initialiser les étapes via le web service
                     </div>
                 </div>
             </div>

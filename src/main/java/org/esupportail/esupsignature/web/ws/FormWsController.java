@@ -16,7 +16,6 @@ import org.esupportail.esupsignature.dto.WorkflowDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.slf4j.Logger;
@@ -27,6 +26,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -129,25 +129,20 @@ public class FormWsController {
             createByEppn = eppn;
         }
         if(createByEppn == null) {
-            throw new EsupSignatureRuntimeException("Required request parameter 'createByEppn' for method parameter type String is not present");
+            return ResponseEntity.badRequest().body("Required request parameter 'createByEppn' for method parameter type String is not present");
         }
-        try {
-            Data data = dataService.addData(id, createByEppn);
-            TypeReference<Map<String, String>> type = new TypeReference<>(){};
-            Map<String, String> datas = new HashMap<>();
-            if(formDatas != null) {
-                datas = objectMapper.readValue(formDatas, type);
-            }
-            SignBook signBook = signBookService.sendForSign(data.getId(), recipientService.convertRecipientJsonStringToWorkflowStepDtos(stepsJsonString), targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, signRequestParamsJsonString, title, sendEmailAlert, comment);
-            signBookService.addViewers(signBook.getId(), recipientsCCEmails);
-            if(json) {
-                return ResponseEntity.ok(signBook.getSignRequests().get(0).getId());
-            } else {
-                return ResponseEntity.ok(signBook.getSignRequests().get(0).getId().toString());
-            }
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            return ResponseEntity.internalServerError().body("-1");
+        Data data = dataService.addData(id, createByEppn);
+        TypeReference<Map<String, String>> type = new TypeReference<>(){};
+        Map<String, String> datas = new HashMap<>();
+        if(formDatas != null) {
+            datas = objectMapper.readValue(formDatas, type);
+        }
+        SignBook signBook = signBookService.sendForSign(data.getId(), recipientService.convertRecipientJsonStringToWorkflowStepDtos(stepsJsonString), targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, signRequestParamsJsonString, title, sendEmailAlert, comment);
+        signBookService.addViewers(signBook.getId(), recipientsCCEmails);
+        if(json) {
+            return ResponseEntity.ok(signBook.getSignRequests().get(0).getId());
+        } else {
+            return ResponseEntity.ok(signBook.getSignRequests().get(0).getId().toString());
         }
     }
 
@@ -181,7 +176,7 @@ public class FormWsController {
                                           @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json,
                                           @RequestParam(required = false) @Parameter(description = "commentaire") String comment,
                                           @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey
-    ) {
+    ) throws IOException {
         if(json == null) {
             json = false;
         }
@@ -192,22 +187,17 @@ public class FormWsController {
             steps = recipientService.convertRecipientEmailsToStep(recipientEmails);
         }
         Data data = dataService.addData(id, createByEppn);
-        try {
-            TypeReference<Map<String, String>> type = new TypeReference<>(){};
-            Map<String, String> datas = new HashMap<>();
-            if(formDatas != null) {
-                datas.putAll(objectMapper.readValue(formDatas, type));
-            }
-            SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), signRequestParamsJsonString, title, sendEmailAlert, comment);
-            signRequestService.addAttachement(attachementMultipartFiles, null, signBook.getSignRequests().get(0).getId(), createByEppn);
-            if(json) {
-                return ResponseEntity.ok(signBook.getSignRequests().get(0).getId());
-            } else {
-                return ResponseEntity.ok(signBook.getSignRequests().get(0).getId().toString());
-            }
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            return ResponseEntity.internalServerError().body("-1");
+        TypeReference<Map<String, String>> type = new TypeReference<>(){};
+        Map<String, String> datas = new HashMap<>();
+        if(formDatas != null) {
+            datas.putAll(objectMapper.readValue(formDatas, type));
+        }
+        SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), signRequestParamsJsonString, title, sendEmailAlert, comment);
+        signRequestService.addAttachement(attachementMultipartFiles, null, signBook.getSignRequests().get(0).getId(), createByEppn);
+        if(json) {
+            return ResponseEntity.ok(signBook.getSignRequests().get(0).getId());
+        } else {
+            return ResponseEntity.ok(signBook.getSignRequests().get(0).getId().toString());
         }
     }
 

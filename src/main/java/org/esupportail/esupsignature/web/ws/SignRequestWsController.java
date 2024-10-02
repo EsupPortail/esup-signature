@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.ws;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.zxing.WriterException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -24,6 +25,7 @@ import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,6 +33,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -101,7 +104,7 @@ public class SignRequestWsController {
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Forcer la signature de tous les documents") Boolean forceAllSign,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Type de signature", schema = @Schema(allowableValues = {"visa", "pdfImageStamp", "certSign", "nexuSign"}), examples = {@ExampleObject(value = "visa"), @ExampleObject(value = "pdfImageStamp"), @ExampleObject(value = "certSign"), @ExampleObject(value = "nexuSign")}) String signType,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "EPPN du créateur/propriétaire de la demande (ancien nom)") String eppn
-                       ) {
+                       ) throws EsupSignatureException {
         if(json == null) {
             json = false;
         }
@@ -128,17 +131,15 @@ public class SignRequestWsController {
             workflowStepDtos = recipientService.convertRecipientJsonStringToWorkflowStepDtos(stepsJsonString);
         }
         if(workflowStepDtos != null) {
-            try {
-                Map<SignBook, String> signBookStringMap = signBookService.createAndSendSignBook(title, multipartFiles, pending, workflowStepDtos, createByEppn, true, forceAllSign, targetUrl);
-                List<String> signRequestIds = signBookStringMap.keySet().stream().flatMap(sb -> sb.getSignRequests().stream().map(signRequest -> signRequest.getId().toString())).toList();
-                if(json) {
-                    return ResponseEntity.ok(signRequestIds);
-                } else {
-                    return ResponseEntity.ok(org.apache.commons.lang.StringUtils.join(signRequestIds, ","));
-                }
-            } catch (EsupSignatureException e) {
-                logger.error(e.getMessage(), e);
-                return ResponseEntity.internalServerError().body("-1");
+            Map<SignBook, String> signBookStringMap = signBookService.createAndSendSignBook(title, multipartFiles, pending, workflowStepDtos, createByEppn, true, forceAllSign, targetUrl);
+            List<String> signRequestIds = signBookStringMap.keySet().stream().flatMap(sb -> sb.getSignRequests().stream().map(signRequest -> signRequest.getId().toString())).toList();
+            if(signRequestIds.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("-1");
+            }
+            if(json) {
+                return ResponseEntity.ok(signRequestIds);
+            } else {
+                return ResponseEntity.ok(org.apache.commons.lang.StringUtils.join(signRequestIds, ","));
             }
         }
         return ResponseEntity.internalServerError().body("-1");
@@ -220,14 +221,9 @@ public class SignRequestWsController {
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id,
-                                                           @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse httpServletResponse) {
-        try {
-            signRequestService.getToSignFileResponse(id, "form-data", httpServletResponse);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-        return ResponseEntity.internalServerError().build();
+                                                           @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureException {
+        signRequestService.getToSignFileResponse(id, "form-data", httpServletResponse);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping(value = "/get-last-file-and-report/{id}")
@@ -242,7 +238,7 @@ public class SignRequestWsController {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-        return ResponseEntity.internalServerError().build();
+        return ResponseEntity.notFound().build();
     }
 
     @GetMapping(value = "/print-with-code/{id}")
@@ -250,27 +246,17 @@ public class SignRequestWsController {
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande avec un datamatrix apposé dessus", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<Void> printWithCode(@PathVariable("id") Long id,
-                                              @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse httpServletResponse) {
-        try {
-            signRequestService.getToSignFileResponseWithCode(id, httpServletResponse);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-        return ResponseEntity.internalServerError().build();
+                                              @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse httpServletResponse) throws IOException, WriterException {
+        signRequestService.getToSignFileResponseWithCode(id, httpServletResponse);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer toutes les demandes", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = List.class), mediaType = "application/pdf")))
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
-    public ResponseEntity<String> getAllSignRequests(@ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
-        try {
-            return ResponseEntity.ok(signRequestService.getAllToJSon());
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-        return ResponseEntity.internalServerError().build();
+    public ResponseEntity<String> getAllSignRequests(@ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
+        return ResponseEntity.ok(signRequestService.getAllToJSon());
     }
 
     @GetMapping(value = "/return-test")
