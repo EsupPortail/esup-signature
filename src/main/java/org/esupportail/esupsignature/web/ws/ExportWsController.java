@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -36,23 +37,17 @@ public class ExportWsController {
 
     @GetMapping(value = "/form/{name}/datas/csv", produces="text/csv")
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
-    public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse response) {
+    public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse response) throws IOException {
         List<Form> forms = formRepository.findFormByNameAndDeletedIsNullOrDeletedIsFalse(name);
         if (!forms.isEmpty()) {
-            try {
-                response.setContentType("text/csv; charset=utf-8");
-                response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(forms.get(0).getName(), StandardCharsets.UTF_8) + ".csv");
-                InputStream csvInputStream = dataExportService.getCsvDatasFromForms(forms.stream().map(Form::getWorkflow).collect(Collectors.toList()));
-                IOUtils.copy(csvInputStream, response.getOutputStream());
-                return ResponseEntity.ok().build();
-            } catch (Exception e) {
-                logger.error("get file error", e);
-            }
-        } else {
-            logger.warn("form " + name + " not found");
-            return ResponseEntity.notFound().build();
+            response.setContentType("text/csv; charset=utf-8");
+            response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(forms.get(0).getName(), StandardCharsets.UTF_8) + ".csv");
+            InputStream csvInputStream = dataExportService.getCsvDatasFromForms(forms.stream().map(Form::getWorkflow).collect(Collectors.toList()));
+            IOUtils.copy(csvInputStream, response.getOutputStream());
+            return ResponseEntity.ok().build();
         }
-        return ResponseEntity.internalServerError().build();
+        logger.warn("form " + name + " not found");
+        return ResponseEntity.notFound().build();
     }
 
     @ResponseBody

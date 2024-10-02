@@ -84,12 +84,14 @@ export class WizUi {
                     self.files = self.input.fileinput('getFileList');
                     self.input.fileinput('upload');
                 } else {
-                    self.input.on('filebatchselected', function(event) {
-                        self.input.fileinput('upload');
-                    });
-                    self.input.fileinput('clear');
-                    self.input.fileinput('clearFileStack');
-                    self.input.fileinput('readFiles', self.files);
+                    if(self.files.size() > 0) {
+                        self.input.on('filebatchselected', function (event) {
+                            self.input.fileinput('upload');
+                        });
+                        self.input.fileinput('clear');
+                        self.input.fileinput('clearFileStack');
+                        self.input.fileinput('readFiles', self.files);
+                    }
                 }
             }
         });

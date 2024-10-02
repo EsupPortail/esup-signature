@@ -17,6 +17,7 @@ import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -73,20 +74,15 @@ public class GlobalWsSecureController {
                                        @RequestParam(value = "formData", required = false) String formData,
                                        @RequestParam(value = "password", required = false) String password,
                                        @RequestParam(value = "certType", required = false) String certType,
-                                       HttpSession httpSession) {
+                                       HttpSession httpSession) throws IOException {
         Object userShareString = httpSession.getAttribute("userShareId");
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
-        try {
-            StepStatus stepStatus = signBookService.initSign(signRequestId, signRequestParamsJsonString, comment, formData, password, certType, userShareId, userEppn, authUserEppn);
-            if(stepStatus.equals(StepStatus.nexu_redirect)) {
-                return ResponseEntity.ok().body("initNexu");
-            }
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(e.getMessage());
+        StepStatus stepStatus = signBookService.initSign(signRequestId, signRequestParamsJsonString, comment, formData, password, certType, userShareId, userEppn, authUserEppn);
+        if(stepStatus.equals(StepStatus.nexu_redirect)) {
+            return ResponseEntity.ok().body("initNexu");
         }
+        return ResponseEntity.ok().build();
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#signRequestId, #userEppn, #authUserEppn)")
@@ -106,7 +102,7 @@ public class GlobalWsSecureController {
         } catch (Exception e) {
             logger.error("get file error", e);
         }
-        return ResponseEntity.internalServerError().build();
+        return ResponseEntity.notFound().build();
     }
 
     @PreAuthorize("@preAuthorizeService.documentView(#documentId, #userEppn, #authUserEppn)")
@@ -125,7 +121,7 @@ public class GlobalWsSecureController {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-        return ResponseEntity.internalServerError().build();
+        return ResponseEntity.notFound().build();
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
@@ -137,7 +133,7 @@ public class GlobalWsSecureController {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-        return ResponseEntity.internalServerError().build();
+        return ResponseEntity.notFound().build();
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
@@ -149,7 +145,7 @@ public class GlobalWsSecureController {
         } catch (Exception e) {
             logger.error("get file error", e);
         }
-        return ResponseEntity.internalServerError().build();
+        return ResponseEntity.notFound().build();
     }
 
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
@@ -209,7 +205,7 @@ public class GlobalWsSecureController {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-        return ResponseEntity.internalServerError().build();
+        return ResponseEntity.notFound().build();
     }
 
     @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
@@ -218,14 +214,10 @@ public class GlobalWsSecureController {
     public ResponseEntity<String> addDocumentToNewSignRequest(@PathVariable("signBookId") Long signBookId,  @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents");
         if(globalProperties.getPdfOnly() && Arrays.stream(multipartFiles).anyMatch(m -> !Objects.equals(m.getContentType(), "application/pdf"))) {
-            return ResponseEntity.internalServerError().body("Seul les fichiers PDF sont autorisés");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Seul les fichiers PDF sont autorisés");
         }
-        try {
-            signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn);
-            return ResponseEntity.ok().body(signBookId.toString());
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
-        }
+        signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn);
+        return ResponseEntity.ok().body(signBookId.toString());
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
