@@ -73,7 +73,7 @@ header {
 
 .table-fix-head {
     overflow-y: auto;
-    height: calc(100vh - 250px);
+    height: calc(100vh - 150px);
 }
 
 .table-fix-head thead th {
@@ -103,10 +103,6 @@ header {
 .new-height {
     height: calc(100vh - 120px) !important;
     overflow: auto;
-}
-
-.workflow-button {
-    z-index: 10;
 }
 
 .workspace {
@@ -162,6 +158,7 @@ header {
 
 .workflow-btn {
     height: 170px;
+    z-index: 10;
 }
 
 .workflow-btn-perso {

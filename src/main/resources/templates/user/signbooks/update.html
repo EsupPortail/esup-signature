@@ -6,7 +6,7 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-sign :: side-sign}"></nav>
+        <nav th:unless="${user.userType.name() == 'external'}" id="sidebar" class="scrollbar-lite scrollbar-style" th:insert="~{fragments/sides/side-sign :: side-sign}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/signrequests">Tableau de bord</a></li>
@@ -29,10 +29,12 @@
                     </li>
                 </ul>
             </div>
-            <div class="card col-lg-10 mx-auto mb-1">
+            <div class="col-11 card text-bg-light border-light m-2">
+                <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+                    <h5 class="ms-4"><b>Paramètres généraux</b></h5>
+                </div>
                 <div class="card-body">
                     <form id="params" th:action="'/user/signbooks/update/' + ${signBook.id}" th:method="put">
-                        <h5 class="text-center"><b>Paramètres généraux</b></h5>
                         <div class="form-group">
                             <label for="subject">Titre</label>
                             <input type="text" class="form-control" name="subject" id="subject" th:value="${signBook.subject}">
@@ -52,9 +54,11 @@
                     </form>
                 </div>
             </div>
-            <div class="card col-lg-10 mx-auto mb-1">
+            <div class="col-11 card text-bg-light border-light m-2">
+                <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+                    <h5 class="ms-4"><b>Documents à signer dans ce parapheur</b></h5>
+                </div>
                 <div class="card-body">
-                    <h5 class="text-center"><b>Demandes à signer dans ce parapheur</b></h5>
                     <table class="table table-sm table-hover">
                             <thead class="table-secondary">
                             <tr>
