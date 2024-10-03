@@ -21,6 +21,8 @@ public class UserShare {
 
     private Boolean signWithOwnSign = true;
 
+    private Boolean forceTransmitEmails = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private Form form;
 
@@ -72,6 +74,14 @@ public class UserShare {
 
     public void setSignWithOwnSign(Boolean signWithOwnSign) {
         this.signWithOwnSign = signWithOwnSign;
+    }
+
+    public Boolean getForceTransmitEmails() {
+        return forceTransmitEmails;
+    }
+
+    public void setForceTransmitEmails(Boolean forceTransmitEmails) {
+        this.forceTransmitEmails = forceTransmitEmails;
     }
 
     public Form getForm() {

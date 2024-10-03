@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service.mail;
 
-import jakarta.annotation.Resource;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -53,36 +52,37 @@ public class MailService {
 
     private final MailConfig mailConfig;
 
-    public MailService(GlobalProperties globalProperties, @Autowired(required = false) MailConfig mailConfig, @Autowired(required = false) JavaMailSenderImpl mailSender, TemplateEngine templateEngine) {
-        this.globalProperties = globalProperties;
-        this.mailConfig = mailConfig;
-        this.mailSender = mailSender;
-        this.templateEngine = templateEngine;
-    }
-
     private final JavaMailSenderImpl mailSender;
 
-//    @Autowired(required = false)
+    private final TemplateEngine templateEngine;
+
+    private final UserService userService;
+
+    private final FileService fileService;
+
+    private final MessageSource messageSource;
+
+    private final UserShareService userShareService;
+
+
+    //    @Autowired(required = false)
 //    public void setMailSender(JavaMailSenderImpl mailSender) {
 //        this.mailSender = mailSender;
 //    }
 
-    private final TemplateEngine templateEngine;
-
-    @Resource
-    private UserService userService;
-
 //    @Resource
 //    private CertificatService certificatService;
 
-    @Resource
-    private FileService fileService;
-
-    @Resource
-    private MessageSource messageSource;
-
-    @Resource
-    private UserShareService userShareService;
+    public MailService(GlobalProperties globalProperties, @Autowired(required = false) MailConfig mailConfig, @Autowired(required = false) JavaMailSenderImpl mailSender, TemplateEngine templateEngine, UserService userService, FileService fileService, MessageSource messageSource, UserShareService userShareService) {
+        this.globalProperties = globalProperties;
+        this.mailConfig = mailConfig;
+        this.mailSender = mailSender;
+        this.templateEngine = templateEngine;
+        this.userService = userService;
+        this.fileService = fileService;
+        this.messageSource = messageSource;
+        this.userShareService = userShareService;
+    }
 
     public void sendEmailAlerts(SignBook signBook, String userEppn, Data data, boolean forceSend) throws EsupSignatureMailException {
         for (Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
@@ -103,13 +103,13 @@ public class MailService {
         toEmails.add(recipientUser.getEmail());
         Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
         recipientUser.setLastSendAlertDate(date);
-        if(data != null && data.getForm() != null) {
-            for (UserShare userShare : userShareService.getUserSharesByUser(recipientUser.getEppn())) {
-                if (userShare.getShareTypes().contains(ShareType.sign)) {
-                    if ((data.getForm().equals(userShare.getForm())) || (workflow != null && workflow.equals(userShare.getWorkflow()))) {
-                        for (User toUser : userShare.getToUsers()) {
-                            toEmails.add(toUser.getEmail());
-                        }
+        for (UserShare userShare : userShareService.getUserSharesByUser(recipientUser.getEppn())) {
+            if (userShare.getShareTypes().contains(ShareType.sign)) {
+                if ((data != null && data.getForm() != null && data.getForm().equals(userShare.getForm()))
+                    || (workflow != null && workflow.equals(userShare.getWorkflow()))
+                    || (userShare.getAllSignRequests() && BooleanUtils.isTrue(userShare.getForceTransmitEmails()))) {
+                    for (User toUser : userShare.getToUsers()) {
+                        toEmails.add(toUser.getEmail());
                     }
                 }
             }
