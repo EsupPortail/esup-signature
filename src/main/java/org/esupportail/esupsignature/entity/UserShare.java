@@ -77,7 +77,7 @@ public class UserShare {
     }
 
     public Boolean getForceTransmitEmails() {
-        return forceTransmitEmails;
+        return Objects.requireNonNullElse(forceTransmitEmails, false);
     }
 
     public void setForceTransmitEmails(Boolean forceTransmitEmails) {
