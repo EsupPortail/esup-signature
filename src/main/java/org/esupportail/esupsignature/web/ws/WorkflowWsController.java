@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dto.WorkflowDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.SignRequestParams;
@@ -16,6 +15,7 @@ import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestParamsService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.export.WorkflowExportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @RestController
@@ -34,17 +35,23 @@ public class WorkflowWsController {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowWsController.class);
 
-    @Resource
-    private WorkflowService workflowService;
+    private final WorkflowService workflowService;
 
-    @Resource
-    private SignBookService signBookService;
+    private final WorkflowExportService workflowExportService;
 
-    @Resource
-    private SignRequestParamsService signRequestParamsService;
+    private final SignBookService signBookService;
 
-    @Resource
-    private RecipientService recipientService;
+    private final SignRequestParamsService signRequestParamsService;
+
+    private final RecipientService recipientService;
+
+    public WorkflowWsController(WorkflowService workflowService, WorkflowExportService workflowExportService, SignBookService signBookService, SignRequestParamsService signRequestParamsService, RecipientService recipientService) {
+        this.workflowService = workflowService;
+        this.workflowExportService = workflowExportService;
+        this.signBookService = signBookService;
+        this.signRequestParamsService = signRequestParamsService;
+        this.recipientService = recipientService;
+    }
 
     @CrossOrigin
     @PostMapping(value = "/{id}/new", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
@@ -147,4 +154,13 @@ public class WorkflowWsController {
         return workflowService.getAllWorkflowsJson();
     }
 
+    @CrossOrigin
+    @GetMapping(value = "/get-datas/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération des données d'un formulaire")
+    @PreAuthorize("@wsAccessTokenService.createWorkflowAccess(#id, #xApiKey)")
+    public LinkedHashMap<String, String> getDatas(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
+        return workflowExportService.getJsonDatasFromWorkflow(id);
+    }
+
 }
+
