@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.mail;
 
 import jakarta.annotation.Resource;
+import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
@@ -460,6 +461,7 @@ public class MailService {
             return;
         }
         try {
+            logger.info("send email to : " + Arrays.toString(mimeMessage.getRecipients(Message.RecipientType.TO)));
             mimeMessage.setFrom(mailConfig.getMailFrom());
             if(workflow != null && org.springframework.util.StringUtils.hasText(workflow.getMailFrom())) {
                 mimeMessage.setFrom(workflow.getMailFrom());
