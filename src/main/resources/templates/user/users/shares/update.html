@@ -23,7 +23,7 @@
         <div id="content" class="content">
             <div class="fixed-action-btn">
                 <a title="Enregistrer" type="button" onclick="$('#shareForm').submit()"
-                   class="btn-floating btn-lg bg-success wave-effect">
+                    class="btn-floating btn-lg bg-success wave-effect">
                     <i class="fa-solid fa-save fa-2xl"></i>
                 </a>
             </div>
@@ -58,15 +58,21 @@
                             <th:block th:each="shareType : ${T(org.esupportail.esupsignature.entity.enums.ShareType).values()}">
                                 <div class="form-check text-left">
                                     <input th:id="'check-' + ${shareType.name()}" type="checkbox" class="form-check-input" name="types"
-                                           th:checked="${userShare.shareTypes.contains(shareType)}"
-                                           th:value="${shareType.name()}"
-                                           th:disabled="${(userShare.form != null && !userShare.form.authorizedShareTypes.contains(shareType)) || (userShare.workflow != null &&!userShare.workflow.authorizedShareTypes.contains(shareType))}"/>
+                                        th:checked="${userShare.shareTypes.contains(shareType)}"
+                                        th:value="${shareType.name()}"
+                                        th:disabled="${(userShare.form != null && !userShare.form.authorizedShareTypes.contains(shareType)) || (userShare.workflow != null &&!userShare.workflow.authorizedShareTypes.contains(shareType))}"/>
                                     <label class="form-check-label" th:for="'check-' + ${shareType.name()}"
-                                           th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></label>
+                                        th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></label>
                                 </div>
                             </th:block>
                         </div>
-
+                        <div class="form-group mb-3">
+                            <div class="form-check form-switch form-switch-md">
+                            <input id="forceTransmitEmails" type="checkbox" class="form-check-input" name="forceTransmitEmails"
+                                th:checked="${userShare.forceTransmitEmails}" />
+                                <label class="form-check-label">Forcer l’envoi de mail au délégué</label>
+                            </div>
+                        </div>
                         <div id="sign-mod" class="form-group d-none" th:if="${globalProperties.shareMode > 2}">
                             <label for="signWithOwnSign">Modalité de signature</label>
                             <select id="signWithOwnSign" class="form-select" name="signWithOwnSign">

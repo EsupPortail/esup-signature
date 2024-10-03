@@ -71,6 +71,7 @@ public class UserShareController {
     @PostMapping("/add")
     public String addShare(@ModelAttribute("authUserEppn") String authUserEppn,
                            @RequestParam(value = "signWithOwnSign", required = false) Boolean signWithOwnSign,
+                           @RequestParam(value = "forceTransmitEmails", required = false) Boolean forceTransmitEmails,
                            @RequestParam(value = "form", required = false) Long[] form,
                            @RequestParam(value = "workflow", required = false) Long[] workflow,
                            @RequestParam("types") String[] types,
@@ -82,8 +83,9 @@ public class UserShareController {
         if(form == null) form = new Long[] {};
         if(workflow == null) workflow = new Long[] {};
         if(signWithOwnSign == null) signWithOwnSign = false;
+        if(forceTransmitEmails == null) forceTransmitEmails = false;
         try {
-            userShareService.addUserShare(authUser, signWithOwnSign, form, workflow, types, userEmails, beginDate, endDate);
+            userShareService.addUserShare(authUser, signWithOwnSign, forceTransmitEmails, form, workflow, types, userEmails, beginDate, endDate);
         } catch (EsupSignatureUserException e) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
         }
@@ -94,11 +96,12 @@ public class UserShareController {
     public String updateShare(@ModelAttribute("authUserEppn") String authUserEppn,
                               @PathVariable("id") Long id,
                               @RequestParam(value = "signWithOwnSign", required = false) Boolean signWithOwnSign,
+                              @RequestParam(value = "forceTransmitEmails", required = false) Boolean forceTransmitEmails,
                               @RequestParam("types") String[] types,
                               @RequestParam("userIds") String[] userEmails,
                               @RequestParam("beginDate") String beginDate,
                               @RequestParam("endDate") String endDate) {
-        userShareService.updateUserShare(authUserEppn, types, userEmails, beginDate, endDate, id, signWithOwnSign);
+        userShareService.updateUserShare(authUserEppn, types, userEmails, beginDate, endDate, id, signWithOwnSign, forceTransmitEmails);
         return "redirect:/user/users/shares";
     }
 

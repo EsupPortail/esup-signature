@@ -33,6 +33,7 @@
                             <th style="width: 15%">Elément délégué</th>
                             <th style="width: 15%">Type de délégation</th>
                             <th style="width: 15%">Modalité de signature</th>
+                            <th style="width: 15%">Forcer l’envoi de mail au délégué</th>
                             <th style="width: 15%">Délégataire</th>
                             <th style="width: 10%">Date de création</th>
                             <th style="width: 10%">Date de début</th>
@@ -61,6 +62,11 @@
                                         <span th:unless="${userShare.signWithOwnSign}" class="text-left">Le délégué signe avec votre signature</span>
                                     </div>
                                 </td>
+                                <td>
+                                    <div>
+                                        <span th:if="${userShare.forceTransmitEmails}" class="text-left">Oui</span>
+                                        <span th:unless="${userShare.forceTransmitEmails}" class="text-left">Non</span>
+                                    </div>
                                 <td>
                                     <ul class="text-left">
                                     <th:block th:each="toUser : ${userShare.toUsers}">
