@@ -67,7 +67,7 @@ public class UserShareService {
         return userShareRepository.findByWorkflowId(id);
     }
 
-    public void createUserShare(Boolean signWithOwnSign, List<Long> formsIds, List<Long> workflowsIds, String[] types, List<User> userEmails, Date beginDate, Date endDate, User user) throws EsupSignatureUserException {
+    public void createUserShare(Boolean signWithOwnSign, Boolean forceTransmitEmails, List<Long> formsIds, List<Long> workflowsIds, String[] types, List<User> userEmails, Date beginDate, Date endDate, User user) throws EsupSignatureUserException {
         UserShare userShare = new UserShare();
         userShare.setUser(user);
         if(globalProperties.getShareMode() > 2) {
@@ -105,13 +105,14 @@ public class UserShareService {
         if(formsIds.isEmpty() && workflowsIds.isEmpty()) {
             userShare.setAllSignRequests(true);
         }
+        userShare.setForceTransmitEmails(forceTransmitEmails);
         userShare.getToUsers().addAll(userEmails);
         userShare.setBeginDate(beginDate);
         userShare.setEndDate(endDate);
         userShareRepository.save(userShare);
     }
 
-    public void addUserShare(User authUser, Boolean signWithOwnSign, Long[] form, Long[] workflow, String[] types, String[] userEmails, String beginDate, String endDate) throws EsupSignatureUserException {
+    public void addUserShare(User authUser, Boolean signWithOwnSign, Boolean forceTransmitEmails, Long[] form, Long[] workflow, String[] types, String[] userEmails, String beginDate, String endDate) throws EsupSignatureUserException {
         List<User> users = new ArrayList<>();
         for (String userEmail : userEmails) {
             users.add(userService.getUserByEmail(userEmail));
@@ -126,11 +127,11 @@ public class UserShareService {
                 logger.error("error on parsing dates");
             }
         }
-        createUserShare(signWithOwnSign, Arrays.asList(form), Arrays.asList(workflow), types, users, beginDateDate, endDateDate, authUser);
+        createUserShare(signWithOwnSign, forceTransmitEmails, Arrays.asList(form), Arrays.asList(workflow), types, users, beginDateDate, endDateDate, authUser);
     }
 
     @Transactional
-    public void updateUserShare(String authUserEppn, String[] types, String[] userEmails, String beginDate, String endDate, Long userShareId, Boolean signWithOwnSign) {
+    public void updateUserShare(String authUserEppn, String[] types, String[] userEmails, String beginDate, String endDate, Long userShareId, Boolean signWithOwnSign, Boolean forceTransmitEmails) {
         User authUser = userService.getByEppn(authUserEppn);
         UserShare userShare = getById(userShareId);
         if(globalProperties.getShareMode() > 2) {
@@ -140,6 +141,7 @@ public class UserShareService {
         } else if(globalProperties.getShareMode() > 0) {
             userShare.setSignWithOwnSign(true);
         }
+        userShare.setForceTransmitEmails(forceTransmitEmails);
         if(userShare.getUser().equals(authUser)) {
             userShare.getToUsers().clear();
             for (String userEmail : userEmails) {

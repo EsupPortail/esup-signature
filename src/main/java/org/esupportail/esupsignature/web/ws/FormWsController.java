@@ -204,7 +204,7 @@ public class FormWsController {
     @CrossOrigin
     @Deprecated
     @PostMapping(value = "/get-datas/{id}")
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération des données d'un formulaire (POST)", deprecated = true)
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération des données d'un formulaire (POST)", deprecated = true)
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public LinkedHashMap<String, String> postGetDatas(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         return dataExportService.getJsonDatasFromSignRequest(id);
@@ -212,7 +212,7 @@ public class FormWsController {
 
     @CrossOrigin
     @GetMapping(value = "/get-datas/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération des données d'un formulaire")
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération des données d'un formulaire")
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public LinkedHashMap<String, String> getDatas(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         return dataExportService.getJsonDatasFromSignRequest(id);
