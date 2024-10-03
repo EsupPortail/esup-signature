@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<body>
+	<table width="90%" border="0" style="width: 90%;" bgcolor="#ffffff">
+		<tr>
+			<td width="100%" style="background-color:#343a40; border-bottom:1px solid rgba(0, 0, 0, 0.125); margin-bottom:0; padding:10px; width: 100%;" bgcolor="#343a40">
+				<img height="40" class="mx-auto float-start" src="cid:logo" style="border-style:none; vertical-align:middle; float:left; margin-right:auto; margin-left:auto" valign="middle" align="left">
+				<img height="40" class="mx-auto float-end" src="cid:logo-univ" style="border-style:none; vertical-align:middle; float:right; margin-right:auto; margin-left:auto" valign="middle" align="right">
+			</td>
+		</tr>
+		<tr>
+			<td style="width:100%; padding:10px;background-color:#f8f9fa;">
+				<p style="margin-bottom:1rem; margin-top:0">Bonjour,</p>
+				<p style="margin-bottom:1rem; margin-top:0" th:text="${recipientUser.firstname} + ' ' + ${recipientUser.name} + ' a une nouvelle demande de signature, pour laquelle vous avez délégation de signature, en attente :'"> </p>
+				<p style="margin-bottom:1rem; margin-top:0" th:text="'Circuit : ' + ${signBook.workflowName}"></p>
+				<p style="margin-bottom:1rem; margin-top:0" th:text="'Nom : ' + ${signBook.subject}"></p>
+				<p style="margin-bottom:1rem; margin-top:0" th:text="'Date de création : ' + ${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></p>
+				<p style="margin-bottom:1rem; margin-top:0">
+					<span th:text="'Créé par : ' + ${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></span>
+				</p>
+				<p style="margin-bottom:1rem; margin-top:0" th:if="${organizationalUnitLdap != null}">
+					<span th:text="'Composante : ' + ${organizationalUnitLdap.description}"></span>
+				</p>
+				<p style="margin-bottom:1rem; margin-top:0">
+					<a class="btn btn-sm btn-dark mx-auto"
+					   th:href="@{|${rootUrl}/user/users/shares/change?eppn=${recipientUser.getEppn()}&userShareId=${userShare.id}|}" style="background-color:#343a40; color:#fff; text-decoration:none; -moz-user-select:none; -ms-user-select:none; -webkit-user-select:none; border:1px solid transparent; border-radius:3px; display:inline-block; font-size:0.875rem; font-weight:400; line-height:1.5; padding:10px; text-align:center; transition:color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; user-select:none; vertical-align:middle; border-color:#343a40; margin-right:auto; margin-left:auto" bgcolor="#343a40" align="center" valign="middle"
+					   th:text="'Accéder au tableau de bord de ' + ${recipientUser.firstname} + ' ' + ${recipientUser.name}"></a>
+				</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width:100%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;  -ms-flex-pack:center; justify-content:center; text-align:center; font-size:14px;" bgcolor="#6c757d">
+				<span class="text-white text-center" style="text-align:center; color:#fff" align="center" th:text="#{application.footer}"></span>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>
