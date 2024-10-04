@@ -260,14 +260,14 @@ public class NexuService {
 	}
 
 	@Transactional
-	public SignDocumentResponse getSignDocumentResponse(Long signRequestId, SignResponse signatureValue, AbstractSignatureForm abstractSignatureForm, String userEppn, List<Document> documentsToSign) throws EsupSignatureRuntimeException, EsupSignatureException {
+	public SignDocumentResponse getSignDocumentResponse(Long signRequestId, SignResponse signResponse, AbstractSignatureForm abstractSignatureForm, String userEppn, List<Document> documentsToSign) throws EsupSignatureRuntimeException, EsupSignatureException {
 		User user = userService.getByEppn(userEppn);
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		if(signRequest.getAuditTrail() == null) {
 			signRequest.setAuditTrail(auditTrailService.create(signRequest.getToken()));
 		}
 		SignDocumentResponse signedDocumentResponse;
-		abstractSignatureForm.setSignatureValue(signatureValue.getSignatureValue());
+		abstractSignatureForm.setSignatureValue(signResponse.getSignatureValue());
 		try {
 			Document signedFile = nexuSign(signRequest, userEppn, abstractSignatureForm, documentsToSign);
 			if(signedFile != null) {

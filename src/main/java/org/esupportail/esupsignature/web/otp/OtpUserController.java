@@ -2,23 +2,18 @@ package org.esupportail.esupsignature.web.otp;
 
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
-import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
+import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.DayOfWeek;
-import java.util.Arrays;
-import java.util.List;
 
 @CrossOrigin(origins = "*")
 @RequestMapping("/otp/users")
@@ -29,22 +24,6 @@ public class OtpUserController {
 
     @Resource
     private UserService userService;
-
-    @Resource
-    private SignRequestService signRequestService;
-
-    @GetMapping
-    public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
-        model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
-        model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
-        if(referer != null && !"".equals(referer) && !"null".equals(referer)) {
-            model.addAttribute("referer", request.getHeader(HttpHeaders.REFERER));
-        }
-        model.addAttribute("activeMenu", "settings");
-        List<SignRequest> signRequests = signRequestService.getToSignRequests(authUserEppn);
-        model.addAttribute("signRequestId", signRequests.get(0).getId());
-        return "user/users/update";
-    }
 
     @PostMapping
     public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,

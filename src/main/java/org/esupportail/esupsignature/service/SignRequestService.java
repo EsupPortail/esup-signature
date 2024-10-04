@@ -315,9 +315,9 @@ public class SignRequestService {
 			}
 			if (!signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty()) {
 				SignRequestParams signRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0);
-				auditTrailService.addAuditStep(signRequest.getToken(), userEppn, certificat, timestamp, reports.getSimpleReport().getValidationTime(), isViewed, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
+				auditTrailService.addAuditStep(signRequest.getToken(), userEppn, certificat, timestamp, reports.getSimpleReport().getBestSignatureTime(reports.getSimpleReport().getFirstSignatureId()), isViewed, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
 			} else {
-				auditTrailService.addAuditStep(signRequest.getToken(), userEppn, certificat, timestamp, reports.getSimpleReport().getValidationTime(), isViewed, 0, 0, 0);
+				auditTrailService.addAuditStep(signRequest.getToken(), userEppn, certificat, timestamp, reports.getSimpleReport().getBestSignatureTime(reports.getSimpleReport().getFirstSignatureId()), isViewed, 0, 0, 0);
 			}
 			stepStatus = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, SignType.certSign, comment);
 
