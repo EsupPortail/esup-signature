@@ -99,22 +99,56 @@ public class MailService {
 
     public void sendSignRequestEmailAlert(SignBook signBook, User recipientUser, Data data) throws EsupSignatureMailException {
         Date date = new Date();
-        Set<String> toEmails = new HashSet<>();
-        toEmails.add(recipientUser.getEmail());
+        sendSignRequestAlert(Collections.singletonList(recipientUser.getEmail()), signBook);
         Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
         recipientUser.setLastSendAlertDate(date);
+        Map<String, UserShare> toShareEmails = new HashMap<>();
         for (UserShare userShare : userShareService.getUserSharesByUser(recipientUser.getEppn())) {
-            if (userShare.getShareTypes().contains(ShareType.sign)) {
-                if ((data != null && data.getForm() != null && data.getForm().equals(userShare.getForm()))
-                    || (workflow != null && workflow.equals(userShare.getWorkflow()))
-                    || (userShare.getAllSignRequests() && BooleanUtils.isTrue(userShare.getForceTransmitEmails()))) {
-                    for (User toUser : userShare.getToUsers()) {
-                        toEmails.add(toUser.getEmail());
-                    }
+            if (userShare.getShareTypes().contains(ShareType.sign) &&
+                ((data != null && data.getForm() != null && data.getForm().getId().equals(userShare.getForm().getId()))
+                || (workflow != null && workflow.getId().equals(userShare.getWorkflow().getId()))
+                || (userShare.getAllSignRequests() && BooleanUtils.isTrue(userShare.getForceTransmitEmails())))) {
+                for (User toUser : userShare.getToUsers()) {
+                    toShareEmails.put(toUser.getEmail(), userShare);
                 }
             }
         }
-        sendSignRequestAlert(new ArrayList<>(toEmails), signBook);
+        if(!toShareEmails.isEmpty()) {
+            sendSignRequestAlertShare(new ArrayList<>(toShareEmails.keySet()), recipientUser, toShareEmails.values().stream().toList().get(0), signBook);
+        }
+    }
+
+    private void sendSignRequestAlertShare(List<String> recipientsEmails, User recipientUser, UserShare userShare, SignBook signBook) {
+        if (!checkMailSender()) {
+            return;
+        }
+        final Context ctx = new Context(Locale.FRENCH);
+
+        PersonLdap personLdap = userService.findPersonLdapByUser(signBook.getCreateBy());
+        if(personLdap != null) {
+            OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
+            ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
+        }
+        ctx.setVariable("signBook", signBook);
+        ctx.setVariable("recipientUser", recipientUser);
+        ctx.setVariable("userShare", userShare);
+        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("userService", userService);
+        setTemplate(ctx);
+        try {
+            MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
+            String htmlContent = templateEngine.process("mail/email-alert-share.html", ctx);
+            addInLineImages(mimeMessage, htmlContent);
+            mimeMessage.setSubject(recipientUser.getFirstname() + " " + recipientUser.getName() + " a une nouvelle demande de signature");
+            mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
+            logger.info("send email alert for " + recipientsEmails.get(0));
+//            sendMail(signMessage(mimeMessage.getMimeMessage()));
+            sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
+            signBook.setLastNotifDate(new Date());
+        } catch (Exception e) {
+            logger.error("unable to send ALERT email share", e);
+            throw new EsupSignatureMailException("Problème lors de l'envoi du mail delegation", e);
+        }
     }
 
     public void sendCompletedMail(SignBook signBook, String userEppn) throws EsupSignatureMailException {
