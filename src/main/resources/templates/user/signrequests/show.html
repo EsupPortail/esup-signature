@@ -148,7 +148,10 @@
                         </li>
                     </th:block>
                     <li th:if="${nextSignBook != null}" class="">
-                        <a id="nextSignBookButton" role="button" th:href="'/user/signbooks/' + ${nextSignBook.id}"class="btn-lg btn-floating bg-primary waves-effect" title="Demande suivante">
+                        <a th:unless="${user.userType.name() == 'external'}" id="nextSignBookButton" role="button" th:href="'/user/signbooks/' + ${nextSignBook.id}" class="btn-lg btn-floating bg-primary waves-effect" title="Demande suivante">
+                            <i class="fa-solid fa-arrow-right fa-2xl"></i>
+                        </a>
+                        <a th:if="${user.userType.name() == 'external'}" id="nextSignBookButton" role="button" th:href="'/otp/signrequests/' + ${nextSignBook.signRequests.get(0).id}" class="btn-lg btn-floating bg-primary waves-effect" title="Demande suivante">
                             <i class="fa-solid fa-arrow-right fa-2xl"></i>
                         </a>
                     </li>
