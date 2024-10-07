@@ -78,6 +78,24 @@ public class ManageController {
                        @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
                        @RequestParam(value = "dateFilter", required = false) String dateFilter,
                        @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, @PathVariable Long id, Model model) {
+        manageView(userEppn, authUserEppn, statusFilter, recipientsFilter, docTitleFilter, creatorFilter, dateFilter, pageable, id, model);
+        return "user/manage/details";
+    }
+
+    @PreAuthorize("@preAuthorizeService.workflowDashboard(#id, #authUserEppn)")
+    @GetMapping(value = "/workflow/{id}/dashboard", produces="text/csv")
+    public String dashboard(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                       @RequestParam(value = "statusFilter", required = false) String statusFilter,
+                       @RequestParam(value = "recipientsFilter", required = false) String recipientsFilter,
+                       @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
+                       @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
+                       @RequestParam(value = "dateFilter", required = false) String dateFilter,
+                       @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, @PathVariable Long id, Model model) {
+        manageView(userEppn, authUserEppn, statusFilter, recipientsFilter, docTitleFilter, creatorFilter, dateFilter, pageable, id, model);
+        return "user/manage/dashboard";
+    }
+
+    private void manageView(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "statusFilter", required = false) String statusFilter, @RequestParam(value = "recipientsFilter", required = false) String recipientsFilter, @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter, @RequestParam(value = "creatorFilter", required = false) String creatorFilter, @RequestParam(value = "dateFilter", required = false) String dateFilter, @PageableDefault(size = 10) @SortDefault(value = "createDate", direction = Sort.Direction.DESC) Pageable pageable, @PathVariable Long id, Model model) {
         SignRequestStatus signRequestStatus = null;
         if(StringUtils.hasText(statusFilter) && !statusFilter.equals("all")) {
             signRequestStatus = SignRequestStatus.valueOf(statusFilter);
@@ -104,10 +122,9 @@ public class ManageController {
         model.addAttribute("docTitles", signBookService.getSignBooksForManagersSubjects(workflow.getDescription()));
         model.addAttribute("creators", signBookService.getSignBooksForManagersCreators(workflow.getDescription()));
         model.addAttribute("signRequestRecipients", signBookService.getSignBooksForManagersRecipientsUsers(workflow.getDescription()));
-        return "user/manage/details";
     }
 
-    @PreAuthorize("@preAuthorizeService.workflowManage(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.workflowManageExport(#id, #authUserEppn)")
     @GetMapping(value = "/form/{id}/datas/csv", produces="text/csv")
     public ResponseEntity<Void> getFormDatasCsv(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long id, HttpServletResponse response) {
         Workflow workflow = workflowService.getById(id);
@@ -124,7 +141,7 @@ public class ManageController {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @PreAuthorize("@preAuthorizeService.workflowManage(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.workflowManageExport(#id, #authUserEppn)")
     @GetMapping(value = "/workflow/{id}/datas/csv", produces="text/csv")
     public ResponseEntity<Void> getWorkflowDatasCsv(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long id, HttpServletResponse response) {
         Workflow workflow = workflowService.getById(id);

@@ -33,13 +33,16 @@
                             </td>
                             <td th:text="${workflow.description}"></td>
                             <td>
-                                <a type="button" th:href="'user/manage/workflow/' + ${workflow.id} + '/signbooks'" class="btn btn-sm btn-primary"><i class="fa-solid fa-list"></i> Liste des demandes</a>
+                                <a type="button" th:if="${workflow.managers.contains(user.email)}"
+                                    th:href="'user/manage/workflow/' + ${workflow.id} + '/signbooks'" class="btn btn-sm btn-primary"><i class="fa-solid fa-list"></i> Liste des demandes</a>
+                                <a type="button" th:unless="${workflow.managers.contains(user.email)}"
+                                    th:href="'user/manage/workflow/' + ${workflow.id} + '/dashboard'" class="btn btn-sm btn-primary"><i class="fa-solid fa-list"></i> Liste des demandes</a>
                             </td>
                             <td>
                                 <a th:if="${managedForms.contains(workflow)}" type="button" th:href="'user/manage/form/' + ${workflow.id} + '/datas/csv'"
-                                   class="btn btn-sm btn-primary"><i class="fa-solid fa-file-export"></i> Export des données</a>
+                                    class="btn btn-sm btn-primary"><i class="fa-solid fa-file-export"></i> Export des données</a>
                                 <a th:unless="${managedForms.contains(workflow)}" type="button" th:href="'user/manage/workflow/' + ${workflow.id} + '/datas/csv'"
-                                   class="btn btn-sm btn-primary"><i class="fa-solid fa-file-export"></i> Export des données</a>
+                                    class="btn btn-sm btn-primary"><i class="fa-solid fa-file-export"></i> Export des données</a>
                             </td>
                             <td>
                                 <button th:if="${managedForms.contains(workflow)}" type="button" class="btn btn-sm btn-primary" th:data-bs-target="'#sendModal_' +  ${workflow.id}"  data-bs-toggle="modal"><i class="fa-solid fa-paper-plane"></i> Envoyer le formulaire</button>

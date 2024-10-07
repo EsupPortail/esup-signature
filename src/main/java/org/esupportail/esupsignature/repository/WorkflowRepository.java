@@ -1,11 +1,12 @@
 package org.esupportail.esupsignature.repository;
 
-import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.dto.WorkflowDto;
+import org.esupportail.esupsignature.entity.Workflow;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+import java.util.Set;
 
 public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     List<Workflow> findAll();
@@ -23,7 +24,10 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     List<Workflow> findAuthorizedForms(String role);
     @Query("select distinct w from Workflow w where w.id not in (select distinct f.workflow.id from Form f where f.workflow is not null) and w.createBy.eppn = 'system'")
     List<Workflow> findNotInForm();
-    List<Workflow> findWorkflowByManagersIn(List<String> emails);
+    @Query("select distinct w from Workflow w " +
+            "where :email member of w.managers " +
+            "or exists (select r from Workflow w2 join w2.dashboardRoles r where w = w2 and r in :roles)")
+    List<Workflow> findWorkflowByManagersIn(String email, Set<String> roles);
     List<Workflow> findByViewersEppn(String userEppn);
     @Query("select w from Workflow w where w.id = :id")
     WorkflowDto getByIdJson(Long id);
