@@ -419,7 +419,7 @@ public class FormService {
 	@Transactional
 	public List<Form> getFormByManagersContains(String eppn) {
 		User user = userService.getByEppn(eppn);
-		List<Workflow> workflows = workflowRepository.findWorkflowByManagersIn(Collections.singletonList(user.getEmail()));
+		List<Workflow> workflows = workflowRepository.findWorkflowByManagersIn(user.getEmail(), user.getRoles());
 		List<Form> managerForms = new ArrayList<>();
 		for(Workflow workflow : workflows) {
 			List<Form> form = formRepository.findByWorkflowIdEquals(workflow.getId());

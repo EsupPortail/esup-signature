@@ -51,6 +51,9 @@ public class Workflow {
 
     private String managerRole;
 
+    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    private Set<String> dashboardRoles = new HashSet<>();
+
     @ElementCollection(targetClass =  ShareType.class, fetch = FetchType.EAGER)
     private Set<ShareType> authorizedShareTypes = new HashSet<>();
 
@@ -258,6 +261,14 @@ public class Workflow {
 
     public void setManagerRole(String managerRole) {
         this.managerRole = managerRole;
+    }
+
+    public Set<String> getDashboardRoles() {
+        return dashboardRoles;
+    }
+
+    public void setDashboardRoles(Set<String> dashboardRoles) {
+        this.dashboardRoles = dashboardRoles;
     }
 
     public Set<ShareType> getAuthorizedShareTypes() {
