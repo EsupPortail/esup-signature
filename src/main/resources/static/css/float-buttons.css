@@ -122,7 +122,7 @@
     right: 1vw;
     bottom: 25px;
     margin-bottom: 0;
-    z-index: 6;
+    z-index: 1000;
     overflow: hidden;
     height: 600px;
     display: -webkit-box;

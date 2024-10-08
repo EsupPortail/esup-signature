@@ -1945,7 +1945,6 @@ public class SignBookService {
     public boolean checkUserViewRights(String userEppn, String authUserEppn, Long signBookId) {
         SignBook signBook = getById(signBookId);
         if(signBook == null) return false;
-        User user = userService.getByEppn(userEppn);
         List<Recipient> recipients = new ArrayList<>();
         for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
             recipients.addAll(liveWorkflowStep.getRecipients());
@@ -1954,7 +1953,7 @@ public class SignBookService {
                 || signBook.getViewers().stream().anyMatch(u -> u.getEppn().equals(authUserEppn))
                 || signBook.getCreateBy().getEppn().equals(authUserEppn)
                 || recipientService.recipientsContainsUser(recipients, authUserEppn) > 0
-                || (signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail()))) {
+                || workflowService.checkWorkflowManageRights(signBook.getLiveWorkflow().getWorkflow().getId(), authUserEppn)) {
             return true;
         }
         return false;

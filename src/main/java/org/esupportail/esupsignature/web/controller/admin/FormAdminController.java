@@ -40,7 +40,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/admin/forms")
+@RequestMapping({"/manager/forms", "/admin/forms"})
 public class FormAdminController {
 
 	private static final Logger logger = LoggerFactory.getLogger(FormAdminController.class);

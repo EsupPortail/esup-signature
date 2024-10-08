@@ -1060,6 +1060,8 @@ export class WorkspacePdf {
             }
             if (mode === "comment" && this.mode !== "comment") {
                 this.enableCommentMode();
+            } else {
+                this.enableSignMode();
             }
             if (mode === "read") {
                 this.enableReadMode();
