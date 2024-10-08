@@ -40,7 +40,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/admin/forms")
+@RequestMapping({"/manager/forms", "/admin/forms"})
 public class FormAdminController {
 
 	private static final Logger logger = LoggerFactory.getLogger(FormAdminController.class);
@@ -398,14 +398,12 @@ public class FormAdminController {
 	@PostMapping(value = "/add-spot/{id}")
 	@ResponseBody
 	@PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
-	public void addSpot(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+	public Long addSpot(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 						  @RequestParam(value = "spotStepNumber", required = false) Integer spotStepNumber,
 						  @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
 						  @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
 						  @RequestParam(value = "commentPosY", required = false) Integer commentPosY) {
-		if(spotStepNumber != null) {
-			formService.addSignRequestParamsSteps(id, spotStepNumber, commentPageNumber, commentPosX, commentPosY);
-		}
+		return formService.addSignRequestParamsSteps(id, spotStepNumber, commentPageNumber, commentPosX, commentPosY);
 	}
 
 }

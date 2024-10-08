@@ -28,12 +28,12 @@
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.deleted}">
-                        <a th:href="'/admin/signbooks/restore/' + ${signBook.id}" role="button" class="btn-floating btn-lg bg-primary waves-effect" title="Restaurer">
+                        <a th:href="'/admin/signbooks/restore/' + ${signBook.id}" role="button" class="btn-floating btn-lg bg-primary" title="Restaurer">
                             <i class="fa-solid fa-trash-restore fa-2xl"></i>
                         </a>
                     </li>
                     <li th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}">
-                        <a id="trashLaunchButton" role="button" class="btn-floating btn-lg bg-danger waves-effect"
+                        <a id="trashLaunchButton" role="button" class="btn-floating btn-lg bg-danger"
                             th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
                             data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
                             <i th:if="${signRequest.deleted}" class="fa-solid fa-dumpster-fire fa-2xl"></i>

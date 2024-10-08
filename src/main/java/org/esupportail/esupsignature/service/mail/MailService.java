@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.service.mail;
 
-import jakarta.annotation.Resource;
+import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
@@ -52,36 +52,37 @@ public class MailService {
 
     private final MailConfig mailConfig;
 
-    public MailService(GlobalProperties globalProperties, @Autowired(required = false) MailConfig mailConfig, @Autowired(required = false) JavaMailSenderImpl mailSender, TemplateEngine templateEngine) {
-        this.globalProperties = globalProperties;
-        this.mailConfig = mailConfig;
-        this.mailSender = mailSender;
-        this.templateEngine = templateEngine;
-    }
-
     private final JavaMailSenderImpl mailSender;
 
-//    @Autowired(required = false)
+    private final TemplateEngine templateEngine;
+
+    private final UserService userService;
+
+    private final FileService fileService;
+
+    private final MessageSource messageSource;
+
+    private final UserShareService userShareService;
+
+
+    //    @Autowired(required = false)
 //    public void setMailSender(JavaMailSenderImpl mailSender) {
 //        this.mailSender = mailSender;
 //    }
 
-    private final TemplateEngine templateEngine;
-
-    @Resource
-    private UserService userService;
-
 //    @Resource
 //    private CertificatService certificatService;
 
-    @Resource
-    private FileService fileService;
-
-    @Resource
-    private MessageSource messageSource;
-
-    @Resource
-    private UserShareService userShareService;
+    public MailService(GlobalProperties globalProperties, @Autowired(required = false) MailConfig mailConfig, @Autowired(required = false) JavaMailSenderImpl mailSender, TemplateEngine templateEngine, UserService userService, FileService fileService, MessageSource messageSource, UserShareService userShareService) {
+        this.globalProperties = globalProperties;
+        this.mailConfig = mailConfig;
+        this.mailSender = mailSender;
+        this.templateEngine = templateEngine;
+        this.userService = userService;
+        this.fileService = fileService;
+        this.messageSource = messageSource;
+        this.userShareService = userShareService;
+    }
 
     public void sendEmailAlerts(SignBook signBook, String userEppn, Data data, boolean forceSend) throws EsupSignatureMailException {
         for (Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
@@ -98,22 +99,56 @@ public class MailService {
 
     public void sendSignRequestEmailAlert(SignBook signBook, User recipientUser, Data data) throws EsupSignatureMailException {
         Date date = new Date();
-        Set<String> toEmails = new HashSet<>();
-        toEmails.add(recipientUser.getEmail());
+        sendSignRequestAlert(Collections.singletonList(recipientUser.getEmail()), signBook);
         Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
         recipientUser.setLastSendAlertDate(date);
-        if(data != null && data.getForm() != null) {
-            for (UserShare userShare : userShareService.getUserSharesByUser(recipientUser.getEppn())) {
-                if (userShare.getShareTypes().contains(ShareType.sign)) {
-                    if ((data.getForm().equals(userShare.getForm())) || (workflow != null && workflow.equals(userShare.getWorkflow()))) {
-                        for (User toUser : userShare.getToUsers()) {
-                            toEmails.add(toUser.getEmail());
-                        }
-                    }
+        Map<String, UserShare> toShareEmails = new HashMap<>();
+        for (UserShare userShare : userShareService.getUserSharesByUser(recipientUser.getEppn())) {
+            if (userShare.getShareTypes().contains(ShareType.sign) &&
+                ((data != null && data.getForm() != null && data.getForm().getId().equals(userShare.getForm().getId()))
+                || (workflow != null && workflow.getId().equals(userShare.getWorkflow().getId()))
+                || (userShare.getAllSignRequests() && BooleanUtils.isTrue(userShare.getForceTransmitEmails())))) {
+                for (User toUser : userShare.getToUsers()) {
+                    toShareEmails.put(toUser.getEmail(), userShare);
                 }
             }
         }
-        sendSignRequestAlert(new ArrayList<>(toEmails), signBook);
+        if(!toShareEmails.isEmpty()) {
+            sendSignRequestAlertShare(new ArrayList<>(toShareEmails.keySet()), recipientUser, toShareEmails.values().stream().toList().get(0), signBook);
+        }
+    }
+
+    private void sendSignRequestAlertShare(List<String> recipientsEmails, User recipientUser, UserShare userShare, SignBook signBook) {
+        if (!checkMailSender()) {
+            return;
+        }
+        final Context ctx = new Context(Locale.FRENCH);
+
+        PersonLdap personLdap = userService.findPersonLdapByUser(signBook.getCreateBy());
+        if(personLdap != null) {
+            OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
+            ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
+        }
+        ctx.setVariable("signBook", signBook);
+        ctx.setVariable("recipientUser", recipientUser);
+        ctx.setVariable("userShare", userShare);
+        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("userService", userService);
+        setTemplate(ctx);
+        try {
+            MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
+            String htmlContent = templateEngine.process("mail/email-alert-share.html", ctx);
+            addInLineImages(mimeMessage, htmlContent);
+            mimeMessage.setSubject(recipientUser.getFirstname() + " " + recipientUser.getName() + " a une nouvelle demande de signature");
+            mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
+            logger.info("send email alert for " + recipientsEmails.get(0));
+//            sendMail(signMessage(mimeMessage.getMimeMessage()));
+            sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
+            signBook.setLastNotifDate(new Date());
+        } catch (Exception e) {
+            logger.error("unable to send ALERT email share", e);
+            throw new EsupSignatureMailException("Problème lors de l'envoi du mail delegation", e);
+        }
     }
 
     public void sendCompletedMail(SignBook signBook, String userEppn) throws EsupSignatureMailException {
@@ -460,6 +495,7 @@ public class MailService {
             return;
         }
         try {
+            logger.info("send email to : " + Arrays.toString(mimeMessage.getRecipients(Message.RecipientType.TO)));
             mimeMessage.setFrom(mailConfig.getMailFrom());
             if(workflow != null && org.springframework.util.StringUtils.hasText(workflow.getMailFrom())) {
                 mimeMessage.setFrom(workflow.getMailFrom());

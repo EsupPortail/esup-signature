@@ -170,6 +170,9 @@ export class SignRequestParams extends EventFactory {
                     self.id = result;
                     self.disableSpot();
                     $(window).unbind("beforeunload");
+                    if (self.signType === "form") {
+                        location.reload();
+                    }
                 }
             });
         }
@@ -197,6 +200,9 @@ export class SignRequestParams extends EventFactory {
             bootbox.confirm("Supprimer cet emplacement de signature ?", function (result) {
                 if (result) {
                     let url = "/ws-secure/global/delete-comment/" + self.signRequestId + "/" + self.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
+                    if (self.authUserName === "forms" && self.userName === "admin") {
+                        url = "/admin/forms/delete-spot/" + self.signRequestId + "/" + self.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
+                    }
                     $.ajax({
                         method: 'DELETE',
                         url: url,
@@ -433,7 +439,7 @@ export class SignRequestParams extends EventFactory {
         $("#pdf").prepend(div);
         this.cross = $("#" + divName);
         this.cross.css("position", "absolute");
-        this.cross.css("z-index", "5");
+        this.cross.css("z-index", "100");
         this.cross.attr("data-id", this.id);
     }
 

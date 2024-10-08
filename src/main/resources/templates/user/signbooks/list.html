@@ -27,35 +27,35 @@
                         <a type="button" id="massSignModalButton"
                             data-bs-toggle="modal" data-bs-target="#massSignModal"
                             title="Signer en masse les demandes sélectionnées"
-                            class="btn-floating btn-lg bg-success wave-effect d-none">
+                            class="btn-floating btn-lg bg-success d-none">
                             <i class="fa-solid fa-file-signature fa-2xl"></i>
                         </a>
                     </li>
                     <li>
                         <a type="button" id="deleteMultipleButton"
                             title="Supprimer en masse les demandes sélectionnées"
-                            class="btn-floating btn-lg bg-danger wave-effect d-none">
+                            class="btn-floating btn-lg bg-danger d-none">
                             <i class="fa-solid fa-trash-alt fa-2xl"></i>
                         </a>
                     </li>
                     <li>
                         <a type="button" id="downloadMultipleButton"
                             title="Télécharger la selection"
-                            class="btn-floating btn-lg bg-primary wave-effect d-none">
+                            class="btn-floating btn-lg bg-primary d-none">
                             <i class="fa-solid fa-download fa-2xl"></i>
                         </a>
                     </li>
                     <li>
                         <a type="button" id="downloadMultipleButtonWithReport"
                             title="Télécharger la selection avec les rapports"
-                            class="btn-floating btn-lg bg-primary wave-effect d-none">
+                            class="btn-floating btn-lg bg-primary d-none">
                             <i class="fa-solid fa-file-archive fa-2xl"></i>
                         </a>
                     </li>
                     <li>
                         <a th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')') || #authorization.expression('hasRole(''ROLE_FRANCECONNECT'')')}" data-bs-toggle="modal" data-bs-target="#newFomModal" type="button"
                             title="Créer une nouvelle demande"
-                            class="btn-floating btn-lg bg-primary wave-effect">
+                            class="btn-floating btn-lg bg-primary">
                             <i class="fa-solid fa-plus fa-2xl"></i>
                         </a>
                     </li>
@@ -204,9 +204,8 @@
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-
-                </button>
+                <h3 class="modal-title">Créer une nouvelle demande</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div th:replace="~{fragments/new :: new}"></div>

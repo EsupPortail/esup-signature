@@ -31,12 +31,17 @@ export default class ShareUi {
         let selectedTargetValue = $("#selectTarget :selected").val();
         console.info("toggle share form" + selectedTargetValue);
         if(selectedTargetValue === 'form') {
+            $('#forceTransmitEmailsDiv').addClass('d-none');
             $('#selectFormDiv').removeClass('d-none');
             $('#selectWorkflowDiv').addClass('d-none');
         } else if(selectedTargetValue === 'workflow') {
+            $('#forceTransmitEmailsDiv').addClass('d-none');
             $('#selectFormDiv').addClass('d-none');
             $('#selectWorkflowDiv').removeClass('d-none');
         } else {
+            $('#forceTransmitEmailsDiv').removeClass('d-none');
+            $('#selectFormDiv').addClass('d-none');
+            $('#selectWorkflowDiv').addClass('d-none');
             let self = this;
             $("input[id^='check-']").each(function() {
                 $(this).removeAttr("disabled");

@@ -1,13 +1,14 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.export.WorkflowExportService;
-import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -24,12 +25,13 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RequestMapping("user/manage")
@@ -38,28 +40,35 @@ public class ManageController {
 
     private static final Logger logger = LoggerFactory.getLogger(ManageController.class);
 
-    private final static byte[] EXCEL_UTF8_HACK = new byte[] { (byte)0xEF, (byte)0xBB, (byte)0xBF};
+    private static final byte[] EXCEL_UTF8_HACK = new byte[] { (byte)0xEF, (byte)0xBB, (byte)0xBF};
 
-    @Resource
-    private DataExportService dataExportService;
+    private final DataExportService dataExportService;
 
-    @Resource
-    private DataService dataService;
+    private final DataService dataService;
 
-    @Resource
-    private SignBookService signBookService;
+    private final SignBookService signBookService;
 
-    @Resource
-    private FormService formService;
+    private final FormService formService;
 
-    @Resource
-    private UserService userService;
+    private final UserService userService;
 
-    @Resource
-    private WorkflowService workflowService;
+    private final WorkflowService workflowService;
 
-    @Resource
-    private WorkflowExportService workflowExportService;
+    private final WorkflowExportService workflowExportService;
+
+    private final SignRequestService signRequestService;
+
+    public ManageController(DataExportService dataExportService, DataService dataService, SignBookService signBookService, FormService formService, UserService userService, WorkflowService workflowService, WorkflowExportService workflowExportService, SignRequestService signRequestService) {
+        this.dataExportService = dataExportService;
+        this.dataService = dataService;
+        this.signBookService = signBookService;
+        this.formService = formService;
+        this.userService = userService;
+        this.workflowService = workflowService;
+        this.workflowExportService = workflowExportService;
+        this.signRequestService = signRequestService;
+    }
+
 
     @GetMapping
     public String index(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
@@ -156,5 +165,16 @@ public class ManageController {
         return "redirect:/user/manage";
     }
 
+    @PreAuthorize("@preAuthorizeService.workflowManage(#workflowId, #authUserEppn)")
+    @GetMapping(value = "/workflow/{workflowId}/get-last-file/{signRequestId}")
+    public ResponseEntity<Void> getLastFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("workflowId") Long workflowId, @PathVariable("signRequestId") Long signRequestId, HttpServletResponse httpServletResponse) {
+        try {
+            signRequestService.getToSignFileResponse(signRequestId, "attachment", httpServletResponse, true);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error("get file error", e);
+        }
+        return ResponseEntity.notFound().build();
+    }
 
 }

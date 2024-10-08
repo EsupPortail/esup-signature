@@ -20,7 +20,7 @@
         <div id="content" class="content">
             <div class="fixed-action-btn">
                 <a title="Ajouter une nouvelle délégation" data-bs-toggle="modal" data-bs-target="#newShareModal" type="button"
-                   class="btn-floating btn-lg bg-primary wave-effect">
+                    class="btn-floating btn-lg bg-primary">
                     <i class="fa-solid fa-plus fa-2xl"></i>
                 </a>
             </div>
@@ -33,6 +33,7 @@
                             <th style="width: 15%">Elément délégué</th>
                             <th style="width: 15%">Type de délégation</th>
                             <th style="width: 15%">Modalité de signature</th>
+                            <th style="width: 15%">Forcer l’envoi de mail au délégué</th>
                             <th style="width: 15%">Délégataire</th>
                             <th style="width: 10%">Date de création</th>
                             <th style="width: 10%">Date de début</th>
@@ -62,6 +63,11 @@
                                     </div>
                                 </td>
                                 <td>
+                                    <div>
+                                        <span th:if="${userShare.forceTransmitEmails}" class="text-left">Oui</span>
+                                        <span th:unless="${userShare.forceTransmitEmails}" class="text-left">Non</span>
+                                    </div>
+                                <td>
                                     <ul class="text-left">
                                     <th:block th:each="toUser : ${userShare.toUsers}">
                                         <li th:text="${toUser.firstname} + ' ' + ${toUser.name}"></li>
@@ -89,12 +95,12 @@
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                     <div data-bs-focus="false" class="modal modal-warning fade in"
-                                         th:id="modal-warning+${userShare.id}">
+                                        th:id="modal-warning+${userShare.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <form id="command"
-                                                      th:action="'/user/users/shares/del/' + ${userShare.id}"
-                                                      th:method="delete">
+                                                    th:action="'/user/users/shares/del/' + ${userShare.id}"
+                                                    th:method="delete">
                                                     <div class="modal-header">
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                                 aria-label="Close">
@@ -128,7 +134,7 @@
         </div>
     </div>
     <div data-bs-focus="false" class="modal fade" id="newShareModal"  role="dialog"
-         aria-labelledby="exampleModalLabel" aria-hidden="true">
+        aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -146,6 +152,13 @@
                                 <option value="workflow">Circuit</option>
                                 <option value="form">Formulaire</option>
                             </select>
+                        </div>
+
+                        <div id="forceTransmitEmailsDiv" class="form-group mb-3">
+                            <div class="form-check form-switch form-switch-md">
+                                <input id="forceTransmitEmails" type="checkbox" class="form-check-input" name="forceTransmitEmails" />
+                                <label class="form-check-label">Forcer l’envoi de mail au délégué</label>
+                            </div>
                         </div>
 
                         <div id="selectFormDiv" class="form-group d-none">
