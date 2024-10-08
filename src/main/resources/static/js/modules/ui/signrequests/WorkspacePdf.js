@@ -604,7 +604,7 @@ export class WorkspacePdf {
                                         method: 'DELETE',
                                         url: url,
                                         success: function () {
-                                            spotDiv.remove();
+                                            location.reload();
                                         }
                                     });
                                 }

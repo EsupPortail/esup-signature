@@ -979,7 +979,7 @@ public class SignBookService {
                                     signRequestParamses.get(0).setExtraText(signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getCertificat().getKeystore().getFileName().replace(",", "\n"));
                                 }
                                 try {
-                                    signRequestService.sign(signRequest1, "", "autoCert", signRequestParamses, null, "system", "system", null, "");
+                                    signRequestService.sign(signRequest1, "", "autoCert", signRequestParamses, null, null,"system", "system", null, "");
                                                                     } catch (IOException | EsupSignatureMailException e) {
                                     refuse(signRequest1.getId(), "Signature refusée par le système automatique", "system", "system");
                                     logger.error("auto sign fail", e);
@@ -987,7 +987,7 @@ public class SignBookService {
                                 }
                             } else {
                                 try {
-                                    signRequestService.sign(signRequest1, "", "sealCert", signRequestParamses, null, "system", "system", null, "");
+                                    signRequestService.sign(signRequest1, "", "sealCert", signRequestParamses, null, null,"system", "system", null, "");
                                 } catch (IOException | EsupSignatureRuntimeException e) {
                                     logger.error("auto sign fail", e);
                                     refuse(signRequest1.getId(), "Signature refusée par le système automatique", "system", "system");
@@ -1083,12 +1083,13 @@ public class SignBookService {
         }
         Map<String, String> formDataMap = null;
         List<String> toRemoveKeys = new ArrayList<>();
+        Data data = null;
         if(formData != null) {
             try {
                 TypeReference<Map<String, String>> type = new TypeReference<>(){};
                 formDataMap = objectMapper.readValue(formData, type);
                 formDataMap.remove("_csrf");
-                Data data = dataService.getBySignBook(signRequest.getParentSignBook());
+                data = dataService.getBySignBook(signRequest.getParentSignBook());
                 if(data != null && data.getForm() != null) {
                     List<Field> fields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), data.getForm().getFields(), userService.getByEppn(userEppn), signRequest);
                     for(Map.Entry<String, String> entry : formDataMap.entrySet()) {
@@ -1125,7 +1126,7 @@ public class SignBookService {
             signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
             return StepStatus.nexu_redirect;
         } else {
-            StepStatus stepStatus = signRequestService.sign(signRequest, password, signWith, signRequestParamses, formDataMap, userEppn, authUserEppn, userShareId, comment);
+            StepStatus stepStatus = signRequestService.sign(signRequest, password, signWith, signRequestParamses, data, formDataMap, userEppn, authUserEppn, userShareId, comment);
             if(stepStatus.equals(StepStatus.last_end)) {
                 try {
                     if(globalProperties.getSealAllDocs() ||

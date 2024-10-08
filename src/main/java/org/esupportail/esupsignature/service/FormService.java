@@ -500,11 +500,12 @@ public class FormService {
 	}
 
 	@Transactional
-	public void addSignRequestParamsSteps(Long formId, Integer step, Integer signPageNumber, Integer xPos, Integer yPos) {
+	public Long addSignRequestParamsSteps(Long formId, Integer step, Integer signPageNumber, Integer xPos, Integer yPos) {
 		Form form = getById(formId);
 		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(signPageNumber, xPos, yPos, 150, 75);
 		form.getSignRequestParams().add(signRequestParams);
 		form.getWorkflow().getWorkflowSteps().get(step - 1).getSignRequestParams().add(signRequestParams);
+		return signRequestParams.getId();
 	}
 
 	@Transactional
