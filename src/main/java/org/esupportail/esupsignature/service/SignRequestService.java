@@ -212,7 +212,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public StepStatus sign(SignRequest signRequest, String password, String signWith, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String userEppn, String authUserEppn, Long userShareId, String comment) throws EsupSignatureRuntimeException, IOException {
+	public StepStatus sign(SignRequest signRequest, String password, String signWith, List<SignRequestParams> signRequestParamses, Data data, Map<String, String> formDataMap, String userEppn, String authUserEppn, Long userShareId, String comment) throws EsupSignatureRuntimeException, IOException {
 		User user = userService.getByEppn(userEppn);
 		if(signRequest.getAuditTrail() == null) {
 			signRequest.setAuditTrail(auditTrailService.create(signRequest.getToken()));
@@ -233,7 +233,6 @@ public class SignRequestService {
 		byte[] filledInputStream;
 		boolean isForm = false;
 		if(!isNextWorkFlowStep(signRequest.getParentSignBook())) {
-			Data data = dataService.getBySignRequest(signRequest);
 			if(data != null && data.getForm() != null) {
 				Form form = data.getForm();
 				for (Field field : form.getFields()) {
