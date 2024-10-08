@@ -21,7 +21,7 @@
         </nav>
         <div id="content" class="content">
             <div class="fixed-action-btn" >
-                <a id="saveButton" th:if="${workflow.fromCode == null || !workflow.fromCode}" role="button" title="Enregistrer" class="btn-floating btn-lg bg-success wave-effect"
+                <a id="saveButton" th:if="${workflow.fromCode == null || !workflow.fromCode}" role="button" title="Enregistrer" class="btn-floating btn-lg bg-success"
                         onclick="document.getElementById('updateSignBook').submit();">
                     <i class="fa-solid fa-save fa-2xl"></i>
                 </a>
@@ -108,17 +108,23 @@
                                     Les superviseurs ont accès à l’espace supervision du circuit. Cela permet de consulter et supprimer les demandes associées et d’exporter les données
                                 </div>
                             </div>
+                            <div class="form-group mb-3">
+                            <label for="roles" class="form-check-label">Accès superviseur nominatif</label>
                             <select id="managersSelect" class="auto-select-users" multiple="multiple" name="managers">
                                 <option data-placeholder="true"></option>
                                 <th:block th:each="manager : ${workflow.managers}">
                                     <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
                                 </th:block>
                             </select>
-                            <select id="dashboardRoles" class="slim-select-filter" data-placeholder="Choisir des roles" type="text" th:field="*{dashboardRoles}" multiple>
+                            </div>
+                            <div class="form-group mb-3">
+                            <label for="roles" class="form-check-label">Accès superviseur par rôles</label>
+                            <select id="dashboardRoles" class="slim-select-filter" data-placeholder="Choisir des roles" type="text" th:field="*{dashboardRoles}" multiple="multiple">
                                 <th:block th:each="newRole : ${roles}">
                                     <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(workflow.dashboardRoles, newRole)}"></option>
                                 </th:block>
                             </select>
+                            </div>
                         </div>
                         <div class="form-group mb-3">
                             <label for="viewersSelect"><strong>Observateurs par défaut</strong>

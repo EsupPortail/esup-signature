@@ -22,17 +22,17 @@
             <div id="addButton" class="fixed-action-btns"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <ul id="collapseExample" class="list-unstyled">
                     <li>
-                        <a th:if="${workflow.documentsSourceUri != null}" title="Scanner la source" type="button" th:href="'/user/workflows/get-files-from-source/' + ${workflow.id}" class="btn-lg btn-floating bg-success waves-effect">
+                        <a th:if="${workflow.documentsSourceUri != null}" title="Scanner la source" type="button" th:href="'/user/workflows/get-files-from-source/' + ${workflow.id}" class="btn-lg btn-floating bg-success">
                             <i class="fa-solid fa-binoculars"></i>
                         </a>
                     </li>
                     <li>
-                        <a id="saveButton" onclick="$('#params').submit();" class="btn-floating btn-lg bg-success waves-effect" title="Enregistrer">
+                        <a id="saveButton" onclick="$('#params').submit();" class="btn-floating btn-lg bg-success" title="Enregistrer">
                             <i class="fa-solid fa-save fa-2xl"></i>
                         </a>
                     </li>
                     <li>
-                        <a role="button" title="Ajouter une étape" class="btn-lg btn-floating bg-primary waves-effect" data-bs-toggle="modal" data-bs-target="#addStep">
+                        <a role="button" title="Ajouter une étape" class="btn-lg btn-floating bg-primary" data-bs-toggle="modal" data-bs-target="#addStep">
                             <span class="fa-stack fa-1x">
                                 <i class="fas fa-shoe-prints fa-stack-1x" style="margin-top: 27px; margin-left: 10px"></i>
                                 <i class="fas fa-plus fa-stack-2x" style="margin-top: 8px; margin-left: -5px"></i>
@@ -40,7 +40,7 @@
                     </li>
                     <li>
                         <form id="delete" th:action="'/user/workflows/' + ${workflow.id}" th:method="delete">
-                            <a id="delete-button" role="button" title="Supprimer" class="btn-lg btn-floating bg-danger waves-effect">
+                            <a id="delete-button" role="button" title="Supprimer" class="btn-lg btn-floating bg-danger">
                                 <i class="fa-solid fa-trash-alt fa-2xl"></i>
                             </a>
                         </form>
