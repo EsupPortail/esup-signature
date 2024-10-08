@@ -25,18 +25,8 @@
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li>
-                        <a type="button" id="massSignModalButton" class="btn-floating btn-lg bg-success wave-effect d-none">
-                            <i class="fa-solid fa-file-signature fa-2xl"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a type="button" id="deleteMultipleButton" class="btn-floating btn-lg bg-danger wave-effect d-none">
-                            <i class="fa-solid fa-trash-alt fa-2xl"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a data-bs-toggle="modal" data-bs-target="#newFomModal" type="button" class="btn-floating btn-lg bg-primary wave-effect">
-                            <i class="fa-solid fa-plus fa-2xl"></i>
+                        <a href="user/manage/workflow/39700/datas/csv" type="button" class="btn-floating btn-lg bg-primary">
+                            <i class="fa-solid fa-file-csv fa-2xl"></i>
                         </a>
                     </li>
                 </ul>
@@ -113,7 +103,7 @@
 <!--                                               th:data-es-signbook-id="${signBook.id}">-->
 <!--                                    </td>-->
                             <td class="clickable-td text-break"><span th:text="${signBook.subject}"></span></td>
-                                <td class="clickable-td d-none d-lg-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
+                            <td class="clickable-td d-none d-lg-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
                             <td class="clickable-td d-none d-xl-table-cell"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                             </td>
                             <td class="clickable-td d-none d-lg-table-cell">
@@ -121,6 +111,9 @@
                                     <tbody th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0 && signBook.liveWorkflow.currentStepNumber > 0}">
                                     <th:block th:each="recipient : ${signBook.liveWorkflow.currentStep.recipients}">
                                         <tr>
+                                            <td>
+                                                <span class="badge rounded-5 text-bg-primary" th:text="${signBook.liveWorkflow.currentStepNumber}" th:title="${signBook.liveWorkflow.workflow.workflowSteps.size >= signBook.liveWorkflow.currentStepNumber ? signBook.liveWorkflow.workflow.workflowSteps.get(signBook.liveWorkflow.currentStepNumber - 1).description : ''}"></span>
+                                            </td>
                                             <td class="w-100" th:title="${recipient.user.email}">
                                                 <span class="me-1" th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
                                                 <span class="me-1" th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.email}"></span>
@@ -144,6 +137,8 @@
                             </td>
                             <td class="clickable-td d-none d-xxl-table-cell">
                                 <span th:if="${signBook.endDate != null}" th:text="${#dates.format(signBook.endDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                <span th:unless="${signBook.endDate != null && signBook.signRequests.size() == 1}"
+                                    th:text="${#dates.format(signBook.signRequests.get(0).lastSignedDocument.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                             </td>
                             <td class="clickable-td d-none d-md-table-cell"
                                 style="width: 150px;">
@@ -158,6 +153,12 @@
                                         <li>
                                             <a th:unless="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/' + ${signBook.id}">
                                                 <i class="fa-solid fa-eye pr-2"></i> Consulter
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a target="_blank" th:if="${signBook.signRequests.size() == 1}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
+                                                th:href="'/user/manage/workflow/' + ${workflow.id} + '/get-last-file/' + ${signBook.signRequests.get(0).id}">
+                                                <i class="fa-solid fa-download pr-2"></i> Télécharger
                                             </a>
                                         </li>
                                         <li>

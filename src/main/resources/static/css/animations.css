@@ -77,36 +77,6 @@
     animation: fadein 0.5s, fadeout 0.5s 2.5s;
 }
 
-.waves-effect {
-    display: inline-block;
-    overflow: hidden;
-    transition: all ease-in-out .5s;
-}
-
-.waves-effect::after {
-    content: "";
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 50%;
-    width: 50%;
-    background-color: #000;
-    border-radius: 50%;
-    opacity: 0;
-    pointer-events: none;
-    transition: all ease-in-out 0.5s;
-    transform: scale(5, 5);
-}
-
-.waves-effect:active::after {
-    padding: 0;
-    margin: 0;
-    opacity: .2;
-    transition: 0s;
-    transform: scale(0, 0);
-}
-
 @keyframes jump {
     0% { transform: translateY(0); }
     50% { transform: translateY(-20px); }

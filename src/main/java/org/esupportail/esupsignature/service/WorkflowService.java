@@ -116,6 +116,13 @@ public class WorkflowService {
     }
 
     @Transactional
+    public boolean checkWorkflowManageRights(Long id, String userEppn) {
+        Workflow workflow = getById(id);
+        User user = userService.getByEppn(userEppn);
+        return workflow.getManagers().contains(user.getEmail()) || user.getRoles().stream().anyMatch(role -> workflow.getDashboardRoles().contains(role));
+    }
+
+    @Transactional
     public void copyClassWorkflowsIntoDatabase() throws EsupSignatureRuntimeException {
         logger.info("Checking Workflow classes...");
         for (Workflow classWorkflow : getClassesWorkflows()) {
@@ -464,7 +471,7 @@ public class WorkflowService {
             workflows.removeAll(getClassesWorkflows());
             workflows.removeAll(getWorkflowsBySystemUser());
         }
-        return workflows.stream().sorted(Comparator.comparing(Workflow::getDescription)).collect(Collectors.toList());
+        return workflows.stream().sorted(Comparator.comparing(Workflow::getDescription, Comparator.nullsFirst(Comparator.naturalOrder()))).collect(Collectors.toList());
     }
 
     @Transactional
