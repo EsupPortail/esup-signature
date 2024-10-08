@@ -63,25 +63,7 @@ public class PreAuthorizeService {
         if(userEppn != null) {
             Workflow workflow = workflowService.getById(id);
             User user = userService.getByEppn(userEppn);
-            return workflow.getManagers().contains(user.getEmail());
-        }
-        return false;
-    }
-
-    public boolean workflowManageExport(Long id, String userEppn) {
-        if(userEppn != null) {
-            Workflow workflow = workflowService.getById(id);
-            User user = userService.getByEppn(userEppn);
             return workflow.getManagers().contains(user.getEmail()) || user.getRoles().stream().anyMatch(role -> workflow.getDashboardRoles().contains(role));
-        }
-        return false;
-    }
-
-    public boolean workflowDashboard(Long id, String userEppn) {
-        if(userEppn != null) {
-            Workflow workflow = workflowService.getById(id);
-            User user = userService.getByEppn(userEppn);
-            return user.getRoles().stream().anyMatch(role -> workflow.getDashboardRoles().contains(role));
         }
         return false;
     }

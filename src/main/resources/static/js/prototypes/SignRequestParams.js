@@ -439,7 +439,7 @@ export class SignRequestParams extends EventFactory {
         $("#pdf").prepend(div);
         this.cross = $("#" + divName);
         this.cross.css("position", "absolute");
-        this.cross.css("z-index", "1000000");
+        this.cross.css("z-index", "100");
         this.cross.attr("data-id", this.id);
     }
 

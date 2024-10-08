@@ -114,9 +114,6 @@
                                     <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
                                 </th:block>
                             </select>
-                        </div>
-                        <div class="form-group mb-2">
-                            <label><strong>Accès au tableau de bord du circuit (consultation seule)</strong></label>
                             <select id="dashboardRoles" class="slim-select-filter" data-placeholder="Choisir des roles" type="text" th:field="*{dashboardRoles}" multiple>
                                 <th:block th:each="newRole : ${roles}">
                                     <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(workflow.dashboardRoles, newRole)}"></option>
