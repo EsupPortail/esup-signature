@@ -98,7 +98,7 @@ export class SignPosition extends EventFactory {
     }
 
     addSign(page, restore, signImageNumber, forceSignNumber) {
-        if(this.signImages.length === 1) {
+        if(this.signImages != null && this.signImages.length === 1) {
             this.popUserUi();
             return;
         }
