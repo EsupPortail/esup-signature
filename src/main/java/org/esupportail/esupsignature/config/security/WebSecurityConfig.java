@@ -252,9 +252,10 @@ public class WebSecurityConfig {
 
 	private void setAuthorizeRequests(HttpSecurity http) throws Exception {
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/")).permitAll());
+		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/ws/workflows/**/datas/csv")).permitAll());
 		StringBuilder hasIpAddresses = new StringBuilder();
 		int nbIps = 0;
-		if(webSecurityProperties.getWsAccessAuthorizeIps() != null) {
+		if(webSecurityProperties.getWsAccessAuthorizeIps() != null && webSecurityProperties.getWsAccessAuthorizeIps().length > 0) {
 			for (String ip : webSecurityProperties.getWsAccessAuthorizeIps()) {
 				nbIps++;
 				hasIpAddresses.append("hasIpAddress('").append(ip).append("')");
@@ -268,6 +269,9 @@ public class WebSecurityConfig {
 						.access(new WebExpressionAuthorizationManager(finalHasIpAddresses)));
 				http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/actuator/**"))
 						.access(new WebExpressionAuthorizationManager(finalHasIpAddresses)));
+			} else {
+				http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/ws/**")).denyAll());
+				http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/actuator/**")).denyAll());
 			}
 //			http.authorizeRequests().requestMatchers("/ws/**").access("hasRole('WS')").and().addFilter(apiKeyFilter());
 		} else {
