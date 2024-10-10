@@ -106,7 +106,7 @@ public class MailService {
         for (UserShare userShare : userShareService.getUserSharesByUser(recipientUser.getEppn())) {
             if (userShare.getShareTypes().contains(ShareType.sign) &&
                 ((data != null && data.getForm() != null && data.getForm().getId().equals(userShare.getForm().getId()))
-                || (workflow != null && workflow.getId().equals(userShare.getWorkflow().getId()))
+                || (workflow != null && userShare.getWorkflow() != null &&  workflow.getId().equals(userShare.getWorkflow().getId()))
                 || (userShare.getAllSignRequests() && BooleanUtils.isTrue(userShare.getForceTransmitEmails())))) {
                 for (User toUser : userShare.getToUsers()) {
                     toShareEmails.put(toUser.getEmail(), userShare);
