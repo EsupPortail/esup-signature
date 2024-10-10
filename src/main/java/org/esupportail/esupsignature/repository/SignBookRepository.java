@@ -197,8 +197,11 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
 
     Page<SignBook> findByStatus(SignRequestStatus signRequestStatus, Pageable pageable);
 
-    @Query("select sb from SignBook sb where sb.liveWorkflow.workflow.id = :workflowId")
+    @Query("select sb from SignBook sb where sb.liveWorkflow.workflow.id = :workflowId and sb.status != 'uploading'")
     List<SignBook> findByWorkflowId(Long workflowId);
+
+    @Query("select sb from SignBook sb where size(sb.signRequests) = 0 and sb.status != 'uploading'")
+    List<SignBook> findEmpties();
 
     @Query("select sb from SignBook sb where sb.liveWorkflow.workflow = :workflow and (sb.hidedBy) is empty order by sb.id")
     List<SignBook> findByLiveWorkflowWorkflow(Workflow workflow);

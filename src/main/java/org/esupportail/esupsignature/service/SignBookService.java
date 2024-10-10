@@ -1941,7 +1941,10 @@ public class SignBookService {
 
     @Transactional
     public void cleanUploadingSignBooks() {
-        for(SignBook signBook : signBookRepository.findByStatus(SignRequestStatus.uploading)){
+        List<SignBook> toDelete = new ArrayList<>();
+        toDelete.addAll(signBookRepository.findEmpties());
+        toDelete.addAll(signBookRepository.findByStatus(SignRequestStatus.uploading));
+        for(SignBook signBook : toDelete){
             deleteDefinitive(signBook.getId(), "system");
         }
     }

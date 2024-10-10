@@ -7,12 +7,14 @@ import org.esupportail.esupsignature.entity.WsAccessToken;
 import org.esupportail.esupsignature.repository.WsAccessTokenRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Service
+@Transactional(readOnly = true)
 public class WsAccessTokenService {
 
     @Resource
@@ -24,12 +26,11 @@ public class WsAccessTokenService {
     @Resource
     private WorkflowService workflowService;
 
-    @Transactional
+
     public boolean isAllAccess(String token) {
         return allAccess(token);
     }
 
-    @Transactional
     public boolean createWorkflowAccess(Long id, String token) {
         if(allAccess(token)) return true;
         Workflow workflow = workflowService.getById(id);
@@ -38,7 +39,11 @@ public class WsAccessTokenService {
         return !wsAccessToken.isEmpty() && wsAccessToken.stream().anyMatch(WsAccessToken::getCreateSignrequest);
     }
 
-    @Transactional
+    public boolean workflowCsv(Long id, String csvToken) {
+        Workflow workflow = workflowService.getById(id);
+        return StringUtils.hasText(workflow.getCsvToken()) && workflow.getCsvToken().equals(csvToken);
+    }
+
     public boolean readWorkflowAccess(Long id, String token) {
         if(allAccess(token)) return true;
         SignRequest signRequest = signRequestService.getById(id);
@@ -48,7 +53,6 @@ public class WsAccessTokenService {
         return !wsAccessToken.isEmpty() && wsAccessToken.stream().anyMatch(WsAccessToken::getReadSignrequest);
     }
 
-    @Transactional
     public boolean deleteWorkflowAccess(Long id, String token) {
         if(allAccess(token)) return true;
         SignRequest signRequest = signRequestService.getById(id);
@@ -95,13 +99,11 @@ public class WsAccessTokenService {
         wsAccessTokenRepository.save(wsAccessToken);
     }
 
-    @Transactional
     public void renew(Long wsAccessTokenId) {
         WsAccessToken wsAccessToken = wsAccessTokenRepository.findById(wsAccessTokenId).get();
         wsAccessToken.setToken(UUID.randomUUID().toString());
     }
 
-    @Transactional
     public void updateToken(Long wsAccessTokenId, String appName, List<Long> workflowIds) {
         WsAccessToken wsAccessToken = wsAccessTokenRepository.findById(wsAccessTokenId).get();
         wsAccessToken.setAppName(appName);
