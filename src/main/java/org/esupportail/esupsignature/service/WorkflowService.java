@@ -119,7 +119,7 @@ public class WorkflowService {
     public boolean checkWorkflowManageRights(Long id, String userEppn) {
         Workflow workflow = getById(id);
         User user = userService.getByEppn(userEppn);
-        return workflow.getManagers().contains(user.getEmail()) || user.getRoles().stream().anyMatch(role -> workflow.getDashboardRoles().contains(role));
+        return (workflow.getManagers() != null && workflow.getManagers().contains(user.getEmail())) || user.getRoles().stream().anyMatch(role -> workflow.getDashboardRoles().contains(role));
     }
 
     @Transactional
