@@ -355,7 +355,7 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @PostMapping(value = "/pending/{id}")
     public String pending(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws EsupSignatureRuntimeException {
-        signBookService.pendingSignBook(id, null, authUserEppn, authUserEppn, false, true);
+        signBookService.pendingSignBook(authUserEppn, id);
         return "redirect:/user/signbooks/" + id;
     }
 

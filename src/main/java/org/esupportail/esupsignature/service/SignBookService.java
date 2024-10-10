@@ -343,7 +343,7 @@ public class SignBookService {
         recipientService.addRecipientInStep(workflowStepDto, user.getEmail());
         importWorkflowFromWorkflowStepDto(signBookId, Collections.singletonList(workflowStepDto), userEppn);
         signBook.setStatus(SignRequestStatus.draft);
-        pendingSignBook(signBookId, null, userEppn, userEppn, false, true);
+        pendingSignBook(signBook, null, userEppn, userEppn, false, true);
     }
 
     @Transactional
@@ -811,7 +811,7 @@ public class SignBookService {
         }
         data.setSignBook(signBook);
         dataRepository.save(data);
-        pendingSignBook(signBook.getId(), data, user.getEppn(), authUser.getEppn(), forceSendEmail, sendEmailAlert);
+        pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn(), forceSendEmail, sendEmailAlert);
         data.setStatus(SignRequestStatus.pending);
         userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUser.getEppn()), steps);
         if(workflow.getCounter() != null) {
@@ -897,7 +897,7 @@ public class SignBookService {
         importWorkflowFromWorkflowStepDto(signBook.getId(), steps, userEppn);
         String message = null;
         if (pending == null || pending) {
-            pendingSignBook(signBook.getId(), null, userEppn, authUserEppn, forceSendEmail, true);
+            pendingSignBook(signBook, null, userEppn, authUserEppn, forceSendEmail, true);
         } else {
             updateStatus(signBook, SignRequestStatus.draft,  "Création de la demande " + signBook.getId(), "SUCCESS", null, userEppn, authUserEppn);
             message = "Après vérification/annotation, vous devez cliquer sur 'Démarrer le circuit' pour transmettre la demande aux participants";
@@ -931,7 +931,7 @@ public class SignBookService {
             targetService.copyTargets(targets, signBook, targetEmails);
             userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), steps);
             if (pending != null && pending) {
-                pendingSignBook(signBook.getId(), null, userEppn, authUserEppn, false, sendEmailAlert);
+                pendingSignBook(signBook, null, userEppn, authUserEppn, false, sendEmailAlert);
             }
         }
         if(signBook.getLiveWorkflow().getWorkflow().getOwnerSystem() != null && signBook.getLiveWorkflow().getWorkflow().getOwnerSystem()) {
@@ -943,8 +943,13 @@ public class SignBookService {
     }
 
     @Transactional
-    public void pendingSignBook(Long signBookId, Data data, String userEppn, String authUserEppn, boolean forceSendEmail, boolean sendEmailAlert) throws EsupSignatureRuntimeException {
-        SignBook signBook = signBookRepository.findById(signBookId).orElseThrow();
+    public void pendingSignBook(String authUserEppn, Long id) {
+        SignBook signBook = getById(id);
+        pendingSignBook(signBook, null, authUserEppn, authUserEppn, false, true);
+    }
+
+    @Transactional
+    public void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn, boolean forceSendEmail, boolean sendEmailAlert) throws EsupSignatureRuntimeException {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
         boolean emailSended = false;
         for(SignRequest signRequest : signBook.getSignRequests()) {
@@ -997,7 +1002,7 @@ public class SignBookService {
 
                         }
                         if(signRequestService.isMoreWorkflowStep(signBook)) {
-                            pendingSignBook(signBookId, data, userEppn, authUserEppn, forceSendEmail, sendEmailAlert);
+                            pendingSignBook(signBook, data, userEppn, authUserEppn, forceSendEmail, sendEmailAlert);
                         } else {
                             completeSignBook(signBook.getId(), userEppn, "Tous les documents sont signés");
                             logger.info("Circuit " + signBook.getId() + " terminé");
@@ -1142,7 +1147,7 @@ public class SignBookService {
                 }
             } else if(stepStatus.equals(StepStatus.completed)) {
                 if(signRequestService.isCurrentStepCompleted(signRequest)) {
-                    pendingSignBook(signRequest.getParentSignBook().getId(), null, userEppn, authUserEppn, false, true);
+                    pendingSignBook(signRequest.getParentSignBook(), null, userEppn, authUserEppn, false, true);
                 }
             }
             return stepStatus;
@@ -1299,14 +1304,14 @@ public class SignBookService {
         workflowService.importWorkflow(signBook, workflow, new ArrayList<>());
         dispatchSignRequestParams(signBook);
         signRequestService.nextWorkFlowStep(signBook);
-        pendingSignBook(signBook.getId(), null, authUserEppn, authUserEppn, false, true);
+        pendingSignBook(signBook, null, authUserEppn, authUserEppn, false, true);
     }
 
     @Transactional
     public void nextStepAndPending(Long signBookId, Data data, String userEppn, String authUserEppn) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(signBookId);
         signRequestService.nextWorkFlowStep(signBook);
-        pendingSignBook(signBook.getId(), data, userEppn, authUserEppn, true, true);
+        pendingSignBook(signBook, data, userEppn, authUserEppn, true, true);
     }
 
     @Transactional
@@ -1314,7 +1319,7 @@ public class SignBookService {
         if(!signBook.getLiveWorkflow().getLiveWorkflowSteps().isEmpty()) {
             signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
             if(start != null && start) {
-                pendingSignBook(signBook.getId(), null, userEppn, authUserEppn, false, true);
+                pendingSignBook(signBook, null, userEppn, authUserEppn, false, true);
             }
             return true;
         }else {
@@ -2002,7 +2007,7 @@ public class SignBookService {
     @Transactional
     public void pendingSignRequest(Long id, Data data, String userEppn, String authUserEppn, boolean forceSendEmail) {
         SignRequest signRequest = signRequestService.getById(id);
-        pendingSignBook(signRequest.getParentSignBook().getId(), data, userEppn, authUserEppn, forceSendEmail, true);
+        pendingSignBook(signRequest.getParentSignBook(), data, userEppn, authUserEppn, forceSendEmail, true);
     }
 
     public void addToTeam(SignBook signBook, String userEppn) {
