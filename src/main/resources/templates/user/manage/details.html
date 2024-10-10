@@ -25,7 +25,7 @@
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li>
-                        <a href="user/manage/workflow/39700/datas/csv" type="button" class="btn-floating btn-lg bg-primary">
+                        <a th:href="'user/manage/workflow/' + ${workflow.id} + '/datas/csv'" type="button" class="btn-floating btn-lg bg-primary">
                             <i class="fa-solid fa-file-csv fa-2xl"></i>
                         </a>
                     </li>
