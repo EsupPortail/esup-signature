@@ -522,6 +522,7 @@ public class WorkflowService {
         workflowToUpdate.setUpdateDate(new Date());
         workflowToUpdate.setMessage(workflow.getMessage());
         workflowToUpdate.setMailFrom(workflow.getMailFrom());
+        workflowToUpdate.setCsvToken(workflow.getCsvToken());
         workflowToUpdate.setDisableEmailAlerts(workflow.getDisableEmailAlerts());
         workflowToUpdate.setSignRequestParamsDetectionPattern(workflow.getSignRequestParamsDetectionPattern());
         workflowRepository.save(workflowToUpdate);

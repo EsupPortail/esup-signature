@@ -94,6 +94,8 @@ public class Workflow {
 
     private String signRequestParamsDetectionPattern;
 
+    private String csvToken;
+
     @Transient
     private String messageToDisplay;
 
@@ -373,5 +375,13 @@ public class Workflow {
 
     public void setSignRequestParamsDetectionPattern(String signRequestParamsDetectionPattern) {
         this.signRequestParamsDetectionPattern = signRequestParamsDetectionPattern;
+    }
+
+    public String getCsvToken() {
+        return csvToken;
+    }
+
+    public void setCsvToken(String csvToken) {
+        this.csvToken = csvToken;
     }
 }
