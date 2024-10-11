@@ -1,13 +1,12 @@
 package org.esupportail.esupsignature.service;
 
-import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WsAccessToken;
 import org.esupportail.esupsignature.repository.WsAccessTokenRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,15 +16,20 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class WsAccessTokenService {
 
-    @Resource
-    private WsAccessTokenRepository wsAccessTokenRepository;
+    private final WsAccessTokenRepository wsAccessTokenRepository;
 
-    @Resource
-    private SignRequestService signRequestService;
+    private final SignRequestService signRequestService;
 
-    @Resource
-    private WorkflowService workflowService;
+    private final WorkflowService workflowService;
 
+    private final UserService userService;
+
+    public WsAccessTokenService(WsAccessTokenRepository wsAccessTokenRepository, SignRequestService signRequestService, WorkflowService workflowService, UserService userService) {
+        this.wsAccessTokenRepository = wsAccessTokenRepository;
+        this.signRequestService = signRequestService;
+        this.workflowService = workflowService;
+        this.userService = userService;
+    }
 
     public boolean isAllAccess(String token) {
         return allAccess(token);
@@ -41,7 +45,8 @@ public class WsAccessTokenService {
 
     public boolean workflowCsv(Long id, String csvToken) {
         Workflow workflow = workflowService.getById(id);
-        return StringUtils.hasText(workflow.getCsvToken()) && workflow.getCsvToken().equals(csvToken);
+        User user = userService.getByAccessToken(csvToken);
+        return user != null && (workflow.getManagers().contains(user.getEmail()) || user.getRoles().contains(workflow.getManagerRole()));
     }
 
     public boolean readWorkflowAccess(Long id, String token) {
