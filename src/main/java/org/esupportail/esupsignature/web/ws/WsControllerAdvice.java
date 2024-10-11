@@ -12,10 +12,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.ws"})
 public class WsControllerAdvice implements ResponseBodyAdvice<Object> {
@@ -50,7 +47,11 @@ public class WsControllerAdvice implements ResponseBodyAdvice<Object> {
 
     @ModelAttribute("xApiKey")
     public String getXApiKey(HttpServletRequest request) {
-        Optional<String> headerName = Collections.list(request.getHeaderNames()).stream().filter(name -> API_KEY_HEADERS.contains(name.toLowerCase())).findFirst();
+        List<String> possibleHeaders = new ArrayList<>(API_KEY_HEADERS);
+        possibleHeaders.add("authorization");
+        Optional<String> headerName = Collections.list(request.getHeaderNames()).stream()
+                .filter(name -> possibleHeaders.contains(name.toLowerCase()))
+                .findFirst();
         return headerName.map(request::getHeader).orElse(null);
     }
 
