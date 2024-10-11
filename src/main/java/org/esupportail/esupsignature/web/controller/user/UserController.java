@@ -243,4 +243,12 @@ public class UserController {
 		}
 		return "redirect:/user/users/replace";
 	}
+
+	@PostMapping(value ="/renew-token")
+	public String renewToken(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
+		userService.renewToken(authUserEppn);
+		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Votre token a bien été renouvelé"));
+		return "redirect:/user/users";
+	}
+
 }
