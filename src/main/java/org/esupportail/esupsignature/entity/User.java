@@ -115,6 +115,8 @@ public class User {
 
     private Boolean forceSms = false;
 
+    private String accessToken;
+
 	public Long getId() {
         return this.id;
     }
@@ -361,4 +363,13 @@ public class User {
     public void setForceSms(Boolean forceSms) {
         this.forceSms = forceSms;
     }
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
+
 }
