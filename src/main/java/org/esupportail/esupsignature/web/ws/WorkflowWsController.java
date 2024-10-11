@@ -173,7 +173,7 @@ public class WorkflowWsController {
 
     @CrossOrigin
     @PreAuthorize("@wsAccessTokenService.workflowCsv(#id, #xApiKey)")
-    @GetMapping(value = "/{id}/datas/csv", produces="text/csv")
+    @GetMapping(value = "/{id}/datas/csv", produces = {"text/csv", "*/*"})
     public ResponseEntity<Void> getWorkflowDatasCsv(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse response) {
         Workflow workflow = workflowService.getById(id);
         try {

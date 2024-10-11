@@ -52,7 +52,14 @@ public class WsControllerAdvice implements ResponseBodyAdvice<Object> {
         Optional<String> headerName = Collections.list(request.getHeaderNames()).stream()
                 .filter(name -> possibleHeaders.contains(name.toLowerCase()))
                 .findFirst();
-        return headerName.map(request::getHeader).orElse(null);
+        if (headerName.isPresent()) {
+            String headerValue = request.getHeader(headerName.get());
+            if ("authorization".equalsIgnoreCase(headerName.get()) && headerValue.startsWith("Bearer ")) {
+                return headerValue.substring(7);
+            }
+            return headerValue;
+        }
+        return request.getParameter("XApiKey");
     }
 
 }
