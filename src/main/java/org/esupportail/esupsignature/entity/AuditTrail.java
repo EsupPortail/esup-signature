@@ -16,6 +16,9 @@ public class AuditTrail {
     private String token;
 
     @OneToMany
+    @JoinTable(
+            indexes = @Index(name = "idx_audit_steps_audit_trail_id", columnList = "audit_trail_id")
+    )
     private List<AuditStep> auditSteps = new ArrayList<>();
 
     private String documentId;
