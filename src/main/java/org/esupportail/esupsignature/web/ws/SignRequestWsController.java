@@ -1,6 +1,8 @@
 package org.esupportail.esupsignature.web.ws;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.zxing.WriterException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -13,6 +15,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.esupportail.esupsignature.dto.RecipientWsDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.AuditTrail;
 import org.esupportail.esupsignature.entity.SignBook;
@@ -176,9 +179,23 @@ public class SignRequestWsController {
     }
 
     @CrossOrigin
+    @PostMapping(value = "/update-recipients/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Modifier les destinataires d'une étape de demande de signature")
+    @PreAuthorize("@wsAccessTokenService.updateWorkflowAccess(#id, #xApiKey)")
+    public ResponseEntity<String> updateRecipients(@PathVariable Long id,
+                                                   @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey,
+                                                   @RequestPart("recipientWsDtosString") String recipientWsDtosString,
+                                                   @RequestParam Integer stepNumber) throws JsonProcessingException, EsupSignatureException {
+        List<RecipientWsDto> recipientWsDtos = new ObjectMapper().readValue(recipientWsDtosString, new TypeReference<List<RecipientWsDto>>() {});
+        SignRequest signRequest = signRequestService.getById(id);
+        signRequestService.replaceRecipientsToWorkflowStep(signRequest.getParentSignBook().getId(), stepNumber, recipientWsDtos);
+        return ResponseEntity.ok().build();
+    }
+
+    @CrossOrigin
     @DeleteMapping("/{id}")
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Supprimer une demande de signature définitivement")
-    @PreAuthorize("@wsAccessTokenService.deleteWorkflowAccess(#id, #xApiKey)")
+    @PreAuthorize("@wsAccessTokenService.updateWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<String> delete(@PathVariable Long id,
                                          @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         Long signBookId = signRequestService.getParentIdIfSignRequestUnique(id);
@@ -193,7 +210,7 @@ public class SignRequestWsController {
     @CrossOrigin
     @DeleteMapping("/soft/{id}")
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Supprimer une demande de signature")
-    @PreAuthorize("@wsAccessTokenService.deleteWorkflowAccess(#id, #xApiKey)")
+    @PreAuthorize("@wsAccessTokenService.updateWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<String> softDelete(@PathVariable Long id,
                                              @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         Long signBookId = signRequestService.getParentIdIfSignRequestUnique(id);
@@ -208,7 +225,7 @@ public class SignRequestWsController {
     @CrossOrigin
     @DeleteMapping("/{id}/signbook")
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Supprimer le parapheur dans lequel se trouve la demande ciblée")
-    @PreAuthorize("@wsAccessTokenService.deleteWorkflowAccess(#id, #xApiKey)")
+    @PreAuthorize("@wsAccessTokenService.updateWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<String> deleteSignBook(@PathVariable Long id,
                                                  @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         SignRequest signRequest = signRequestService.getById(id);

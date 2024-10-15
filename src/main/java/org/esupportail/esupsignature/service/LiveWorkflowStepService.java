@@ -1,10 +1,10 @@
 package org.esupportail.esupsignature.service;
 
-import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dto.RecipientWsDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.UserType;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -22,20 +23,30 @@ public class LiveWorkflowStepService {
 
     private static final Logger logger = LoggerFactory.getLogger(LiveWorkflowStepService.class);
 
-    @Resource
-    private LiveWorkflowStepRepository liveWorkflowStepRepository;
+    private final LiveWorkflowStepRepository liveWorkflowStepRepository;
 
-    @Resource
-    private RecipientService recipientService;
+    private final RecipientService recipientService;
 
-    @Resource
-    private UserService userService;
+    private final UserService userService;
 
-    @Resource
-    private SignTypeService signTypeService;
+    private final SignTypeService signTypeService;
 
-    @Resource
-    private SignService signService;
+    private final SignService signService;
+
+    private final ActionService actionService;
+
+    public LiveWorkflowStepService(LiveWorkflowStepRepository liveWorkflowStepRepository, RecipientService recipientService, UserService userService, SignTypeService signTypeService, SignService signService, ActionService actionService) {
+        this.liveWorkflowStepRepository = liveWorkflowStepRepository;
+        this.recipientService = recipientService;
+        this.userService = userService;
+        this.signTypeService = signTypeService;
+        this.signService = signService;
+        this.actionService = actionService;
+    }
+
+    public LiveWorkflowStep getById(Long liveWorkflowStepId) {
+        return liveWorkflowStepRepository.findById(liveWorkflowStepId).orElse(null);
+    }
 
     public LiveWorkflowStep createLiveWorkflowStep(SignBook signBook, WorkflowStep workflowStep, WorkflowStepDto step) {
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
@@ -61,12 +72,30 @@ public class LiveWorkflowStepService {
         return liveWorkflowStep;
     }
 
-    public void addRecipientsToWorkflowStep(SignBook signBook, LiveWorkflowStep liveWorkflowStep,  List<RecipientWsDto> recipients) {
-        List<String> recipientsEmails = recipientService.getCompleteRecipientList(recipients);
+    public void replaceRecipientsToWorkflowStep(SignBook signBook, LiveWorkflowStep liveWorkflowStep, List<RecipientWsDto> recipientWsDtos) throws EsupSignatureException {
+        if(signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(liveWorkflowStep) + 1 < signBook.getLiveWorkflow().getCurrentStepNumber()) {
+            throw new EsupSignatureException("Impossible de modifier les destinataires d'une étape déjà passée");
+        }
+        liveWorkflowStep.getRecipients().clear();
+        List<Recipient> recipients = addRecipientsToWorkflowStep(signBook, liveWorkflowStep, recipientWsDtos);
+        liveWorkflowStepRepository.save(liveWorkflowStep);
+        if(signBook.getLiveWorkflow().getCurrentStep().equals(liveWorkflowStep)) {
+            for(SignRequest signRequest : signBook.getSignRequests()) {
+                signRequest.getRecipientHasSigned().clear();
+                for(Recipient recipient : recipients) {
+                    signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
+                }
+            }
+        }
+    }
+
+    public List<Recipient> addRecipientsToWorkflowStep(SignBook signBook, LiveWorkflowStep liveWorkflowStep, List<RecipientWsDto> recipientWsDtos) {
+        List<String> recipientsEmails = recipientService.getAllRecipientsEmails(recipientWsDtos);
+        List<Recipient> recipients = new ArrayList<>();
         for (String recipientEmail : recipientsEmails) {
             User recipientUser = userService.getUserByEmail(recipientEmail);
-            if(recipientUser != null && recipientUser.getUserType().equals(UserType.external) && recipients != null) {
-                Optional<RecipientWsDto> optionalRecipientWsDto = recipients.stream().filter(recipientWsDto1 -> recipientWsDto1.getEmail().equals(recipientEmail)).findFirst();
+            if(recipientUser != null && recipientUser.getUserType().equals(UserType.external) && recipientWsDtos != null) {
+                Optional<RecipientWsDto> optionalRecipientWsDto = recipientWsDtos.stream().filter(recipientWsDto1 -> recipientWsDto1.getEmail().equals(recipientEmail)).findFirst();
                 if(optionalRecipientWsDto.isPresent()) {
                     RecipientWsDto recipientWsDto = optionalRecipientWsDto.get();
                     recipientUser.setName(recipientWsDto.getName());
@@ -81,7 +110,7 @@ public class LiveWorkflowStepService {
             if(liveWorkflowStep.getId() != null) {
                 for (Recipient recipient : liveWorkflowStep.getRecipients()) {
                     if (recipient.getUser().equals(recipientUser)) {
-                        return;
+                        return recipients;
                     }
                 }
             }
@@ -91,9 +120,11 @@ public class LiveWorkflowStepService {
                 if(signBook.getTeam().stream().noneMatch(u -> u.getId().equals(recipientUser.getId()))) {
                     signBook.getTeam().add(recipientUser);
                 }
+                recipients.add(recipient);
             }
         }
         if(liveWorkflowStep.getRecipients().isEmpty() && !liveWorkflowStep.getAutoSign()) throw new EsupSignatureRuntimeException("recipients must not be empty");
+        return recipients;
     }
 
     public void addRecipient(LiveWorkflowStep liveWorkflowStep, Recipient recipient) {
