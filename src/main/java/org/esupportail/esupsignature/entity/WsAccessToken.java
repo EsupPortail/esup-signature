@@ -25,7 +25,7 @@ public class WsAccessToken {
 
     private Boolean readSignrequest = true;
 
-    private Boolean deleteSignrequest = true;
+    private Boolean updateSignrequest = true;
 
     public Long getId() {
         return id;
@@ -75,11 +75,11 @@ public class WsAccessToken {
         this.readSignrequest = readSignrequest;
     }
 
-    public Boolean getDeleteSignrequest() {
-        return deleteSignrequest;
+    public Boolean getUpdateSignrequest() {
+        return updateSignrequest;
     }
 
-    public void setDeleteSignrequest(Boolean deleteSignrequest) {
-        this.deleteSignrequest = deleteSignrequest;
+    public void setUpdateSignrequest(Boolean deleteSignrequest) {
+        this.updateSignrequest = deleteSignrequest;
     }
 }
