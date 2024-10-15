@@ -46,6 +46,9 @@ public class Field {
 	private Boolean editable = false;
 
 	@ManyToMany
+	@JoinTable(
+			indexes = @Index(name = "idx_workflow_steps_field_id", columnList = "field_id")
+	)
 	private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
 	private Boolean stepZero = true;

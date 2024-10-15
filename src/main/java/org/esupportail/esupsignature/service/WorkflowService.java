@@ -379,7 +379,7 @@ public class WorkflowService {
             recipients = recipients.stream().filter(r -> r.getStep().equals(stepNumber)).collect(Collectors.toList());
             for (RecipientWsDto recipient : recipients) {
                 String userEmail = recipient.getEmail();
-                for(String realUserEmail : recipientService.getCompleteRecipientList(Collections.singletonList(new RecipientWsDto(userEmail)))) {
+                for(String realUserEmail : recipientService.getAllRecipientsEmails(Collections.singletonList(new RecipientWsDto(userEmail)))) {
                     User user = userService.getUserByEmail(realUserEmail);
                     if(StringUtils.hasText(recipient.getPhone())) {
                         userService.updatePhone(user.getEppn(), recipient.getPhone());

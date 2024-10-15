@@ -2,11 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <div th:fragment="stepscard-updatable">
-        <div class="col-11 card text-bg-light border-light m-2">
-            <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
-                <h5 class="ms-4"><b>Circuit de signature</b></h5>
-            </div>
-            <div class="card-body">
+    <div class="col-11 card text-bg-light border-light m-2">
+        <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+            <h5 class="ms-4"><b>Circuit de signature</b></h5>
+        </div>
+        <div class="card-body">
             <th:block th:if="${signBook.liveWorkflow.liveWorkflowSteps != null}">
                 <div id="stepper" class="bs-stepper">
                     <div class="bs-stepper-header container" role="tablist">
@@ -37,6 +37,35 @@
                                                 <i class="fa-solid fa-trash-alt"></i>
                                             </button>
                                         </form>
+                                    </div>
+                                    <button type="button" data-bs-toggle="modal" th:data-bs-target="'#modal-update-' + ${iterator.index + 1}" class="btn btn-sm float-end">
+                                        <i class="fa-solid fa-pencil-alt"></i>
+                                    </button>
+                                    <div data-bs-focus="false" role="dialog" class="modal fade" th:id="'modal-update-' + ${iterator.index + 1}" tabindex="-1" aria-labelledby="modal-update-label" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form th:action="'/user/signbooks/update-recipients/' + ${signBook.id}" th:method="post" enctype="multipart/form-data">
+                                                    <div class="modal-header">
+                                                        <h1 class="modal-title fs-5" id="modal-update-label" th:text="'Modifier l`étape : ' + ${iterator.index + 1}"></h1>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <input type="hidden" name="stepNumber" th:value="${iterator.index + 1}">
+                                                        <div class="form-group mb-3">
+                                                            <label class="form-label" th:for="'recipientsEmails-' + ${iterator.index + 1}">Choisir les participants</label>
+                                                            <select class="auto-select-users" data-es-check-cert="true" name="recipientsEmails" th:id="'recipientsEmails-' + ${iterator.index + 1}" multiple="multiple" required="required">
+                                                                <option data-placeholder="true"></option>
+                                                            </select>
+                                                            <div th:id="'tempUsers-recipientsEmails-' + ${iterator.index + 1}"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                        <button type="submit" class="btn btn-primary">Valider</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

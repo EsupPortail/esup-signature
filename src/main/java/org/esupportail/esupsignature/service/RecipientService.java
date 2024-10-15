@@ -81,7 +81,7 @@ public class RecipientService {
         }
     }
 
-    public List<String> getCompleteRecipientList(List<RecipientWsDto> recipients) {
+    public List<String> getAllRecipientsEmails(List<RecipientWsDto> recipients) {
         List<User> users = new ArrayList<>();
         if (recipients != null && !recipients.isEmpty()) {
             for (RecipientWsDto recipient : recipients) {
@@ -110,7 +110,7 @@ public class RecipientService {
                     continue;
                 }
                 String userEmail = userStrings[1];
-                for(String realUserEmail : getCompleteRecipientList(Collections.singletonList(new RecipientWsDto(userEmail)))) {
+                for(String realUserEmail : getAllRecipientsEmails(Collections.singletonList(new RecipientWsDto(userEmail)))) {
                     RecipientWsDto recipientWsDto = new RecipientWsDto();
                     recipientWsDto.setStep(Integer.parseInt(userStrings[0]));
                     recipientWsDto.setEmail(realUserEmail);

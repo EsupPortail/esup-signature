@@ -27,6 +27,9 @@ public class LiveWorkflow {
     private LiveWorkflowStep currentStep;
 
     @OneToMany(cascade = CascadeType.REMOVE)
+    @JoinTable(
+            indexes = @Index(name = "idx_targets_live_workflow_id", columnList = "live_workflow_id")
+    )
     private Set<Target> targets = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
