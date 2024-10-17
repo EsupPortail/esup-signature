@@ -208,9 +208,10 @@ public class CertificatService {
             isCertificatWasPresent = true;
             privateKeysCache.put("keys", dssPrivateKeyEntries);
         } else if(isCertificatWasPresent) {
-            mailService.sendAdminError("certificat was present but not found", "certificat was present but not found");
+            String message = "certificat was present but not found on " + globalProperties.getRootUrl();
+            mailService.sendAdminError(message, message);
             isCertificatWasPresent = false;
-            logger.error("certificat was present but not found");
+            logger.error(message);
         }
         return dssPrivateKeyEntries;
     }

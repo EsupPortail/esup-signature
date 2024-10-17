@@ -54,7 +54,7 @@ public class LiveWorkflowStepService {
         try {
             ObjectMapper mapper = new ObjectMapper();
             String jsonString = mapper.writeValueAsString(step);
-            logger.info("create LiveWorkflowStep with : " + jsonString);
+            logger.debug("create LiveWorkflowStep with : " + jsonString);
         } catch (JsonProcessingException e) {
             logger.warn(e.getMessage(), e);
         }

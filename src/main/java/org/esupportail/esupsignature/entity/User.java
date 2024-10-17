@@ -284,8 +284,13 @@ public class User {
     public void setEmailAlertFrequency(EmailAlertFrequency emailAlertFrequency) {
         this.emailAlertFrequency = emailAlertFrequency;
     }
+
     public Set<String> getRoles() {
         return roles;
+    }
+
+    public List<String> getRolesCopy() {
+        return new ArrayList<>(roles);
     }
 
     public void setRoles(Set<String> roles) {

@@ -96,7 +96,10 @@ public class PreAuthorizeService {
     public boolean signBookSendOtp(Long id, String userEppn) {
         SignBook signBook = signBookService.getById(id);
         User user = userService.getByEppn(userEppn);
-        return signBook != null && (signBook.getCreateBy().getEppn().equals(userEppn) || signBook.getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail()) || user.getRoles().contains("ROLE_ADMIN"));
+        return signBook != null && (signBook.getCreateBy().getEppn().equals(userEppn)
+                || signBook.getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail())
+                || signBook.getLiveWorkflow().getWorkflow().getDashboardRoles().stream().anyMatch(user.getRoles()::contains)
+                || user.getRoles().contains("ROLE_ADMIN"));
     }
 
     public boolean signBookManage(Long id, String userEppn) {
