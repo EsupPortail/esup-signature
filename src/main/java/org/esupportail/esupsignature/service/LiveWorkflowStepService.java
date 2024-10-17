@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.dto.RecipientWsDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
@@ -49,6 +51,13 @@ public class LiveWorkflowStepService {
     }
 
     public LiveWorkflowStep createLiveWorkflowStep(SignBook signBook, WorkflowStep workflowStep, WorkflowStepDto step) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            String jsonString = mapper.writeValueAsString(step);
+            logger.info("create LiveWorkflowStep with : " + jsonString);
+        } catch (JsonProcessingException e) {
+            logger.warn(e.getMessage(), e);
+        }
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
         liveWorkflowStep.setWorkflowStep(workflowStep);
         liveWorkflowStep.setRepeatable(Objects.requireNonNullElse(step.getRepeatable(), false));
