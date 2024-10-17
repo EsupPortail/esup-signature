@@ -72,6 +72,9 @@ export class SignUi {
             }
         });
         this.initLaunchButtons();
+        $("#refuseModal").on('shown.bs.modal', function () {
+            $("#refuseComment").focus();
+        });
     }
 
     initLaunchButtons() {
