@@ -69,7 +69,7 @@
                         <div class="form-group mb-3">
                             <label for="csvToken"><strong>Token d'accès API</strong></label>
                             <div class="input-group">
-                                <input id="csvToken" class="form-control" type="text" th:field="*{accessToken}" value="">
+                                <input disabled id="csvToken" class="form-control" type="text" th:field="*{accessToken}" value="">
                                 <button id="refresh-token" data-bs-toggle="modal" data-bs-target="#accessTokenModal" type="button" class="btn border-light-subtle" title="Actualiser le token"><i class="fa-solid fa-arrows-rotate"></i></button>
                             </div>
                         </div>
