@@ -90,6 +90,7 @@ public class SignRequestWsController {
                                             "  \"forceAllSign\": true,\n" +
                                             "  \"comment\": \"string\",\n" +
                                             "  \"attachmentRequire\": true,\n" +
+                                           "  \"attachmentAlert\": false,\n" +
                                             "  \"maxRecipients\": 0\n" +
                                             "}]") String stepsJsonString,
                                     @RequestParam(required = false) @Parameter(description = "EPPN du créateur/propriétaire de la demande") String createByEppn,

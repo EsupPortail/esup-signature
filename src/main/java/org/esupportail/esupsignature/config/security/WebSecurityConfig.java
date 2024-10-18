@@ -254,7 +254,8 @@ public class WebSecurityConfig {
 
 	private void setAuthorizeRequests(HttpSecurity http) throws Exception {
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/")).permitAll());
-		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/ws/workflows/**/datas/csv")).permitAll());
+		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/ws/workflows/**/datas/csv"))
+				.access(new WebExpressionAuthorizationManager("hasIpAddress('" + webSecurityProperties.getCsvAccessAuthorizeMask() + "')")));
 		StringBuilder hasIpAddresses = new StringBuilder();
 		int nbIps = 0;
 		if(webSecurityProperties.getWsAccessAuthorizeIps() != null && webSecurityProperties.getWsAccessAuthorizeIps().length > 0) {
