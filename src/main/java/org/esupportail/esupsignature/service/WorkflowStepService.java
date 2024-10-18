@@ -153,6 +153,7 @@ public class WorkflowStepService {
             workflowStep.setMaxRecipients(step.getMaxRecipients());
         }
         workflowStep.setAttachmentRequire(step.getAttachmentRequire());
+        workflowStep.setAttachmentAlert(step.getAttachmentAlert());
         workflowStep.setAutoSign(autoSign);
         if(autoSign) {
             if(certificatId != null) {

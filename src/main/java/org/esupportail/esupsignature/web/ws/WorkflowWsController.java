@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.dto.WorkflowDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.SignRequestParams;
@@ -21,6 +22,7 @@ import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.export.WorkflowExportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +40,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/ws/workflows")
+@EnableConfigurationProperties({WebSecurityProperties.class})
 public class WorkflowWsController {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowWsController.class);
@@ -53,6 +56,7 @@ public class WorkflowWsController {
     private final SignRequestParamsService signRequestParamsService;
 
     private final RecipientService recipientService;
+
 
     public WorkflowWsController(WorkflowService workflowService, WorkflowExportService workflowExportService, SignBookService signBookService, SignRequestParamsService signRequestParamsService, RecipientService recipientService) {
         this.workflowService = workflowService;
@@ -98,6 +102,7 @@ public class WorkflowWsController {
                                            "  \"forceAllSign\": true,\n" +
                                            "  \"comment\": \"string\",\n" +
                                            "  \"attachmentRequire\": true,\n" +
+                                           "  \"attachmentAlert\": false,\n" +
                                            "  \"maxRecipients\": 0\n" +
                                            "}]") String stepsJsonString,
                                    @RequestParam(required = false) @Parameter(description = "EPPN du créateur/propriétaire de la demande") String createByEppn,
