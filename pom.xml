@@ -288,7 +288,7 @@
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>signature_pad</artifactId>
-			<version>4.0.5</version>
+			<version>4.1.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
