@@ -86,8 +86,8 @@ public class SignBookAdminController {
 		if(creatorFilter != null && (creatorFilter.isEmpty() || creatorFilter.equals("all"))) {
 			creatorFilter = null;
 		}
-		if(docTitleFilter != null && (docTitleFilter.isEmpty() || docTitleFilter.equals("all"))) {
-			docTitleFilter = null;
+		if(docTitleFilter == null || (docTitleFilter.isEmpty() || docTitleFilter.equals("all"))) {
+			docTitleFilter = "";
 		}
 		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
 		model.addAttribute("statusFilter", statusFilter);
@@ -134,8 +134,8 @@ public class SignBookAdminController {
 		if(creatorFilter != null && (creatorFilter.isEmpty() || creatorFilter.equals("all"))) {
 			creatorFilter = null;
 		}
-		if(docTitleFilter != null && (docTitleFilter.isEmpty() || docTitleFilter.equals("all"))) {
-			docTitleFilter = null;
+		if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
+			docTitleFilter = "";
 		}
 		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
 		model.addAttribute("signBooks", signBooks);
