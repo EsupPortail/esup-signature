@@ -10,6 +10,7 @@ import java.util.Map;
 public class WebSecurityProperties {
 
     private String[] wsAccessAuthorizeIps;
+    private String csvAccessAuthorizeMask = "127.0.0.1";
     private String groupToRoleFilterPattern;
     private Map<String, String> mappingGroupsRoles;
     private Map<String, String> groupMappingSpel;
@@ -22,6 +23,14 @@ public class WebSecurityProperties {
     }
 
     public void setWsAccessAuthorizeIps(String[] wsAccessAuthorizeIps) { this.wsAccessAuthorizeIps = wsAccessAuthorizeIps; }
+
+    public String getCsvAccessAuthorizeMask() {
+        return csvAccessAuthorizeMask;
+    }
+
+    public void setCsvAccessAuthorizeMask(String csvAccessAuthorizeMask) {
+        this.csvAccessAuthorizeMask = csvAccessAuthorizeMask;
+    }
 
     public String getGroupToRoleFilterPattern() {
         return groupToRoleFilterPattern;
