@@ -22,6 +22,7 @@ import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.export.WorkflowExportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/ws/workflows")
+@EnableConfigurationProperties({WebSecurityProperties.class})
 public class WorkflowWsController {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowWsController.class);
@@ -55,16 +57,13 @@ public class WorkflowWsController {
 
     private final RecipientService recipientService;
 
-    private final WebSecurityProperties webSecurityProperties;
 
-
-    public WorkflowWsController(WorkflowService workflowService, WorkflowExportService workflowExportService, SignBookService signBookService, SignRequestParamsService signRequestParamsService, RecipientService recipientService, WebSecurityProperties webSecurityProperties) {
+    public WorkflowWsController(WorkflowService workflowService, WorkflowExportService workflowExportService, SignBookService signBookService, SignRequestParamsService signRequestParamsService, RecipientService recipientService) {
         this.workflowService = workflowService;
         this.workflowExportService = workflowExportService;
         this.signBookService = signBookService;
         this.signRequestParamsService = signRequestParamsService;
         this.recipientService = recipientService;
-        this.webSecurityProperties = webSecurityProperties;
     }
 
     @CrossOrigin
