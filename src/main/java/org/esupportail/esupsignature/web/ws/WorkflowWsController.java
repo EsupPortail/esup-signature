@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.dto.WorkflowDto;
 import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.SignRequestParams;
@@ -54,12 +55,16 @@ public class WorkflowWsController {
 
     private final RecipientService recipientService;
 
-    public WorkflowWsController(WorkflowService workflowService, WorkflowExportService workflowExportService, SignBookService signBookService, SignRequestParamsService signRequestParamsService, RecipientService recipientService) {
+    private final WebSecurityProperties webSecurityProperties;
+
+
+    public WorkflowWsController(WorkflowService workflowService, WorkflowExportService workflowExportService, SignBookService signBookService, SignRequestParamsService signRequestParamsService, RecipientService recipientService, WebSecurityProperties webSecurityProperties) {
         this.workflowService = workflowService;
         this.workflowExportService = workflowExportService;
         this.signBookService = signBookService;
         this.signRequestParamsService = signRequestParamsService;
         this.recipientService = recipientService;
+        this.webSecurityProperties = webSecurityProperties;
     }
 
     @CrossOrigin
