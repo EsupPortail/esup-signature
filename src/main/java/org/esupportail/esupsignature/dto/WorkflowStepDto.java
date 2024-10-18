@@ -45,6 +45,8 @@ public class WorkflowStepDto {
 
 	private Boolean attachmentRequire = false;
 
+	private Boolean attachmentAlert = false;
+
 	private Integer maxRecipients = 99;
 
 	private List<String> targetEmails = new ArrayList<>();
@@ -210,6 +212,14 @@ public class WorkflowStepDto {
 
 	public void setAttachmentRequire(Boolean attachmentRequire) {
 		this.attachmentRequire = attachmentRequire;
+	}
+
+	public Boolean getAttachmentAlert() {
+		return attachmentAlert;
+	}
+
+	public void setAttachmentAlert(Boolean attachmentAlert) {
+		this.attachmentAlert = attachmentAlert;
 	}
 
 	public Integer getMaxRecipients() {

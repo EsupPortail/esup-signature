@@ -608,4 +608,8 @@ public class FormService {
 		return srpMap;
 	}
 
+	@Transactional
+    public String getAllFormsJson() throws JsonProcessingException {
+		return objectMapper.writeValueAsString(formRepository.findAllJson());
+	}
 }

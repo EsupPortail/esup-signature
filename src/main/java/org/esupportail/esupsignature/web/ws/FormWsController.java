@@ -94,6 +94,7 @@ public class FormWsController {
                                            "  \"forceAllSign\": true,\n" +
                                            "  \"comment\": \"string\",\n" +
                                            "  \"attachmentRequire\": true,\n" +
+                                           "  \"attachmentAlert\": false,\n" +
                                            "  \"maxRecipients\": 0\n" +
                                            "}]") String stepsJsonString,
                                    @RequestParam(required = false) @Parameter(description = "EPPN du créateur/propriétaire de la demande") String createByEppn,
@@ -218,4 +219,11 @@ public class FormWsController {
         return dataExportService.getJsonDatasFromSignRequest(id);
     }
 
+    @CrossOrigin
+    @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération de la liste des formulaires disponibles", responses = @ApiResponse(description = "List<JsonDtoWorkflow>", content = @Content(schema = @Schema(implementation = List.class))))
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
+    public String getAll(@ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
+        return formService.getAllFormsJson();
+    }
 }

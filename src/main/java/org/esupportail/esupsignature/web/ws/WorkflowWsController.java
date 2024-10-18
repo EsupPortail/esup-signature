@@ -102,6 +102,7 @@ public class WorkflowWsController {
                                            "  \"forceAllSign\": true,\n" +
                                            "  \"comment\": \"string\",\n" +
                                            "  \"attachmentRequire\": true,\n" +
+                                           "  \"attachmentAlert\": false,\n" +
                                            "  \"maxRecipients\": 0\n" +
                                            "}]") String stepsJsonString,
                                    @RequestParam(required = false) @Parameter(description = "EPPN du créateur/propriétaire de la demande") String createByEppn,
@@ -176,7 +177,7 @@ public class WorkflowWsController {
     }
 
     @CrossOrigin
-    @PreAuthorize("@wsAccessTokenService.workflowCsv(#id, #xApiKey) && hasIpAddress(@webSecurityProperties.csvAccessAuthorizeMask)")
+    @PreAuthorize("@wsAccessTokenService.workflowCsv(#id, #xApiKey)")
     @GetMapping(value = "/{id}/datas/csv", produces = {"text/csv", "*/*"})
     public ResponseEntity<Void> getWorkflowDatasCsv(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse response) {
         Workflow workflow = workflowService.getById(id);
