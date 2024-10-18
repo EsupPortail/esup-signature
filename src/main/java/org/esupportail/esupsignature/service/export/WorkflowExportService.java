@@ -33,12 +33,11 @@ public class WorkflowExportService {
         this.webUtilsService = webUtilsService;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public InputStream getCsvDatasFromWorkflow(List<Workflow> workflows) throws IOException {
         return webUtilsService.mapListToCSV(getDatasToExport(workflows));
     }
 
-    @Transactional
     public List<Map<String, String>> getDatasToExport(List<Workflow> workflows) {
         List<Map<String, String>> dataDatas = new ArrayList<>();
         for(Workflow workflow: workflows) {
@@ -47,23 +46,21 @@ public class WorkflowExportService {
         return  dataDatas;
     }
 
-    @Transactional
     public List<LinkedHashMap<String, String>> getDatasToExport(Workflow workflow) {
         List<LinkedHashMap<String, String>> dataDatas = new ArrayList<>();
         for(SignBook signBook : signBookService.getByWorkflowId(workflow.getId())) {
-            dataDatas.add(getToExportDatas(signBook.getId()));
+            dataDatas.add(getToExportDatas(signBook));
         }
         return dataDatas;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public LinkedHashMap<String, String> getJsonDatasFromWorkflow(Long id) {
         Workflow workflow = workflowService.getById(id);
         return getDatasToExport(workflow).get(0);
     }
 
-    private LinkedHashMap<String, String> getToExportDatas(Long signBookId) {
-        SignBook signBook = signBookService.getById(signBookId);
+    private LinkedHashMap<String, String> getToExportDatas(SignBook signBook) {
         LinkedHashMap<String, String> toExportDatas = new LinkedHashMap<>();
         toExportDatas.put("sign_book_id", signBook.getId().toString());
         if(signBook.getSignRequests().size() == 1) {
