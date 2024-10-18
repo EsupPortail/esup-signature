@@ -24,7 +24,8 @@
             </div>
             <div class="table-fix-head scrollbar-style rounded-3 col-sm-9 col-md-10 col-xl-11 p-0 m-2">
                 <table class="table table-hover table-responsive">
-                    <tr class="table-secondary">
+                    <thead class="table-secondary">
+                    <tr>
                         <th>EPPN</th>
                         <th>Session ID</th>
                         <th>Creation time</th>
@@ -35,6 +36,8 @@
                         <th>Alive</th>
                         <th>Delete</th>
                     </tr>
+                    </thead>
+                    <tbody id="signRequestTable">
                     <tr th:each="httpSession : ${httpSessions}" th:class="${httpSession.userEppn == null && httpSession.originRequestUri != '/login/casentry'} ? 'table-danger' : ''">
                         <!--/*@thymesVar id="httpSession" type="org.springframework.session.MapSession"*/-->
                         <td th:if="${httpSession.userEppn != null}">
@@ -58,6 +61,7 @@
                             </form>
                         </td>
                     </tr>
+                    </tbody>
                 </table>
             </div>
         </div>
