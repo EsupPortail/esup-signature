@@ -137,7 +137,7 @@
                             </td>
                             <td class="clickable-td d-none d-xxl-table-cell">
                                 <span th:if="${signBook.endDate != null}" th:text="${#dates.format(signBook.endDate, 'dd/MM/yyyy HH:mm')}"></span>
-                                <span th:unless="${signBook.endDate != null && signBook.signRequests.size() == 1}"
+                                <span th:unless="${signBook.endDate != null && signBook.signRequests.size() == 1 && signBook.signRequests.get(0).lastSignedDocument != null}"
                                     th:text="${#dates.format(signBook.signRequests.get(0).lastSignedDocument.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                             </td>
                             <td class="clickable-td d-none d-md-table-cell"
