@@ -91,7 +91,7 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastSendAlertDate = new Date(0);
 
-    @ElementCollection(targetClass = String.class)
+    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
     @JsonIgnore
     private Set<String> roles = new HashSet<>();
 
