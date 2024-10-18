@@ -99,7 +99,7 @@ public class SignBookAdminController {
 		model.addAttribute("workflows", workflowService.getAllWorkflows());
 		model.addAttribute("workflowFilter", workflowFilter);
 		model.addAttribute("creatorFilter", creatorFilter);
-		if(docTitleFilter != "%") model.addAttribute("docTitleFilter", docTitleFilter);
+		if(!"%".equals(docTitleFilter)) model.addAttribute("docTitleFilter", docTitleFilter);
 		model.addAttribute("dateFilter", dateFilter);
 		model.addAttribute("workflowNames", signBookRepository.findAllWorkflowNames());
 		return "admin/signbooks/list";

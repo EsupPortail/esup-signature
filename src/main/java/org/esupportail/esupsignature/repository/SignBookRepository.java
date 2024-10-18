@@ -27,7 +27,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("""
             select distinct sb from SignBook sb
             where (:workflowFilter is null or sb.workflowName = :workflowFilter)
-            and (:docTitleFilter is null or sb.subject = :docTitleFilter)
+            and (:docTitleFilter is null or sb.subject like concat('%', :docTitleFilter, '%'))
             and size(sb.signRequests) > 0
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
             and (:statusFilter is null or sb.status = :statusFilter)
@@ -75,6 +75,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("""
             select distinct sb.subject from SignBook sb
             where (:workflowFilter is null or sb.workflowName = :workflowFilter)
+            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             """)
     List<String> findByWorkflowNameSubjects(String workflowFilter);
 
