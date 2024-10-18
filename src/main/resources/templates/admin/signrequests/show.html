@@ -28,7 +28,7 @@
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.deleted}">
-                        <a th:href="'/admin/signbooks/restore/' + ${signBook.id}" role="button" class="btn-floating btn-lg bg-primary" title="Restaurer">
+                        <a th:href="'/admin/signbooks/restore/' + ${signRequest.parentSignBook.id}" role="button" class="btn-floating btn-lg bg-primary" title="Restaurer">
                             <i class="fa-solid fa-trash-restore fa-2xl"></i>
                         </a>
                     </li>
@@ -41,6 +41,14 @@
                         </a>
                     </li>
                 </ul>
+            </div>
+            <div class="card text-bg-light col-lg-11 m-2">
+                <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+                    <h5 class="ms-4">Statut</h5>
+                </div>
+                <div class="card-body">
+                    <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})}" class="mb-1"></div>
+                </div>
             </div>
             <div class="card text-bg-light col-lg-11 m-2">
                 <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
