@@ -1,8 +1,10 @@
 package org.esupportail.esupsignature.service.export;
 
-import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.ActionType;
-import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.dto.WorkflowDatasDto;
+import org.esupportail.esupsignature.dto.WorkflowDatasSignRequestDto;
+import org.esupportail.esupsignature.dto.WorkflowDatasStepsActionsDto;
+import org.esupportail.esupsignature.entity.Workflow;
+import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
@@ -13,8 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class WorkflowExportService {
@@ -26,11 +30,13 @@ public class WorkflowExportService {
     private final SignBookService signBookService;
 
     private final WebUtilsService webUtilsService;
+    private final WorkflowRepository workflowRepository;
 
-    public WorkflowExportService(WorkflowService workflowService, SignBookService signBookService, WebUtilsService webUtilsService) {
+    public WorkflowExportService(WorkflowService workflowService, SignBookService signBookService, WebUtilsService webUtilsService, WorkflowRepository workflowRepository) {
         this.workflowService = workflowService;
         this.signBookService = signBookService;
         this.webUtilsService = webUtilsService;
+        this.workflowRepository = workflowRepository;
     }
 
     @Transactional(readOnly = true)
@@ -47,11 +53,8 @@ public class WorkflowExportService {
     }
 
     public List<LinkedHashMap<String, String>> getDatasToExport(Workflow workflow) {
-        List<LinkedHashMap<String, String>> dataDatas = new ArrayList<>();
-        for(SignBook signBook : signBookService.getByWorkflowId(workflow.getId())) {
-            dataDatas.add(getToExportDatas(signBook));
-        }
-        return dataDatas;
+        List<WorkflowDatasDto> workflowDatasDtos = workflowRepository.findWorkflowDatas(workflow.getId());
+        return getToExportDatas(workflowDatasDtos);
     }
 
     @Transactional(readOnly = true)
@@ -60,45 +63,36 @@ public class WorkflowExportService {
         return getDatasToExport(workflow).get(0);
     }
 
-    private LinkedHashMap<String, String> getToExportDatas(SignBook signBook) {
-        LinkedHashMap<String, String> toExportDatas = new LinkedHashMap<>();
-        toExportDatas.put("sign_book_id", signBook.getId().toString());
-        if(signBook.getSignRequests().size() == 1) {
-            toExportDatas.put("sign_request_id", signBook.getSignRequests().get(0).getId().toString());
-            toExportDatas.put("sign_request_title", signBook.getSignRequests().get(0).getTitle());
-        } else {
-            toExportDatas.put("sign_request_ids", signBook.getSignRequests().stream().map(SignRequest::getId).map(Object::toString).collect(Collectors.joining(",")));
-            toExportDatas.put("sign_request_titles", signBook.getSignRequests().stream().map(SignRequest::getTitle).collect(Collectors.joining(",")));
-        }
-        toExportDatas.put("sign_book_statut", signBook.getStatus().name());
-        toExportDatas.put("sign_book_create_date", signBook.getCreateDate().toString());
-        toExportDatas.put("completed_date", "");
-        toExportDatas.put("completed_by", "");
-        Map<Recipient, Action> recipientHasSigned = signBook.getSignRequests().get(0).getRecipientHasSigned();
-        try {
-            if (recipientHasSigned != null && !recipientHasSigned.isEmpty() && (signBook.getStatus().equals(SignRequestStatus.completed) || signBook.getStatus().equals(SignRequestStatus.refused) || signBook.getStatus().equals(SignRequestStatus.exported) || signBook.getStatus().equals(SignRequestStatus.archived))) {
-                Optional<Action> lastAction = recipientHasSigned.values().stream().filter(action -> !action.getActionType().equals(ActionType.none)).findFirst();
-                if (lastAction.isPresent()) {
-                    toExportDatas.put("completed_date", lastAction.get().getDate().toString());
-                    toExportDatas.put("completed_by", recipientHasSigned.entrySet().stream().filter(entry -> lastAction.get().equals(entry.getValue())).map(Map.Entry::getKey).findFirst().get().getUser().getEppn());
-                }
+    private List<LinkedHashMap<String, String>> getToExportDatas(List<WorkflowDatasDto> workflowDatasDtos) {
+        List<LinkedHashMap<String, String>> dataDatas = new ArrayList<>();
+        for(WorkflowDatasDto workflowDatasDto : workflowDatasDtos) {
+            LinkedHashMap<String, String> toExportDatas = new LinkedHashMap<>();
+            toExportDatas.put("sign_book_id", workflowDatasDto.getSignBookId());
+            for (WorkflowDatasSignRequestDto workflowDatasSignRequestDto : workflowDatasDto.getWorkflowDatasSignRequestDtos()) {
+                toExportDatas.put("sign_request_id", workflowDatasSignRequestDto.getId().toString());
+                toExportDatas.put("sign_request_title", workflowDatasSignRequestDto.getTitle());
             }
-        } catch (Exception e) {
-            logger.error("error while getting completed date", e);
+            toExportDatas.put("sign_book_statut", workflowDatasDto.getSignBookStatus());
+            toExportDatas.put("sign_book_create_by", workflowDatasDto.getSignBookCreateBy());
+            toExportDatas.put("sign_book_create_date", workflowDatasDto.getSignBookCreateDate());
+            toExportDatas.put("completed_date", workflowDatasDto.getCompletedDate());
+            toExportDatas.put("completed_by", workflowDatasDto.getCompletedBy());
+            toExportDatas.put("current_step_id", workflowDatasDto.getCurrentStepId());
+            toExportDatas.put("current_step_description", workflowDatasDto.getCurrentStepDescription());
+            int step = 1;
+            for(WorkflowDatasStepsActionsDto workflowDatasStepsActionDto : workflowDatasDto.getWorkflowDatasStepsActionsDtos()) {
+                if(workflowDatasDto.getWorkflowDatasStepsRecipientsDtos() != null ) {
+                    toExportDatas.put("sign_step_" + step + "_user_eppn", workflowDatasDto.getWorkflowDatasStepsRecipientsDtos().get(step - 1).getUserEppn());
+                }
+                toExportDatas.put("sign_step_" + step + "_type", workflowDatasStepsActionDto.getActionType().name());
+                if(workflowDatasStepsActionDto.getDate() != null) {
+                toExportDatas.put("sign_step_" + step + "_date", workflowDatasStepsActionDto.getDate().toString());
+                }
+                step++;
+            }
+            dataDatas.add(toExportDatas);
         }
-        if (signBook.getLiveWorkflow().getCurrentStep() != null && signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep() != null) {
-            toExportDatas.put("current_step_id", signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getId().toString());
-            toExportDatas.put("current_step_description", signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getDescription());
-        }
-        int step = 1;
-        List<Map.Entry<Recipient, Action>> actionsList = recipientHasSigned.entrySet().stream().filter(recipientActionEntry -> !recipientActionEntry.getValue().getActionType().equals(ActionType.none) && recipientActionEntry.getValue().getDate() != null).sorted(Comparator.comparing(o -> o.getValue().getDate())).collect(Collectors.toList());
-        for (Map.Entry<Recipient, Action> actions : actionsList) {
-            toExportDatas.put("sign_step_" + step + "_user_eppn", actions.getKey().getUser().getEppn());
-            toExportDatas.put("sign_step_" + step + "_type", actions.getValue().getActionType().name());
-            toExportDatas.put("sign_step_" + step + "_date", actions.getValue().getDate().toString());
-            step++;
-        }
-        return toExportDatas;
+        return dataDatas;
     }
 
 }

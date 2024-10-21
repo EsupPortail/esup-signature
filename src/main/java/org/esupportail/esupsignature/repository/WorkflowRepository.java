@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
+import org.esupportail.esupsignature.dto.WorkflowDatasDto;
 import org.esupportail.esupsignature.dto.WorkflowDto;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.springframework.data.jpa.repository.Query;
@@ -31,4 +32,22 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     List<Workflow> findByViewersEppn(String userEppn);
     @Query("select w from Workflow w where w.id = :id")
     WorkflowDto getByIdJson(Long id);
+
+    @Query("SELECT " +
+            "sr.parentSignBook.id as signBookId, " +
+            "sr.parentSignBook.signRequests as workflowDatasSignRequestDtos, " +
+            "sr.status as signBookStatus, " +
+            "sr.createBy.eppn as signBookCreateBy, " +
+            "sr.createDate as signBookCreateDate, " +
+            "sr.parentSignBook.updateDate as completedDate, " +
+            "sr.parentSignBook.updateBy as completedBy, " +
+            "sr.parentSignBook.liveWorkflow.currentStep.id as currentStepId, " +
+            "sr.parentSignBook.liveWorkflow.currentStep.workflowStep.description as currentStepDescription, " +
+            "key(rhs) as workflowDatasStepsRecipiensDtos, " +
+            "value(rhs) as workflowDatasStepsActionsDtos " +
+            "FROM SignRequest sr " +
+            "JOIN sr.parentSignBook.signRequests srs " +
+            "JOIN sr.recipientHasSigned rhs " +
+            "WHERE sr.parentSignBook.liveWorkflow.workflow.id = :id")
+    List<WorkflowDatasDto> findWorkflowDatas(Long id);
 }
