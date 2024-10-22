@@ -34,7 +34,7 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     WorkflowDto getByIdJson(Long id);
 
     @Query(value = """
-        select distinct\s
+        select distinct
             sr.parent_sign_book_id as signBookId,
             array_agg(sbsr.id) as workflowDatasSignRequestIds,
             array_agg(sbsr.title) as workflowDatasSignRequestTitles,
