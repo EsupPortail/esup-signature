@@ -1,11 +1,8 @@
 package org.esupportail.esupsignature.service.export;
 
 import org.esupportail.esupsignature.dto.WorkflowDatasDto;
-import org.esupportail.esupsignature.dto.WorkflowDatasSignRequestDto;
-import org.esupportail.esupsignature.dto.WorkflowDatasStepsActionsDto;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
-import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.slf4j.Logger;
@@ -27,14 +24,12 @@ public class WorkflowExportService {
 
     private final WorkflowService workflowService;
 
-    private final SignBookService signBookService;
-
     private final WebUtilsService webUtilsService;
+
     private final WorkflowRepository workflowRepository;
 
-    public WorkflowExportService(WorkflowService workflowService, SignBookService signBookService, WebUtilsService webUtilsService, WorkflowRepository workflowRepository) {
+    public WorkflowExportService(WorkflowService workflowService, WebUtilsService webUtilsService, WorkflowRepository workflowRepository) {
         this.workflowService = workflowService;
-        this.signBookService = signBookService;
         this.webUtilsService = webUtilsService;
         this.workflowRepository = workflowRepository;
     }
@@ -68,10 +63,8 @@ public class WorkflowExportService {
         for(WorkflowDatasDto workflowDatasDto : workflowDatasDtos) {
             LinkedHashMap<String, String> toExportDatas = new LinkedHashMap<>();
             toExportDatas.put("sign_book_id", workflowDatasDto.getSignBookId());
-            for (WorkflowDatasSignRequestDto workflowDatasSignRequestDto : workflowDatasDto.getWorkflowDatasSignRequestDtos()) {
-                toExportDatas.put("sign_request_id", workflowDatasSignRequestDto.getId().toString());
-                toExportDatas.put("sign_request_title", workflowDatasSignRequestDto.getTitle());
-            }
+            toExportDatas.put("sign_request_ids", workflowDatasDto.getWorkflowDatasSignRequestIds());
+            toExportDatas.put("sign_request_titles", workflowDatasDto.getWorkflowDatasSignRequestTitles());
             toExportDatas.put("sign_book_statut", workflowDatasDto.getSignBookStatus());
             toExportDatas.put("sign_book_create_by", workflowDatasDto.getSignBookCreateBy());
             toExportDatas.put("sign_book_create_date", workflowDatasDto.getSignBookCreateDate());
@@ -79,17 +72,9 @@ public class WorkflowExportService {
             toExportDatas.put("completed_by", workflowDatasDto.getCompletedBy());
             toExportDatas.put("current_step_id", workflowDatasDto.getCurrentStepId());
             toExportDatas.put("current_step_description", workflowDatasDto.getCurrentStepDescription());
-            int step = 1;
-            for(WorkflowDatasStepsActionsDto workflowDatasStepsActionDto : workflowDatasDto.getWorkflowDatasStepsActionsDtos()) {
-                if(workflowDatasDto.getWorkflowDatasStepsRecipientsDtos() != null ) {
-                    toExportDatas.put("sign_step_" + step + "_user_eppn", workflowDatasDto.getWorkflowDatasStepsRecipientsDtos().get(step - 1).getUserEppn());
-                }
-                toExportDatas.put("sign_step_" + step + "_type", workflowDatasStepsActionDto.getActionType().name());
-                if(workflowDatasStepsActionDto.getDate() != null) {
-                toExportDatas.put("sign_step_" + step + "_date", workflowDatasStepsActionDto.getDate().toString());
-                }
-                step++;
-            }
+            toExportDatas.put("sign_steps_emails", workflowDatasDto.getWorkflowDatasStepsRecipientsEmails());
+            toExportDatas.put("sign_steps_types", workflowDatasDto.getWorkflowDatasStepsActionsTypes());
+            toExportDatas.put("sign_steps_dates", workflowDatasDto.getWorkflowDatasStepsActionsDates());
             dataDatas.add(toExportDatas);
         }
         return dataDatas;
