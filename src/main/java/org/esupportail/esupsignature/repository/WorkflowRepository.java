@@ -33,7 +33,7 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     @Query("select w from Workflow w where w.id = :id")
     WorkflowDto getByIdJson(Long id);
 
-    @Query("SELECT " +
+    @Query("select distinct " +
             "sr.parentSignBook.id as signBookId, " +
             "sr.parentSignBook.signRequests as workflowDatasSignRequestDtos, " +
             "sr.status as signBookStatus, " +
@@ -45,9 +45,9 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
             "sr.parentSignBook.liveWorkflow.currentStep.workflowStep.description as currentStepDescription, " +
             "key(rhs) as workflowDatasStepsRecipiensDtos, " +
             "value(rhs) as workflowDatasStepsActionsDtos " +
-            "FROM SignRequest sr " +
-            "JOIN sr.parentSignBook.signRequests srs " +
-            "JOIN sr.recipientHasSigned rhs " +
-            "WHERE sr.parentSignBook.liveWorkflow.workflow.id = :id")
+            "from SignRequest sr " +
+            "join sr.parentSignBook.signRequests srs " +
+            "join sr.recipientHasSigned rhs " +
+            "where sr.parentSignBook.liveWorkflow.workflow.id = :id")
     List<WorkflowDatasDto> findWorkflowDatas(Long id);
 }
