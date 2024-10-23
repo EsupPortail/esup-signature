@@ -1,6 +1,6 @@
-package org.esupportail.esupsignature.dto;
+package org.esupportail.esupsignature.dto.export;
 
-public interface WorkflowDatasDto {
+public interface WorkflowDatasCsvDto {
 
     String getSignBookId();
     String getWorkflowDatasSignRequestIds();

@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.service.security;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.esupportail.esupsignature.dto.HttpSession;
+import org.esupportail.esupsignature.dto.view.HttpSessionViewDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
@@ -20,7 +20,7 @@ public class HttpSessionsListenerService {
 
     Logger logger = LoggerFactory.getLogger(HttpSessionsListenerService.class);
 
-    Map<String, HttpSession> sessions = new HashMap<>();
+    Map<String, HttpSessionViewDto> sessions = new HashMap<>();
 
     @EventListener
     public void onHttpSessionCreatedEvent(HttpSessionCreatedEvent event) {
@@ -29,7 +29,7 @@ public class HttpSessionsListenerService {
         String remoteIp = request.getRemoteAddr();
         String originRequestUri = request.getRequestURI();
         Date createdDate = new Date();
-        HttpSession session = new HttpSession();
+        HttpSessionViewDto session = new HttpSessionViewDto();
         session.setSessionId(id);
         session.setRemoteIp(remoteIp);
         session.setCreatedDate(createdDate);
@@ -43,7 +43,7 @@ public class HttpSessionsListenerService {
         sessions.remove(event.getSession().getId());
     }
 
-    public Map<String, HttpSession> getSessions() {
+    public Map<String, HttpSessionViewDto> getSessions() {
         return sessions;
     }
 

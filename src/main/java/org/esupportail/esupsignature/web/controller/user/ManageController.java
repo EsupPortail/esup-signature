@@ -28,10 +28,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequestMapping("user/manage")
@@ -58,7 +55,9 @@ public class ManageController {
 
     private final SignRequestService signRequestService;
 
-    public ManageController(DataExportService dataExportService, DataService dataService, SignBookService signBookService, FormService formService, UserService userService, WorkflowService workflowService, WorkflowExportService workflowExportService, SignRequestService signRequestService) {
+    private final ChartsService chartsService;
+
+    public ManageController(DataExportService dataExportService, DataService dataService, SignBookService signBookService, FormService formService, UserService userService, WorkflowService workflowService, WorkflowExportService workflowExportService, SignRequestService signRequestService, ChartsService chartsService) {
         this.dataExportService = dataExportService;
         this.dataService = dataService;
         this.signBookService = signBookService;
@@ -67,6 +66,7 @@ public class ManageController {
         this.workflowService = workflowService;
         this.workflowExportService = workflowExportService;
         this.signRequestService = signRequestService;
+        this.chartsService = chartsService;
     }
 
 
@@ -74,7 +74,13 @@ public class ManageController {
     public String index(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
         List<Form> managedForms = formService.getFormByManagersContains(authUserEppn);
         model.addAttribute("managedForms", managedForms.stream().map(Form::getWorkflow).collect(Collectors.toList()));
-        model.addAttribute("managedWorkflows", workflowService.getWorkflowByManagersContains(authUserEppn));
+        List<Workflow> workflows = workflowService.getWorkflowByManagersContains(authUserEppn);
+        model.addAttribute("managedWorkflows", workflows);
+        List<String> workflowsCharts = new ArrayList<>();
+        for(Workflow workflow : workflows) {
+            workflowsCharts.add(chartsService.getWorkflowSignBooksStatus(workflow.getId()));
+        }
+        model.addAttribute("chartWorkflowSignBooksStatus", workflowsCharts);
         return "user/manage/list";
     }
 

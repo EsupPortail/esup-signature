@@ -11,10 +11,11 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
-import org.esupportail.esupsignature.dto.WorkflowDto;
-import org.esupportail.esupsignature.dto.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.json.WorkflowDto;
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.Workflow;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestParamsService;
@@ -139,14 +140,19 @@ public class WorkflowWsController {
         if (signRequestParamsJsonString != null) {
             signRequestParamses = signRequestParamsService.getSignRequestParamsesFromJson(signRequestParamsJsonString);
         }
-        List<Long> signRequestIds = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, steps, targetEmails, targetUrls, signRequestParamses, scanSignatureFields, sendEmailAlert, comment);
-        if(signRequestIds.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("-1");
-        }
-        if(json) {
-            return ResponseEntity.ok(signRequestIds);
-        } else {
-            return ResponseEntity.ok(org.apache.commons.lang.StringUtils.join(signRequestIds, ","));
+        try {
+            List<Long> signRequestIds = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, steps, targetEmails, targetUrls, signRequestParamses, scanSignatureFields, sendEmailAlert, comment);
+            if(signRequestIds.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("-1");
+            }
+            if(json) {
+                return ResponseEntity.ok(signRequestIds);
+            } else {
+                return ResponseEntity.ok(org.apache.commons.lang.StringUtils.join(signRequestIds, ","));
+            }
+        } catch (EsupSignatureRuntimeException e) {
+            logger.warn(e.getMessage() + " for : " + id);
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
 
