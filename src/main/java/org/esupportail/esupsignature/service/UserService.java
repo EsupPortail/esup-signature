@@ -874,7 +874,7 @@ public class UserService {
     @Transactional
     public InputStream getDefaultImage(String eppn) throws IOException {
         User user = getByEppn(eppn);
-        return fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), false);
+        return fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail());
     }
 
     @Transactional
@@ -885,7 +885,7 @@ public class UserService {
     @Transactional
     public InputStream getDefaultParaphe(String eppn) throws IOException {
         User user = getByEppn(eppn);
-        return fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail(), false);
+        return fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail());
     }
 
     @Transactional

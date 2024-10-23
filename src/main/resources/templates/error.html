@@ -11,7 +11,7 @@
     <main role="main" style="padding-bottom: 65px !important;">
     <div class="card col-lg-10 mx-auto" style="top: 60px;">
         <div class="card-body">
-            <h1>Une erreur s’est produite<span th:if="${userEppn != null}" th:text=" ' : ' + ${status} + ' ' + ${error}"></span></h1>
+            <h1>Une erreur s’est produite.<span th:if="${userEppn != null}" th:text=" ' : ' + ${status} + ' ' + ${error}"></span></h1>
             <p>Merci de contacter le gestionnaire de cette application</p>
             <p><a th:href="'mailto:' + ${applicationEmail}" th:text="${applicationEmail}" target="_blank"></a></p>
             <a th:if="${userEppn != null}" class="btn btn-success" href="javascript:window.history.back();">Retour</a>
