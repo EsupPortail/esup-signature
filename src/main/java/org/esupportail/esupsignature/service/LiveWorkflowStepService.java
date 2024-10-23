@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -15,10 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class LiveWorkflowStepService {
@@ -86,16 +84,25 @@ public class LiveWorkflowStepService {
             throw new EsupSignatureException("Impossible de modifier les destinataires d'une étape déjà passée");
         }
         liveWorkflowStep.getRecipients().clear();
+        Map<Recipient, Action> recipientsToReAdd = new HashMap<>();
         List<Recipient> recipients = addRecipientsToWorkflowStep(signBook, liveWorkflowStep, recipientWsDtos);
         liveWorkflowStepRepository.save(liveWorkflowStep);
         if(signBook.getLiveWorkflow().getCurrentStep().equals(liveWorkflowStep)) {
             for(SignRequest signRequest : signBook.getSignRequests()) {
+                for(Map.Entry<Recipient, Action> recipientActionEntry : signRequest.getRecipientHasSigned().entrySet()) {
+                    if(!recipientActionEntry.getValue().getActionType().equals(ActionType.none)) {
+                        recipientsToReAdd.put(recipientActionEntry.getKey(), recipientActionEntry.getValue());
+                    }
+                }
                 signRequest.getRecipientHasSigned().clear();
                 for(Recipient recipient : recipients) {
                     signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
                 }
+                signRequest.getRecipientHasSigned().putAll(recipientsToReAdd);
             }
         }
+        liveWorkflowStep.getRecipients().addAll(recipientsToReAdd.keySet());
+
     }
 
     public List<Recipient> addRecipientsToWorkflowStep(SignBook signBook, LiveWorkflowStep liveWorkflowStep, List<RecipientWsDto> recipientWsDtos) {

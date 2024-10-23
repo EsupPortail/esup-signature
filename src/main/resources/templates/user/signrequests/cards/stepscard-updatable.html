@@ -33,24 +33,25 @@
                                     <div class="bs-stepper-bottom">
                                         <form th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 1}"
                                                 th:id="'del_' + ${iterator.index}" th:action="'/user/signbooks/remove-live-step/' + ${id} + '/' + ${iterator.index}" th:method="delete">
-                                            <button onclick="return confirm('Voulez-vous vraiment supprimer cette étape ?');" class="btn btn-sm float-end">
+                                            <button th:if="${iterator.index + 1 > signBook.liveWorkflow.currentStepNumber || iterator.index + 1 == signBook.liveWorkflow.currentStepNumber}" onclick="return confirm('Voulez-vous vraiment supprimer cette étape ?');" class="btn btn-sm float-end">
                                                 <i class="fa-solid fa-trash-alt"></i>
                                             </button>
                                         </form>
                                     </div>
-                                    <button type="button" data-bs-toggle="modal" th:data-bs-target="'#modal-update-' + ${iterator.index + 1}" class="btn btn-sm float-end">
+                                    <button th:if="${iterator.index + 1 > signBook.liveWorkflow.currentStepNumber || iterator.index + 1 == signBook.liveWorkflow.currentStepNumber}" type="button" data-bs-toggle="modal" th:data-bs-target="'#modal-update-' + ${iterator.index + 1}" class="btn btn-sm float-end">
                                         <i class="fa-solid fa-pencil-alt"></i>
                                     </button>
-                                    <div data-bs-focus="false" role="dialog" class="modal fade" th:id="'modal-update-' + ${iterator.index + 1}" tabindex="-1" aria-labelledby="modal-update-label" aria-hidden="true">
+                                    <div data-bs-focus="false" role="dialog" class="modal modal-lg fade" th:id="'modal-update-' + ${iterator.index + 1}" tabindex="-1" aria-labelledby="modal-update-label" aria-hidden="true">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <form th:action="'/user/signbooks/update-recipients/' + ${signBook.id}" th:method="post" enctype="multipart/form-data">
                                                     <div class="modal-header">
-                                                        <h1 class="modal-title fs-5" id="modal-update-label" th:text="'Modifier l`étape : ' + ${iterator.index + 1}"></h1>
+                                                        <h1 class="modal-title fs-5" id="modal-update-label" th:text="'Modifier l’étape : ' + ${iterator.index + 1}"></h1>
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
                                                     <div class="modal-body">
                                                         <input type="hidden" name="stepNumber" th:value="${iterator.index + 1}">
+                                                        <div class="alert alert-warning">Tous les participants n’ayant pas encore signé seront remplacés à cette étape</div>
                                                         <div class="form-group mb-3">
                                                             <label class="form-label" th:for="'recipientsEmails-' + ${iterator.index + 1}">Choisir les participants</label>
                                                             <select class="auto-select-users" data-es-check-cert="true" name="recipientsEmails" th:id="'recipientsEmails-' + ${iterator.index + 1}" multiple="multiple" required="required">
