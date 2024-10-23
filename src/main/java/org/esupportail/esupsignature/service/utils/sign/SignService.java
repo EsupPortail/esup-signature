@@ -259,7 +259,7 @@ public class SignService {
 			if(user.getSignImages().size() > signRequestParams.getSignImageNumber() && signRequestParams.getAddImage()) {
 				inputStream = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
 			} else {
-				inputStream = fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true);
+				inputStream = fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail());
 			}
 			InputStream signImage = fileService.addTextToImage(inputStream, signRequestParams, SignType.nexuSign, user, date, userService.getRoles(user.getEppn()).contains("ROLE_OTP"));
 			if(signRequestParams.getAddWatermark()) {
