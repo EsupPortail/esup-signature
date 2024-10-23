@@ -3,7 +3,7 @@ package org.esupportail.esupsignature.web.wssecure;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.dto.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.service.FieldPropertieService;

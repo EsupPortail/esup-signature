@@ -14,7 +14,7 @@
         </nav>
         <div id="content" class="content">
             <div class="table-fix-head scrollbar-style rounded-3 col-sm-9 col-md-10 col-xl-11 p-0 m-2">
-                <table class="table table-borderless">
+                <table class="table table-borderless table-striped">
                     <thead class="table-secondary">
                     <tr>
                         <th>Type</th>
@@ -22,10 +22,11 @@
                         <th>Consulter la liste des demandes</th>
                         <th>Export des données</th>
                         <th>Envoi du formulaire</th>
+                        <th>Stats</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <th:block th:each="workflow : ${managedWorkflows}">
+                    <th:block th:each="workflow, iterator : ${managedWorkflows}">
                         <tr>
                             <td>
                                 <i th:unless="${managedForms.contains(workflow)}" class="fa-solid fa-project-diagram project-diagram-color fa-2xl"></i>
@@ -123,6 +124,25 @@
                                             </form>
                                         </div>
                                     </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div th:if="${chartWorkflowSignBooksStatus.get(iterator.index) != null}" style="width: 40px">
+                                    <canvas th:onmouseover="'$(\'#big-chart-' + ${iterator.index} + '\').toggle();'" th:id="'chart-workflow-sign-books-status-' + ${iterator.index}"></canvas>
+                                    <script th:inline="javascript">
+                                        let ctx[[${iterator.index}]] = document.getElementById('chart-workflow-sign-books-status-[[${iterator.index}]]');
+                                        let chart[[${iterator.index}]] = new Chart(ctx[[${iterator.index}]], JSON.parse([[${chartWorkflowSignBooksStatus.get(iterator.index)}]]));
+                                        chart[[${iterator.index}]].options.plugins.tooltip = false;
+                                        chart[[${iterator.index}]].options.plugins.legend = false;
+                                        chart[[${iterator.index}]].update();
+                                    </script>
+                                </div>
+                                <div class="border border-secondary-subtle rounded-1 p-2" th:onmouseleave="'$(\'#big-chart-' + ${iterator.index} + '\').toggle();'" th:id="'big-chart-' + ${iterator.index}" style="position: absolute;width: 400px;right:200px;background-color: #FFF;display: none">
+                                    <canvas th:id="'chart-workflow-sign-books-status-big-' + ${iterator.index}"></canvas>
+                                    <script th:inline="javascript">
+                                        let ctxB[[${iterator.index}]] = document.getElementById('chart-workflow-sign-books-status-big-[[${iterator.index}]]');
+                                        let chartB[[${iterator.index}]] = new Chart(ctxB[[${iterator.index}]], JSON.parse([[${chartWorkflowSignBooksStatus.get(iterator.index)}]]));
+                                    </script>
                                 </div>
                             </td>
                         </tr>

@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.service.export;
 
-import org.esupportail.esupsignature.dto.WorkflowDatasDto;
+import org.esupportail.esupsignature.dto.export.WorkflowDatasCsvDto;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.WorkflowService;
@@ -45,8 +45,8 @@ public class WorkflowExportService {
     }
 
     public List<LinkedHashMap<String, String>> getDatasToExport(Workflow workflow) {
-        List<WorkflowDatasDto> workflowDatasDtos = workflowRepository.findWorkflowDatas(workflow.getId());
-        return getToExportDatas(workflowDatasDtos);
+        List<WorkflowDatasCsvDto> workflowDatasCsvDtos = workflowRepository.findWorkflowDatas(workflow.getId());
+        return getToExportDatas(workflowDatasCsvDtos);
     }
 
     @Transactional(readOnly = true)
@@ -55,25 +55,25 @@ public class WorkflowExportService {
         return getDatasToExport(workflow).get(0);
     }
 
-    private List<LinkedHashMap<String, String>> getToExportDatas(List<WorkflowDatasDto> workflowDatasDtos) {
+    private List<LinkedHashMap<String, String>> getToExportDatas(List<WorkflowDatasCsvDto> workflowDatasCsvDtos) {
         List<LinkedHashMap<String, String>> dataDatas = new ArrayList<>();
-        for(WorkflowDatasDto workflowDatasDto : workflowDatasDtos) {
+        for(WorkflowDatasCsvDto workflowDatasCsvDto : workflowDatasCsvDtos) {
             LinkedHashMap<String, String> toExportDatas = new LinkedHashMap<>();
-            toExportDatas.put("sign_book_id", workflowDatasDto.getSignBookId());
-            toExportDatas.put("sign_request_ids", workflowDatasDto.getWorkflowDatasSignRequestIds());
-            toExportDatas.put("sign_request_titles", workflowDatasDto.getWorkflowDatasSignRequestTitles());
-            toExportDatas.put("sign_book_statut", workflowDatasDto.getSignBookStatus());
-            toExportDatas.put("sign_book_create_by", workflowDatasDto.getSignBookCreateBy());
-            toExportDatas.put("sign_book_create_date", workflowDatasDto.getSignBookCreateDate());
-            toExportDatas.put("completed_date", workflowDatasDto.getCompletedDate());
-            toExportDatas.put("completed_by", workflowDatasDto.getCompletedBy());
-            toExportDatas.put("current_step_number", (Arrays.stream(workflowDatasDto.getWorkflowDatasStepsActionsTypes().split(",")).filter(s -> !s.equals("none")).count() + 1) + "");
-            toExportDatas.put("current_step_id", workflowDatasDto.getCurrentStepId());
-            toExportDatas.put("current_step_description", workflowDatasDto.getCurrentStepDescription());
-            for(int i = 0; i < workflowDatasDto.getWorkflowDatasStepsActionsTypes().split(",").length; i++) {
-                toExportDatas.put("sign_step_" + (i + 1) + "_email", workflowDatasDto.getWorkflowDatasStepsRecipientsEmails().split(",")[i]);
-                toExportDatas.put("sign_step_" + (i + 1) + "_type", workflowDatasDto.getWorkflowDatasStepsActionsTypes().split(",")[i]);
-                toExportDatas.put("sign_step_" + (i + 1) + "_date", workflowDatasDto.getWorkflowDatasStepsActionsDates().split(",")[i]);
+            toExportDatas.put("sign_book_id", workflowDatasCsvDto.getSignBookId());
+            toExportDatas.put("sign_request_ids", workflowDatasCsvDto.getWorkflowDatasSignRequestIds());
+            toExportDatas.put("sign_request_titles", workflowDatasCsvDto.getWorkflowDatasSignRequestTitles());
+            toExportDatas.put("sign_book_statut", workflowDatasCsvDto.getSignBookStatus());
+            toExportDatas.put("sign_book_create_by", workflowDatasCsvDto.getSignBookCreateBy());
+            toExportDatas.put("sign_book_create_date", workflowDatasCsvDto.getSignBookCreateDate());
+            toExportDatas.put("completed_date", workflowDatasCsvDto.getCompletedDate());
+            toExportDatas.put("completed_by", workflowDatasCsvDto.getCompletedBy());
+            toExportDatas.put("current_step_number", (Arrays.stream(workflowDatasCsvDto.getWorkflowDatasStepsActionsTypes().split(",")).filter(s -> !s.equals("none")).count() + 1) + "");
+            toExportDatas.put("current_step_id", workflowDatasCsvDto.getCurrentStepId());
+            toExportDatas.put("current_step_description", workflowDatasCsvDto.getCurrentStepDescription());
+            for(int i = 0; i < workflowDatasCsvDto.getWorkflowDatasStepsActionsTypes().split(",").length; i++) {
+                toExportDatas.put("sign_step_" + (i + 1) + "_email", workflowDatasCsvDto.getWorkflowDatasStepsRecipientsEmails().split(",")[i]);
+                toExportDatas.put("sign_step_" + (i + 1) + "_type", workflowDatasCsvDto.getWorkflowDatasStepsActionsTypes().split(",")[i]);
+                toExportDatas.put("sign_step_" + (i + 1) + "_date", workflowDatasCsvDto.getWorkflowDatasStepsActionsDates().split(",")[i]);
             }
             dataDatas.add(toExportDatas);
         }

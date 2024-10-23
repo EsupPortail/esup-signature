@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.service.interfaces.workflow;
 
-import org.esupportail.esupsignature.dto.RecipientWsDto;
+import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.entity.Target;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;

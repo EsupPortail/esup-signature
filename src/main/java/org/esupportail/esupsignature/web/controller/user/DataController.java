@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.dto.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.Form;
