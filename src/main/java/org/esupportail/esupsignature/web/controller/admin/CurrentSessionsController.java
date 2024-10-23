@@ -62,25 +62,28 @@ public class CurrentSessionsController {
 		List<SessionInformation> sessions = new ArrayList<>();
 		for(Object principal : sessionRegistry.getAllPrincipals()) {
 			for(SessionInformation sessionInformation: sessionRegistry.getAllSessions(principal, false)) {
+				HttpSessionViewDto httpSession;
 				if (allSessions.containsKey(sessionInformation.getSessionId())) {
-					HttpSessionViewDto httpSession = allSessions.get(sessionInformation.getSessionId());
-					httpSession.setLastRequest(sessionInformation.getLastRequest());
-					httpSession.setUserEppn(((UserDetails) principal).getUsername());
+					httpSession = allSessions.get(sessionInformation.getSessionId());
 					sessions.addAll(sessionRegistry.getAllSessions(principal, false));
 				} else {
-					HttpSessionViewDto httpSession = new HttpSessionViewDto();
+					httpSession = new HttpSessionViewDto();
 					httpSession.setSessionId(sessionInformation.getSessionId());
-					httpSession.setLastRequest(sessionInformation.getLastRequest());
-					httpSession.setUserEppn(((UserDetails) principal).getUsername());
 					allSessions.put(sessionInformation.getSessionId(), httpSession);
 				}
+				if(sessionInformation.getLastRequest() != null) {
+					httpSession.setLastRequest(sessionInformation.getLastRequest());
+				} else {
+					httpSession.setLastRequest(httpSession.getCreatedDate());
+				}
+				httpSession.setUserEppn(((UserDetails) principal).getUsername());
 			}
 		}
 		sessions.sort((s1, s2) -> s2.getLastRequest().compareTo(s1.getLastRequest()));
 		try {
 			model.addAttribute("httpSessions",
 					allSessions.values().stream()
-							.sorted(Comparator.comparing(HttpSessionViewDto::getLastRequest, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+							.sorted(Comparator.nullsLast(Comparator.comparing(HttpSessionViewDto::getLastRequest)).reversed())
 							.toList());
 		} catch (Exception e) {
 			model.addAttribute("httpSessions", allSessions.values());
