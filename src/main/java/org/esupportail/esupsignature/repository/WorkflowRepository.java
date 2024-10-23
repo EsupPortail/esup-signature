@@ -36,8 +36,8 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     @Query(value = """
         select distinct
             sb.id as signBookId,
-            array_agg(sbsr.id) as workflowDatasSignRequestIds,
-            array_agg(sbsr.title) as workflowDatasSignRequestTitles,
+            array_agg(distinct sbsr.id) as workflowDatasSignRequestIds,
+            array_agg(distinct sbsr.title) as workflowDatasSignRequestTitles,
             sb.status as signBookStatus,
             cb.eppn as signBookCreateBy,
             sb.create_date as signBookCreateDate,
