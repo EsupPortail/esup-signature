@@ -27,10 +27,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RequestMapping("/admin/currentsessions")
 @Controller
@@ -71,19 +68,20 @@ public class CurrentSessionsController {
 					httpSession.setSessionId(sessionInformation.getSessionId());
 					allSessions.put(sessionInformation.getSessionId(), httpSession);
 				}
-				if(sessionInformation.getLastRequest() != null) {
-					httpSession.setLastRequest(sessionInformation.getLastRequest());
-				} else {
-					httpSession.setLastRequest(httpSession.getCreatedDate());
-				}
+				httpSession.setLastRequest(sessionInformation.getLastRequest());
 				httpSession.setUserEppn(((UserDetails) principal).getUsername());
+				httpSession.setExpired(sessionInformation.isExpired());
 			}
 		}
-		sessions.sort((s1, s2) -> s2.getLastRequest().compareTo(s1.getLastRequest()));
+		for(HttpSessionViewDto httpSession : allSessions.values()) {
+			if(httpSession.getLastRequest() == null) {
+				httpSession.setLastRequest(httpSession.getCreatedDate());
+			}
+		}
 		try {
 			model.addAttribute("httpSessions",
 					allSessions.values().stream()
-							.sorted(Comparator.nullsLast(Comparator.comparing(HttpSessionViewDto::getLastRequest)).reversed())
+							.sorted(Comparator.comparing(HttpSessionViewDto::getLastRequest, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
 							.toList());
 		} catch (Exception e) {
 			model.addAttribute("httpSessions", allSessions.values());
