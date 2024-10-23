@@ -71,9 +71,9 @@ public class WorkflowExportService {
             toExportDatas.put("current_step_id", workflowDatasDto.getCurrentStepId());
             toExportDatas.put("current_step_description", workflowDatasDto.getCurrentStepDescription());
             for(int i = 0; i < workflowDatasDto.getWorkflowDatasStepsActionsTypes().split(",").length; i++) {
-                toExportDatas.put("sign_step_" + i + "_email", workflowDatasDto.getWorkflowDatasStepsRecipientsEmails().split(",")[i]);
-                toExportDatas.put("sign_step_" + i + "_type", workflowDatasDto.getWorkflowDatasStepsActionsTypes().split(",")[i]);
-                toExportDatas.put("sign_step_" + i + "_date", workflowDatasDto.getWorkflowDatasStepsActionsDates().split(",")[i]);
+                toExportDatas.put("sign_step_" + (i + 1) + "_email", workflowDatasDto.getWorkflowDatasStepsRecipientsEmails().split(",")[i]);
+                toExportDatas.put("sign_step_" + (i + 1) + "_type", workflowDatasDto.getWorkflowDatasStepsActionsTypes().split(",")[i]);
+                toExportDatas.put("sign_step_" + (i + 1) + "_date", workflowDatasDto.getWorkflowDatasStepsActionsDates().split(",")[i]);
             }
             dataDatas.add(toExportDatas);
         }
