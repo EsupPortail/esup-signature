@@ -216,7 +216,11 @@ public class GlobalWsSecureController {
         if(globalProperties.getPdfOnly() && Arrays.stream(multipartFiles).anyMatch(m -> !Objects.equals(m.getContentType(), "application/pdf"))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Seul les fichiers PDF sont autorisés");
         }
-        signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn);
+        try {
+            signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn);
+        } catch(Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
         return ResponseEntity.ok().body(signBookId.toString());
     }
 
