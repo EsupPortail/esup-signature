@@ -1,7 +1,8 @@
 package org.esupportail.esupsignature.repository;
 
-import org.esupportail.esupsignature.dto.WorkflowDatasDto;
-import org.esupportail.esupsignature.dto.WorkflowDto;
+import org.esupportail.esupsignature.dto.export.WorkflowDatasCsvDto;
+import org.esupportail.esupsignature.dto.json.WorkflowDto;
+import org.esupportail.esupsignature.dto.chart.WorkflowStatusChartDto;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -59,5 +60,12 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
         where w.id = :id
         group by sb.id, sb.status, cb.eppn, sb.create_date, sb.update_date, sb.update_by, lw.current_step_id, ws.description
     """, nativeQuery = true)
-    List<WorkflowDatasDto> findWorkflowDatas(Long id);
+    List<WorkflowDatasCsvDto> findWorkflowDatas(Long id);
+
+    @Query("""
+            select sb.status as status, count(sb.status) as count from SignBook sb
+            where sb.liveWorkflow.workflow.id = :id and sb.deleted is not true group by sb.status
+            """)
+    List<WorkflowStatusChartDto> findWorkflowStatusCount(Long id);
+
 }

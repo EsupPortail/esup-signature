@@ -17,7 +17,7 @@
  */
 package org.esupportail.esupsignature.web.controller.admin;
 
-import org.esupportail.esupsignature.dto.HttpSession;
+import org.esupportail.esupsignature.dto.view.HttpSessionViewDto;
 import org.esupportail.esupsignature.service.security.HttpSessionsListenerService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.session.SessionInformation;
@@ -58,17 +58,17 @@ public class CurrentSessionsController {
 
 	@GetMapping
 	public String getCurrentSessions(Model model) {
-		Map<String, HttpSession> allSessions = httpSessionsListenerService.getSessions();
+		Map<String, HttpSessionViewDto> allSessions = httpSessionsListenerService.getSessions();
 		List<SessionInformation> sessions = new ArrayList<>();
 		for(Object principal : sessionRegistry.getAllPrincipals()) {
 			for(SessionInformation sessionInformation: sessionRegistry.getAllSessions(principal, false)) {
 				if (allSessions.containsKey(sessionInformation.getSessionId())) {
-					HttpSession httpSession = allSessions.get(sessionInformation.getSessionId());
+					HttpSessionViewDto httpSession = allSessions.get(sessionInformation.getSessionId());
 					httpSession.setLastRequest(sessionInformation.getLastRequest());
 					httpSession.setUserEppn(((UserDetails) principal).getUsername());
 					sessions.addAll(sessionRegistry.getAllSessions(principal, false));
 				} else {
-					HttpSession httpSession = new HttpSession();
+					HttpSessionViewDto httpSession = new HttpSessionViewDto();
 					httpSession.setSessionId(sessionInformation.getSessionId());
 					httpSession.setLastRequest(sessionInformation.getLastRequest());
 					httpSession.setUserEppn(((UserDetails) principal).getUsername());
@@ -80,7 +80,7 @@ public class CurrentSessionsController {
 		try {
 			model.addAttribute("httpSessions",
 					allSessions.values().stream()
-							.sorted(Comparator.comparing(HttpSession::getLastRequest, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+							.sorted(Comparator.comparing(HttpSessionViewDto::getLastRequest, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
 							.toList());
 		} catch (Exception e) {
 			model.addAttribute("httpSessions", allSessions.values());
