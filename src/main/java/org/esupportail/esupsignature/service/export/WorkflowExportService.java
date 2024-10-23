@@ -12,10 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class WorkflowExportService {
@@ -70,11 +67,14 @@ public class WorkflowExportService {
             toExportDatas.put("sign_book_create_date", workflowDatasDto.getSignBookCreateDate());
             toExportDatas.put("completed_date", workflowDatasDto.getCompletedDate());
             toExportDatas.put("completed_by", workflowDatasDto.getCompletedBy());
+            toExportDatas.put("current_step_number", (Arrays.stream(workflowDatasDto.getWorkflowDatasStepsActionsTypes().split(",")).filter(s -> !s.equals("none")).count() + 1) + "");
             toExportDatas.put("current_step_id", workflowDatasDto.getCurrentStepId());
             toExportDatas.put("current_step_description", workflowDatasDto.getCurrentStepDescription());
-            toExportDatas.put("sign_steps_emails", workflowDatasDto.getWorkflowDatasStepsRecipientsEmails());
-            toExportDatas.put("sign_steps_types", workflowDatasDto.getWorkflowDatasStepsActionsTypes());
-            toExportDatas.put("sign_steps_dates", workflowDatasDto.getWorkflowDatasStepsActionsDates());
+            for(int i = 0; i < workflowDatasDto.getWorkflowDatasStepsActionsTypes().split(",").length; i++) {
+                toExportDatas.put("sign_step_" + i + "_email", workflowDatasDto.getWorkflowDatasStepsRecipientsEmails().split(",")[i]);
+                toExportDatas.put("sign_step_" + i + "_type", workflowDatasDto.getWorkflowDatasStepsActionsTypes().split(",")[i]);
+                toExportDatas.put("sign_step_" + i + "_date", workflowDatasDto.getWorkflowDatasStepsActionsDates().split(",")[i]);
+            }
             dataDatas.add(toExportDatas);
         }
         return dataDatas;
