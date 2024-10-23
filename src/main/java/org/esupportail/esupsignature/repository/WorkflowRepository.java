@@ -57,7 +57,7 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
              join live_workflow_step lws on lws.id = lw.current_step_id
              join workflow_step ws on ws.id = lws.workflow_step_id
              join workflow w on w.id = lw.workflow_id
-        where w.id = :id
+        where w.id = :id and sb.deleted is not true
         group by sb.id, sb.status, cb.eppn, sb.create_date, sb.update_date, sb.update_by, lw.current_step_id, ws.description
     """, nativeQuery = true)
     List<WorkflowDatasCsvDto> findWorkflowDatas(Long id);
