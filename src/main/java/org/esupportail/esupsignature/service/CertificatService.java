@@ -25,6 +25,8 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,7 +43,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class CertificatService {
+public class CertificatService implements HealthIndicator {
 
     private static final Logger logger = LoggerFactory.getLogger(CertificatService.class);
 
@@ -205,11 +207,15 @@ public class CertificatService {
             logger.debug("no seal certificat found", e);
         }
         if(!dssPrivateKeyEntries.isEmpty()) {
+            if(!isCertificatWasPresent) {
+                String message = "certificat was found on " + globalProperties.getRootUrl();
+                mailService.sendAdminError("Seal certificat UP", message);
+            }
             isCertificatWasPresent = true;
             privateKeysCache.put("keys", dssPrivateKeyEntries);
         } else if(isCertificatWasPresent) {
             String message = "certificat was present but not found on " + globalProperties.getRootUrl();
-            mailService.sendAdminError(message, message);
+            mailService.sendAdminError("Seal certificat DOWN", message);
             isCertificatWasPresent = false;
             logger.error(message);
         }
@@ -218,7 +224,8 @@ public class CertificatService {
 
     public boolean checkCertificatProblem() {
         boolean certificatProblem = false;
-        if(isCertificatWasPresent && getSealCertificats().isEmpty()) {
+        List<DSSPrivateKeyEntry> dssPrivateKeyEntries = getSealCertificats();
+        if(isCertificatWasPresent && dssPrivateKeyEntries.isEmpty()) {
             certificatProblem = true;
         }
         Date lastDate = new DateTime().minusDays(globalProperties.getNbDaysBeforeCertifWarning()).toDate();
@@ -228,7 +235,7 @@ public class CertificatService {
                 break;
             }
         }
-        for(eu.europa.esig.dss.token.DSSPrivateKeyEntry dssPrivateKeyEntry : getSealCertificats()) {
+        for(eu.europa.esig.dss.token.DSSPrivateKeyEntry dssPrivateKeyEntry : dssPrivateKeyEntries) {
             if(dssPrivateKeyEntry.getCertificate().getNotAfter().before(lastDate)) {
                 certificatProblem = true;
                 break;
@@ -237,4 +244,12 @@ public class CertificatService {
         return certificatProblem;
     }
 
+    @Override
+    public Health health() {
+        if(isCertificatWasPresent) {
+            return Health.up().withDetail("seal certificat", "UP").build();
+        } else {
+            return Health.down().withDetail("seal certificat", "DOWN").build();
+        }
+    }
 }
