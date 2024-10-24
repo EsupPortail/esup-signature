@@ -796,3 +796,11 @@ button.close {
 .close {
     font-size: 14px;
 }
+
+.floating-chart {
+    position: absolute;
+    width: 400px;
+    right:200px;
+    margin-top: -40px;
+    background-color: #FFF;
+}
