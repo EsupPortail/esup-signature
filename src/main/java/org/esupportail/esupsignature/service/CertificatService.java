@@ -29,6 +29,7 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.Cipher;
@@ -161,7 +162,7 @@ public class CertificatService implements HealthIndicator {
     }
 
     public SignatureTokenConnection getSealToken() {
-        if((globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
+        if((!StringUtils.hasText(globalProperties.getSealCertificatDriver()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
            return getPkcsToken();
         } else if(globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC)){
             return openSCSignatureToken;
@@ -170,11 +171,11 @@ public class CertificatService implements HealthIndicator {
     }
 
     public AbstractKeyStoreTokenConnection getPkcsToken() throws EsupSignatureKeystoreException {
-        if(globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatPin() != null) {
-            if (globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) {
+        if(!StringUtils.hasText(globalProperties.getSealCertificatPin())) {
+            if (!StringUtils.hasText(globalProperties.getSealCertificatDriver()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) {
                 KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
                 return new eu.europa.esig.dss.token.Pkcs11SignatureToken(globalProperties.getSealCertificatDriver(), passwordProtection);
-            } else if (globalProperties.getSealCertificatFile() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
+            } else if (!StringUtils.hasText(globalProperties.getSealCertificatFile()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
                 try {
                     return userKeystoreService.getPkcs12Token(new FileInputStream(globalProperties.getSealCertificatFile()), globalProperties.getSealCertificatPin());
                 } catch (FileNotFoundException e) {
@@ -198,7 +199,7 @@ public class CertificatService implements HealthIndicator {
         if(privateKeysCache.getIfPresent("keys") != null) return privateKeysCache.getIfPresent("keys");
         List<DSSPrivateKeyEntry> dssPrivateKeyEntries = new ArrayList<>();
         try {
-            if ((globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
+            if ((!StringUtils.hasText(globalProperties.getSealCertificatDriver()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
                 dssPrivateKeyEntries = getPkcsToken().getKeys();
             } else if (globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC)) {
                 dssPrivateKeyEntries = openSCSignatureToken.getKeys();
@@ -246,6 +247,7 @@ public class CertificatService implements HealthIndicator {
 
     @Override
     public Health health() {
+        if(!StringUtils.hasText(globalProperties.getSealCertificatPin())) return Health.up().build();
         if(isCertificatWasPresent) {
             return Health.up().withDetail("seal certificat", "UP").build();
         } else {
