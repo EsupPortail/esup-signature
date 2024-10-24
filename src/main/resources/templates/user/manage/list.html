@@ -137,7 +137,7 @@
                                         chart[[${iterator.index}]].update();
                                     </script>
                                 </div>
-                                <div class="border border-secondary-subtle rounded-1 p-2" th:onmouseleave="'$(\'#big-chart-' + ${iterator.index} + '\').toggle();'" th:id="'big-chart-' + ${iterator.index}" style="position: absolute;width: 400px;right:200px;background-color: #FFF;display: none">
+                                <div class="border border-secondary-subtle rounded-1 p-2 floating-chart" th:onmouseleave="'$(\'#big-chart-' + ${iterator.index} + '\').toggle();'" th:id="'big-chart-' + ${iterator.index}" style="display: none">
                                     <canvas th:id="'chart-workflow-sign-books-status-big-' + ${iterator.index}"></canvas>
                                     <script th:inline="javascript">
                                         let ctxB[[${iterator.index}]] = document.getElementById('chart-workflow-sign-books-status-big-[[${iterator.index}]]');
