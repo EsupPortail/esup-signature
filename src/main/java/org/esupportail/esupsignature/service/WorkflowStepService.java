@@ -1,8 +1,8 @@
 package org.esupportail.esupsignature.service;
 
 import jakarta.annotation.Resource;
-import org.esupportail.esupsignature.dto.RecipientWsDto;
-import org.esupportail.esupsignature.dto.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.json.RecipientWsDto;
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -153,6 +153,7 @@ public class WorkflowStepService {
             workflowStep.setMaxRecipients(step.getMaxRecipients());
         }
         workflowStep.setAttachmentRequire(step.getAttachmentRequire());
+        workflowStep.setAttachmentAlert(step.getAttachmentAlert());
         workflowStep.setAutoSign(autoSign);
         if(autoSign) {
             if(certificatId != null) {

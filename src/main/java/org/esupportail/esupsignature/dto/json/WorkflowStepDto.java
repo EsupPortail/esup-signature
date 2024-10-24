@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.dto;
+package org.esupportail.esupsignature.dto.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -44,6 +44,8 @@ public class WorkflowStepDto {
 	private String comment;
 
 	private Boolean attachmentRequire = false;
+
+	private Boolean attachmentAlert = false;
 
 	private Integer maxRecipients = 99;
 
@@ -210,6 +212,14 @@ public class WorkflowStepDto {
 
 	public void setAttachmentRequire(Boolean attachmentRequire) {
 		this.attachmentRequire = attachmentRequire;
+	}
+
+	public Boolean getAttachmentAlert() {
+		return attachmentAlert;
+	}
+
+	public void setAttachmentAlert(Boolean attachmentAlert) {
+		this.attachmentAlert = attachmentAlert;
 	}
 
 	public Integer getMaxRecipients() {

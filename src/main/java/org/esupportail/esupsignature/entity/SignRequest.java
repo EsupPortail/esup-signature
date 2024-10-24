@@ -71,6 +71,9 @@ public class SignRequest {
 
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
+    @JoinTable(
+            indexes = @Index(name = "idx_sign_request_params_sign_request_id", columnList = "sign_request_id")
+    )
     private List<SignRequestParams> signRequestParams = new LinkedList<>();
 
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
@@ -84,6 +87,9 @@ public class SignRequest {
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JsonSerialize(using = RecipientActionMapSerializer.class)
+    @JoinTable(
+            indexes = @Index(name = "idx_recipient_has_signed_recipient_has_signed_key", columnList = "recipient_has_signed_key")
+    )
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
     @OneToOne(cascade = CascadeType.DETACH)

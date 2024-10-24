@@ -5,20 +5,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
-import jakarta.annotation.Resource;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
-import org.esupportail.esupsignature.dto.RecipientWsDto;
-import org.esupportail.esupsignature.dto.UserDto;
+import org.esupportail.esupsignature.dto.json.RecipientWsDto;
+import org.esupportail.esupsignature.dto.view.UserDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
@@ -76,8 +74,17 @@ public class UserService {
 
     private final SmsService smsService;
 
-    @Resource
-    private ObjectMapper objectMapper;
+    private final ShibProperties shibProperties;
+
+    private final UserRepository userRepository;
+
+    private final FileService fileService;
+
+    private final DocumentService documentService;
+
+    private final UserListService userListService;
+
+    private final ObjectMapper objectMapper;
 
     public UserService(GlobalProperties globalProperties,
                        WebSecurityProperties webSecurityProperties,
@@ -86,7 +93,7 @@ public class UserService {
                        @Autowired(required = false) LdapAliasService ldapAliasService,
                        @Autowired(required = false) LdapGroupService ldapGroupService,
                        @Autowired(required = false) LdapOrganizationalUnitService ldapOrganizationalUnitService,
-                       @Autowired(required = false) SmsService smsService) {
+                       @Autowired(required = false) SmsService smsService, ShibProperties shibProperties, UserRepository userRepository, FileService fileService, DocumentService documentService, UserListService userListService, ObjectMapper objectMapper) {
         this.globalProperties = globalProperties;
         this.webSecurityProperties = webSecurityProperties;
         this.ldapPersonService = ldapPersonService;
@@ -95,25 +102,13 @@ public class UserService {
         this.ldapGroupService = ldapGroupService;
         this.ldapOrganizationalUnitService = ldapOrganizationalUnitService;
         this.smsService = smsService;
+        this.shibProperties = shibProperties;
+        this.userRepository = userRepository;
+        this.fileService = fileService;
+        this.documentService = documentService;
+        this.userListService = userListService;
+        this.objectMapper = objectMapper;
     }
-
-    @Resource
-    private ShibProperties shibProperties;
-
-    @Resource
-    private UserRepository userRepository;
-
-    @Resource
-    private FileService fileService;
-
-    @Resource
-    private DocumentService documentService;
-
-    @Resource
-    private SignRequestParamsRepository signRequestParamsRepository;
-
-    @Resource
-    private UserListService userListService;
 
     public User getById(Long id) {
         return userRepository.findById(id).get();
@@ -121,6 +116,10 @@ public class UserService {
 
     public User getByEppn(String eppn) {
         return  userRepository.findByEppn(eppn).orElse(null);
+    }
+
+    public User getByAccessToken(String accessToken) {
+        return  userRepository.findByAccessToken(accessToken).orElse(null);
     }
 
     @Transactional
@@ -731,7 +730,7 @@ public class UserService {
     @Transactional
     public List<User> getUserWithoutCertificate(List<String> userEmails) {
         List<User> users = new ArrayList<>();
-        if(globalProperties.getSealCertificatPin() != null && globalProperties.getSealCertificatPin().isEmpty()) {
+        if(!StringUtils.hasText(globalProperties.getSealCertificatPin()) && globalProperties.getSealCertificatPin().isEmpty()) {
             userEmails.forEach(ue -> users.add(this.getUserByEmail(ue)));
             return users.stream().filter(u -> u.getKeystoreFileName() == null).collect(Collectors.toList());
         } else {
@@ -875,7 +874,7 @@ public class UserService {
     @Transactional
     public InputStream getDefaultImage(String eppn) throws IOException {
         User user = getByEppn(eppn);
-        return fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), false);
+        return fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail());
     }
 
     @Transactional
@@ -886,7 +885,7 @@ public class UserService {
     @Transactional
     public InputStream getDefaultParaphe(String eppn) throws IOException {
         User user = getByEppn(eppn);
-        return fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail(), false);
+        return fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail());
     }
 
     @Transactional
@@ -1006,5 +1005,11 @@ public class UserService {
                 user.getManagersRoles().remove(role);
             }
         }
+    }
+
+    @Transactional
+    public void renewToken(String userEppn) {
+        User user = getByEppn(userEppn);
+        user.setAccessToken(UUID.randomUUID().toString());
     }
 }

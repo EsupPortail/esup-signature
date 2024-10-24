@@ -6,8 +6,8 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import org.esupportail.esupsignature.dto.RecipientWsDto;
-import org.esupportail.esupsignature.dto.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.json.RecipientWsDto;
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
@@ -379,7 +379,7 @@ public class WorkflowService {
             recipients = recipients.stream().filter(r -> r.getStep().equals(stepNumber)).collect(Collectors.toList());
             for (RecipientWsDto recipient : recipients) {
                 String userEmail = recipient.getEmail();
-                for(String realUserEmail : recipientService.getCompleteRecipientList(Collections.singletonList(new RecipientWsDto(userEmail)))) {
+                for(String realUserEmail : recipientService.getAllRecipientsEmails(Collections.singletonList(new RecipientWsDto(userEmail)))) {
                     User user = userService.getUserByEmail(realUserEmail);
                     if(StringUtils.hasText(recipient.getPhone())) {
                         userService.updatePhone(user.getEppn(), recipient.getPhone());
@@ -703,4 +703,6 @@ public class WorkflowService {
             signBook.getLiveWorkflow().setWorkflow(workflow);
         }
     }
+
+
 }

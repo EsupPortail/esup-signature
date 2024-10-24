@@ -1,6 +1,8 @@
 package org.esupportail.esupsignature.web.ws;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.zxing.WriterException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -13,7 +15,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.esupportail.esupsignature.dto.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.json.RecipientWsDto;
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.AuditTrail;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
@@ -87,6 +90,7 @@ public class SignRequestWsController {
                                             "  \"forceAllSign\": true,\n" +
                                             "  \"comment\": \"string\",\n" +
                                             "  \"attachmentRequire\": true,\n" +
+                                           "  \"attachmentAlert\": false,\n" +
                                             "  \"maxRecipients\": 0\n" +
                                             "}]") String stepsJsonString,
                                     @RequestParam(required = false) @Parameter(description = "EPPN du créateur/propriétaire de la demande") String createByEppn,
@@ -176,9 +180,23 @@ public class SignRequestWsController {
     }
 
     @CrossOrigin
+    @PostMapping(value = "/update-recipients/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Modifier les destinataires d'une étape de demande de signature")
+    @PreAuthorize("@wsAccessTokenService.updateWorkflowAccess(#id, #xApiKey)")
+    public ResponseEntity<String> updateRecipients(@PathVariable Long id,
+                                                   @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey,
+                                                   @RequestPart("recipientWsDtosString") String recipientWsDtosString,
+                                                   @RequestParam Integer stepNumber) throws JsonProcessingException, EsupSignatureException {
+        List<RecipientWsDto> recipientWsDtos = new ObjectMapper().readValue(recipientWsDtosString, new TypeReference<List<RecipientWsDto>>() {});
+        SignRequest signRequest = signRequestService.getById(id);
+        signRequestService.replaceRecipientsToWorkflowStep(signRequest.getParentSignBook().getId(), stepNumber, recipientWsDtos);
+        return ResponseEntity.ok().build();
+    }
+
+    @CrossOrigin
     @DeleteMapping("/{id}")
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Supprimer une demande de signature définitivement")
-    @PreAuthorize("@wsAccessTokenService.deleteWorkflowAccess(#id, #xApiKey)")
+    @PreAuthorize("@wsAccessTokenService.updateWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<String> delete(@PathVariable Long id,
                                          @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         Long signBookId = signRequestService.getParentIdIfSignRequestUnique(id);
@@ -193,7 +211,7 @@ public class SignRequestWsController {
     @CrossOrigin
     @DeleteMapping("/soft/{id}")
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Supprimer une demande de signature")
-    @PreAuthorize("@wsAccessTokenService.deleteWorkflowAccess(#id, #xApiKey)")
+    @PreAuthorize("@wsAccessTokenService.updateWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<String> softDelete(@PathVariable Long id,
                                              @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         Long signBookId = signRequestService.getParentIdIfSignRequestUnique(id);
@@ -208,7 +226,7 @@ public class SignRequestWsController {
     @CrossOrigin
     @DeleteMapping("/{id}/signbook")
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Supprimer le parapheur dans lequel se trouve la demande ciblée")
-    @PreAuthorize("@wsAccessTokenService.deleteWorkflowAccess(#id, #xApiKey)")
+    @PreAuthorize("@wsAccessTokenService.updateWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<String> deleteSignBook(@PathVariable Long id,
                                                  @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         SignRequest signRequest = signRequestService.getById(id);
@@ -218,7 +236,7 @@ public class SignRequestWsController {
 
     @GetMapping(value = "/get-last-file/{id}")
     @ResponseBody
-    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = MediaType.APPLICATION_PDF_VALUE)))
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id,
                                                            @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureException {
@@ -228,7 +246,7 @@ public class SignRequestWsController {
 
     @GetMapping(value = "/get-last-file-and-report/{id}")
     @ResponseBody
-    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = MediaType.APPLICATION_PDF_VALUE)))
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<Void> getLastFileAndReport(@PathVariable("id") Long id,
                                                      @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
@@ -243,7 +261,7 @@ public class SignRequestWsController {
 
     @GetMapping(value = "/print-with-code/{id}")
     @ResponseBody
-    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande avec un datamatrix apposé dessus", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande avec un datamatrix apposé dessus", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = MediaType.APPLICATION_PDF_VALUE)))
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<Void> printWithCode(@PathVariable("id") Long id,
                                               @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse httpServletResponse) throws IOException, WriterException {
@@ -253,7 +271,7 @@ public class SignRequestWsController {
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer toutes les demandes", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = List.class), mediaType = "application/pdf")))
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer toutes les demandes", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = List.class), mediaType = MediaType.APPLICATION_JSON_VALUE)))
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public ResponseEntity<String> getAllSignRequests(@ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
         return ResponseEntity.ok(signRequestService.getAllToJSon());

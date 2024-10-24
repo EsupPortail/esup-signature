@@ -556,6 +556,18 @@ public class MailService {
         return mailSender;
     }
 
+    public void sendAdminError(String message, String trace) {
+        try {
+            MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
+            mimeMessage.setTo(globalProperties.getApplicationEmail());
+            mimeMessage.setSubject("esup-signature : " + message);
+            mimeMessage.setText(trace, false);
+            sendMail(mimeMessage.getMimeMessage(), null);
+        } catch (MessagingException e) {
+            logger.error("unable to send ADMIN ERROR email", e);
+        }
+    }
+
 //    public MimeMessage signMessage(MimeMessage message) {
 //        try {
 //            if(globalProperties.getSignEmailWithSealCertificat()) {

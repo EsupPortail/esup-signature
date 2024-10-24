@@ -176,6 +176,10 @@
                     <td>Identifiant</td>
                     <td th:text="${user.eppn}"></td>
                 </tr>
+                <tr th:if="${user.userType.name == 'ldap'}">
+                    <td>Token d’accès API</td>
+                    <td><input type="text" th:value="${user.accessToken}" disabled></td>
+                </tr>
                 <tr th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" >
                     <td>Auth</td>
                     <td th:text="${securityServiceName}"></td>
@@ -200,8 +204,8 @@
                                 <span class="sr-only">Next</span>
                             </button>
                         </div>
-                        <div th:unless="${userImagesIds.size() > 0 && userImagesIds.get(0) != null}" class="alert alert-danger">
-                            Pas de signature
+                        <div th:unless="${userImagesIds.size() > 0 && userImagesIds.get(0) != null}" class="text-secondary">
+                            pas d’image de signature personalisée
                         </div>
                     </td>
                 </tr>
@@ -215,8 +219,8 @@
                                 <span th:text="${keystoreFileName}"></span>
                             </a>
                         </div>
-                        <div th:if="${keystoreFileName == null}" class="alert alert-danger">
-                            Pas de magasin de certificats
+                        <div th:if="${keystoreFileName == null}" class="text-secondary">
+                            pas de magasin de certificats
                         </div>
                     </td>
                 </tr>

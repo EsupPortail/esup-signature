@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
-import org.esupportail.esupsignature.dto.UserDto;
+import org.esupportail.esupsignature.dto.view.UserDto;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.springframework.data.domain.Page;
@@ -24,6 +24,7 @@ public interface UserRepository extends CrudRepository<User, Long>  {
     @Query("select u from User u where (u.eppn = :eppn or u.phone = :phone or u.email = :email) and u.userType != 'system'")
     Page<User> findByEppnOrPhoneOrEmailAndUserTypeNot(String eppn, String phone, String email, Pageable pageable);
     Optional<User> findByEppn(String eppn);
+    Optional<User> findByAccessToken(String accessToken);
     @Query("select u from User u where u.eppn like :eppn%")
     List<User> findByEppnStartingWith(String eppn);
     @Query("select u from User u where upper(u.name) like :name%")

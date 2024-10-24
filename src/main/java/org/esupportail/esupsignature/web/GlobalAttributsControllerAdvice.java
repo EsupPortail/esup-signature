@@ -127,7 +127,7 @@ public class GlobalAttributsControllerAdvice {
         }
         model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
         model.addAttribute("maxInactiveInterval", httpSession.getMaxInactiveInterval());
-        model.addAttribute("expiredCertificat", certificatService.checkExpiredCertificat());
+        model.addAttribute("certificatProblem", certificatService.checkCertificatProblem());
 
     }
 

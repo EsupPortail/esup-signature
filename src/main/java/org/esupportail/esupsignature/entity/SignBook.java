@@ -78,9 +78,15 @@ public class SignBook {
     private Set<User> viewers = new HashSet<>();
 
     @ManyToMany
+    @JoinTable(
+            indexes = @Index(name = "idx_team_sign_book_id", columnList = "sign_book_id")
+    )
     private Set<User> team = new HashSet<>();
 
     @ManyToMany
+    @JoinTable(
+            indexes = @Index(name = "idx_hided_by_sign_book_id", columnList = "sign_book_id")
+    )
     private Set<User> hidedBy = new HashSet<>();
 
     private Boolean forceAllDocsSign = false;

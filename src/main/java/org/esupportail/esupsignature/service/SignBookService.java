@@ -10,8 +10,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.model.DssMultipartFile;
-import org.esupportail.esupsignature.dto.RecipientWsDto;
-import org.esupportail.esupsignature.dto.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.json.RecipientWsDto;
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
@@ -607,9 +607,8 @@ public class SignBookService {
         if(signBook == null) return false;
         if(signBook.getSignRequests().size() == 1) {
             User user = userService.getByEppn(userEppn);
-            Data data = dataService.getBySignBook(signBook);
-            if(data != null && data.getForm() != null && data.getForm().getWorkflow() != null && !data.getForm().getWorkflow().getManagers().isEmpty()) {
-                if (data.getForm().getWorkflow().getManagers().contains(user.getEmail())) {
+            if(signBook.getLiveWorkflow().getWorkflow() != null && !signBook.getLiveWorkflow().getWorkflow().getManagers().isEmpty()) {
+                if (signBook.getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail()) ||  signBook.getLiveWorkflow().getWorkflow().getDashboardRoles().stream().anyMatch(r -> user.getRoles().contains(r))) {
                     return true;
                 }
             }
@@ -676,6 +675,9 @@ public class SignBookService {
         SignBook signBook = getById(id);
         if(stepNumber == null) stepNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
         int currentStepNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
+        if(step.getRepeatable()) {
+            signBook.getLiveWorkflow().getCurrentStep().setRepeatable(false);
+        }
         LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, null, step);
         if (stepNumber == -1) {
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
@@ -1941,7 +1943,10 @@ public class SignBookService {
 
     @Transactional
     public void cleanUploadingSignBooks() {
-        for(SignBook signBook : signBookRepository.findByStatus(SignRequestStatus.uploading)){
+        List<SignBook> toDelete = new ArrayList<>();
+        toDelete.addAll(signBookRepository.findEmpties());
+        toDelete.addAll(signBookRepository.findByStatus(SignRequestStatus.uploading));
+        for(SignBook signBook : toDelete){
             deleteDefinitive(signBook.getId(), "system");
         }
     }

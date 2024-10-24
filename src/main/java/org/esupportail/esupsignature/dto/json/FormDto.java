@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.dto;
+package org.esupportail.esupsignature.dto.json;
 
 import org.esupportail.esupsignature.entity.Field;
 import org.esupportail.esupsignature.entity.Workflow;

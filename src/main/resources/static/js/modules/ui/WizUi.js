@@ -58,7 +58,7 @@ export class WizUi {
         this.div.html(html);
         this.input = $("#multipartFiles");
         this.fileInput = new FilesInput(this.input, this.maxSize, this.csrf, null, false, null);
-        this.input.on("filebatchuploadcomplete", function() {
+        this.input.on("filebatchuploadsuccess", function() {
             $.ajax({
                 url: "/user/wizard/start-self-sign/" + self.newSignBookId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
                 type: 'POST',
@@ -119,7 +119,7 @@ export class WizUi {
         if($("#recipientsCCEmails").length) {
             self.recipientCCSelect = new SelectUser("recipientsCCEmails", null, null, this.csrf);
         }
-        this.input.on("filebatchuploadcomplete", e => this.fastSignSubmitDatas());
+        this.input.on("filebatchuploadsuccess", e => this.fastSignSubmitDatas());
         $("#send-draft-button").on('click', function() {
             self.wizCreateSign("fast");
         });
@@ -181,7 +181,7 @@ export class WizUi {
         if($("#recipientsCCEmails").length) {
             this.recipientCCSelect = new SelectUser("recipientsCCEmails", null, null, this.csrf);
         }
-        this.input.on("filebatchuploadcomplete", function() {
+        this.input.on("filebatchuploadsuccess", function() {
             self.workflowSignNextStep();
         });
         $("#wiz-start-button").on('click', function (){

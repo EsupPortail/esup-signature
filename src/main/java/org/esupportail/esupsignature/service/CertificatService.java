@@ -10,7 +10,6 @@ import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
-import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.entity.Certificat;
@@ -19,14 +18,18 @@ import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.repository.CertificatRepository;
 import org.esupportail.esupsignature.repository.WorkflowStepRepository;
+import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.utils.sign.OpenSCSignatureToken;
 import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.Cipher;
@@ -41,7 +44,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class CertificatService {
+public class CertificatService implements HealthIndicator {
 
     private static final Logger logger = LoggerFactory.getLogger(CertificatService.class);
 
@@ -49,31 +52,32 @@ public class CertificatService {
 
     private static LoadingCache<String, List<DSSPrivateKeyEntry>> privateKeysCache;
 
-    @Resource
-    private UserService userService;
+    private static boolean isCertificatWasPresent = false;
 
-    private UserKeystoreService userKeystoreService;
+    private final UserService userService;
 
-    @Autowired(required = false)
-    public void setUserKeystoreService(UserKeystoreService userKeystoreService) {
-        this.userKeystoreService = userKeystoreService;
-    }
+    private final UserKeystoreService userKeystoreService;
 
-    @Resource
-    private CertificatRepository certificatRepository;
+    private final MailService mailService;
 
-    @Resource
-    private DocumentService documentService;
+    private final CertificatRepository certificatRepository;
 
-    @Resource
-    private WorkflowStepRepository workflowStepRepository;
+    private final DocumentService documentService;
+
+    private final WorkflowStepRepository workflowStepRepository;
 
     private final GlobalProperties globalProperties;
 
     private final SignProperties signProperties;
 
-    public CertificatService(GlobalProperties globalProperties, SignProperties signProperties) {
+    public CertificatService(GlobalProperties globalProperties, SignProperties signProperties, UserService userService, @Autowired(required = false) UserKeystoreService userKeystoreService, MailService mailService, CertificatRepository certificatRepository, DocumentService documentService, WorkflowStepRepository workflowStepRepository) {
         this.globalProperties = globalProperties;
+        this.userService = userService;
+        this.userKeystoreService = userKeystoreService;
+        this.mailService = mailService;
+        this.certificatRepository = certificatRepository;
+        this.documentService = documentService;
+        this.workflowStepRepository = workflowStepRepository;
         this.openSCSignatureToken = new OpenSCSignatureToken(new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray()), signProperties);
         this.signProperties = signProperties;
         privateKeysCache = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<>() {
@@ -158,7 +162,7 @@ public class CertificatService {
     }
 
     public SignatureTokenConnection getSealToken() {
-        if((globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
+        if((!StringUtils.hasText(globalProperties.getSealCertificatDriver()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
            return getPkcsToken();
         } else if(globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC)){
             return openSCSignatureToken;
@@ -167,11 +171,11 @@ public class CertificatService {
     }
 
     public AbstractKeyStoreTokenConnection getPkcsToken() throws EsupSignatureKeystoreException {
-        if(globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatPin() != null) {
-            if (globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) {
+        if(!StringUtils.hasText(globalProperties.getSealCertificatPin())) {
+            if (!StringUtils.hasText(globalProperties.getSealCertificatDriver()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) {
                 KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
                 return new eu.europa.esig.dss.token.Pkcs11SignatureToken(globalProperties.getSealCertificatDriver(), passwordProtection);
-            } else if (globalProperties.getSealCertificatFile() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
+            } else if (!StringUtils.hasText(globalProperties.getSealCertificatFile()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
                 try {
                     return userKeystoreService.getPkcs12Token(new FileInputStream(globalProperties.getSealCertificatFile()), globalProperties.getSealCertificatPin());
                 } catch (FileNotFoundException e) {
@@ -195,7 +199,7 @@ public class CertificatService {
         if(privateKeysCache.getIfPresent("keys") != null) return privateKeysCache.getIfPresent("keys");
         List<DSSPrivateKeyEntry> dssPrivateKeyEntries = new ArrayList<>();
         try {
-            if ((globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
+            if ((!StringUtils.hasText(globalProperties.getSealCertificatDriver()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
                 dssPrivateKeyEntries = getPkcsToken().getKeys();
             } else if (globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC)) {
                 dssPrivateKeyEntries = openSCSignatureToken.getKeys();
@@ -203,26 +207,51 @@ public class CertificatService {
         } catch (Exception e) {
             logger.debug("no seal certificat found", e);
         }
-        privateKeysCache.put("keys", dssPrivateKeyEntries);
+        if(!dssPrivateKeyEntries.isEmpty()) {
+            if(!isCertificatWasPresent) {
+                String message = "certificat was found on " + globalProperties.getRootUrl();
+                mailService.sendAdminError("Seal certificat UP", message);
+            }
+            isCertificatWasPresent = true;
+            privateKeysCache.put("keys", dssPrivateKeyEntries);
+        } else if(isCertificatWasPresent) {
+            String message = "certificat was present but not found on " + globalProperties.getRootUrl();
+            mailService.sendAdminError("Seal certificat DOWN", message);
+            isCertificatWasPresent = false;
+            logger.error(message);
+        }
         return dssPrivateKeyEntries;
     }
 
-    public boolean checkExpiredCertificat() {
-        boolean expiredCertificat = false;
+    public boolean checkCertificatProblem() {
+        boolean certificatProblem = false;
+        List<DSSPrivateKeyEntry> dssPrivateKeyEntries = getSealCertificats();
+        if(isCertificatWasPresent && dssPrivateKeyEntries.isEmpty()) {
+            certificatProblem = true;
+        }
         Date lastDate = new DateTime().minusDays(globalProperties.getNbDaysBeforeCertifWarning()).toDate();
         for(Certificat certificat : getAllCertificats()) {
             if(certificat.getExpireDate().before(lastDate)) {
-                expiredCertificat = true;
+                certificatProblem = true;
                 break;
             }
         }
-        for(eu.europa.esig.dss.token.DSSPrivateKeyEntry dssPrivateKeyEntry : getSealCertificats()) {
+        for(eu.europa.esig.dss.token.DSSPrivateKeyEntry dssPrivateKeyEntry : dssPrivateKeyEntries) {
             if(dssPrivateKeyEntry.getCertificate().getNotAfter().before(lastDate)) {
-                expiredCertificat = true;
+                certificatProblem = true;
                 break;
             }
         }
-        return expiredCertificat;
+        return certificatProblem;
     }
 
+    @Override
+    public Health health() {
+        if(!StringUtils.hasText(globalProperties.getSealCertificatPin())) return Health.up().build();
+        if(isCertificatWasPresent) {
+            return Health.up().withDetail("seal certificat", "UP").build();
+        } else {
+            return Health.down().withDetail("seal certificat", "DOWN").build();
+        }
+    }
 }

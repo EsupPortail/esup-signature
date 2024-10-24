@@ -27,7 +27,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("""
             select distinct sb from SignBook sb
             where (:workflowFilter is null or sb.workflowName = :workflowFilter)
-            and (:docTitleFilter is null or sb.subject = :docTitleFilter)
+            and (:docTitleFilter is null or sb.subject like concat('%', :docTitleFilter, '%'))
             and size(sb.signRequests) > 0
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
             and (:statusFilter is null or sb.status = :statusFilter)
@@ -75,6 +75,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("""
             select distinct sb.subject from SignBook sb
             where (:workflowFilter is null or sb.workflowName = :workflowFilter)
+            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             """)
     List<String> findByWorkflowNameSubjects(String workflowFilter);
 
@@ -197,8 +198,11 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
 
     Page<SignBook> findByStatus(SignRequestStatus signRequestStatus, Pageable pageable);
 
-    @Query("select sb from SignBook sb where sb.liveWorkflow.workflow.id = :workflowId")
+    @Query("select sb from SignBook sb where sb.liveWorkflow.workflow.id = :workflowId and sb.status != 'uploading'")
     List<SignBook> findByWorkflowId(Long workflowId);
+
+    @Query("select sb from SignBook sb where size(sb.signRequests) = 0 and sb.status != 'uploading'")
+    List<SignBook> findEmpties();
 
     @Query("select sb from SignBook sb where sb.liveWorkflow.workflow = :workflow and (sb.hidedBy) is empty order by sb.id")
     List<SignBook> findByLiveWorkflowWorkflow(Workflow workflow);

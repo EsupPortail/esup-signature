@@ -1,9 +1,8 @@
 package org.esupportail.esupsignature.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import jakarta.persistence.*;
 import java.util.Date;
 
 @Entity
@@ -15,7 +14,6 @@ public class Comment {
     private Long id;
 
     @ManyToOne
-    @JsonIgnore
     private User createBy;
 
     @Temporal(TemporalType.TIMESTAMP)

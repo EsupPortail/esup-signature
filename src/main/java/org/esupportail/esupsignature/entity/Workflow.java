@@ -65,7 +65,7 @@ public class Workflow {
 
     private String documentsSourceUri;
 
-    private Boolean forbidDownloadsBeforeEnd = true;
+    private Boolean forbidDownloadsBeforeEnd = false;
 
     @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
     private Set<String> managers = new HashSet<>();
@@ -374,4 +374,5 @@ public class Workflow {
     public void setSignRequestParamsDetectionPattern(String signRequestParamsDetectionPattern) {
         this.signRequestParamsDetectionPattern = signRequestParamsDetectionPattern;
     }
+
 }

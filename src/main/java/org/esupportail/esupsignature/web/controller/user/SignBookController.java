@@ -1,9 +1,16 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.esupportail.esupsignature.dto.json.RecipientWsDto;
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -12,8 +19,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
-import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.WorkflowStepDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -23,6 +28,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -36,10 +42,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.io.IOException;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -428,5 +431,25 @@ public class SignBookController {
         }
         redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
         return new ResponseEntity<>(true, HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/update-recipients/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Modifier les destinataires d'une étape de demande de signature")
+    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
+    public String updateRecipients(@PathVariable Long id,
+                                   @ModelAttribute("authUserEppn") String authUserEppn,
+                                   @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey,
+                                   @RequestParam("recipientsEmails") List<String> recipientsEmails,
+                                   @RequestParam Integer stepNumber, RedirectAttributes redirectAttributes) throws JsonProcessingException {
+        List<RecipientWsDto> recipientWsDtos = new ArrayList<>();
+        for(String recipientsEmail: recipientsEmails) {
+            recipientWsDtos.add(new RecipientWsDto(recipientsEmail));
+        }
+        try {
+            signRequestService.replaceRecipientsToWorkflowStep(id, stepNumber, recipientWsDtos);
+        } catch (EsupSignatureException e) {
+            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+        }
+        return "redirect:/user/signbooks/update/" + id;
     }
 }

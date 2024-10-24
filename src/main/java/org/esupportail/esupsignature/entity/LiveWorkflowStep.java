@@ -19,6 +19,9 @@ public class LiveWorkflowStep {
     private Long id;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
+    @JoinTable(
+            indexes = @Index(name = "idx_recipients_live_workflow_step_id", columnList = "live_workflow_step_id")
+    )
     private List<Recipient> recipients = new ArrayList<>();
 
     private Boolean allSignToComplete = false;
