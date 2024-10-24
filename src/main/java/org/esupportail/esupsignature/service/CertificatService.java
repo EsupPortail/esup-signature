@@ -25,8 +25,11 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.Cipher;
@@ -41,7 +44,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class CertificatService {
+public class CertificatService implements HealthIndicator {
 
     private static final Logger logger = LoggerFactory.getLogger(CertificatService.class);
 
@@ -159,7 +162,7 @@ public class CertificatService {
     }
 
     public SignatureTokenConnection getSealToken() {
-        if((globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
+        if((!StringUtils.hasText(globalProperties.getSealCertificatDriver()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
            return getPkcsToken();
         } else if(globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC)){
             return openSCSignatureToken;
@@ -168,11 +171,11 @@ public class CertificatService {
     }
 
     public AbstractKeyStoreTokenConnection getPkcsToken() throws EsupSignatureKeystoreException {
-        if(globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatPin() != null) {
-            if (globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) {
+        if(!StringUtils.hasText(globalProperties.getSealCertificatPin())) {
+            if (!StringUtils.hasText(globalProperties.getSealCertificatDriver()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) {
                 KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
                 return new eu.europa.esig.dss.token.Pkcs11SignatureToken(globalProperties.getSealCertificatDriver(), passwordProtection);
-            } else if (globalProperties.getSealCertificatFile() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
+            } else if (!StringUtils.hasText(globalProperties.getSealCertificatFile()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
                 try {
                     return userKeystoreService.getPkcs12Token(new FileInputStream(globalProperties.getSealCertificatFile()), globalProperties.getSealCertificatPin());
                 } catch (FileNotFoundException e) {
@@ -196,7 +199,7 @@ public class CertificatService {
         if(privateKeysCache.getIfPresent("keys") != null) return privateKeysCache.getIfPresent("keys");
         List<DSSPrivateKeyEntry> dssPrivateKeyEntries = new ArrayList<>();
         try {
-            if ((globalProperties.getSealCertificatDriver() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
+            if ((!StringUtils.hasText(globalProperties.getSealCertificatDriver()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
                 dssPrivateKeyEntries = getPkcsToken().getKeys();
             } else if (globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC)) {
                 dssPrivateKeyEntries = openSCSignatureToken.getKeys();
@@ -205,11 +208,15 @@ public class CertificatService {
             logger.debug("no seal certificat found", e);
         }
         if(!dssPrivateKeyEntries.isEmpty()) {
+            if(!isCertificatWasPresent) {
+                String message = "certificat was found on " + globalProperties.getRootUrl();
+                mailService.sendAdminError("Seal certificat UP", message);
+            }
             isCertificatWasPresent = true;
             privateKeysCache.put("keys", dssPrivateKeyEntries);
         } else if(isCertificatWasPresent) {
             String message = "certificat was present but not found on " + globalProperties.getRootUrl();
-            mailService.sendAdminError(message, message);
+            mailService.sendAdminError("Seal certificat DOWN", message);
             isCertificatWasPresent = false;
             logger.error(message);
         }
@@ -218,7 +225,8 @@ public class CertificatService {
 
     public boolean checkCertificatProblem() {
         boolean certificatProblem = false;
-        if(isCertificatWasPresent && getSealCertificats().isEmpty()) {
+        List<DSSPrivateKeyEntry> dssPrivateKeyEntries = getSealCertificats();
+        if(isCertificatWasPresent && dssPrivateKeyEntries.isEmpty()) {
             certificatProblem = true;
         }
         Date lastDate = new DateTime().minusDays(globalProperties.getNbDaysBeforeCertifWarning()).toDate();
@@ -228,7 +236,7 @@ public class CertificatService {
                 break;
             }
         }
-        for(eu.europa.esig.dss.token.DSSPrivateKeyEntry dssPrivateKeyEntry : getSealCertificats()) {
+        for(eu.europa.esig.dss.token.DSSPrivateKeyEntry dssPrivateKeyEntry : dssPrivateKeyEntries) {
             if(dssPrivateKeyEntry.getCertificate().getNotAfter().before(lastDate)) {
                 certificatProblem = true;
                 break;
@@ -237,4 +245,13 @@ public class CertificatService {
         return certificatProblem;
     }
 
+    @Override
+    public Health health() {
+        if(!StringUtils.hasText(globalProperties.getSealCertificatPin())) return Health.up().build();
+        if(isCertificatWasPresent) {
+            return Health.up().withDetail("seal certificat", "UP").build();
+        } else {
+            return Health.down().withDetail("seal certificat", "DOWN").build();
+        }
+    }
 }
