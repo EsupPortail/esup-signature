@@ -1,17 +1,19 @@
 package org.esupportail.esupsignature.config.security;
 
-import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
-import org.esupportail.esupsignature.service.security.shib.DevShibRequestFilter;
 import org.esupportail.esupsignature.config.security.shib.DevShibProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
-import org.esupportail.esupsignature.service.security.*;
+import org.esupportail.esupsignature.service.security.IndexEntryPoint;
+import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
+import org.esupportail.esupsignature.service.security.SecurityService;
+import org.esupportail.esupsignature.service.security.SpelGroupService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.CustomAuthorizationRequestResolver;
 import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.ValidatingOAuth2UserService;
+import org.esupportail.esupsignature.service.security.shib.DevShibRequestFilter;
 import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.su.SuAuthenticationSuccessHandler;
 import org.slf4j.Logger;
@@ -77,11 +79,9 @@ public class WebSecurityConfig {
 		this.ldapContextSource = ldapContextSource;
 	}
 
-	@Resource
-	private GlobalProperties globalProperties;
+	private final GlobalProperties globalProperties;
 
-	@Resource
-	private WebSecurityProperties webSecurityProperties;
+	private final WebSecurityProperties webSecurityProperties;
 
 	private final ClientRegistrationRepository clientRegistrationRepository;
 
@@ -89,8 +89,10 @@ public class WebSecurityConfig {
 
 	private DevShibRequestFilter devShibRequestFilter;
 
-	public WebSecurityConfig(@Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository) {
-		this.clientRegistrationRepository = clientRegistrationRepository;
+	public WebSecurityConfig(GlobalProperties globalProperties, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository) {
+        this.globalProperties = globalProperties;
+        this.webSecurityProperties = webSecurityProperties;
+        this.clientRegistrationRepository = clientRegistrationRepository;
 	}
 
 	@Bean
@@ -252,9 +254,11 @@ public class WebSecurityConfig {
 
 	private void setAuthorizeRequests(HttpSecurity http) throws Exception {
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/")).permitAll());
+		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/ws/workflows/**/datas/csv"))
+				.access(new WebExpressionAuthorizationManager("hasIpAddress('" + webSecurityProperties.getCsvAccessAuthorizeMask() + "')")));
 		StringBuilder hasIpAddresses = new StringBuilder();
 		int nbIps = 0;
-		if(webSecurityProperties.getWsAccessAuthorizeIps() != null) {
+		if(webSecurityProperties.getWsAccessAuthorizeIps() != null && webSecurityProperties.getWsAccessAuthorizeIps().length > 0) {
 			for (String ip : webSecurityProperties.getWsAccessAuthorizeIps()) {
 				nbIps++;
 				hasIpAddresses.append("hasIpAddress('").append(ip).append("')");
@@ -268,6 +272,9 @@ public class WebSecurityConfig {
 						.access(new WebExpressionAuthorizationManager(finalHasIpAddresses)));
 				http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/actuator/**"))
 						.access(new WebExpressionAuthorizationManager(finalHasIpAddresses)));
+			} else {
+				http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/ws/**")).denyAll());
+				http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/actuator/**")).denyAll());
 			}
 //			http.authorizeRequests().requestMatchers("/ws/**").access("hasRole('WS')").and().addFilter(apiKeyFilter());
 		} else {
@@ -278,7 +285,8 @@ public class WebSecurityConfig {
 				.requestMatchers(antMatcher("/api-docs/**")).hasAnyRole("ADMIN")
 				.requestMatchers(antMatcher("/swagger-ui/**")).hasAnyRole("ADMIN")
 				.requestMatchers(antMatcher("/swagger-ui.html")).hasAnyRole("ADMIN")
-				.requestMatchers(antMatcher("/admin/**")).hasAnyRole("ADMIN", "MANAGER")
+				.requestMatchers(antMatcher("/admin/**")).hasAnyRole("ADMIN")
+				.requestMatchers(antMatcher("/manager/**")).hasAnyRole("MANAGER")
 				.requestMatchers(antMatcher("/user/**")).hasAnyRole("USER")
 				.requestMatchers(antMatcher("/nexu-sign/**")).hasAnyRole("USER", "OTP", "FRANCECONNECT")
 				.requestMatchers(antMatcher("/otp/**")).hasAnyRole("OTP", "FRANCECONNECT")

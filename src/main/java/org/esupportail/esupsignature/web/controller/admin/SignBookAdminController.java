@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import org.esupportail.esupsignature.dto.js.JsSlimSelect;
-import org.esupportail.esupsignature.dto.UserDto;
+import org.esupportail.esupsignature.dto.view.UserDto;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -86,8 +86,8 @@ public class SignBookAdminController {
 		if(creatorFilter != null && (creatorFilter.isEmpty() || creatorFilter.equals("all"))) {
 			creatorFilter = null;
 		}
-		if(docTitleFilter != null && (docTitleFilter.isEmpty() || docTitleFilter.equals("all"))) {
-			docTitleFilter = null;
+		if(docTitleFilter == null || (docTitleFilter.isEmpty() || docTitleFilter.equals("all"))) {
+			docTitleFilter = "";
 		}
 		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
 		model.addAttribute("statusFilter", statusFilter);
@@ -99,7 +99,7 @@ public class SignBookAdminController {
 		model.addAttribute("workflows", workflowService.getAllWorkflows());
 		model.addAttribute("workflowFilter", workflowFilter);
 		model.addAttribute("creatorFilter", creatorFilter);
-		if(docTitleFilter != "%") model.addAttribute("docTitleFilter", docTitleFilter);
+		if(!"%".equals(docTitleFilter)) model.addAttribute("docTitleFilter", docTitleFilter);
 		model.addAttribute("dateFilter", dateFilter);
 		model.addAttribute("workflowNames", signBookRepository.findAllWorkflowNames());
 		return "admin/signbooks/list";
@@ -134,8 +134,8 @@ public class SignBookAdminController {
 		if(creatorFilter != null && (creatorFilter.isEmpty() || creatorFilter.equals("all"))) {
 			creatorFilter = null;
 		}
-		if(docTitleFilter != null && (docTitleFilter.isEmpty() || docTitleFilter.equals("all"))) {
-			docTitleFilter = null;
+		if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
+			docTitleFilter = "";
 		}
 		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
 		model.addAttribute("signBooks", signBooks);

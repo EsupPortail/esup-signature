@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service.security;
 
-import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -13,39 +12,41 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 public class PreAuthorizeService {
 
-    @Resource
-    private UserService userService;
+    private final UserService userService;
 
-    @Resource
-    private SignBookService signBookService;
+    private final SignBookService signBookService;
 
-    @Resource
-    private DataService dataService;
+    private final DataService dataService;
 
-    @Resource
-    private SignRequestService signRequestService;
+    private final SignRequestService signRequestService;
 
-    @Resource
-    private DocumentService documentService;
+    private final DocumentService documentService;
 
-    @Resource
-    private CommentService commentService;
+    private final CommentService commentService;
 
-    @Resource
-    private WorkflowService workflowService;
+    private final WorkflowService workflowService;
 
-    @Resource
-    private FormService formService;
+    private final FormService formService;
 
-    @Resource
-    private ReportService reportService;
+    private final ReportService reportService;
 
+    private final UserShareService userShareService;
 
-    @Resource
-    private UserShareService userShareService;
+    public PreAuthorizeService(UserService userService, SignBookService signBookService, DataService dataService, SignRequestService signRequestService, DocumentService documentService, CommentService commentService, WorkflowService workflowService, FormService formService, ReportService reportService, UserShareService userShareService) {
+        this.userService = userService;
+        this.signBookService = signBookService;
+        this.dataService = dataService;
+        this.signRequestService = signRequestService;
+        this.documentService = documentService;
+        this.commentService = commentService;
+        this.workflowService = workflowService;
+        this.formService = formService;
+        this.reportService = reportService;
+        this.userShareService = userShareService;
+    }
 
     public boolean notInShare(String userEppn, String authUserEppn) {
         return userEppn.equals(authUserEppn);
@@ -61,9 +62,7 @@ public class PreAuthorizeService {
 
     public boolean workflowManage(Long id, String userEppn) {
         if(userEppn != null) {
-            Workflow workflow = workflowService.getById(id);
-            User user = userService.getByEppn(userEppn);
-            return workflow.getManagers().contains(user.getEmail());
+            return workflowService.checkWorkflowManageRights(id, userEppn);
         }
         return false;
     }
@@ -97,7 +96,10 @@ public class PreAuthorizeService {
     public boolean signBookSendOtp(Long id, String userEppn) {
         SignBook signBook = signBookService.getById(id);
         User user = userService.getByEppn(userEppn);
-        return signBook != null && (signBook.getCreateBy().getEppn().equals(userEppn) || signBook.getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail()) || user.getRoles().contains("ROLE_ADMIN"));
+        return signBook != null && (signBook.getCreateBy().getEppn().equals(userEppn)
+                || signBook.getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail())
+                || signBook.getLiveWorkflow().getWorkflow().getDashboardRoles().stream().anyMatch(user.getRoles()::contains)
+                || user.getRoles().contains("ROLE_ADMIN"));
     }
 
     public boolean signBookManage(Long id, String userEppn) {
@@ -184,7 +186,7 @@ public class PreAuthorizeService {
         if(userEppn != null && authUserEppn != null) {
             SignRequest signRequest = signRequestService.getById(id);
             if (signRequest != null) {
-                return checkUserViewRights(signRequest, userEppn, authUserEppn) || signBookService.checkUserSignRights(signRequest, userEppn, authUserEppn);
+                return checkUserViewRights(signRequest, userEppn, authUserEppn) || signBookService.checkUserViewRights(userEppn, authUserEppn, signRequest.getParentSignBook().getId());
             }
         }
         return false;

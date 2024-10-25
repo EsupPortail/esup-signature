@@ -19,7 +19,7 @@
                     <div>
                         <canvas id="signsCount" height="80"></canvas>
                         <script th:inline="javascript">
-                            const ctx = document.getElementById('signsCount');
+                            let ctx = document.getElementById('signsCount');
                             new Chart(ctx, JSON.parse([[${signsByYears}]]));
                         </script>
                     </div>

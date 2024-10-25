@@ -11,9 +11,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.annotation.Resource;
-import org.esupportail.esupsignature.dto.RecipientWsDto;
-import org.esupportail.esupsignature.dto.WorkflowDto;
-import org.esupportail.esupsignature.dto.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.json.RecipientWsDto;
+import org.esupportail.esupsignature.dto.json.WorkflowDto;
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.service.*;
@@ -94,6 +94,7 @@ public class FormWsController {
                                            "  \"forceAllSign\": true,\n" +
                                            "  \"comment\": \"string\",\n" +
                                            "  \"attachmentRequire\": true,\n" +
+                                           "  \"attachmentAlert\": false,\n" +
                                            "  \"maxRecipients\": 0\n" +
                                            "}]") String stepsJsonString,
                                    @RequestParam(required = false) @Parameter(description = "EPPN du créateur/propriétaire de la demande") String createByEppn,
@@ -204,7 +205,7 @@ public class FormWsController {
     @CrossOrigin
     @Deprecated
     @PostMapping(value = "/get-datas/{id}")
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération des données d'un formulaire (POST)", deprecated = true)
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération des données d'un formulaire (POST)", deprecated = true)
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public LinkedHashMap<String, String> postGetDatas(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         return dataExportService.getJsonDatasFromSignRequest(id);
@@ -212,10 +213,17 @@ public class FormWsController {
 
     @CrossOrigin
     @GetMapping(value = "/get-datas/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération des données d'un formulaire")
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération des données d'un formulaire")
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public LinkedHashMap<String, String> getDatas(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         return dataExportService.getJsonDatasFromSignRequest(id);
     }
 
+    @CrossOrigin
+    @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération de la liste des formulaires disponibles", responses = @ApiResponse(description = "List<JsonDtoWorkflow>", content = @Content(schema = @Schema(implementation = List.class))))
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
+    public String getAll(@ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
+        return formService.getAllFormsJson();
+    }
 }

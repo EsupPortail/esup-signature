@@ -91,7 +91,7 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastSendAlertDate = new Date(0);
 
-    @ElementCollection(targetClass = String.class)
+    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
     @JsonIgnore
     private Set<String> roles = new HashSet<>();
 
@@ -114,6 +114,8 @@ public class User {
     private Boolean returnToHomeAfterSign = true;
 
     private Boolean forceSms = false;
+
+    private String accessToken;
 
 	public Long getId() {
         return this.id;
@@ -282,8 +284,13 @@ public class User {
     public void setEmailAlertFrequency(EmailAlertFrequency emailAlertFrequency) {
         this.emailAlertFrequency = emailAlertFrequency;
     }
+
     public Set<String> getRoles() {
         return roles;
+    }
+
+    public List<String> getRolesCopy() {
+        return new ArrayList<>(roles);
     }
 
     public void setRoles(Set<String> roles) {
@@ -361,4 +368,13 @@ public class User {
     public void setForceSms(Boolean forceSms) {
         this.forceSms = forceSms;
     }
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
+
 }

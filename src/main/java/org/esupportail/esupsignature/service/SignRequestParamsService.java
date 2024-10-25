@@ -86,6 +86,8 @@ public class SignRequestParamsService {
     public SignRequestParams getSignRequestParamsFromJson(String signRequestParamsJsonString) {
         try {
             SignRequestParams signRequestParams = objectMapper.readValue(signRequestParamsJsonString, SignRequestParams.class);
+            if(signRequestParams.getxPos() == null) signRequestParams.setxPos(0);
+            if(signRequestParams.getyPos() == null) signRequestParams.setyPos(0);
             return signRequestParamsRepository.save(signRequestParams);
         } catch (JsonProcessingException e) {
             logger.warn("no signRequestParams returned", e);

@@ -46,7 +46,7 @@ public class UpgradeService {
 
     private final FormService formService;
 
-    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10"};
+    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5"};
 
     public UpgradeService(EntityManager entityManager, GlobalProperties globalProperties, SignBookRepository signBookRepository, AppliVersionRepository appliVersionRepository, @Autowired(required = false) BuildProperties buildProperties, FileService fileService, FormService formService) {
         this.entityManager = entityManager;
@@ -285,4 +285,11 @@ public class UpgradeService {
         logger.info("#### Update deleted flag completed ####");
     }
 
+    @SuppressWarnings("unused")
+    public void update_1_30_5() {
+        logger.info("#### Starting update signRequestParams ####");
+        entityManager.createNativeQuery("alter table sign_request_params alter column x_pos drop not null").executeUpdate();
+        entityManager.createNativeQuery("alter table sign_request_params alter column y_pos drop not null").executeUpdate();
+        logger.info("#### Update signRequestParams completed ####");
+    }
 }

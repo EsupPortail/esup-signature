@@ -7,19 +7,19 @@
 <!--/*@thymesVar id="keystoreFileName" type="java.lang.String"*/-->
 <header id="header" th:fragment="nav" class="fixed-top" th:with="isUserOnSu = ${userEppn != authUserEppn}">
     <nav id="navbar" data-bs-theme="dark" class="nav nav-pills navbar navbar-expand-sm" th:classappend="|${(isUserOnSu && user.name != null) ? 'bg-striped' : ''} ${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')') ? 'bg-danger' : 'bg-dark'}">
-        <button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse"
+        <button th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}" aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse"
                 class="btn btn-lg text-white float-start position-fixed">
             <i class="fa-solid fa-bars"></i>
         </button>
-        <button aria-label="Retour" type="button" id="returnButton"
+        <button th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}" aria-label="Retour" type="button" id="returnButton"
                 class="btn btn-lg text-white float-start position-fixed d-none">
             <i class="fa-solid fa-arrow-left"></i>
         </button>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar_toggle"
+        <button th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}" class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar_toggle"
                 aria-controls="navbar_toggle" aria-expanded="false" aria-label="Toggle navigation">
             <span class="fa-solid fa-bars text-white"></span>
         </button>
-        <a th:unless="${user.userType.name() == 'external'}" href="/" class="navbar-brand" aria-label="Esup-Signature" title="Esup-Signature">
+        <a th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}" href="/" class="navbar-brand" aria-label="Esup-Signature" title="Esup-Signature">
             <img id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/>
         </a>
         <img th:if="${user.userType.name() == 'external'}" id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/>
@@ -30,14 +30,6 @@
                             href="/user" class="btn btn-transparent text-left me-1">
                         <i class="fa-solid fa-home"></i> <span class="nav-item-label d-none d-xxl-inline">Accueil</span>
                         <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-lg-inline" th:text="${nbToSign}">
-                        </span>
-                    </a>
-                </li>
-                <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_OTP'')') && signRequestId != null}">
-                    <a th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" id="link-return-accueil" title="Accueil" type="button"
-                        th:href="'/otp/signrequests/' + ${signRequestId}" class="btn btn-transparent text-left me-1">
-                        <i class="fa-solid fa-file-signature"></i> <span class="nav-item-label d-none d-xxl-inline">Retour à ma demande</span>
-                        <span title="Retour à ma demande" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-lg-inline" th:text="${nbToSign}">
                         </span>
                     </a>
                 </li>
@@ -76,7 +68,7 @@
                                 <i class="fa-solid fa-magic"></i> Assistant de création de circuit
                         </a>
                         <div th:unless="${globalProperties.hideWizardWorkflow}" class="dropdown-divider"></div>
-                        <a class="btn text-white btn-transparent text-left m-1" id="link-user" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" th:href="'/'+ ${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users'">
+                        <a class="btn text-white btn-transparent text-left m-1" id="link-user" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users">
                             <i class="fa-solid fa-user-cog"></i> Modifier mes paramètres
                         </a>
                         <div class="dropdown-divider"></div>
@@ -184,6 +176,10 @@
                     <td>Identifiant</td>
                     <td th:text="${user.eppn}"></td>
                 </tr>
+                <tr th:if="${user.userType.name == 'ldap'}">
+                    <td>Token d’accès API</td>
+                    <td><input type="text" th:value="${user.accessToken}" disabled></td>
+                </tr>
                 <tr th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" >
                     <td>Auth</td>
                     <td th:text="${securityServiceName}"></td>
@@ -208,8 +204,8 @@
                                 <span class="sr-only">Next</span>
                             </button>
                         </div>
-                        <div th:unless="${userImagesIds.size() > 0 && userImagesIds.get(0) != null}" class="alert alert-danger">
-                            Pas de signature
+                        <div th:unless="${userImagesIds.size() > 0 && userImagesIds.get(0) != null}" class="text-secondary">
+                            pas d’image de signature personalisée
                         </div>
                     </td>
                 </tr>
@@ -223,8 +219,8 @@
                                 <span th:text="${keystoreFileName}"></span>
                             </a>
                         </div>
-                        <div th:if="${keystoreFileName == null}" class="alert alert-danger">
-                            Pas de magasin de certificats
+                        <div th:if="${keystoreFileName == null}" class="text-secondary">
+                            pas de magasin de certificats
                         </div>
                     </td>
                 </tr>
@@ -232,7 +228,7 @@
             </table>
             <a id="link-user-params" th:unless="${isUserOnSu}" class="btn btn-sm btn-light btn-outline-dark"
                 aria-label="Paramètres utilisateur "
-                title="Paramètres" th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users'">
+                title="Paramètres" href="/user/users">
                 <i class="fa-solid fa-user-cog"></i> Modifier mes paramètres
             </a>
             <hr>

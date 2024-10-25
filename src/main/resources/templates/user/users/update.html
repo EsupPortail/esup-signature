@@ -24,7 +24,7 @@
         </nav>
         <div id="content" class="content">
             <div id="floatButtons" class="fixed-action-simple-btn">
-                <a id="saveButton" class="btn-floating btn-lg bg-success wave-effect">
+                <a id="saveButton" class="btn-floating btn-lg bg-success">
                     <i class="fa-solid fa-save fa-2xl"></i>
                 </a>
             </div>
@@ -65,6 +65,13 @@
                                             th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
                                 </th:block>
                             </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="csvToken"><strong>Token d'accès API</strong></label>
+                            <div class="input-group">
+                                <input disabled id="csvToken" class="form-control" type="text" th:field="*{accessToken}" value="">
+                                <button id="refresh-token" data-bs-toggle="modal" data-bs-target="#accessTokenModal" type="button" class="btn border-light-subtle" title="Actualiser le token"><i class="fa-solid fa-arrows-rotate"></i></button>
+                            </div>
                         </div>
                         <div class="form-group d-none" id="emailAlertHourDiv" th:unless="${user.userType.name() == 'external'}">
                             <label class="col-form-label" for="emailAlertHour"> <strong>Heure d’alerte</strong>
@@ -300,6 +307,27 @@
         </form>
     </th:block>
 </main>
+
+<div data-bs-focus="false" class="modal fade" id="accessTokenModal"  role="dialog" aria-labelledby="accessTokenModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form th:action="'/user/users/renew-token'" method="post">
+                <div class="modal-header">
+                    <h3 class="modal-title">Régénérer mon token d’accès API</h3>
+                </div>
+                <div class="modal-body">
+                La régénération de votre token d’accès API va entraîner la désactivation de l’ancien token. Êtes-vous sûr de vouloir continuer ?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary float-right" data-bs-dismiss="modal">Annuler</button>
+                    <input class="btn btn-primary" type="submit" value="Valider"/>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div data-bs-focus="false" class="modal fade" id="testKeystore"  role="dialog" aria-labelledby="testKeystore" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">

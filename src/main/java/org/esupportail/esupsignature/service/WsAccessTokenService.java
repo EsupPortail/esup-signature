@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.service;
 
-import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WsAccessToken;
 import org.esupportail.esupsignature.repository.WsAccessTokenRepository;
@@ -15,16 +15,22 @@ import java.util.UUID;
 @Service
 public class WsAccessTokenService {
 
-    @Resource
-    private WsAccessTokenRepository wsAccessTokenRepository;
+    private final WsAccessTokenRepository wsAccessTokenRepository;
 
-    @Resource
-    private SignRequestService signRequestService;
+    private final SignRequestService signRequestService;
 
-    @Resource
-    private WorkflowService workflowService;
+    private final WorkflowService workflowService;
 
-    @Transactional
+    private final UserService userService;
+
+    public WsAccessTokenService(WsAccessTokenRepository wsAccessTokenRepository, SignRequestService signRequestService, WorkflowService workflowService, UserService userService) {
+        this.wsAccessTokenRepository = wsAccessTokenRepository;
+        this.signRequestService = signRequestService;
+        this.workflowService = workflowService;
+        this.userService = userService;
+    }
+
+    @Transactional(readOnly = true)
     public boolean isAllAccess(String token) {
         return allAccess(token);
     }
@@ -38,7 +44,14 @@ public class WsAccessTokenService {
         return !wsAccessToken.isEmpty() && wsAccessToken.stream().anyMatch(WsAccessToken::getCreateSignrequest);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
+    public boolean workflowCsv(Long id, String csvToken) {
+        Workflow workflow = workflowService.getById(id);
+        User user = userService.getByAccessToken(csvToken);
+        return user != null && (workflow.getManagers().contains(user.getEmail()) || user.getRoles().contains(workflow.getManagerRole()));
+    }
+
+    @Transactional(readOnly = true)
     public boolean readWorkflowAccess(Long id, String token) {
         if(allAccess(token)) return true;
         SignRequest signRequest = signRequestService.getById(id);
@@ -48,31 +61,35 @@ public class WsAccessTokenService {
         return !wsAccessToken.isEmpty() && wsAccessToken.stream().anyMatch(WsAccessToken::getReadSignrequest);
     }
 
-    @Transactional
-    public boolean deleteWorkflowAccess(Long id, String token) {
+    @Transactional(readOnly = true)
+    public boolean updateWorkflowAccess(Long id, String token) {
         if(allAccess(token)) return true;
         SignRequest signRequest = signRequestService.getById(id);
         if(signRequest == null) return true;
         Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
         List<WsAccessToken> wsAccessToken = wsAccessTokenRepository.findByTokenAndWorkflowsContains(token, workflow);
-        return !wsAccessToken.isEmpty() && wsAccessToken.stream().anyMatch(WsAccessToken::getDeleteSignrequest);
+        return !wsAccessToken.isEmpty() && wsAccessToken.stream().anyMatch(WsAccessToken::getUpdateSignrequest);
     }
 
+    @Transactional(readOnly = true)
     public boolean allAccess(String token) {
         return !wsAccessTokenRepository.findAll().iterator().hasNext() || !wsAccessTokenRepository.findByTokenIsNullAndWorkflowsEmpty().isEmpty() || wsAccessTokenRepository.findByTokenAndWorkflowsEmpty(token).stream().anyMatch(WsAccessToken::getReadSignrequest);
     }
 
+    @Transactional(readOnly = true)
     public List<WsAccessToken> getAll() {
         List<WsAccessToken> list = new ArrayList<>();
         wsAccessTokenRepository.findAll().forEach(list::add);
         return list;
     }
 
+    @Transactional
     public void delete(Long wsAccessTokenId) {
         WsAccessToken wsAccessToken = wsAccessTokenRepository.findById(wsAccessTokenId).get();
         wsAccessTokenRepository.delete(wsAccessToken);
     }
 
+    @Transactional
     public boolean createDefaultWsAccessToken() {
         if(!wsAccessTokenRepository.findAll().iterator().hasNext()) {
             WsAccessToken wsAccessToken = new WsAccessToken();
@@ -83,6 +100,7 @@ public class WsAccessTokenService {
         return false;
     }
 
+    @Transactional
     public void createToken(String appName, List<Long> workflowIds) {
         WsAccessToken wsAccessToken = new WsAccessToken();
         wsAccessToken.setAppName(appName);

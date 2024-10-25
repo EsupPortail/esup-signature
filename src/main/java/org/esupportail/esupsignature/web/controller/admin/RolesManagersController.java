@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@RequestMapping("/admin/roles-managers")
+@RequestMapping({"/manager/roles-managers", "/admin/roles-managers"})
 @Controller
 public class RolesManagersController {
 

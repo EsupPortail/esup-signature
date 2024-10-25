@@ -12,7 +12,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.FOPService;
-import org.esupportail.esupsignature.dto.RecipientWsDto;
+import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
@@ -115,7 +115,9 @@ public class SignRequestService {
 
 	private final SignBookRepository signBookRepository;
 
-    public SignRequestService(GlobalProperties globalProperties, TargetService targetService, NexuService nexuService, WebUtilsService webUtilsService, SignRequestRepository signRequestRepository, ActionService actionService, PdfService pdfService, DocumentService documentService, CustomMetricsService customMetricsService, SignService signService, SignTypeService signTypeService, UserService userService, DataService dataService, CommentService commentService, MailService mailService, AuditTrailService auditTrailService, UserShareService userShareService, RecipientService recipientService, FsAccessFactoryService fsAccessFactoryService, OtpService otpService, FileService fileService, PreFillService preFillService, LogService logService, SignRequestParamsService signRequestParamsService, ValidationService validationService, FOPService fopService, ObjectMapper objectMapper, SignBookRepository signBookRepository) {
+	private final LiveWorkflowStepService liveWorkflowStepService;
+
+	public SignRequestService(GlobalProperties globalProperties, TargetService targetService, NexuService nexuService, WebUtilsService webUtilsService, SignRequestRepository signRequestRepository, ActionService actionService, PdfService pdfService, DocumentService documentService, CustomMetricsService customMetricsService, SignService signService, SignTypeService signTypeService, UserService userService, DataService dataService, CommentService commentService, MailService mailService, AuditTrailService auditTrailService, UserShareService userShareService, RecipientService recipientService, FsAccessFactoryService fsAccessFactoryService, OtpService otpService, FileService fileService, PreFillService preFillService, LogService logService, SignRequestParamsService signRequestParamsService, ValidationService validationService, FOPService fopService, ObjectMapper objectMapper, SignBookRepository signBookRepository, LiveWorkflowStepService liveWorkflowStepService) {
         this.globalProperties = globalProperties;
         this.targetService = targetService;
         this.nexuService = nexuService;
@@ -144,6 +146,7 @@ public class SignRequestService {
         this.fopService = fopService;
         this.objectMapper = objectMapper;
         this.signBookRepository = signBookRepository;
+        this.liveWorkflowStepService = liveWorkflowStepService;
     }
 
     @PostConstruct
@@ -212,7 +215,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public StepStatus sign(SignRequest signRequest, String password, String signWith, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String userEppn, String authUserEppn, Long userShareId, String comment) throws EsupSignatureRuntimeException, IOException {
+	public StepStatus sign(SignRequest signRequest, String password, String signWith, List<SignRequestParams> signRequestParamses, Data data, Map<String, String> formDataMap, String userEppn, String authUserEppn, Long userShareId, String comment) throws EsupSignatureRuntimeException, IOException {
 		User user = userService.getByEppn(userEppn);
 		if(signRequest.getAuditTrail() == null) {
 			signRequest.setAuditTrail(auditTrailService.create(signRequest.getToken()));
@@ -233,7 +236,6 @@ public class SignRequestService {
 		byte[] filledInputStream;
 		boolean isForm = false;
 		if(!isNextWorkFlowStep(signRequest.getParentSignBook())) {
-			Data data = dataService.getBySignRequest(signRequest);
 			if(data != null && data.getForm() != null) {
 				Form form = data.getForm();
 				for (Field field : form.getFields()) {
@@ -315,9 +317,9 @@ public class SignRequestService {
 			}
 			if (!signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty()) {
 				SignRequestParams signRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0);
-				auditTrailService.addAuditStep(signRequest.getToken(), userEppn, certificat, timestamp, reports.getSimpleReport().getValidationTime(), isViewed, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
+				auditTrailService.addAuditStep(signRequest.getToken(), userEppn, certificat, timestamp, reports.getSimpleReport().getBestSignatureTime(reports.getSimpleReport().getFirstSignatureId()), isViewed, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
 			} else {
-				auditTrailService.addAuditStep(signRequest.getToken(), userEppn, certificat, timestamp, reports.getSimpleReport().getValidationTime(), isViewed, 0, 0, 0);
+				auditTrailService.addAuditStep(signRequest.getToken(), userEppn, certificat, timestamp, reports.getSimpleReport().getBestSignatureTime(reports.getSimpleReport().getFirstSignatureId()), isViewed, 0, 0, 0);
 			}
 			stepStatus = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, SignType.certSign, comment);
 
@@ -915,9 +917,14 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void getToSignFileResponse(Long signRequestId, String disposition, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureRuntimeException, EsupSignatureException {
+	public void getToSignFileResponse(Long signRequestId, String disposition, HttpServletResponse httpServletResponse, boolean force) throws IOException, EsupSignatureRuntimeException, EsupSignatureException {
 		SignRequest signRequest = getById(signRequestId);
-		if(!disposition.equals("form-data") && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null &&  BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd()) && !signRequest.getStatus().equals(SignRequestStatus.completed)) {
+		if(!force && !disposition.equals("form-data")
+				&& signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
+				&&  BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
+				&& !signRequest.getStatus().equals(SignRequestStatus.completed)
+				&& !signRequest.getStatus().equals(SignRequestStatus.archived)
+				&& !signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit");
 		}
 		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
@@ -1248,4 +1255,10 @@ public class SignRequestService {
 		return pdfaCheck.toString();
 	}
 
+	@Transactional
+	public void replaceRecipientsToWorkflowStep(Long signBookId, Integer stepNumber, List<RecipientWsDto> recipientWsDtos) throws EsupSignatureException {
+		SignBook signBook = signBookRepository.findById(signBookId).orElseThrow();
+		LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber - 1);
+		liveWorkflowStepService.replaceRecipientsToWorkflowStep(signBook, liveWorkflowStep, recipientWsDtos);
+	}
 }

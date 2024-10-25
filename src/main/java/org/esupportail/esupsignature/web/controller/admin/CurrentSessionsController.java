@@ -17,7 +17,7 @@
  */
 package org.esupportail.esupsignature.web.controller.admin;
 
-import org.esupportail.esupsignature.dto.HttpSession;
+import org.esupportail.esupsignature.dto.view.HttpSessionViewDto;
 import org.esupportail.esupsignature.service.security.HttpSessionsListenerService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.session.SessionInformation;
@@ -27,10 +27,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RequestMapping("/admin/currentsessions")
 @Controller
@@ -58,29 +55,33 @@ public class CurrentSessionsController {
 
 	@GetMapping
 	public String getCurrentSessions(Model model) {
-		Map<String, HttpSession> allSessions = httpSessionsListenerService.getSessions();
+		Map<String, HttpSessionViewDto> allSessions = httpSessionsListenerService.getSessions();
 		List<SessionInformation> sessions = new ArrayList<>();
 		for(Object principal : sessionRegistry.getAllPrincipals()) {
 			for(SessionInformation sessionInformation: sessionRegistry.getAllSessions(principal, false)) {
+				HttpSessionViewDto httpSession;
 				if (allSessions.containsKey(sessionInformation.getSessionId())) {
-					HttpSession httpSession = allSessions.get(sessionInformation.getSessionId());
-					httpSession.setLastRequest(sessionInformation.getLastRequest());
-					httpSession.setUserEppn(((UserDetails) principal).getUsername());
+					httpSession = allSessions.get(sessionInformation.getSessionId());
 					sessions.addAll(sessionRegistry.getAllSessions(principal, false));
 				} else {
-					HttpSession httpSession = new HttpSession();
+					httpSession = new HttpSessionViewDto();
 					httpSession.setSessionId(sessionInformation.getSessionId());
-					httpSession.setLastRequest(sessionInformation.getLastRequest());
-					httpSession.setUserEppn(((UserDetails) principal).getUsername());
 					allSessions.put(sessionInformation.getSessionId(), httpSession);
 				}
+				httpSession.setLastRequest(sessionInformation.getLastRequest());
+				httpSession.setUserEppn(((UserDetails) principal).getUsername());
+				httpSession.setExpired(sessionInformation.isExpired());
 			}
 		}
-		sessions.sort((s1, s2) -> s2.getLastRequest().compareTo(s1.getLastRequest()));
+		for(HttpSessionViewDto httpSession : allSessions.values()) {
+			if(httpSession.getLastRequest() == null) {
+				httpSession.setLastRequest(httpSession.getCreatedDate());
+			}
+		}
 		try {
 			model.addAttribute("httpSessions",
 					allSessions.values().stream()
-							.sorted(Comparator.comparing(HttpSession::getLastRequest, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+							.sorted(Comparator.comparing(HttpSessionViewDto::getLastRequest, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
 							.toList());
 		} catch (Exception e) {
 			model.addAttribute("httpSessions", allSessions.values());

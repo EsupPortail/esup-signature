@@ -51,6 +51,9 @@ public class Workflow {
 
     private String managerRole;
 
+    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    private Set<String> dashboardRoles = new HashSet<>();
+
     @ElementCollection(targetClass =  ShareType.class, fetch = FetchType.EAGER)
     private Set<ShareType> authorizedShareTypes = new HashSet<>();
 
@@ -62,7 +65,7 @@ public class Workflow {
 
     private String documentsSourceUri;
 
-    private Boolean forbidDownloadsBeforeEnd = true;
+    private Boolean forbidDownloadsBeforeEnd = false;
 
     @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
     private Set<String> managers = new HashSet<>();
@@ -260,6 +263,14 @@ public class Workflow {
         this.managerRole = managerRole;
     }
 
+    public Set<String> getDashboardRoles() {
+        return dashboardRoles;
+    }
+
+    public void setDashboardRoles(Set<String> dashboardRoles) {
+        this.dashboardRoles = dashboardRoles;
+    }
+
     public Set<ShareType> getAuthorizedShareTypes() {
         return authorizedShareTypes;
     }
@@ -363,4 +374,5 @@ public class Workflow {
     public void setSignRequestParamsDetectionPattern(String signRequestParamsDetectionPattern) {
         this.signRequestParamsDetectionPattern = signRequestParamsDetectionPattern;
     }
+
 }

@@ -11,6 +11,7 @@
                 <div class="spot" th:id="'inDocSpot_' + ${spot.value}" style="z-index: 999" title="Cliquer pour supprimer l'emplacement de signature">
                     <div th:data-es-width="${spots.get(iterator.index).width}"
                         th:data-es-height="${spots.get(iterator.index).height}"
+                        data-es-delete="true"
                         th:id="'inDocSign_' + ${spot.value}" th:style="'width: '+ ${spots.get(iterator.index).width} +'px; height: ' + ${spots.get(iterator.index).height} + 'px;color: #000;'" class="sign-field"
                         th:onmouseover="'$(\'#step-' + ${spot.key - 1} + '\').addClass(\'circle-border\');'"
                         th:onmouseout="'$(\'#step-' + ${spot.key - 1} + '\').removeClass(\'circle-border\');'">
@@ -121,7 +122,7 @@
                             <label for="spotStepNumber">Choisir l’étape concernée</label>
                             <br/>
                             <select th:if="${workflow != null}" id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
-                                <option></option>
+                                <option data-placeholder="true"></option>
                                 <th:block th:each="step, iterator : ${workflow.workflowSteps}">
                                     <option th:unless="${srpMap.containsKey(iterator.index + 1)}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}"></option>
                                 </th:block>

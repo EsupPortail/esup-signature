@@ -26,7 +26,9 @@
             <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
         </div>
         <div id="alertNexu" class="alert alert-danger border-dark text-center" style="display: none;">
-            L'application Esup-DSS-Client n’a pas été détectée. Cette application est nécessaire pour le niveau de signature eIDas qui vous est demandé.
+            L'application Esup-DSS-Client n’a pas été détectée. Cette application est nécessaire pour le mode de signature qui vous est demandé.
+            <br>
+            Esup-DSS-Client disponible ici : <a target="_blank" href="https://github.com/EsupPortail/esup-dss-client/releases/latest">Esup-DSS-Client</a>
             <br>
             <button id="refresh-certType2" class="mt-2 mx-auto btn btn-secondary align-self-center">
                 <i class="fa-solid fa-sync-alt fa-2xl"></i><br> Cliquez ici après le lancement de Esup-DSS-Client
@@ -62,13 +64,13 @@
                     <i class="fa-solid fa-comment fa-3x"></i>
                 </div>
             </th:block>
-            <th:block th:each="spot, iterator : ${spots}" th:if="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email))) && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
+            <th:block th:each="spot, iterator : ${spots}" th:if="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && (signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email) || !signRequest.parentSignBook.liveWorkflow.workflow.dashboardRoles.retainAll(user.rolesCopy)))) && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
                 <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}" title="Cliquer pour supprimer l'emplacement de signature"
                     th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').removeClass(\'circle-border\');'">
-                    <div th:id="'inDocSign_' + ${spot.id}" style="width: 150px; height: 75px; color: #000;" class="sign-field" th:data-es-delete="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email)))} ? 'true' :''">
-                        <span th:if="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email)))}" th:text="'Cliquer pour supprimer l’emplacement de signature étape ' + ${spot.stepNumber}"></span>
-                        <span th:unless="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email)))}" th:text="'Emplacement de signature pour l\'étape ' + ${spot.stepNumber}"></span>
+                    <div th:id="'inDocSign_' + ${spot.id}" style="width: 150px; height: 75px; color: #000;" class="sign-field" th:data-es-delete="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && (signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email) || !signRequest.parentSignBook.liveWorkflow.workflow.dashboardRoles.retainAll(user.rolesCopy))))} ? 'true' :''">
+                        <span th:if="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && (signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email) || !signRequest.parentSignBook.liveWorkflow.workflow.dashboardRoles.retainAll(user.rolesCopy))))}" th:text="'Cliquer pour supprimer l’emplacement de signature étape ' + ${spot.stepNumber}"></span>
+                        <span th:unless="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && (signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email) || !signRequest.parentSignBook.liveWorkflow.workflow.dashboardRoles.retainAll(user.rolesCopy))))}" th:text="'Emplacement de signature pour l\'étape ' + ${spot.stepNumber}"></span>
                     </div>
                 </div>
             </th:block>
@@ -233,7 +235,7 @@
                             <label for="spotStepNumber">Choisir l’étape concernée</label>
                             <br/>
                             <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
-                                <option></option>
+                                <option data-placeholder="true"></option>
                                 <th:block th:each="step, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
                                     <option th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}" th:selected="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 1}"></option>
                                 </th:block>

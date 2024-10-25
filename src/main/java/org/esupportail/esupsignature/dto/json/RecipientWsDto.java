@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.dto;
+package org.esupportail.esupsignature.dto.json;
 
 import jakarta.validation.constraints.NotNull;
 

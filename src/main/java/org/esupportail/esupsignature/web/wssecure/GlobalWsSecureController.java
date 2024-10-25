@@ -97,7 +97,7 @@ public class GlobalWsSecureController {
     @GetMapping(value = "/get-last-file/{id}")
     public ResponseEntity<Void> getLastFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
-            signRequestService.getToSignFileResponse(id, "attachment", httpServletResponse);
+            signRequestService.getToSignFileResponse(id, "attachment", httpServletResponse, false);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("get file error", e);
@@ -116,7 +116,7 @@ public class GlobalWsSecureController {
     @GetMapping(value = "/get-last-file-inline/{id}")
     public ResponseEntity<Void> getLastFileFromSignRequestInLine(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
-            signRequestService.getToSignFileResponse(id, "inline", httpServletResponse);
+            signRequestService.getToSignFileResponse(id, "inline", httpServletResponse, false);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -128,7 +128,7 @@ public class GlobalWsSecureController {
     @GetMapping(value = "/get-last-file-pdf/{id}")
     public ResponseEntity<Void> getLastFileFromSignRequestPdf(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
-            signRequestService.getToSignFileResponse(id, "form-data", httpServletResponse);
+            signRequestService.getToSignFileResponse(id, "form-data", httpServletResponse, false);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -216,7 +216,11 @@ public class GlobalWsSecureController {
         if(globalProperties.getPdfOnly() && Arrays.stream(multipartFiles).anyMatch(m -> !Objects.equals(m.getContentType(), "application/pdf"))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Seul les fichiers PDF sont autorisés");
         }
-        signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn);
+        try {
+            signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn);
+        } catch(Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
         return ResponseEntity.ok().body(signBookId.toString());
     }
 

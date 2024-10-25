@@ -330,17 +330,13 @@ public class FileService {
 		imgBuf.setRGB(0, 0, w, h, rgb, 0, w);
 	}
 
-	public InputStream getDefaultImage(String name, String firstname, String email, boolean forPrint) throws IOException {
-		float factor = 1f;
-		if(forPrint) {
-			factor = globalProperties.getFixFactor();
-		}
-		BufferedImage bufferedImage = new BufferedImage(Math.round(600 / factor), Math.round(300 / factor), BufferedImage.TYPE_INT_ARGB);
+	public InputStream getDefaultImage(String name, String firstname, String email) throws IOException {
+		BufferedImage bufferedImage = new BufferedImage(Math.round(600 / globalProperties.getFixFactor()), Math.round(300 / globalProperties.getFixFactor()), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics2D = bufferedImage.createGraphics();
 		graphics2D.setColor(new Color(0f,0f,0f,0f ));
 		Rectangle rect = new Rectangle();
-		rect.setRect(0, 0, 600 / factor, 300 / factor);
-		graphics2D.fillRect(0, 0, Math.round(600 / factor), Math.round(300 / factor));
+		rect.setRect(0, 0, 600 / globalProperties.getFixFactor(), 300 / globalProperties.getFixFactor());
+		graphics2D.fillRect(0, 0, Math.round(600 / globalProperties.getFixFactor()), Math.round(300 / globalProperties.getFixFactor()));
 		setQualityParams(graphics2D);
 		String word;
 		if(StringUtils.hasText(firstname) && StringUtils.hasText(name)) {
@@ -357,10 +353,10 @@ public class FileService {
 			int fontSize;
 			if(StringUtils.hasText(firstname) && StringUtils.hasText(name)) {
 				font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/Signature.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(12f);
-				fontSize = findFontSize(word, Math.round(250 / factor), font);
+				fontSize = findFontSize(word, Math.round(250 / globalProperties.getFixFactor()), font);
 			} else {
 				font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(12f);
-				fontSize = findFontSize(email, Math.round(500 / factor), font);
+				fontSize = findFontSize(email, Math.round(500 / globalProperties.getFixFactor()), font);
 			}
 			font = font.deriveFont((float) fontSize);
 			graphics2D.setFont(font);
@@ -369,10 +365,10 @@ public class FileService {
 			int y = rect.y + ((rect.height - fm.getHeight()) / 2) + fm.getAscent();
 			int lineHeight = Math.round((float) fontSize / 1.5f);
 			if(StringUtils.hasText(firstname) && StringUtils.hasText(name)) {
-				graphics2D.drawString(StringUtils.capitalize(firstname), 250 / factor, y - lineHeight);
-				graphics2D.drawString(StringUtils.capitalize(name), 250 / factor, y + lineHeight);
+				graphics2D.drawString(StringUtils.capitalize(firstname), 250 / globalProperties.getFixFactor(), y - lineHeight);
+				graphics2D.drawString(StringUtils.capitalize(name), 250 / globalProperties.getFixFactor(), y + lineHeight);
 			} else {
-				graphics2D.drawString(email, 10 / factor, y - lineHeight);
+				graphics2D.drawString(email, 10 / globalProperties.getFixFactor(), y - lineHeight);
 			}
 			graphics2D.dispose();
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -384,17 +380,13 @@ public class FileService {
 		}
 	}
 
-	public InputStream getDefaultParaphe(String name, String firstname, String email, boolean forPrint) throws IOException {
-		float factor = 1f;
-		if(forPrint) {
-			factor = globalProperties.getFixFactor();
-		}
-		BufferedImage bufferedImage = new BufferedImage(Math.round(600 / factor), Math.round(300 / factor), BufferedImage.TYPE_INT_ARGB);
+	public InputStream getDefaultParaphe(String name, String firstname, String email) throws IOException {
+		BufferedImage bufferedImage = new BufferedImage(Math.round(600 / globalProperties.getFixFactor()), Math.round(300 / globalProperties.getFixFactor()), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics2D = bufferedImage.createGraphics();
 		graphics2D.setColor(new Color(0f,0f,0f,0f ));
 		Rectangle rect = new Rectangle();
-		rect.setRect(0, 0, 600 / factor, 300 / factor);
-		graphics2D.fillRect(0, 0, Math.round(600 / factor), Math.round(300 / factor));
+		rect.setRect(0, 0, 600 / globalProperties.getFixFactor(), 300 / globalProperties.getFixFactor());
+		graphics2D.fillRect(0, 0, Math.round(600 / globalProperties.getFixFactor()), Math.round(300 / globalProperties.getFixFactor()));
 		setQualityParams(graphics2D);
 		String word = email;
 		if(StringUtils.hasText(firstname) && StringUtils.hasText(name)) {
@@ -402,14 +394,14 @@ public class FileService {
 		}
 		try {
 			Font font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/Signature.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(12f);
-			int fontSize = findFontSize(word, Math.round(250 / factor), font);
+			int fontSize = findFontSize(word, Math.round(250 / globalProperties.getFixFactor()), font);
 			font = font.deriveFont((float) fontSize);
 			graphics2D.setFont(font);
 			graphics2D.setColor(Color.BLACK);
 			FontMetrics fm = graphics2D.getFontMetrics();
 			int y = rect.y + ((rect.height - fm.getHeight()) / 2) + fm.getAscent();
 			int lineHeight = Math.round((float) fontSize / 1.5f);
-			graphics2D.drawString(word, 250 / factor, y - lineHeight);
+			graphics2D.drawString(word, 250 / globalProperties.getFixFactor(), y - lineHeight);
 			graphics2D.dispose();
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			ImageIO.write(bufferedImage, "png", outputStream);

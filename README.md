@@ -70,7 +70,7 @@ mvn spring-boot:run -DskipTests
 
 # Esup-DSS-Client
 
-Pour signer à l'aide de certificats sur support cryptographique (eIDas) il est necessaire d'installer une application sur le poste client.
+Pour signer à l'aide de certificats sur support cryptographique USB (eIDas) il est necessaire d'installer une application sur le poste client.
 Esup-DSS-Client est disponible ici :
 
 https://github.com/EsupPortail/esup-dss-client

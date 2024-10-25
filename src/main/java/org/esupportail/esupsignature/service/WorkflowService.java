@@ -6,8 +6,8 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import org.esupportail.esupsignature.dto.RecipientWsDto;
-import org.esupportail.esupsignature.dto.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.json.RecipientWsDto;
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
@@ -113,6 +113,13 @@ public class WorkflowService {
             workflow.getWorkflowSteps().add(workflowStep);
             workflowRepository.save(workflow);
         }
+    }
+
+    @Transactional
+    public boolean checkWorkflowManageRights(Long id, String userEppn) {
+        Workflow workflow = getById(id);
+        User user = userService.getByEppn(userEppn);
+        return workflow.getManagers().contains(user.getEmail()) || user.getRoles().stream().anyMatch(role -> workflow.getDashboardRoles().contains(role));
     }
 
     @Transactional
@@ -241,7 +248,6 @@ public class WorkflowService {
         Set<Workflow> workflows = new HashSet<>();
         if (userEppn.equals(authUserEppn)) {
             workflows.addAll(workflowRepository.findByCreateByEppn(userEppn).stream().filter(workflow -> workflow.getManagerRole() == null || workflow.getManagerRole().isEmpty()).collect(Collectors.toList()));
-//            workflows.addAll(workflowRepository.findByManagersContains(user.getEmail()));
             workflows.addAll(authorizedWorkflows);
         } else {
             for (UserShare userShare : userShareService.getByUserAndToUsersInAndShareTypesContains(userEppn, authUser, ShareType.create)) {
@@ -373,7 +379,7 @@ public class WorkflowService {
             recipients = recipients.stream().filter(r -> r.getStep().equals(stepNumber)).collect(Collectors.toList());
             for (RecipientWsDto recipient : recipients) {
                 String userEmail = recipient.getEmail();
-                for(String realUserEmail : recipientService.getCompleteRecipientList(Collections.singletonList(new RecipientWsDto(userEmail)))) {
+                for(String realUserEmail : recipientService.getAllRecipientsEmails(Collections.singletonList(new RecipientWsDto(userEmail)))) {
                     User user = userService.getUserByEmail(realUserEmail);
                     if(StringUtils.hasText(recipient.getPhone())) {
                         userService.updatePhone(user.getEppn(), recipient.getPhone());
@@ -465,7 +471,7 @@ public class WorkflowService {
             workflows.removeAll(getClassesWorkflows());
             workflows.removeAll(getWorkflowsBySystemUser());
         }
-        return workflows.stream().sorted(Comparator.comparing(Workflow::getName)).collect(Collectors.toList());
+        return workflows.stream().sorted(Comparator.comparing(Workflow::getDescription, Comparator.nullsFirst(Comparator.naturalOrder()))).collect(Collectors.toList());
     }
 
     @Transactional
@@ -510,6 +516,8 @@ public class WorkflowService {
         workflowToUpdate.setSendAlertToAllRecipients(workflow.getSendAlertToAllRecipients());
         workflowToUpdate.getRoles().clear();
         workflowToUpdate.getRoles().addAll(workflow.getRoles());
+        workflowToUpdate.getDashboardRoles().clear();
+        workflowToUpdate.getDashboardRoles().addAll(workflow.getDashboardRoles());
         workflowToUpdate.setUpdateBy(user.getEppn());
         workflowToUpdate.setUpdateDate(new Date());
         workflowToUpdate.setMessage(workflow.getMessage());
@@ -562,7 +570,7 @@ public class WorkflowService {
     @Transactional
     public List<Workflow> getWorkflowByManagersContains(String eppn) {
         User user = userService.getByEppn(eppn);
-        return workflowRepository.findWorkflowByManagersIn(Collections.singletonList(user.getEmail()));
+        return workflowRepository.findWorkflowByManagersIn(user.getEmail(), user.getRoles());
     }
 
     @Transactional
@@ -695,4 +703,6 @@ public class WorkflowService {
             signBook.getLiveWorkflow().setWorkflow(workflow);
         }
     }
+
+
 }

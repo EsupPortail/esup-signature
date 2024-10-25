@@ -1,8 +1,8 @@
-package org.esupportail.esupsignature.dto;
+package org.esupportail.esupsignature.dto.view;
 
 import java.util.Date;
 
-public class HttpSession {
+public class HttpSessionViewDto {
 
     Date createdDate;
 
