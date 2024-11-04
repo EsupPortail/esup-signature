@@ -19,6 +19,11 @@ public class WsAccessToken {
     private String token;
 
     @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "ws_access_token_workflows",
+            joinColumns = @JoinColumn(name = "ws_access_token_id"),
+            inverseJoinColumns = @JoinColumn(name = "workflows_id")
+    )
     private Set<Workflow> workflows = new HashSet<>();
 
     private Boolean createSignrequest = true;
