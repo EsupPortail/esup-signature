@@ -290,7 +290,7 @@ public class GlobalProperties {
     private SignRequestParams externalSignatureParams = new SignRequestParams();
 
     /**
-     * Activation de l'intro d'aide
+     * Activation de l’intro d’aide
      */
     private Boolean enableHelp = true;
 
@@ -299,6 +299,9 @@ public class GlobalProperties {
      */
     private String testEmail;
 
+    /**
+     * Activer la vérification des numéros de téléphone français pour l’OTP
+     */
     Boolean frenchPhoneNumberOnly = false;
 
     public String getRootUrl() {
