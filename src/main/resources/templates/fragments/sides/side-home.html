@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="activeMenu" type="java.lang.String"*/-->
-<nav th:fragment="side-home" id="sidebar">
+<nav th:fragment="side-home" id="sidebar" th:with="isUserOnSu = ${userEppn != authUserEppn}">
     <div class="ms-1 mt-2">
         <h5 class="text-center sidebar-label"><b>Outils</b></h5>
-        <a th:unless="${globalProperties.hideWizardWorkflow}" id="start-wizard-button-2" role="button" class="btn btn-light mb-1 col-12 text-left border-light-subtle" data-bs-toggle="modal" data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant">
+        <a th:unless="${globalProperties.hideWizardWorkflow}" th:if="${!isUserOnSu}" id="start-wizard-button-2" role="button" class="btn btn-light mb-1 col-12 text-left border-light-subtle" data-bs-toggle="modal" data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant">
             <i class="fa-solid fa-magic"></i> Assistant de création de circuit
         </a>
         <a title="Valider la signature d'un document" href="/user/validation" class="btn btn-light mb-1 col-12 text-left border-light-subtle" style="width: 250px;">
