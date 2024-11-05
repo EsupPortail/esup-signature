@@ -70,6 +70,9 @@ public class Workflow {
     @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
     private Set<String> managers = new HashSet<>();
 
+    @ManyToMany(mappedBy = "workflows")
+    private Set<WsAccessToken> wsAccessTokens = new HashSet<>();
+
     @OrderColumn
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE, CascadeType.DETACH})
     private List<WorkflowStep> workflowSteps = new ArrayList<>();

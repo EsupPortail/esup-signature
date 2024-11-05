@@ -63,7 +63,6 @@ public class ScheduledTaskService {
 	}
 
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
-	@Transactional
 	public void scanAllWorkflowsSources() {
 		logger.debug("scan workflows sources");
 		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
