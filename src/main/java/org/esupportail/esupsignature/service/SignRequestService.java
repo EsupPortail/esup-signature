@@ -12,19 +12,19 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.FOPService;
-import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.repository.WsAccessTokenRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.mail.MailService;
-import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
@@ -97,7 +97,7 @@ public class SignRequestService {
 
 	private final FsAccessFactoryService fsAccessFactoryService;
 
-	private final OtpService otpService;
+	private final WsAccessTokenRepository wsAccessTokenRepository;
 
 	private final FileService fileService;
 
@@ -117,7 +117,7 @@ public class SignRequestService {
 
 	private final LiveWorkflowStepService liveWorkflowStepService;
 
-	public SignRequestService(GlobalProperties globalProperties, TargetService targetService, NexuService nexuService, WebUtilsService webUtilsService, SignRequestRepository signRequestRepository, ActionService actionService, PdfService pdfService, DocumentService documentService, CustomMetricsService customMetricsService, SignService signService, SignTypeService signTypeService, UserService userService, DataService dataService, CommentService commentService, MailService mailService, AuditTrailService auditTrailService, UserShareService userShareService, RecipientService recipientService, FsAccessFactoryService fsAccessFactoryService, OtpService otpService, FileService fileService, PreFillService preFillService, LogService logService, SignRequestParamsService signRequestParamsService, ValidationService validationService, FOPService fopService, ObjectMapper objectMapper, SignBookRepository signBookRepository, LiveWorkflowStepService liveWorkflowStepService) {
+	public SignRequestService(GlobalProperties globalProperties, TargetService targetService, NexuService nexuService, WebUtilsService webUtilsService, SignRequestRepository signRequestRepository, ActionService actionService, PdfService pdfService, DocumentService documentService, CustomMetricsService customMetricsService, SignService signService, SignTypeService signTypeService, UserService userService, DataService dataService, CommentService commentService, MailService mailService, AuditTrailService auditTrailService, UserShareService userShareService, RecipientService recipientService, FsAccessFactoryService fsAccessFactoryService, WsAccessTokenRepository wsAccessTokenRepository, FileService fileService, PreFillService preFillService, LogService logService, SignRequestParamsService signRequestParamsService, ValidationService validationService, FOPService fopService, ObjectMapper objectMapper, SignBookRepository signBookRepository, LiveWorkflowStepService liveWorkflowStepService) {
         this.globalProperties = globalProperties;
         this.targetService = targetService;
         this.nexuService = nexuService;
@@ -137,7 +137,7 @@ public class SignRequestService {
         this.userShareService = userShareService;
         this.recipientService = recipientService;
         this.fsAccessFactoryService = fsAccessFactoryService;
-        this.otpService = otpService;
+        this.wsAccessTokenRepository = wsAccessTokenRepository;
         this.fileService = fileService;
         this.preFillService = preFillService;
         this.logService = logService;
@@ -1124,8 +1124,12 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public String getAllToJSon() throws JsonProcessingException {
-		return objectMapper.writeValueAsString(signRequestRepository.findAllByForWs());
+	public String getAllToJSon(String xApikey) throws JsonProcessingException {
+		WsAccessToken wsAccessToken = wsAccessTokenRepository.findByToken(xApikey);
+		if(wsAccessToken == null || wsAccessToken.getWorkflows().isEmpty()) {
+			return objectMapper.writeValueAsString(signRequestRepository.findAllForWs());
+		}
+		return objectMapper.writeValueAsString(signRequestRepository.findAllByToken(wsAccessToken));
 	}
 
 	public boolean isAttachmentAlert(SignRequest signRequest) {

@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.repository;
 import org.esupportail.esupsignature.dto.json.SignRequestWsDto;
 import org.esupportail.esupsignature.entity.Comment;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.WsAccessToken;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,8 +20,19 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
 
     Optional<SignRequest> findByToken(String token);
 
+    @Query("""
+            select s.id as id, s.title as title, s.status as status, s.createDate as createDate, s.createBy.eppn as createByEppn, sb.endDate as endDate 
+            from SignRequest s 
+            join SignBook as sb on sb.id = s.parentSignBook.id
+            join sb.liveWorkflow as lw
+            join lw.workflow as w
+            join w.wsAccessTokens as t
+            where :token in (t) 
+            """)
+    List<SignRequestWsDto> findAllByToken(WsAccessToken token);
+
     @Query("select s.id as id, s.title as title, s.status as status, s.createDate as createDate, s.createBy.eppn as createByEppn, sb.endDate as endDate from SignRequest s join SignBook as sb on sb.id = s.parentSignBook.id")
-    List<SignRequestWsDto> findAllByForWs();
+    List<SignRequestWsDto> findAllForWs();
 
     List<SignRequest> findByCreateByEppnAndStatus(String createByEppn, SignRequestStatus status);
 

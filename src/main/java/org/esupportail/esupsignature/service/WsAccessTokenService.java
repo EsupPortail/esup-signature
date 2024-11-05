@@ -35,6 +35,16 @@ public class WsAccessTokenService {
         return allAccess(token);
     }
 
+    @Transactional(readOnly = true)
+    public boolean isTokenExist(String token) {
+        return allAccess(token) || wsAccessTokenRepository.findByToken(token) != null;
+    }
+
+    @Transactional(readOnly = true)
+    public WsAccessToken getByToken(String token) {
+        return wsAccessTokenRepository.findByToken(token);
+    }
+
     @Transactional
     public boolean createWorkflowAccess(Long id, String token) {
         if(allAccess(token)) return true;

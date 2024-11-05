@@ -272,9 +272,9 @@ public class SignRequestWsController {
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer toutes les demandes", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = List.class), mediaType = MediaType.APPLICATION_JSON_VALUE)))
-    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
+    @PreAuthorize("@wsAccessTokenService.isTokenExist(#xApiKey)")
     public ResponseEntity<String> getAllSignRequests(@ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
-        return ResponseEntity.ok(signRequestService.getAllToJSon());
+        return ResponseEntity.ok(signRequestService.getAllToJSon(xApiKey));
     }
 
     @GetMapping(value = "/return-test")

@@ -12,7 +12,7 @@
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.31.1</version>
+	<version>1.31.2</version>
 	<name>esup-signature</name>
 	<properties>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
@@ -847,6 +847,7 @@
 					<composeFile>${project.basedir}/src/test/resources/docker-compose.yml</composeFile>
 					<removeOrphans>true</removeOrphans>
 					<detachedMode>true</detachedMode>
+					<removeVolumes>true</removeVolumes>
 					<skip>${skipDockerCompose}</skip>
 				</configuration>
 				<executions>
