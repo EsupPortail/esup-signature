@@ -104,7 +104,9 @@ public class ValidationService {
                 throw new EsupSignatureRuntimeException("Impossible de signer avec ce certificat. Détails : " + e.getMessage());
             }
         }
-        if(containsBadSignature || revocationToken != null && !certificateVerifier.getRevocationDataVerifier().isAcceptable(revocationToken)
+        if(containsBadSignature
+            || revocationToken == null
+            || !certificateVerifier.getRevocationDataVerifier().isAcceptable(revocationToken)
             || (!certificateToken.isValidOn(new Date()) && parameters.isSignWithExpiredCertificate())) {
             logger.warn("LT or LTA signature level not supported, switching to T level");
             if(parameters.getSignatureLevel().name().contains("_LT") || parameters.getSignatureLevel().name().contains("_LTA")) {
