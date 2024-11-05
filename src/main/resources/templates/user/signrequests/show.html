@@ -102,10 +102,15 @@
                             th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank"
                             title="Télécharger le document"><i class="fa-solid fa-file-download fa-2xl"></i></a>
                     </li>
-                    <li th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                    <li th:if="${signRequest.parentSignBook.signRequests.size() == 1 && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a class="btn-lg btn-floating bg-primary"
                             th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank"
                             title="Télécharger la dernière version du document"><i class="fa-solid fa-file-download fa-2xl"></i></a>
+                    </li>
+                    <li th:if="${signRequest.parentSignBook.signRequests.size() > 1 && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                        <a class="btn-lg btn-floating bg-primary"
+                           th:href="'/ws-secure/global/get-last-files/' + ${signRequest.parentSignBook.id}" target="_blank"
+                           title="Télécharger la dernière version des documents"><i class="fa-solid fa-file-download fa-2xl"></i></a>
                     </li>
                     <li th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
                         <a class="btn-lg btn-floating bg-primary"
@@ -201,9 +206,7 @@
                 <div th:replace="~{user/signrequests/includes/workspace :: workspace}"></div>
             </th:block>
             <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
-                <div class="alert alert-success">
-                    Le document contenu dans cette demande de signature a été archivé. Vous avez la possibilité de le télécharger à l’aide du bouton en bas à droite.
-                </div>
+                <div class="alert alert-success">Les documents contenus dans cette demande de signature ont été archivés. Vous avez la possibilité de les télécharger à l’aide du bouton en bas à droite.</div>
             </th:block>
             <div th:if="${signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace"
                 class="workspace alert alert-secondary row">
