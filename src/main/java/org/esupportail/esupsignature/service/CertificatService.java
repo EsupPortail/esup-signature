@@ -162,7 +162,7 @@ public class CertificatService implements HealthIndicator {
     }
 
     public SignatureTokenConnection getSealToken() {
-        if((!StringUtils.hasText(globalProperties.getSealCertificatDriver()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
+        if((StringUtils.hasText(globalProperties.getSealCertificatDriver()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
            return getPkcsToken();
         } else if(globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC)){
             return openSCSignatureToken;
@@ -175,7 +175,7 @@ public class CertificatService implements HealthIndicator {
             if (StringUtils.hasText(globalProperties.getSealCertificatDriver()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) {
                 KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
                 return new eu.europa.esig.dss.token.Pkcs11SignatureToken(globalProperties.getSealCertificatDriver(), passwordProtection);
-            } else if (!StringUtils.hasText(globalProperties.getSealCertificatFile()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
+            } else if (StringUtils.hasText(globalProperties.getSealCertificatFile()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
                 try {
                     return userKeystoreService.getPkcs12Token(new FileInputStream(globalProperties.getSealCertificatFile()), globalProperties.getSealCertificatPin());
                 } catch (FileNotFoundException e) {
