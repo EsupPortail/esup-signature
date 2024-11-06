@@ -21,9 +21,7 @@
                                     <br>
                                     <select class="form-select" name="signType" th:id="'signType-' + ${workflowStep.id}" th:disabled="${workflowStep.autoSign}">
                                         <th:block th:each="signType : ${signTypes}">
-                                            <option th:value="${signType}"
-                                                    th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"
-                                                    th:selected="${workflowStep.signType == signType}"></option>
+                                            <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
                                         </th:block>
                                     </select>
                                     <input type="hidden" name="signType" value="certSign" th:if="${workflowStep.autoSign}" >
