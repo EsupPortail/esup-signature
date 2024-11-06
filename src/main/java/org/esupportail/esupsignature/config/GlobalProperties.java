@@ -270,7 +270,8 @@ public class GlobalProperties {
     private Float fixFactor = .75f;
 
     /**
-     * @deprecated Activer le watermark pour les utilisateurs externes
+     * Activer le watermark pour les utilisateurs externes
+     * @deprecated utiliser externalSignatureParams.addWatermark
      */
     @Deprecated
     private Boolean watermarkForExternals;
