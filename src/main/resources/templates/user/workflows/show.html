@@ -168,7 +168,7 @@
                                     <div class="col-lg-10">
                                         <select class="slim-select-simple" id="signType_id" name="signType" size="1">
                                             <th:block th:each="signType : ${signTypes}">
-                                                <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                                                <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
                                             </th:block>
                                         </select>
                                     </div>
