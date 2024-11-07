@@ -102,7 +102,7 @@
                             th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank"
                             title="Télécharger le document"><i class="fa-solid fa-file-download fa-2xl"></i></a>
                     </li>
-                    <li th:if="${signRequest.parentSignBook.signRequests.size() == 1 && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                    <li th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a class="btn-lg btn-floating bg-primary"
                             th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank"
                             title="Télécharger la dernière version du document"><i class="fa-solid fa-file-download fa-2xl"></i></a>
@@ -110,7 +110,7 @@
                     <li th:if="${signRequest.parentSignBook.signRequests.size() > 1 && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a class="btn-lg btn-floating bg-primary"
                            th:href="'/ws-secure/global/get-last-files/' + ${signRequest.parentSignBook.id}" target="_blank"
-                           title="Télécharger la dernière version des documents"><i class="fa-solid fa-file-download fa-2xl"></i></a>
+                           title="Télécharger la dernière version des documents dans une archive ZIP"><i class="fa-solid fa-file-archive fa-2xl"></i></a>
                     </li>
                     <li th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
                         <a class="btn-lg btn-floating bg-primary"
@@ -138,7 +138,7 @@
                         <li>
                             <a class="btn-lg btn-floating bg-primary"
                                 th:href="'/ws-secure/global/get-last-file-report/' + ${id}" target="_blank"
-                                title="Enregistrer le document signé et le rapport de signature"><i class="fa-solid fa-file-archive fa-2xl"></i>
+                                title="Enregistrer le document signé et le rapport de signature"><i class="fa-solid fa-file-shield fa-2xl"></i>
                             </a>
                         </li>
                         <li>
@@ -354,7 +354,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                 <div th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa || signWiths.size() > 0}">
-                    <button id="checkValidateSignButtonEnd" th:if="${signBook.signRequests.size() == 1 || nextSignBook == null}"
+                    <button id="checkValidateSignButtonEnd"
                             class="btn btn-success me-1" title="Signer/Viser" th:value="${signRequest.id}" autofocus>
                         <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer</span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>
