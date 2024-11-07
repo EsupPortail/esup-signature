@@ -70,10 +70,10 @@
 			</form>
 		</th:block>
 		<div class="border 1 me-2 d-none d-lg-block ms-1"></div>
-		<a th:if="${signRequest.parentSignBook.createBy.eppn == user.eppn}" class="btn btn-light btn-outline-dark d-none d-lg-block ms-1 me-1" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal">
+		<a th:if="${signRequest.parentSignBook.createBy.eppn == user.eppn || #authorization.expression('hasRole(''ROLE_ADMIN'')') || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email))}" class="btn btn-light btn-outline-dark d-none d-lg-block ms-1 me-1" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal">
 			<i class="fa-solid fa-users-viewfinder"></i>
 		</a>
-		<a th:if="${signRequest.parentSignBook.createBy.eppn == user.eppn}" class="btn btn-light btn-outline-dark d-none d-md-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/update/' + ${signRequest.parentSignBook.id}">
+		<a th:if="${signRequest.parentSignBook.createBy.eppn == user.eppn || #authorization.expression('hasRole(''ROLE_ADMIN'')') || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email))}" class="btn btn-light btn-outline-dark d-none d-md-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/update/' + ${signRequest.parentSignBook.id}">
 			<i class="fa-solid fa-pencil-alt"></i>
 		</a>
 	</div>
