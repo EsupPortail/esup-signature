@@ -67,7 +67,7 @@
                                     </div>
                                     <span class="h7" th:text="'Circuit : ' + ${workflow.description}"></span>
                                 </a><br/>
-                                <button style="margin-left: 90px; margin-top: -68px;" class="btn btn-transparent btn-sm text-dark toggle-mini-menu rounded-0"
+                                <button title="Éditer le circuit" style="margin-left: 90px; margin-top: -68px;" class="btn btn-transparent btn-sm text-dark toggle-mini-menu rounded-0"
                                         th:if="${workflow.createBy.eppn == userEppn}" type="button" th:id="'menu-toggle_' + ${workflow.id}"
                                         th:data-bs-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-bs-toggle="collapse">
                                     <i class="fa-solid fa-ellipsis-h" style="float: right;"></i>
