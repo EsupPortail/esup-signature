@@ -38,7 +38,7 @@
                             <table th:if="${signBooksToSign.size() > 0}" class="table table-sm table-borderless table-hover table-light">
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksToSign}">
-                                    <tr th:if="${signBook.signRequests.size() > 0}" th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}" th:with="signRequest = ${signBook.signRequests.get(0)}">
+                                    <tr th:if="${signBook.signRequests.size() > 0}" th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" th:with="signRequest = ${signBook.signRequests.get(0)}">
                                         <td style="width: 15px;">
                                             <div class="d-lg-inline-flex align-items-center gap-1">
                                                 <i th:unless="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-success" title="Le document n'a pas été lu jusqu'à la dernière page"></i>
@@ -119,7 +119,7 @@
                                 <table th:if="${signBooksPending.size() > 0}" class="table table-sm table-borderless table-hover table-light">
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooksPending}">
-                                    <tr th:title="${signBook.description}" th:data-href="'/user/signbooks/' + ${signBook.id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}" th:with="signRequest = ${signBook.signRequests.get(0)}">
+                                    <tr th:title="${signBook.description}" th:data-href="'/user/signbooks/' + ${signBook.id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" th:with="signRequest = ${signBook.signRequests.get(0)}">
                                         <td style="width: 15px;">
                                             <div class="d-lg-inline-flex align-items-center gap-1">
                                                 <i th:unless="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-success" title="Le document n'a pas été lu jusqu'à la dernière page"></i>
@@ -153,11 +153,13 @@
                                             <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>
                                         </td>
                                         <td class="text-break w-20 d-none d-md-table-cell" style="width: 300px;">
+                                            <ul>
                                             <th:block th:each="recipient : ${signBook.liveWorkflow.currentStep.recipients}">
                                                 <li th:title="${recipient.user.email}" style="display: inline-flex;">
                                                     <span class="me-1" th:text="'En attente chez : ' + ${recipient.user.firstname + ' ' + recipient.user.name}"></span>
                                                 </li>
                                             </th:block>
+                                            </ul>
                                         </td>
                                         <td class="text-break w-20" style="width: 250px;"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                         </td>
