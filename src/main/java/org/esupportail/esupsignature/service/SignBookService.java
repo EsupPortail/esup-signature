@@ -264,6 +264,8 @@ public class SignBookService {
             signBooks = signBookRepository.findEmpty(user, pageable);
         } else if(statusFilter.equals("deleted")) {
             signBooks = signBookRepository.findByCreateByIdDeleted(user, pageable);
+        } else if(statusFilter.equals("completed")) {
+            signBooks = signBookRepository.findCompleted(user, pageable);
         } else {
             signBooks = signBookRepository.findByCreateByIdAndStatusAndSignRequestsNotNull(user, SignRequestStatus.valueOf(statusFilter), pageable);
         }
