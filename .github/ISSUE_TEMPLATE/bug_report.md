@@ -17,7 +17,7 @@ A clear and concise description of what the bug is.
 Explication...
 
 **Screenshots**
-si besoin des copies d'écran
+si besoin de copies d'écran
 
 **Contexte spécifique**
 ?
