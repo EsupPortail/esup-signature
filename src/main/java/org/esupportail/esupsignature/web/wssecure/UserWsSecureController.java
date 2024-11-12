@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
@@ -55,7 +56,7 @@ public class UserWsSecureController {
 
     @ResponseBody
     @GetMapping("/get-favorites")
-    private List<User> getFavorites(@ModelAttribute("authUserEppn") String authUserEppn) {
+    private Set<User> getFavorites(@ModelAttribute("authUserEppn") String authUserEppn) {
         return userPropertieService.getFavoritesEmails(authUserEppn);
     }
 

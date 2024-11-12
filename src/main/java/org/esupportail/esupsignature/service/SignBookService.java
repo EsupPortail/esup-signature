@@ -1887,7 +1887,7 @@ public class SignBookService {
     public int transfer(String authUserEppn) {
         int i = 0;
         User user = userService.getByEppn(authUserEppn);
-        User replacedByUser = user.getCurrentReplaceUser();
+        User replacedByUser = user.getCurrentReplaceByUser();
         if(replacedByUser != null) {
             List<SignRequest> signRequests = getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).flatMap(signBook -> signBook.getSignRequests().stream().distinct()).collect(Collectors.toList());
             for(SignRequest signRequest : signRequests) {

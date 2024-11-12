@@ -341,7 +341,7 @@ public class User {
     }
 
     @JsonIgnore
-    public User getCurrentReplaceUser() {
+    public User getCurrentReplaceByUser() {
         Date checkDate = new Date();
         if((getReplaceBeginDate() == null
                 || checkDate.after(getReplaceBeginDate()))
