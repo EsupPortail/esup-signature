@@ -30,7 +30,7 @@
                     <div class="alert alert-success" th:if="${user.replaceByUser != null}">
                         Vos demandes seront redirigées vers <b th:text="${user.replaceByUser.name + ' ' + user.replaceByUser.firstname}"></b>
                         <span th:if="${user.replaceBeginDate != null}"> du <b th:text="${#dates.format(user.replaceBeginDate, 'dd/MM/yyyy HH:mm')}"></b> au <b th:text="${#dates.format(user.replaceEndDate, 'dd/MM/yyyy HH:mm')}"></b></span>
-                        <div th:if="${signRequests.size() > 0}" class="m-2">
+                        <div th:if="${signRequests.size() > 0 && user.currentReplaceByUser != null}" class="m-2">
                             <a onclick="return confirm('Merci de confirmer le transfert de toutes vos demandes. Les demandes ne pourront plus être récupérées')"
                                 class="btn btn-primary" href="/user/users/replace/transfer">Transférer toutes mes demandes en cours</a>
                         </div>

@@ -1925,7 +1925,7 @@ public class SignBookService {
         }
         for(LiveWorkflowStep liveWorkflowStep : liveWorkflowSteps) {
             for(Recipient recipient : liveWorkflowStep.getRecipients()) {
-                if(recipient.getUser().equals(user) && signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none)) {
+                if(recipient.getUser().equals(user) && signRequest.getRecipientHasSigned().get(recipient) != null && signRequest.getRecipientHasSigned().get(recipient).getActionType() != null && signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none)) {
                     recipient.setUser(replacedByUser);
                 }
             }
