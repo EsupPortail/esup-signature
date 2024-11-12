@@ -114,7 +114,7 @@ public class ManageController {
         model.addAttribute("creatorFilter", creatorFilter);
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("workflow", workflow);
-        Page<SignBook> signBooks = signBookService.getSignBooksForManagers(userEppn, authUserEppn, signRequestStatus, recipientsFilter, workflow.getDescription(), docTitleFilter, creatorFilter, dateFilter, pageable);
+        Page<SignBook> signBooks = signBookService.getSignBooksForManagers(userEppn, authUserEppn, signRequestStatus, recipientsFilter, workflow.getId(), docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("signBooks", signBooks);
         model.addAttribute("docTitles", signBookService.getSignBooksForManagersSubjects(workflow.getId()));
         model.addAttribute("creators", signBookService.getSignBooksForManagersCreators(workflow.getId()));
