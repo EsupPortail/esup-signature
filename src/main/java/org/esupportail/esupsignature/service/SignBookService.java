@@ -2024,12 +2024,12 @@ public class SignBookService {
         }
     }
 
-    public List<String> getSignBooksForManagersSubjects(String workflowFilter) {
-        return signBookRepository.findByWorkflowNameSubjects(workflowFilter);
+    public List<String> getSignBooksForManagersSubjects(Long workflowId) {
+        return signBookRepository.findByWorkflowNameSubjects(workflowId);
     }
 
-    public List<User> getSignBooksForManagersCreators(String workflowFilter) {
-        return signBookRepository.findByWorkflowNameCreators(workflowFilter);
+    public List<User> getSignBooksForManagersCreators(Long workflowId) {
+        return signBookRepository.findByWorkflowNameCreators(workflowId);
     }
 
     public List<User> getSignBooksForManagersRecipientsUsers(String workflowFilter) {

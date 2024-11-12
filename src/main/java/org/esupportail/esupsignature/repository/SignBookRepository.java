@@ -74,16 +74,17 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
 
     @Query("""
             select distinct sb.subject from SignBook sb
-            where (:workflowFilter is null or sb.workflowName = :workflowFilter)
+            where (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId)
             and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             """)
-    List<String> findByWorkflowNameSubjects(String workflowFilter);
+    List<String> findByWorkflowNameSubjects(Long workflowId);
 
     @Query("""
             select distinct sb.createBy from SignBook sb
-            where (:workflowFilter is null or sb.workflowName = :workflowFilter)
+            where (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId)
+            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             """)
-    List<User> findByWorkflowNameCreators(String workflowFilter);
+    List<User> findByWorkflowNameCreators(Long workflowId);
 
     @Query("""
             select distinct u from SignBook sb
