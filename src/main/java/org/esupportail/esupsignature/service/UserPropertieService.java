@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.User;
@@ -8,9 +9,7 @@ import org.esupportail.esupsignature.repository.UserPropertieRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class UserPropertieService {
@@ -60,7 +59,7 @@ public class UserPropertieService {
     }
 
     @Transactional
-    public List<User> getFavoritesEmails(String userEppn) {
+    public Set<User> getFavoritesEmails(String userEppn) {
         List<UserPropertie> userProperties = getUserProperties(userEppn);
         Map<User, Date> favorites = new HashMap<>();
         for(UserPropertie userPropertie : userProperties) {
@@ -68,7 +67,15 @@ public class UserPropertieService {
         }
         List<Map.Entry<User, Date>> entrySet = new ArrayList<>(favorites.entrySet());
         entrySet.sort(Map.Entry.<User, Date>comparingByValue().reversed());
-        return entrySet.stream().map(Map.Entry::getKey).limit(5).collect(Collectors.toList());
+        Set<User> favoritesUsers = new HashSet<>();
+        for(User favoriteUser : entrySet.stream().map(Map.Entry::getKey).limit(5).toList()) {
+            if(favoriteUser.getCurrentReplaceByUser() != null) {
+                favoritesUsers.add(favoriteUser.getCurrentReplaceByUser());
+            } else {
+                favoritesUsers.add(favoriteUser);
+            }
+        }
+        return favoritesUsers;
     }
 
     @Transactional

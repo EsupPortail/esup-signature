@@ -20,7 +20,7 @@
         <div id="content" class="content">
             <div class="fixed-action-btn">
                 <a th:if="${user.replaceByUser == null}" title="Mettre en place une redirection" data-bs-toggle="modal" data-bs-target="#newReplaceModal" type="button"
-                   class="btn-floating btn-lg bg-primary">
+                    class="btn-floating btn-lg bg-primary">
                     <i class="fa-solid fa-plus fa-2xl"></i>
                 </a>
             </div>
@@ -28,10 +28,11 @@
                 <div class="card-body">
                     <h5 class="text-center"><b>Remplacements</b></h5>
                     <div class="alert alert-success" th:if="${user.replaceByUser != null}">
-                        Vos demandes sont redirigées vers <b th:text="${user.replaceByUser.name + ' ' + user.replaceByUser.firstname}"></b>
-                        <div th:if="${signRequests.size() > 0}" class="m-2">
+                        Vos demandes seront redirigées vers <b th:text="${user.replaceByUser.name + ' ' + user.replaceByUser.firstname}"></b>
+                        <span th:if="${user.replaceBeginDate != null}"> du <b th:text="${#dates.format(user.replaceBeginDate, 'dd/MM/yyyy HH:mm')}"></b> au <b th:text="${#dates.format(user.replaceEndDate, 'dd/MM/yyyy HH:mm')}"></b></span>
+                        <div th:if="${signRequests.size() > 0 && user.currentReplaceByUser != null}" class="m-2">
                             <a onclick="return confirm('Merci de confirmer le transfert de toutes vos demandes. Les demandes ne pourront plus être récupérées')"
-                               class="btn btn-primary" href="/user/users/replace/transfer">Transférer toutes mes demandes en cours</a>
+                                class="btn btn-primary" href="/user/users/replace/transfer">Transférer toutes mes demandes en cours</a>
                         </div>
                         <form id="shareForm" th:action="'/user/users/replace/update'" method="post" class="m-2">
                             <input type="submit" class="btn btn-danger" value="Supprimer la redirection">

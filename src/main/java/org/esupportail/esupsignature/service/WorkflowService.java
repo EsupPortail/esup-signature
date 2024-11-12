@@ -416,9 +416,9 @@ public class WorkflowService {
                         workflowStep.getUsers().add(userService.getUserByEmail(email));
                     }
                 }
-                if(oneUser.getCurrentReplaceUser() != null) {
+                if(oneUser.getCurrentReplaceByUser() != null) {
                         workflowStep.getUsers().remove(oneUser);
-                        workflowStep.getUsers().add(oneUser.getCurrentReplaceUser());
+                        workflowStep.getUsers().add(oneUser.getCurrentReplaceByUser());
                 }
             }
         }
