@@ -503,8 +503,9 @@ public class PdfService {
             }
             ByteArrayOutputStream convertedOutputStream = new ByteArrayOutputStream();
             byte[] result;
+            Process process = null;
             try {
-                Process process = processBuilder.start();
+                process = processBuilder.start();
                 IOUtils.copy(new ByteArrayInputStream(originalBytes), process.getOutputStream());
                 process.getOutputStream().flush();
                 process.getOutputStream().close();
@@ -524,12 +525,15 @@ public class PdfService {
                     }
                     logger.warn(output.toString());
                     logger.warn("PDF/A conversion failure : document will be signed without conversion");
-                    process.destroy();
                     return originalBytes;
                 }
             } catch (IOException | InterruptedException e) {
                 logger.error("GhostScript launch error : check installation or path", e);
                 throw new EsupSignatureSignException("GhostScript launch error");
+            } finally {
+                if(process != null) {
+                    process.destroy();
+                }
             }
             return result;
         } else {
@@ -553,8 +557,9 @@ public class PdfService {
                 processBuilder.command("bash", "-c", cmd);
             }
             byte[] result;
+            Process process = null;
             try {
-                Process process = processBuilder.start();
+                process = processBuilder.start();
                 process.getOutputStream().write(originalBytes);
                 process.getOutputStream().flush();
                 process.getOutputStream().close();
@@ -577,6 +582,10 @@ public class PdfService {
             } catch (InterruptedException e) {
                 logger.error("GhostScript launcs error : check installation or path", e);
                 throw new EsupSignatureSignException("GhostScript launch error");
+            } finally {
+                if(process != null) {
+                    process.destroy();
+                }
             }
             return result;
         } else {
