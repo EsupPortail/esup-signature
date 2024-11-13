@@ -692,15 +692,14 @@ public class UserService {
         Map<String, Object> signature = new HashMap<>();
         User authUser = getByEppn(authUserEppn);
         Optional<Document> signImage = authUser.getSignImages().stream().filter(document -> document.getId().equals(id)).findFirst();
-//        if(signImage.isPresent()) {
-//            signature.put("bytes", signImage.get().getInputStream().readAllBytes());
-//            signature.put("fileName", "sign_" + signImage.get().getFileName());
-//            signature.put("contentType", signImage.get().getContentType());
-//            return signature;
-//        } else {
-//            return null;
-//        }
-        return null;
+        if(signImage.isPresent()) {
+            signature.put("bytes", signImage.get().getInputStream().readAllBytes());
+            signature.put("fileName", "sign_" + signImage.get().getFileName());
+            signature.put("contentType", signImage.get().getContentType());
+            return signature;
+        } else {
+            return null;
+        }
     }
 
     @Transactional
