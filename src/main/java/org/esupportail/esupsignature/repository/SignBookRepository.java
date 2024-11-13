@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
+import org.esupportail.esupsignature.dto.view.UserDto;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
@@ -87,17 +88,14 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     List<User> findByWorkflowNameCreators(Long workflowId);
 
     @Query("""
-            select distinct u from SignBook sb
-            left join sb.team team
-            left join sb.signRequests sr
-            left join sr.recipientHasSigned rhs
-            left join sb.liveWorkflow lw
-            left join lw.liveWorkflowSteps lws
-            left join lws.recipients r
-            left join r.user u
-            where (:workflowFilter is null or sb.workflowName = :workflowFilter) and u is not null
-            """)
-    List<User> findByWorkflowNameRecipientsUsers(String workflowFilter);
+                select distinct u.name as name, u.firstname as firstname, u.eppn as eppn, u.email as email from SignBook sb
+                left join sb.liveWorkflow lw
+                left join lw.liveWorkflowSteps lws
+                left join lws.recipients r
+                left join r.user u
+                where (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId) and u is not null
+                """)
+    List<UserDto> findByWorkflowNameRecipientsUsers(Long workflowId);
 
     @Query("""
             select distinct sb from SignBook sb
