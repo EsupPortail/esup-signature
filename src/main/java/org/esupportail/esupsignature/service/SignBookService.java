@@ -359,7 +359,7 @@ public class SignBookService {
         signBook.setStatus(SignRequestStatus.draft);
     }
 
-    public List<User> getRecipientsNames(String userEppn) {
+    public List<UserDto> getRecipientsNames(String userEppn) {
         User user = userService.getByEppn(userEppn);
         return signBookRepository.findRecipientNames(user);
     }
@@ -1870,7 +1870,7 @@ public class SignBookService {
         return template;
     }
 
-    public List<User> getCreators(String userEppn, String workflowFilter, String docTitleFilter, String creatorFilter) {
+    public List<UserDto> getCreators(String userEppn, String workflowFilter, String docTitleFilter, String creatorFilter) {
         User creatorFilterUser = null;
         if(creatorFilter != null) {
             creatorFilterUser = userService.getByEppn(creatorFilter);
@@ -2029,7 +2029,7 @@ public class SignBookService {
         return signBookRepository.findByWorkflowNameSubjects(workflowId);
     }
 
-    public List<User> getSignBooksForManagersCreators(Long workflowId) {
+    public List<UserDto> getSignBooksForManagersCreators(Long workflowId) {
         return signBookRepository.findByWorkflowNameCreators(workflowId);
     }
 
