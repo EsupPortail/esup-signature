@@ -118,7 +118,7 @@ public class ManageController {
         model.addAttribute("signBooks", signBooks);
         model.addAttribute("docTitles", signBookService.getSignBooksForManagersSubjects(workflow.getId()));
         model.addAttribute("creators", signBookService.getSignBooksForManagersCreators(workflow.getId()));
-        model.addAttribute("signRequestRecipients", signBookService.getSignBooksForManagersRecipientsUsers(workflow.getDescription()));
+        model.addAttribute("signRequestRecipients", signBookService.getSignBooksForManagersRecipientsUsers(workflow.getId()));
         return "user/manage/details";
     }
 

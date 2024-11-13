@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.model.DssMultipartFile;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.view.UserDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
@@ -1570,7 +1571,7 @@ public class SignBookService {
                     }
                     if (!user.getSignImages().isEmpty() && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
                         for (Document signImage : user.getSignImages()) {
-                            signImages.add(fileService.getBase64Image(signImage));
+//                            signImages.add(fileService.getBase64Image(signImage));
                         }
                     }
                 }
@@ -2032,7 +2033,7 @@ public class SignBookService {
         return signBookRepository.findByWorkflowNameCreators(workflowId);
     }
 
-    public List<User> getSignBooksForManagersRecipientsUsers(String workflowFilter) {
-        return signBookRepository.findByWorkflowNameRecipientsUsers(workflowFilter);
+    public List<UserDto> getSignBooksForManagersRecipientsUsers(Long workflowId) {
+        return signBookRepository.findByWorkflowNameRecipientsUsers(workflowId);
     }
 }
