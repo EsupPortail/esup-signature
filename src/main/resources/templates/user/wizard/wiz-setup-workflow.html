@@ -43,7 +43,7 @@
                         <th:block th:unless="${step.autoSign}">
                         Destinataires :
                         <th:block th:each="user, iterator : ${step.users}">
-                            <span th:text="${user.email}"></span><span th:if="${user.currentReplaceUser != null}" th:text="' (remplacé par ' + ${user.currentReplaceUser.email} +')'"></span>
+                            <span th:text="${user.email}"></span><span th:if="${user.currentReplaceByUser != null}" th:text="' (remplacé par ' + ${user.currentReplaceByUser.email} +')'"></span>
                             <span th:if="${iterator.index >= step.users.size()}">, </span>
                         </th:block>
                         <span th:if="${step.repeatable}"> (cette étape peut donner lieu à plusieurs validations en série)</span>
