@@ -1571,7 +1571,7 @@ public class SignBookService {
                     }
                     if (!user.getSignImages().isEmpty() && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
                         for (Document signImage : user.getSignImages()) {
-//                            signImages.add(fileService.getBase64Image(signImage));
+                            signImages.add(fileService.getBase64Image(signImage));
                         }
                     }
                 }
