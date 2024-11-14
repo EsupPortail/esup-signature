@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.model.DssMultipartFile;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.view.UserDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
@@ -184,7 +185,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public Page<SignBook> getSignBooksForManagers(String userEppn, String authUserEppn, SignRequestStatus statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
+    public Page<SignBook> getSignBooksForManagers(String userEppn, String authUserEppn, SignRequestStatus statusFilter, String recipientsFilter, Long workflowId, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
         User creatorFilterUser = null;
         if(creatorFilter != null) {
             creatorFilterUser = userService.getByEppn(creatorFilter);
@@ -210,7 +211,7 @@ public class SignBookService {
                 logger.error("unable to parse date : " + dateFilter);
             }
         }
-        return signBookRepository.findByWorkflowName(userFilter, statusFilter, workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
+        return signBookRepository.findByWorkflowName(userFilter, statusFilter, workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
     }
 
     @Transactional
@@ -358,7 +359,7 @@ public class SignBookService {
         signBook.setStatus(SignRequestStatus.draft);
     }
 
-    public List<User> getRecipientsNames(String userEppn) {
+    public List<UserDto> getRecipientsNames(String userEppn) {
         User user = userService.getByEppn(userEppn);
         return signBookRepository.findRecipientNames(user);
     }
@@ -1869,7 +1870,7 @@ public class SignBookService {
         return template;
     }
 
-    public List<User> getCreators(String userEppn, String workflowFilter, String docTitleFilter, String creatorFilter) {
+    public List<UserDto> getCreators(String userEppn, String workflowFilter, String docTitleFilter, String creatorFilter) {
         User creatorFilterUser = null;
         if(creatorFilter != null) {
             creatorFilterUser = userService.getByEppn(creatorFilter);
@@ -2024,15 +2025,15 @@ public class SignBookService {
         }
     }
 
-    public List<String> getSignBooksForManagersSubjects(String workflowFilter) {
-        return signBookRepository.findByWorkflowNameSubjects(workflowFilter);
+    public List<String> getSignBooksForManagersSubjects(Long workflowId) {
+        return signBookRepository.findByWorkflowNameSubjects(workflowId);
     }
 
-    public List<User> getSignBooksForManagersCreators(String workflowFilter) {
-        return signBookRepository.findByWorkflowNameCreators(workflowFilter);
+    public List<UserDto> getSignBooksForManagersCreators(Long workflowId) {
+        return signBookRepository.findByWorkflowNameCreators(workflowId);
     }
 
-    public List<User> getSignBooksForManagersRecipientsUsers(String workflowFilter) {
-        return signBookRepository.findByWorkflowNameRecipientsUsers(workflowFilter);
+    public List<UserDto> getSignBooksForManagersRecipientsUsers(Long workflowId) {
+        return signBookRepository.findByWorkflowNameRecipientsUsers(workflowId);
     }
 }

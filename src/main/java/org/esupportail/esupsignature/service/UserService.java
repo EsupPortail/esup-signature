@@ -787,7 +787,7 @@ public class UserService {
                 roles.add(role);
             }
         }
-        if(ldapGroupService != null && webSecurityProperties.getGroupToRoleFilterPattern() != null) {
+        if(ldapGroupService != null && StringUtils.hasText(webSecurityProperties.getGroupToRoleFilterPattern())) {
             List<String> groupsNames = ldapGroupService.getAllPrefixGroups(webSecurityProperties.getGroupToRoleFilterPattern());
             for (String groupName : groupsNames) {
                 Pattern pattern = Pattern.compile(webSecurityProperties.getGroupToRoleFilterPattern());

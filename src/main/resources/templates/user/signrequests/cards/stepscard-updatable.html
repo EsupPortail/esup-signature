@@ -21,7 +21,8 @@
                                         <table class="table table-sm table-hover table-borderless">
                                             <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
                                                 <tr onmouseover="this.style.cursor = 'pointer'" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').show();'">
-                                                    <td th:title="${recipient.user.email}" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
+                                                    <td th:th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" th:title="${recipient.user.email}" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
+                                                    <td th:th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" th:title="${recipient.user.email}" th:text="${recipient.user.email}"></td>
                                                     <td th:if="${(iterator.index + 1 > signBook.liveWorkflow.currentStepNumber || iterator.index + 1 == signBook.liveWorkflow.currentStepNumber) && signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" th:switch="${recipient.signed}">
                                                         <i title="a signé le document" th:case="true" class="fa-solid fa-check-circle text-success"></i>
                                                         <i title="En attente de signature" th:case="false" class="fa-solid fa-clock text-warning"></i>
