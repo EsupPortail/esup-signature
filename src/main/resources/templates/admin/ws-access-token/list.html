@@ -34,6 +34,7 @@
                             <th>Application</th>
                             <th>Workflows</th>
                             <th>X-Api-Key</th>
+                            <th>Accès public</th>
                             <th class="text-center">Actions</th>
                         </tr>
                         </thead>
@@ -53,6 +54,12 @@
                                 <td>
                                     <input type="text" style="width: 100%;" disabled th:if="${wsAccessToken.token != null}" th:value="${wsAccessToken.token}"></input>
                                     <p th:unless="${wsAccessToken.token != null}">Configuration par défaut : web services accessibles sans token, restriction par IP (voir application.yml).<br>Pour ajouter la sécurisation par token, vous pouvez régénérer ce token ou le supprimer puis créer vos propres tokens</p>
+                                </td>
+                                <td>
+                                    <a th:href="'/admin/ws-access-token/toggle-public/' + ${wsAccessToken.getId()}" type="button" class="btn btn-transparent">
+                                        <i th:if="${wsAccessToken.publicAccess}" class="fa-solid fa-unlock text-dark"></i>
+                                        <i th:unless="${wsAccessToken.publicAccess}" class="fa-solid fa-lock text-success"></i>
+                                    </a>
                                 </td>
                                 <td class="text-center">
                                     <div class="dropdown position-relative" th:if="${wsAccessToken.id != null}">

@@ -52,7 +52,12 @@ public class WorkflowExportService {
     @Transactional(readOnly = true)
     public LinkedHashMap<String, String> getJsonDatasFromWorkflow(Long id) {
         Workflow workflow = workflowService.getById(id);
-        return getDatasToExport(workflow).get(0);
+        List<LinkedHashMap<String, String>> datas = getDatasToExport(workflow);
+        if(!datas.isEmpty()) {
+            return datas.get(0);
+        } else {
+            return new LinkedHashMap<>();
+        }
     }
 
     private List<LinkedHashMap<String, String>> getToExportDatas(List<WorkflowDatasCsvDto> workflowDatasCsvDtos) {
