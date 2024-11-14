@@ -518,12 +518,13 @@ public class UserService {
 
     public PersonLightLdap getPersonLdapLightFromUser(User user) {
         PersonLightLdap personLdap = new PersonLightLdap();
-        if(user.getReplaceByUser() != null) {
-            personLdap.setUid(user.getReplaceByUser().getEppn());
-            personLdap.setSn(user.getReplaceByUser().getName());
-            personLdap.setGivenName(user.getReplaceByUser().getFirstname());
-            personLdap.setDisplayName(user.getFirstname() + " " + user.getName() + " remplacé par " + user.getReplaceByUser().getFirstname() + " " + user.getReplaceByUser().getName());
-            personLdap.setMail(user.getReplaceByUser().getEmail());
+        User currentReplaceByUser = user.getCurrentReplaceByUser();
+        if(currentReplaceByUser != null) {
+            personLdap.setUid(currentReplaceByUser.getEppn());
+            personLdap.setSn(currentReplaceByUser.getName());
+            personLdap.setGivenName(currentReplaceByUser.getFirstname());
+            personLdap.setDisplayName(user.getFirstname() + " " + user.getName() + " remplacé par " + currentReplaceByUser.getFirstname() + " " + currentReplaceByUser.getName());
+            personLdap.setMail(currentReplaceByUser.getEmail());
         } else {
             personLdap.setUid(user.getEppn());
             personLdap.setSn(user.getName());
@@ -786,7 +787,7 @@ public class UserService {
                 roles.add(role);
             }
         }
-        if(ldapGroupService != null && webSecurityProperties.getGroupToRoleFilterPattern() != null) {
+        if(ldapGroupService != null && StringUtils.hasText(webSecurityProperties.getGroupToRoleFilterPattern())) {
             List<String> groupsNames = ldapGroupService.getAllPrefixGroups(webSecurityProperties.getGroupToRoleFilterPattern());
             for (String groupName : groupsNames) {
                 Pattern pattern = Pattern.compile(webSecurityProperties.getGroupToRoleFilterPattern());
@@ -909,7 +910,7 @@ public class UserService {
         User user = userRepository.findById(id).orElseThrow();
         List<User> users = userRepository.findByReplaceByUser(user);
         for(User user1 : users) {
-            user1.setReplaceByUser(user.getReplaceByUser());
+            user1.setReplaceByUser(user.getCurrentReplaceByUser());
         }
         user.setEppn("");
         user.setName("");

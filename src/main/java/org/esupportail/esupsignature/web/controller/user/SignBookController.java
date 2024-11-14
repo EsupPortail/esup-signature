@@ -8,11 +8,10 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
-import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -125,8 +124,7 @@ public class SignBookController {
             docTitles.addAll(signBooks.stream().map(SignBook::getSubject).toList());
             workflowNames.addAll(signBooks.stream().map(SignBook::getWorkflowName).toList());
         }
-        List<User> creators = signBookService.getCreators(userEppn, workflowFilter, docTitleFilter, creatorFilter);
-        model.addAttribute("creators", creators);
+        model.addAttribute("creators", signBookService.getCreators(userEppn, workflowFilter, docTitleFilter, creatorFilter));
         model.addAttribute("docTitles", docTitles);
         model.addAttribute("workflowNames", workflowNames);
         model.addAttribute("signRequestRecipients", signBookService.getRecipientsNames(userEppn).stream().filter(Objects::nonNull).collect(Collectors.toList()));

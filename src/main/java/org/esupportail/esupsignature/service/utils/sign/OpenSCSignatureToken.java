@@ -148,10 +148,11 @@ public class OpenSCSignatureToken implements SignatureTokenConnection {
     }
 
     public byte[] launchProcess(String command) throws DSSException {
+        Process process = null;
         try {
             ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder.command("bash", "-c", signProperties.getOpenscPathLinux() + command);
-            Process process = processBuilder.start();
+            process = processBuilder.start();
             int exitVal = process.waitFor();
             if (exitVal == 0) {
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -173,7 +174,10 @@ public class OpenSCSignatureToken implements SignatureTokenConnection {
             }
         } catch (InterruptedException | IOException e) {
             throw new DSSException(e);
-
+        } finally {
+            if (process != null) {
+                process.destroy();
+            }
         }
     }
 

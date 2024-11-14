@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
+import org.esupportail.esupsignature.dto.view.UserDto;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
@@ -61,7 +62,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             left join lw.liveWorkflowSteps lws
             left join lws.recipients r
             left join r.user u
-            where (:workflowFilter is null or sb.workflowName = :workflowFilter)
+            where (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId)
             and (:docTitleFilter is null or sb.subject = :docTitleFilter)
             and (:recipientUser is null or key(rhs).user = :recipientUser or :recipientUser in (u))
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
@@ -70,33 +71,31 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             and size(sb.signRequests) > 0
             and (sb.createDate between :startDateFilter and :endDateFilter)
             """)
-    Page<SignBook> findByWorkflowName(User recipientUser, SignRequestStatus statusFilter, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
+    Page<SignBook> findByWorkflowName(User recipientUser, SignRequestStatus statusFilter, Long workflowId, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     @Query("""
             select distinct sb.subject from SignBook sb
-            where (:workflowFilter is null or sb.workflowName = :workflowFilter)
+            where (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId)
             and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             """)
-    List<String> findByWorkflowNameSubjects(String workflowFilter);
+    List<String> findByWorkflowNameSubjects(Long workflowId);
 
     @Query("""
-            select distinct sb.createBy from SignBook sb
-            where (:workflowFilter is null or sb.workflowName = :workflowFilter)
+            select distinct sb.createBy.name as name, sb.createBy.firstname as firstname, sb.createBy.eppn as eppn, sb.createBy.email as email from SignBook sb
+            where (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId)
+            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             """)
-    List<User> findByWorkflowNameCreators(String workflowFilter);
+    List<UserDto> findByWorkflowNameCreators(Long workflowId);
 
     @Query("""
-            select distinct u from SignBook sb
-            left join sb.team team
-            left join sb.signRequests sr
-            left join sr.recipientHasSigned rhs
-            left join sb.liveWorkflow lw
-            left join lw.liveWorkflowSteps lws
-            left join lws.recipients r
-            left join r.user u
-            where (:workflowFilter is null or sb.workflowName = :workflowFilter) and u is not null
-            """)
-    List<User> findByWorkflowNameRecipientsUsers(String workflowFilter);
+                select distinct u.name as name, u.firstname as firstname, u.eppn as eppn, u.email as email from SignBook sb
+                left join sb.liveWorkflow lw
+                left join lw.liveWorkflowSteps lws
+                left join lws.recipients r
+                left join r.user u
+                where (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId) and u is not null
+                """)
+    List<UserDto> findByWorkflowNameRecipientsUsers(Long workflowId);
 
     @Query("""
             select distinct sb from SignBook sb
@@ -252,7 +251,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     List<String> findSubjects(User user);
 
     @Query("""
-            select distinct sb.createBy from SignBook sb
+            select distinct sb.createBy.name as name, sb.createBy.firstname as firstname, sb.createBy.eppn as eppn, sb.createBy.email as email from SignBook sb
             left join sb.team team
             where (sb.workflowName = :workflowFilter or :workflowFilter is null)
             and (sb.subject = :docTitleFilter or :docTitleFilter is null)
@@ -262,12 +261,12 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             and (sb.createBy = :creatorFilter or :creatorFilter is null)
             """)
-    List<User> findUserByRecipientAndCreateBy(User user, String workflowFilter, String docTitleFilter, User creatorFilter);
+    List<UserDto> findUserByRecipientAndCreateBy(User user, String workflowFilter, String docTitleFilter, User creatorFilter);
 
     Page<SignBook> findAll(Pageable pageable);
 
     @Query("""
-            select distinct u from SignBook sb
+            select distinct u.name as name, u.firstname as firstname, u.eppn as eppn, u.email from SignBook sb
             left join sb.team team
             left join sb.liveWorkflow lw
             left join lw.liveWorkflowSteps lws
@@ -277,7 +276,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             and :user not member of sb.hidedBy
             and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             """)
-    List<User> findRecipientNames(User user);
+    List<UserDto> findRecipientNames(User user);
 
     @Query("""
             select distinct sb from SignBook as sb

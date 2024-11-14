@@ -83,6 +83,7 @@ public class LiveWorkflowStepService {
         if(signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(liveWorkflowStep) + 1 < signBook.getLiveWorkflow().getCurrentStepNumber()) {
             throw new EsupSignatureException("Impossible de modifier les destinataires d'une étape déjà passée");
         }
+        List<Recipient> oldRecipients = new ArrayList<>(liveWorkflowStep.getRecipients());
         liveWorkflowStep.getRecipients().clear();
         Map<Recipient, Action> recipientsToReAdd = new HashMap<>();
         List<Recipient> recipients = addRecipientsToWorkflowStep(signBook, liveWorkflowStep, recipientWsDtos);
@@ -90,7 +91,7 @@ public class LiveWorkflowStepService {
         if(signBook.getLiveWorkflow().getCurrentStep().equals(liveWorkflowStep)) {
             for(SignRequest signRequest : signBook.getSignRequests()) {
                 for(Map.Entry<Recipient, Action> recipientActionEntry : signRequest.getRecipientHasSigned().entrySet()) {
-                    if(!recipientActionEntry.getValue().getActionType().equals(ActionType.none)) {
+                    if(!recipientActionEntry.getValue().getActionType().equals(ActionType.none) && oldRecipients.contains(recipientActionEntry.getKey())) {
                         recipientsToReAdd.put(recipientActionEntry.getKey(), recipientActionEntry.getValue());
                     }
                 }
@@ -102,7 +103,6 @@ public class LiveWorkflowStepService {
             }
         }
         liveWorkflowStep.getRecipients().addAll(recipientsToReAdd.keySet());
-
     }
 
     public List<Recipient> addRecipientsToWorkflowStep(SignBook signBook, LiveWorkflowStep liveWorkflowStep, List<RecipientWsDto> recipientWsDtos) {
@@ -114,8 +114,12 @@ public class LiveWorkflowStepService {
                 Optional<RecipientWsDto> optionalRecipientWsDto = recipientWsDtos.stream().filter(recipientWsDto1 -> recipientWsDto1.getEmail().equals(recipientEmail)).findFirst();
                 if(optionalRecipientWsDto.isPresent()) {
                     RecipientWsDto recipientWsDto = optionalRecipientWsDto.get();
-                    recipientUser.setName(recipientWsDto.getName());
-                    recipientUser.setFirstname(recipientWsDto.getFirstName());
+                    if(StringUtils.hasText(recipientWsDto.getName())) {
+                        recipientUser.setName(recipientWsDto.getName());
+                    }
+                    if(StringUtils.hasText(recipientWsDto.getFirstName())) {
+                        recipientUser.setFirstname(recipientWsDto.getFirstName());
+                    }
                     if(StringUtils.hasText(recipientWsDto.getPhone())) {
                         userService.updatePhone(recipientUser.getEppn(), recipientWsDto.getPhone());
                     }
