@@ -114,8 +114,12 @@ public class LiveWorkflowStepService {
                 Optional<RecipientWsDto> optionalRecipientWsDto = recipientWsDtos.stream().filter(recipientWsDto1 -> recipientWsDto1.getEmail().equals(recipientEmail)).findFirst();
                 if(optionalRecipientWsDto.isPresent()) {
                     RecipientWsDto recipientWsDto = optionalRecipientWsDto.get();
-                    recipientUser.setName(recipientWsDto.getName());
-                    recipientUser.setFirstname(recipientWsDto.getFirstName());
+                    if(StringUtils.hasText(recipientWsDto.getName())) {
+                        recipientUser.setName(recipientWsDto.getName());
+                    }
+                    if(StringUtils.hasText(recipientWsDto.getFirstName())) {
+                        recipientUser.setFirstname(recipientWsDto.getFirstName());
+                    }
                     if(StringUtils.hasText(recipientWsDto.getPhone())) {
                         userService.updatePhone(recipientUser.getEppn(), recipientWsDto.getPhone());
                     }
