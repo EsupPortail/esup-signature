@@ -700,7 +700,11 @@ public class PdfService {
                                 pdField.getCOSObject().removeItem(COSName.AA);
                                 pdField.getCOSObject().removeItem(COSName.AP);
                                 pdField.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
-                                pdField.setValue(value);
+                                try {
+                                    pdField.setValue(value);
+                                } catch (Exception e) {
+                                    logger.warn("error on set value " + filedName + ", cause : " +e.getMessage());
+                                }
                             }
                         }
                     }

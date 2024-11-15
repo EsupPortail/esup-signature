@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface WsAccessTokenRepository extends CrudRepository<WsAccessToken, Long> {
     List<WsAccessToken> findByTokenAndWorkflowsEmpty(String token);
+    List<WsAccessToken> findByWorkflowsContains(Workflow workflow);
     List<WsAccessToken> findByTokenAndWorkflowsContains(String token, Workflow workflow);
     List<WsAccessToken> findByTokenIsNullAndWorkflowsEmpty();
     WsAccessToken findByToken(String token);
