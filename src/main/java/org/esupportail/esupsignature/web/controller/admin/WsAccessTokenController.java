@@ -60,6 +60,12 @@ public class WsAccessTokenController {
         return "redirect:/admin/ws-access-token";
     }
 
+    @GetMapping("/toggle-public/{wsAccessTokenId}")
+    public String togglePublic(@PathVariable Long wsAccessTokenId, RedirectAttributes redirectAttributes) {
+        wsAccessTokenService.togglePublic(wsAccessTokenId);
+        return "redirect:/admin/ws-access-token";
+    }
+
     @GetMapping("/reset")
     public String reset(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
         if(wsAccessTokenService.createDefaultWsAccessToken()) {

@@ -18,6 +18,8 @@ public class WsAccessToken {
     @Column(unique=true)
     private String token;
 
+    private Boolean publicAccess = false;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "ws_access_token_workflows",
@@ -54,6 +56,17 @@ public class WsAccessToken {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public Boolean getPublicAccess() {
+        if(publicAccess == null) {
+            return false;
+        }
+        return publicAccess;
+    }
+
+    public void setPublicAccess(Boolean publicAccess) {
+        this.publicAccess = publicAccess;
     }
 
     public Set<Workflow> getWorkflows() {
