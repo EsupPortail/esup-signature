@@ -5,10 +5,10 @@
     <div class="ms-1 mt-2">
         <h5 class="text-center sidebar-label"><b>Outils</b></h5>
         <a th:unless="${globalProperties.hideWizardWorkflow}" th:if="${!isUserOnSu}" id="start-wizard-button-2" role="button" class="btn btn-light mb-1 col-12 text-left border-light-subtle" data-bs-toggle="modal" data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant">
-            <i class="fa-solid fa-magic"></i> Assistant de création de circuit
+            <i class="fa-solid fa-magic"></i> <span class="sidebar-label">Assistant de création de circuit</span>
         </a>
         <a title="Valider la signature d'un document" href="/user/validation" class="btn btn-light mb-1 col-12 text-left border-light-subtle" style="width: 250px;">
-            <i class="fa-solid fa-shield-alt"></i> <span class="nav-item-label d-inline">Contrôler un document</span>
+            <i class="fa-solid fa-shield-alt"></i> <span class="sidebar-label">Contrôler un document</span>
         </a>
         <h5 class="text-center sidebar-label"><b>Filtres</b></h5>
         <button id="noFilterButton" title="Tout voir" type="button" class="btn btn-light mb-1 col-12 text-left border-light-subtle">
