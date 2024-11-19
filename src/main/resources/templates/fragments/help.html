@@ -29,7 +29,9 @@
         Un guide utilisateur est accessible sur le portail de la communauté ESUP : <a href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur" target="_blank">Documentation utilisateur</a>
     </p>
     <p>
-        Pour toutes questions merci d'utiliser ce contact : <a th:href="'mailto:' + ${globalProperties.applicationEmail}" target="_blank" th:text="${globalProperties.applicationEmail}"></a>
+        Pour toutes questions merci d'utiliser ce contact :
+        <a th:if="${workflow == null || workflow.mailFrom == null}" th:href="'mailto:' + ${globalProperties.applicationEmail}" target="_blank" th:text="${globalProperties.applicationEmail}"></a>
+        <a th:if="${workflow != null && workflow.mailFrom != null}" th:href="'mailto:' + ${workflow.mailFrom}" target="_blank" th:text="${workflow.mailFrom}"></a>
     </p>
 </div>
 </html>
