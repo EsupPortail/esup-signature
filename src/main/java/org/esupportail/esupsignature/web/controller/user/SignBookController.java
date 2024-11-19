@@ -424,7 +424,12 @@ public class SignBookController {
     public ResponseEntity<Boolean> deleteMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<Long> ids, RedirectAttributes redirectAttributes) {
         for(Long id : ids) {
             if(preAuthorizeService.signBookManage(id, authUserEppn)) {
-                signBookService.delete(id, authUserEppn);
+                try {
+                    signBookService.delete(id, authUserEppn);
+                } catch (EsupSignatureRuntimeException e) {
+                    logger.warn("error while deleting signBook : " + id, e);
+                }
+
             }
         }
         redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
