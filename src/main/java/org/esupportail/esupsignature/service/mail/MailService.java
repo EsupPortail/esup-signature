@@ -4,6 +4,7 @@ import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.angus.mail.smtp.SMTPAddressFailedException;
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.MessageSource;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -465,6 +467,10 @@ public class MailService {
         addInLineImages(mimeMessage, htmlContent);
         mimeMessage.setSubject("Nouveau document signé à télécharger : " + title);
         mimeMessage.setTo(targetUri.replace("mailto:", "").split(","));
+        for(SignRequest signRequest : signBook.getSignRequests()) {
+            Document toSendDocument = signRequest.getLastSignedDocument();
+            mimeMessage.addAttachment(toSendDocument.getFileName(), new ByteArrayResource(IOUtils.toByteArray(toSendDocument.getInputStream())));
+        }
         sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
 
     }
