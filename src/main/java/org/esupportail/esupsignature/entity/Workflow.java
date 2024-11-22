@@ -267,6 +267,9 @@ public class Workflow {
     }
 
     public Set<String> getDashboardRoles() {
+        if(dashboardRoles == null) {
+            dashboardRoles = new HashSet<>();
+        }
         return dashboardRoles;
     }
 
