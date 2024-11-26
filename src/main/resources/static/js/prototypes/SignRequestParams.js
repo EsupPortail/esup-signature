@@ -1,6 +1,8 @@
 import {EventFactory} from "../modules/utils/EventFactory.js?version=@version@";
 import {Color} from "../modules/utils/Color.js?version=@version@";
 import {UserUi} from '../modules/ui/users/UserUi.js?version=@version@';
+import {UserSignaturePad} from "../modules/ui/users/UserSignaturePad.js?version=@version@";
+
 
 export class SignRequestParams extends EventFactory {
 
@@ -53,6 +55,8 @@ export class SignRequestParams extends EventFactory {
         this.scrollTop = scrollTop;
         this.csrf = csrf;
         this.signType = signType;
+        this.userSignaturePad = null;
+        this.canvasBtn = null;
         if(!light) {
             let signPage = $("#page_" + this.signPageNumber);
             if(signPage != null && signPage.offset() != null) {
@@ -453,10 +457,22 @@ export class SignRequestParams extends EventFactory {
     }
 
     createBorder() {
-        let border = "<div id='border_" + this.id + "' class='static-border' style='width: 100%; height: 100%;'></div>"
+        let border = "<div id='border_" + this.id + "' class='static-border' style='width: 100%; height: 100%;'>" +
+            "<button id='canvasBtn_" + this.id +"'  type='button' class='btn btn-transparent btn-outline-dark text-dark position-absolute bottom-0 end-0 m-2'>" +
+            "   <i class='fas fa-pen-alt'></i>" +
+            "</button>" +
+            "<canvas id='canvas_" + this.id + "' style='background-color: #ececec;border: 1px solid black; display: none; height: 75%; width: 100%; margin-top: 25%;'></canvas>" +
+            "</div>"
         this.cross.prepend(border);
         this.border = $("#border_" + this.id);
-        this.border.css("pointer-events", "none");
+        // this.canvasBtn = $("#canvasBtn_" + this.id);
+        // let self = this;
+        // this.canvasBtn.on("mousedown", function(){
+        //     self.canvasBtn.hide();
+        //     $("#canvas_" + self.id).show();
+        //     self.userSignaturePad = new UserSignaturePad("canvas_" + self.id);
+        // });
+        // this.border.css("pointer-events", "none");
     }
 
     restoreUserParams() {
