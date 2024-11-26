@@ -59,7 +59,7 @@
 					data-bs-target="#addCommentModal">
 				<i class="fa-solid fa-sticky-note"></i> <span class="d-none d-xl-inline">Post-it</span>
 			</button>
-			<button th:if="${user.userType.name() == 'external' && !#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" id="signImageBtn" class="btn btn-light btn-outline-dark me-1" title="Ajouter une image de signature">
+			<button th:if="${!#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" id="signImageBtn" class="btn btn-light btn-outline-dark me-1" title="Ajouter une image de signature">
 				<i class="fa-solid fa-user-pen"></i> <span class="d-xl-inline">Ajouter une image de signature</span>
 			</button>
 			<form th:if="${displayNotif}"
