@@ -28,7 +28,7 @@
                     <i class="fa-solid fa-save fa-2xl"></i>
                 </a>
             </div>
-            <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
+            <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" th:method="'put'">
                 <input type="hidden" name="id" th:value="${authUser.id}"/>
                 <input type="hidden" id="sign-request-params" name="signRequestParamsJsonString" />
                 <div class="card text-bg-light mb-1 col-lg-11 m-2">

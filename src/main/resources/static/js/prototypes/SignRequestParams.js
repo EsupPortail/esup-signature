@@ -1,5 +1,6 @@
 import {EventFactory} from "../modules/utils/EventFactory.js?version=@version@";
 import {Color} from "../modules/utils/Color.js?version=@version@";
+import {UserUi} from '../modules/ui/users/UserUi.js?version=@version@';
 
 export class SignRequestParams extends EventFactory {
 
@@ -114,6 +115,7 @@ export class SignRequestParams extends EventFactory {
         $("#watermark_" + this.id).on("mousedown", e => this.toggleWatermark(e));
         $("#allPages_" + this.id).on("mousedown", e => this.toggleAllPages());
         $("#signImage_" + this.id).on("mousedown", e => this.toggleImage());
+        $("#signImageBtn_" + this.id).on("mousedown", e => this.toggleSignModal(e));
         $("#signExtra_" + this.id).on("mousedown", e => this.toggleExtra());
         $("#signExtraOnTop_" + this.id).on("mousedown", e => this.toggleExtraOnTop());
 
@@ -847,6 +849,7 @@ export class SignRequestParams extends EventFactory {
         if(this.addExtra) {
             $("#signExtra_" + this.id).addClass("btn-outline-light");
             $("#signImage_" + this.id).attr("disabled", false);
+            $("#signImage_" + this.id).addClass("btn-outline-light");
             $("#signExtraOnTop_" + this.id).removeAttr("disabled");
             if(this.divExtra == null) {
                 this.typeSign = "Signature calligraphique";
@@ -881,6 +884,7 @@ export class SignRequestParams extends EventFactory {
                 this.toggleExtraOnTop();
             }
             $("#signImage_" + this.id).attr("disabled", true);
+            $("#signImage_" + this.id).removeClass("btn-outline-light");
             $("#signExtra_" + this.id).removeClass("btn-outline-light");
             $("#signExtraOnTop_" + this.id).attr("disabled", true);
             if(this.divExtra != null) {
@@ -1284,4 +1288,10 @@ export class SignRequestParams extends EventFactory {
         img.src = url;
     }
 
+    toggleSignModal(e) {
+        if (this.userUI == null) {
+            this.userUI = new UserUi();
+        }
+        $("#add-sign-image").modal("show");
+    }
 }
