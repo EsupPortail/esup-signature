@@ -4,6 +4,7 @@ export class UserSignaturePad {
         console.info("Starting user signature pad tool");
         this.canvas = $('#' + name);
         this.signImageBase64 = $("#signImageBase64");
+        this.signImageBase64Val = null;
         this.signaturePad = new SignaturePad(this.canvas[0], {
             minWidth: 1,
             maxWidth: 4
@@ -50,7 +51,9 @@ export class UserSignaturePad {
     }
 
     save() {
-        this.signImageBase64.val(this.signaturePad.toDataURL("image/png"));
+        let imageBase64 = this.signaturePad.toDataURL("image/png");
+        this.signImageBase64.val(imageBase64);
+        this.signImageBase64Val = imageBase64;
         this.canvas.css("background", "rgba(0, 255, 0, .5)");
     }
 

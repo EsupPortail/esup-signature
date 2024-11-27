@@ -350,6 +350,8 @@ export class SignUi {
                 delete signRequestParams.signImages;
                 if(signRequestParams.userSignaturePad != null) {
                     signRequestParams.userSignaturePad.save();
+                    signRequestParams.imageBase64 = signRequestParams.userSignaturePad.signImageBase64Val;
+                    delete signRequestParams.userSignaturePad;
                 }
             });
             this.signRequestUrlParams = {
@@ -379,6 +381,7 @@ export class SignUi {
                 "password": document.getElementById("password").value,
             }
         }
+        console.log(this.signRequestUrlParams);
         this.sendData(this.signRequestUrlParams);
     }
 
