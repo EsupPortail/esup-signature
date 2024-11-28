@@ -610,8 +610,12 @@ public class SignBookService {
         if(signBook == null) return false;
         if(signBook.getSignRequests().size() == 1) {
             User user = userService.getByEppn(userEppn);
-            if(signBook.getLiveWorkflow().getWorkflow() != null && !signBook.getLiveWorkflow().getWorkflow().getManagers().isEmpty()) {
-                if (signBook.getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail()) ||  signBook.getLiveWorkflow().getWorkflow().getDashboardRoles().stream().anyMatch(r -> user.getRoles().contains(r))) {
+            Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
+            if(workflow != null) {
+                if ((!signBook.getLiveWorkflow().getWorkflow().getManagers().isEmpty() && signBook.getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail()))
+                    ||
+                    signBook.getLiveWorkflow().getWorkflow().getDashboardRoles().stream().anyMatch(r -> user.getRoles().contains(r))
+                ) {
                     return true;
                 }
             }
