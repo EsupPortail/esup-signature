@@ -269,6 +269,8 @@ export class SignRequestParams extends EventFactory {
                     self.resizeText();
                     self.signWidth = parseInt(self.textareaPart.css("width")) / self.currentScale;
                     self.extraWidth = self.extraWidth / self.signScale;
+                    self.canvas.css('width', (self.signWidth * self.currentScale * self.signScale));
+                    self.canvas.css('height', (self.signHeight * self.currentScale * self.signScale));
                 } else {
                     self.resize(ui);
                 }
@@ -440,12 +442,14 @@ export class SignRequestParams extends EventFactory {
         if (this.addExtra) {
             this.refreshExtraDiv();
         }
+        this.canvas.css('width', this.signWidth * this.currentScale);
+        this.canvas.css('height', this.signHeight * this.currentScale);
     }
 
     createCross() {
         let divName = "cross_" + this.id;
         let div = "<div id='" + divName + "' class='cross'>" +
-            "<button id='canvasBtn_" + this.id +"'  type='button' class='btn btn-transparent btn-outline-dark text-dark position-absolute bottom-0 end-0 m-2'>" +
+            "<button id='canvasBtn_" + this.id +"'  type='button' style='display: none;' class='btn btn-transparent btn-outline-dark text-dark position-absolute bottom-0 end-0 m-2'>" +
             "   <i class='fas fa-pen-alt'></i>" +
             "</button>" +
             "<canvas id='canvas_" + this.id + "' style='z-index:999999 !important; position: absolute; background-color: #ececec;border: 1px solid black; display: none;'></canvas>" +
@@ -461,11 +465,14 @@ export class SignRequestParams extends EventFactory {
         this.canvas.css("width", 300);
         let self = this;
         this.canvasBtn.on("mousedown", function(){
-            self.canvasBtn.hide();
+            self.canvasBtn.addClass("d-none");
+            self.cross.draggable("disable");
             self.canvas.show();
+            self.canvas.css("opacity", 0.5);
+            self.canvas.css("cursor", "pointer");
+            self.cross.css("background-image", "");
             self.userSignaturePad = new UserSignaturePad("canvas_" + self.id);
-            self.userSignaturePad.signImageBase64 = $("#signImageBase64_" + self.id);
-            // self.cross.draggable("disable");
+            self.userSignaturePad.signImageBase64 = $("#signImageBase64_" + self.id, 1, 2);
         });
     }
 
@@ -667,9 +674,13 @@ export class SignRequestParams extends EventFactory {
     }
 
     lock() {
+        this.cross.draggable("enable");
         this.tools.addClass("d-none");
         this.border.removeClass("anim-border");
         this.border.addClass("static-border");
+        if(!this.firstLaunch) {
+            this.canvasBtn.show();
+        }
         if(this.textareaExtra != null) {
             this.textareaExtra.addClass("sign-textarea-lock");
         }
@@ -691,6 +702,7 @@ export class SignRequestParams extends EventFactory {
         this.border.removeClass("static-border");
         this.border.addClass("anim-border");
         this.tools.removeClass("d-none");
+        this.canvasBtn.hide();
         if(this.textareaExtra != null) {
             this.textareaExtra.removeClass("sign-textarea-lock");
         }

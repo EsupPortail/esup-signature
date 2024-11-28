@@ -1,13 +1,13 @@
 export class UserSignaturePad {
 
-    constructor(name) {
+    constructor(name, minWidth, maxWidth) {
         console.info("Starting user signature pad tool");
         this.canvas = $('#' + name);
         this.signImageBase64 = $("#signImageBase64");
         this.signImageBase64Val = null;
         this.signaturePad = new SignaturePad(this.canvas[0], {
-            minWidth: 1,
-            maxWidth: 4
+            minWidth: minWidth,
+            maxWidth: maxWidth
         });
         this.firstClear = true;
         this.lastSign = null;

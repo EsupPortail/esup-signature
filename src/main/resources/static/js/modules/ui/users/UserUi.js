@@ -9,7 +9,7 @@ export class UserUi {
         this.emailAlertFrequencySelect = $("#emailAlertFrequency_id");
         this.emailAlertDay = $("#emailAlertDayDiv");
         this.emailAlertHour = $("#emailAlertHourDiv");
-        this.userSignaturePad = new UserSignaturePad("canvas");
+        this.userSignaturePad = new UserSignaturePad("canvas", 1, 4);
         this.userSignatureCrop = new UserSignatureCrop();
         this.saveSignRequestParams = false;
         this.checkAlertFrequency();
