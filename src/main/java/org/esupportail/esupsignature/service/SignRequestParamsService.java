@@ -18,12 +18,15 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -53,6 +56,14 @@ public class SignRequestParamsService {
     @Resource
     private ObjectMapper objectMapper;
 
+    @Resource
+    private DocumentService documentService;
+
+    @Resource
+    private FileService fileService;
+    @Autowired
+    private UserService userService;
+
     public SignRequestParams getById(Long id) {
         return signRequestParamsRepository.findById(id).orElseThrow();
     }
@@ -71,11 +82,22 @@ public class SignRequestParamsService {
     }
 
     @Transactional
-    public List<SignRequestParams> getSignRequestParamsesFromJson(String signRequestParamsJsonString) {
+    public List<SignRequestParams> getSignRequestParamsesFromJson(String signRequestParamsJsonString, String userEppn) {
+        User user = userService.getByEppn(userEppn);
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
         try {
             signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
-            signRequestParamsRepository.saveAll(signRequestParamses);
+            for (SignRequestParams signRequestParams : signRequestParamses) {
+                if(signRequestParams.getImageBase64() != null) {
+                    try {
+                        user.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signRequestParams.getImageBase64()), user, user.getEppn() + "_sign.png", "image/png"));
+                        signRequestParams.setSignImageNumber(user.getSignImages().size() - 1);
+                    } catch (IOException e) {
+                        logger.error("error on create sign image", e);
+                    }
+                }
+            }
+//            signRequestParamsRepository.saveAll(signRequestParamses);
         } catch (JsonProcessingException e) {
             logger.warn("no signRequestParams returned", e);
         }

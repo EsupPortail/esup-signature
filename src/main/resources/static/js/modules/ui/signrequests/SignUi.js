@@ -331,6 +331,7 @@ export class SignUi {
     }
 
     submitSignRequest() {
+        let signaturesCheck = true;
         let formData = { };
         if(this.isPdf) {
             $.each($('#signForm').serializeArray(), function () {
@@ -348,6 +349,15 @@ export class SignUi {
             let signRequestParamses = Array.from(this.workspace.signPosition.signRequestParamses.values());
             signRequestParamses.forEach(function (signRequestParams){
                 delete signRequestParams.signImages;
+                if(signRequestParams.userSignaturePad != null) {
+                    if(signRequestParams.userSignaturePad.signaturePad.isEmpty()) {
+                        signaturesCheck = false;
+                    } else {
+                        signRequestParams.userSignaturePad.save();
+                        signRequestParams.imageBase64 = signRequestParams.userSignaturePad.signImageBase64Val;
+                        delete signRequestParams.userSignaturePad;
+                    }
+                }
             });
             this.signRequestUrlParams = {
                 'password' : $("#password").val(),
@@ -376,7 +386,12 @@ export class SignUi {
                 "password": document.getElementById("password").value,
             }
         }
-        this.sendData(this.signRequestUrlParams);
+        if(signaturesCheck) {
+            console.log(this.signRequestUrlParams);
+            this.sendData(this.signRequestUrlParams);
+        } else {
+            alert("Une signature est vide");
+        }
     }
 
     sendData(signRequestUrlParams) {

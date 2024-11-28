@@ -190,18 +190,33 @@
                                     <br/>
                                     <label id="signPadLabel" class="col-form-label"><strong>Vous pouvez dessiner une signature dans le rectangle ci dessous</strong></label>
                                     <div id="signPad">
-                                        <canvas id="canvas" style="border: 1px solid black;"></canvas>
-                                            <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
-                                                Valider la signature
-                                            </button>
-                                            <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
-                                            <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
-                                                Réinitialiser
-                                            </button>
-                                        <div>
+                                        <div style="
+                                            position: absolute;
+                                            top: 0;
+                                            left: 0;
+                                            width: 100%;
+                                            height: 100%;
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            color: rgba(0, 0, 0, 0.2); /* Texte transparent */
+                                            font-size: 48px;
+                                            font-family: Arial, sans-serif;
+                                            pointer-events: none; /* Empêche l'interaction avec le texte */
+                                            user-select: none; /* Rend le texte non sélectionnable */
+                                        ">
+                                            Dessinez votre signature ici
                                         </div>
+                                        <canvas id="canvas" style="border: 1px solid black;"></canvas>
+                                        <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
+                                            Valider la signature
+                                        </button>
+                                        <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                        <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
+                                            Réinitialiser
+                                        </button>
                                     </div>
                                     <div id="sign-crop" class="mx-auto">
                                     <div id="crop-div" class="alert alert-light text-dark text-center" style="display: none;">

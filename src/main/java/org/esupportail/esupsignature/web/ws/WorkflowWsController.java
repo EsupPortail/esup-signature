@@ -138,7 +138,7 @@ public class WorkflowWsController {
         }
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
         if (signRequestParamsJsonString != null) {
-            signRequestParamses = signRequestParamsService.getSignRequestParamsesFromJson(signRequestParamsJsonString);
+            signRequestParamses = signRequestParamsService.getSignRequestParamsesFromJson(signRequestParamsJsonString, "system");
         }
         try {
             List<Long> signRequestIds = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, steps, targetEmails, targetUrls, signRequestParamses, scanSignatureFields, sendEmailAlert, comment);
