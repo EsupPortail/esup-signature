@@ -77,6 +77,9 @@ export class UserUi {
             $("#submitUserParamsForm").click();
             return;
         }
+        if(this.userSignaturePad.signaturePad.isEmpty()) {
+            $("#signImageBase64").val("");
+        }
         $("#userParamsForm").submit();
     }
 

@@ -14,6 +14,8 @@ export class UserSignaturePad {
         this.initListeners();
         this.resizeCanvas();
         this.canvas.mousedown();
+        this.cachedWidth = null;
+        this.cachedImage = null;
     }
 
     initListeners() {
@@ -24,6 +26,24 @@ export class UserSignaturePad {
         // $('#reset').click(e => this.resetSignaturePad());
         window.addEventListener("resize", e => this.resizeCanvas());
         $(document).ready(e => this.resizeCanvas());
+        // window.addEventListener("resize", e => this.resizeCanvas());
+
+    }
+
+    resizeCanvas() {
+        if(this.canvas[0].offsetWidth !== this.cachedWidth ) {
+            if (typeof this.signaturePad != 'undefined') {
+                this.cachedImage = this.signaturePad.toDataURL("image/png");
+            }
+            this.cachedWidth = this.canvas[0].offsetWidth;  
+            let ratio = Math.max(window.devicePixelRatio || 1, 1);
+            this.canvas[0].width = this.canvas[0].offsetWidth * ratio;
+            this.canvas[0].height = this.canvas[0].offsetHeight * ratio;
+            this.canvas[0].getContext("2d").scale(ratio, ratio);
+            if (typeof this.signaturePad != 'undefined' && !this.signaturePad.isEmpty()) {
+                this.signaturePad.fromDataURL(this.cachedImage);
+            }
+        }
     }
 
     checkSignatureUpdate() {
@@ -34,12 +54,6 @@ export class UserSignaturePad {
 
     setLastSign() {
         this.lastSign = this.signaturePad.toDataURL("image/png");
-        //this.ratio = Math.max(window.devicePixelRatio || 1, 1);
-        // if(this.ratio === 1) {
-
-        // } else {
-        //     this.firstClearSignaturePad();
-        // }
     }
 
     firstClearSignaturePad() {
@@ -62,20 +76,4 @@ export class UserSignaturePad {
         this.signaturePad.clear();
     }
 
-    // resetSignaturePad() {
-    //     console.info("reset pad");
-    //     // this.canvas.css("backgroundColor", "rgba(255, 255, 255, 1)");
-    //     this.signaturePad.clear();
-    //     this.signaturePad.fromDataURL(this.lastSign);
-    //     this.firstClear = true;
-    // }
-
-    resizeCanvas() {
-        console.info("resize sign pad");
-        let ratio = Math.max(window.devicePixelRatio || 1, 1);
-        this.canvas[0].width = this.canvas[0].offsetWidth * ratio;
-        this.canvas[0].height = this.canvas[0].offsetHeight * ratio;
-        this.canvas[0].getContext("2d").scale(ratio, ratio);
-        //this.resetSignaturePad();
-    }
 }
