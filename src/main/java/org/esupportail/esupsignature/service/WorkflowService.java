@@ -651,6 +651,12 @@ public class WorkflowService {
     }
 
     @Transactional
+    public String getSignRequestById(Long id) throws JsonProcessingException {
+        List<SignBook> signBooks = signBookRepository.findByWorkflowId(id);
+        return objectMapper.writeValueAsString(signBooks.stream().map(SignBook::getSignRequests).collect(Collectors.toList()));
+    }
+
+    @Transactional
     public String getHelpMessage(String userEppn, Workflow workflow) {
         User user = userService.getByEppn(userEppn);
         String messsage = null;
