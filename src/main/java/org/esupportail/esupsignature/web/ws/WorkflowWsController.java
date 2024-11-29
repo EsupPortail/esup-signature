@@ -167,6 +167,15 @@ public class WorkflowWsController {
     }
 
     @CrossOrigin
+    @GetMapping(value = "/{id}/signrequests", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération des demandes d'un circuit",
+            responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = WorkflowDto.class))))
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
+    public String getSignRequests(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
+        return workflowService.getSignRequestById(id);
+    }
+
+    @CrossOrigin
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération de la liste des circuits disponibles", responses = @ApiResponse(description = "List<JsonDtoWorkflow>", content = @Content(schema = @Schema(implementation = List.class))))
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")

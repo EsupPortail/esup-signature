@@ -205,7 +205,7 @@ public class CertificatService implements HealthIndicator {
                 dssPrivateKeyEntries = openSCSignatureToken.getKeys();
             }
         } catch (Exception e) {
-            logger.debug("no seal certificat found", e);
+            logger.debug("no seal certificat found", e.getMessage());
         }
         if(!dssPrivateKeyEntries.isEmpty()) {
             if(!isCertificatWasPresent) {
