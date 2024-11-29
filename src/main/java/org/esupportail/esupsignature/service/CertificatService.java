@@ -54,6 +54,8 @@ public class CertificatService implements HealthIndicator {
 
     private static boolean isCertificatWasPresent = false;
 
+    private static boolean firstStart = true;
+
     private final UserService userService;
 
     private final UserKeystoreService userKeystoreService;
@@ -209,8 +211,12 @@ public class CertificatService implements HealthIndicator {
         }
         if(!dssPrivateKeyEntries.isEmpty()) {
             if(!isCertificatWasPresent) {
-                String message = "certificat was found on " + globalProperties.getRootUrl();
-                mailService.sendAdminError("Seal certificat UP", message);
+                if(!firstStart) {
+                    String message = "certificat was found on " + globalProperties.getRootUrl();
+                    mailService.sendAdminError("Seal certificat UP", message);
+                } else {
+                    firstStart = false;
+                }
             }
             isCertificatWasPresent = true;
             privateKeysCache.put("keys", dssPrivateKeyEntries);

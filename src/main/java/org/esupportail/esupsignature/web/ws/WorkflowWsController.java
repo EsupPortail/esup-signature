@@ -170,7 +170,7 @@ public class WorkflowWsController {
     @GetMapping(value = "/{id}/signrequests", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération des demandes d'un circuit",
             responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = WorkflowDto.class))))
-    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
+    @PreAuthorize("@wsAccessTokenService.createWorkflowAccess(#id, #xApiKey)")
     public String getSignRequests(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
         return workflowService.getSignRequestById(id);
     }
