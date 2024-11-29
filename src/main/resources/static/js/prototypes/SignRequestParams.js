@@ -448,31 +448,46 @@ export class SignRequestParams extends EventFactory {
 
     createCross() {
         let divName = "cross_" + this.id;
-        let div = "<div id='" + divName + "' class='cross'>" +
-            "<button id='canvasBtn_" + this.id +"'  type='button' style='z-index: 1000000;' class='btn btn-dark text-light position-absolute bottom-0 end-0 m-2' title='Modifier ma signature'>" +
-            "   <i class='fas fa-pen-alt'></i>" +
-            "</button>" +
-            "<canvas id='canvas_" + this.id + "' style='z-index:999999 !important; position: absolute; background-color: rgba(236,236,236,0.5);border: 1px solid black; display: none;'></canvas>" +
-            "</div>";
-        $("#pdf").prepend(div);
-        this.cross = $("#" + divName);
+        let div = "";
+        if(this.isSign) {
+            div = "<div id='" + divName + "' class='cross'>" +
+                "<button id='canvasBtn_" + this.id + "'  type='button' style='z-index: 1000000;' class='btn btn-dark text-light position-absolute bottom-0 end-0 m-2' title='Modifier ma signature'>" +
+                "   <i class='fas fa-pen-alt'></i>" +
+                "</button>" +
+                "<canvas id='canvas_" + this.id + "' style='z-index:999999 !important; position: absolute; background-color: rgba(236,236,236,0.5);border: 1px solid black; display: none;'></canvas>" +
+                "</div>";
+            $("#pdf").prepend(div);
+            this.cross = $("#" + divName);
+            this.cross.css("width", "300");
+            this.canvasBtn = $("#canvasBtn_" + this.id);
+            this.canvas = $("#canvas_" + this.id);
+            this.canvas.css("width", 300);
+            let self = this;
+            this.canvasBtn.on("mousedown", function(){
+                self.canvasBtn.addClass("d-none");
+                self.cross.draggable("disable");
+                self.canvas.show();
+                self.canvas.css("cursor", "pointer");
+                self.cross.css("background-image", "");
+                self.userSignaturePad = new UserSignaturePad("canvas_" + self.id);
+                self.userSignaturePad.signImageBase64 = $("#signImageBase64_" + self.id, 1, 2);
+            });
+        } else {
+            div = "<div id='" + divName + "' class='cross'>" +
+                "</div>"+
+                "<input type='hidden' id='canvas_" + this.id + "'/>"
+            ;
+            $("#pdf").prepend(div);
+            this.cross = $("#" + divName);
+            this.canvas = $("#canvas_" + this.id);
+            this.canvasBtn = $("#canvas_" + this.id);
+
+        }
+
         this.cross.css("position", "absolute");
-        this.cross.css("width", "300");
         this.cross.css("z-index", "100");
         this.cross.attr("data-id", this.id);
-        this.canvasBtn = $("#canvasBtn_" + this.id);
-        this.canvas = $("#canvas_" + this.id);
-        this.canvas.css("width", 300);
-        let self = this;
-        this.canvasBtn.on("mousedown", function(){
-            self.canvasBtn.addClass("d-none");
-            self.cross.draggable("disable");
-            self.canvas.show();
-            self.canvas.css("cursor", "pointer");
-            self.cross.css("background-image", "");
-            self.userSignaturePad = new UserSignaturePad("canvas_" + self.id);
-            self.userSignaturePad.signImageBase64 = $("#signImageBase64_" + self.id, 1, 2);
-        });
+
     }
 
     createTools() {
@@ -722,8 +737,12 @@ export class SignRequestParams extends EventFactory {
 
     changeSignSize(result) {
         if(result != null) {
-            this.originalWidth = Math.round((300));
-            this.originalHeight = Math.round((150));
+            this.originalWidth = Math.round((result.w));
+            this.originalHeight = Math.round((result.h));
+            if(this.isSign) {
+                this.originalWidth = Math.round((300));
+                this.originalHeight = Math.round((150));
+            }
             this.signWidth = Math.round(this.originalWidth * this.signScale) + this.extraWidth;
             this.signHeight = Math.round(this.originalHeight * this.signScale) + this.extraHeight;
             this.cross.css('width', (this.signWidth * this.currentScale));
