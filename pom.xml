@@ -7,12 +7,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.5</version>
+		<version>3.4.0</version>
 		<relativePath />
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.31.4-SNAPSHOT</version>
+	<version>1.31.5-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
@@ -46,19 +46,8 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.junit.vintage</groupId>
-					<artifactId>junit-vintage-engine</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-api</artifactId>
-			<version>5.10.5</version>
-			<scope>test</scope>
-		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -332,12 +321,6 @@
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-service</artifactId>
 			<version>${dss.framework.version}</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>httpclient5</artifactId>
-					<groupId>org.apache.httpcomponents.client5</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
@@ -491,22 +474,6 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.12.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents.client5</groupId>
-			<artifactId>httpclient5</artifactId>
-			<version>5.2.1</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>httpcore5</artifactId>
-					<groupId>org.apache.httpcomponents.core5</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents.core5</groupId>
-			<artifactId>httpcore5</artifactId>
-			<version>5.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>de.schlichtherle.truezip</groupId>
@@ -742,12 +709,12 @@
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>2.3.0</version>
+			<version>2.7.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
-			<version>2.3.0</version>
+			<version>2.7.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>

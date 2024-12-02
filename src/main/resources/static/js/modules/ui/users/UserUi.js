@@ -9,7 +9,7 @@ export class UserUi {
         this.emailAlertFrequencySelect = $("#emailAlertFrequency_id");
         this.emailAlertDay = $("#emailAlertDayDiv");
         this.emailAlertHour = $("#emailAlertHourDiv");
-        this.userSignaturePad = new UserSignaturePad();
+        this.userSignaturePad = new UserSignaturePad("canvas", 1, 4);
         this.userSignatureCrop = new UserSignatureCrop();
         this.saveSignRequestParams = false;
         this.checkAlertFrequency();
@@ -76,6 +76,9 @@ export class UserUi {
         if($("#name").val() === "" || $("#firstname").val() === "") {
             $("#submitUserParamsForm").click();
             return;
+        }
+        if(this.userSignaturePad.signaturePad.isEmpty()) {
+            $("#signImageBase64").val("");
         }
         $("#userParamsForm").submit();
     }
