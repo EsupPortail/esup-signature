@@ -78,7 +78,7 @@ public class UserController {
 		return "user/users/update";
     }
 
-	@PostMapping
+	@PutMapping
 	public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
 						 @RequestParam(value = "saveSignRequestParams", required=false) Boolean saveSignRequestParams,
 						 @RequestParam(value = "returnToHomeAfterSign", required=false) Boolean returnToHomeAfterSign,
@@ -99,11 +99,27 @@ public class UserController {
 		return "redirect:" + referer;
     }
 
+	@PostMapping
+	public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
+						 @RequestParam(value = "name") String name,
+						 @RequestParam(value = "firstname") String firstname,
+						 @RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
+						 @RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
+						 @RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
+						 @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore,
+						 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
+		userService.updateUser(authUserEppn, name, firstname, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, null, false);
+		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Vos paramètres ont été enregistrés"));
+		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+		return "redirect:" + referer;
+	}
+
 	@DeleteMapping("/delete-sign/{id}")
-	public String deleteSign(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes) {
+	public String deleteSign(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
 		userService.deleteSign(authUserEppn, id);
 		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Signature supprimée"));
-		return "redirect:/user/users";
+		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+		return "redirect:" + referer;
 	}
 
 	@PostMapping(value = "/view-cert")

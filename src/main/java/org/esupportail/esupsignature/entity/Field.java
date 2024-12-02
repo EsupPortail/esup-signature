@@ -22,8 +22,6 @@ public class Field {
 	)
 	private Long id;
 
-	
-	
 	private String name;
 
 	private String description;

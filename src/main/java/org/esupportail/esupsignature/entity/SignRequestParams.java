@@ -13,6 +13,8 @@ public class SignRequestParams {
 
 	private String pdSignatureFieldName;
 
+    transient private String imageBase64;
+
 	private Integer signImageNumber = 0;
 
 	private Integer signPageNumber = 1;
@@ -79,6 +81,14 @@ public class SignRequestParams {
 
     public void setPdSignatureFieldName(String pdSignatureFieldName) {
         this.pdSignatureFieldName = pdSignatureFieldName;
+    }
+
+    public String getImageBase64() {
+        return imageBase64;
+    }
+
+    public void setImageBase64(String imageBase64) {
+        this.imageBase64 = imageBase64;
     }
 
     public Integer getSignImageNumber() {

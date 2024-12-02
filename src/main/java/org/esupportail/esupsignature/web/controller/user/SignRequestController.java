@@ -110,6 +110,7 @@ public class SignRequestController {
             (signRequest.getParentSignBook().getLastNotifDate() != null && Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()))) {
             displayNotif = true;
         }
+        model.addAttribute("isManager", signBookService.checkUserManageRights(userEppn, signRequest.getParentSignBook().getId()));
         model.addAttribute("displayNotif", displayNotif);
         model.addAttribute("signRequest", signRequest);
         model.addAttribute("signBook", signRequest.getParentSignBook());

@@ -59,8 +59,8 @@
 					data-bs-target="#addCommentModal">
 				<i class="fa-solid fa-sticky-note"></i> <span class="d-none d-xl-inline">Post-it</span>
 			</button>
-			<button th:if="${user.userType.name() == 'external' && !#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" id="signImageBtn" class="btn btn-light btn-outline-dark me-1" title="Ajouter une image de signature">
-				<i class="fa-solid fa-user-pen"></i> <span class="d-xl-inline">Ajouter une image de signature</span>
+			<button th:if="${!#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" id="signImageBtn" class="btn btn-light btn-outline-dark me-1" title="Gérer mes images de signature">
+				<i class="fa-solid fa-user-pen"></i> <span class="d-none d-xxl-inline">Gérer mes images de signature</span>
 			</button>
 			<form th:if="${displayNotif}"
 				  th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
@@ -70,14 +70,14 @@
 			</form>
 		</th:block>
 		<div class="border 1 me-2 d-none d-lg-block ms-1"></div>
-		<a th:if="${signRequest.parentSignBook.createBy.eppn == user.eppn || #authorization.expression('hasRole(''ROLE_ADMIN'')') || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email))}" class="btn btn-light btn-outline-dark d-none d-lg-block ms-1 me-1" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal">
+		<a th:if="${isManager}" class="btn btn-light btn-outline-dark d-none d-lg-block ms-1 me-1" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal">
 			<i class="fa-solid fa-users-viewfinder"></i>
 		</a>
-		<a th:if="${signRequest.parentSignBook.createBy.eppn == user.eppn || #authorization.expression('hasRole(''ROLE_ADMIN'')') || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email))}" class="btn btn-light btn-outline-dark d-none d-md-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/update/' + ${signRequest.parentSignBook.id}">
+		<a th:if="${isManager}" class="btn btn-light btn-outline-dark d-none d-md-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/update/' + ${signRequest.parentSignBook.id}">
 			<i class="fa-solid fa-pencil-alt"></i>
 		</a>
 	</div>
-	<div id="second-tools" class="d-flex">
+	<div id="second-tools" class="d-none d-xl-flex">
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
 			<th:block th:if="${!user.userType.name.equals('external')}">
 			<div class="rounded-2 bg-light d-none d-xl-inline-flex mb-1 text-dark p-1" style="cursor: default;">
@@ -100,13 +100,13 @@
 				}"
 						id="addSignButton"
 						role="button"
-						class="btn btn-light btn-outline-primary pulse-primary">
+						class="btn btn-light btn-outline-primary pulse-primary d-none d-lg-block">
 					<i class="fa-solid fa-file-signature"></i> <span class="d-inline">Insérer une signature</span>
 				</button>
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
 						id="addSignButton"
 						role="button"
-						class="btn btn-light btn-outline-primary pulse-primary">
+						class="btn btn-light btn-outline-primary pulse-primary d-none d-lg-block">
 					<i class="fa-solid fa-file-signature"></i> <span class="d-inline">Insérer un visa</span>
 				</button>
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
@@ -124,7 +124,7 @@
 						class="btn btn-outline-primary ms-1">
 					<i class="fa-solid fa-comment"></i> Ajouter une annotation
 				</button>
-				<button th:if="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && (signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email) || !signRequest.parentSignBook.liveWorkflow.workflow.dashboardRoles.retainAll(user.rolesCopy)))) && signRequest.data == null}" id="addSpotButton"
+				<button th:if="${isManager && signRequest.data == null}" id="addSpotButton"
 						class="btn btn-outline-primary ms-1">
 					<i class="fa-solid fa-map-marker-alt"></i> Ajouter un emplacement de signature
 				</button>

@@ -610,8 +610,12 @@ public class SignBookService {
         if(signBook == null) return false;
         if(signBook.getSignRequests().size() == 1) {
             User user = userService.getByEppn(userEppn);
-            if(signBook.getLiveWorkflow().getWorkflow() != null && !signBook.getLiveWorkflow().getWorkflow().getManagers().isEmpty()) {
-                if (signBook.getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail()) ||  signBook.getLiveWorkflow().getWorkflow().getDashboardRoles().stream().anyMatch(r -> user.getRoles().contains(r))) {
+            Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
+            if(workflow != null) {
+                if ((!signBook.getLiveWorkflow().getWorkflow().getManagers().isEmpty() && signBook.getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail()))
+                    ||
+                    signBook.getLiveWorkflow().getWorkflow().getDashboardRoles().stream().anyMatch(r -> user.getRoles().contains(r))
+                ) {
                     return true;
                 }
             }
@@ -771,7 +775,7 @@ public class SignBookService {
     public SignBook sendForSign(Long dataId, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas, InputStream formReplaceInputStream, String signRequestParamsJsonString, String title, Boolean sendEmailAlert, String comment) {
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
         if (signRequestParamsJsonString != null) {
-            signRequestParamses = signRequestParamsService.getSignRequestParamsesFromJson(signRequestParamsJsonString);
+            signRequestParamses = signRequestParamsService.getSignRequestParamsesFromJson(signRequestParamsJsonString, userEppn);
             signRequestParamsRepository.saveAll(signRequestParamses);
         }
         User user = userService.createUserWithEppn(userEppn);
@@ -1130,7 +1134,7 @@ public class SignBookService {
         if (signRequestParamsJsonString == null) {
             signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
         } else {
-            signRequestParamses = signRequestParamsService.getSignRequestParamsesFromJson(signRequestParamsJsonString);
+            signRequestParamses = signRequestParamsService.getSignRequestParamsesFromJson(signRequestParamsJsonString, userEppn);
         }
         if (signRequest.getCurrentSignType().equals(SignType.nexuSign) || (SignWith.valueOf(signWith).equals(SignWith.nexuCert))) {
             signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
@@ -1966,7 +1970,7 @@ public class SignBookService {
                 || signBook.getViewers().stream().anyMatch(u -> u.getEppn().equals(authUserEppn))
                 || signBook.getCreateBy().getEppn().equals(authUserEppn)
                 || recipientService.recipientsContainsUser(recipients, authUserEppn) > 0
-                || workflowService.checkWorkflowManageRights(signBook.getLiveWorkflow().getWorkflow().getId(), authUserEppn)) {
+                || (signBook.getLiveWorkflow().getWorkflow() != null && workflowService.checkWorkflowManageRights(signBook.getLiveWorkflow().getWorkflow().getId(), authUserEppn))) {
             return true;
         }
         return false;

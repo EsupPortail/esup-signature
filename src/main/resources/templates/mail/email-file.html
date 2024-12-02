@@ -15,7 +15,7 @@
     <tr>
         <td style="width:100%; padding:10px;background-color:#f8f9fa;">
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;">Bonjour</p>
-            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;">Un document signé vous est destiné, pour y accéder cliquez sur le lien ci-dessous</p>
+            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;">Un document signé vous est destiné, il est attaché en piece jointe de ce mail</p>
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
                 Nom de la demande : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.subject}" style="box-sizing:border-box;" ></span></b>
                 <br style="box-sizing:border-box;" >
@@ -25,7 +25,12 @@
                 <br style="box-sizing:border-box;" >
             </p>
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
+                Si vous avez fait partie des signataires, vous pouvez accéder à la demande en cliquant sur le bouton ci-dessous
+                <br>
                 <a th:href="@{|${rootUrl}/user/signbooks/${signBook.id}|}" class="btn btn-dark" style="box-sizing:border-box;text-decoration:none;display:inline-block;font-weight:400;text-align:center;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border-width:1px;border-style:solid;padding-top:.375rem;padding-bottom:.375rem;padding-right:.75rem;padding-left:.75rem;font-size:14px;line-height:1.5;border-radius:.25rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;color:#fff;background-color:#343a40;border-color:#343a40;" >Accéder à la demande</a>
+                <br>
+                Sinon vous pouvez obtenir plus d'informations sur le document à cette adresse :
+                <a th:href="@{|${rootUrl}/public/control/${signBook.signRequests.get(0).token}|}" class="btn btn-dark" style="box-sizing:border-box;text-decoration:none;display:inline-block;font-weight:400;text-align:center;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border-width:1px;border-style:solid;padding-top:.375rem;padding-bottom:.375rem;padding-right:.75rem;padding-left:.75rem;font-size:14px;line-height:1.5;border-radius:.25rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;color:#fff;background-color:#343a40;border-color:#343a40;" >Contrôler le document</a>
             </p>
         </td>
     </tr>

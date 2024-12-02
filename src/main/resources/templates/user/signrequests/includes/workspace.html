@@ -51,26 +51,26 @@
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div id="pdf" class="mx-auto" style="position: relative !important;">
             <th:block th:each="comment : ${comments}">
-                <div th:if="${signRequest.createBy.eppn == user.eppn && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
+                <div th:if="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
                     class="circle" th:id="'inDocComment_' + ${comment.id}"
                     th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'" title="Cliquer pour supprimer l'annotation">
                     <i class="fa-solid fa-comment fa-3x"></i>
                 </div>
-                <div th:unless="${signRequest.createBy.eppn == user.eppn && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
+                <div th:unless="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
                     class="circle" th:id="'inDocComment_' + ${comment.id}"
                     th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'">
                     <i class="fa-solid fa-comment fa-3x"></i>
                 </div>
             </th:block>
-            <th:block th:each="spot, iterator : ${spots}" th:if="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && (signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email) || !signRequest.parentSignBook.liveWorkflow.workflow.dashboardRoles.retainAll(user.rolesCopy)))) && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
+            <th:block th:each="spot, iterator : ${spots}" th:if="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
                 <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}" title="Cliquer pour supprimer l'emplacement de signature"
                     th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').removeClass(\'circle-border\');'">
-                    <div th:id="'inDocSign_' + ${spot.id}" style="width: 150px; height: 75px; color: #000;" class="sign-field" th:data-es-delete="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && (signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email) || !signRequest.parentSignBook.liveWorkflow.workflow.dashboardRoles.retainAll(user.rolesCopy))))} ? 'true' :''">
-                        <span th:if="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && (signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email) || !signRequest.parentSignBook.liveWorkflow.workflow.dashboardRoles.retainAll(user.rolesCopy))))}" th:text="'Cliquer pour supprimer l’emplacement de signature étape ' + ${spot.stepNumber}"></span>
-                        <span th:unless="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && (signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email) || !signRequest.parentSignBook.liveWorkflow.workflow.dashboardRoles.retainAll(user.rolesCopy))))}" th:text="'Emplacement de signature pour l\'étape ' + ${spot.stepNumber}"></span>
+                    <div th:id="'inDocSign_' + ${spot.id}" style="width: 150px; height: 75px; color: #000;" class="sign-field" th:data-es-delete="${isManager} ? 'true' :''">
+                        <span th:if="${isManager}" th:text="'Cliquer pour supprimer l’emplacement de signature étape ' + ${spot.stepNumber}"></span>
+                        <span th:unless="${isManager}" th:text="'Emplacement de signature pour l\'étape ' + ${spot.stepNumber}"></span>
                     </div>
                 </div>
             </th:block>
@@ -120,11 +120,17 @@
                 <i class="fa-solid fa-sync"></i>
             </button>
             <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signImage_x"
-                    title="Ajouter une image de votre signature"
+                    title="Afficher l'image de votre signature"
                     class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
                 <i class="fa-solid fa-signature"></i>
             </button>
+<!--            <button type="button" id="signImageBtn_x"-->
+<!--                    title="Ajouter une image de signature"-->
+<!--                    class="btn btn-sm btn-transparent text-white btn-outline-light"-->
+<!--                    style="z-index: 3;">-->
+<!--                <i class="fa-solid fa-user-pen"></i>-->
+<!--            </button>-->
             <button type="button" id="signPrevImage_x"
                     title="Signature précédente"
                     class="btn btn-sm btn-transparent text-white"
