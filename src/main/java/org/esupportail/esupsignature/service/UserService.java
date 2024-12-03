@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
@@ -17,6 +18,7 @@ import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
+import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
@@ -86,6 +88,8 @@ public class UserService {
 
     private final ObjectMapper objectMapper;
 
+    private final SignRequestParamsRepository signRequestParamsRepository;
+
     public UserService(GlobalProperties globalProperties,
                        WebSecurityProperties webSecurityProperties,
                        @Autowired(required = false) LdapPersonService ldapPersonService,
@@ -93,7 +97,7 @@ public class UserService {
                        @Autowired(required = false) LdapAliasService ldapAliasService,
                        @Autowired(required = false) LdapGroupService ldapGroupService,
                        @Autowired(required = false) LdapOrganizationalUnitService ldapOrganizationalUnitService,
-                       @Autowired(required = false) SmsService smsService, ShibProperties shibProperties, UserRepository userRepository, FileService fileService, DocumentService documentService, UserListService userListService, ObjectMapper objectMapper) {
+                       @Autowired(required = false) SmsService smsService, ShibProperties shibProperties, UserRepository userRepository, FileService fileService, DocumentService documentService, UserListService userListService, ObjectMapper objectMapper, SignRequestParamsRepository signRequestParamsRepository) {
         this.globalProperties = globalProperties;
         this.webSecurityProperties = webSecurityProperties;
         this.ldapPersonService = ldapPersonService;
@@ -108,6 +112,7 @@ public class UserService {
         this.documentService = documentService;
         this.userListService = userListService;
         this.objectMapper = objectMapper;
+        this.signRequestParamsRepository = signRequestParamsRepository;
     }
 
     public User getById(Long id) {
@@ -374,6 +379,38 @@ public class UserService {
     }
 
     @Transactional
+    public void updateUserAndSignRequestParams(String authUserEppn, String signImageBase64, Boolean saveSignRequestParams, Boolean returnToHomeAfterSign, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, String signRequestParamsJsonString) throws IOException {
+        SignRequestParams signRequestParams = new SignRequestParams();
+        if(BooleanUtils.isNotTrue(saveSignRequestParams)) {
+            try {
+                SignRequestParams signRequestParamsJson = objectMapper.readValue(signRequestParamsJsonString, SignRequestParams.class);
+                signRequestParams.setSignWidth(signRequestParamsJson.getSignWidth());
+                signRequestParams.setSignHeight(signRequestParamsJson.getSignHeight());
+                signRequestParams.setxPos(signRequestParamsJson.getxPos());
+                signRequestParams.setyPos(signRequestParamsJson.getyPos());
+                signRequestParams.setSignImageNumber(signRequestParamsJson.getSignImageNumber());
+                signRequestParams.setAddWatermark(signRequestParamsJson.getAddWatermark());
+                signRequestParams.setAddExtra(signRequestParamsJson.getAddExtra());
+                signRequestParams.setIsExtraText(signRequestParamsJson.getIsExtraText());
+                if(signRequestParamsJson.getIsExtraText()) {
+                    signRequestParams.setExtraText(" ");
+                } else {
+                    signRequestParams.setExtraText("");
+                }
+                signRequestParams.setExtraType(signRequestParamsJson.getExtraType());
+                signRequestParams.setExtraName(signRequestParamsJson.getExtraName());
+                signRequestParams.setExtraDate(signRequestParamsJson.getExtraDate());
+                signRequestParams.setExtraOnTop(signRequestParamsJson.getExtraOnTop());
+            } catch (JsonProcessingException e) {
+                logger.warn("no signRequestParams returned", e);
+            }
+        } else {
+            signRequestParams = null;
+        }
+        updateUser(authUserEppn, null, null, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, signRequestParams, returnToHomeAfterSign);
+    }
+
+    @Transactional
     public void updateUser(String authUserEppn, String name, String firstName, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, SignRequestParams signRequestParams, Boolean returnToHomeAfterSign) throws IOException {
         User authUser = getByEppn(authUserEppn);
         if(StringUtils.hasText(name)) {
@@ -387,7 +424,7 @@ public class UserService {
             signRequestParams.setyPos(0);
             signRequestParams.setSignWidth(300);
             signRequestParams.setSignHeight(150);
-
+            signRequestParamsRepository.save(signRequestParams);
         }
         authUser.setFavoriteSignRequestParams(signRequestParams);
         if(multipartKeystore != null && !multipartKeystore.isEmpty() && !globalProperties.getDisableCertStorage()) {
@@ -1013,4 +1050,28 @@ public class UserService {
         User user = getByEppn(userEppn);
         user.setAccessToken(UUID.randomUUID().toString());
     }
+
+    @Transactional
+    public List<SignRequestParams> getSignRequestParamsesFromJson(String signRequestParamsJsonString, String userEppn) {
+        User user = getByEppn(userEppn);
+        List<SignRequestParams> signRequestParamses = new ArrayList<>();
+        try {
+            signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
+            for (SignRequestParams signRequestParams : signRequestParamses) {
+                if(signRequestParams.getImageBase64() != null) {
+                    try {
+                        user.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signRequestParams.getImageBase64()), user, user.getEppn() + "_sign.png", "image/png"));
+                        signRequestParams.setSignImageNumber(user.getSignImages().size() - 1);
+                    } catch (IOException e) {
+                        logger.error("error on create sign image", e);
+                    }
+                }
+            }
+//            signRequestParamsRepository.saveAll(signRequestParamses);
+        } catch (JsonProcessingException e) {
+            logger.warn("no signRequestParams returned", e);
+        }
+        return signRequestParamses;
+    }
+
 }
