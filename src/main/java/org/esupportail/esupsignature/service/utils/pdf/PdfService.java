@@ -12,6 +12,7 @@ import eu.europa.esig.dss.pdf.pdfbox.PdfBoxDocumentReader;
 import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.annotation.Resource;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
@@ -171,7 +172,7 @@ public class PdfService {
                     }
                 }
             }
-            if (signRequestParams.getAddWatermark()) {
+            if (BooleanUtils.isTrue(signRequestParams.getAddWatermark())) {
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, outputStream, signRequestParams.getExtraOnTop());
                 signImage = new ByteArrayInputStream(outputStream.toByteArray());
