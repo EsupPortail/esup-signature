@@ -1,8 +1,5 @@
 package org.esupportail.esupsignature.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.Resource;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -18,15 +15,12 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -34,7 +28,10 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -44,25 +41,17 @@ public class SignRequestParamsService {
 
     private static final Logger logger = LoggerFactory.getLogger(SignRequestParamsService.class);
 
-    @Resource
-    private  SignRequestParamsRepository signRequestParamsRepository;
+    private final SignRequestParamsRepository signRequestParamsRepository;
 
-    @Resource
-    private PdfService pdfService;
+    private final PdfService pdfService;
 
-    @Resource
-    private GlobalProperties globalProperties;
-    
-    @Resource
-    private ObjectMapper objectMapper;
+    private final GlobalProperties globalProperties;
 
-    @Resource
-    private DocumentService documentService;
-
-    @Resource
-    private FileService fileService;
-    @Autowired
-    private UserService userService;
+    public SignRequestParamsService(SignRequestParamsRepository signRequestParamsRepository, PdfService pdfService, GlobalProperties globalProperties) {
+        this.signRequestParamsRepository = signRequestParamsRepository;
+        this.pdfService = pdfService;
+        this.globalProperties = globalProperties;
+    }
 
     public SignRequestParams getById(Long id) {
         return signRequestParamsRepository.findById(id).orElseThrow();
@@ -75,46 +64,8 @@ public class SignRequestParamsService {
         signRequestParams.setxPos(Math.round(pdRectangle.getLowerLeftX() / globalProperties.getFixFactor()));
         signRequestParams.setyPos(Math.round((pdPage.getBBox().getHeight() - pdRectangle.getLowerLeftY() - pdRectangle.getHeight()) / globalProperties.getFixFactor()));
         signRequestParams.setSignPageNumber(signPageNumber);
-//        signRequestParams.setSignWidth(Math.round(pdRectangle.getWidth() / globalProperties.getFixFactor()));
-//        signRequestParams.setSignHeight(Math.round(pdRectangle.getHeight() / globalProperties.getFixFactor()));
         signRequestParamsRepository.save(signRequestParams);
         return signRequestParams;
-    }
-
-    @Transactional
-    public List<SignRequestParams> getSignRequestParamsesFromJson(String signRequestParamsJsonString, String userEppn) {
-        User user = userService.getByEppn(userEppn);
-        List<SignRequestParams> signRequestParamses = new ArrayList<>();
-        try {
-            signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
-            for (SignRequestParams signRequestParams : signRequestParamses) {
-                if(signRequestParams.getImageBase64() != null) {
-                    try {
-                        user.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signRequestParams.getImageBase64()), user, user.getEppn() + "_sign.png", "image/png"));
-                        signRequestParams.setSignImageNumber(user.getSignImages().size() - 1);
-                    } catch (IOException e) {
-                        logger.error("error on create sign image", e);
-                    }
-                }
-            }
-//            signRequestParamsRepository.saveAll(signRequestParamses);
-        } catch (JsonProcessingException e) {
-            logger.warn("no signRequestParams returned", e);
-        }
-        return signRequestParamses;
-    }
-
-    @Transactional
-    public SignRequestParams getSignRequestParamsFromJson(String signRequestParamsJsonString) {
-        try {
-            SignRequestParams signRequestParams = objectMapper.readValue(signRequestParamsJsonString, SignRequestParams.class);
-            if(signRequestParams.getxPos() == null) signRequestParams.setxPos(0);
-            if(signRequestParams.getyPos() == null) signRequestParams.setyPos(0);
-            return signRequestParamsRepository.save(signRequestParams);
-        } catch (JsonProcessingException e) {
-            logger.warn("no signRequestParams returned", e);
-        }
-        return null;
     }
 
     public List<SignRequestParams> scanSignatureFields(InputStream inputStream, int docNumber, Workflow workflow) throws EsupSignatureIOException {
@@ -213,12 +164,6 @@ public class SignRequestParamsService {
             return matcher.group(1);
         }
         return null;
-    }
-
-    private List<String> convertStringToList(String input) {
-        String trimmedInput = input.replace("[", "");
-        trimmedInput = trimmedInput.replace("]", "");
-        return Arrays.asList(StringUtils.split(trimmedInput, ","));
     }
 
     public void copySignRequestParams(SignRequest signRequest, List<SignRequestParams> signRequestParamses) {

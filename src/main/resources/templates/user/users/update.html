@@ -252,7 +252,7 @@
                     </div>
                     <div class="card-body">
                         <div class="form-check form-switch form-switch-md mx-auto">
-                            <input id="saveSignRequestParams" class="form-check-input" type="checkbox" name="saveSignRequestParams" th:checked="${user.favoriteSignRequestParams == null}">
+                            <input id="saveSignRequestParams" class="form-check-input" type="checkbox" name="saveSignRequestParams" value="true" th:checked="${user.favoriteSignRequestParams == null}">
                             <label class="form-check-label" for="saveSignRequestParams">Enregistrer automatiquement mes paramètres après chaque signature</label>
                         </div>
                         <div id="signRequestParamsCleanDiv" class="mx-auto">

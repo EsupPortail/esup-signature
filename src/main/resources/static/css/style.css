@@ -743,6 +743,7 @@ textarea:placeholder-shown.required-field {
     color: black !important;
     float: right;
     width: 50%;
+    left: 50%;
 }
 
 .div-extra {
