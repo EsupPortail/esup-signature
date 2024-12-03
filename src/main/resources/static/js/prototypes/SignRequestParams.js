@@ -464,7 +464,7 @@ export class SignRequestParams extends EventFactory {
         if(this.isSign) {
             div = "<div id='" + divName + "' class='cross'>" +
                 "<button id='canvasBtn_" + this.id + "'  type='button' style='z-index: 1000000;' class='btn btn-dark text-light position-absolute bottom-0 end-0 m-2' title='Modifier ma signature'>" +
-                "   <i class='fas fa-pen-alt'></i>" +
+                "   <i class='fas fa-eraser'></i>" +
                 "</button>" +
                 "<canvas id='canvas_" + this.id + "' style='z-index:999999 !important; position: absolute; bottom: " + this.padMargin + "px; background-color: rgba(236,236,236,0.5);border: 1px solid black; display: none;'></canvas>" +
                 "</div>";
