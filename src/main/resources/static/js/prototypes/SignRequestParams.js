@@ -476,13 +476,7 @@ export class SignRequestParams extends EventFactory {
             this.canvas.css("width", 300);
             let self = this;
             this.canvasBtn.on("mousedown", function(){
-                self.canvasBtn.addClass("d-none");
-                self.cross.draggable("disable");
-                self.canvas.show();
-                self.canvas.css("cursor", "pointer");
-                self.cross.css("background-image", "");
-                self.userSignaturePad = new UserSignaturePad("canvas_" + self.id);
-                self.userSignaturePad.signImageBase64 = $("#signImageBase64_" + self.id, 1, 2);
+                self.enableCanvas();
             });
         } else {
             div = "<div id='" + divName + "' class='cross'>" +
@@ -500,6 +494,27 @@ export class SignRequestParams extends EventFactory {
         this.cross.css("z-index", "100");
         this.cross.attr("data-id", this.id);
 
+    }
+
+    enableCanvas() {
+        this.canvasBtn.addClass("d-none");
+        this.cross.draggable("disable");
+        this.canvas.show();
+        this.canvas.css("cursor", "pointer");
+        this.cross.css("background-image", "");
+        this.userSignaturePad = new UserSignaturePad("canvas_" + this.id);
+        this.userSignaturePad.signImageBase64 = $("#signImageBase64_" + this.id, 1, 2);
+    }
+
+    disableCanvas() {
+        this.canvasBtn.removeClass("d-none");
+        this.cross.draggable("enable");
+        this.canvas.hide();
+        if(this.userSignaturePad != null) {
+            this.userSignaturePad.signImageBase64 = null;
+            this.userSignaturePad.destroy();
+            this.userSignaturePad = null;
+        }
     }
 
     createTools() {
@@ -713,12 +728,12 @@ export class SignRequestParams extends EventFactory {
             this.textareaExtra.addClass("sign-textarea-lock");
         }
         $(document).unbind('keydown');
+        this.canvasBtn.removeClass("d-none");
     }
 
     wantUnlock() {
         this.fireEvent("unlock", ["ok"]);
         this.unlock();
-        this.canvasBtn.removeClass("d-none");
     }
 
     handleKeydown(event) {
@@ -1268,6 +1283,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     changeSignImage(imageNum) {
+        this.disableCanvas();
         if(imageNum != null && imageNum >= 0) {
             if(this.signImages != null) {
                 if(imageNum > this.signImages.length - 1 && imageNum !== 999998 && imageNum !== 999997) {

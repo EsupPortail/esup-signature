@@ -218,9 +218,10 @@ public class UserController {
 	}
 
 	@GetMapping("/set-default-sign-image/{signImageNumber}")
-	public String setDefaultSignImage(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signImageNumber") Integer signImageNumber) {
+	public String setDefaultSignImage(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signImageNumber") Integer signImageNumber, HttpServletRequest httpServletRequest) {
     	userService.setDefaultSignImage(authUserEppn, signImageNumber);
-		return "redirect:/user/users";
+		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+		return "redirect:"+ referer;
 	}
 
 	@GetMapping("/replace")

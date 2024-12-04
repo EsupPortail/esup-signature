@@ -30,6 +30,11 @@ export class UserSignaturePad {
 
     }
 
+    destroy() {
+        this.signaturePad.off();
+        this.signaturePad.clear();
+    }
+
     resizeCanvas() {
         if(this.canvas[0].offsetWidth !== this.cachedWidth ) {
             if (typeof this.signaturePad != 'undefined') {
