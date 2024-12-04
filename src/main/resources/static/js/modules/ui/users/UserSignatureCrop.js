@@ -30,6 +30,7 @@ export class UserSignatureCrop extends EventFactory {
             mouseWheelZoom: true
         });
         this.events = {};
+        this.signImageBase64 = "";
         this.initListeners();
     }
 
@@ -47,7 +48,7 @@ export class UserSignatureCrop extends EventFactory {
 
     update() {
         let result = this.getResult();
-        result.then(this.saveVanilla);
+        result.then(e => this.saveVanilla(e));
     }
 
     rotate(elem) {
@@ -72,6 +73,7 @@ export class UserSignatureCrop extends EventFactory {
     }
 
     saveVanilla(result) {
+        this.signImageBase64 = result;
         $("#signImageBase64").val(result);
     }
 

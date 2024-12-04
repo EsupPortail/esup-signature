@@ -31,6 +31,8 @@ public class SignRequestParams {
 
 	private String extraText;
 
+    private Boolean isExtraText = false;
+
     private Boolean addWatermark = false;
 
     private Boolean allPages = false;
@@ -153,6 +155,14 @@ public class SignRequestParams {
 
     public void setExtraText(String extraText) {
         this.extraText = extraText;
+    }
+
+    public Boolean getIsExtraText() {
+        return isExtraText;
+    }
+
+    public void setIsExtraText(Boolean isExtraText) {
+        this.isExtraText = isExtraText;
     }
 
     public Boolean getAddWatermark() {

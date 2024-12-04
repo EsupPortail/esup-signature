@@ -113,7 +113,7 @@ public class DataExportService {
         Map<Recipient, Action> recipientHasSigned = null;
         if(signBook != null) {
             recipientHasSigned = signBook.getSignRequests().get(0).getRecipientHasSigned();
-            if (recipientHasSigned != null && recipientHasSigned.size() > 0 && signBook.getStatus().equals(SignRequestStatus.completed) || signBook.getStatus().equals(SignRequestStatus.exported) || signBook.getStatus().equals(SignRequestStatus.archived)) {
+            if (recipientHasSigned != null && !recipientHasSigned.isEmpty() && signBook.getStatus().equals(SignRequestStatus.completed) || signBook.getStatus().equals(SignRequestStatus.exported) || signBook.getStatus().equals(SignRequestStatus.archived)) {
                 Optional<Action> lastActionHero = recipientHasSigned.values().stream().filter(action -> !action.getActionType().equals(ActionType.none)).findFirst();
                 if (lastActionHero.isPresent()) {
                     toExportDatas.put("form_completed_date", lastActionHero.get().getDate().toString());
@@ -137,6 +137,9 @@ public class DataExportService {
             if (signBook.getLiveWorkflow().getCurrentStep() != null && signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep() != null) {
                 toExportDatas.put("current_step_id", signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getId().toString());
                 toExportDatas.put("current_step_description", signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getDescription());
+            } else {
+                toExportDatas.put("current_step_id", "");
+                toExportDatas.put("current_step_description", "");
             }
             int step = 1;
             List<Map.Entry<Recipient, Action>> actionsList = recipientHasSigned.entrySet().stream().filter(recipientActionEntry -> !recipientActionEntry.getValue().getActionType().equals(ActionType.none) && recipientActionEntry.getValue().getDate() != null).sorted(Comparator.comparing(o -> o.getValue().getDate())).collect(Collectors.toList());

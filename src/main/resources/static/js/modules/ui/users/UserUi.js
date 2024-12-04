@@ -57,6 +57,7 @@ export class UserUi {
 
     toggleSaveSignRequest() {
         if(this.saveSignRequestParams) {
+            localStorage.clear();
             this.saveSignRequestParams = false;
             $("#signRequestParamsFormDiv").removeClass("d-none");
             $("#signRequestParamsCleanDiv").addClass("d-none");
@@ -71,13 +72,14 @@ export class UserUi {
     save() {
         this.userSignaturePad.checkSignatureUpdate();
         if(!this.saveSignRequestParams) {
-            $("#sign-request-params").val(JSON.stringify(this.signRequestParams));
+            let signRequestParams = JSON.stringify(this.signRequestParams);
+            $("#sign-request-params").val(signRequestParams);
         }
         if($("#name").val() === "" || $("#firstname").val() === "") {
             $("#submitUserParamsForm").click();
             return;
         }
-        if(this.userSignaturePad.signaturePad.isEmpty()) {
+        if(this.userSignaturePad.signaturePad.isEmpty() && this.userSignatureCrop.signImageBase64 === null) {
             $("#signImageBase64").val("");
         }
         $("#userParamsForm").submit();
