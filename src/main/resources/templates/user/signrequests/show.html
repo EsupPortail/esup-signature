@@ -826,15 +826,17 @@
                 </div>
                 <div class="alert alert-light mb-2" th:unless="${signImages == null || signImages.size() < 2}">
                     <h4 class="text-start"><strong>Mes Signatures</strong></h4>
-                        <div style="height: 300px;" th:if="${userImagesIds.size() > 0 && userImagesIds.get(0) != null}" id="carouselSign2" class="carousel slide border rounded border-secondary">
+                        <div style="height: 150px;" th:if="${userImagesIds.size() > 0 && userImagesIds.get(0) != null}" id="carouselSign2" class="carousel slide border rounded border-secondary">
                             <div class="carousel-inner">
                                 <th:block th:each="signImageId, iterator : ${userImagesIds}">
                                     <div class="carousel-item text-center" th:classappend="${iterator.index == 0} ? 'active'">
-                                        <img height="295" class="bg-white" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}" alt="sign image" />
-                                        <a th:title="${user.defaultSignImageNumber == iterator.index}? 'Ma signature favorite' : 'Choisir comme signature favorite '" style="position: absolute; top: 260px; left: 30%;" th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/' + ${iterator.index}" role="button" class="btn btn-light btn-outline-light" th:classappend="${user.defaultSignImageNumber == iterator.index} ? 'text-warning' : 'text-secondary'">
+                                        <img height="145" class="bg-white" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}" alt="sign image" />
+                                        <a style="position: absolute; top: 110px; left: 30%;" th:title="${user.defaultSignImageNumber == iterator.index}? 'Ma signature favorite' : 'Choisir comme signature favorite '"
+                                            th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/' + ${iterator.index}" role="button"
+                                            class="btn btn-light btn-outline-light" th:classappend="${user.defaultSignImageNumber == iterator.index} ? 'text-warning' : 'text-secondary'">
                                             <i class="fa-solid fa-star"></i>
                                         </a>
-                                        <form style="position: absolute; top: 260px; left: 60%;" th:id="'deleteForm-' + ${signImageId}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users/delete-sign/' + ${signImageId}" th:method="'delete'">
+                                        <form style="position: absolute; top: 110px; left: 60%;" th:id="'deleteForm-' + ${signImageId}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users/delete-sign/' + ${signImageId}" th:method="'delete'">
                                             <button type="submit" th:id="'deleteSign_' + ${signImageId}" th:data-es-id="${signImageId}" class="btn btn-sm btn-danger text-white">
                                                 <i class="fa-solid fa-trash-alt"></i>
                                             </button>
