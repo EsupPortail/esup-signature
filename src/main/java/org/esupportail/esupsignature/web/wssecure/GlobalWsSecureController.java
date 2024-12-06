@@ -143,7 +143,7 @@ public class GlobalWsSecureController {
             signRequestService.getSignedFileAndReportResponse(id, httpServletRequest, httpServletResponse, false);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            logger.error("get file error", e);
+            logger.warn("get file error :" + e.getMessage());
         }
         return ResponseEntity.notFound().build();
     }
