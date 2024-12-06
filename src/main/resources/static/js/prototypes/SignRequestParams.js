@@ -126,6 +126,10 @@ export class SignRequestParams extends EventFactory {
         $("#signPrevImage_" + this.id).on("mousedown", e => this.prevSignImage());
         $("#displayMoreTools_" + this.id).on("mousedown", e => this.displayMoreTools());
         $("#watermark_" + this.id).on("mousedown", e => this.toggleWatermark(e));
+        this.canvasBtn = $("#canvasBtn_" + this.id);
+        this.canvasBtn.on("mousedown", function(){
+            self.enableCanvas();
+        });
         $("#allPages_" + this.id).on("mousedown", e => this.toggleAllPages());
         $("#signImage_" + this.id).on("mousedown", e => this.toggleImage());
         $("#signImageBtn_" + this.id).on("mousedown", e => this.toggleSignModal(e));
@@ -462,21 +466,13 @@ export class SignRequestParams extends EventFactory {
         let div = "";
         if(this.isSign) {
             div = "<div id='" + divName + "' class='cross'>" +
-                "<button id='canvasBtn_" + this.id + "'  type='button' style='z-index: 9;' class='btn btn-dark text-light position-absolute bottom-0 end-0 m-2' title='Modifier ma signature'>" +
-                "   <i class='fas fa-eraser'></i>" +
-                "</button>" +
-                "<canvas id='canvas_" + this.id + "' style='z-index:999999 !important; position: absolute; bottom: " + this.padMargin + "px; background-color: rgba(236,236,236,0.5);border: 1px solid black; display: none;'></canvas>" +
+                "<canvas id='canvas_" + this.id + "' style='z-index:9 !important; position: absolute; bottom: " + (this.padMargin + 2) + "px; background-color: rgba(236,236,236,0.5);border: 1px solid black; display: none;'></canvas>" +
                 "</div>";
             $("#pdf").prepend(div);
             this.cross = $("#" + divName);
             this.cross.css("width", "300");
-            this.canvasBtn = $("#canvasBtn_" + this.id);
             this.canvas = $("#canvas_" + this.id);
             this.canvas.css("width", 300);
-            let self = this;
-            this.canvasBtn.on("mousedown", function(){
-                self.enableCanvas();
-            });
         } else {
             div = "<div id='" + divName + "' class='cross'>" +
                 "</div>"+
@@ -496,7 +492,6 @@ export class SignRequestParams extends EventFactory {
     }
 
     enableCanvas() {
-        this.canvasBtn.addClass("d-none");
         this.cross.draggable("disable");
         this.canvas.show();
         this.canvas.css("cursor", "pointer");
@@ -506,7 +501,6 @@ export class SignRequestParams extends EventFactory {
     }
 
     disableCanvas() {
-        this.canvasBtn.removeClass("d-none");
         this.cross.draggable("enable");
         this.canvas.hide();
         if(this.userSignaturePad != null) {
