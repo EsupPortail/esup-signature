@@ -1218,6 +1218,9 @@ export class SignRequestParams extends EventFactory {
             this.signColorPicker.hide();
         }
         $("#signColorPicker_" + this.id).hide();
+        $("#canvasBtn_" + this.id).remove();
+        $("#displayMoreTools_" + this.id).remove();
+
     }
 
     turnToText() {

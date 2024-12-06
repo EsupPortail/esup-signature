@@ -33,9 +33,6 @@ export class Nexu {
                     $("#nexu_ready_alert").show();
                     $("#alertNexu").hide();
                     $("#signLaunchButton").show();
-                    let secondTools = $("#second-tools");
-                    secondTools.addClass("d-flex");
-                    secondTools.show();
                 }
                 self.updateSignModal();
             }).catch(function(e){
@@ -46,9 +43,6 @@ export class Nexu {
                     $("#alertNexu").show();
                     $("#nexu_missing_alert").show();
                     $("#signLaunchButton").hide();
-                    let secondTools = $("#second-tools");
-                    secondTools.removeClass("d-flex");
-                    secondTools.hide();
                     $("#certType").val("");
                     alert("Esup-DSS-Client n'a pas été détecté sur le poste !");
                 }

@@ -154,18 +154,18 @@
 			<version>4-Mar-2013-1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.webjars</groupId>
+			<groupId>org.webjars.npm</groupId>
 			<artifactId>jquery</artifactId>
 			<version>3.7.1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.webjars</groupId>
+			<groupId>org.webjars.npm</groupId>
 			<artifactId>jquery-ui</artifactId>
-			<version>1.13.2</version>
+			<version>1.14.1</version>
 			<exclusions>
 				<exclusion>
-					<groupId>org.webjars</groupId>
 					<artifactId>jquery</artifactId>
+					<groupId>org.webjars.npm</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>

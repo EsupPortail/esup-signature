@@ -57,7 +57,7 @@
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                        <button id="addSignButton2" role="button" class="btn-floating btn-lg bg-white pulse-primary" title="Inserer une signature" style="border: 1px solid #0d6efd;">
+                        <button id="addSignButton2" role="button" class="btn-floating btn-lg bg-white pulse-primary" title="Inserer une signature" style="border: 0px solid #0d6efd;">
                             <i class="fa-solid fa-file-signature fa-2xl text-primary" style="margin-top: -8px;"></i>
                         </button>
                     </li>
@@ -816,79 +816,87 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Ajout d’une image de signature</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="alert alert-warning" th:if="${signImages == null || signImages.size() < 2}">
+                <div class="alert alert-warning mb-2" th:if="${signImages == null || signImages.size() < 2}">
                     Vous n’avez pas encore d’image de signature dans votre profil. Merci de saisir à minima vos nom et prénom pour en ajouter une. Vous pouvez aussi dessiner une signature ci-dessous ou importer une image.
                     <br>
-                    Après l'enregistrement, vous devrez cliquer de nouveau sur "Inserer une signature" pour la voir apparaître.
+                    Après l’enregistrement, vous devrez cliquer de nouveau sur "Mes signature" pour la voir apparaître.
+                </div>
+                <div class="alert alert-light mb-2" th:unless="${signImages == null || signImages.size() < 2}">
+                    <h4 class="text-start"><strong>Mes Signatures</strong></h4>
+                        <div style="height: 300px;" th:if="${userImagesIds.size() > 0 && userImagesIds.get(0) != null}" id="carouselSign2" class="carousel slide border rounded border-secondary">
+                            <div class="carousel-inner">
+                                <th:block th:each="signImageId, iterator : ${userImagesIds}">
+                                    <div class="carousel-item text-center" th:classappend="${iterator.index == 0} ? 'active'">
+                                        <img height="295" class="bg-white" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}" alt="sign image" />
+                                        <a th:title="${user.defaultSignImageNumber == iterator.index}? 'Ma signature favorite' : 'Choisir comme signature favorite '" style="position: absolute; top: 260px; left: 30%;" th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/' + ${iterator.index}" role="button" class="btn btn-light btn-outline-light" th:classappend="${user.defaultSignImageNumber == iterator.index} ? 'text-warning' : 'text-secondary'">
+                                            <i class="fa-solid fa-star"></i>
+                                        </a>
+                                        <form style="position: absolute; top: 260px; left: 60%;" th:id="'deleteForm-' + ${signImageId}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users/delete-sign/' + ${signImageId}" th:method="'delete'">
+                                            <button type="submit" th:id="'deleteSign_' + ${signImageId}" th:data-es-id="${signImageId}" class="btn btn-sm btn-danger text-white">
+                                                <i class="fa-solid fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </th:block>
+                            </div>
+                            <button title="Signature précédente" class="carousel-control-prev" href="#carouselSign2" role="button" data-bs-slide="prev">
+                                <span class="text-dark" aria-hidden="true"><i class="fa-solid fa-chevron-left"></i></span>
+                                <span class="sr-only">Previous</span>
+                            </button>
+                            <button title="Signature suivante" class="carousel-control-next" href="#carouselSign2" role="button" data-bs-slide="next">
+                                <span class="text-dark" aria-hidden="true"><i class="fa-solid fa-chevron-right"></i></span>
+                                <span class="sr-only">Next</span>
+                            </button>
+                        </div>
                 </div>
                 <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
                     <input type="hidden" name="id" th:value="${authUser.id}"/>
                     <input type="submit" class="d-none" id="submitUserParamsForm" />
-                    <div class="alert alert-light" th:if="${user.userType.name() == 'external'}">
-                    <label class="col-form-label">
-                        <strong>Nom</strong>
-                    </label>
-                    <input type="text" class="form-control" id="name" name="name" th:value="${authUser.name}" required="required"/>
-                    <label class="col-form-label">
-                        <strong>Prénom</strong>
-                    </label>
-                    <input type="text" class="form-control" id="firstname" name="firstname" th:value="${authUser.firstname}" required="required"/>
+                    <div class="alert alert-light mb-2" th:if="${user.userType.name() == 'external'}">
+                        <h4 class="text-start"><strong>Mettre à jour mon identité</strong></h4>
+                        <label class="col-form-label">
+                            <strong>Nom</strong>
+                        </label>
+                        <input type="text" class="form-control" id="name" name="name" th:value="${authUser.name}" required="required"/>
+                        <label class="col-form-label">
+                            <strong>Prénom</strong>
+                        </label>
+                        <input type="text" class="form-control" id="firstname" name="firstname" th:value="${authUser.firstname}" required="required"/>
                     </div>
                     <div class="alert alert-light text-center">
-                    <label class="col-form-label">
-                        <strong>Vous pouvez choisir une image provenant de votre ordinateur</strong>
-                        <button data-bs-target="#collapseHelpSignImage" data-bs-toggle="collapse"
-                                type="button"
-                                class="btn btn-sm btn-transparent">
-                            <i class="fa-solid fa-info-circle text-info"></i>
-                        </button>
-                        <div class="collapse" id="collapseHelpSignImage">
-                            <div class="alert alert-info">
-                                <small> Après avoir sélectionné une image, vous pourrez ajuster sa
-                                    taille pour
-                                    que la signature entre dans le carré blanc. La résolution de l’image sera de 600*300 pixels.
-                                </small>
+                        <h4 class="text-start"><strong>Ajouter une signature</strong></h4>
+                        <label class="col-form-label">
+                            <strong>Vous pouvez choisir une image provenant de votre ordinateur</strong>
+                            <button data-bs-target="#collapseHelpSignImage" data-bs-toggle="collapse"
+                                    type="button"
+                                    class="btn btn-sm btn-transparent">
+                                <i class="fa-solid fa-info-circle text-info"></i>
+                            </button>
+                            <div class="collapse" id="collapseHelpSignImage">
+                                <div class="alert alert-info">
+                                    <small> Après avoir sélectionné une image, vous pourrez ajuster sa
+                                        taille pour
+                                        que la signature entre dans le carré blanc. La résolution de l’image sera de 600*300 pixels.
+                                    </small>
+                                </div>
                             </div>
+                        </label>
+                        <div class="mx-auto mb-1" style="width: 600px;">
+                            <input type="file" class="form-control" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
                         </div>
-                    </label>
-                    <div class="mx-auto mb-1" style="width: 600px;">
-                        <input type="file" class="form-control" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
-                    </div>
-                    <br/>
-                    <label id="signPadLabel" class="col-form-label"><strong>Vous pouvez dessiner une signature dans le rectangle ci dessous</strong></label>
-                    <div id="signPad">
-                        <div style="
-                                        position: absolute;
-                                        top: 0;
-                                        left: 0;
-                                        width: 100%;
-                                        height: 100%;
-                                        display: flex;
-                                        align-items: center;
-                                        justify-content: center;
-                                        color: rgba(0, 0, 0, 0.2); /* Texte transparent */
-                                        font-size: 48px;
-                                        font-family: Arial, sans-serif;
-                                        pointer-events: none; /* Empêche l'interaction avec le texte */
-                                        user-select: none; /* Rend le texte non sélectionnable */
-                                    ">
-                            Dessinez votre signature ici
+                        <label id="signPadLabel" class="col-form-label"><strong>Vous pouvez dessiner une signature dans le rectangle ci dessous</strong></label>
+                        <div id="signPad">
+                            <div class="signature-pad-background">
+                                Dessinez votre signature ici
+                            </div>
+                            <canvas id="canvas" style="border: 1px solid black;"></canvas>
+                            <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
                         </div>
-                        <canvas id="canvas" style="border: 1px solid black;"></canvas>
-                        <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
-                            Valider la signature
-                        </button>
-                        <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                        <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
-                            Réinitialiser
-                        </button>
-                    </div>
                     </div>
                     <div id="sign-crop" class="mx-auto">
                         <div id="crop-div" class="alert alert-light text-dark text-center" style="display: none;">
@@ -916,41 +924,6 @@
                     </a>
                     </div>
                 </form>
-                <div class="">
-                    <div th:unless="${signImages == null || signImages.size() < 2}">
-                        <label><strong>Mes signatures</strong></label>
-                        <table class="table table-borderless table-striped">
-                            <thead class="table-secondary">
-                            <tr>
-                                <th class="text-left">Aperçu</th>
-                                <th class="text-left">Préférée</th>
-                                <th>Supprimer</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <th:block th:each="signImageId, iterator : ${userImagesIds}">
-                                <tr>
-                                    <td class="text-left w-100" style="position: relative;height: 74px;" >
-                                        <img class="thumbnail" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}"  alt="Image de la signature"/>
-                                    </td>
-                                    <td>
-                                        <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/' + ${iterator.index}" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == iterator.index} ? 'text-warning' : 'text-secondary'">
-                                            <i class="fa-solid fa-star"></i>
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <form th:id="'deleteForm-' + ${signImageId}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users/delete-sign/' + ${signImageId}" th:method="'delete'">
-                                            <button type="submit" th:id="'deleteSign_' + ${signImageId}" th:data-es-id="${signImageId}" class="btn btn-sm btn-danger text-white">
-                                                <i class="fa-solid fa-trash-alt"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            </th:block>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
             </div>
         </div>
     </div>

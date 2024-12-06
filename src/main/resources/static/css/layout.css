@@ -127,7 +127,7 @@ header {
 }
 
 .workspace-margin-top {
-    margin-top: 170px;
+    margin-top: 128px;
 }
 
 .workspace-margin-top-admin {
@@ -211,6 +211,10 @@ header {
 
 .tools-admin {
     top: 128px;
+}
+
+.second-tools {
+    top: 48px;
 }
 
 #ws-tabs {
