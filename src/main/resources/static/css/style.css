@@ -746,6 +746,10 @@ textarea:placeholder-shown.required-field {
     left: 50%;
 }
 
+.opacity-90 {
+    opacity: 0.9;
+}
+
 .div-extra {
     border: 1px solid transparent;
 }

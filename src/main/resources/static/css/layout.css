@@ -147,13 +147,21 @@ header {
 }
 
 .cross-tools {
+    border: 1px solid #ccc;
     left: 0px;
     top: -45px;
-    z-index: 3; opacity: .9;user-select: none;
+    z-index: 10;
+    user-select: none;
     -moz-user-select: none;
     -khtms-user-select: none;
     -webkit-user-select: none;
     -o-user-select: none;
+}
+
+.extra-tools {
+    right: calc(-100% - 20px);
+    top: 40px;
+    position: absolute;
 }
 
 .workflow-btn {
