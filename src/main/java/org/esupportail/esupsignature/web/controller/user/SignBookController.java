@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -443,10 +442,21 @@ public class SignBookController {
                                    @ModelAttribute("authUserEppn") String authUserEppn,
                                    @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey,
                                    @RequestParam("recipientsEmails") List<String> recipientsEmails,
-                                   @RequestParam Integer stepNumber, RedirectAttributes redirectAttributes) throws JsonProcessingException {
+                                   @RequestParam("names") List<String> names,
+                                   @RequestParam("firstnames") List<String> firstnames,
+                                   @RequestParam("phones") List<String> phones,
+                                   @RequestParam(value = "forcesmses", required = false) List<String> forcesmses,
+                                   @RequestParam Integer stepNumber, RedirectAttributes redirectAttributes) {
         List<RecipientWsDto> recipientWsDtos = new ArrayList<>();
         for(String recipientsEmail: recipientsEmails) {
-            recipientWsDtos.add(new RecipientWsDto(recipientsEmail));
+            RecipientWsDto recipientWsDto = new RecipientWsDto(recipientsEmail);
+            recipientWsDto.setName(names.get(recipientsEmails.indexOf(recipientsEmail)));
+            recipientWsDto.setFirstName(firstnames.get(recipientsEmails.indexOf(recipientsEmail)));
+            recipientWsDto.setPhone(phones.get(recipientsEmails.indexOf(recipientsEmail)));
+            if(forcesmses != null) {
+                recipientWsDto.setForceSms(Boolean.parseBoolean(forcesmses.get(recipientsEmails.indexOf(recipientsEmail))));
+            }
+            recipientWsDtos.add(recipientWsDto);
         }
         try {
             signRequestService.replaceRecipientsToWorkflowStep(id, stepNumber, recipientWsDtos);

@@ -94,8 +94,8 @@ public class UserController {
 
 	@PostMapping
 	public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
-						 @RequestParam(value = "name") String name,
-						 @RequestParam(value = "firstname") String firstname,
+						 @RequestParam(value = "name", required = false) String name,
+						 @RequestParam(value = "firstname", required = false) String firstname,
 						 @RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
 						 @RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
 						 @RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,

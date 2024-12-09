@@ -9,8 +9,8 @@ export class UserSignatureCrop extends EventFactory {
         this.zoomLevel = 1;
         this.signPad = document.getElementById('signPad');
         this.signPadLabel = document.getElementById('signPadLabel');
-        this.zoomInButton = document.getElementById('zoomin');
-        this.zoomOutButton = document.getElementById('zoomout');
+        this.zoomInButton = document.getElementById('crop-zoomin');
+        this.zoomOutButton = document.getElementById('crop-zoomout');
         this.vanillaUpload = document.getElementById('vanilla-upload');
         this.vanillaRotate = document.getElementsByClassName('vanilla-rotate');
         this.vanillaCrop = document.getElementById('vanilla-crop');
