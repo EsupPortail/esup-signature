@@ -819,12 +819,12 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="alert alert-warning mb-2" th:if="${signImages == null || signImages.size() < 2}">
+                <div class="alert alert-warning mb-2" th:if="${signImages == null || signImages.size() <= 2}">
                     Vous n’avez pas encore d’image de signature dans votre profil. Merci de saisir à minima vos nom et prénom pour en ajouter une. Vous pouvez aussi dessiner une signature ci-dessous ou importer une image.
                     <br>
                     Après l’enregistrement, vous devrez cliquer de nouveau sur "Mes signature" pour la voir apparaître.
                 </div>
-                <div class="alert alert-light mb-2" th:unless="${signImages == null || signImages.size() < 2}">
+                <div class="alert alert-light mb-2" th:unless="${signImages == null || signImages.size() <= 2}">
                     <h4 class="text-start"><strong>Mes Signatures</strong></h4>
                         <div style="height: 150px;" th:if="${userImagesIds.size() > 0 && userImagesIds.get(0) != null}" id="carouselSign2" class="carousel slide border rounded border-secondary">
                             <div class="carousel-inner">
