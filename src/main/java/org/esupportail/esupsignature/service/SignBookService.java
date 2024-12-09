@@ -354,7 +354,7 @@ public class SignBookService {
         User user = userService.getByEppn(userEppn);
         SignBook signBook = getById(signBookId);
         if(!StringUtils.hasText(signBook.getSubject())) {
-            signBook.setSubject(generateName(signBookId, null, user, false));
+            signBook.setSubject(generateName(signBookId, null, user, false, false));
         }
         signBook.setStatus(SignRequestStatus.draft);
     }
@@ -391,7 +391,7 @@ public class SignBookService {
         signBook.setSubject(subject);
         signBookRepository.save(signBook);
         if(geneateName) {
-            subject = generateName(signBook.getId(), workflow, user, false);
+            subject = generateName(signBook.getId(), workflow, user, false, false);
         }
         signBook.setSubject(subject);
         return signBook;
@@ -868,7 +868,7 @@ public class SignBookService {
             i++;
         }
         if(!StringUtils.hasText(signBook.getSubject())) {
-            signBook.setSubject(generateName(signBookId, null, signBook.getCreateBy(), false));
+            signBook.setSubject(generateName(signBookId, null, signBook.getCreateBy(), false, false));
         }
     }
 
@@ -1294,7 +1294,7 @@ public class SignBookService {
             signRequest.getSignRequestParams().addAll(signRequestParamses);
             signRequestService.addDocsToSignRequest(signRequest, scanSignatureFields, 0, new ArrayList<>(), multipartFile);
         }
-        signBook.setSubject(generateName(signBook.getId(), workflow, user, false));
+        signBook.setSubject(generateName(signBook.getId(), workflow, user, false, false));
         if (targetUrls != null) {
             for (String targetUrl : targetUrls) {
                 if (signBook.getLiveWorkflow().getTargets().stream().noneMatch(t -> t != null && t.getTargetUri().equals(targetUrl))) {
@@ -1647,7 +1647,7 @@ public class SignBookService {
                                                 documentService.exportDocument(documentIOType, targetUrl, attachment, attachment.getFileName());
                                             }
                                         }
-                                        String name = generateName(id, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), true);
+                                        String name = generateName(id, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), true, false);
                                         documentService.exportDocument(documentIOType, targetUrl, signedFile, name);
                                         target.setTargetOk(true);
                                     } catch (EsupSignatureFsException e) {
@@ -1707,7 +1707,7 @@ public class SignBookService {
                 if(signedFile != null) {
                     String subPath = "/" + signRequest.getParentSignBook().getWorkflowName().replaceAll("[^a-zA-Z0-9]", "_") + "/";
                     if (signRequest.getExportedDocumentURI() == null) {
-                        String name = generateName(signBookId, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), true);
+                        String name = generateName(signBookId, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), true, true);
                         String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath, signedFile.getId() + "_" + name);
                         if (documentUri != null) {
                             signRequest.setExportedDocumentURI(documentUri);
@@ -1748,9 +1748,12 @@ public class SignBookService {
     }
 
     @Transactional
-    public String generateName(Long signBookId, Workflow workflow, User user, Boolean target) {
+    public String generateName(Long signBookId, Workflow workflow, User user, Boolean target, Boolean archive) {
         SignBook signBook = getById(signBookId);
         String template = globalProperties.getNamingTemplate();
+        if(archive && StringUtils.hasText(globalProperties.getNamingTemplateArchive())) {
+            template = globalProperties.getNamingTemplateArchive();
+        }
         if(workflow == null) {
             workflow = signBook.getLiveWorkflow().getWorkflow();
         }
@@ -1870,6 +1873,9 @@ public class SignBookService {
                 }
 
             }
+        }
+        if(archive || target) {
+            return template.substring(0, Math.min(template.length(), 256));
         }
         return template;
     }
