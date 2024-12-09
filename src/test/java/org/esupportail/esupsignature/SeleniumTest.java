@@ -147,8 +147,8 @@ public class SeleniumTest {
         WebElement sendPendingButton = wait.until(ExpectedConditions.elementToBeClickable(By.id("send-pending-button")));
         sendPendingButton.click();
         wait.until(ExpectedConditions.invisibilityOf(sendPendingButton));
-        // Click "addSignButton"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("addSignButton"))).click();
+        // Click "addSignButton2"
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("addSignButton2"))).click();
         // Execute JavaScript to store "signRequestId"
         String signRequestId = (String) js.executeScript("return window.location.href.substring(window.location.href.lastIndexOf('/') + 1);");
         // Store attribute "signBookId"

@@ -416,6 +416,7 @@ export class SignRequestParams extends EventFactory {
                 }
                 this.extraOnTop = !this.globalProperties.externalSignatureParams.extraOnTop;
                 this.toggleExtraOnTop();
+                $("#displayMoreTools_" + this.id).remove();
             }
         }
         this.cross.attr("page", this.signPageNumber);
