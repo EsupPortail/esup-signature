@@ -92,8 +92,8 @@ public class SeleniumTest {
         } catch (Exception e) {
             System.out.println("Element non trouvé dans le délai spécifié.");
         }
-        // Cliquer sur le bouton "addSignButton"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("addSignButton"))).click();
+        // Cliquer sur le bouton "addSignButton2"
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("addSignButton2"))).click();
         // Exécuter du JavaScript pour récupérer "signRequestId"
         String signRequestId = (String) js.executeScript("return window.location.href.substring(window.location.href.lastIndexOf('/') + 1);");
         // Récupérer l'attribut "signBookId"
