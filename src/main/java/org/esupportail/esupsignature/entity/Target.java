@@ -52,7 +52,7 @@ public class Target {
                 m.appendReplacement(sb, m.group(0).replaceFirst(Pattern.quote(m.group(1)), "********"));
             }
             m.appendTail(sb);
-            return sb.toString();
+            return sb.toString().replaceAll("\\?.*", "?...");
         }
         return "";
     }
