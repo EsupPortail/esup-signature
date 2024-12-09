@@ -442,17 +442,23 @@ public class SignBookController {
                                    @ModelAttribute("authUserEppn") String authUserEppn,
                                    @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey,
                                    @RequestParam("recipientsEmails") List<String> recipientsEmails,
-                                   @RequestParam("names") List<String> names,
-                                   @RequestParam("firstnames") List<String> firstnames,
-                                   @RequestParam("phones") List<String> phones,
+                                   @RequestParam(value = "names", required = false) List<String> names,
+                                   @RequestParam(value = "firstnames", required = false) List<String> firstnames,
+                                   @RequestParam(value = "phones", required = false) List<String> phones,
                                    @RequestParam(value = "forcesmses", required = false) List<String> forcesmses,
                                    @RequestParam Integer stepNumber, RedirectAttributes redirectAttributes) {
         List<RecipientWsDto> recipientWsDtos = new ArrayList<>();
         for(String recipientsEmail: recipientsEmails) {
             RecipientWsDto recipientWsDto = new RecipientWsDto(recipientsEmail);
-            recipientWsDto.setName(names.get(recipientsEmails.indexOf(recipientsEmail)));
-            recipientWsDto.setFirstName(firstnames.get(recipientsEmails.indexOf(recipientsEmail)));
+            if (names != null) {
+                recipientWsDto.setName(names.get(recipientsEmails.indexOf(recipientsEmail)));
+            }
+            if(firstnames != null) {
+                recipientWsDto.setFirstName(firstnames.get(recipientsEmails.indexOf(recipientsEmail)));
+            }
+            if(phones != null) {
             recipientWsDto.setPhone(phones.get(recipientsEmails.indexOf(recipientsEmail)));
+            }
             if(forcesmses != null) {
                 recipientWsDto.setForceSms(Boolean.parseBoolean(forcesmses.get(recipientsEmails.indexOf(recipientsEmail))));
             }
