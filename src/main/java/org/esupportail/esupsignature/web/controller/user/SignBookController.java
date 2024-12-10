@@ -450,17 +450,18 @@ public class SignBookController {
         List<RecipientWsDto> recipientWsDtos = new ArrayList<>();
         for(String recipientsEmail: recipientsEmails) {
             RecipientWsDto recipientWsDto = new RecipientWsDto(recipientsEmail);
-            if (names != null) {
-                recipientWsDto.setName(names.get(recipientsEmails.indexOf(recipientsEmail)));
+            int index = recipientsEmails.indexOf(recipientsEmail);
+            if (names != null && names.size() > index) {
+                recipientWsDto.setName(names.get(index));
             }
-            if(firstnames != null) {
-                recipientWsDto.setFirstName(firstnames.get(recipientsEmails.indexOf(recipientsEmail)));
+            if(firstnames != null && firstnames.size() > index) {
+                recipientWsDto.setFirstName(firstnames.get(index));
             }
-            if(phones != null) {
-            recipientWsDto.setPhone(phones.get(recipientsEmails.indexOf(recipientsEmail)));
+            if(phones != null && phones.size() > index) {
+                recipientWsDto.setPhone(phones.get(index));
             }
-            if(forcesmses != null) {
-                recipientWsDto.setForceSms(Boolean.parseBoolean(forcesmses.get(recipientsEmails.indexOf(recipientsEmail))));
+            if(forcesmses != null && forcesmses.size() > index) {
+                recipientWsDto.setForceSms(Boolean.parseBoolean(forcesmses.get(index)));
             }
             recipientWsDtos.add(recipientWsDto);
         }
