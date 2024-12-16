@@ -120,7 +120,7 @@ header {
 }
 
 .workspace-sign {
-    margin-top: 128px;
+    margin-top: 170px;
     display: flex;
     margin-left: 5px;
     margin-right: 5px;
@@ -215,6 +215,7 @@ header {
 
 .second-tools {
     top: 48px;
+    z-index: 1;
 }
 
 #ws-tabs {
