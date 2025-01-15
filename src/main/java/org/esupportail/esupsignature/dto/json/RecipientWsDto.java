@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotNull;
 
 public class RecipientWsDto {
 
+    private Long id;
     private Integer step = 1;
     @NotNull
     private String email;
@@ -17,6 +18,19 @@ public class RecipientWsDto {
 
     public RecipientWsDto(String email) {
         this.email = email;
+    }
+
+    public RecipientWsDto(Long id, String email) {
+        this.id = id;
+        this.email = email;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Integer getStep() {

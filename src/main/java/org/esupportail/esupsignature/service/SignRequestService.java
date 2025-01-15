@@ -1268,6 +1268,6 @@ public class SignRequestService {
 
     public List<RecipientWsDto> getExternalRecipients(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
-		return signRequest.getParentSignBook().getTeam().stream().filter(user -> user.getUserType().equals(UserType.external)).map(user -> new RecipientWsDto(user.getEmail())).collect(Collectors.toList());
+		return signRequest.getParentSignBook().getTeam().stream().filter(user -> user.getUserType().equals(UserType.external)).map(user -> new RecipientWsDto(user.getId(), user.getEmail())).collect(Collectors.toList());
     }
 }
