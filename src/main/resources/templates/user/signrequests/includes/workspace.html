@@ -154,7 +154,7 @@
             </button>
         </div>
         <div id="extraTools_x" class="alert opacity-100 bg-light border-secondary-subtle extra-tools d-flex flex-column d-none text-start gap-1" onclick="event.stopPropagation();">
-            <input id="signColorPicker_x" value='#000000'/>
+            <input id="signColorPicker_x" value='#000000' class="d-none"/>
             <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="watermark_x"
                     title="Filigrane"
                     class="btn btn-sm btn-light text-start"

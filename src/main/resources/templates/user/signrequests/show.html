@@ -732,6 +732,40 @@
     </div>
 </div>
 
+<div data-bs-focus="false" class="modal fade" id="sendLinkModal"  role="dialog" aria-labelledby="sendLinkLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="sendLinkLabel">Details de la demande</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-striped">
+                    <tr>
+                        <th>Email</th>
+                        <th>Actions</th>
+                    </tr>
+                <th:block th:each="extrenalRecipient : ${extrenalsRecipients}">
+                    <tr>
+                        <td th:text="${extrenalRecipient.email}"></td>
+                        <td>
+                            <form th:action="'/user/signrequests/send-otp/' + ${signRequest.parentSignBook.id} + '/' + ${extrenalRecipient.id}" method="post">
+                                <input type="text" name="phone" class="form-control" placeholder="Numéro de mobile" th:value="${extrenalRecipient.phone}" th:if="${globalProperties.smsRequired}">
+                                <br>
+                                <button type="submit" class="btn btn-success" title="Envoyer un nouveau lien d'accès">Envoyer</button>
+                            </form>
+                        </td>
+                    </tr>
+                </th:block>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div data-bs-focus="false" class="modal fade" id="forwardModal"  role="dialog" aria-labelledby="forwardModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
