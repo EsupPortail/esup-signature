@@ -1180,24 +1180,29 @@ public class SignBookService {
             userShareId = Long.valueOf(userShareString.toString());
         }
         for (Long id : idsLong) {
-            SignRequest signRequest = signRequestService.getById(id);
-            if (!signRequest.getStatus().equals(SignRequestStatus.pending)) {
-                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.badStatus);
-            } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().noneMatch(r -> r.getUser().getEppn().equals(authUserEppn))) {
-                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.userNotInCurrentStep);
-                error = messageSource.getMessage("report.reportstatus." + ReportStatus.userNotInCurrentStep, null, Locale.FRENCH);
-            } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().getValue() > SignWith.valueOf(signWith).getValue()) {
-                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signTypeNotCompliant);
-                error = messageSource.getMessage("report.reportstatus." + ReportStatus.signTypeNotCompliant, null, Locale.FRENCH);
-            } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty() && SignWith.valueOf(signWith).equals(SignWith.imageStamp)) {
-                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.noSignField);
-                error = messageSource.getMessage("report.reportstatus." + ReportStatus.noSignField, null, Locale.FRENCH);
-            } else if (signRequest.getStatus().equals(SignRequestStatus.pending) && initSign(id,null, null, null, password, signWith, userShareId, userEppn, authUserEppn) != null) {
-                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signed);
-                error = null;
+            SignRequest selectedSignRequest = signRequestService.getById(id);
+            List<StepStatus> stepStatuses = new ArrayList<>();
+            for(SignRequest signRequest : selectedSignRequest.getParentSignBook().getSignRequests()) {
+                if (!signRequest.getStatus().equals(SignRequestStatus.pending)) {
+                    reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.badStatus);
+                } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().noneMatch(r -> r.getUser().getEppn().equals(authUserEppn))) {
+                    reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.userNotInCurrentStep);
+                    error = messageSource.getMessage("report.reportstatus." + ReportStatus.userNotInCurrentStep, null, Locale.FRENCH);
+                } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().getValue() > SignWith.valueOf(signWith).getValue()) {
+                    reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signTypeNotCompliant);
+                    error = messageSource.getMessage("report.reportstatus." + ReportStatus.signTypeNotCompliant, null, Locale.FRENCH);
+                } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty() && SignWith.valueOf(signWith).equals(SignWith.imageStamp)) {
+                    reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.noSignField);
+                    error = messageSource.getMessage("report.reportstatus." + ReportStatus.noSignField, null, Locale.FRENCH);
+                } else if (signRequest.getStatus().equals(SignRequestStatus.pending)) {
+                    stepStatuses.add(initSign(id, null, null, null, password, signWith, userShareId, userEppn, authUserEppn));
+                    reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signed);
+                } else {
+                    reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.error);
+                }
             }
-            else {
-                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.error);
+            if(!stepStatuses.stream().allMatch(s -> s.equals(StepStatus.completed))) {
+                error = messageSource.getMessage("report.reportstatus." + ReportStatus.error, null, Locale.FRENCH);
             }
         }
         return error;
