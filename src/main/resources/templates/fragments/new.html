@@ -65,7 +65,7 @@
                                     <div class="crop">
                                         <i class="fa-solid fa-project-diagram fa-3x project-diagram-color"></i>
                                     </div>
-                                    <span class="h7" th:text="'Circuit : ' + ${workflow.description}"></span>
+                                    <span class="h7" th:text="${workflow.description}"></span>
                                 </a><br/>
                                 <button title="Éditer le circuit" style="margin-left: 90px; margin-top: -68px;" class="btn btn-transparent btn-sm text-dark toggle-mini-menu rounded-0"
                                         th:if="${workflow.createBy.eppn == userEppn}" type="button" th:id="'menu-toggle_' + ${workflow.id}"
