@@ -304,7 +304,7 @@ export class SignRequestParams extends EventFactory {
         this.moreTools = $("#moreTools_" + this.id);
         this.defaultTools = $("#defaultTools_" + this.id);
         if(this.isSign) {
-            this.createColorPicker();
+            // this.createColorPicker();
         } else {
             this.toggleMinimalTools();
         }

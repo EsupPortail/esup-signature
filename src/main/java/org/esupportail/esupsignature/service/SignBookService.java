@@ -1035,7 +1035,7 @@ public class SignBookService {
             for (Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
                 if (recipient.getUser().getUserType().equals(UserType.external)) {
                     try {
-                        otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), null);
+                        otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), null, true);
                     } catch (EsupSignatureMailException e) {
                         throw new EsupSignatureRuntimeException(e.getMessage());
                     }
@@ -1050,7 +1050,12 @@ public class SignBookService {
         if (!signBook.getCreateBy().equals(userService.getSchedulerUser())) {
             try {
                 mailService.sendCompletedMail(signBook, userEppn);
-                mailService.sendCompletedCCMail(signBook);
+                if(signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().getSendAlertToAllRecipients()) {
+                    mailService.sendCompletedCCMail(signBook, userEppn);
+                    for(User externalUser : signBook.getTeam().stream().filter(u -> u.getUserType().equals(UserType.external)).toList()) {
+                        otpService.generateOtpForSignRequest(signBook.getId(), externalUser.getId(), externalUser.getPhone(), false);
+                    }
+                }
             } catch (EsupSignatureMailException e) {
                 throw new EsupSignatureRuntimeException(e.getMessage());
             }
@@ -1180,24 +1185,29 @@ public class SignBookService {
             userShareId = Long.valueOf(userShareString.toString());
         }
         for (Long id : idsLong) {
-            SignRequest signRequest = signRequestService.getById(id);
-            if (!signRequest.getStatus().equals(SignRequestStatus.pending)) {
-                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.badStatus);
-            } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().noneMatch(r -> r.getUser().getEppn().equals(authUserEppn))) {
-                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.userNotInCurrentStep);
-                error = messageSource.getMessage("report.reportstatus." + ReportStatus.userNotInCurrentStep, null, Locale.FRENCH);
-            } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().getValue() > SignWith.valueOf(signWith).getValue()) {
-                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signTypeNotCompliant);
-                error = messageSource.getMessage("report.reportstatus." + ReportStatus.signTypeNotCompliant, null, Locale.FRENCH);
-            } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty() && SignWith.valueOf(signWith).equals(SignWith.imageStamp)) {
-                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.noSignField);
-                error = messageSource.getMessage("report.reportstatus." + ReportStatus.noSignField, null, Locale.FRENCH);
-            } else if (signRequest.getStatus().equals(SignRequestStatus.pending) && initSign(id,null, null, null, password, signWith, userShareId, userEppn, authUserEppn) != null) {
-                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signed);
-                error = null;
+            SignRequest selectedSignRequest = signRequestService.getById(id);
+            List<StepStatus> stepStatuses = new ArrayList<>();
+            for(SignRequest signRequest : selectedSignRequest.getParentSignBook().getSignRequests()) {
+                if (!signRequest.getStatus().equals(SignRequestStatus.pending)) {
+                    reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.badStatus);
+                } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().noneMatch(r -> r.getUser().getEppn().equals(authUserEppn))) {
+                    reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.userNotInCurrentStep);
+                    error = messageSource.getMessage("report.reportstatus." + ReportStatus.userNotInCurrentStep, null, Locale.FRENCH);
+                } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().getValue() > SignWith.valueOf(signWith).getValue()) {
+                    reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signTypeNotCompliant);
+                    error = messageSource.getMessage("report.reportstatus." + ReportStatus.signTypeNotCompliant, null, Locale.FRENCH);
+                } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty() && SignWith.valueOf(signWith).equals(SignWith.imageStamp)) {
+                    reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.noSignField);
+                    error = messageSource.getMessage("report.reportstatus." + ReportStatus.noSignField, null, Locale.FRENCH);
+                } else if (signRequest.getStatus().equals(SignRequestStatus.pending)) {
+                    stepStatuses.add(initSign(id, null, null, null, password, signWith, userShareId, userEppn, authUserEppn));
+                    reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signed);
+                } else {
+                    reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.error);
+                }
             }
-            else {
-                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.error);
+            if(!stepStatuses.stream().allMatch(s -> s.equals(StepStatus.completed))) {
+                error = messageSource.getMessage("report.reportstatus." + ReportStatus.error, null, Locale.FRENCH);
             }
         }
         return error;
@@ -2004,7 +2014,7 @@ public class SignBookService {
                     List<Recipient> recipients = signRequest.getRecipientHasSigned().keySet().stream().filter(r -> r.getUser().getUserType().equals(UserType.external)).toList();
                     for (Recipient recipient : recipients) {
                         try {
-                            otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), recipient.getUser().getPhone());
+                            otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), recipient.getUser().getPhone(), true);
                             return true;
                         } catch (EsupSignatureMailException e) {
                             logger.error(e.getMessage());

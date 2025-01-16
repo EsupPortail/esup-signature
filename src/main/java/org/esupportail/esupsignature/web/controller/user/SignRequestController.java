@@ -207,6 +207,9 @@ public class SignRequestController {
         if(!toSignDocuments.isEmpty()) {
             model.addAttribute("pdfaCheck", toSignDocuments.get(0).getPdfaCheck());
         }
+        if(signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.completed) || signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.archived) || signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.exported)) {
+            model.addAttribute("extrenalsRecipients", signRequestService.getExternalRecipients(signRequest.getId()));
+        }
         return "user/signrequests/show";
     }
 
@@ -386,7 +389,23 @@ public class SignRequestController {
                           @PathVariable("recipientId") Long recipientId,
                           @RequestParam(value = "phone", required = false) String phone,
                           RedirectAttributes redirectAttributes) {
-        if(otpService.generateOtpForSignRequest(id, recipientId, phone)){
+        if(otpService.generateOtpForSignRequest(id, recipientId, phone, true)){
+            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Demande OTP envoyée"));
+        } else {
+            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Problème d'envoi OTP"));
+        }
+        return "redirect:/user/signbooks/" + id;
+    }
+
+
+    @PreAuthorize("@preAuthorizeService.signBookSendOtp(#id, #authUserEppn)")
+    @PostMapping(value = "/send-otp-download/{id}/{recipientId}")
+    public String sendOtpDownload(@ModelAttribute("authUserEppn") String authUserEppn,
+                          @PathVariable("id") Long id,
+                          @PathVariable("recipientId") Long recipientId,
+                          @RequestParam(value = "phone", required = false) String phone,
+                          RedirectAttributes redirectAttributes) {
+        if(otpService.generateOtpForSignRequest(id, recipientId, phone, false)){
             redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Demande OTP envoyée"));
         } else {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Problème d'envoi OTP"));

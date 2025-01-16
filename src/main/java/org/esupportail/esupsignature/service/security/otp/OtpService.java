@@ -66,7 +66,7 @@ public class OtpService {
     }
 
     @Transactional
-    public boolean generateOtpForSignRequest(Long id, Long extUserId, String phone) throws EsupSignatureMailException {
+    public boolean generateOtpForSignRequest(Long id, Long extUserId, String phone, boolean signature) throws EsupSignatureMailException {
         User extUser = userService.getById(extUserId);
         if(extUser.getUserType().equals(UserType.external) && (!globalProperties.getSmsRequired() || smsService != null)) {
             SignBook signBook = signBookRepository.findById(id).get();
@@ -90,7 +90,7 @@ public class OtpService {
                 userService.updatePhone(extUser.getEppn(), phone);
             }
             otpRepository.save(otp);
-            mailService.sendOtp(otp, urlId, signBook);
+            mailService.sendOtp(otp, urlId, signBook, signature);
             logger.info("new url for otp : " + urlId);
             return true;
         } else {

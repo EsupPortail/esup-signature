@@ -311,7 +311,6 @@ public class SignService {
 	public void fillCommonsParameters(AbstractSignatureParameters<?> parameters, AbstractSignatureForm form) {
 		parameters.setSignatureLevel(form.getSignatureLevel());
 		parameters.setDigestAlgorithm(form.getDigestAlgorithm());
-		parameters.setSignWithExpiredCertificate(form.isSignWithExpiredCertificate());
 		parameters.bLevel().setSigningDate(form.getSigningDate());
 		parameters.bLevel().setClaimedSignerRoles(List.of("Manager"));
 		if(StringUtils.hasText(dssProperties.getCountry())) {
