@@ -1050,7 +1050,7 @@ public class SignBookService {
         if (!signBook.getCreateBy().equals(userService.getSchedulerUser())) {
             try {
                 mailService.sendCompletedMail(signBook, userEppn);
-                if(signBook.getLiveWorkflow().getWorkflow().getSendAlertToAllRecipients()) {
+                if(signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().getSendAlertToAllRecipients()) {
                     mailService.sendCompletedCCMail(signBook, userEppn);
                     for(User externalUser : signBook.getTeam().stream().filter(u -> u.getUserType().equals(UserType.external)).toList()) {
                         otpService.generateOtpForSignRequest(signBook.getId(), externalUser.getId(), externalUser.getPhone(), false);
