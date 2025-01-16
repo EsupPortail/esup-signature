@@ -1035,7 +1035,7 @@ public class SignBookService {
             for (Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
                 if (recipient.getUser().getUserType().equals(UserType.external)) {
                     try {
-                        otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), null);
+                        otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), null, true);
                     } catch (EsupSignatureMailException e) {
                         throw new EsupSignatureRuntimeException(e.getMessage());
                     }
@@ -1050,7 +1050,12 @@ public class SignBookService {
         if (!signBook.getCreateBy().equals(userService.getSchedulerUser())) {
             try {
                 mailService.sendCompletedMail(signBook, userEppn);
-                mailService.sendCompletedCCMail(signBook);
+                if(signBook.getLiveWorkflow().getWorkflow().getSendAlertToAllRecipients()) {
+                    mailService.sendCompletedCCMail(signBook, userEppn);
+                    for(User externalUser : signBook.getTeam().stream().filter(u -> u.getUserType().equals(UserType.external)).toList()) {
+                        otpService.generateOtpForSignRequest(signBook.getId(), externalUser.getId(), externalUser.getPhone(), false);
+                    }
+                }
             } catch (EsupSignatureMailException e) {
                 throw new EsupSignatureRuntimeException(e.getMessage());
             }
@@ -2009,7 +2014,7 @@ public class SignBookService {
                     List<Recipient> recipients = signRequest.getRecipientHasSigned().keySet().stream().filter(r -> r.getUser().getUserType().equals(UserType.external)).toList();
                     for (Recipient recipient : recipients) {
                         try {
-                            otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), recipient.getUser().getPhone());
+                            otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), recipient.getUser().getPhone(), true);
                             return true;
                         } catch (EsupSignatureMailException e) {
                             logger.error(e.getMessage());
