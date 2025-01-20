@@ -224,7 +224,7 @@ public class MailService {
             addInLineImages(mimeMessage, htmlContent);
             mimeMessage.setSubject("Une demande de signature que vous suivez est terminée");
             if (!signBook.getTeam().isEmpty()) {
-                mimeMessage.setTo(signBook.getTeam().stream().filter(userTo -> !userTo.getUserType().equals(UserType.external) && !userTo.getEppn().equals(userEppn)).map(User::getEmail).toArray(String[]::new));
+                mimeMessage.setTo(signBook.getTeam().stream().filter(userTo -> !userTo.getUserType().equals(UserType.external) && !userTo.getUserType().equals(UserType.system) && !userTo.getEppn().equals(userEppn)).map(User::getEmail).toArray(String[]::new));
                 logger.info("send email completes cc for " + user.getEppn());
                 sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
             } else {
