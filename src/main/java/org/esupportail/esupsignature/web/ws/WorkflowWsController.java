@@ -51,17 +51,15 @@ public class WorkflowWsController {
 
     private final SignBookService signBookService;
 
-    private final SignRequestParamsService signRequestParamsService;
 
     private final RecipientService recipientService;
     private final UserService userService;
 
 
-    public WorkflowWsController(WorkflowService workflowService, WorkflowExportService workflowExportService, SignBookService signBookService, SignRequestParamsService signRequestParamsService, RecipientService recipientService, UserService userService) {
+    public WorkflowWsController(WorkflowService workflowService, WorkflowExportService workflowExportService, SignBookService signBookService, RecipientService recipientService, UserService userService) {
         this.workflowService = workflowService;
         this.workflowExportService = workflowExportService;
         this.signBookService = signBookService;
-        this.signRequestParamsService = signRequestParamsService;
         this.recipientService = recipientService;
         this.userService = userService;
     }

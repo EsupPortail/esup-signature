@@ -1265,4 +1265,9 @@ public class SignRequestService {
 		LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber - 1);
 		liveWorkflowStepService.replaceRecipientsToWorkflowStep(signBook, liveWorkflowStep, recipientWsDtos);
 	}
+
+    public List<RecipientWsDto> getExternalRecipients(Long signRequestId) {
+		SignRequest signRequest = getById(signRequestId);
+		return signRequest.getParentSignBook().getTeam().stream().filter(user -> user.getUserType().equals(UserType.external)).map(user -> new RecipientWsDto(user.getId(), user.getEmail())).collect(Collectors.toList());
+    }
 }

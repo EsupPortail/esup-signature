@@ -169,23 +169,13 @@
                                             <div class="alert alert-info">
                                                 <small> Après avoir sélectionné une image, vous pourrez ajuster sa
                                                     taille pour
-                                                    que la signature entre dans le carré blanc. Si votre signature
-                                                    est grande
-                                                    (contient un tampon par exemple), il est possible
-                                                    d'élargir
-                                                    le carré blanc (la signature prendra plus de place sur le
-                                                    document) <br/>
-                                                    Une image de la signature sera toujours nécessaire pour signer
-                                                    un PDF
+                                                    que la signature entre dans le carré blanc. La résolution de l’image sera de 600*300 pixels.
                                                 </small>
                                             </div>
                                         </div>
                                     </label>
                                     <div class="mx-auto mb-1" style="width: 600px;">
                                         <input type="file" class="form-control" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
-                                        <label class="custom-file-label" for="vanilla-upload">
-                                            Choisissez une nouvelle image
-                                        </label>
                                     </div>
                                     <br/>
                                     <label id="signPadLabel" class="col-form-label"><strong>Vous pouvez dessiner une signature dans le rectangle ci dessous</strong></label>
@@ -221,14 +211,12 @@
                                     <div id="sign-crop" class="mx-auto">
                                     <div id="crop-div" class="alert alert-light text-dark text-center" style="display: none;">
                                         <div class="d-flex justify-content-center">
-                                            <button type="button" id="zoomout"
+                                            <button type="button" id="crop-zoomout"
                                                     class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
-                                                <i
-                                                        class="fa-solid fa-search-minus"></i></button>
-                                            <button type="button" id="zoomin"
+                                                <i class="fa-solid fa-search-minus"></i></button>
+                                            <button type="button" id="crop-zoomin"
                                                     class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
-                                                <i
-                                                        class="fa-solid fa-search-plus"></i></button>
+                                                <i class="fa-solid fa-search-plus"></i></button>
                                             <button type="button"
                                                     class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
                                                     data-deg="90"><i class="fa-solid fa-undo"></i></button>

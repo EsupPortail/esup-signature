@@ -165,7 +165,7 @@
                                 <div class="form-group mb-3">
                                     <label><strong>Choix du certificat</strong></label>
                                     <select class="slim-select-simple" name="certificatId" id="certificatId">
-                                        <option class="text-break" style="word-break: break-all;" value="" th:if="${globalProperties.sealCertificatType != null}">Certificat cachet de l’établissement</option>
+                                        <option class="text-break" style="overflow: hidden;text-overflow: ellipsis;" value="" th:if="${globalProperties.sealCertificatType != null}">Certificat cachet de l’établissement</option>
                                         <th:block th:each="certificat : ${certificats}">
                                             <option th:text="${certificat.keystore.fileName}" th:value="${certificat.id}"></option>
                                         </th:block>

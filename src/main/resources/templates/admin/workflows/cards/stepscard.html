@@ -39,7 +39,7 @@
                                         <br>
                                         <select class="form-select" name="certificatId" th:id="'certificatId_' + ${workflowStep.id}" data-placeholder="Choix du certificat">
                                             <option data-placeholder="true" disabled>Choisir un certificat</option>
-                                            <option class="text-break" style="word-break: break-all;" value="" th:if="${globalProperties.sealCertificatType != null}" th:selected="${workflowStep.certificat == null}">Certificat cachet de l’établissement</option>
+                                            <option class="text-break" style="overflow: hidden;text-overflow: ellipsis;" value="" th:if="${globalProperties.sealCertificatType != null}" th:selected="${workflowStep.certificat == null}">Certificat cachet de l’établissement</option>
                                             <th:block th:each="certificat : ${certificats}">
                                                 <option th:text="${certificat.keystore.fileName.substring(0, 50)}" th:value="${certificat.id}" th:selected="${workflowStep.certificat != null && workflowStep.certificat.id == certificat.id}"></option>
                                             </th:block>

@@ -20,7 +20,6 @@ import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLdap;
 import org.esupportail.esupsignature.service.utils.file.FileService;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -209,7 +208,7 @@ public class MailService {
     }
 
     @Transactional
-    public void sendCompletedCCMail(SignBook signBook) throws EsupSignatureMailException {
+    public void sendCompletedCCMail(SignBook signBook, String userEppn) throws EsupSignatureMailException {
         if (!checkMailSender()) {
             return;
         }
@@ -224,15 +223,8 @@ public class MailService {
             String htmlContent = templateEngine.process("mail/email-completed-cc.html", ctx);
             addInLineImages(mimeMessage, htmlContent);
             mimeMessage.setSubject("Une demande de signature que vous suivez est terminée");
-            List<User> viewersArray = getViewers(signBook);
-            if (!viewersArray.isEmpty()) {
-                String[] to = new String[viewersArray.size()];
-                int i = 0;
-                for (User userTo : viewersArray) {
-                    to[i] = userTo.getEmail();
-                    i++;
-                }
-                mimeMessage.setTo(to);
+            if (!signBook.getTeam().isEmpty()) {
+                mimeMessage.setTo(signBook.getTeam().stream().filter(userTo -> !userTo.getUserType().equals(UserType.external) && !userTo.getUserType().equals(UserType.system) && !userTo.getEppn().equals(userEppn)).map(User::getEmail).toArray(String[]::new));
                 logger.info("send email completes cc for " + user.getEppn());
                 sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
             } else {
@@ -241,29 +233,6 @@ public class MailService {
         } catch (MailSendException | MessagingException e) {
             logger.error("unable to send email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
-        }
-    }
-
-    @NotNull
-    private List<User> getViewers(SignBook signBook) {
-        List<User> viewersArray = new ArrayList<>(signBook.getViewers());
-        if(signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().getSendAlertToAllRecipients() != null && signBook.getLiveWorkflow().getWorkflow().getSendAlertToAllRecipients()) {
-            List<LiveWorkflowStep> liveWorkflowSteps = signBook.getLiveWorkflow().getLiveWorkflowSteps();
-            for (LiveWorkflowStep liveWorkflowStep : liveWorkflowSteps) {
-                List<Recipient> recipients = liveWorkflowStep.getRecipients();
-                for (Recipient recipient : recipients) {
-                    User user1 = userService.getById(recipient.getUser().getId());
-                    if (!viewersArray.contains(user1)) {
-                        viewersArray.add(user1);
-                    }
-                }
-            }
-        }
-        if(!signBook.getLiveWorkflow().getLiveWorkflowSteps().isEmpty()) {
-            viewersArray.removeAll(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() - 1).getRecipients().stream().filter(Recipient::getSigned).map(Recipient::getUser).toList());
-            return viewersArray;
-        } else {
-            return new ArrayList<>();
         }
     }
 
@@ -430,7 +399,7 @@ public class MailService {
 
     }
 
-    public void sendOtp(Otp otp, String urlId, SignBook signBook) throws EsupSignatureMailException {
+    public void sendOtp(Otp otp, String urlId, SignBook signBook, boolean signature) throws EsupSignatureMailException {
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("url", globalProperties.getRootUrl() + "/otp-access/first/" + urlId);
         ctx.setVariable("signBook", signBook);
@@ -439,9 +408,13 @@ public class MailService {
         setTemplate(ctx);
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
-            String htmlContent = templateEngine.process("mail/email-otp.html", ctx);
+            String htmlContent = templateEngine.process("mail/email-otp-download.html", ctx);
+            mimeMessage.setSubject("Un document émanant de " + messageSource.getMessage("application.footer", null, Locale.FRENCH) + " est disponible au téléchargement");
+            if(signature) {
+                htmlContent = templateEngine.process("mail/email-otp.html", ctx);
+                mimeMessage.setSubject("Vous avez un document à signer émanant de " + messageSource.getMessage("application.footer", null, Locale.FRENCH));
+            }
             addInLineImages(mimeMessage, htmlContent);
-            mimeMessage.setSubject("Vous avez un document à signer émanant de " + messageSource.getMessage("application.footer", null, Locale.FRENCH));
             mimeMessage.setTo(otp.getUser().getEmail());
             logger.info("send email otp for " + otp.getUser().getEmail());
             sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());

@@ -98,10 +98,10 @@ public class GlobalProperties {
 
     /**
      *Le modèle est construit à l'aide d'attributs entre crochets.
-     *default : [title]
+     *default : [title] : Titre caluler au moment de l'import
      *Les attributs disponibles sont :
      *<ul>
-     *  <li>[title] : titre du document original</li>
+     *  <li>[originalFileName] : titre du document original</li>
      *  <li>[id] : identifiant du parapheur</li>
      *  <li>[worflowName] : nom du circuit</li>
      *  <li>[user.name] : nom prénom de l'utilisateur courant</li>
@@ -115,6 +115,27 @@ public class GlobalProperties {
      *</ul>
      */
     private String namingTemplate = "[title]";
+
+    /**
+     *Le modèle est construit à l'aide d'attributs entre crochets.
+     *default : [title] : Titre caluler au moment de l'import
+     *Les attributs disponibles sont :
+     *<ul>
+     *  <li>[originalFileName] : titre du document original</li>
+     *  <li>[id] : identifiant du parapheur</li>
+     *  <li>[worflowName] : nom du circuit</li>
+     *  <li>[user.name] : nom prénom de l'utilisateur courant</li>
+     *  <li>[user.eppn] : eppn de l'utilisateur courant</li>
+     *  <li>[user.initials] : initiales de l'utilisateur courant</li>
+     *  <li>[UUID] : un identifiant unique</li>
+     *  <li>[order] : le numéro d'ordre de création pour un même circuit</li>
+     *  <li>[timestamp] : timestamp sous forme de long</li>
+     *  <li>[date-fr] : date dd/MM/yyyy hh:mm</li>
+     *  <li>[date-en] : date yyyy-MM-dd hh:mm</li>
+     *</ul>
+     */
+    private String namingTemplateArchive = "[title]";
+
     /**
      * Suffix ajouté aux documents signés
      */
@@ -487,6 +508,14 @@ public class GlobalProperties {
 
     public void setNamingTemplate(String namingTemplate) {
         this.namingTemplate = namingTemplate;
+    }
+
+    public String getNamingTemplateArchive() {
+        return namingTemplateArchive;
+    }
+
+    public void setNamingTemplateArchive(String namingTemplateArchive) {
+        this.namingTemplateArchive = namingTemplateArchive;
     }
 
     public String getSignedSuffix() {

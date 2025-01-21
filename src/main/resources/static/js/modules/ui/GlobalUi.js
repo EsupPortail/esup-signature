@@ -277,6 +277,7 @@ export class GlobalUi {
     }
 
     hideMenus(event) {
+        $("#second-tools").collapse('hide');
         var clickover = $(event.target);
         $("div[id^='menu-']").each(function() {
             var _opened = $(this).hasClass("collapse show");
@@ -290,6 +291,7 @@ export class GlobalUi {
         if (_opened === true && container !== event.target && !container.contains(event.target)) {
             $("#user-infos").collapse('hide');
         }
+
     }
 
     resetMode() {

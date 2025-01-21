@@ -60,8 +60,8 @@
                                     <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
                                         <tr>
                                             <td th:title="${recipient.user.email}">
-                                                <span th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
-                                                <span th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.email}"></span>
+                                                <span th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" style="overflow: hidden;text-overflow: ellipsis;" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                                <span th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" style="overflow: hidden;text-overflow: ellipsis;" th:text="${recipient.user.email}"></span>
                                                 <br/>
                                                 <small th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" th:text="'Le ' + ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}"></small>
                                             </td>
@@ -87,7 +87,7 @@
                             <div class="step border border-dark rounded">
                                 <div title="Fin" class="bs-stepper-circle bg-success">
                                     <i class="fa-solid fa-flag-checkered"></i></div>
-                                <div class="bs-stepper-label text-break">La procédure est terminée. Les intervenants ont été informés par mail</div>
+                                <div class="bs-stepper-label text-break">La procédure est terminée. <span th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">Les intervenants ont été informés par mail</span></div>
                             </div>
                         </th:block>
                         <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
@@ -95,7 +95,7 @@
                             <div class="step border border-dark rounded">
                                 <div title="Fin" class="bs-stepper-circle bg-danger">
                                     <i class="fa-solid fa-exclamation-triangle"></i></div>
-                                <div class="bs-stepper-label text-break">La procédure est terminée. Les intervenants ont été informés par mail</div>
+                                <div class="bs-stepper-label text-break">La procédure est terminée. <span th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">Les intervenants ont été informés par mail</span></div>
                             </div>
                         </th:block>
                     </div>
