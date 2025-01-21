@@ -128,7 +128,7 @@
                             <div class="step border border-dark rounded">
                                 <div title="Fin" class="bs-stepper-circle bg-success">
                                     <i class="fa-solid fa-flag-checkered"></i></div>
-                                <div class="bs-stepper-label text-break">La procédure est terminée. Les intervenants ont été informés par mail</div>
+                                <div class="bs-stepper-label text-break">La procédure est terminée. <span th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">Les intervenants ont été informés par mail</span></div>
                             </div>
                         </th:block>
                         <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
@@ -136,7 +136,7 @@
                             <div class="step border border-dark rounded">
                                 <div title="Fin" class="bs-stepper-circle bg-danger">
                                     <i class="fa-solid fa-exclamation-triangle"></i></div>
-                                <div class="bs-stepper-label text-break">La procédure est terminée. Les intervenants ont été informés par mail</div>
+                                <div class="bs-stepper-label text-break">La procédure est terminée. <span th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">Les intervenants ont été informés par mail</span></div>
                             </div>
                         </th:block>
                     </div>
