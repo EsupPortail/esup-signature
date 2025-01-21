@@ -107,7 +107,7 @@ public class ValidationService {
         if(containsBadSignature
             || revocationToken == null
             || !certificateVerifier.getRevocationDataVerifier().isAcceptable(revocationToken)
-            || (!certificateToken.isValidOn(new Date()) && parameters.isSignWithExpiredCertificate())) {
+            || (!certificateToken.isValidOn(new Date()) && signatureDocumentForm.isSignWithExpiredCertificate())) {
             logger.warn("LT or LTA signature level not supported, switching to T level");
             if(parameters.getSignatureLevel().name().contains("_LT") || parameters.getSignatureLevel().name().contains("_LTA")) {
                 String newLevel = parameters.getSignatureLevel().name().replace("_LTA", "_T");

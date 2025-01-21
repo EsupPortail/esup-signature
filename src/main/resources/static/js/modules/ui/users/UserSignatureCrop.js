@@ -9,8 +9,8 @@ export class UserSignatureCrop extends EventFactory {
         this.zoomLevel = 1;
         this.signPad = document.getElementById('signPad');
         this.signPadLabel = document.getElementById('signPadLabel');
-        this.zoomInButton = document.getElementById('zoomin');
-        this.zoomOutButton = document.getElementById('zoomout');
+        this.zoomInButton = document.getElementById('crop-zoomin');
+        this.zoomOutButton = document.getElementById('crop-zoomout');
         this.vanillaUpload = document.getElementById('vanilla-upload');
         this.vanillaRotate = document.getElementsByClassName('vanilla-rotate');
         this.vanillaCrop = document.getElementById('vanilla-crop');
@@ -30,6 +30,7 @@ export class UserSignatureCrop extends EventFactory {
             mouseWheelZoom: true
         });
         this.events = {};
+        this.signImageBase64 = "";
         this.initListeners();
     }
 
@@ -47,7 +48,7 @@ export class UserSignatureCrop extends EventFactory {
 
     update() {
         let result = this.getResult();
-        result.then(this.saveVanilla);
+        result.then(e => this.saveVanilla(e));
     }
 
     rotate(elem) {
@@ -72,6 +73,7 @@ export class UserSignatureCrop extends EventFactory {
     }
 
     saveVanilla(result) {
+        this.signImageBase64 = result;
         $("#signImageBase64").val(result);
     }
 

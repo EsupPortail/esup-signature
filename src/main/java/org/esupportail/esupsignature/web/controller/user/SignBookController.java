@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -424,7 +423,12 @@ public class SignBookController {
     public ResponseEntity<Boolean> deleteMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<Long> ids, RedirectAttributes redirectAttributes) {
         for(Long id : ids) {
             if(preAuthorizeService.signBookManage(id, authUserEppn)) {
-                signBookService.delete(id, authUserEppn);
+                try {
+                    signBookService.delete(id, authUserEppn);
+                } catch (EsupSignatureRuntimeException e) {
+                    logger.warn("error while deleting signBook : " + id, e);
+                }
+
             }
         }
         redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
@@ -438,10 +442,28 @@ public class SignBookController {
                                    @ModelAttribute("authUserEppn") String authUserEppn,
                                    @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey,
                                    @RequestParam("recipientsEmails") List<String> recipientsEmails,
-                                   @RequestParam Integer stepNumber, RedirectAttributes redirectAttributes) throws JsonProcessingException {
+                                   @RequestParam(value = "names", required = false) List<String> names,
+                                   @RequestParam(value = "firstnames", required = false) List<String> firstnames,
+                                   @RequestParam(value = "phones", required = false) List<String> phones,
+                                   @RequestParam(value = "forcesmses", required = false) List<String> forcesmses,
+                                   @RequestParam Integer stepNumber, RedirectAttributes redirectAttributes) {
         List<RecipientWsDto> recipientWsDtos = new ArrayList<>();
         for(String recipientsEmail: recipientsEmails) {
-            recipientWsDtos.add(new RecipientWsDto(recipientsEmail));
+            RecipientWsDto recipientWsDto = new RecipientWsDto(recipientsEmail);
+            int index = recipientsEmails.indexOf(recipientsEmail);
+            if (names != null && names.size() > index) {
+                recipientWsDto.setName(names.get(index));
+            }
+            if(firstnames != null && firstnames.size() > index) {
+                recipientWsDto.setFirstName(firstnames.get(index));
+            }
+            if(phones != null && phones.size() > index) {
+                recipientWsDto.setPhone(phones.get(index));
+            }
+            if(forcesmses != null && forcesmses.size() > index) {
+                recipientWsDto.setForceSms(Boolean.parseBoolean(forcesmses.get(index)));
+            }
+            recipientWsDtos.add(recipientWsDto);
         }
         try {
             signRequestService.replaceRecipientsToWorkflowStep(id, stepNumber, recipientWsDtos);

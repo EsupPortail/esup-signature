@@ -1,5 +1,8 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -7,7 +10,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
-import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
 import java.time.DayOfWeek;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,9 +31,6 @@ import java.util.stream.Collectors;
 public class UserController {
 
 	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
-
-	@Resource
-	private SignRequestParamsService signRequestParamsService;
 
 	@ModelAttribute("paramMenu")
 	public String getActiveMenu() {
@@ -78,7 +75,7 @@ public class UserController {
 		return "user/users/update";
     }
 
-	@PostMapping
+	@PutMapping
 	public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
 						 @RequestParam(value = "saveSignRequestParams", required=false) Boolean saveSignRequestParams,
 						 @RequestParam(value = "returnToHomeAfterSign", required=false) Boolean returnToHomeAfterSign,
@@ -89,21 +86,33 @@ public class UserController {
 						 @RequestParam(value = "signRequestParamsJsonString", required=false) String signRequestParamsJsonString,
 						 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
 		if(returnToHomeAfterSign == null) returnToHomeAfterSign = false;
-		SignRequestParams signRequestParams = null;
-		if(saveSignRequestParams == null || !saveSignRequestParams) {
-			signRequestParams = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
-		}
-		userService.updateUser(authUserEppn, null, null, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, signRequestParams, returnToHomeAfterSign);
+		userService.updateUserAndSignRequestParams(authUserEppn, signImageBase64, saveSignRequestParams, returnToHomeAfterSign, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, signRequestParamsJsonString);
 		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Vos paramètres ont été enregistrés"));
 		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
 		return "redirect:" + referer;
     }
 
+	@PostMapping
+	public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
+						 @RequestParam(value = "name", required = false) String name,
+						 @RequestParam(value = "firstname", required = false) String firstname,
+						 @RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
+						 @RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
+						 @RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
+						 @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore,
+						 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
+		userService.updateUser(authUserEppn, name, firstname, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, null, false);
+		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Vos paramètres ont été enregistrés"));
+		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+		return "redirect:" + referer;
+	}
+
 	@DeleteMapping("/delete-sign/{id}")
-	public String deleteSign(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes) {
+	public String deleteSign(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
 		userService.deleteSign(authUserEppn, id);
 		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Signature supprimée"));
-		return "redirect:/user/users";
+		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+		return "redirect:" + referer;
 	}
 
 	@PostMapping(value = "/view-cert")
@@ -209,9 +218,10 @@ public class UserController {
 	}
 
 	@GetMapping("/set-default-sign-image/{signImageNumber}")
-	public String setDefaultSignImage(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signImageNumber") Integer signImageNumber) {
+	public String setDefaultSignImage(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signImageNumber") Integer signImageNumber, HttpServletRequest httpServletRequest) {
     	userService.setDefaultSignImage(authUserEppn, signImageNumber);
-		return "redirect:/user/users";
+		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+		return "redirect:"+ referer;
 	}
 
 	@GetMapping("/replace")

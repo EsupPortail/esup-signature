@@ -51,26 +51,26 @@
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div id="pdf" class="mx-auto" style="position: relative !important;">
             <th:block th:each="comment : ${comments}">
-                <div th:if="${signRequest.createBy.eppn == user.eppn && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
+                <div th:if="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
                     class="circle" th:id="'inDocComment_' + ${comment.id}"
                     th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'" title="Cliquer pour supprimer l'annotation">
                     <i class="fa-solid fa-comment fa-3x"></i>
                 </div>
-                <div th:unless="${signRequest.createBy.eppn == user.eppn && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
+                <div th:unless="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
                     class="circle" th:id="'inDocComment_' + ${comment.id}"
                     th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'">
                     <i class="fa-solid fa-comment fa-3x"></i>
                 </div>
             </th:block>
-            <th:block th:each="spot, iterator : ${spots}" th:if="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && (signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email) || !signRequest.parentSignBook.liveWorkflow.workflow.dashboardRoles.retainAll(user.rolesCopy)))) && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
+            <th:block th:each="spot, iterator : ${spots}" th:if="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
                 <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}" title="Cliquer pour supprimer l'emplacement de signature"
                     th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').removeClass(\'circle-border\');'">
-                    <div th:id="'inDocSign_' + ${spot.id}" style="width: 150px; height: 75px; color: #000;" class="sign-field" th:data-es-delete="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && (signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email) || !signRequest.parentSignBook.liveWorkflow.workflow.dashboardRoles.retainAll(user.rolesCopy))))} ? 'true' :''">
-                        <span th:if="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && (signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email) || !signRequest.parentSignBook.liveWorkflow.workflow.dashboardRoles.retainAll(user.rolesCopy))))}" th:text="'Cliquer pour supprimer l’emplacement de signature étape ' + ${spot.stepNumber}"></span>
-                        <span th:unless="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && (signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email) || !signRequest.parentSignBook.liveWorkflow.workflow.dashboardRoles.retainAll(user.rolesCopy))))}" th:text="'Emplacement de signature pour l\'étape ' + ${spot.stepNumber}"></span>
+                    <div th:id="'inDocSign_' + ${spot.id}" style="width: 150px; height: 75px; color: #000;" class="sign-field" th:data-es-delete="${isManager} ? 'true' :''">
+                        <span th:if="${isManager}" th:text="'Cliquer pour supprimer l’emplacement de signature étape ' + ${spot.stepNumber}"></span>
+                        <span th:unless="${isManager}" th:text="'Emplacement de signature pour l\'étape ' + ${spot.stepNumber}"></span>
                     </div>
                 </div>
             </th:block>
@@ -94,112 +94,116 @@
         </div>
     </form>
 
-    <div id="crossTools_x" class="badge bg-primary btn-small position-absolute cross-tools d-none">
-        <div id="defaultTools_x">
+    <div id="crossTools_x" class="badge opacity-90 bg-light position-absolute cross-tools d-none">
+        <div id="defaultTools_x" class="">
             <button type="button" id="signDrop_x"
                     title="Supprimer la signature"
-                    class="btn btn-sm btn-transparent text-white"
+                    class="btn btn-sm btn-light"
                     style="z-index: 3;">
                 <i class="fa-regular fa-trash-alt"></i>
             </button>
+            <button id="canvasBtn_x" type='button' class="btn btn-sm btn-light" title='Modifier ma signature'>
+                <i class='fas fa-eraser'></i>
+            </button>
             <button type="button" id="textReduce_x"
                     title="Agrandir le text"
-                    class="btn btn-sm btn-transparent text-white"
+                    class="btn btn-sm btn-light"
                     style="z-index: 3; display: none">
                 <b style="font-size: 11px;">A</b>
             </button>
             <button type="button" id="textGrow_x"
                     title="Reduire le text"
-                    class="btn btn-sm btn-transparent text-white"
+                    class="btn btn-sm btn-light"
                     style="z-index: 3; display: none">
                 <b style="font-size: 14px;">A</b>
             </button>
             <button type="button" id="signUndo_x"
-                    class="btn btn-sm btn-transparent text-white d-none"
+                    class="btn btn-sm btn-light d-none"
                     style="z-index: 3;">
                 <i class="fa-solid fa-sync"></i>
             </button>
-            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signImage_x"
-                    title="Ajouter une image de votre signature"
-                    class="btn btn-sm btn-transparent text-white"
-                    style="z-index: 3;">
-                <i class="fa-solid fa-signature"></i>
-            </button>
+<!--            <button type="button" id="signImageBtn_x"-->
+<!--                    title="Ajouter une image de signature"-->
+<!--                    class="btn btn-sm btn-light btn-outline-dark"-->
+<!--                    style="z-index: 3;">-->
+<!--                <i class="fa-solid fa-user-pen"></i>-->
+<!--            </button>-->
             <button type="button" id="signPrevImage_x"
                     title="Signature précédente"
-                    class="btn btn-sm btn-transparent text-white"
+                    class="btn btn-sm btn-light"
                     style="z-index: 3;">
                 <i class="fa-solid fa-chevron-up"></i>
             </button>
             <button type="button" id="signNextImage_x"
                     title="Signature suivante"
-                    class="btn btn-sm btn-transparent text-white"
+                    class="btn btn-sm btn-light"
                     style="z-index: 3;">
                 <i class="fa-solid fa-chevron-down"></i>
             </button>
-            <button type="button" id="hideMoreTools_x"
-                    title="Moins d'outils"
-                    class="btn btn-sm btn-transparent text-white d-none"
-                    style="z-index: 3;">
-                <i style="line-height: 1.8em;" class="fa-solid fa-arrow-left"></i>
-            </button>
-            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signExtra_x"
-                    title="Ajouter les informations complémentaires (nom, date et heure...)"
-                    class="btn btn-sm btn-transparent text-white"
-                    style="z-index: 3;">
-                <i class="fa-solid fa-receipt"></i>
-            </button>
-            <button type="button" id="signExtraOnTop_x"
-                    title="Texte au dessus/texte sur la droite"
-                    class="btn btn-sm btn-transparent text-white"
-                    disabled
-                    style="z-index: 3;">
-                <i class="fa-solid fa-retweet"></i>
-            </button>
-            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="watermark_x"
-                    title="Filigrane"
-                    class="btn btn-sm btn-transparent text-white"
-                    style="z-index: 3;">
-                <i class="fab fa-markdown"></i>
-            </button>
             <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')') && isNotSigned && currentStepMultiSign}" type="button" id="allPages_x"
                     title="Répéter sur toutes les pages"
-                    class="btn btn-sm btn-transparent text-white"
+                    class="btn btn-sm btn-light"
                     style="z-index: 3;">
-                <i class="fa-solid fa-reply-all"></i>
+                <i class="fa-regular fa-copy"></i>
             </button>
-            <input id="signColorPicker_x" value='#000000'/>
             <button type="button" id="displayMoreTools_x"
                     title="Plus d'outils"
-                    class="btn btn-sm btn-transparent text-white d-none"
+                    class="btn btn-sm btn-light"
                     style="z-index: 3;">
                 <i class="fa-solid fa-ellipsis-v"></i>
             </button>
         </div>
-        <div id="extraTools_x" class="d-none" >
+        <div id="extraTools_x" class="alert opacity-100 bg-light border-secondary-subtle extra-tools d-flex flex-column d-none text-start gap-1" onclick="event.stopPropagation();">
+            <input id="signColorPicker_x" value='#000000' class="d-none"/>
+            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="watermark_x"
+                    title="Filigrane"
+                    class="btn btn-sm btn-light text-start"
+                    style="z-index: 3;">
+                <i class="fab fa-markdown"></i> Filigrane
+            </button>
+            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signImage_x"
+                    title="Masquer l'image de votre signature"
+                    class="btn btn-sm btn-light text-start"
+                    style="z-index: 3;">
+                <i class="fa-solid fa-eye-slash"></i> Masquer l'image
+            </button>
+            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signExtra_x"
+                    title="Ajouter les informations complémentaires (nom, date et heure...)"
+                    class="btn btn-sm btn-light text-start"
+                    style="z-index: 3;">
+                <i class="fa-solid fa-receipt"></i> Textes complémentaires
+            </button>
+            <button type="button" id="signExtraOnTop_x"
+                    title="Texte au dessus/texte sur la droite"
+                    class="btn btn-sm btn-light text-start"
+                    disabled
+                    style="z-index: 3;">
+                <i class="fa-solid fa-retweet"></i> Textes au dessus
+            </button>
+            <hr>
             <button type="button" id="extraType_x"
                     title="Afficher/Masquer le type de signature"
-                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    class="btn btn-sm btn-light btn-outline-dark text-start"
                     style="z-index: 3;">
-                Type
+                <li>Type de signature</li>
             </button>
             <button type="button" id="extraName_x"
                     title="Afficher/Masquer le nom"
-                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    class="btn btn-sm btn-light btn-outline-dark text-start"
                     style="z-index: 3;">
-                Nom
+                <li>Prénom et nom</li>
             </button>
             <button type="button" id="extraDate_x"
                     title="Afficher/Masquer la date"
-                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    class="btn btn-sm btn-light btn-outline-dark text-start"
                     style="z-index: 3;">
-                Date
+                <li>Date de signature</li>
             </button>
             <button type="button" id="extraText_x"
                     title="Ajouter/Masquer un texte libre"
-                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    class="btn btn-sm btn-light btn-outline-dark text-start"
                     style="z-index: 3;">
-                Texte
+                <li>Texte libre</li>
             </button>
         </div>
     </div>

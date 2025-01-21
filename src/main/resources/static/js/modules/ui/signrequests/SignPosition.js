@@ -28,8 +28,8 @@ export class SignPosition extends EventFactory {
         this.scrollTop = 0;
         this.signType = signType;
         this.forwardButton = $("#forward-btn");
-        this.addSignButton = $("#addSignButton")
-        this.addSignButton.focus();
+        this.addSignButton = $("#addSignButton");
+        $("#addSignButton2").focus();
         this.faImages = ["check-solid", "times-solid", "circle-regular", "minus-solid"];
         if(localStorage.getItem("scale") != null) {
             this.currentScale = localStorage.getItem("scale");
@@ -55,12 +55,11 @@ export class SignPosition extends EventFactory {
     removeSign(id) {
         this.signRequestParamses.delete(id);
         if(this.signRequestParamses.size === 0) {
-            this.addSignButton.addClass("pulse-primary");
             $("#addSignButton2").addClass("pulse-primary");
+            $("#addSignButton2").focus();
             $("#addSignButton").removeAttr("disabled");
             $(window).unbind("beforeunload");
             this.enableForwardButton();
-            this.addSignButton.focus();
         }
     }
 
@@ -155,7 +154,7 @@ export class SignPosition extends EventFactory {
             }
             this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page, this.userName, this.authUserName, restore, signImageNumber != null && signImageNumber >= 0, false, this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, null, this.scrollTop));
         }
-        this.signRequestParamses.get(id).addEventListener("unlock", e => this.lockSigns());
+        // this.signRequestParamses.get(id).addEventListener("unlock", e => this.lockSigns());
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(id));
         if (signImageNumber != null && signImageNumber >= 0) {
             this.signRequestParamses.get(id).cross.addClass("drop-sign");

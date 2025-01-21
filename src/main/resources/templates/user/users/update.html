@@ -28,7 +28,7 @@
                     <i class="fa-solid fa-save fa-2xl"></i>
                 </a>
             </div>
-            <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
+            <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" th:method="'put'">
                 <input type="hidden" name="id" th:value="${authUser.id}"/>
                 <input type="hidden" id="sign-request-params" name="signRequestParamsJsonString" />
                 <div class="card text-bg-light mb-1 col-lg-11 m-2">
@@ -169,51 +169,54 @@
                                             <div class="alert alert-info">
                                                 <small> Après avoir sélectionné une image, vous pourrez ajuster sa
                                                     taille pour
-                                                    que la signature entre dans le carré blanc. Si votre signature
-                                                    est grande
-                                                    (contient un tampon par exemple), il est possible
-                                                    d'élargir
-                                                    le carré blanc (la signature prendra plus de place sur le
-                                                    document) <br/>
-                                                    Une image de la signature sera toujours nécessaire pour signer
-                                                    un PDF
+                                                    que la signature entre dans le carré blanc. La résolution de l’image sera de 600*300 pixels.
                                                 </small>
                                             </div>
                                         </div>
                                     </label>
                                     <div class="mx-auto mb-1" style="width: 600px;">
                                         <input type="file" class="form-control" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
-                                        <label class="custom-file-label" for="vanilla-upload">
-                                            Choisissez une nouvelle image
-                                        </label>
                                     </div>
                                     <br/>
                                     <label id="signPadLabel" class="col-form-label"><strong>Vous pouvez dessiner une signature dans le rectangle ci dessous</strong></label>
                                     <div id="signPad">
-                                        <canvas id="canvas" style="border: 1px solid black;"></canvas>
-                                            <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
-                                                Valider la signature
-                                            </button>
-                                            <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
-                                            <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
-                                                Réinitialiser
-                                            </button>
-                                        <div>
+                                        <div style="
+                                            position: absolute;
+                                            top: 0;
+                                            left: 0;
+                                            width: 100%;
+                                            height: 100%;
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            color: rgba(0, 0, 0, 0.2); /* Texte transparent */
+                                            font-size: 48px;
+                                            font-family: Arial, sans-serif;
+                                            pointer-events: none; /* Empêche l'interaction avec le texte */
+                                            user-select: none; /* Rend le texte non sélectionnable */
+                                        ">
+                                            Dessinez votre signature ici
                                         </div>
+                                        <canvas id="canvas" style="border: 1px solid black;"></canvas>
+                                        <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
+                                            Valider la signature
+                                        </button>
+                                        <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                        <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
+                                            Réinitialiser
+                                        </button>
                                     </div>
                                     <div id="sign-crop" class="mx-auto">
                                     <div id="crop-div" class="alert alert-light text-dark text-center" style="display: none;">
                                         <div class="d-flex justify-content-center">
-                                            <button type="button" id="zoomout"
+                                            <button type="button" id="crop-zoomout"
                                                     class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
-                                                <i
-                                                        class="fa-solid fa-search-minus"></i></button>
-                                            <button type="button" id="zoomin"
+                                                <i class="fa-solid fa-search-minus"></i></button>
+                                            <button type="button" id="crop-zoomin"
                                                     class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
-                                                <i
-                                                        class="fa-solid fa-search-plus"></i></button>
+                                                <i class="fa-solid fa-search-plus"></i></button>
                                             <button type="button"
                                                     class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
                                                     data-deg="90"><i class="fa-solid fa-undo"></i></button>
@@ -237,7 +240,7 @@
                     </div>
                     <div class="card-body">
                         <div class="form-check form-switch form-switch-md mx-auto">
-                            <input id="saveSignRequestParams" class="form-check-input" type="checkbox" name="saveSignRequestParams" th:checked="${user.favoriteSignRequestParams == null}">
+                            <input id="saveSignRequestParams" class="form-check-input" type="checkbox" name="saveSignRequestParams" value="true" th:checked="${user.favoriteSignRequestParams == null}">
                             <label class="form-check-label" for="saveSignRequestParams">Enregistrer automatiquement mes paramètres après chaque signature</label>
                         </div>
                         <div id="signRequestParamsCleanDiv" class="mx-auto">

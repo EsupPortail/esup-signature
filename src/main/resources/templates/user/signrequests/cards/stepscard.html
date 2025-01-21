@@ -61,9 +61,9 @@
                                     <table th:if="${!liveWorkflowStep.getAutoSign()}" class="table table-sm table-hover table-borderless">
                                     <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
                                         <tr>
-                                            <td th:title="${recipient.user.email}">
-                                                <span th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
-                                                <span th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.email}"></span>
+                                            <td th:title="${recipient.user.email}" style="max-width: 140px;">
+                                                <span th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" style="word-break: keep-all; overflow: hidden;text-overflow: ellipsis;" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                                <span th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" style="word-break: keep-all; overflow: hidden;text-overflow: ellipsis;" th:text="${recipient.user.email}"></span>
                                                 <br/>
                                                 <small th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" th:text="'Le ' + ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}"></small>
                                             </td>
@@ -84,15 +84,11 @@
                                                 <button class="btn btn-sm"
                                                         title="Envoyer un nouveau lien d'accès"
                                                         th:onclick="'$(\'#menu-' + ${recipient.id} + '\').toggle();'"
-                                                        th:if="${(userEppn == signRequest.createBy.eppn
-                                                        ||
-                                                        (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && (signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email) || !signRequest.parentSignBook.liveWorkflow.workflow.dashboardRoles.retainAll(user.rolesCopy)))
-                                                        || user.roles.contains('ROLE_ADMIN'))
-                                                        && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                                                        th:if="${isManager && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                                                     <i class="fa-solid fa-key"></i></button>
                                             </td>
                                         </tr>
-                                        <div th:if="${(userEppn == signRequest.createBy.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && (signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email) || !signRequest.parentSignBook.liveWorkflow.workflow.dashboardRoles.retainAll(user.rolesCopy))) || user.roles.contains('ROLE_ADMIN')) && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" data-bs-focus="false" class="modal " th:id="'menu-' + ${recipient.id}">
+                                        <div th:if="${isManager && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" data-bs-focus="false" class="modal " th:id="'menu-' + ${recipient.id}">
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
                                                     <div class="modal-header"><h3>Envoyer un nouveau lien d’accès</h3></div>
@@ -132,7 +128,7 @@
                             <div class="step border border-dark rounded">
                                 <div title="Fin" class="bs-stepper-circle bg-success">
                                     <i class="fa-solid fa-flag-checkered"></i></div>
-                                <div class="bs-stepper-label text-break">La procédure est terminée. Les intervenants ont été informés par mail</div>
+                                <div class="bs-stepper-label text-break">La procédure est terminée. <span th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">Les intervenants ont été informés par mail</span></div>
                             </div>
                         </th:block>
                         <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
@@ -140,7 +136,7 @@
                             <div class="step border border-dark rounded">
                                 <div title="Fin" class="bs-stepper-circle bg-danger">
                                     <i class="fa-solid fa-exclamation-triangle"></i></div>
-                                <div class="bs-stepper-label text-break">La procédure est terminée. Les intervenants ont été informés par mail</div>
+                                <div class="bs-stepper-label text-break">La procédure est terminée. <span th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">Les intervenants ont été informés par mail</span></div>
                             </div>
                         </th:block>
                     </div>

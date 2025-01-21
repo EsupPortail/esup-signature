@@ -16,10 +16,7 @@ import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.service.RecipientService;
-import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestParamsService;
-import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.WorkflowExportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,17 +51,17 @@ public class WorkflowWsController {
 
     private final SignBookService signBookService;
 
-    private final SignRequestParamsService signRequestParamsService;
 
     private final RecipientService recipientService;
+    private final UserService userService;
 
 
-    public WorkflowWsController(WorkflowService workflowService, WorkflowExportService workflowExportService, SignBookService signBookService, SignRequestParamsService signRequestParamsService, RecipientService recipientService) {
+    public WorkflowWsController(WorkflowService workflowService, WorkflowExportService workflowExportService, SignBookService signBookService, RecipientService recipientService, UserService userService) {
         this.workflowService = workflowService;
         this.workflowExportService = workflowExportService;
         this.signBookService = signBookService;
-        this.signRequestParamsService = signRequestParamsService;
         this.recipientService = recipientService;
+        this.userService = userService;
     }
 
     @CrossOrigin
@@ -138,7 +135,7 @@ public class WorkflowWsController {
         }
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
         if (signRequestParamsJsonString != null) {
-            signRequestParamses = signRequestParamsService.getSignRequestParamsesFromJson(signRequestParamsJsonString);
+            signRequestParamses = userService.getSignRequestParamsesFromJson(signRequestParamsJsonString, "system");
         }
         try {
             List<Long> signRequestIds = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, steps, targetEmails, targetUrls, signRequestParamses, scanSignatureFields, sendEmailAlert, comment);
@@ -164,6 +161,15 @@ public class WorkflowWsController {
     public String get(@PathVariable Long id,
                       @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
         return workflowService.getByIdJson(id);
+    }
+
+    @CrossOrigin
+    @GetMapping(value = "/{id}/signrequests", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération des demandes d'un circuit",
+            responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = WorkflowDto.class))))
+    @PreAuthorize("@wsAccessTokenService.createWorkflowAccess(#id, #xApiKey)")
+    public String getSignRequests(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
+        return workflowService.getSignRequestById(id);
     }
 
     @CrossOrigin

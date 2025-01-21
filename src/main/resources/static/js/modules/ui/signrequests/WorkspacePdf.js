@@ -61,15 +61,11 @@ export class WorkspacePdf {
         this.wheelDetector = new WheelDetector();
         this.addSpotEnabled = false;
         this.addCommentEnabled = false;
-        this.spotCursor = this.getCommentPointer("\uf3c5");
-        this.commentCursor = this.getCommentPointer("\uf075");
         this.nextCommand = "none";
         this.initChangeModeSelector();
         this.initDataFields(fields);
         this.wsTabs = $("#ws-tabs");
         this.navWidth = this.wsTabs.innerWidth();
-        this.workspace = $("#workspace");
-        this.secondTools = $("#second-tools");
         this.addSignButton = $("#addSignButton")
         if (currentSignType === "form" || (formId == null && !workflow) || currentSignRequestParamses.length === 0) {
             if(this.wsTabs.length) {
@@ -80,11 +76,6 @@ export class WorkspacePdf {
                         self.autocollapse();
                     }
                 });
-                if(this.secondTools.children().length > 0) {
-                    this.workspace.css("margin-top", "216px");
-                } else {
-                    this.workspace.css("margin-top", "178px");
-                }
             }
         }
         let root = document.querySelector(':root');
@@ -799,6 +790,8 @@ export class WorkspacePdf {
         if (this.changeModeSelector != null) {
             this.changeModeSelector.setSelected("comment");
         }
+        let signTools = $('#sign-tools');
+        signTools.removeClass("d-none");
         $('#commentsBar').show();
         $('#infos').show();
         this.pdfViewer.promiseToggleFields(false);
@@ -839,12 +832,9 @@ export class WorkspacePdf {
         });
         $('#signButtons').removeClass('d-none');
         $('#signModeButton').toggleClass('btn-outline-success');
-
+        $('#sign-tools').removeClass("d-none");
         if(this.currentSignType !== 'hiddenVisa') {
-            let signTools = $('#sign-tools');
-            signTools.removeClass("d-none");
-            signTools.addClass("d-flex");
-            $("#addSignButton").focus();
+            $("#addSignButton2").focus();
         }
 
         $('#infos').show();
@@ -884,10 +874,7 @@ export class WorkspacePdf {
         $("#commentHelp").addClass("d-none");
         $('#commentsTools').hide();
         $('#commentsBar').hide();
-        let signTools = $('#sign-tools');
-        signTools.addClass("d-none");
-        signTools.removeClass("d-flex");
-        // this.signPosition.cross.addClass('d-none');
+        $('#sign-tools').addClass("d-none");
         $('#infos').hide();
         $('#postit').hide();
         $('#refusetools').hide();

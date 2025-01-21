@@ -3,6 +3,18 @@
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div th:fragment="tools" id="tools" class="tools" th:if="${toSignDocument != null}">
 	<div class="d-flex mb-1">
+		<th:block th:if="${!user.userType.name.equals('external') && signBook.workflowName != 'Auto signature'}">
+			<div class="rounded-2 bg-light d-none d-xl-inline-flex mb-1 text-dark p-1" style="cursor: default;">
+				<div class="ms-2">Mode :</div>
+				<div class="ms-2 me-2 d-none d-lg-block">
+					<input class="form-check-input" type="checkbox" name="changeMode" id="changeMode1">
+					<label class="form-check-label" for="changeMode1">
+						Annotations
+					</label>
+				</div>
+			</div>
+			<div class="border ms-1 me-2"></div>
+		</th:block>
 		<a th:unless="${user.userType.name() == 'external'}" class="btn btn-light btn-outline-dark d-none d-lg-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
 			<i class="fa-solid fa-info-circle"></i>
 		</a>
@@ -23,9 +35,9 @@
 		<div class="border ms-1 me-2 d-none d-lg-block ms-1"></div>
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf'}">
 			<button id="zoomout" title="Zoom arrière" class="btn btn-light btn-outline-dark me-1"><i
-					class="fa-solid fa-search-minus"></i></button>
+					class="fa-solid fa-magnifying-glass-minus"></i></button>
 			<button id="zoomin" title="Zoom avant" class="btn btn-light btn-outline-dark me-1"><i
-					class="fa-solid fa-search-plus"></i></button>
+					class="fa-solid fa-magnifying-glass-plus"></i></button>
 			<button id="fullwidth" title="Pleine largeur" class="btn btn-light btn-outline-dark me-1"><i
 					class="fa-solid fa-expand"></i></button>
 			<button id="fullheight" title="Pleine hauteur" class="btn btn-light btn-outline-dark d-none d-lg-block me-1"><i
@@ -48,6 +60,64 @@
 				<i class="fa-solid fa-redo"></i>
 			</button>
 			<div class="border ms-1 me-2"></div>
+			<div>
+				<button id="sign-tools" th:if="${editable}" class="btn btn-light btn-outline-primary pulse-primary me-1"
+					data-bs-toggle="collapse" href="#second-tools">
+					<i class="fa-solid fa-plus"></i> <span class="d-none d-xl-inline">Menu insertion</span>
+				</button>
+				<div id="second-tools" class="second-tools position-absolute collapse">
+					<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
+						<div th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="alert alert-light d-flex flex-column text-start gap-1">
+							<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp
+									||
+									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign
+									||
+									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign
+									}"
+									id="addSignButton"
+									role="button"
+									class="btn btn-light btn-outline-primary text-start">
+								<i class="fa-solid fa-file-signature"></i> <span class="d-inline">Insérer une signature</span>
+							</button>
+							<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
+									id="addSignButton"
+									role="button"
+									class="btn btn-light btn-outline-primary text-start">
+								<i class="fa-solid fa-file-signature"></i> <span class="d-inline">Insérer un visa</span>
+							</button>
+							<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
+									id="visualButton" title="Afficher/Masquer le visuel"
+									class="btn btn-light btn-outline-primary text-start"> Afficher/Masquer le visuel
+							</button>
+							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addCheck" class="btn btn-light btn-outline-primary text-start">
+								<i class="fa-solid fa-check"></i> Insérer une coche
+							</button>
+							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addTimes" class="btn btn-light btn-outline-primary text-start">
+								<i class="fa-solid fa-times"></i> Insérer une croix
+							</button>
+							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addCircle" class="btn btn-light btn-outline-primary text-start">
+								<i class="fa-regular fa-circle"></i> Insérer un cercle
+							</button>
+							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addMinus" class="btn btn-light btn-outline-primary text-start">
+								<i class="fa-solid fa-minus"></i> Insérer un trait
+							</button>
+							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addText" class="btn btn-light btn-outline-primary text-start">
+								<i class="fa-solid fa-i-cursor"></i><i class="fa-solid fa-font d-none d-md-inline"></i> Insérer un texte
+							</button>
+						</div>
+						<div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable && !signable}" class="alert alert-light d-flex flex-column text-start gap-1" style="display: none;">
+							<button id="addCommentButton"
+									class="btn btn-outline-primary text-start">
+								<i class="fa-solid fa-comment"></i> Ajouter une annotation
+							</button>
+							<button th:if="${isManager && signRequest.data == null}" id="addSpotButton"
+									class="btn btn-outline-primary text-start">
+								<i class="fa-solid fa-map-marker-alt"></i> Ajouter un emplacement de signature
+							</button>
+						</div>
+					</th:block>
+				</div>
+			</div>
 			<button class="btn btn-light btn-outline-dark d-none d-sm-block me-1" data-bs-toggle="modal" title="Pièces jointes"
 					data-bs-target="#attachment">
 				<i class="fa-solid fa-paperclip"></i> <span class="d-none d-xxl-inline">Pièces jointes</span>
@@ -59,8 +129,8 @@
 					data-bs-target="#addCommentModal">
 				<i class="fa-solid fa-sticky-note"></i> <span class="d-none d-xl-inline">Post-it</span>
 			</button>
-			<button th:if="${user.userType.name() == 'external' && !#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" id="signImageBtn" class="btn btn-light btn-outline-dark me-1" title="Ajouter une image de signature">
-				<i class="fa-solid fa-user-pen"></i> <span class="d-xl-inline">Ajouter une image de signature</span>
+			<button th:if="${signable && !#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" id="signImageBtn" class="btn btn-light btn-outline-dark me-1" title="Gérer mes images de signature">
+				<i class="fa-solid fa-images"></i> <span class="d-none d-xxl-inline">Mes signatures</span>
 			</button>
 			<form th:if="${displayNotif}"
 				  th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
@@ -68,68 +138,17 @@
 					<i class="fa-solid fa-bullhorn"></i> <span class="d-none d-xxl-inline">Relancer</span>
 				</button>
 			</form>
+			<button th:if="${extrenalsRecipients != null && extrenalsRecipients.size() > 0}" class="btn btn-light btn-outline-dark me-1" title="Transmettre un lien d'accès" data-bs-toggle="modal" data-bs-target="#sendLinkModal">
+				<i class="fa-solid fa-share-nodes"></i>
+			</button>
 		</th:block>
 		<div class="border 1 me-2 d-none d-lg-block ms-1"></div>
-		<a th:if="${signRequest.parentSignBook.createBy.eppn == user.eppn || #authorization.expression('hasRole(''ROLE_ADMIN'')') || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email))}" class="btn btn-light btn-outline-dark d-none d-lg-block ms-1 me-1" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal">
+		<a th:if="${isManager}" class="btn btn-light btn-outline-dark d-none d-lg-block ms-1 me-1" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal">
 			<i class="fa-solid fa-users-viewfinder"></i>
 		</a>
-		<a th:if="${signRequest.parentSignBook.createBy.eppn == user.eppn || #authorization.expression('hasRole(''ROLE_ADMIN'')') || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email))}" class="btn btn-light btn-outline-dark d-none d-md-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/update/' + ${signRequest.parentSignBook.id}">
+		<a th:if="${isManager}" class="btn btn-light btn-outline-dark d-none d-md-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/update/' + ${signRequest.parentSignBook.id}">
 			<i class="fa-solid fa-pencil-alt"></i>
 		</a>
-	</div>
-	<div id="second-tools" class="d-flex">
-		<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
-			<th:block th:if="${!user.userType.name.equals('external')}">
-			<div class="rounded-2 bg-light d-none d-xl-inline-flex mb-1 text-dark p-1" style="cursor: default;">
-				<div class="ms-2">Mode :</div>
-				<div class="ms-2 me-2 d-none d-lg-block">
-					<input class="form-check-input" type="checkbox" name="changeMode" id="changeMode1" th:if="${signBook.workflowName != 'Auto signature'}">
-					<label class="form-check-label" for="changeMode1" th:if="${signBook.workflowName != 'Auto signature'}">
-						Annotations
-					</label>
-				</div>
-			</div>
-			<div class="border ms-1 me-2"></div>
-			</th:block>
-			<div id="sign-tools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="d-none me-1 mb-1">
-				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp
-				||
-				signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign
-				||
-				signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign
-				}"
-						id="addSignButton"
-						role="button"
-						class="btn btn-light btn-outline-primary pulse-primary">
-					<i class="fa-solid fa-file-signature"></i> <span class="d-inline">Insérer une signature</span>
-				</button>
-				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
-						id="addSignButton"
-						role="button"
-						class="btn btn-light btn-outline-primary pulse-primary">
-					<i class="fa-solid fa-file-signature"></i> <span class="d-inline">Insérer un visa</span>
-				</button>
-				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
-						id="visualButton" title="Afficher/Masquer le visuel"
-						class="btn btn-light btn-outline-primary ms-1 d-none">Afficher/Masquer le visuel
-				</button>
-				<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addCheck" title="Ajouter une coche" class="btn btn-light btn-outline-primary d-none d-lg-block ms-1"><i class="fa-solid fa-check"></i></button>
-				<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addTimes" title="Ajouter une croix" class="btn btn-light btn-outline-primary d-none d-lg-block ms-1"><i class="fa-solid fa-times"></i></button>
-				<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addCircle" title="Ajouter un cercle" class="btn btn-light btn-outline-primary d-none d-lg-block ms-1"><i class="fa-regular fa-circle"></i></button>
-				<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addMinus" title="Ajouter un trait" class="btn btn-light btn-outline-primary d-none d-lg-block ms-1 d-none"><i class="fa-solid fa-minus"></i></button>
-				<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addText" title="Ajouter un texte" class="btn btn-light btn-outline-primary d-none d-lg-block ms-1"><i class="fa-solid fa-i-cursor"></i><i class="fa-solid fa-font d-none d-md-inline"></i></button>
-			</div>
-			<div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable}" style="display: none;">
-				<button id="addCommentButton"
-						class="btn btn-outline-primary ms-1">
-					<i class="fa-solid fa-comment"></i> Ajouter une annotation
-				</button>
-				<button th:if="${(signRequest.createBy.eppn == user.eppn || (signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.managers != null && (signRequest.parentSignBook.liveWorkflow.workflow.managers.contains(user.email) || !signRequest.parentSignBook.liveWorkflow.workflow.dashboardRoles.retainAll(user.rolesCopy)))) && signRequest.data == null}" id="addSpotButton"
-						class="btn btn-outline-primary ms-1">
-					<i class="fa-solid fa-map-marker-alt"></i> Ajouter un emplacement de signature
-				</button>
-			</div>
-		</th:block>
 	</div>
 	<ul id="ws-tabs" class="nav nav-tabs" th:if="${nbSignRequestInSignBookParent > 1}">
 		<th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
