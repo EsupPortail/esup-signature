@@ -492,7 +492,7 @@ public class SignBookService {
             addUserSignFirstStep(signBookId, userEppn);
         }
         workflowService.computeWorkflow(steps, signBook);
-        dispatchSignRequestParams(signBook);
+//        dispatchSignRequestParams(signBook);
     }
 
     @Transactional
