@@ -443,6 +443,11 @@ public class SignRequestService {
 							}
 						}
 						signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
+						int step = 1;
+						for(SignRequestParams signRequestParams : toAddSignRequestParams) {
+							commentService.create(signRequest.getId(), "", signRequestParams.getxPos(), signRequestParams.getyPos(), signRequestParams.getSignPageNumber(), step, false, null, "system");
+							step++;
+						}
 						Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
 						if(reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty()) {
 							inputStream = pdfService.removeSignField(new ByteArrayInputStream(bytes), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow());

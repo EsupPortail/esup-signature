@@ -24,17 +24,15 @@
 			<button id="next" title="Page suivante" class="btn btn-light btn-outline-dark ms-1" aria-label="Prochain">
 				<i class="fa-solid fa-arrow-down"></i>
 			</button>
-		</th:block>
-	</div>
-	<div id="second-tools" class="mb-1">
-		<th:block th:if="${document.contentType == 'application/pdf' && form.workflow != null}">
-			<div id="commentsTools">
+			<th:block th:if="${document.contentType == 'application/pdf' && form.workflow != null}">
+				<div class="border ms-3 me-3 d-none d-lg-block"></div>
+
 				<button id="addSpotButton"
 						th:title="${form.workflow.workflowSteps.size() > srpMap.entrySet().size()} ? 'Ajouter un emplacement de signature' : 'Plus d`emplacement disponible'"
 						class="btn btn-outline-primary" th:disabled="${form.workflow.workflowSteps.size() <= srpMap.entrySet().size()}">
 					<i class="fa-solid fa-map-marker-alt"></i> Ajouter un emplacement
 				</button>
-			</div>
+			</th:block>
 		</th:block>
 	</div>
 </div>
