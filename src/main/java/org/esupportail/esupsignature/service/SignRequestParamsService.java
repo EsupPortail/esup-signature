@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -101,8 +102,26 @@ public class SignRequestParamsService {
                         if(pageNrByAnnotDict.containsKey(signFieldName) && pageNrByAnnotDict.get(signFieldName) != null) {
                             int pageNum = pageNrByAnnotDict.get(signFieldName);
                             PDPage pdPage = pdPages.get(pageNum);
-                            SignRequestParams signRequestParams = createFromPdf(signFieldName, pdSignatureField.getWidgets().get(0).getRectangle(), pageNrByAnnotDict.get(signFieldName) + 1, pdPage);
-                            signRequestParamsList.add(signRequestParams);
+                            PDRectangle signRect = pdSignatureField.getWidgets().get(0).getRectangle();
+                            boolean isOverlapping = false;
+                            for (PDAnnotation annotation : pdPage.getAnnotations()) {
+                                if ("Sig".equals(annotation.getCOSObject().getNameAsString(COSName.FT))) {
+                                    continue;
+                                }
+                                PDRectangle annotRect = annotation.getRectangle();
+                                if (rectanglesOverlap(signRect, annotRect)) {
+                                    isOverlapping = true;
+                                    break;
+                                }
+                            }
+                            if (!isOverlapping) {
+                                SignRequestParams signRequestParams = createFromPdf(
+                                        signFieldName, signRect, pageNrByAnnotDict.get(signFieldName) + 1, pdPage
+                                );
+                                signRequestParamsList.add(signRequestParams);
+                            } else {
+                                logger.warn("Signature field " + signFieldName + " is overlapping with another annotation");
+                            }
                         }
                     }
                     if(workflow != null && StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern())) {
@@ -155,6 +174,13 @@ public class SignRequestParamsService {
             throw new EsupSignatureIOException(e.getMessage(), e);
         }
         return signRequestParamsList.stream().sorted(Comparator.comparingInt(SignRequestParams::getxPos)).sorted(Comparator.comparingInt(SignRequestParams::getyPos)).sorted(Comparator.comparingInt(SignRequestParams::getSignPageNumber)).collect(Collectors.toList());
+    }
+
+    private boolean rectanglesOverlap(PDRectangle rect1, PDRectangle rect2) {
+        return rect1.getLowerLeftX() < rect2.getUpperRightX() &&
+                rect1.getUpperRightX() > rect2.getLowerLeftX() &&
+                rect1.getLowerLeftY() < rect2.getUpperRightY() &&
+                rect1.getUpperRightY() > rect2.getLowerLeftY();
     }
 
     private String extractTextInBrackets(String input) {

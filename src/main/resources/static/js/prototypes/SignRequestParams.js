@@ -157,7 +157,7 @@ export class SignRequestParams extends EventFactory {
         this.cross.css('background-color', 'rgba(189, 255, 189, .5)');
         this.cross.append("<p class='text-black'>Positionner le champ de signature et cliquer sur enregistrer</p>");
         this.cross.css("font-size", Math.round(12 * this.currentScale)  + "px");
-        this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute bottom-0 end-0'><i class='fas fa-save'></i></button>");
+        this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute bottom-0 end-0' style='z-index: 4;'><i class='fas fa-save'></i></button>");
         $("#submit-add-spot").on("click", function () {
             $("#spot-modal").modal("show");
         });

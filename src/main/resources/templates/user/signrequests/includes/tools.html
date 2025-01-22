@@ -3,7 +3,7 @@
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div th:fragment="tools" id="tools" class="tools" th:if="${toSignDocument != null}">
 	<div class="d-flex mb-1">
-		<th:block th:if="${!user.userType.name.equals('external') && signBook.workflowName != 'Auto signature'}">
+		<th:block th:if="${!user.userType.name.equals('external')}">
 			<div class="rounded-2 bg-light d-none d-xl-inline-flex mb-1 text-dark p-1" style="cursor: default;">
 				<div class="ms-2">Mode :</div>
 				<div class="ms-2 me-2 d-none d-lg-block">
@@ -61,13 +61,13 @@
 			</button>
 			<div class="border ms-1 me-2"></div>
 			<div>
-				<button id="sign-tools" th:if="${editable}" class="btn btn-light btn-outline-primary pulse-primary me-1"
+				<button th:if="${editable}" class="btn btn-light btn-outline-primary pulse-primary me-1"
 					data-bs-toggle="collapse" href="#second-tools">
 					<i class="fa-solid fa-plus"></i> <span class="d-none d-xl-inline">Menu insertion</span>
 				</button>
 				<div id="second-tools" class="second-tools position-absolute collapse">
 					<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
-						<div th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="alert alert-light d-flex flex-column text-start gap-1">
+						<div id="signTools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="alert alert-light d-flex flex-column text-start gap-1">
 							<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp
 									||
 									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign
@@ -105,7 +105,7 @@
 								<i class="fa-solid fa-i-cursor"></i><i class="fa-solid fa-font d-none d-md-inline"></i> Insérer un texte
 							</button>
 						</div>
-						<div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable && !signable}" class="alert alert-light d-flex flex-column text-start gap-1" style="display: none;">
+						<div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable}" class="alert alert-light d-flex flex-column d-none text-start gap-1" style="display: none;">
 							<button id="addCommentButton"
 									class="btn btn-outline-primary text-start">
 								<i class="fa-solid fa-comment"></i> Ajouter une annotation

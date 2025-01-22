@@ -277,7 +277,7 @@ export class WorkspacePdf {
             } else if(!this.editable) {
                 this.enableSignMode();
             } else {
-                this.enableCommentMode();
+                this.enableReadMode();
             }
             this.wheelDetector.addEventListener("down", e => this.pdfViewer.checkCurrentPage(e));
             this.wheelDetector.addEventListener("up", e => this.pdfViewer.checkCurrentPage(e));
@@ -786,12 +786,11 @@ export class WorkspacePdf {
         this.signPosition.pointItEnable = true;
         $('#workspace').addClass('alert-warning');
         $('#commentModeButton').toggleClass('btn-outline-warning');
-        $('#commentsTools').show();
+        $('#commentsTools').removeClass('d-none');
         if (this.changeModeSelector != null) {
             this.changeModeSelector.setSelected("comment");
         }
-        let signTools = $('#sign-tools');
-        signTools.removeClass("d-none");
+        $('#signTools').addClass("d-none");
         $('#commentsBar').show();
         $('#infos').show();
         this.pdfViewer.promiseToggleFields(false);
@@ -860,6 +859,8 @@ export class WorkspacePdf {
         $('#addSignButton2').removeClass('d-none');
         $('#refuseLaunchButton').removeClass('d-none');
         $('#trashLaunchButton').removeClass('d-none');
+        $('#commentsTools').addClass('d-none');
+        $('#signTools').removeClass("d-none");
         this.refreshAfterPageChange();
     }
 
