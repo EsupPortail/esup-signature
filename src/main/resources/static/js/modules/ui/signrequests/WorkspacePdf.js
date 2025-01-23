@@ -4,7 +4,7 @@ import {WheelDetector} from "../../utils/WheelDetector.js?version=@version@";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepMultiSign, workflow, signImages, userName, authUserName, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
+    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepMultiSign, currentStepSingleSignWithAnnotation, workflow, signImages, userName, authUserName, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
         console.info("Starting workspace UI");
         this.ready = false;
         this.formInitialized = false;
@@ -53,6 +53,7 @@ export class WorkspacePdf {
             currentSignType,
             currentSignRequestParamses,
             currentStepMultiSign,
+            currentStepSingleSignWithAnnotation,
             signImageNumber,
             signImages,
             userName, authUserName, signable, this.forcePageNum, this.isOtp, this.phone, this.csrf);

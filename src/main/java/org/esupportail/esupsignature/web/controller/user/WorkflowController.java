@@ -77,6 +77,7 @@ public class WorkflowController {
                                      @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
                                      @RequestParam(name="changeable", required = false) Boolean changeable,
                                      @RequestParam(name="multiSign", required = false) Boolean multiSign,
+                                     @RequestParam(name="singleSignWithAnnotation", required = false) Boolean singleSignWithAnnotation,
                                      @RequestParam(name="repeatable", required = false) Boolean repeatable,
                                      @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                                      @RequestParam(name="attachmentAlert", required = false) Boolean attachmentAlert,
@@ -84,7 +85,7 @@ public class WorkflowController {
                                      RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowService.getById(id);
         try {
-            workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, false, null);
+            workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, singleSignWithAnnotation, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, false, null);
         } catch (EsupSignatureRuntimeException e) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Type de signature impossible pour une étape infinie"));
         }

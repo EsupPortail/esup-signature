@@ -643,17 +643,21 @@ export class SignRequestParams extends EventFactory {
     }
 
     deleteSign() {
+        let self = this;
         this.cross.attr("remove", "true");
+        this.cross.on("drag", function(e) {
+            self.cross.remove();
+            self.fireEvent("delete", ["ok"]);
+            $("#signLaunchButton").removeClass("pulse-success");
+            $("#addSpotButton").attr("disabled", false);
+            $("#addCommentButton").attr("disabled", false);
+            $('#insert-btn').removeAttr('disabled');
+        });
         this.cross.simulate("drag", {
             dx: 9999999999,
             dy: 9999999999
         });
-        this.cross.remove();
-        this.fireEvent("delete", ["ok"]);
-        $("#signLaunchButton").removeClass("pulse-success");
-        $("#addSpotButton").attr("disabled", false);
-        $("#addCommentButton").attr("disabled", false);
-        $('#insert-btn').removeAttr('disabled');
+
     }
 
     getTools() {
@@ -712,7 +716,9 @@ export class SignRequestParams extends EventFactory {
     }
 
     lock() {
-        this.cross.resizable("enable");
+        if(this.textareaPart == null) {
+            this.cross.resizable("enable");
+        }
         $("#extraTools_" + this.id).addClass("d-none");
         this.cross.draggable("enable");
         this.border.removeClass("anim-border");

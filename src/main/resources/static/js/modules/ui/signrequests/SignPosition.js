@@ -4,7 +4,7 @@ import {UserUi} from '../users/UserUi.js?version=@version@';
 
 export class SignPosition extends EventFactory {
 
-    constructor(signType, currentSignRequestParamses, currentStepMultiSign, signImageNumber, signImages, userName, authUserName, signable, forceResetSignPos, isOtp, phone, csrf) {
+    constructor(signType, currentSignRequestParamses, currentStepMultiSign, currentStepSingleSignWithAnnotation, signImageNumber, signImages, userName, authUserName, signable, forceResetSignPos, isOtp, phone, csrf) {
         super();
         console.info("Starting sign positioning tools");
         this.userName = userName;
@@ -12,6 +12,7 @@ export class SignPosition extends EventFactory {
         this.pdf = $("#pdf");
         this.signImages = signImages;
         this.currentStepMultiSign = currentStepMultiSign;
+        this.currentStepSingleSignWithAnnotation = currentStepSingleSignWithAnnotation;
         this.isOtp = isOtp;
         this.phone = phone;
         this.csrf = csrf;
@@ -24,6 +25,7 @@ export class SignPosition extends EventFactory {
         }
         this.signRequestParamses = new Map();
         this.id = 0;
+        this.signsList = [];
         this.currentScale = 1;
         this.scrollTop = 0;
         this.signType = signType;
@@ -54,6 +56,12 @@ export class SignPosition extends EventFactory {
 
     removeSign(id) {
         this.signRequestParamses.delete(id);
+        if(this.signsList.includes(id)) {
+            this.signsList.splice(this.signsList.indexOf(id), 1);
+        }
+        if(this.signsList.length === 0) {
+            $('#addSignButton').removeAttr('disabled');
+        }
         if(this.signRequestParamses.size === 0) {
             $("#addSignButton2").addClass("pulse-primary");
             $("#addSignButton2").focus();
@@ -127,7 +135,7 @@ export class SignPosition extends EventFactory {
                 id = 999999;
                 this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, false, false, false, signImageNumber, this.scrollTop, this.csrf, this.signType));
             } else if(signImageNumber >= 0) {
-                if(this.currentStepMultiSign === false && this.signRequestParamses.size > 0) {
+                if(this.currentStepMultiSign === false && this.signsList.length > 0) {
                     alert("Impossible d'ajouter plusieurs signatures sur cette étape");
                     return;
                 }
@@ -139,11 +147,16 @@ export class SignPosition extends EventFactory {
                     }
                 }
                 this.signRequestParamses.set(id, new SignRequestParams(favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, this.signImages, this.scrollTop));
+                this.signsList.push(id);
                 if(this.currentStepMultiSign === false && this.signRequestParamses.size > 0) {
-                    $('#insert-btn').attr('disabled', 'disabled');
+                    if(this.currentStepSingleSignWithAnnotation === false) {
+                        $('#insert-btn').attr('disabled', 'disabled');
+                    } else {
+                        $('#addSignButton').attr('disabled', 'disabled');
+                    }
                 }
             } else {
-                if(this.currentStepMultiSign === false) {
+                if(this.currentStepMultiSign === false && this.currentStepSingleSignWithAnnotation === false) {
                     alert("Impossible d'ajouter des annotations sur cette étape");
                     return;
                 }
@@ -151,7 +164,7 @@ export class SignPosition extends EventFactory {
             }
             this.signRequestParamses.get(id).changeSignImage(signImageNumber);
         } else {
-            if(this.currentStepMultiSign === false) {
+            if(this.currentStepMultiSign === false && this.currentStepSingleSignWithAnnotation === false) {
                 alert("Impossible d'ajouter des annotations sur cette étape");
                 return;
             }
