@@ -653,6 +653,7 @@ export class SignRequestParams extends EventFactory {
         $("#signLaunchButton").removeClass("pulse-success");
         $("#addSpotButton").attr("disabled", false);
         $("#addCommentButton").attr("disabled", false);
+        $('#insert-btn').removeAttr('disabled');
     }
 
     getTools() {

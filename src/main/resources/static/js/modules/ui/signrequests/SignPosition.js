@@ -139,6 +139,9 @@ export class SignPosition extends EventFactory {
                     }
                 }
                 this.signRequestParamses.set(id, new SignRequestParams(favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, this.signImages, this.scrollTop));
+                if(this.currentStepMultiSign === false && this.signRequestParamses.size > 0) {
+                    $('#insert-btn').attr('disabled', 'disabled');
+                }
             } else {
                 if(this.currentStepMultiSign === false) {
                     alert("Impossible d'ajouter des annotations sur cette étape");

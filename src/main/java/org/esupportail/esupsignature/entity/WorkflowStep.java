@@ -6,10 +6,8 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
 import jakarta.persistence.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
 
 @Entity
 public class WorkflowStep {
@@ -43,6 +41,8 @@ public class WorkflowStep {
     private Boolean attachmentRequire = false;
 
     private Boolean multiSign = true;
+
+    private Boolean singleSignWithAnnotation = false;
 
     private Boolean autoSign = false;
 
@@ -110,6 +110,14 @@ public class WorkflowStep {
 
     public void setMultiSign(Boolean multiSign) {
         this.multiSign = multiSign;
+    }
+
+    public Boolean getSingleSignWithAnnotation() {
+        return Objects.requireNonNullElse(singleSignWithAnnotation, false);
+    }
+
+    public void setSingleSignWithAnnotation(Boolean singleSignWithAnnotation) {
+        this.singleSignWithAnnotation = singleSignWithAnnotation;
     }
 
     public Boolean getAutoSign() {
