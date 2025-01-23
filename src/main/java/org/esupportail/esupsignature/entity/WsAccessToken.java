@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.entity;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -78,7 +79,7 @@ public class WsAccessToken {
     }
 
     public Boolean getCreateSignrequest() {
-        return createSignrequest;
+        return Objects.requireNonNullElse(createSignrequest, true);
     }
 
     public void setCreateSignrequest(Boolean createSignrequest) {
@@ -86,7 +87,7 @@ public class WsAccessToken {
     }
 
     public Boolean getReadSignrequest() {
-        return readSignrequest;
+        return Objects.requireNonNullElse(readSignrequest, true);
     }
 
     public void setReadSignrequest(Boolean readSignrequest) {
@@ -94,7 +95,7 @@ public class WsAccessToken {
     }
 
     public Boolean getUpdateSignrequest() {
-        return updateSignrequest;
+        return Objects.requireNonNullElse(updateSignrequest, true);
     }
 
     public void setUpdateSignrequest(Boolean deleteSignrequest) {

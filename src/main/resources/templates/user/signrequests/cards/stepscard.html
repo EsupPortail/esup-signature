@@ -25,7 +25,7 @@
                                     <span title="Étape refusée" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="bs-stepper-circle bg-danger">
                                         <i class="fa-solid fa-times"></i>
                                     </span>
-                                    <th:block th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="bs-stepper-circle bg-success">
+                                    <th:block th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" class="bs-stepper-circle bg-success">
                                         <th:block title="Étape terminée" th:if="${!liveWorkflowStep.getAutoSign()}">
                                             <span title="Etape visé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="bs-stepper-circle bg-success">
                                                 <i class="fa-solid fa-check"></i>
