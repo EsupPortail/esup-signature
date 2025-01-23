@@ -70,6 +70,9 @@ public class OtpService {
         User extUser = userService.getById(extUserId);
         if(extUser.getUserType().equals(UserType.external) && (!globalProperties.getSmsRequired() || smsService != null)) {
             SignBook signBook = signBookRepository.findById(id).get();
+            if(!signBook.getStatus().equals(SignRequestStatus.pending) && !signBook.getStatus().equals(SignRequestStatus.completed)) {
+                return false;
+            }
             Otp otp = new Otp();
             otp.setCreateDate(new Date());
             if(StringUtils.hasText(phone)) {
