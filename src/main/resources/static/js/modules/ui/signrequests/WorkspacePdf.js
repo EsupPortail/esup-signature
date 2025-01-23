@@ -277,7 +277,11 @@ export class WorkspacePdf {
             } else if(!this.editable) {
                 this.enableSignMode();
             } else {
-                this.enableReadMode();
+                if(this.status === 'draft') {
+                    this.enableCommentMode();
+                } else {
+                    this.enableReadMode();
+                }
             }
             this.wheelDetector.addEventListener("down", e => this.pdfViewer.checkCurrentPage(e));
             this.wheelDetector.addEventListener("up", e => this.pdfViewer.checkCurrentPage(e));
