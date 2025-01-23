@@ -710,5 +710,9 @@ public class WorkflowService {
         }
     }
 
-
+    @Transactional
+    public void updateSendAlertToAllRecipients(Long id, Boolean sendAlertToAllRecipients) {
+        Workflow workflow = getById(id);
+        workflow.setSendAlertToAllRecipients(sendAlertToAllRecipients);
+    }
 }

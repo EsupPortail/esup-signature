@@ -140,13 +140,17 @@ public class WorkflowController {
         return "redirect:/";
     }
 
+
+    //add sendAlertToAllRecipients update to workflow
     @PutMapping(value = "/{id}")
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     public String rename(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
                          @RequestParam(required = false) List<String> viewers,
+                            @RequestParam(required = false) Boolean sendAlertToAllRecipients,
                          @RequestParam String name) {
         workflowService.rename(id, name);
         workflowService.addViewers(id, viewers);
+        workflowService.updateSendAlertToAllRecipients(id, sendAlertToAllRecipients);
         return "redirect:/user/workflows/" + id;
     }
 }
