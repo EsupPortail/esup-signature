@@ -60,8 +60,8 @@
 				<i class="fa-solid fa-redo"></i>
 			</button>
 			<div class="border ms-1 me-2"></div>
-			<div>
-				<button th:if="${editable}" class="btn btn-light btn-outline-primary pulse-primary me-1"
+			<div id="insert-btn-div">
+				<button id="insert-btn" th:if="${editable}" class="btn btn-light btn-outline-primary pulse-primary me-1"
 					data-bs-toggle="collapse" href="#second-tools">
 					<i class="fa-solid fa-plus"></i> <span class="d-none d-xl-inline">Menu insertion</span>
 				</button>
@@ -107,11 +107,11 @@
 						</div>
 						<div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable}" class="alert alert-light d-flex flex-column d-none text-start gap-1" style="display: none;">
 							<button id="addCommentButton"
-									class="btn btn-outline-primary text-start">
+									class="btn btn-warning text-start">
 								<i class="fa-solid fa-comment"></i> Ajouter une annotation
 							</button>
 							<button th:if="${isManager && signRequest.data == null}" id="addSpotButton"
-									class="btn btn-outline-primary text-start">
+									class="btn btn-warning text-start">
 								<i class="fa-solid fa-map-marker-alt"></i> Ajouter un emplacement de signature
 							</button>
 						</div>
