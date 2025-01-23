@@ -768,6 +768,7 @@ export class WorkspacePdf {
         $('#rotateright').prop('disabled', false);
         $('#rotateleft').css('opacity', 1);
         $('#rotateright').css('opacity', 1);
+        $('#insert-btn-div').hide();
         this.showAllPostits();
         $(".sign-space").each(function () {
             $(this).hide();
@@ -793,6 +794,12 @@ export class WorkspacePdf {
         $('#signTools').addClass("d-none");
         $('#commentsBar').show();
         $('#infos').show();
+        $('#insert-btn-div').show();
+        let insertBtn = $('#insert-btn');
+        insertBtn.removeClass("pulse-primary");
+        insertBtn.removeClass("btn-outline-primary");
+        insertBtn.removeClass("btn-light");
+        insertBtn.addClass("btn-warning");
         this.pdfViewer.promiseToggleFields(false);
         this.refreshAfterPageChange();
         $(".spot").each(function () {
@@ -837,6 +844,12 @@ export class WorkspacePdf {
         }
 
         $('#infos').show();
+        $('#insert-btn-div').show();
+        let insertBtn = $('#insert-btn');
+        insertBtn.addClass("pulse-primary");
+        insertBtn.addClass("btn-outline-primary");
+        insertBtn.addClass("btn-light");
+        insertBtn.removeClass("btn-warning");
         this.pdfViewer.rotation = 0;
         if (this.currentSignRequestParamses != null && this.currentSignRequestParamses.length > 0 && this.currentSignRequestParamses[0] != null) {
             if (this.forcePageNum) {
@@ -879,6 +892,7 @@ export class WorkspacePdf {
         $('#infos').hide();
         $('#postit').hide();
         $('#refusetools').hide();
+        $('#insert-btn-div').hide();
         $('#rotateleft').prop('disabled', true);
         $('#rotateright').prop('disabled', true);
         $('#rotateleft').css('opacity', 0);
@@ -1049,7 +1063,11 @@ export class WorkspacePdf {
             if (mode === "comment" && this.mode !== "comment") {
                 this.enableCommentMode();
             } else {
-                this.enableSignMode();
+                if(this.signable) {
+                    this.enableSignMode();
+                } else {
+                    this.enableReadMode();
+                }
             }
             if (mode === "read") {
                 this.enableReadMode();
