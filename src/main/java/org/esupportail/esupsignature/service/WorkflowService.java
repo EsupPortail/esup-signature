@@ -592,14 +592,14 @@ public class WorkflowService {
             Optional<WorkflowStep> optionalWorkflowStep = workflow.getWorkflowSteps().stream().filter(workflowStep1 -> workflowStep1.getId().equals(workflowStepSetup.getId())).findFirst();
             if(optionalWorkflowStep.isPresent()) {
                 WorkflowStep workflowStep = optionalWorkflowStep.get();
-                workflowStepService.updateStep(workflowStep.getId(), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentAlert(), workflowStepSetup.getAttachmentRequire(), false, null);
+                workflowStepService.updateStep(workflowStep.getId(), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getSingleSignWithAnnotation(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentAlert(), workflowStepSetup.getAttachmentRequire(), false, null);
             } else {
                 List<RecipientWsDto> recipients = new ArrayList<>();
                 for(User user : workflowStepSetup.getUsers()) {
                     recipients.add(new RecipientWsDto(user.getEmail()));
                 }
                 WorkflowStep newWorkflowStep = workflowStepService.createWorkflowStep(workflowSetup.getName(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getSignType(), workflowStepSetup.getChangeable(), recipients.toArray(RecipientWsDto[]::new));
-                workflowStepService.updateStep(newWorkflowStep.getId(), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentAlert(), workflowStepSetup.getAttachmentRequire(), false, null);
+                workflowStepService.updateStep(newWorkflowStep.getId(), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getSingleSignWithAnnotation(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentAlert(), workflowStepSetup.getAttachmentRequire(), false, null);
                 workflow.getWorkflowSteps().add(newWorkflowStep);
             }
         }
@@ -699,6 +699,7 @@ public class WorkflowService {
             step.setRepeatable(workflowStep.getRepeatable());
             step.setRepeatableSignType(workflowStep.getRepeatableSignType());
             step.setMultiSign(workflowStep.getMultiSign());
+            step.setSingleSignWithAnnotation(workflowStep.getSingleSignWithAnnotation());
             step.setAutoSign(workflowStep.getAutoSign());
             step.setAllSignToComplete(workflowStep.getAllSignToComplete());
             step.setSignType(workflowStep.getSignType());
@@ -710,5 +711,9 @@ public class WorkflowService {
         }
     }
 
-
+    @Transactional
+    public void updateSendAlertToAllRecipients(Long id, Boolean sendAlertToAllRecipients) {
+        Workflow workflow = getById(id);
+        workflow.setSendAlertToAllRecipients(sendAlertToAllRecipients);
+    }
 }

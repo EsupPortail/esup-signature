@@ -113,7 +113,7 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentAlert, Boolean attachmentRequire, Boolean autoSign, Long certificatId) throws EsupSignatureRuntimeException {
+    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean singleSignWithAnnotation, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentAlert, Boolean attachmentRequire, Boolean autoSign, Long certificatId) throws EsupSignatureRuntimeException {
         if(repeatable != null && repeatable && signType.getValue() > 2) {
             throw new EsupSignatureRuntimeException(signType.name() + ", type de signature impossible pour une étape infinie");
         }
@@ -129,6 +129,11 @@ public class WorkflowStepService {
         workflowStep.setAttachmentAlert(attachmentAlert);
         workflowStep.setAttachmentRequire(attachmentRequire);
         workflowStep.setMultiSign(Objects.requireNonNullElse(multiSign, false));
+        if(workflowStep.getMultiSign()) {
+            workflowStep.setSingleSignWithAnnotation(true);
+        } else {
+            workflowStep.setSingleSignWithAnnotation(Objects.requireNonNullElse(singleSignWithAnnotation, false));
+        }
         workflowStep.setAllSignToComplete(Objects.requireNonNullElse(allSignToComplete, false));
         workflowStep.setAutoSign(autoSign);
         if(autoSign) {

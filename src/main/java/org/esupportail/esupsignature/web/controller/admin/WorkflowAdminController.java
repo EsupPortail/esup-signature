@@ -201,6 +201,7 @@ public class WorkflowAdminController {
 							 @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
 							 @RequestParam(name="repeatable", required = false) Boolean repeatable,
 							 @RequestParam(name="multiSign", required = false) Boolean multiSign,
+							 @RequestParam(name="singleSignWithAnnotation", required = false) Boolean singleSignWithAnnotation,
 							 @RequestParam(name="changeable", required = false) Boolean changeable,
 							 @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
 							 @RequestParam(name="attachmentAlert", required = false) Boolean attachmentAlert,
@@ -210,7 +211,7 @@ public class WorkflowAdminController {
 							 RedirectAttributes redirectAttributes) {
 		Workflow workflow = workflowService.getById(id);
 		try {
-			workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, autoSign, certificatId);
+			workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, singleSignWithAnnotation, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, autoSign, certificatId);
 		} catch (EsupSignatureRuntimeException e) {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
 		}

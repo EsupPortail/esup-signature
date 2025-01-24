@@ -77,6 +77,7 @@ public class WorkflowController {
                                      @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
                                      @RequestParam(name="changeable", required = false) Boolean changeable,
                                      @RequestParam(name="multiSign", required = false) Boolean multiSign,
+                                     @RequestParam(name="singleSignWithAnnotation", required = false) Boolean singleSignWithAnnotation,
                                      @RequestParam(name="repeatable", required = false) Boolean repeatable,
                                      @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                                      @RequestParam(name="attachmentAlert", required = false) Boolean attachmentAlert,
@@ -84,7 +85,7 @@ public class WorkflowController {
                                      RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowService.getById(id);
         try {
-            workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, false, null);
+            workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, singleSignWithAnnotation, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, false, null);
         } catch (EsupSignatureRuntimeException e) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Type de signature impossible pour une étape infinie"));
         }
@@ -140,13 +141,17 @@ public class WorkflowController {
         return "redirect:/";
     }
 
+
+    //add sendAlertToAllRecipients update to workflow
     @PutMapping(value = "/{id}")
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     public String rename(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
                          @RequestParam(required = false) List<String> viewers,
+                            @RequestParam(required = false) Boolean sendAlertToAllRecipients,
                          @RequestParam String name) {
         workflowService.rename(id, name);
         workflowService.addViewers(id, viewers);
+        workflowService.updateSendAlertToAllRecipients(id, sendAlertToAllRecipients);
         return "redirect:/user/workflows/" + id;
     }
 }

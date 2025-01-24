@@ -89,19 +89,24 @@
 									id="visualButton" title="Afficher/Masquer le visuel"
 									class="btn btn-light btn-outline-primary text-start"> Afficher/Masquer le visuel
 							</button>
-							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addCheck" class="btn btn-light btn-outline-primary text-start">
+							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addCheck" class="btn btn-light btn-outline-primary text-start"
+								th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">
 								<i class="fa-solid fa-check"></i> Insérer une coche
 							</button>
-							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addTimes" class="btn btn-light btn-outline-primary text-start">
+							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addTimes" class="btn btn-light btn-outline-primary text-start"
+								th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">
 								<i class="fa-solid fa-times"></i> Insérer une croix
 							</button>
-							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addCircle" class="btn btn-light btn-outline-primary text-start">
+							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addCircle" class="btn btn-light btn-outline-primary text-start"
+								th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">
 								<i class="fa-regular fa-circle"></i> Insérer un cercle
 							</button>
-							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addMinus" class="btn btn-light btn-outline-primary text-start">
+							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addMinus" class="btn btn-light btn-outline-primary text-start"
+								th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">
 								<i class="fa-solid fa-minus"></i> Insérer un trait
 							</button>
-							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addText" class="btn btn-light btn-outline-primary text-start">
+							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addText" class="btn btn-light btn-outline-primary text-start"
+								th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">
 								<i class="fa-solid fa-i-cursor"></i><i class="fa-solid fa-font d-none d-md-inline"></i> Insérer un texte
 							</button>
 						</div>
