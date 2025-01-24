@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Entity
@@ -32,6 +33,8 @@ public class LiveWorkflowStep {
     private SignType repeatableSignType;
 
     private Boolean multiSign = true;
+
+    private Boolean singleSignWithAnnotation = false;
 
     private Boolean autoSign = false;
 
@@ -91,6 +94,14 @@ public class LiveWorkflowStep {
 
     public void setMultiSign(Boolean multiSign) {
         this.multiSign = multiSign;
+    }
+
+    public Boolean getSingleSignWithAnnotation() {
+        return Objects.requireNonNullElse(singleSignWithAnnotation, false);
+    }
+
+    public void setSingleSignWithAnnotation(Boolean singleSignWithAnnotation) {
+        this.singleSignWithAnnotation = singleSignWithAnnotation;
     }
 
     public Boolean getAutoSign() {

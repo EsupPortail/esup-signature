@@ -10,6 +10,7 @@ import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
+import jakarta.annotation.PostConstruct;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.entity.Certificat;
@@ -197,6 +198,7 @@ public class CertificatService implements HealthIndicator {
         return null;
     }
 
+    @PostConstruct
     public List<DSSPrivateKeyEntry> getSealCertificats() {
         if(privateKeysCache.getIfPresent("keys") != null) return privateKeysCache.getIfPresent("keys");
         List<DSSPrivateKeyEntry> dssPrivateKeyEntries = new ArrayList<>();
@@ -229,7 +231,8 @@ public class CertificatService implements HealthIndicator {
         return dssPrivateKeyEntries;
     }
 
-    public boolean checkCertificatProblem() {
+    public boolean checkCertificatProblem(List<String> roles) {
+        if(!roles.contains("ROLE_ADMIN")) return false;
         boolean certificatProblem = false;
         List<DSSPrivateKeyEntry> dssPrivateKeyEntries = getSealCertificats();
         if(isCertificatWasPresent && dssPrivateKeyEntries.isEmpty()) {

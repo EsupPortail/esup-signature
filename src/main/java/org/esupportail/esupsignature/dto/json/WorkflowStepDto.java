@@ -37,6 +37,8 @@ public class WorkflowStepDto {
 
 	private Boolean multiSign = true;
 
+	private Boolean singleSignWithAnnotation = false;
+
 	private Boolean autoSign = false;
 
 	private Boolean forceAllSign = false;
@@ -180,6 +182,14 @@ public class WorkflowStepDto {
 
 	public void setMultiSign(Boolean multiSign) {
 		this.multiSign = multiSign;
+	}
+
+	public Boolean getSingleSignWithAnnotation() {
+		return singleSignWithAnnotation;
+	}
+
+	public void setSingleSignWithAnnotation(Boolean singleSignWithAnnotation) {
+		this.singleSignWithAnnotation = singleSignWithAnnotation;
 	}
 
 	public Boolean getAutoSign() {

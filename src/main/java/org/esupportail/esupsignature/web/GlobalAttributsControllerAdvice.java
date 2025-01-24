@@ -124,11 +124,10 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("signTypes", signTypeService.getAuthorizedSignTypes(roles));
             model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
             model.addAttribute("nbToSign", signBookService.nbToSignSignBooks(userEppn));
+            model.addAttribute("certificatProblem", certificatService.checkCertificatProblem(roles));
         }
         model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
         model.addAttribute("maxInactiveInterval", httpSession.getMaxInactiveInterval());
-        model.addAttribute("certificatProblem", certificatService.checkCertificatProblem());
-
     }
 
 }
