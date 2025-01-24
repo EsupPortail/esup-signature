@@ -73,6 +73,14 @@
                                     </div>
                                     <div class="form-check form-switch form-switch-md">
                                         <label class="form-check-label">
+                                            Le signataire peut tout de même apposer des annotations
+                                        </label>
+                                        <input type="checkbox" class="form-check-input" name="singleSignWithAnnotation"
+                                            th:id="'singleSignWithAnnotation-' + ${workflowStep.id}" th:checked="${workflowStep.singleSignWithAnnotation || workflowStep.multiSign}"
+                                            th:disabled="${workflowStep.multiSign}"/>
+                                    </div>
+                                    <div class="form-check form-switch form-switch-md">
+                                        <label class="form-check-label">
                                             Tous les participants doivent signer à cette étape
                                         </label>
                                         <input type="checkbox" class="form-check-input" name="allSignToComplete"
