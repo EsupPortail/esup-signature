@@ -43,16 +43,16 @@
                 </ul>
             </div>
 
-            <div class="card col-lg-10 mx-auto mb-1">
+            <div class="card col-lg-10 mx-auto mb-1 text-bg-light">
                 <div class="card-body">
                     <h5 class="text-center"><b>Paramètres généraux</b></h5>
                     <form id="params" th:action="'/user/workflows/' + ${workflow.id}" th:method="'put'">
                         <div class="form-group">
-                            <label for="name">Nom du circuit</label>
+                            <label for="name"><strong>Nom du circuit</strong></label>
                             <input type="text" class="form-control" name="name" id="name" th:value="${workflow.description}"/>
                         </div>
                         <div class="form-group">
-                            <label for="viewersSelect">Observateurs</label>
+                            <label for="viewersSelect"><strong>Observateurs</strong></label>
                             <select id="viewersSelect" class="auto-select-users" multiple="multiple" name="viewers">
                                 <option data-placeholder="true"></option>
                                 <th:block th:each="viewer : ${workflow.viewers}">
@@ -60,14 +60,19 @@
                                 </th:block>
                             </select>
                         </div>
+                        <strong>Options</strong>
+                        <div class="form-check mb-2">
+                            <input id="sendAlertToAllRecipients" type="checkbox" class="form-check-input" th:field="${workflow.sendAlertToAllRecipients}"/>
+                            <label for="sendAlertToAllRecipients" class="form-check-label">Avertir tous les participants à la fin du circuit</label>
+                        </div>
                         <button title="Enregistrer" type="submit" class="btn btn-success mt-2 float-end"><i class="fa-solid fa-save"></i></button>
                     </form>
                 </div>
             </div>
-            <div class="card col-lg-10 mx-auto">
+            <div class="card col-lg-10 mx-auto mb-1 text-bg-light">
                 <div class="card-body">
+                    <h5 class="text-center"><b>Étapes</b></h5>
                     <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Circuit de signatures</dt>
                         <dd>
                             <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="~{admin/workflows/cards/stepscard :: stepscard}"></div>
                             <div th:unless="${workflow.workflowSteps.size() > 0}" class="alert alert-secondary">

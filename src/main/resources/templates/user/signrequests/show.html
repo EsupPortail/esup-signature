@@ -993,6 +993,7 @@
         [[${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}]],
         [[${currentStepNumber}]],
         [[${currentStepMultiSign}]],
+        [[${currentStepSingleSignWithAnnotation}]],
         [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null}"]
             [[${workflow != null}]],
         [/]
