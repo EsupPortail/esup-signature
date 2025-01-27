@@ -612,7 +612,7 @@ export class SignRequestParams extends EventFactory {
             },
             stop: function(event, ui) {
                 self.tools.removeClass("d-none");
-                if($(event.target).hasClass("cross-error") && self.firstCrossAlert) {
+                if($("#border_" + $(event.originalEvent.target).attr("id").split("_")[1]).hasClass("cross-error") && self.firstCrossAlert) {
                     self.firstCrossAlert = false;
                     bootbox.alert("Attention votre signature superpose un autre élément du document (vous pouvez la valider même si elle est de couleur rouge)", null);
                 }
