@@ -63,6 +63,8 @@ public class LiveWorkflowStepService {
         liveWorkflowStep.setSingleSignWithAnnotation(Objects.requireNonNullElse(step.getSingleSignWithAnnotation(), false));
         liveWorkflowStep.setAutoSign(Objects.requireNonNullElse(step.getAutoSign(), false));
         liveWorkflowStep.setAllSignToComplete(Objects.requireNonNullElse(step.getAllSignToComplete(), false));
+        liveWorkflowStep.setAttachmentAlert(Objects.requireNonNullElse(step.getAttachmentAlert(), false));
+        liveWorkflowStep.setAttachmentRequire(Objects.requireNonNullElse(step.getAttachmentRequire(), false));
         if(step.getSignType() == null) {
             int minLevel = 2;
             if(signService.isSigned(signBook, null)) {
