@@ -176,18 +176,18 @@ export class GlobalUi {
             show: { effect: "fade", duration: 500 },
             hide: { effect: "fade", duration: 500 }
         });
-        $("#tools").tooltip({
-            disabled: false,
-            show: { effect: "fade", duration: 500 },
-            hide: { effect: "fade", duration: 500 },
-            position: { my: "left top+5" }
-        });
-        $("#signButtons").tooltip({
-            disabled: false,
-            show: { effect: "fade", duration: 500 },
-            hide: { effect: "fade", duration: 500 },
-            position: { my: "left+15 center", at: "right center", collision: "flip" }
-        });
+        // $("#tools").tooltip({
+        //     disabled: false,
+        //     show: { effect: "fade", duration: 500 },
+        //     hide: { effect: "fade", duration: 500 },
+        //     position: { my: "left top+5" }
+        // });
+        // $("#signButtons").tooltip({
+        //     disabled: false,
+        //     show: { effect: "fade", duration: 500 },
+        //     hide: { effect: "fade", duration: 500 },
+        //     position: { my: "left+15 center", at: "right center", collision: "flip" }
+        // });
     }
 
     initBootBox() {

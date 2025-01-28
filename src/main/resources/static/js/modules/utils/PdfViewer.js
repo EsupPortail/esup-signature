@@ -122,18 +122,18 @@ export class PdfViewer extends EventFactory {
             $(this).droppable({
                 tolerance: "touch",
                 drop: function( event, ui ) {
-                    if($(event.originalEvent.target).attr("id") != null && $(event.originalEvent.target).attr("id").includes("cross_")) {
-                        $(event.originalEvent.target).addClass("cross-error");
+                    if($(ui.draggable).attr("id") != null && ($(ui.draggable).attr("id").includes("cross_") || $($(ui.draggable).attr("id").includes("border_")))) {
+                        $("#border_" + $(ui.draggable).attr("id").split("_")[1]).addClass("cross-error");
                     }
                 },
                 over: function( event, ui ) {
-                    if($(event.originalEvent.target).attr("id") != null && $(event.originalEvent.target).attr("id").includes("cross_")) {
-                        $(event.originalEvent.target).addClass("cross-error");
+                    if($(ui.draggable).attr("id") != null && ($(ui.draggable).attr("id").includes("cross_") || $($(ui.draggable).attr("id").includes("border_")))) {
+                        $("#border_" + $(ui.draggable).attr("id").split("_")[1]).addClass("cross-error");
                     }
                 },
                 out: function( event, ui ) {
-                    if($(event.originalEvent.target).attr("id") != null && $(event.originalEvent.target).attr("id").includes("cross_")) {
-                        $(event.originalEvent.target).removeClass("cross-error");
+                    if($(ui.draggable).attr("id") != null && ($(ui.draggable).attr("id").includes("cross_") || $($(ui.draggable).attr("id").includes("border_")))) {
+                        $("#border_" + $(ui.draggable).attr("id").split("_")[1]).removeClass("cross-error");
                     }
                 }
             });
