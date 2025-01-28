@@ -27,6 +27,10 @@ public class LiveWorkflowStep {
 
     private Boolean allSignToComplete = false;
 
+    private Boolean attachmentAlert = false;
+
+    private Boolean attachmentRequire = false;
+
     private Boolean repeatable = false;
 
     @Enumerated(EnumType.STRING)
@@ -70,6 +74,22 @@ public class LiveWorkflowStep {
 
     public void setAllSignToComplete(Boolean allSignToComplete) {
         this.allSignToComplete = allSignToComplete;
+    }
+
+    public Boolean getAttachmentAlert() {
+        return attachmentAlert;
+    }
+
+    public void setAttachmentAlert(Boolean attachmentAlert) {
+        this.attachmentAlert = attachmentAlert;
+    }
+
+    public Boolean getAttachmentRequire() {
+        return attachmentRequire;
+    }
+
+    public void setAttachmentRequire(Boolean attachmentRequire) {
+        this.attachmentRequire = attachmentRequire;
     }
 
     public Boolean getRepeatable() {

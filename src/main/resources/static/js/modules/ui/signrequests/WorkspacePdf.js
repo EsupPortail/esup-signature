@@ -1069,7 +1069,7 @@ export class WorkspacePdf {
                 this.enableCommentMode();
             } else {
                 if(this.signable) {
-                    this.enableSignMode();
+                    document.location.reload();
                 } else {
                     this.enableReadMode();
                 }
