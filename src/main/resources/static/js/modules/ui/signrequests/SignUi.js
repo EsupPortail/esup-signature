@@ -222,10 +222,10 @@ export class SignUi {
                 message: "Attention, il est demandé de joindre un document à cette étape avant de signer",
                 buttons: {
                     cancel: {
-                        label: '<i class="fa fa-times"></i> Annuler'
+                        label: '<i class="fa fa-times"></i> Retour'
                     },
                     confirm: {
-                        label: '<i class="fa fa-check"></i> Continuer'
+                        label: '<i class="fa fa-check"></i> Continuer sans pièce jointe'
                     }
                 },
                 callback: function (result) {

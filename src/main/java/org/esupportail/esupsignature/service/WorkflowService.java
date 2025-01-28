@@ -342,11 +342,11 @@ public class WorkflowService {
             for (WorkflowStep workflowStep : modelWorkflow.getWorkflowSteps()) {
                 entityManager.detach(workflowStep);
                 replaceStepSystemUsers(userEppn, workflowStep);
-                if (workflowStep.getChangeable() != null && workflowStep.getChangeable()) {
-                    if(!computeForDisplay) {
-                        int finalStep = stepNumber;
-                        Optional<WorkflowStepDto> step = steps.stream().filter(s -> s.getStepNumber() == finalStep).findFirst();
-                        if(step.isPresent()) {
+                if(!computeForDisplay) {
+                    int finalStep = stepNumber;
+                    Optional<WorkflowStepDto> step = steps.stream().filter(s -> s.getStepNumber() == finalStep).findFirst();
+                    if(step.isPresent()) {
+                        if (workflowStep.getChangeable() != null && workflowStep.getChangeable()) {
                             List<RecipientWsDto> recipients = step.get().getRecipients();
                             List<User> users = this.getFavoriteRecipientEmail(stepNumber, recipients);
                             if (!recipients.isEmpty()) {
@@ -355,12 +355,27 @@ public class WorkflowService {
                                     workflowStep.getUsers().add(oneUser);
                                 }
                             }
-                            if (step.get().getAllSignToComplete()) {
-                                workflowStep.setAllSignToComplete(true);
-                            }
-                            if (step.get().getSignType() != null) {
-                                workflowStep.setSignType(step.get().getSignType());
-                            }
+                        }
+                        if (step.get().getAllSignToComplete()) {
+                            workflowStep.setAllSignToComplete(true);
+                        }
+                        if (step.get().getSignType() != null) {
+                            workflowStep.setSignType(step.get().getSignType());
+                        }
+                        if (step.get().getRepeatable() != null) {
+                            workflowStep.setRepeatable(step.get().getRepeatable());
+                        }
+                        if (step.get().getMultiSign() != null) {
+                            workflowStep.setMultiSign(step.get().getMultiSign());
+                        }
+                        if (step.get().getSingleSignWithAnnotation() != null) {
+                            workflowStep.setSingleSignWithAnnotation(step.get().getSingleSignWithAnnotation());
+                        }
+                        if (step.get().getAttachmentAlert() != null) {
+                            workflowStep.setAttachmentAlert(step.get().getAttachmentAlert());
+                        }
+                        if (step.get().getAttachmentRequire() != null) {
+                            workflowStep.setAttachmentRequire(step.get().getAttachmentRequire());
                         }
                     }
                 }
@@ -703,6 +718,8 @@ public class WorkflowService {
             step.setAutoSign(workflowStep.getAutoSign());
             step.setAllSignToComplete(workflowStep.getAllSignToComplete());
             step.setSignType(workflowStep.getSignType());
+            step.setAttachmentAlert(workflowStep.getAttachmentAlert());
+            step.setAttachmentRequire(workflowStep.getAttachmentRequire());
             LiveWorkflowStep newWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, workflowStep, step);
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(newWorkflowStep);
         }
