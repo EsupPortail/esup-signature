@@ -60,6 +60,7 @@ public class SignRequestWsController {
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Création d'une demande de signature")
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public ResponseEntity<?> create(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
+                                    @RequestParam(required = false) @Parameter(description = "Multipart stream des pièces jointes") MultipartFile[] attachementMultipartFiles,
                                     @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example = "[{\n" +
                                             "  \"title\": \"string\",\n" +
                                             "  \"workflowId\": 0,\n" +
@@ -140,6 +141,7 @@ public class SignRequestWsController {
             if(signRequestIds.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("-1");
             }
+            signRequestService.addAttachement(attachementMultipartFiles, null, Long.valueOf(signRequestIds.get(0)), createByEppn);
             if(json) {
                 return ResponseEntity.ok(signRequestIds);
             } else {

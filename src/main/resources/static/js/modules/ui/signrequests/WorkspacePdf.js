@@ -625,7 +625,7 @@ export class WorkspacePdf {
         if(this.status === "pending") {
             this.initFormAction();
         }
-        if(this.currentSignType !== "form") {
+        if(this.currentSignType !== "form" && this.currentSignType !== "hiddenVisa") {
             this.initSignFields();
         }
         $("div[id^='cross_']").each((index, e) => this.toggleSign(e));
@@ -1069,7 +1069,7 @@ export class WorkspacePdf {
                 this.enableCommentMode();
             } else {
                 if(this.signable) {
-                    this.enableSignMode();
+                    document.location.reload();
                 } else {
                     this.enableReadMode();
                 }

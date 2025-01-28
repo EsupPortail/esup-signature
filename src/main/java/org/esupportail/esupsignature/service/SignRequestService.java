@@ -1140,10 +1140,15 @@ public class SignRequestService {
 	public boolean isAttachmentAlert(SignRequest signRequest) {
 		boolean attachmentAlert = false;
 		if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null
-			&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null
-			&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentAlert() != null
-			&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentAlert()
-			&& signRequest.getAttachments().isEmpty()) {
+			&& (
+			(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null
+				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentAlert() != null
+				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentAlert())
+				||
+				(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAttachmentAlert() != null
+				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAttachmentAlert())
+			)
+		&& signRequest.getAttachments().isEmpty()) {
 			attachmentAlert = true;
 		}
 		return attachmentAlert;
@@ -1151,10 +1156,15 @@ public class SignRequestService {
 	public boolean isAttachmentRequire(SignRequest signRequest) {
 		boolean attachmentRequire = false;
 		if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null
-			&&signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null
-			&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentRequire() != null
-			&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentRequire()
-			&& signRequest.getAttachments().isEmpty()) {
+			&& (
+			(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null
+				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentRequire() != null
+				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentRequire())
+				||
+				(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAttachmentRequire() != null
+				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAttachmentRequire())
+			)
+		&& signRequest.getAttachments().isEmpty()) {
 			attachmentRequire = true;
 		}
 		return attachmentRequire;
