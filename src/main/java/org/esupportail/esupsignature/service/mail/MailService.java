@@ -134,7 +134,7 @@ public class MailService {
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("recipientUser", recipientUser);
         ctx.setVariable("userShare", userShare);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/user/signbooks/"+ signBook.getId());
         
         setTemplate(ctx);
         try {
@@ -160,7 +160,7 @@ public class MailService {
         }
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signBook", signBook);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/user/signbooks/"+ signBook.getId());
         
         setTemplate(ctx);
         Set<String> toEmails = new HashSet<>();
@@ -189,7 +189,7 @@ public class MailService {
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("comment", comment);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/user/signbooks/"+ signBook.getId());
         
         setTemplate(ctx);
         Set<String> toEmails = new HashSet<>();
@@ -216,7 +216,7 @@ public class MailService {
         User user = signBook.getCreateBy();
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signBook", signBook);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/user/signbooks/"+ signBook.getId());
         
         setTemplate(ctx);
         try {
@@ -244,7 +244,7 @@ public class MailService {
         }
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signBook", signBook);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/user/signbooks/"+ signBook.getId());
         
         ctx.setVariable("comment", comment);
         ctx.setVariable("user", user);
@@ -291,7 +291,7 @@ public class MailService {
             ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
         }
         ctx.setVariable("signBook", signBook);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/user/signbooks/"+ signBook.getId());
         
         setTemplate(ctx);
         try {
@@ -322,7 +322,7 @@ public class MailService {
             ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
         }
         ctx.setVariable("signBook", signBook);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/user/signbooks/"+ signBook.getId());
         
         setTemplate(ctx);
         try {
@@ -356,7 +356,7 @@ public class MailService {
             ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
         }
         ctx.setVariable("signBook", signBook);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/user/signbooks/"+ signBook.getId());
         
         setTemplate(ctx);
         try {
@@ -404,7 +404,6 @@ public class MailService {
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("url", globalProperties.getRootUrl() + "/otp-access/first/" + otp.getUrlId());
         ctx.setVariable("signBook", signBook);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("otpValidity", new Date(otp.getCreateDate().getTime() + TimeUnit.MINUTES.toMillis(globalProperties.getOtpValidity())));
         ctx.setVariable("otp", otp);
         setTemplate(ctx);
@@ -431,7 +430,7 @@ public class MailService {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/user/signbooks/"+ signBook.getId());
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("signRequests", signBook.getSignRequests());
         User user = signBook.getCreateBy();

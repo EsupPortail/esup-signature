@@ -8,33 +8,39 @@
 <table width="100%" border="0" style="width: 100%;" bgcolor="#ffffff">
     <tr>
         <td width="100%" style="background-color:#343a40; border-bottom:1px solid rgba(0, 0, 0, 0.125); margin-bottom:0; padding:10px; width: 100%;" bgcolor="#343a40">
-            <img height="40" class="mx-auto float-start" src="cid:logo" style="border-style:none; vertical-align:middle; float:left; margin-right:auto; margin-left:auto" valign="middle" align="left">
-            <img height="40" class="mx-auto float-end" src="cid:logo-univ" style="border-style:none; vertical-align:middle; float:right; margin-right:auto; margin-left:auto" valign="middle" align="right">
+            <img height="30" class="mx-auto float-start" src="cid:logo" style="border-style:none; vertical-align:middle; float:left; margin-right:auto; margin-left:auto" valign="middle" align="left">
+            <img height="30" class="mx-auto float-end" src="cid:logo-univ" style="border-style:none; vertical-align:middle; float:right; margin-right:auto; margin-left:auto" valign="middle" align="right">
         </td>
     </tr>
     <tr>
         <td style="width:100%; padding:10px;background-color:#f8f9fa;">
-
             <p style="margin-bottom:1rem; margin-top:0;text-align: center;font-weight: bold">Bonjour,</p>
             <p style="margin-bottom:1rem; margin-top:0;text-align: center;">Votre demande de signature est terminée : </p>
-            <table style="width: 500px; margin-left: 30%;">
+            <table style="width: 50%; margin-left: 25%;">
                 <tr>
                     <td style="vertical-align: middle; width: 100%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;font-size:14px;" bgcolor="#6c757d">
-                        <a th:href="${url}">
-                            <img height="25" class="mx-auto float-start" src="cid:logo-file" style="border-style:none; vertical-align:middle; float:left; margin-right:auto; margin-left:auto" valign="middle" align="left"><span class="text-white text-center" style="line-height:25px;text-align:center; color:#fff; font-weight: 600" align="center" th:text="${signBook.signRequests.get(0).originalDocuments.get(0).getFileName()}"></span>
-                        </a>
+                        <p style="width: 100%; text-align: center;">
+                            <a th:href="${url}">
+                                <img height="25" class="mx-auto float-start" src="cid:logo-file" style="border-style:none; vertical-align:middle;"  valign="middle" align="left"><span class="text-white text-center" style="line-height:25px;text-align:center; color:#fff; font-weight: 600" align="center" th:text="${signBook.signRequests.get(0).originalDocuments.get(0).getFileName()}"></span>
+                            </a>
+                        </p>
+                        <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;color:#fff;" >
+                            Titre : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.subject}" style="box-sizing:border-box;" ></span></b>
+                            <br style="box-sizing:border-box;" >
+                            Circuit : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.workflowName}" style="box-sizing:border-box;" ></span></b>
+                            <br style="box-sizing:border-box;" >
+                            Crée par : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}" style="box-sizing:border-box;" ></span></b>
+                            <br style="box-sizing:border-box;" >
+                            Date de création : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}" style="box-sizing:border-box;" ></span></b>
+                            <br style="box-sizing:border-box;" >
+                        </p>
+                        <p style="margin-bottom:1rem; margin-top:0" th:if="${organizationalUnitLdap != null}">
+                            <span th:text="'Composante : ' + ${organizationalUnitLdap.description}"></span>
+                        </p>
                     </td>
                 </tr>
             </table>
-            <p style="margin-bottom:1rem; margin-top:0" th:text="'Titre : ' + ${signBook.subject}"></p>
-            <p style="margin-bottom:1rem; margin-top:0" th:text="'Circuit : ' + ${signBook.workflowName}"></p>
-            <p style="margin-bottom:1rem; margin-top:0" th:text="'Date de création : ' + ${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></p>
-            <p style="margin-bottom:1rem; margin-top:0">
-                <span th:text="'Créé par : ' + ${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></span>
-            </p>
-            <p style="margin-bottom:1rem; margin-top:0" th:if="${organizationalUnitLdap != null}">
-                <span th:text="'Composante : ' + ${organizationalUnitLdap.description}"></span>
-            </p>
+            <br>
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Liste des signataires : </p>
             <ul style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
                 <th:block th:each="signRequest : ${signBook.signRequests}" >
@@ -57,6 +63,9 @@
             </ul>
             <p style="margin-bottom:1rem; margin-top:0;width: 100%;text-align: center;" >
                 <a th:href="@{|${rootUrl}/user/signbooks/${signBook.id}|}" style="background-color:#0d6efd; color:#fff; text-decoration:none; -moz-user-select:none; -ms-user-select:none; -webkit-user-select:none; border-radius: 20px; display:inline-block; font-size:14px; font-weight:600; line-height:1.5; padding:15px; text-align:center; transition:color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; user-select:none; vertical-align:middle; margin-right:auto; margin-left:auto" >Accéder à la demande</a>
+            </p>
+            <p style="margin-bottom:1rem; margin-top:0;color:#565656;">
+                ⚠️ Veuillez vérifier que le lien ci-dessus correspond bien à l’adresse officielle avant de cliquer. En cas de doute, copiez-collez l’URL directement dans votre navigateur : <span th:text="${url}"></span>
             </p>
             <p style="margin-bottom:1rem; margin-top:0;color:#565656;">Pour en savoir plus sur l’outil esup-signature, <a href="https://code.gouv.fr/sill/detail?name=Esup-Signature" style="color:#0d6efd; text-decoration:underline;">cliquez ici</a></p>
         </td>
