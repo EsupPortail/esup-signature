@@ -191,7 +191,7 @@ public class SignBookController {
     public String showMail(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes, Model model) {
         SignBook signBook = signBookService.getById(id);
         model.addAttribute("signBook", signBook);
-        return "mail/email-otp";
+        return "mail/email-otp-download";
     }
 
     @PreAuthorize("@preAuthorizeService.signBookOwner(#id, #authUserEppn)")

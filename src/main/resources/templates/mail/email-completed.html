@@ -5,7 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 </head>
 <body>
-<table width="90%" border="0" style="width: 90%;" bgcolor="#ffffff">
+<table width="100%" border="0" style="width: 100%;" bgcolor="#ffffff">
     <tr>
         <td width="100%" style="background-color:#343a40; border-bottom:1px solid rgba(0, 0, 0, 0.125); margin-bottom:0; padding:10px; width: 100%;" bgcolor="#343a40">
             <img height="40" class="mx-auto float-start" src="cid:logo" style="border-style:none; vertical-align:middle; float:left; margin-right:auto; margin-left:auto" valign="middle" align="left">
@@ -14,40 +14,51 @@
     </tr>
     <tr>
         <td style="width:100%; padding:10px;background-color:#f8f9fa;">
-            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Bonjour,</p>
-            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Votre demande de signature est terminée.</p>
-            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
-                Nom de la demande : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.subject}" style="box-sizing:border-box;" ></span></b>
-                <br style="box-sizing:border-box;" >
-                Crée par : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}" style="box-sizing:border-box;" ></span></b>
-                <br style="box-sizing:border-box;" >
-                Date de création : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}" style="box-sizing:border-box;" ></span></b>
-                <br style="box-sizing:border-box;" >
-            </p>
 
+            <p style="margin-bottom:1rem; margin-top:0;text-align: center;font-weight: bold">Bonjour,</p>
+            <p style="margin-bottom:1rem; margin-top:0;text-align: center;">Votre demande de signature est terminée : </p>
+            <table style="width: 500px; margin-left: 30%;">
+                <tr>
+                    <td style="vertical-align: middle; width: 100%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;font-size:14px;" bgcolor="#6c757d">
+                        <a th:href="${url}">
+                            <img height="25" class="mx-auto float-start" src="cid:logo-file" style="border-style:none; vertical-align:middle; float:left; margin-right:auto; margin-left:auto" valign="middle" align="left"><span class="text-white text-center" style="line-height:25px;text-align:center; color:#fff; font-weight: 600" align="center" th:text="${signBook.signRequests.get(0).originalDocuments.get(0).getFileName()}"></span>
+                        </a>
+                    </td>
+                </tr>
+            </table>
+            <p style="margin-bottom:1rem; margin-top:0" th:text="'Titre : ' + ${signBook.subject}"></p>
+            <p style="margin-bottom:1rem; margin-top:0" th:text="'Circuit : ' + ${signBook.workflowName}"></p>
+            <p style="margin-bottom:1rem; margin-top:0" th:text="'Date de création : ' + ${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></p>
+            <p style="margin-bottom:1rem; margin-top:0">
+                <span th:text="'Créé par : ' + ${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></span>
+            </p>
+            <p style="margin-bottom:1rem; margin-top:0" th:if="${organizationalUnitLdap != null}">
+                <span th:text="'Composante : ' + ${organizationalUnitLdap.description}"></span>
+            </p>
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Liste des signataires : </p>
             <ul style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
-            <th:block th:each="signRequest : ${signBook.signRequests}" >
-                <th:block th:each="action : ${signRequest.orderedRecipientHasSigned}" >
-                    <th:block th:if="${action.value.actionType.name() == 'signed'}" >
-                    <li if="${recipient.signed == true}" style="box-sizing:border-box;" >
-                        <span th:text="${action.key.user.firstname + ' ' + action.key.user.name} + ' le '" ></span>
-                        <span th:text="${#dates.format(action.value.date, 'dd/MM/yyyy HH:mm')}" ></span>
-                    </li>
+                <th:block th:each="signRequest : ${signBook.signRequests}" >
+                    <th:block th:each="action : ${signRequest.orderedRecipientHasSigned}" >
+                        <th:block th:if="${action.value.actionType.name() == 'signed'}" >
+                            <li if="${recipient.signed == true}" style="box-sizing:border-box; list-style-type: none;" >
+                                ✅ <span th:text="${action.key.user.firstname + ' ' + action.key.user.name} + ' le '" ></span>
+                                <span th:text="${#dates.format(action.value.date, 'dd/MM/yyyy HH:mm')}" ></span>
+                            </li>
+                        </th:block>
                     </th:block>
                 </th:block>
-            </th:block>
             </ul>
             <ul>
                 <th:block th:each="signRequest : ${signBook.signRequests}">
-                <li th:if="${signRequest.exportedDocumentURI}" style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
-                    Le document a été transmit à cette adresse : <span th:text="${signRequest.exportedDocumentURI}" style="box-sizing:border-box;" ></span>
-                </li>
+                    <li th:if="${signRequest.exportedDocumentURI}" style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
+                        Le document a été transmit à cette adresse : <span th:text="${signRequest.exportedDocumentURI}" style="box-sizing:border-box;" ></span>
+                    </li>
                 </th:block>
             </ul>
-            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
-                <a th:href="@{|${rootUrl}/user/signbooks/${signBook.id}|}" class="btn btn-dark" style="box-sizing:border-box;text-decoration:none;display:inline-block;font-weight:400;text-align:center;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border-width:1px;border-style:solid;padding-top:.375rem;padding-bottom:.375rem;padding-right:.75rem;padding-left:.75rem;font-size:14px;line-height:1.5;border-radius:.25rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;color:#fff;background-color:#343a40;border-color:#343a40;" >Accéder à la demande</a>
+            <p style="margin-bottom:1rem; margin-top:0;width: 100%;text-align: center;" >
+                <a th:href="@{|${rootUrl}/user/signbooks/${signBook.id}|}" style="background-color:#0d6efd; color:#fff; text-decoration:none; -moz-user-select:none; -ms-user-select:none; -webkit-user-select:none; border-radius: 20px; display:inline-block; font-size:14px; font-weight:600; line-height:1.5; padding:15px; text-align:center; transition:color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; user-select:none; vertical-align:middle; margin-right:auto; margin-left:auto" >Accéder à la demande</a>
             </p>
+            <p style="margin-bottom:1rem; margin-top:0;color:#565656;">Pour en savoir plus sur l’outil esup-signature, <a href="https://code.gouv.fr/sill/detail?name=Esup-Signature" style="color:#0d6efd; text-decoration:underline;">cliquez ici</a></p>
         </td>
     </tr>
     <tr>
