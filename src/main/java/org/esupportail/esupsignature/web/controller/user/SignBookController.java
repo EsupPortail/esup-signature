@@ -186,6 +186,14 @@ public class SignBookController {
         }
     }
 
+    @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/{id}/mail")
+    public String showMail(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes, Model model) {
+        SignBook signBook = signBookService.getById(id);
+        model.addAttribute("signBook", signBook);
+        return "mail/email-otp";
+    }
+
     @PreAuthorize("@preAuthorizeService.signBookOwner(#id, #authUserEppn)")
     @GetMapping(value = "/restore/{id}", produces = "text/html")
     public String restore(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {

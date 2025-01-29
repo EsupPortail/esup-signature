@@ -40,6 +40,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -134,7 +135,7 @@ public class MailService {
         ctx.setVariable("recipientUser", recipientUser);
         ctx.setVariable("userShare", userShare);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
+        
         setTemplate(ctx);
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
@@ -160,7 +161,7 @@ public class MailService {
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
+        
         setTemplate(ctx);
         Set<String> toEmails = new HashSet<>();
         if(!signBook.getCreateBy().getEppn().equals("system")) toEmails.add(signBook.getCreateBy().getEmail());
@@ -189,7 +190,7 @@ public class MailService {
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("comment", comment);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
+        
         setTemplate(ctx);
         Set<String> toEmails = new HashSet<>();
         if(!signBook.getCreateBy().getEppn().equals("system")) toEmails.add(signBook.getCreateBy().getEmail());
@@ -216,7 +217,7 @@ public class MailService {
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
+        
         setTemplate(ctx);
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
@@ -244,7 +245,7 @@ public class MailService {
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
+        
         ctx.setVariable("comment", comment);
         ctx.setVariable("user", user);
         setTemplate(ctx);
@@ -291,7 +292,7 @@ public class MailService {
         }
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
+        
         setTemplate(ctx);
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
@@ -322,7 +323,7 @@ public class MailService {
         }
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
+        
         setTemplate(ctx);
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
@@ -356,7 +357,7 @@ public class MailService {
         }
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
+        
         setTemplate(ctx);
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
@@ -381,7 +382,7 @@ public class MailService {
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signRequests", signRequests);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
+        
         setTemplate(ctx);
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
@@ -399,12 +400,13 @@ public class MailService {
 
     }
 
-    public void sendOtp(Otp otp, String urlId, SignBook signBook, boolean signature) throws EsupSignatureMailException {
+    public void sendOtp(Otp otp, SignBook signBook, boolean signature) throws EsupSignatureMailException {
         final Context ctx = new Context(Locale.FRENCH);
-        ctx.setVariable("url", globalProperties.getRootUrl() + "/otp-access/first/" + urlId);
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/otp-access/first/" + otp.getUrlId());
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
+        ctx.setVariable("otpValidity", new Date(otp.getCreateDate().getTime() + TimeUnit.MINUTES.toMillis(globalProperties.getOtpValidity())));
+        ctx.setVariable("otp", otp);
         setTemplate(ctx);
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
@@ -452,6 +454,7 @@ public class MailService {
         mimeMessage.setText(htmlContent, true);
         mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class));
         mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class));
+        mimeMessage.addInline("logo-file", new ClassPathResource("/static/images/fa-file.png", MailService.class));
     }
 
     public void sendTest(List<String> recipientsEmails) throws MessagingException {
