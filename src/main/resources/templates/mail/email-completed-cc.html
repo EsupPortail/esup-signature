@@ -21,25 +21,28 @@
                 <table style="width: 50%; margin-left: 25%;">
                     <tr>
                         <td style="vertical-align: middle; width: 100%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;font-size:14px;" bgcolor="#6c757d">
-                            <a th:href="${url}">
-                                <img height="25" class="mx-auto float-start" src="cid:logo-file" style="border-style:none; vertical-align:middle; float:left; margin-right:auto; margin-left:auto" valign="middle" align="left"><span class="text-white text-center" style="line-height:25px;text-align:center; color:#fff; font-weight: 600" align="center" th:text="${signBook.signRequests.get(0).originalDocuments.get(0).getFileName()}"></span>
-                            </a>
+                            <p style="width: 100%; text-align: center;">
+                                <a th:href="${url}">
+                                    <img height="25" class="mx-auto float-start" src="cid:logo-file" style="border-style:none; vertical-align:middle;"  valign="middle" align="left"><span class="text-white text-center" style="line-height:25px;text-align:center; color:#fff; font-weight: 600" align="center" th:text="${signBook.signRequests.get(0).originalDocuments.get(0).getFileName()}"></span>
+                                </a>
+                            </p>
+                            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;color:#fff;" >
+                                Titre : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.subject}" style="box-sizing:border-box;" ></span></b>
+                                <br style="box-sizing:border-box;" >
+                                Circuit : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.workflowName}" style="box-sizing:border-box;" ></span></b>
+                                <br style="box-sizing:border-box;" >
+                                Crée par : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}" style="box-sizing:border-box;" ></span></b>
+                                <br style="box-sizing:border-box;" >
+                                Date de création : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}" style="box-sizing:border-box;" ></span></b>
+                                <br style="box-sizing:border-box;" >
+                            </p>
+                            <p style="margin-bottom:1rem; margin-top:0" th:if="${organizationalUnitLdap != null}">
+                                <span th:text="'Composante : ' + ${organizationalUnitLdap.description}" style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;color:#fff;"></span>
+                            </p>
                         </td>
                     </tr>
                 </table>
-                <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
-                    Titre : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.subject}" style="box-sizing:border-box;" ></span></b>
-                    <br style="box-sizing:border-box;" >
-                    Circuit : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.workflowName}" style="box-sizing:border-box;" ></span></b>
-                    <br style="box-sizing:border-box;" >
-                    Crée par : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}" style="box-sizing:border-box;" ></span></b>
-                    <br style="box-sizing:border-box;" >
-                    Date de création : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}" style="box-sizing:border-box;" ></span></b>
-                    <br style="box-sizing:border-box;" >
-                </p>
-                <p style="margin-bottom:1rem; margin-top:0" th:if="${organizationalUnitLdap != null}">
-                    <span th:text="'Composante : ' + ${organizationalUnitLdap.description}"></span>
-                </p>
+                <br>
                 <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Liste des signataires : </p>
                 <ul style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
                     <th:block th:each="signRequest : ${signBook.signRequests}" >
