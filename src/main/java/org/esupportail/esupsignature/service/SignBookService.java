@@ -1049,9 +1049,9 @@ public class SignBookService {
         SignBook signBook = getById(signBookId);
         if (!signBook.getCreateBy().equals(userService.getSchedulerUser())) {
             try {
-                mailService.sendCompletedMail(signBook, userEppn);
-                if(signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().getSendAlertToAllRecipients()) {
-                    mailService.sendCompletedCCMail(signBook, userEppn);
+                Set<String> toMails = mailService.sendCompletedMail(signBook, userEppn);
+                if(signBook.getLiveWorkflow().getWorkflow() == null || signBook.getLiveWorkflow().getWorkflow().getSendAlertToAllRecipients()) {
+                    mailService.sendCompletedCCMail(signBook, userEppn, toMails);
                     for(User externalUser : signBook.getTeam().stream().filter(u -> u.getUserType().equals(UserType.external)).toList()) {
                         otpService.generateOtpForSignRequest(signBook.getId(), externalUser.getId(), externalUser.getPhone(), false);
                     }

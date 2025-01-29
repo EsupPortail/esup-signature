@@ -98,17 +98,19 @@
                 </th:block>
             </th:block>
         </div>
+        <ul th:if="${!signBook.liveWorkflow.workflow.targets.isEmpty()}" class="list-group striped-list mt-1">
         <th:block th:each="target, iterator : ${signBook.liveWorkflow.workflow.targets}">
-                <div th:if="${target.targetUri.contains('mailto:')}" class="form-group mb-3">
-                    <label>Étape finale : Envoi par mail à </label>
+            <li th:if="${target.targetUri.contains('mailto:')}" class="list-group-item border-secondary">
+                    <b>Étape finale :</b> Envoi par mail à
                     <select class="select-users" id="targetEmailsSelect" multiple="multiple" name="targetEmails">
                         <option data-placeholder="true"></option>
                         <th:block th:each="targetEmail : ${target.targetUri.replace('mailto:', '').split(',')}">
                             <option selected="selected" th:if="${targetEmail != ''}" th:text="${targetEmail}" th:value="${targetEmail}"></option>
                         </th:block>
                     </select>
-                </div>
+                </li>
             </th:block>
+        </ul>
     </form>
 </div>
 <div class="modal-footer">

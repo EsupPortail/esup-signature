@@ -78,16 +78,17 @@
                         </li>
                 </th:block>
             </ul>
+            <ul th:if="${!form.workflow.targets.isEmpty()}" class="list-group striped-list mt-1">
             <th:block th:each="target : ${form.workflow.targets}">
-                <hr>
-                <div th:if="${target.targetUri.contains('mailto:')}" class="form-group mb-3">
-                    <label>Étape finale : Envoi par mail à </label>
+                <li th:if="${target.targetUri.contains('mailto:')}" class="list-group-item border-secondary">
+                    <b>Étape finale :</b> Envoi par mail à
                     <select class="select-users" th:id="'targetEmailsSelect-' + ${form.id}" multiple="multiple" name="targetEmails">
                         <option data-placeholder="true"></option>
                         <option th:if="${target.targetUri != null && target.targetUri != ''}" th:value="${target.targetUri.split(':')[1]}" th:text="${target.targetUri.split(':')[1]}" selected></option>
                     </select>
-                </div>
+                </li>
             </th:block>
+            </ul>
         </div>
     </form>
 </div>
