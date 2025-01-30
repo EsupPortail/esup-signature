@@ -294,7 +294,7 @@ public class Workflow {
     }
 
     public Boolean getSendAlertToAllRecipients() {
-        return sendAlertToAllRecipients;
+        return Objects.requireNonNullElse(sendAlertToAllRecipients, false);
     }
 
     public void setSendAlertToAllRecipients(Boolean sendAlertToAllRecipients) {

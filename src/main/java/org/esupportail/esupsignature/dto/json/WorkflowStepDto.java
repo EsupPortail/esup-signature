@@ -21,6 +21,8 @@ public class WorkflowStepDto {
 
 	private List<RecipientWsDto> recipients = new ArrayList<>();
 
+	private List<SignRequestParamsWsDto> signRequestParams = new ArrayList<>();
+
 	private Boolean changeable = false;
 
 	private Integer signLevel = 0;
@@ -118,6 +120,14 @@ public class WorkflowStepDto {
 
 	public void setRecipients(List<RecipientWsDto> recipients) {
 		this.recipients = recipients;
+	}
+
+	public List<SignRequestParamsWsDto> getSignRequestParams() {
+		return signRequestParams;
+	}
+
+	public void setSignRequestParams(List<SignRequestParamsWsDto> signRequestParams) {
+		this.signRequestParams = signRequestParams;
 	}
 
 	public Boolean getChangeable() {

@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
+import org.esupportail.esupsignature.dto.json.SignRequestParamsWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.SignRequestParams;
@@ -136,12 +137,15 @@ public class WorkflowWsController {
         } else if(stepsJsonString != null) {
             steps = recipientService.convertRecipientJsonStringToWorkflowStepDtos(stepsJsonString);
         }
-        List<SignRequestParams> signRequestParamses = new ArrayList<>();
         if (signRequestParamsJsonString != null) {
-            signRequestParamses = userService.getSignRequestParamsesFromJson(signRequestParamsJsonString, "system");
+            List<SignRequestParamsWsDto> signRequestParamsWsDtos = userService.getSignRequestParamsesFromJson(signRequestParamsJsonString, "system");
+            int i = 0;
+            for(WorkflowStepDto step : steps) {
+                step.getSignRequestParams().add(signRequestParamsWsDtos.get(i));
+            }
         }
         try {
-            List<Long> signRequestIds = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, steps, targetEmails, targetUrls, signRequestParamses, scanSignatureFields, sendEmailAlert, comment);
+            List<Long> signRequestIds = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, steps, targetEmails, targetUrls, scanSignatureFields, sendEmailAlert, comment);
             if(signRequestIds.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("-1");
             }
