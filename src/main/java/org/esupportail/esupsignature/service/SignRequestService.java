@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -1035,7 +1036,11 @@ public class SignRequestService {
 	public void getFileResponse(Long documentId, HttpServletResponse httpServletResponse) throws IOException {
 		Document document = documentService.getById(documentId);
 		SignRequest signRequest = getById(document.getParentId());
-		if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd()) && !signRequest.getStatus().equals(SignRequestStatus.completed)) {
+		if(SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+				.stream()
+				.noneMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))
+			&&
+				signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd()) && !signRequest.getStatus().equals(SignRequestStatus.completed)) {
 			throw new EsupSignatureRuntimeException("Téléchargement interdit avant la fin du circuit");
 		}
 		webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), "attachment", document.getInputStream(), httpServletResponse);
