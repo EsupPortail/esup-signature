@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.dto.json.SignRequestParamsWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
@@ -28,6 +29,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -46,24 +48,33 @@ public class WorkflowWsController {
     private static final byte[] EXCEL_UTF8_HACK = new byte[] { (byte)0xEF, (byte)0xBB, (byte)0xBF};
 
     private final WorkflowService workflowService;
-
     private final WorkflowExportService workflowExportService;
-
     private final SignBookService signBookService;
-
-
     private final RecipientService recipientService;
     private final UserService userService;
     private final SignRequestService signRequestService;
+    private final SignRequestParamsService signRequestParamsService;
 
-
-    public WorkflowWsController(WorkflowService workflowService, WorkflowExportService workflowExportService, SignBookService signBookService, RecipientService recipientService, UserService userService, SignRequestService signRequestService) {
+    public WorkflowWsController(WorkflowService workflowService, WorkflowExportService workflowExportService, SignBookService signBookService, RecipientService recipientService, UserService userService, SignRequestService signRequestService, SignRequestParamsService signRequestParamsService) {
         this.workflowService = workflowService;
         this.workflowExportService = workflowExportService;
         this.signBookService = signBookService;
         this.recipientService = recipientService;
         this.userService = userService;
         this.signRequestService = signRequestService;
+        this.signRequestParamsService = signRequestParamsService;
+    }
+
+    @CrossOrigin
+    @PostMapping(value ="/{id}/scan", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Recupération des paramètres de signature du documents")
+    @PreAuthorize("@wsAccessTokenService.createWorkflowAccess(#id, #xApiKey)")
+    public ResponseEntity<List<SignRequestParams>> getSignRequestParams(@PathVariable Long id,
+                                                                        @Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
+                                                                        @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey
+    ) throws IOException {
+        Workflow workflow = workflowService.getById(id);
+        return ResponseEntity.ok().body(signRequestParamsService.scanSignatureFields(multipartFiles[0].getInputStream(), 1, workflow, false));
     }
 
     @CrossOrigin
