@@ -1701,7 +1701,7 @@ public class SignBookService {
                             try {
                                 for (String email : targetUrl.replace("mailto:", "").split(",")) {
                                     User user = userService.getUserByEmail(email);
-                                    if (!signBook.getViewers().contains(user)) {
+                                    if (user != null && !signBook.getViewers().contains(user)) {
                                         signBook.getViewers().add(user);
                                         addToTeam(signBook, user.getEppn());
                                     }
