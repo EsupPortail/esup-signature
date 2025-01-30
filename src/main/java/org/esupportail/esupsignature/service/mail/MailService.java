@@ -1,7 +1,9 @@
 package org.esupportail.esupsignature.service.mail;
 
+import jakarta.mail.Address;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import org.apache.commons.io.IOUtils;
@@ -432,9 +434,11 @@ public class MailService {
         try {
             logger.info("send email to : " + Arrays.toString(mimeMessage.getRecipients(Message.RecipientType.TO)));
             mimeMessage.setFrom(mailConfig.getMailFrom());
+            InternetAddress replyToAddress = new InternetAddress(mailConfig.getMailFrom());
             if(workflow != null && org.springframework.util.StringUtils.hasText(workflow.getMailFrom())) {
-                mimeMessage.setFrom(workflow.getMailFrom());
+                replyToAddress = new InternetAddress(workflow.getMailFrom());
             }
+            mimeMessage.setReplyTo(new Address[]{replyToAddress});
             String[] toHeader =  mimeMessage.getHeader("To");
             if(toHeader == null) {
                 return;
