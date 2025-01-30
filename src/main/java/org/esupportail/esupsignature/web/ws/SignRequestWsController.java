@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
@@ -20,11 +19,13 @@ import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.AuditTrail;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestParamsService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,14 +47,30 @@ public class SignRequestWsController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignRequestWsController.class);
 
-    @Resource
-    private SignRequestService signRequestService;
+    private final SignRequestService signRequestService;
 
-    @Resource
-    private RecipientService recipientService;
+    private final RecipientService recipientService;
 
-    @Resource
-    private SignBookService signBookService;
+    private final SignBookService signBookService;
+
+    private final SignRequestParamsService signRequestParamsService;
+
+    public SignRequestWsController(SignRequestService signRequestService, RecipientService recipientService, SignBookService signBookService, SignRequestParamsService signRequestParamsService) {
+        this.signRequestService = signRequestService;
+        this.recipientService = recipientService;
+        this.signBookService = signBookService;
+        this.signRequestParamsService = signRequestParamsService;
+    }
+
+    @CrossOrigin
+    @PostMapping(value ="/scan", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Recupération des paramètres de signature du documents")
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
+    public ResponseEntity<List<SignRequestParams>> getSignRequestParams(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
+                                                                        @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey
+                                                                        ) throws IOException {
+        return ResponseEntity.ok().body(signRequestParamsService.scanSignatureFields(multipartFiles[0].getInputStream(), 1, null, false));
+    }
 
     @CrossOrigin
     @PostMapping(value ="/new", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
