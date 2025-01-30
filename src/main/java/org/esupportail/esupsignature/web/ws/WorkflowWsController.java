@@ -14,7 +14,6 @@ import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.dto.json.SignRequestParamsWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
-import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
@@ -74,39 +73,56 @@ public class WorkflowWsController {
     public ResponseEntity<?> start(@PathVariable Long id,
                                    @RequestParam @Parameter(description = "Multipart stream du fichier à signer") MultipartFile[] multipartFiles,
                                    @RequestParam(required = false) @Parameter(description = "Multipart stream des pièces jointes") MultipartFile[] attachementMultipartFiles,
-                                   @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example = "[{\n" +
-                                           "  \"title\": \"string\",\n" +
-                                           "  \"workflowId\": 0,\n" +
-                                           "  \"stepNumber\": 0,\n" +
-                                           "  \"description\": \"string\",\n" +
-                                           "  \"recipientsCCEmails\": [\n" +
-                                           "    \"string\"\n" +
-                                           "  ],\n" +
-                                           "  \"recipients\": [\n" +
-                                           "    {\n" +
-                                           "      \"step\": 0,\n" +
-                                           "      \"email\": \"string\",\n" +
-                                           "      \"phone\": \"string\",\n" +
-                                           "      \"name\": \"string\",\n" +
-                                           "      \"firstName\": \"string\",\n" +
-                                           "      \"forceSms\": true\n" +
-                                           "    }\n" +
-                                           "  ],\n" +
-                                           "  \"changeable\": true,\n" +
-                                           "  \"signLevel\": 0,\n" +
-                                           "  \"signType\": \"hiddenVisa\",\n" +
-                                           "  \"repeatable\": true,\n" +
-                                           "  \"repeatableSignType\": \"hiddenVisa\",\n" +
-                                           "  \"allSignToComplete\": true,\n" +
-                                           "  \"userSignFirst\": true,\n" +
-                                           "  \"multiSign\": true,\n" +
-                                           "  \"autoSign\": true,\n" +
-                                           "  \"forceAllSign\": true,\n" +
-                                           "  \"comment\": \"string\",\n" +
-                                           "  \"attachmentRequire\": true,\n" +
-                                           "  \"attachmentAlert\": false,\n" +
-                                           "  \"maxRecipients\": 0\n" +
-                                           "}]") String stepsJsonString,
+                                   @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example =
+                                           """
+                                                  [{
+                                                  "title": "string",
+                                                  "workflowId": 0,
+                                                  "stepNumber": 1,
+                                                  "description": "string",
+                                                  "recipientsCCEmails": [
+                                                    "string"
+                                                  ],
+                                                  "recipients": [
+                                                    {
+                                                      "step": 0,
+                                                      "email": "string",
+                                                      "phone": "string",
+                                                      "name": "string",
+                                                      "firstName": "string",
+                                                      "forceSms": true
+                                                    }
+                                                  ],
+                                                  "signRequestParams": [
+                                                    {
+                                                      "signPageNumber": 1,
+                                                      "signDocumentNumber": 0,
+                                                      "signWidth": 150,
+                                                      "signHeight": 75,
+                                                      "xPos": 0,
+                                                      "yPos": 0
+                                                    }
+                                                  ],
+                                                  "changeable": false,
+                                                  "signLevel": 0,
+                                                  "signType": "visa",
+                                                  "repeatable": false,
+                                                  "repeatableSignType": "visa",
+                                                  "allSignToComplete": false,
+                                                  "userSignFirst": false,
+                                                  "multiSign": true,
+                                                  "singleSignWithAnnotation": false,
+                                                  "autoSign": false,
+                                                  "forceAllSign": false,
+                                                  "comment": "string",
+                                                  "attachmentRequire": false,
+                                                  "attachmentAlert": false,
+                                                  "maxRecipients": 99,
+                                                  "targetEmails": [
+                                                    "string"
+                                                  ]
+                                                  }]
+                                                  """) String stepsJsonString,
                                    @RequestParam(required = false) @Parameter(description = "EPPN du créateur/propriétaire de la demande") String createByEppn,
                                    @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title,
                                    @RequestParam(required = false, defaultValue = "false") @Parameter(description = "Scanner les champs signature (false par défaut)") Boolean scanSignatureFields,

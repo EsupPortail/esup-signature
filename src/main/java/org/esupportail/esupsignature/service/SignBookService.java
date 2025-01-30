@@ -1322,9 +1322,7 @@ public class SignBookService {
         signBook.getLiveWorkflow().setWorkflow(workflow);
         for(MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(multipartFile.getOriginalFilename(), signBook, createByEppn, createByEppn);
-            for(WorkflowStepDto step : steps) {
-                signRequest.getSignRequestParams().addAll(step.getSignRequestParams().stream().map(SignRequestParamsWsDto::getSignRequestParams).toList());
-            }
+            replaceSignRequestParamsWithDtoParams(steps, signRequest);
             signRequestService.addDocsToSignRequest(signRequest, scanSignatureFields, 0, new ArrayList<>(), multipartFile);
         }
         signBook.setSubject(generateName(signBook.getId(), workflow, user, false, false));
