@@ -1160,8 +1160,7 @@ public class SignBookService {
         if (signRequestParamsJsonString == null) {
             signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
         } else {
-            List<SignRequestParamsWsDto> signRequestParamsWsDtos = userService.getSignRequestParamsesFromJson(signRequestParamsJsonString, userEppn);
-            signRequestParamses = signRequestParamsWsDtos.stream().map(SignRequestParamsWsDto::getSignRequestParams).toList();
+            signRequestParamses = userService.getSignRequestParamsesFromJson(signRequestParamsJsonString, userEppn);
         }
         if (signRequest.getCurrentSignType().equals(SignType.nexuSign) || (SignWith.valueOf(signWith).equals(SignWith.nexuCert))) {
             signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);

@@ -166,7 +166,7 @@ public class FormWsController {
         }
         List<WorkflowStepDto> workflowStepDtos = recipientService.convertRecipientJsonStringToWorkflowStepDtos(stepsJsonString);
         if (signRequestParamsJsonString != null) {
-            List<SignRequestParamsWsDto> signRequestParamsWsDtos = userService.getSignRequestParamsesFromJson(signRequestParamsJsonString, "system");
+            List<SignRequestParamsWsDto> signRequestParamsWsDtos = userService.getSignRequestParamsWsDtosFromJson(signRequestParamsJsonString, "system");
             for(WorkflowStepDto workflowStepDto : workflowStepDtos) {
                 workflowStepDto.setSignRequestParams(signRequestParamsWsDtos);
             }
