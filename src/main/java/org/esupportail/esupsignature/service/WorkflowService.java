@@ -362,6 +362,9 @@ public class WorkflowService {
                         if (step.get().getSignType() != null) {
                             workflowStep.setSignType(step.get().getSignType());
                         }
+                        if (step.get().getChangeable() != null) {
+                            workflowStep.setChangeable(step.get().getChangeable());
+                        }
                         if (step.get().getRepeatable() != null) {
                             workflowStep.setRepeatable(step.get().getRepeatable());
                         }

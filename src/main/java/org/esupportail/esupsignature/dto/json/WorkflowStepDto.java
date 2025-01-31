@@ -23,13 +23,13 @@ public class WorkflowStepDto {
 
 	private List<SignRequestParamsWsDto> signRequestParams = new ArrayList<>();
 
-	private Boolean changeable = false;
+	private Boolean changeable = null;
 
 	private Integer signLevel = 0;
 
 	private SignType signType;
 
-	private Boolean repeatable = false;
+	private Boolean repeatable = null;
 
 	private SignType repeatableSignType = SignType.visa;
 
