@@ -29,6 +29,12 @@ public class AuditStep {
     private Integer posY;
 
     @Column(columnDefinition = "TEXT")
+    private String signId;
+
+    @Column(columnDefinition = "TEXT")
+    private String timeStampId;
+
+    @Column(columnDefinition = "TEXT")
     private String signCertificat;
 
     @Column(columnDefinition = "TEXT")
@@ -110,6 +116,22 @@ public class AuditStep {
 
     public void setPosY(Integer posY) {
         this.posY = posY;
+    }
+
+    public String getSignId() {
+        return signId;
+    }
+
+    public void setSignId(String signId) {
+        this.signId = signId;
+    }
+
+    public String getTimeStampId() {
+        return timeStampId;
+    }
+
+    public void setTimeStampId(String timeStampId) {
+        this.timeStampId = timeStampId;
     }
 
     public String getSignCertificat() {
