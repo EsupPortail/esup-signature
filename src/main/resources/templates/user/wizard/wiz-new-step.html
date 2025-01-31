@@ -94,11 +94,15 @@
     </form>
 </div>
 <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
     <button type="button" id="save-step" value="true" class="btn btn-primary float-end m-1">
-        <i class="fa-solid fa-save"></i> Enregistrer cette étape
+        <i class="fa-solid fa-plus"></i> Enregistrer cette étape
     </button>
     <button formnovalidate id="end-workflow-sign" name="end-workflow-sign" value="true" th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" type="button" class="btn btn-success float-end m-1">
-        <i class="fa-solid fa-paper-plane"></i> Envoyer la demande sans ajouter d’étape supplémentaire
+        <i class="fa-solid fa-save"></i> Valider le circuit puis annoter le document
+    </button>
+    <button formnovalidate id="end-workflow-sign-start" name="end-workflow-sign" value="true" th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" type="button" class="btn btn-success float-end m-1">
+        <i class="fa-solid fa-paper-plane"></i> Valider le circuit et envoyer le document
     </button>
 </div>
 </html>

@@ -63,6 +63,9 @@ public class WorkflowStepService {
         } else {
             workflowStep.setSignType(signType);
         }
+        if(changeable == null) {
+            changeable = false;
+        }
         workflowStep.setChangeable(changeable);
         workflowStepRepository.save(workflowStep);
         if (recipients != null && recipients.length > 0) {

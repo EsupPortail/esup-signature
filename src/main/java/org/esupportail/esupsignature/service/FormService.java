@@ -470,7 +470,7 @@ public class FormService {
 	@Transactional
 	public void updateSignRequestParams(Long formId, InputStream inputStream) {
 		Form form = getById(formId);
-		List<SignRequestParams> findedSignRequestParams = signRequestParamsService.scanSignatureFields(inputStream, 0, form.getWorkflow());
+		List<SignRequestParams> findedSignRequestParams = signRequestParamsService.scanSignatureFields(inputStream, 0, form.getWorkflow(), true);
 		if(!findedSignRequestParams.isEmpty()) {
 			form.getSignRequestParams().clear();
 			int i = 0;

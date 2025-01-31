@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
+import org.esupportail.esupsignature.dto.json.SignRequestParamsWsDto;
 import org.esupportail.esupsignature.dto.view.UserDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
@@ -1052,12 +1053,12 @@ public class UserService {
     }
 
     @Transactional
-    public List<SignRequestParams> getSignRequestParamsesFromJson(String signRequestParamsJsonString, String userEppn) {
+    public List<SignRequestParamsWsDto> getSignRequestParamsesFromJson(String signRequestParamsJsonString, String userEppn) {
         User user = getByEppn(userEppn);
-        List<SignRequestParams> signRequestParamses = new ArrayList<>();
+        List<SignRequestParamsWsDto> signRequestParamseWsDtos = new ArrayList<>();
         try {
-            signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
-            for (SignRequestParams signRequestParams : signRequestParamses) {
+            signRequestParamseWsDtos = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParamsWsDto[].class));
+            for (SignRequestParamsWsDto signRequestParams : signRequestParamseWsDtos) {
                 if(signRequestParams.getImageBase64() != null) {
                     try {
                         user.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signRequestParams.getImageBase64()), user, user.getEppn() + "_sign.png", "image/png"));
@@ -1067,11 +1068,10 @@ public class UserService {
                     }
                 }
             }
-//            signRequestParamsRepository.saveAll(signRequestParamses);
         } catch (JsonProcessingException e) {
             logger.warn("no signRequestParams returned", e);
         }
-        return signRequestParamses;
+        return signRequestParamseWsDtos;
     }
 
 }

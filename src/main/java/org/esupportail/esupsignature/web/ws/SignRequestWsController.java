@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
@@ -20,11 +19,13 @@ import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.AuditTrail;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestParamsService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,14 +47,30 @@ public class SignRequestWsController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignRequestWsController.class);
 
-    @Resource
-    private SignRequestService signRequestService;
+    private final SignRequestService signRequestService;
 
-    @Resource
-    private RecipientService recipientService;
+    private final RecipientService recipientService;
 
-    @Resource
-    private SignBookService signBookService;
+    private final SignBookService signBookService;
+
+    private final SignRequestParamsService signRequestParamsService;
+
+    public SignRequestWsController(SignRequestService signRequestService, RecipientService recipientService, SignBookService signBookService, SignRequestParamsService signRequestParamsService) {
+        this.signRequestService = signRequestService;
+        this.recipientService = recipientService;
+        this.signBookService = signBookService;
+        this.signRequestParamsService = signRequestParamsService;
+    }
+
+    @CrossOrigin
+    @PostMapping(value ="/scan", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Recupération des paramètres de signature du documents")
+    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
+    public ResponseEntity<List<SignRequestParams>> getSignRequestParams(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
+                                                                        @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey
+                                                                        ) throws IOException {
+        return ResponseEntity.ok().body(signRequestParamsService.scanSignatureFields(multipartFiles[0].getInputStream(), 1, null, false));
+    }
 
     @CrossOrigin
     @PostMapping(value ="/new", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
@@ -61,39 +78,56 @@ public class SignRequestWsController {
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public ResponseEntity<?> create(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
                                     @RequestParam(required = false) @Parameter(description = "Multipart stream des pièces jointes") MultipartFile[] attachementMultipartFiles,
-                                    @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example = "[{\n" +
-                                            "  \"title\": \"string\",\n" +
-                                            "  \"workflowId\": 0,\n" +
-                                            "  \"stepNumber\": 0,\n" +
-                                            "  \"description\": \"string\",\n" +
-                                            "  \"recipientsCCEmails\": [\n" +
-                                            "    \"string\"\n" +
-                                            "  ],\n" +
-                                            "  \"recipients\": [\n" +
-                                            "    {\n" +
-                                            "      \"step\": 0,\n" +
-                                            "      \"email\": \"string\",\n" +
-                                            "      \"phone\": \"string\",\n" +
-                                            "      \"name\": \"string\",\n" +
-                                            "      \"firstName\": \"string\",\n" +
-                                            "      \"forceSms\": true\n" +
-                                            "    }\n" +
-                                            "  ],\n" +
-                                            "  \"changeable\": true,\n" +
-                                            "  \"signLevel\": 0,\n" +
-                                            "  \"signType\": \"hiddenVisa\",\n" +
-                                            "  \"repeatable\": true,\n" +
-                                            "  \"repeatableSignType\": \"hiddenVisa\",\n" +
-                                            "  \"allSignToComplete\": true,\n" +
-                                            "  \"userSignFirst\": true,\n" +
-                                            "  \"multiSign\": true,\n" +
-                                            "  \"autoSign\": true,\n" +
-                                            "  \"forceAllSign\": true,\n" +
-                                            "  \"comment\": \"string\",\n" +
-                                            "  \"attachmentRequire\": true,\n" +
-                                           "  \"attachmentAlert\": false,\n" +
-                                            "  \"maxRecipients\": 0\n" +
-                                            "}]") String stepsJsonString,
+                                    @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example =
+                                            """
+                                                  [{
+                                                  "title": "string",
+                                                  "workflowId": 0,
+                                                  "stepNumber": 1,
+                                                  "description": "string",
+                                                  "recipientsCCEmails": [
+                                                    "string"
+                                                  ],
+                                                  "recipients": [
+                                                    {
+                                                      "step": 0,
+                                                      "email": "string",
+                                                      "phone": "string",
+                                                      "name": "string",
+                                                      "firstName": "string",
+                                                      "forceSms": true
+                                                    }
+                                                  ],
+                                                  "signRequestParams": [
+                                                    {
+                                                      "signPageNumber": 1,
+                                                      "signDocumentNumber": 0,
+                                                      "signWidth": 150,
+                                                      "signHeight": 75,
+                                                      "xPos": 0,
+                                                      "yPos": 0
+                                                    }
+                                                  ],
+                                                  "changeable": false,
+                                                  "signLevel": 0,
+                                                  "signType": "visa",
+                                                  "repeatable": false,
+                                                  "repeatableSignType": "visa",
+                                                  "allSignToComplete": false,
+                                                  "userSignFirst": false,
+                                                  "multiSign": true,
+                                                  "singleSignWithAnnotation": false,
+                                                  "autoSign": false,
+                                                  "forceAllSign": false,
+                                                  "comment": "string",
+                                                  "attachmentRequire": false,
+                                                  "attachmentAlert": false,
+                                                  "maxRecipients": 99,
+                                                  "targetEmails": [
+                                                    "string"
+                                                  ]
+                                                  }]
+                                                  """) String stepsJsonString,
                                     @RequestParam(required = false) @Parameter(description = "EPPN du créateur/propriétaire de la demande") String createByEppn,
                                     @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title,
                                     @RequestParam(required = false) @Parameter(description = "Liste des personnes en copie (emails). Ne prend pas en charge les groupes") List<String> recipientsCCEmails,

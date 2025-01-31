@@ -65,17 +65,18 @@ public class SignRequestParamsService {
         signRequestParams.setxPos(Math.round(pdRectangle.getLowerLeftX() / globalProperties.getFixFactor()));
         signRequestParams.setyPos(Math.round((pdPage.getBBox().getHeight() - pdRectangle.getLowerLeftY() - pdRectangle.getHeight()) / globalProperties.getFixFactor()));
         signRequestParams.setSignPageNumber(signPageNumber);
-        signRequestParamsRepository.save(signRequestParams);
         return signRequestParams;
     }
 
-    public List<SignRequestParams> scanSignatureFields(InputStream inputStream, int docNumber, Workflow workflow) throws EsupSignatureIOException {
+    public List<SignRequestParams> scanSignatureFields(InputStream inputStream, int docNumber, Workflow workflow, boolean persist) throws EsupSignatureIOException {
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
             List<SignRequestParams> signRequestParamses = getSignRequestParamsFromPdf(pdDocument, workflow);
             for(SignRequestParams signRequestParams : signRequestParamses) {
                 signRequestParams.setSignDocumentNumber(docNumber);
-                signRequestParamsRepository.save(signRequestParams);
+                if(persist) {
+                    signRequestParamsRepository.save(signRequestParams);
+                }
             }
             pdDocument.close();
             return signRequestParamses;

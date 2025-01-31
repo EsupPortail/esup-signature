@@ -11,10 +11,10 @@ export class Step {
         this.signType = "pdfImageStamp";
         this.forceAllSign = false;
         this.userSignFirst = false;
-        this.changeable = false;
+        this.changeable = "";
         this.recipients = [];
         this.recipientsCCEmails = [];
-        this.repeatable = false;
+        this.repeatable = "";
         this.targetEmails = [];
         Object.assign(this, step);
     }
