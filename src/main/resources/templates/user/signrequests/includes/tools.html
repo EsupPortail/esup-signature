@@ -61,14 +61,14 @@
 			</button>
 			<div class="border ms-1 me-2"></div>
 			<div id="insert-btn-sign-div" class="d-block d-lg-none">
-				<div id="signTools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="me-1">
+				<div th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="me-1">
 					<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp
 									||
 									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign
 									||
 									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign
 									}"
-							id="addSignButton"
+							id="addSignButton3"
 							role="button"
 							class="btn btn-light btn-outline-primary text-start">
 						<i class="fa-solid fa-file-signature"></i>
