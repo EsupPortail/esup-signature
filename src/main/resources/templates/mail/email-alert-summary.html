@@ -4,7 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 </head>
 <body>
-<table width="100%" border="0" style="width: 100%;" bgcolor="#ffffff">
+<table width="100%" border="0" style="width: 100%; border: 0;" bgcolor="#ffffff">
 	<tr>
 		<td width="100%" style="background-color:#343a40; border-bottom:1px solid rgba(0, 0, 0, 0.125); margin-bottom:0; padding:10px; width: 100%;" bgcolor="#343a40">
 			<img height="30" class="mx-auto float-start" src="cid:logo" style="border-style:none; vertical-align:middle; float:left; margin-right:auto; margin-left:auto" valign="middle" align="left">
@@ -12,26 +12,26 @@
 		</td>
 	</tr>
 	<tr>
-		<td style="width:100%; padding:10px;background-color:#f8f9fa;">
+		<td style="width:100%; padding:10px;background-color:rgba(0,0,0,0.05);">
 			<p style="margin-bottom:1rem; margin-top:0;text-align: center;font-weight: bold">Bonjour, </p>
 			<p style="margin-bottom:1rem; margin-top:0;text-align: center;">Voici la liste des demandes de signatures en attente : </p>
 			<table class="table table-borderless">
 				<thead class="table-secondary">
 				<tr>
-					<td style="color: #fff;vertical-align: middle; width: 50%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;font-size:14px;" bgcolor="#6c757d" class="text-white"><b>Nom</b></td>
-					<td style="color: #fff;vertical-align: middle; width: 15%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;font-size:14px;" bgcolor="#6c757d" class="text-white"><b>Date de création</b></td>
-					<td style="color: #fff;vertical-align: middle; width: 15%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;font-size:14px;" bgcolor="#6c757d"><b>Créé par</b></td>
-					<td style="color: #fff;vertical-align: middle; width: 15%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;font-size:14px;" bgcolor="#6c757d"><b>Consulter</b></td>
+					<td style="color: #fff;vertical-align: middle; width: 50%; background-color:#6c757d;  padding:10px;font-size:14px;" bgcolor="#6c757d" class="text-white"><b>Nom</b></td>
+					<td style="color: #fff;vertical-align: middle; width: 15%; background-color:#6c757d;  padding:10px;font-size:14px;" bgcolor="#6c757d" class="text-white"><b>Date de création</b></td>
+					<td style="color: #fff;vertical-align: middle; width: 15%; background-color:#6c757d;  padding:10px;font-size:14px;" bgcolor="#6c757d"><b>Créé par</b></td>
+					<td style="color: #fff;vertical-align: middle; width: 15%; background-color:#6c757d;  padding:10px;font-size:14px;" bgcolor="#6c757d"><b>Consulter</b></td>
 				</tr>
 				</thead>
 				<tbody>
 				<th:block th:each="signRequest : ${signRequests}">
 					<tr>
-						<td style="color: #fff;vertical-align: middle; width: 50%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;font-size:14px;" bgcolor="#6c757d" th:text="${signRequest.title}"></td>
-						<td style="color: #fff;vertical-align: middle; width: 15%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;font-size:14px;" bgcolor="#6c757d" th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></td>
-						<td style="color: #fff;vertical-align: middle; width: 15%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;font-size:14px;" bgcolor="#6c757d" th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}">
+						<td style="color: #fff;vertical-align: middle; width: 50%; background-color:#6c757d;  padding:10px;font-size:14px;" bgcolor="#6c757d" th:text="${signRequest.title}"></td>
+						<td style="color: #fff;vertical-align: middle; width: 15%; background-color:#6c757d;  padding:10px;font-size:14px;" bgcolor="#6c757d" th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></td>
+						<td style="color: #fff;vertical-align: middle; width: 15%; background-color:#6c757d;  padding:10px;font-size:14px;" bgcolor="#6c757d" th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}">
 						</td>
-						<td style="color: #fff;vertical-align: middle; width: 15%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;font-size:14px;" bgcolor="#6c757d">
+						<td style="color: #fff;vertical-align: middle; width: 15%; background-color:#6c757d;  padding:10px;font-size:14px;" bgcolor="#6c757d">
 							<a th:href="@{|${rootUrl}/user/signrequests/${signRequest.id}|}" style="background-color:#0d6efd; color:#fff; text-decoration:none; -moz-user-select:none; -ms-user-select:none; -webkit-user-select:none; border-radius: 10px; display:inline-block; font-size:14px; font-weight:600; line-height:1.5; padding:5px; text-align:center; transition:color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; user-select:none; vertical-align:middle; margin-right:auto; margin-left:auto" bgcolor="#0d6efd" align="center" valign="middle">Accéder au document</a>
 						</td>
 					</tr>
@@ -43,7 +43,7 @@
 		</td>
 	</tr>
 	<tr>
-		<td style="width:100%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;  -ms-flex-pack:center; justify-content:center; text-align:center; font-size:14px;" bgcolor="#6c757d">
+		<td style="width:100%; background-color:#6c757d;  padding:10px;  -ms-flex-pack:center; justify-content:center; text-align:center; font-size:14px;" bgcolor="#6c757d">
 			<span class="text-white text-center" style="text-align:center; color:#fff" align="center" th:text="#{application.footer}"></span>
 		</td>
 	</tr>

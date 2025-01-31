@@ -5,7 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 </head>
 <body>
-<table width="100%" border="0" style="width: 100%;" bgcolor="#ffffff">
+<table width="100%" border="0" style="width: 100%; border: 0;" bgcolor="#ffffff">
     <tr>
         <td width="100%" style="background-color:#343a40; border-bottom:1px solid rgba(0, 0, 0, 0.125); margin-bottom:0; padding:10px; width: 100%;" bgcolor="#343a40">
             <img height="30" class="mx-auto float-start" src="cid:logo" style="border-style:none; vertical-align:middle; float:left; margin-right:auto; margin-left:auto" valign="middle" align="left">
@@ -13,15 +13,15 @@
         </td>
     </tr>
     <tr>
-        <td style="width:100%; padding:10px;background-color:#f8f9fa;">
+        <td style="width:100%; padding:10px;background-color:rgba(0,0,0,0.05);">
             <p style="margin-bottom:1rem; margin-top:0;text-align: center;font-weight: bold">Bonjour, </p>
             <p style="margin-bottom:1rem; margin-top:0;text-align: center;">Un document signé vous est destiné, il est attaché en piece jointe de ce mail : </p>
-            <table style="width: 50%; margin-left: 25%;">
+            <table style="width: 66%; margin-left: 16.5%;">
                 <tr>
-                    <td style="vertical-align: middle; width: 100%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;font-size:14px;" bgcolor="#6c757d">
-                        <p style="width: 100%; text-align: center;">
+                    <td style="border-radius:5px; border-color: #343a40;vertical-align: middle; width: 100%; background-color:#343a40; padding:10px;font-size:14px;" bgcolor="#343a40">
+                        <p style="width: 96%; text-align: left;background-color: #6c757d;padding: 2%;border-radius: 5px;">
                             <a th:href="${url}">
-                                <img height="25" class="mx-auto float-start" src="cid:logo-file" style="border-style:none; vertical-align:middle;"  valign="middle" align="left"><span class="text-white text-center" style="line-height:25px;color:#fff; font-weight: 600" align="center" th:text="${signBook.signRequests.get(0).originalDocuments.get(0).getFileName()}"></span>
+                                <img height="25" class="mx-auto float-start" src="cid:logo-file" style="border-style:none; vertical-align:middle;margin-right: 5%;"  valign="middle"><span class="text-white text-center" style="line-height:25px;color:#fff; font-weight: 600;font-size: 16px;" align="center" th:text="${signBook.signRequests.get(0).originalDocuments.get(0).getFileName()}"></span>
                             </a>
                         </p>
                         <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;color:#fff;" >
@@ -56,7 +56,7 @@
         </td>
     </tr>
     <tr>
-        <td style="width:100%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;  -ms-flex-pack:center; justify-content:center; text-align:center; font-size:14px;" bgcolor="#6c757d">
+        <td style="width:100%; background-color:#6c757d;  padding:10px;  -ms-flex-pack:center; justify-content:center; text-align:center; font-size:14px;" bgcolor="#6c757d">
             <span class="text-white text-center" style="text-align:center; color:#fff" align="center" th:text="#{application.footer}"></span>
         </td>
     </tr>
