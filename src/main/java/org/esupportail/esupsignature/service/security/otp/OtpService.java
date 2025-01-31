@@ -93,7 +93,7 @@ public class OtpService {
                 userService.updatePhone(extUser.getEppn(), phone);
             }
             otpRepository.save(otp);
-            mailService.sendOtp(otp, urlId, signBook, signature);
+            mailService.sendOtp(otp, signBook, signature);
             logger.info("new url for otp : " + urlId);
             return true;
         } else {

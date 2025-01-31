@@ -143,7 +143,8 @@ export class WorkspacePdf {
             }
         }
         this.addSignButton.on('click', e => this.addSign());
-        $('#addSignButton2').on('click', e => this.addSign());
+        $("#addSignButton2").on('click', e => this.addSign());
+        $("#addSignButton3").on('click', e => this.addSign());
         $("#addCheck").on("click", e => this.signPosition.addCheckImage(this.pdfViewer.pageNum));
         $("#addTimes").on("click", e => this.signPosition.addTimesImage(this.pdfViewer.pageNum));
         $("#addCircle").on("click", e => this.signPosition.addCircleImage(this.pdfViewer.pageNum));
@@ -227,7 +228,7 @@ export class WorkspacePdf {
                 signSpaceDiv.css("left", xPos);
                 signSpaceDiv.css("width", Math.round(parseInt(signSpaceDiv.attr("data-es-width")) * this.pdfViewer.scale) + "px");
                 signSpaceDiv.css("height", Math.round(parseInt(signSpaceDiv.attr("data-es-height")) * this.pdfViewer.scale) + "px");
-                signSpaceDiv.css("font-size", 12 *  this.pdfViewer.scale);
+                signSpaceDiv.css("font-size", 13 *  this.pdfViewer.scale);
                 this.makeItDroppable(signSpaceDiv);
             }
         }

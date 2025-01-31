@@ -362,6 +362,9 @@ public class WorkflowService {
                         if (step.get().getSignType() != null) {
                             workflowStep.setSignType(step.get().getSignType());
                         }
+                        if (step.get().getChangeable() != null) {
+                            workflowStep.setChangeable(step.get().getChangeable());
+                        }
                         if (step.get().getRepeatable() != null) {
                             workflowStep.setRepeatable(step.get().getRepeatable());
                         }
@@ -601,7 +604,9 @@ public class WorkflowService {
         Workflow workflow = getById(id);
         String savedName = workflow.getName();
         String savedTitle = workflow.getTitle();
+        String savedDescription = workflow.getDescription();
         Workflow workflowSetup = objectMapper.readValue(inputStream.readAllBytes(), Workflow.class);
+        workflowSetup.setId(id);
         workflow.getWorkflowSteps().clear();
         for(WorkflowStep workflowStepSetup : workflowSetup.getWorkflowSteps()) {
             Optional<WorkflowStep> optionalWorkflowStep = workflow.getWorkflowSteps().stream().filter(workflowStep1 -> workflowStep1.getId().equals(workflowStepSetup.getId())).findFirst();
@@ -619,13 +624,14 @@ public class WorkflowService {
             }
         }
         workflow.getTargets().clear();
-        update(workflow, workflowSetup.getCreateBy(), null, workflowSetup.getManagers());
+        update(workflowSetup, workflowSetup.getCreateBy(), null, workflowSetup.getManagers());
         for(Target target : workflowSetup.getTargets()) {
             Target newTarget = targetService.createTarget(target.getTargetUri());
             workflow.getTargets().add(newTarget);
         }
         workflow.setName(savedName);
         workflow.setTitle(savedTitle);
+        workflow.setDescription(savedDescription);
     }
 
     @Transactional

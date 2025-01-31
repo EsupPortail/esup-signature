@@ -412,9 +412,10 @@ input:focus, textarea:focus, select:focus {
 .sign-field {
     border: 1px solid transparent !important;
     background-color: rgba(189, 255, 189, 1) !important;
-    mix-blend-mode: multiply;
+    opacity: 0.9;
     cursor: pointer !important;
     overflow: hidden;
+    font-weight: bold;
 }
 
 .sign-field:hover {

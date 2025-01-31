@@ -2,7 +2,8 @@ package org.esupportail.esupsignature.service;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.openhtmltopdf.util.XRLog;
-import jakarta.annotation.Resource;
+import eu.europa.esig.dss.diagnostic.DiagnosticData;
+import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FileUtils;
@@ -12,6 +13,7 @@ import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.repository.AuditStepRepository;
 import org.esupportail.esupsignature.repository.AuditTrailRepository;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -38,23 +40,29 @@ public class AuditTrailService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuditTrailService.class);
 
-    @Resource
-    private AuditTrailRepository auditTrailRepository;
+    private final AuditTrailRepository auditTrailRepository;
 
-    @Resource
-    private AuditStepRepository auditStepRepository;
+    private final AuditStepRepository auditStepRepository;
 
-    @Resource
-    private UserService userService;
+    private final UserService userService;
 
-    @Resource
-    private FileService fileService;
+    private final FileService fileService;
 
-    @Resource
-    private LogService logService;
+    private final LogService logService;
 
-    @Resource
-    private TemplateEngine templateEngine;
+    private final TemplateEngine templateEngine;
+
+    private final ValidationService validationService;
+
+    public AuditTrailService(AuditTrailRepository auditTrailRepository, AuditStepRepository auditStepRepository, UserService userService, FileService fileService, LogService logService, TemplateEngine templateEngine, ValidationService validationService) {
+        this.auditTrailRepository = auditTrailRepository;
+        this.auditStepRepository = auditStepRepository;
+        this.userService = userService;
+        this.fileService = fileService;
+        this.logService = logService;
+        this.templateEngine = templateEngine;
+        this.validationService = validationService;
+    }
 
     public AuditTrail create(String token) {
         AuditTrail auditTrail = new AuditTrail();
@@ -72,13 +80,13 @@ public class AuditTrailService {
         auditTrail.setDocumentId(document.getId().toString());
     }
 
-    public void addAuditStep(String token, String userEppn, String certificat, String timeStampCertificat, Date timeStampDate, Boolean allScrolled, Integer page, Integer posX, Integer posY) {
+    public void addAuditStep(String token, String userEppn, String signId, String timeStampId, String certificat, String timeStampCertificat, Date timeStampDate, Boolean allScrolled, Integer page, Integer posX, Integer posY) {
         AuditTrail auditTrail = auditTrailRepository.findByToken(token);
-        AuditStep auditStep = createAuditStep(userEppn, certificat, timeStampCertificat, timeStampDate, allScrolled, page, posX, posY);
+        AuditStep auditStep = createAuditStep(userEppn, signId, timeStampId, certificat, timeStampCertificat, timeStampDate, allScrolled, page, posX, posY);
         auditTrail.getAuditSteps().add(auditStep);
     }
 
-    public AuditStep createAuditStep(String userEppn, String certificat, String timeStampCertificat, Date timeStampDate, Boolean allScrolled, Integer page, Integer posX, Integer posY) {
+    public AuditStep createAuditStep(String userEppn, String signId, String timeStampId, String certificat, String timeStampCertificat, Date timeStampDate, Boolean allScrolled, Integer page, Integer posX, Integer posY) {
         User user = userService.getByEppn(userEppn);
         AuditStep auditStep = new AuditStep();
         auditStep.setName(user.getName());
@@ -88,6 +96,8 @@ public class AuditTrailService {
         auditStep.setPosX(posX);
         auditStep.setPosY(posY);
         auditStep.setLogin(user.getEppn());
+        auditStep.setSignId(signId);
+        auditStep.setTimeStampId(timeStampId);
         auditStep.setSignCertificat(certificat);
         auditStep.setTimeStampCertificat(timeStampCertificat);
         auditStep.setTimeStampDate(timeStampDate);
@@ -190,5 +200,26 @@ public class AuditTrailService {
             }
         }
         return usersHasRefused;
+    }
+
+    public void createSignAuditStep(SignRequest signRequest, String userEppn, Document signedDocument, boolean isViewed) {
+        DiagnosticData diagnosticData;
+        Reports reports;
+        reports = validationService.validate(signedDocument.getInputStream(), null);
+        diagnosticData = reports.getDiagnosticData();
+        String signId = new ArrayList<>(diagnosticData.getAllSignatures()).get(diagnosticData.getAllSignatures().size() - 1).getId();
+        String timestampId = "no timestamp found";
+        String certificat = new ArrayList<>(diagnosticData.getAllSignatures()).get(diagnosticData.getAllSignatures().size() - 1).getSigningCertificate().getId();
+        String timestamp = "no timestamp found";
+        if(!diagnosticData.getTimestampList().isEmpty()) {
+            timestampId = diagnosticData.getTimestampList().get(0).getId();
+            timestamp = diagnosticData.getTimestampList().get(0).getSigningCertificate().getId();
+        }
+        if (!signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty()) {
+            SignRequestParams signRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0);
+            addAuditStep(signRequest.getToken(), userEppn, signId, timestampId, certificat, timestamp, reports.getSimpleReport().getBestSignatureTime(reports.getSimpleReport().getFirstSignatureId()), isViewed, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
+        } else {
+            addAuditStep(signRequest.getToken(), userEppn, signId, timestampId, certificat, timestamp, reports.getSimpleReport().getBestSignatureTime(reports.getSimpleReport().getFirstSignatureId()), isViewed, 0, 0, 0);
+        }
     }
 }

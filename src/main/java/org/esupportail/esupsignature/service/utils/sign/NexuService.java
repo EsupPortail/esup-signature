@@ -12,8 +12,6 @@ import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
 import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
-import jakarta.annotation.Resource;
-import org.bouncycastle.asn1.x509.Certificate;
 import org.esupportail.esupsignature.dss.DssUtilsService;
 import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.*;
@@ -34,7 +32,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -42,34 +39,29 @@ public class NexuService {
 
 	private static final Logger logger = LoggerFactory.getLogger(NexuService.class);
 
-	@Resource
-	private SignService signService;
+	private final SignService signService;
+	private final DocumentService documentService;
+	private final FileService fileService;
+	private final UserService userService;
+	private final SignRequestRepository signRequestRepository;
+	private final NexuSignatureRepository nexuSignatureRepository;
+	private final DssUtilsService dssUtilsService;
+	private final AuditTrailService auditTrailService;
+	private final ValidationService validationService;
 
-	@Resource
-	private DocumentService documentService;
+	public NexuService(SignService signService, DocumentService documentService, FileService fileService, UserService userService, SignRequestRepository signRequestRepository, NexuSignatureRepository nexuSignatureRepository, DssUtilsService dssUtilsService, AuditTrailService auditTrailService, ValidationService validationService) {
+        this.signService = signService;
+        this.documentService = documentService;
+        this.fileService = fileService;
+        this.userService = userService;
+        this.signRequestRepository = signRequestRepository;
+        this.nexuSignatureRepository = nexuSignatureRepository;
+        this.dssUtilsService = dssUtilsService;
+        this.auditTrailService = auditTrailService;
+        this.validationService = validationService;
+	}
 
-	@Resource
-	private FileService fileService;
-
-	@Resource
-	private UserService userService;
-
-	@Resource
-	private SignRequestRepository signRequestRepository;
-
-	@Resource
-	private NexuSignatureRepository nexuSignatureRepository;
-
-	@Resource
-	private DssUtilsService dssUtilsService;
-
-	@Resource
-	private AuditTrailService auditTrailService;
-
-	@Resource
-	private ValidationService validationService;
-
-	public AbstractSignatureParameters<?> getParameters(SignatureMultipleDocumentsForm signatureMultipleDocumentsForm, List<Document> documentsToSign) throws IOException {
+    public AbstractSignatureParameters<?> getParameters(SignatureMultipleDocumentsForm signatureMultipleDocumentsForm, List<Document> documentsToSign) throws IOException {
 		AbstractSignatureParameters<?> parameters = signService.getASiCSignatureParameters(signatureMultipleDocumentsForm.getContainerType(), signatureMultipleDocumentsForm.getSignatureForm());
 		List<DssMultipartFile> dssMultipartFiles = new ArrayList<>();
 		for(Document document : documentsToSign) {
@@ -95,7 +87,7 @@ public class NexuService {
 		DocumentSignatureService service = signService.getSignatureService(signatureDocumentForm.getContainerType(), signatureDocumentForm.getSignatureForm());
 		DSSDocument toSignDocument = dssUtilsService.toDSSDocument(new DssMultipartFile(documentsToSign.get(0).getFileName(), documentsToSign.get(0).getFileName(), documentsToSign.get(0).getContentType(), documentsToSign.get(0).getInputStream()));
 		AbstractSignatureParameters parameters = getSignatureParameters(signRequest, userEppn, signatureDocumentForm, documentsToSign);
-		ToBeSigned  toBeSigned = service.getDataToSign(toSignDocument, parameters);
+		ToBeSigned toBeSigned = service.getDataToSign(toSignDocument, parameters);
 		logger.info("End getDataToSign with one document");
 		return toBeSigned;
 	}
@@ -187,7 +179,7 @@ public class NexuService {
 		nexuSignature.setDigestAlgorithm(abstractSignatureForm.getDigestAlgorithm());
 		nexuSignature.setEncryptionAlgorithm(abstractSignatureForm.getEncryptionAlgorithm());
 		nexuSignature.setSignatureLevel(abstractSignatureForm.getSignatureLevel());
-		nexuSignature.setSignWithExpiredCertificate(abstractSignatureForm.isSignWithExpiredCertificate());
+		//nexuSignature.setSignWithExpiredCertificate(abstractSignatureForm.isSignWithExpiredCertificate());
 		nexuSignature.getDocumentToSign().addAll(signService.getToSignDocuments(id));
 		nexuSignatureRepository.save(nexuSignature);
 		return nexuSignature;
@@ -228,7 +220,6 @@ public class NexuService {
 		abstractSignatureForm.setDigestAlgorithm(nexuSignature.getDigestAlgorithm());
 		abstractSignatureForm.setEncryptionAlgorithm(nexuSignature.getEncryptionAlgorithm());
 		abstractSignatureForm.setSignatureLevel(nexuSignature.getSignatureLevel());
-		abstractSignatureForm.setSignWithExpiredCertificate(nexuSignature.getSignWithExpiredCertificate());
 		return abstractSignatureForm;
 	}
 
@@ -271,16 +262,7 @@ public class NexuService {
 		try {
 			Document signedFile = nexuSign(signRequest, userEppn, abstractSignatureForm, documentsToSign);
 			if(signedFile != null) {
-				Certificate certificate = Certificate.getInstance(abstractSignatureForm.getCertificate());
-				int pageNumber = 0;
-				int posX = 0;
-				int posY = 0;
-				if(!signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty()) {
-					pageNumber = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0).getSignPageNumber();
-					posX = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0).getxPos();
-					posY = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0).getyPos();
-				}
-				auditTrailService.addAuditStep(signRequest.getToken(), userEppn, certificate.getSubject().toString(), "", new Date(), signRequest.getViewedBy().contains(user), pageNumber, posX, posY);
+				auditTrailService.createSignAuditStep(signRequest, userEppn, signedFile, signRequest.getViewedBy().contains(user));
 				auditTrailService.closeAuditTrail(signRequest.getToken(), signedFile, signedFile.getInputStream());
 				signedDocumentResponse = new SignDocumentResponse();
 				signedDocumentResponse.setUrlToDownload("download");

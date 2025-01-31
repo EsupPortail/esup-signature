@@ -1,7 +1,9 @@
 package org.esupportail.esupsignature.service.mail;
 
+import jakarta.mail.Address;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import org.apache.commons.io.IOUtils;
@@ -40,6 +42,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -130,12 +133,10 @@ public class MailService {
             OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
             ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
         }
-        ctx.setVariable("signBook", signBook);
         ctx.setVariable("recipientUser", recipientUser);
         ctx.setVariable("userShare", userShare);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
-        setTemplate(ctx);
+        setTemplate(ctx, signBook);
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-alert-share.html", ctx);
@@ -152,16 +153,13 @@ public class MailService {
         }
     }
 
-    public void sendCompletedMail(SignBook signBook, String userEppn) throws EsupSignatureMailException {
+    public Set<String> sendCompletedMail(SignBook signBook, String userEppn) throws EsupSignatureMailException {
         User user = userService.getByEppn(userEppn);
         if (!checkMailSender()) {
-            return;
+            return null;
         }
         final Context ctx = new Context(Locale.FRENCH);
-        ctx.setVariable("signBook", signBook);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
-        setTemplate(ctx);
+        setTemplate(ctx, signBook);
         Set<String> toEmails = new HashSet<>();
         if(!signBook.getCreateBy().getEppn().equals("system")) toEmails.add(signBook.getCreateBy().getEmail());
         toEmails.remove(user.getEmail());
@@ -174,11 +172,13 @@ public class MailService {
                 mimeMessage.setTo(toEmails.toArray(String[]::new));
                 logger.info("send email completed to : " + StringUtils.join(toEmails.toArray(String[]::new), ";"));
                 sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
+                return toEmails;
             } catch (MailSendException | MessagingException e) {
                 logger.error("unable to send COMPLETE email", e);
                 throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
             }
         }
+        return null;
     }
 
     public void sendPostit(SignBook signBook, Comment comment) throws EsupSignatureMailException {
@@ -186,11 +186,8 @@ public class MailService {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
-        ctx.setVariable("signBook", signBook);
+        setTemplate(ctx, signBook);
         ctx.setVariable("comment", comment);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
-        setTemplate(ctx);
         Set<String> toEmails = new HashSet<>();
         if(!signBook.getCreateBy().getEppn().equals("system")) toEmails.add(signBook.getCreateBy().getEmail());
         try {
@@ -208,23 +205,20 @@ public class MailService {
     }
 
     @Transactional
-    public void sendCompletedCCMail(SignBook signBook, String userEppn) throws EsupSignatureMailException {
+    public void sendCompletedCCMail(SignBook signBook, String userEppn, Set<String> toMails) throws EsupSignatureMailException {
         if (!checkMailSender()) {
             return;
         }
         User user = signBook.getCreateBy();
         final Context ctx = new Context(Locale.FRENCH);
-        ctx.setVariable("signBook", signBook);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
-        setTemplate(ctx);
+        setTemplate(ctx, signBook);
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-completed-cc.html", ctx);
             addInLineImages(mimeMessage, htmlContent);
             mimeMessage.setSubject("Une demande de signature que vous suivez est terminée");
             if (!signBook.getTeam().isEmpty()) {
-                mimeMessage.setTo(signBook.getTeam().stream().filter(userTo -> !userTo.getUserType().equals(UserType.external) && !userTo.getUserType().equals(UserType.system) && !userTo.getEppn().equals(userEppn)).map(User::getEmail).toArray(String[]::new));
+                mimeMessage.setTo(signBook.getTeam().stream().filter(userTo -> !userTo.getUserType().equals(UserType.external) && (toMails == null || !toMails.contains(userTo.getEmail())) && !userTo.getUserType().equals(UserType.system) && !userTo.getEppn().equals(userEppn)).map(User::getEmail).toArray(String[]::new));
                 logger.info("send email completes cc for " + user.getEppn());
                 sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
             } else {
@@ -237,17 +231,14 @@ public class MailService {
     }
 
     public void sendRefusedMail(SignBook signBook, String comment, String userEppn) throws EsupSignatureMailException {
-        User user = userService.getByEppn(userEppn);
         if (!checkMailSender()) {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
-        ctx.setVariable("signBook", signBook);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
         ctx.setVariable("comment", comment);
+        setTemplate(ctx, signBook);
+        User user = userService.getByEppn(userEppn);
         ctx.setVariable("user", user);
-        setTemplate(ctx);
         Set<String> toEmails = new HashSet<>();
         if(!signBook.getCreateBy().getEppn().equals("system")) toEmails.add(signBook.getCreateBy().getEmail());
         for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
@@ -283,16 +274,7 @@ public class MailService {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
-
-        PersonLdap personLdap = userService.findPersonLdapByUser(signBook.getCreateBy());
-        if(personLdap != null) {
-            OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
-            ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
-        }
-        ctx.setVariable("signBook", signBook);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
-        setTemplate(ctx);
+        setTemplate(ctx, signBook);
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-alert.html", ctx);
@@ -314,16 +296,7 @@ public class MailService {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
-
-        PersonLdap personLdap = userService.findPersonLdapByUser(signBook.getCreateBy());
-        if(personLdap != null) {
-            OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
-            ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
-        }
-        ctx.setVariable("signBook", signBook);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
-        setTemplate(ctx);
+        setTemplate(ctx, signBook);
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-replay-alert.html", ctx);
@@ -348,16 +321,7 @@ public class MailService {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
-
-        PersonLdap personLdap = userService.findPersonLdapByUser(signBook.getCreateBy());
-        if(personLdap != null) {
-            OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
-            ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
-        }
-        ctx.setVariable("signBook", signBook);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
-        setTemplate(ctx);
+        setTemplate(ctx, signBook);
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-cc.html", ctx);
@@ -379,10 +343,8 @@ public class MailService {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
-        ctx.setVariable("signRequests", signRequests);
+        setTemplate(ctx, signRequests.get(0).getParentSignBook());
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
-        setTemplate(ctx);
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-alert-summary.html", ctx);
@@ -399,13 +361,13 @@ public class MailService {
 
     }
 
-    public void sendOtp(Otp otp, String urlId, SignBook signBook, boolean signature) throws EsupSignatureMailException {
+    public void sendOtp(Otp otp, SignBook signBook, boolean signature) throws EsupSignatureMailException {
         final Context ctx = new Context(Locale.FRENCH);
-        ctx.setVariable("url", globalProperties.getRootUrl() + "/otp-access/first/" + urlId);
-        ctx.setVariable("signBook", signBook);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
-        setTemplate(ctx);
+        setTemplate(ctx, signBook);
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/otp-access/first/" + otp.getUrlId());
+        ctx.setVariable("urlControl", globalProperties.getRootUrl() + "/public/control/" + signBook.getSignRequests().get(0).getToken());
+        ctx.setVariable("otpValidity", new Date(otp.getCreateDate().getTime() + TimeUnit.MINUTES.toMillis(globalProperties.getOtpValidity())));
+        ctx.setVariable("otp", otp);
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-otp-download.html", ctx);
@@ -429,12 +391,7 @@ public class MailService {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("signBook", signBook);
-        ctx.setVariable("signRequests", signBook.getSignRequests());
-        User user = signBook.getCreateBy();
-        ctx.setVariable("user", user);
-        setTemplate(ctx);
+        setTemplate(ctx, signBook);
         MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
         String htmlContent = templateEngine.process("mail/email-file.html", ctx);
         addInLineImages(mimeMessage, htmlContent);
@@ -452,6 +409,7 @@ public class MailService {
         mimeMessage.setText(htmlContent, true);
         mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class));
         mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class));
+        mimeMessage.addInline("logo-file", new ClassPathResource("/static/images/fa-file.png", MailService.class));
     }
 
     public void sendTest(List<String> recipientsEmails) throws MessagingException {
@@ -476,9 +434,11 @@ public class MailService {
         try {
             logger.info("send email to : " + Arrays.toString(mimeMessage.getRecipients(Message.RecipientType.TO)));
             mimeMessage.setFrom(mailConfig.getMailFrom());
+            InternetAddress replyToAddress = new InternetAddress(mailConfig.getMailFrom());
             if(workflow != null && org.springframework.util.StringUtils.hasText(workflow.getMailFrom())) {
-                mimeMessage.setFrom(workflow.getMailFrom());
+                replyToAddress = new InternetAddress(workflow.getMailFrom());
             }
+            mimeMessage.setReplyTo(new Address[]{replyToAddress});
             String[] toHeader =  mimeMessage.getHeader("To");
             if(toHeader == null) {
                 return;
@@ -504,8 +464,18 @@ public class MailService {
         }
     }
 
-    private void setTemplate(Context ctx) {
+    private void setTemplate(Context ctx, SignBook signBook) {
         try {
+            ctx.setVariable("user", signBook.getCreateBy());
+            ctx.setVariable("url", globalProperties.getRootUrl() + "/user/signbooks/"+ signBook.getId());
+            ctx.setVariable("urlControl", globalProperties.getRootUrl() + "/public/control/" + signBook.getSignRequests().get(0).getToken());
+            ctx.setVariable("signBook", signBook);
+            ctx.setVariable("signRequests", signBook.getSignRequests());
+            PersonLdap personLdap = userService.findPersonLdapByUser(signBook.getCreateBy());
+            if(personLdap != null) {
+                OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
+                ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
+            }
             ctx.setVariable("logo", fileService.getBase64Image(new ClassPathResource("/static/images/logo.png", MailService.class).getInputStream(), "logo.png"));
             ctx.setVariable("logoUrn", fileService.getBase64Image(new ClassPathResource("/static/images/logo-univ.png", MailService.class).getInputStream(), "logo-univ.png"));
             try (Reader reader = new InputStreamReader(new ClassPathResource("/static/css/bootstrap.min.css", MailService.class).getInputStream(), UTF_8)) {

@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
+import org.esupportail.esupsignature.dto.json.SignRequestParamsWsDto;
 import org.esupportail.esupsignature.dto.view.UserDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
@@ -456,7 +457,7 @@ public class UserService {
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
         long diff = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.MILLISECONDS);
-        if ((EmailAlertFrequency.hourly.equals(user.getEmailAlertFrequency()) && diff >= 1 && minute == 0)
+        if ((EmailAlertFrequency.hourly.equals(user.getEmailAlertFrequency()) && diff >= 1)
                 || (EmailAlertFrequency.daily.equals(user.getEmailAlertFrequency()) && diff >= 24 && user.getEmailAlertHour().equals(hour))
                 || (EmailAlertFrequency.weekly.equals(user.getEmailAlertFrequency()) && diff >= 168 && user.getEmailAlertDay().equals(DayOfWeek.of(calendar.get(Calendar.DAY_OF_WEEK))))) {
             return true;
@@ -1067,11 +1068,32 @@ public class UserService {
                     }
                 }
             }
-//            signRequestParamsRepository.saveAll(signRequestParamses);
         } catch (JsonProcessingException e) {
             logger.warn("no signRequestParams returned", e);
         }
         return signRequestParamses;
+    }
+
+    @Transactional
+    public List<SignRequestParamsWsDto> getSignRequestParamsWsDtosFromJson(String signRequestParamsJsonString, String userEppn) {
+        User user = getByEppn(userEppn);
+        List<SignRequestParamsWsDto> signRequestParamseWsDtos = new ArrayList<>();
+        try {
+            signRequestParamseWsDtos = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParamsWsDto[].class));
+            for (SignRequestParamsWsDto signRequestParamsWsDto : signRequestParamseWsDtos) {
+                if(signRequestParamsWsDto.getImageBase64() != null) {
+                    try {
+                        user.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signRequestParamsWsDto.getImageBase64()), user, user.getEppn() + "_sign.png", "image/png"));
+                        signRequestParamsWsDto.setSignImageNumber(user.getSignImages().size() - 1);
+                    } catch (IOException e) {
+                        logger.error("error on create sign image", e);
+                    }
+                }
+            }
+        } catch (JsonProcessingException e) {
+            logger.warn("no signRequestParams returned", e);
+        }
+        return signRequestParamseWsDtos;
     }
 
 }

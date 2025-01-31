@@ -13,7 +13,7 @@
 					</label>
 				</div>
 			</div>
-			<div class="border ms-1 me-2"></div>
+			<div class="border d-none d-lg-block ms-1 me-2"></div>
 		</th:block>
 		<a th:unless="${user.userType.name() == 'external'}" class="btn btn-light btn-outline-dark d-none d-lg-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
 			<i class="fa-solid fa-info-circle"></i>
@@ -42,12 +42,12 @@
 					class="fa-solid fa-expand"></i></button>
 			<button id="fullheight" title="Pleine hauteur" class="btn btn-light btn-outline-dark d-none d-lg-block me-1"><i
 					class="fa-solid fa-compress"></i></button>
-			<div class="zoom bg-light me-1 p-1 pt-2 d-inline fw-bold"><span id="zoom"></span> %</div>
+			<div class="zoom bg-light me-1 p-1 pt-2 d-none d-xxl-inline fw-bold"><span id="zoom"></span> %</div>
 			<div class="border ms-1 me-2 d-none d-lg-block"></div>
 			<button id="prev" title="Page précédente" class="btn btn-light btn-outline-dark me-1" aria-label="Précédent">
 				<i class="fa-solid fa-arrow-up"></i>
 			</button>
-			<div class="bg-light me-1 p-1 pt-2 d-none d-lg-inline fw-bold text-center" style="min-width: 150px;">
+			<div class="bg-light me-1 p-1 pt-2 d-none d-xxxl-inline fw-bold text-center" style="min-width: 150px;">
 				<span>Page <span id="page_num"></span> / <span id="page_count"></span></span>
 			</div>
 			<button id="next" title="Page suivante" class="btn btn-light btn-outline-dark me-1" aria-label="Prochain">
@@ -60,10 +60,25 @@
 				<i class="fa-solid fa-redo"></i>
 			</button>
 			<div class="border ms-1 me-2"></div>
-			<div id="insert-btn-div">
+			<div id="insert-btn-sign-div" class="d-block d-lg-none">
+				<div th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="me-1">
+					<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp
+									||
+									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign
+									||
+									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign
+									}"
+							id="addSignButton3"
+							role="button"
+							class="btn btn-light btn-outline-primary text-start">
+						<i class="fa-solid fa-file-signature"></i>
+					</button>
+				</div>
+			</div>
+			<div id="insert-btn-div" class="d-none d-lg-block">
 				<button id="insert-btn" th:if="${editable}" class="btn btn-light btn-outline-primary pulse-primary me-1"
 					data-bs-toggle="collapse" href="#second-tools">
-					<i class="fa-solid fa-plus"></i> <span class="d-none d-xl-inline">Menu insertion</span>
+					<i class="fa-solid fa-plus"></i> <span class="d-none d-xxl-inline">Menu insertion</span>
 				</button>
 				<div id="second-tools" class="second-tools position-absolute collapse">
 					<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
@@ -123,24 +138,24 @@
 					</th:block>
 				</div>
 			</div>
-			<button class="btn btn-light btn-outline-dark d-none d-sm-block me-1" data-bs-toggle="modal" title="Pièces jointes"
+			<button class="btn btn-light btn-outline-dark me-1" data-bs-toggle="modal" title="Pièces jointes"
 					data-bs-target="#attachment">
-				<i class="fa-solid fa-paperclip"></i> <span class="d-none d-xxl-inline">Pièces jointes</span>
+				<i class="fa-solid fa-paperclip"></i> <span class="d-none d-xxxxl-inline">Pièces jointes</span>
 				<div th:if="${attachments != null && attachments.size() + signRequest.links.size() > 0 }"
 					 th:text="${attachments.size() + signRequest.links.size()}"
 					 class="badge bg-primary"></div>
 			</button>
 			<button th:if="${editable}" class="btn btn-light btn-outline-dark me-1" data-bs-toggle="modal" title="Ajouter un post-it"
 					data-bs-target="#addCommentModal">
-				<i class="fa-solid fa-sticky-note"></i> <span class="d-none d-xl-inline">Post-it</span>
+				<i class="fa-solid fa-sticky-note"></i> <span class="d-none d-xxxl-inline">Post-it</span>
 			</button>
 			<button th:if="${signable && !#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" id="signImageBtn" class="btn btn-light btn-outline-dark me-1" title="Gérer mes images de signature">
-				<i class="fa-solid fa-images"></i> <span class="d-none d-xxl-inline">Mes signatures</span>
+				<i class="fa-solid fa-images"></i> <span class="d-none d-xxxxl-inline">Mes signatures</span>
 			</button>
 			<form th:if="${displayNotif}"
 				  th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
 				<button type="submit" class="btn btn-light btn-outline-dark me-1">
-					<i class="fa-solid fa-bullhorn"></i> <span class="d-none d-xxl-inline">Relancer</span>
+					<i class="fa-solid fa-bullhorn"></i> <span class="d-none d-xxxl-inline">Relancer</span>
 				</button>
 			</form>
 			<button th:if="${extrenalsRecipients != null && extrenalsRecipients.size() > 0}" class="btn btn-light btn-outline-dark me-1" title="Transmettre un lien d'accès" data-bs-toggle="modal" data-bs-target="#sendLinkModal">
