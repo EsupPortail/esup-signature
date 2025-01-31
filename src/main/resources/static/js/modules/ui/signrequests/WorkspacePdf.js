@@ -143,7 +143,8 @@ export class WorkspacePdf {
             }
         }
         this.addSignButton.on('click', e => this.addSign());
-        $('#addSignButton2').on('click', e => this.addSign());
+        $("#addSignButton2").on('click', e => this.addSign());
+        $("#addSignButton3").on('click', e => this.addSign());
         $("#addCheck").on("click", e => this.signPosition.addCheckImage(this.pdfViewer.pageNum));
         $("#addTimes").on("click", e => this.signPosition.addTimesImage(this.pdfViewer.pageNum));
         $("#addCircle").on("click", e => this.signPosition.addCircleImage(this.pdfViewer.pageNum));
