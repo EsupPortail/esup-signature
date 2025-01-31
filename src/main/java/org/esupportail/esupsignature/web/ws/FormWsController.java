@@ -10,12 +10,13 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
+import org.esupportail.esupsignature.dto.json.SignRequestParamsWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.slf4j.Logger;
@@ -38,65 +39,90 @@ public class FormWsController {
 
     private static final Logger logger = LoggerFactory.getLogger(FormWsController.class);
 
-    @Resource
-    private DataService dataService;
+    private final DataService dataService;
 
-    @Resource
-    private FormService formService;
+    private final UserService userService;
 
-    @Resource
-    private RecipientService recipientService;
+    private final FormService formService;
 
-    @Resource
-    private SignBookService signBookService;
+    private final RecipientService recipientService;
 
-    @Resource
-    private DataExportService dataExportService;
+    private final SignBookService signBookService;
 
-    @Resource
-    private SignRequestService signRequestService;
+    private final DataExportService dataExportService;
 
-    @Resource
-    private ObjectMapper objectMapper;
+    private final SignRequestService signRequestService;
+
+    private final ObjectMapper objectMapper;
+    private final SignRequestParamsRepository signRequestParamsRepository;
+
+    public FormWsController(DataService dataService, UserService userService, FormService formService, RecipientService recipientService, SignBookService signBookService, DataExportService dataExportService, SignRequestService signRequestService, ObjectMapper objectMapper, SignRequestParamsRepository signRequestParamsRepository) {
+        this.dataService = dataService;
+        this.userService = userService;
+        this.formService = formService;
+        this.recipientService = recipientService;
+        this.signBookService = signBookService;
+        this.dataExportService = dataExportService;
+        this.signRequestService = signRequestService;
+        this.objectMapper = objectMapper;
+        this.signRequestParamsRepository = signRequestParamsRepository;
+    }
 
     @CrossOrigin
     @PostMapping(value = "/{id}/new")
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Création d'une nouvelle instance d'un formulaire")
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public ResponseEntity<?> start(@PathVariable Long id,
-                                   @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example = "[{\n" +
-                                           "  \"title\": \"string\",\n" +
-                                           "  \"workflowId\": 0,\n" +
-                                           "  \"stepNumber\": 0,\n" +
-                                           "  \"description\": \"string\",\n" +
-                                           "  \"recipientsCCEmails\": [\n" +
-                                           "    \"string\"\n" +
-                                           "  ],\n" +
-                                           "  \"recipients\": [\n" +
-                                           "    {\n" +
-                                           "      \"step\": 0,\n" +
-                                           "      \"email\": \"string\",\n" +
-                                           "      \"phone\": \"string\",\n" +
-                                           "      \"name\": \"string\",\n" +
-                                           "      \"firstName\": \"string\",\n" +
-                                           "      \"forceSms\": true\n" +
-                                           "    }\n" +
-                                           "  ],\n" +
-                                           "  \"changeable\": true,\n" +
-                                           "  \"signLevel\": 0,\n" +
-                                           "  \"signType\": \"hiddenVisa\",\n" +
-                                           "  \"repeatable\": true,\n" +
-                                           "  \"repeatableSignType\": \"hiddenVisa\",\n" +
-                                           "  \"allSignToComplete\": true,\n" +
-                                           "  \"userSignFirst\": true,\n" +
-                                           "  \"multiSign\": true,\n" +
-                                           "  \"autoSign\": true,\n" +
-                                           "  \"forceAllSign\": true,\n" +
-                                           "  \"comment\": \"string\",\n" +
-                                           "  \"attachmentRequire\": true,\n" +
-                                           "  \"attachmentAlert\": false,\n" +
-                                           "  \"maxRecipients\": 0\n" +
-                                           "}]") String stepsJsonString,
+                                   @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example =
+                                           """
+                                                  [{
+                                                  "title": "string",
+                                                  "workflowId": 0,
+                                                  "stepNumber": 1,
+                                                  "description": "string",
+                                                  "recipientsCCEmails": [
+                                                    "string"
+                                                  ],
+                                                  "recipients": [
+                                                    {
+                                                      "step": 0,
+                                                      "email": "string",
+                                                      "phone": "string",
+                                                      "name": "string",
+                                                      "firstName": "string",
+                                                      "forceSms": true
+                                                    }
+                                                  ],
+                                                  "signRequestParams": [
+                                                    {
+                                                      "signPageNumber": 1,
+                                                      "signDocumentNumber": 0,
+                                                      "signWidth": 150,
+                                                      "signHeight": 75,
+                                                      "xPos": 0,
+                                                      "yPos": 0
+                                                    }
+                                                  ],
+                                                  "changeable": false,
+                                                  "signLevel": 0,
+                                                  "signType": "visa",
+                                                  "repeatable": false,
+                                                  "repeatableSignType": "visa",
+                                                  "allSignToComplete": false,
+                                                  "userSignFirst": false,
+                                                  "multiSign": true,
+                                                  "singleSignWithAnnotation": false,
+                                                  "autoSign": false,
+                                                  "forceAllSign": false,
+                                                  "comment": "string",
+                                                  "attachmentRequire": false,
+                                                  "attachmentAlert": false,
+                                                  "maxRecipients": 99,
+                                                  "targetEmails": [
+                                                    "string"
+                                                  ]
+                                                  }]
+                                                  """) String stepsJsonString,
                                    @RequestParam(required = false) @Parameter(description = "EPPN du créateur/propriétaire de la demande") String createByEppn,
                                    @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title,
                                    @RequestParam(required = false) @Parameter(description = "Liste des personnes en copie (emails). Ne prend pas en charge les groupes")  List<String> recipientsCCEmails,
@@ -138,7 +164,14 @@ public class FormWsController {
         if(formDatas != null) {
             datas = objectMapper.readValue(formDatas, type);
         }
-        SignBook signBook = signBookService.sendForSign(data.getId(), recipientService.convertRecipientJsonStringToWorkflowStepDtos(stepsJsonString), targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, signRequestParamsJsonString, title, sendEmailAlert, comment);
+        List<WorkflowStepDto> workflowStepDtos = recipientService.convertRecipientJsonStringToWorkflowStepDtos(stepsJsonString);
+        if (signRequestParamsJsonString != null) {
+            List<SignRequestParamsWsDto> signRequestParamsWsDtos = userService.getSignRequestParamsesFromJson(signRequestParamsJsonString, "system");
+            for(WorkflowStepDto workflowStepDto : workflowStepDtos) {
+                workflowStepDto.setSignRequestParams(signRequestParamsWsDtos);
+            }
+        }
+        SignBook signBook = signBookService.sendForSign(data.getId(), workflowStepDtos, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, signRequestParamsJsonString, title, sendEmailAlert, comment);
         signBookService.addViewers(signBook.getId(), recipientsCCEmails);
         if(json) {
             return ResponseEntity.ok(signBook.getSignRequests().get(0).getId());

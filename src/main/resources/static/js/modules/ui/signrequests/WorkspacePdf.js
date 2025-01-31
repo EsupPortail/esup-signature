@@ -227,7 +227,7 @@ export class WorkspacePdf {
                 signSpaceDiv.css("left", xPos);
                 signSpaceDiv.css("width", Math.round(parseInt(signSpaceDiv.attr("data-es-width")) * this.pdfViewer.scale) + "px");
                 signSpaceDiv.css("height", Math.round(parseInt(signSpaceDiv.attr("data-es-height")) * this.pdfViewer.scale) + "px");
-                signSpaceDiv.css("font-size", 12 *  this.pdfViewer.scale);
+                signSpaceDiv.css("font-size", 13 *  this.pdfViewer.scale);
                 this.makeItDroppable(signSpaceDiv);
             }
         }
