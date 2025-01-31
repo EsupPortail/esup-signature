@@ -259,9 +259,15 @@ export class WizUi {
         if(workflowIdInput.length) {
             this.newWorkflowId = workflowIdInput.val();
         }
-        $("#end-workflow-sign").on('click', function (){
+        $("#end-workflow-sign-start").on('click', function (){
             self.end = true;
             self.start = true;
+            $("#recipientsEmails-1").removeAttr("required");
+            self.workflowSignSubmitStepData();
+        });
+        $("#end-workflow-sign").on('click', function (){
+            self.end = true;
+            self.start = false;
             $("#recipientsEmails-1").removeAttr("required");
             self.workflowSignSubmitStepData();
         });
