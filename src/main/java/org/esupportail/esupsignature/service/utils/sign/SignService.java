@@ -411,9 +411,6 @@ public class SignService {
 				((SignatureDocumentForm) abstractSignatureForm).setContainerType(signProperties.getContainerType());
 			}
 		}
-		if(signProperties.getSignWithExpiredCertificate()) {
-			abstractSignatureForm.setSignWithExpiredCertificate(true);
-		}
 		abstractSignatureForm.setSignatureForm(signatureForm);
 		if(signatureForm.equals(SignatureForm.PAdES)) {
 			abstractSignatureForm.setSignatureLevel(signProperties.getPadesSignatureLevel());

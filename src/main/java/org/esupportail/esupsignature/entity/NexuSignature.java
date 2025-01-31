@@ -24,8 +24,6 @@ public class NexuSignature {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date signingDate;
 
-	private Boolean signWithExpiredCertificate;
-
 	@Enumerated(EnumType.STRING)
 	private SignatureForm signatureForm;
 
@@ -70,14 +68,6 @@ public class NexuSignature {
 
 	public void setSigningDate(Date signingDate) {
 		this.signingDate = signingDate;
-	}
-
-	public Boolean getSignWithExpiredCertificate() {
-		return signWithExpiredCertificate;
-	}
-
-	public void setSignWithExpiredCertificate(Boolean signWithExpiredCertificate) {
-		this.signWithExpiredCertificate = signWithExpiredCertificate;
 	}
 
 	public SignatureForm getSignatureForm() {
