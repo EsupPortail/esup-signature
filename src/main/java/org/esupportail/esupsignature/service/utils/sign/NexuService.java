@@ -12,7 +12,6 @@ import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
 import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
-import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.dss.DssUtilsService;
 import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.*;
@@ -49,9 +48,8 @@ public class NexuService {
 	private final DssUtilsService dssUtilsService;
 	private final AuditTrailService auditTrailService;
 	private final ValidationService validationService;
-    private final SignProperties signProperties;
 
-	public NexuService(SignService signService, DocumentService documentService, FileService fileService, UserService userService, SignRequestRepository signRequestRepository, NexuSignatureRepository nexuSignatureRepository, DssUtilsService dssUtilsService, AuditTrailService auditTrailService, ValidationService validationService, SignProperties signProperties) {
+	public NexuService(SignService signService, DocumentService documentService, FileService fileService, UserService userService, SignRequestRepository signRequestRepository, NexuSignatureRepository nexuSignatureRepository, DssUtilsService dssUtilsService, AuditTrailService auditTrailService, ValidationService validationService) {
         this.signService = signService;
         this.documentService = documentService;
         this.fileService = fileService;
@@ -61,7 +59,6 @@ public class NexuService {
         this.dssUtilsService = dssUtilsService;
         this.auditTrailService = auditTrailService;
         this.validationService = validationService;
-        this.signProperties = signProperties;
 	}
 
     public AbstractSignatureParameters<?> getParameters(SignatureMultipleDocumentsForm signatureMultipleDocumentsForm, List<Document> documentsToSign) throws IOException {
@@ -89,9 +86,6 @@ public class NexuService {
 		logger.info("Start getDataToSign with one document");
 		DocumentSignatureService service = signService.getSignatureService(signatureDocumentForm.getContainerType(), signatureDocumentForm.getSignatureForm());
 		DSSDocument toSignDocument = dssUtilsService.toDSSDocument(new DssMultipartFile(documentsToSign.get(0).getFileName(), documentsToSign.get(0).getFileName(), documentsToSign.get(0).getContentType(), documentsToSign.get(0).getInputStream()));
-		if(signProperties.getSignWithExpiredCertificate()) {
-			signatureDocumentForm.setSignWithExpiredCertificate(true);
-		}
 		AbstractSignatureParameters parameters = getSignatureParameters(signRequest, userEppn, signatureDocumentForm, documentsToSign);
 		ToBeSigned toBeSigned = service.getDataToSign(toSignDocument, parameters);
 		logger.info("End getDataToSign with one document");
@@ -185,7 +179,7 @@ public class NexuService {
 		nexuSignature.setDigestAlgorithm(abstractSignatureForm.getDigestAlgorithm());
 		nexuSignature.setEncryptionAlgorithm(abstractSignatureForm.getEncryptionAlgorithm());
 		nexuSignature.setSignatureLevel(abstractSignatureForm.getSignatureLevel());
-		nexuSignature.setSignWithExpiredCertificate(abstractSignatureForm.isSignWithExpiredCertificate());
+		//nexuSignature.setSignWithExpiredCertificate(abstractSignatureForm.isSignWithExpiredCertificate());
 		nexuSignature.getDocumentToSign().addAll(signService.getToSignDocuments(id));
 		nexuSignatureRepository.save(nexuSignature);
 		return nexuSignature;
@@ -226,7 +220,6 @@ public class NexuService {
 		abstractSignatureForm.setDigestAlgorithm(nexuSignature.getDigestAlgorithm());
 		abstractSignatureForm.setEncryptionAlgorithm(nexuSignature.getEncryptionAlgorithm());
 		abstractSignatureForm.setSignatureLevel(nexuSignature.getSignatureLevel());
-		abstractSignatureForm.setSignWithExpiredCertificate(nexuSignature.getSignWithExpiredCertificate());
 		return abstractSignatureForm;
 	}
 
@@ -254,9 +247,6 @@ public class NexuService {
 				parameters = getParameters(signatureDocumentForm);
 			}
 		}
-		if(abstractSignatureForm.isSignWithExpiredCertificate()) {
-			parameters.setSignWithExpiredCertificate(true);
-		}
 		return parameters;
 	}
 
@@ -269,9 +259,6 @@ public class NexuService {
 		}
 		SignDocumentResponse signedDocumentResponse;
 		abstractSignatureForm.setSignatureValue(signResponse.getSignatureValue());
-		if(signProperties.getSignWithExpiredCertificate()) {
-			abstractSignatureForm.setSignWithExpiredCertificate(true);
-		}
 		try {
 			Document signedFile = nexuSign(signRequest, userEppn, abstractSignatureForm, documentsToSign);
 			if(signedFile != null) {

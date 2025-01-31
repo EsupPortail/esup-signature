@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.dss.config;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import eu.europa.esig.dss.alert.ExceptionOnStatusAlert;
+import eu.europa.esig.dss.alert.SilentOnStatusAlert;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
@@ -55,6 +56,7 @@ import eu.europa.esig.dss.xml.common.ValidatorConfigurator;
 import eu.europa.esig.dss.xml.common.XmlDefinerUtils;
 import jakarta.annotation.PostConstruct;
 import org.apache.hc.client5.http.ssl.TrustAllStrategy;
+import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -298,7 +300,7 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public CertificateVerifier certificateVerifier(JdbcCacheOCSPSource jdbcCacheOCSPSource, JdbcCacheCRLSource jdbcCacheCRLSource, JdbcCacheAIASource jdbcCacheAIASource, TrustedListsCertificateSource trustedListSource, RevocationDataVerifier revocationDataVerifier) {
+	public CertificateVerifier certificateVerifier(JdbcCacheOCSPSource jdbcCacheOCSPSource, JdbcCacheCRLSource jdbcCacheCRLSource, JdbcCacheAIASource jdbcCacheAIASource, TrustedListsCertificateSource trustedListSource, RevocationDataVerifier revocationDataVerifier, SignProperties signProperties) {
 		CommonCertificateVerifier certificateVerifier = new CommonCertificateVerifier();
 		certificateVerifier.setCrlSource(jdbcCacheCRLSource);
 		certificateVerifier.setOcspSource(jdbcCacheOCSPSource);
@@ -308,6 +310,11 @@ public class DSSBeanConfig {
 		certificateVerifier.setAlertOnMissingRevocationData(new ExceptionOnStatusAlert());
 		certificateVerifier.setRevocationDataLoadingStrategyFactory(new OCSPFirstRevocationDataLoadingStrategyFactory());
 		certificateVerifier.setCheckRevocationForUntrustedChains(dssProperties.getCheckRevocationForUntrustedChains());
+		if(signProperties.getSignWithExpiredCertificate()) {
+			certificateVerifier.setAlertOnExpiredCertificate(new SilentOnStatusAlert());
+		} else {
+			certificateVerifier.setAlertOnExpiredCertificate(new ExceptionOnStatusAlert());
+		}
 		return certificateVerifier;
 	}
 
