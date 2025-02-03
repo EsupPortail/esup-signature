@@ -2029,17 +2029,17 @@ public class SignBookService {
     }
 
     @Transactional
-    public boolean renewOtp(String urlId) {
+    public boolean renewOtp(String urlId, boolean signature) {
         Otp otp = otpService.getOtpFromDatabase(urlId);
         if(otp != null) {
             SignBook signBook = otp.getSignBook();
-            if (signBook != null) {
+            if (signBook != null && !signBook.getStatus().equals(SignRequestStatus.pending)) {
                 SignRequest signRequest = signBook.getSignRequests().stream().filter(s -> !s.getStatus().equals(SignRequestStatus.cleaned) || !s.getDeleted()).findFirst().orElse(null);
                 if (signRequest != null) {
                     List<Recipient> recipients = signRequest.getRecipientHasSigned().keySet().stream().filter(r -> r.getUser().getUserType().equals(UserType.external)).toList();
                     for (Recipient recipient : recipients) {
                         try {
-                            otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), recipient.getUser().getPhone(), true);
+                            otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), recipient.getUser().getPhone(), signature);
                             return true;
                         } catch (EsupSignatureMailException e) {
                             logger.error(e.getMessage());

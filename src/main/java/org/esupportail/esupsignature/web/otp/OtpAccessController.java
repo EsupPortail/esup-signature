@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.Otp;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.SignBookService;
@@ -67,11 +68,17 @@ public class OtpAccessController {
 
     @GetMapping(value = "/first/{urlId}")
     public String signin(@PathVariable String urlId, Model model, HttpServletRequest httpServletRequest) throws NumberParseException {
+        boolean signature = true;
         model.addAttribute("urlId", urlId);
         Otp otp = otpService.getOtpFromDatabase(urlId);
         if(otp != null) {
+            if(!otp.getSignBook().getStatus().equals(SignRequestStatus.pending) && otp.isSignature()) {
+                return "redirect:/otp-access/completed";
+            } else {
+                signature = otp.isSignature();
+            }
             User user = otp.getUser();
-            if(globalProperties.getSmsRequired() || otp.isForceSms()) {
+            if (globalProperties.getSmsRequired() || otp.isForceSms()) {
                 if (!otp.getSmsSended() && smsService != null) {
                     if (user.getPhone() != null && !user.getPhone().isEmpty()) {
                         Phonenumber.PhoneNumber number = PhoneNumberUtil.getInstance().parse(user.getPhone(), "FR");
@@ -89,19 +96,24 @@ public class OtpAccessController {
                     }
                     return "otp/enter-phonenumber";
                 }
-            } else if(!globalProperties.getSmsRequired() && !otp.isForceSms()) {
-                Otp cachedOtp =  otpService.getAndCheckOtpFromCache(urlId);
-                if(cachedOtp != null && urlId.equals(cachedOtp.getUrlId())) {
+            } else if (!globalProperties.getSmsRequired() && !otp.isForceSms()) {
+                Otp cachedOtp = otpService.getAndCheckOtpFromCache(urlId);
+                if (cachedOtp != null && urlId.equals(cachedOtp.getUrlId())) {
                     authOtp(model, httpServletRequest, user);
                     return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
                 }
             }
         }
-        if(signBookService.renewOtp(urlId)) {
+        if(signBookService.renewOtp(urlId, signature)) {
             return "redirect:/otp-access/expired";
         } else {
             return "redirect:/otp-access/error";
         }
+    }
+
+    @GetMapping(value = "/completed")
+    public String completed() {
+        return "otp/completed";
     }
 
     @GetMapping(value = "/expired")
