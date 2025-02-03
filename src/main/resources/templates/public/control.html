@@ -79,8 +79,16 @@
                                                 <dd th:text="${auditStep.authenticationDetails}"></dd>
                                             </dl>
                                             <dl class="row border-bottom m-0">
+                                                <dt class="col-lg-5">Id signature : </dt>
+                                                <dd th:text="${auditStep.signId}"></dd>
+                                            </dl>
+                                            <dl class="row border-bottom m-0">
                                                 <dt class="col-lg-5">Certificat signature : </dt>
                                                 <dd th:text="${auditStep.signCertificat}"></dd>
+                                            </dl>
+                                            <dl class="row border-bottom m-0">
+                                                <dt class="col-lg-5">Id timestamp : </dt>
+                                                <dd th:text="${auditStep.timeStampId}"></dd>
                                             </dl>
                                             <dl class="row border-bottom m-0">
                                                 <dt class="col-lg-5">Certificat timestamp : </dt>

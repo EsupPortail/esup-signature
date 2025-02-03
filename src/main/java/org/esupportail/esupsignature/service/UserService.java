@@ -1053,16 +1053,38 @@ public class UserService {
     }
 
     @Transactional
-    public List<SignRequestParamsWsDto> getSignRequestParamsesFromJson(String signRequestParamsJsonString, String userEppn) {
+    public List<SignRequestParams> getSignRequestParamsesFromJson(String signRequestParamsJsonString, String userEppn) {
         User user = getByEppn(userEppn);
-        List<SignRequestParamsWsDto> signRequestParamseWsDtos = new ArrayList<>();
+        List<SignRequestParams> signRequestParamses = new ArrayList<>();
         try {
-            signRequestParamseWsDtos = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParamsWsDto[].class));
-            for (SignRequestParamsWsDto signRequestParams : signRequestParamseWsDtos) {
+            signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
+            for (SignRequestParams signRequestParams : signRequestParamses) {
                 if(signRequestParams.getImageBase64() != null) {
                     try {
                         user.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signRequestParams.getImageBase64()), user, user.getEppn() + "_sign.png", "image/png"));
                         signRequestParams.setSignImageNumber(user.getSignImages().size() - 1);
+                    } catch (IOException e) {
+                        logger.error("error on create sign image", e);
+                    }
+                }
+            }
+        } catch (JsonProcessingException e) {
+            logger.warn("no signRequestParams returned", e);
+        }
+        return signRequestParamses;
+    }
+
+    @Transactional
+    public List<SignRequestParamsWsDto> getSignRequestParamsWsDtosFromJson(String signRequestParamsJsonString, String userEppn) {
+        User user = getByEppn(userEppn);
+        List<SignRequestParamsWsDto> signRequestParamseWsDtos = new ArrayList<>();
+        try {
+            signRequestParamseWsDtos = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParamsWsDto[].class));
+            for (SignRequestParamsWsDto signRequestParamsWsDto : signRequestParamseWsDtos) {
+                if(signRequestParamsWsDto.getImageBase64() != null) {
+                    try {
+                        user.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signRequestParamsWsDto.getImageBase64()), user, user.getEppn() + "_sign.png", "image/png"));
+                        signRequestParamsWsDto.setSignImageNumber(user.getSignImages().size() - 1);
                     } catch (IOException e) {
                         logger.error("error on create sign image", e);
                     }

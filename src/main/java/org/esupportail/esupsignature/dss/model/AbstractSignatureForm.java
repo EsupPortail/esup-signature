@@ -15,8 +15,6 @@ public abstract class AbstractSignatureForm implements Serializable {
 
 	private Date signingDate;
 
-	private boolean signWithExpiredCertificate;
-
 	@NotNull
 	private SignatureForm signatureForm;
 
@@ -42,14 +40,6 @@ public abstract class AbstractSignatureForm implements Serializable {
 
 	public void setSigningDate(Date signingDate) {
 		this.signingDate = signingDate;
-	}
-
-	public boolean isSignWithExpiredCertificate() {
-		return signWithExpiredCertificate;
-	}
-
-	public void setSignWithExpiredCertificate(boolean signWithExpiredCertificate) {
-		this.signWithExpiredCertificate = signWithExpiredCertificate;
 	}
 
 	public SignatureForm getSignatureForm() {

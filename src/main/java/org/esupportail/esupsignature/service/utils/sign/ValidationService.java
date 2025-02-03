@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.utils.sign;
 
+import eu.europa.esig.dss.alert.SilentOnStatusAlert;
 import eu.europa.esig.dss.enumerations.Indication;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.TokenExtractionStrategy;
@@ -107,7 +108,7 @@ public class ValidationService {
         if(containsBadSignature
             || revocationToken == null
             || !certificateVerifier.getRevocationDataVerifier().isAcceptable(revocationToken)
-            || (!certificateToken.isValidOn(new Date()) && signatureDocumentForm.isSignWithExpiredCertificate())) {
+            || (!certificateToken.isValidOn(new Date()) && certificateVerifier.getAlertOnExpiredCertificate() instanceof SilentOnStatusAlert)) {
             logger.warn("LT or LTA signature level not supported, switching to T level");
             if(parameters.getSignatureLevel().name().contains("_LT") || parameters.getSignatureLevel().name().contains("_LTA")) {
                 String newLevel = parameters.getSignatureLevel().name().replace("_LTA", "_T");
