@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head-lite :: head-lite}"></head>
+<body>
+<header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
+<main role="main">
+    <div class="wrapper">
+        <div id="content" class="content">
+            <h1>Signature OTP</h1>
+            <div class="alert alert-success w-75">
+                <p>
+                    La demande à laquelle vous tentiez d’accéder est terminée.
+                </p>
+                <p>
+                    Si vous avez des questions, merci de contacter le créateur de la demande (son nom est présent dans le premier mail que vous avez reçu).
+                </p>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/footer-light :: footer}"></footer>
+</body>
+</html>
