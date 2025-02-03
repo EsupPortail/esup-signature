@@ -619,7 +619,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public boolean checkUserManageRights(String userEppn, Long signBookId) {
+    public boolean checkUserManageRights(Long signBookId, String userEppn) {
         SignBook signBook = getById(signBookId);
         if(signBook == null) return false;
         if(signBook.getSignRequests().size() == 1) {
