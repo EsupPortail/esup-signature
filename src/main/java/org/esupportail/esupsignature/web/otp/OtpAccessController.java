@@ -68,11 +68,14 @@ public class OtpAccessController {
 
     @GetMapping(value = "/first/{urlId}")
     public String signin(@PathVariable String urlId, Model model, HttpServletRequest httpServletRequest) throws NumberParseException {
+        boolean signature = true;
         model.addAttribute("urlId", urlId);
         Otp otp = otpService.getOtpFromDatabase(urlId);
         if(otp != null) {
-            if(!otp.getSignBook().getStatus().equals(SignRequestStatus.pending)) {
+            if(!otp.getSignBook().getStatus().equals(SignRequestStatus.pending) && otp.isSignature()) {
                 return "redirect:/otp-access/completed";
+            } else {
+                signature = otp.isSignature();
             }
             User user = otp.getUser();
             if (globalProperties.getSmsRequired() || otp.isForceSms()) {
@@ -101,7 +104,7 @@ public class OtpAccessController {
                 }
             }
         }
-        if(signBookService.renewOtp(urlId)) {
+        if(signBookService.renewOtp(urlId, signature)) {
             return "redirect:/otp-access/expired";
         } else {
             return "redirect:/otp-access/error";
