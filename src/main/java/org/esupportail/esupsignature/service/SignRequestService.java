@@ -1045,9 +1045,7 @@ public class SignRequestService {
 	@Transactional
 	public boolean replayNotif(Long id, String userEppn) throws EsupSignatureMailException {
 		SignRequest signRequest = this.getById(id);
-		if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) && signRequest.getCreateBy().getEppn().equals(userEppn) &&
-				((signRequest.getParentSignBook().getLastNotifDate() == null && Duration.between(signRequest.getParentSignBook().getCreateDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()) ||
-				(signRequest.getParentSignBook().getLastNotifDate() != null && Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()))) {
+		if (isDisplayNotif(signRequest, userEppn)) {
 			List<String> recipientEmails = new ArrayList<>();
 			List<Recipient> recipients = getCurrentRecipients(signRequest);
 			for (Recipient recipient : recipients) {
@@ -1065,6 +1063,21 @@ public class SignRequestService {
 			}
 		}
 		return false;
+	}
+
+	public boolean isDisplayNotif(SignRequest signRequest, String userEppn) {
+		User user = userService.getByEppn(userEppn);
+		boolean displayNotif = false;
+		if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) &&
+				(signRequest.getCreateBy().getEppn().equals(userEppn)
+						|| (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail()))
+				)
+				&&
+				((signRequest.getParentSignBook().getLastNotifDate() == null && Duration.between(signRequest.getParentSignBook().getCreateDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()) ||
+						(signRequest.getParentSignBook().getLastNotifDate() != null && Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()))) {
+			displayNotif = true;
+		}
+		return displayNotif;
 	}
 
 	private List<Recipient> getCurrentRecipients(SignRequest signRequest) {
