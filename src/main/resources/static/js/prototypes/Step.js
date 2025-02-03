@@ -5,8 +5,8 @@ export class Step {
         this.comment = "";
         this.workflowId = "";
         this.stepNumber = "";
-        this.allSignToComplete = false;
-        this.multiSign = true;
+        this.allSignToComplete = "";
+        this.multiSign = "";
         this.autoSign = false;
         this.signType = "pdfImageStamp";
         this.forceAllSign = false;

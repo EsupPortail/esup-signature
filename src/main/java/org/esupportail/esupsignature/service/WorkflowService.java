@@ -356,8 +356,8 @@ public class WorkflowService {
                                 }
                             }
                         }
-                        if (step.get().getAllSignToComplete()) {
-                            workflowStep.setAllSignToComplete(true);
+                        if (step.get().getAllSignToComplete() != null) {
+                            workflowStep.setAllSignToComplete(step.get().getAllSignToComplete());
                         }
                         if (step.get().getSignType() != null) {
                             workflowStep.setSignType(step.get().getSignType());
