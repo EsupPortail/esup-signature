@@ -375,10 +375,12 @@ public class MailService {
             if(signature) {
                 htmlContent = templateEngine.process("mail/email-otp.html", ctx);
                 mimeMessage.setSubject("Vous avez un document à signer émanant de " + messageSource.getMessage("application.footer", null, Locale.FRENCH));
+                logger.info("send signature email otp for " + otp.getUser().getEmail());
+            } else {
+                logger.info("send download email otp for " + otp.getUser().getEmail());
             }
             addInLineImages(mimeMessage, htmlContent);
             mimeMessage.setTo(otp.getUser().getEmail());
-            logger.info("send email otp for " + otp.getUser().getEmail());
             sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
         } catch (MessagingException e) {
             logger.error("unable to send OTP email", e);
