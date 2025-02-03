@@ -1980,8 +1980,12 @@ public class SignBookService {
 
     @Transactional
     public void anonymize(String userEppn, User anonymous) {
+        User user = userService.getByEppn(userEppn);
         for(SignBook signBook : signBookRepository.findByCreateByEppn(userEppn)) {
             signBook.setCreateBy(anonymous);
+        }
+        for(SignBook signBook : signBookRepository.findByHidedById(user, Pageable.unpaged())) {
+            signBook.getHidedBy().remove(user);
         }
     }
 
