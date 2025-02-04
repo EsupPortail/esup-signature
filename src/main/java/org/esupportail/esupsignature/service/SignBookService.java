@@ -1227,7 +1227,7 @@ public class SignBookService {
                     reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.error);
                 }
             }
-            if(!stepStatuses.stream().allMatch(s -> s.equals(StepStatus.completed))) {
+            if(!stepStatuses.stream().allMatch(s -> s.equals(StepStatus.completed) || s.equals(StepStatus.last_end))) {
                 error = messageSource.getMessage("report.reportstatus." + ReportStatus.error, null, Locale.FRENCH);
             }
         }
