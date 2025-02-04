@@ -111,7 +111,11 @@ public class MailService {
             if (userShare.getShareTypes().contains(ShareType.sign) &&
                 ((data != null && data.getForm() != null && userShare.getForm() != null && data.getForm().getId().equals(userShare.getForm().getId()))
                 || (workflow != null && userShare.getWorkflow() != null &&  workflow.getId().equals(userShare.getWorkflow().getId()))
-                || (userShare.getAllSignRequests() && BooleanUtils.isTrue(userShare.getForceTransmitEmails())))) {
+                || (userShare.getAllSignRequests()
+                        && BooleanUtils.isTrue(userShare.getForceTransmitEmails()
+                        && (userShare.getBeginDate() == null || userShare.getBeginDate().before(new Date()))
+                        && (userShare.getEndDate() == null || userShare.getEndDate().after(new Date()))
+                )))) {
                 for (User toUser : userShare.getToUsers()) {
                     toShareEmails.put(toUser.getEmail(), userShare);
                 }
