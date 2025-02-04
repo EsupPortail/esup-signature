@@ -33,13 +33,13 @@ public class WorkflowStepDto {
 
 	private SignType repeatableSignType = SignType.visa;
 
-	private Boolean allSignToComplete = false;
+	private Boolean allSignToComplete;
 
 	private Boolean userSignFirst = false;
 
-	private Boolean multiSign = true;
+	private Boolean multiSign;
 
-	private Boolean singleSignWithAnnotation = false;
+	private Boolean singleSignWithAnnotation;
 
 	private Boolean autoSign = false;
 
@@ -47,9 +47,9 @@ public class WorkflowStepDto {
 
 	private String comment;
 
-	private Boolean attachmentRequire = false;
+	private Boolean attachmentRequire;
 
-	private Boolean attachmentAlert = false;
+	private Boolean attachmentAlert;
 
 	private Integer maxRecipients = 99;
 

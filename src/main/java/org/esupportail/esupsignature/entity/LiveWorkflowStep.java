@@ -109,7 +109,7 @@ public class LiveWorkflowStep {
     }
 
     public Boolean getMultiSign() {
-        return multiSign;
+        return Objects.requireNonNullElse(multiSign, true);
     }
 
     public void setMultiSign(Boolean multiSign) {

@@ -35,10 +35,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 @Controller
@@ -104,14 +102,8 @@ public class SignRequestController {
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
         SignRequest signRequest = signRequestService.getById(id);
-        boolean displayNotif = false;
-        if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) && signRequest.getCreateBy().getEppn().equals(userEppn) &&
-            ((signRequest.getParentSignBook().getLastNotifDate() == null && Duration.between(signRequest.getParentSignBook().getCreateDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()) ||
-            (signRequest.getParentSignBook().getLastNotifDate() != null && Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()))) {
-            displayNotif = true;
-        }
-        model.addAttribute("isManager", signBookService.checkUserManageRights(userEppn, signRequest.getParentSignBook().getId()));
-        model.addAttribute("displayNotif", displayNotif);
+        model.addAttribute("isManager", signBookService.checkUserManageRights(signRequest.getParentSignBook().getId(), userEppn));
+        model.addAttribute("displayNotif", signRequestService.isDisplayNotif(signRequest, userEppn));
         model.addAttribute("signRequest", signRequest);
         model.addAttribute("signBook", signRequest.getParentSignBook());
         Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
@@ -415,7 +407,7 @@ public class SignRequestController {
         return "redirect:/user/signbooks/" + id;
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #authUserEppn, #authUserEppn)")
     @PostMapping(value = "/replay-notif/{id}")
     public String replayNotif(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws EsupSignatureMailException {
         if(signRequestService.replayNotif(id, authUserEppn)) {

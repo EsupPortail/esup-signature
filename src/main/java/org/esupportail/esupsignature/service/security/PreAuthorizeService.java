@@ -104,7 +104,7 @@ public class PreAuthorizeService {
 
     public boolean signBookManage(Long id, String userEppn) {
         if(userEppn != null) {
-            return signBookService.checkUserManageRights(userEppn, id);
+            return signBookService.checkUserManageRights(id, userEppn);
         }
         return false;
     }
