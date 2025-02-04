@@ -2,7 +2,11 @@ export class Nexu {
 
     constructor(addExtra, ids, currentSignType, urlProfil, massSignReportId) {
         Nexu.urlProfil = urlProfil;
-        Nexu.massSignReportId = massSignReportId;
+        if(massSignReportId != null) {
+            Nexu.massSignReportId = massSignReportId;
+        } else {
+            Nexu.massSignReportId = "";
+        }
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.nexuUrl = this.globalProperties.nexuUrl;
         this.nexuVersion = this.globalProperties.nexuVersion;
