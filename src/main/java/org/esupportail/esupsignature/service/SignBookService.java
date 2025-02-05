@@ -70,71 +70,38 @@ public class SignBookService {
     private static final Logger logger = LoggerFactory.getLogger(SignBookService.class);
 
     private final GlobalProperties globalProperties;
-
     private final MessageSource messageSource;
-
     private final AuditTrailService auditTrailService;
-
     private final SignBookRepository signBookRepository;
-
     private final SignRequestService signRequestService;
-
     private final UserService userService;
-
     private final FsAccessFactoryService fsAccessFactoryService;
-
     private final WebUtilsService webUtilsService;
-
     private final FileService fileService;
-
     private final PdfService pdfService;
-
     private final WorkflowService workflowService;
-
     private final MailService mailService;
-
     private final WorkflowStepService workflowStepService;
-
     private final LiveWorkflowService liveWorkflowService;
-
     private final LiveWorkflowStepService liveWorkflowStepService;
-
     private final DataService dataService;
-
     private final LogService logService;
-
     private final TargetService targetService;
-
     private final UserPropertieService userPropertieService;
-
     private final CommentService commentService;
-
     private final OtpService otpService;
-
     private final DataRepository dataRepository;
-
     private final WorkflowRepository workflowRepository;
-
     private final UserShareService userShareService;
-
     private final SignService signService;
-
     private final RecipientService recipientService;
-
     private final DocumentService documentService;
-
     private final SignRequestParamsService signRequestParamsService;
-
     private final PreFillService preFillService;
-
     private final ReportService reportService;
-
     private final ActionService actionService;
-
     private final SignRequestParamsRepository signRequestParamsRepository;
-
     private final ObjectMapper objectMapper;
-
     private final SignWithService signWithService;
 
     public SignBookService(GlobalProperties globalProperties, MessageSource messageSource, AuditTrailService auditTrailService, SignBookRepository signBookRepository, SignRequestService signRequestService, UserService userService, FsAccessFactoryService fsAccessFactoryService, WebUtilsService webUtilsService, FileService fileService, PdfService pdfService, WorkflowService workflowService, MailService mailService, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, DataService dataService, LogService logService, TargetService targetService, UserPropertieService userPropertieService, CommentService commentService, OtpService otpService, DataRepository dataRepository, WorkflowRepository workflowRepository, UserShareService userShareService, SignService signService, RecipientService recipientService, DocumentService documentService, SignRequestParamsService signRequestParamsService, PreFillService preFillService, ReportService reportService, ActionService actionService, SignRequestParamsRepository signRequestParamsRepository, ObjectMapper objectMapper, SignWithService signWithService) {
@@ -824,7 +791,7 @@ public class SignBookService {
         targetService.copyTargets(workflow.getTargets(), signBook, targetEmails);
         if (targetUrls != null) {
             for (String targetUrl : targetUrls) {
-                signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
+                signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl, true, false));
             }
         }
         data.setSignBook(signBook);
@@ -913,7 +880,7 @@ public class SignBookService {
         signBook.setForceAllDocsSign(forceAllSign);
         addViewers(signBook.getId(), steps.stream().map(WorkflowStepDto::getRecipientsCCEmails).filter(Objects::nonNull).flatMap(List::stream).toList());
         if(targetUrl != null && !targetUrl.isEmpty()) {
-            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
+            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl, true, false));
         }
         for(SignRequest signRequest : signBook.getSignRequests()) {
             replaceSignRequestParamsWithDtoParams(steps, signRequest);
@@ -949,7 +916,7 @@ public class SignBookService {
         }
         SignBook signBook = getById(signBookId);
         if(signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.uploading)) {
-            List<Target> targets = new ArrayList<>(workflowService.getById(signBook.getLiveWorkflow().getWorkflow().getId()).getTargets());
+            List<Target> targets = new ArrayList<>(signBook.getLiveWorkflow().getWorkflow().getTargets());
             if(signBook.getLiveWorkflow().getWorkflow().getWorkflowSteps().isEmpty()) {
                 workflowService.computeWorkflow(steps, signBook);
             } else {
@@ -1329,7 +1296,7 @@ public class SignBookService {
         if (targetUrls != null) {
             for (String targetUrl : targetUrls) {
                 if (signBook.getLiveWorkflow().getTargets().stream().noneMatch(t -> t != null && t.getTargetUri().equals(targetUrl))) {
-                    Target target = targetService.createTarget(targetUrl);
+                    Target target = targetService.createTarget(targetUrl, true, false);
                     signBook.getLiveWorkflow().getTargets().add(target);
                 }
             }
@@ -1433,7 +1400,7 @@ public class SignBookService {
                                 if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
                                     String metadataTarget = metadatas.get(metadataKey);
                                     for(Target target : workflow.getTargets()) {
-                                        signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetUri() + "/" + metadataTarget));
+                                        signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetUri() + "/" + metadataTarget, target.getSendDocument(), target.getSendReport()));
                                     }
                                     logger.info("target set to : " + new ArrayList<>(signBook.getLiveWorkflow().getTargets()).get(0).getTargetUri());
                                 }
@@ -1668,18 +1635,29 @@ public class SignBookService {
                                     }
                                 } else {
                                     try {
-                                        Document signedFile = signRequest.getLastSignedDocument();
                                         if (!signRequest.getAttachments().isEmpty() && globalProperties.getExportAttachements()) {
                                             if (!targetUrl.endsWith("/")) {
                                                 targetUrl += "/";
                                             }
                                             targetUrl += signRequest.getTitle();
                                             for (Document attachment : signRequest.getAttachments()) {
-                                                documentService.exportDocument(documentIOType, targetUrl, attachment, attachment.getFileName());
+                                                documentService.exportDocument(documentIOType, targetUrl, attachment.getInputStream(), attachment.getFileName(), attachment.getFileName());
                                             }
                                         }
-                                        String name = generateName(id, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), true, false);
-                                        documentService.exportDocument(documentIOType, targetUrl, signedFile, name);
+                                        if(target.getSendDocument()) {
+                                            Document signedFile = signRequest.getLastSignedDocument();
+                                            String name = generateName(id, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), true, false);
+                                            documentService.exportDocument(documentIOType, targetUrl, signedFile.getInputStream(), signedFile.getFileName(), name);
+                                        }
+                                        if(target.getSendReport()) {
+                                            try {
+                                                byte[] fileBytes = reportService.getReportBytes(signRequest);
+                                                String name = generateName(id, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), false, false);
+                                                documentService.exportDocument(documentIOType, targetUrl, new ByteArrayInputStream(fileBytes), "report.zip",  name + "-report");
+                                            } catch (Exception e) {
+                                                throw new RuntimeException(e);
+                                            }
+                                        }
                                         target.setTargetOk(true);
                                     } catch (EsupSignatureFsException e) {
                                         logger.error("fs export fail : " + target.getProtectedTargetUri(), e);
@@ -1706,7 +1684,7 @@ public class SignBookService {
                                         addToTeam(signBook, user.getEppn());
                                     }
                                 }
-                                mailService.sendFile(title, signBook, targetUrl);
+                                mailService.sendFile(title, signBook, targetUrl, target.getSendDocument(), target.getSendReport());
                                 target.setTargetOk(true);
                             } catch (MessagingException | IOException e) {
                                 logger.error("unable to send mail to : " + target.getTargetUri(), e);
