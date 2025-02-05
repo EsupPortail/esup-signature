@@ -111,10 +111,12 @@ public class WizardController {
     public ResponseEntity<String> updateFastSign(@PathVariable("signBookId") Long signBookId,
                                          @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                          @RequestBody List<WorkflowStepDto> steps,
+                                         @RequestParam(value = "multiSign", required = false) Boolean multiSign,
+                                         @RequestParam(value = "singleSignWithAnnotation", required = false) Boolean singleSignWithAnnotation,
                                          @RequestParam(value = "pending", required = false) Boolean pending) throws EsupSignatureRuntimeException {
         if(pending == null) pending = false;
         try {
-            signBookService.startFastSignBook(signBookId, pending, steps, userEppn, authUserEppn, false);
+            signBookService.startFastSignBook(signBookId, pending, steps, userEppn, authUserEppn, multiSign, singleSignWithAnnotation);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

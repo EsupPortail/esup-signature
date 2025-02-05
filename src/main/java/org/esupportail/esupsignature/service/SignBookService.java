@@ -367,16 +367,18 @@ public class SignBookService {
     }
 
     @Transactional
-    public void startFastSignBook(Long id, Boolean pending, List<WorkflowStepDto> steps, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureRuntimeException {
+    public void startFastSignBook(Long id, Boolean pending, List<WorkflowStepDto> steps, String userEppn, String authUserEppn, boolean multiSign, boolean singleSignWithAnnotation) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(id);
         if(StringUtils.hasText(steps.get(0).getTitle())) {
             signBook.setSubject(steps.get(0).getTitle());
         }
         signBook.setForceAllDocsSign(steps.get(0).getAllSignToComplete());
-        sendSignBook(signBook, pending, steps.get(0).getComment(), steps, userEppn, authUserEppn, forceSendEmail);
+        sendSignBook(signBook, pending, steps.get(0).getComment(), steps, userEppn, authUserEppn, false);
         if(steps.get(0).getRecipientsCCEmails() != null) {
             addViewers(signBook.getId(), steps.get(0).getRecipientsCCEmails());
         }
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setMultiSign(multiSign);
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setSingleSignWithAnnotation(singleSignWithAnnotation);
     }
 
     @Transactional
@@ -473,7 +475,6 @@ public class SignBookService {
             addUserSignFirstStep(signBookId, userEppn);
         }
         workflowService.computeWorkflow(steps, signBook);
-//        dispatchSignRequestParams(signBook);
     }
 
     @Transactional

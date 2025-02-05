@@ -73,6 +73,8 @@ export class WizUi {
     wizCreateSign(type) {
         console.info("create signbook");
         let self = this;
+        let multiSign = $("#multiSign").is(":checked");
+        let singleSignWithAnnotation = $("#singleSignWithAnnotation").is(":checked");
         $.ajax({
             url: "/user/wizard/wiz-create-sign/" + type + "?"+ self.csrf.parameterName + "=" + self.csrf.token,
             type: 'POST',
@@ -156,7 +158,11 @@ export class WizUi {
                 $("#update-fast-sign-submit").click();
             }
         }
-        this.sendSteps('/user/wizard/update-fast-sign/' + this.newSignBookId + '?pending=' + self.pending, $("#update-fast-sign"), successCallback, errorCallback);
+        let multiSign = $("#multiSign").is(":checked");
+        let singleSignWithAnnotation = $("#singleSignWithAnnotation").is(":checked");
+        console.log(multiSign);
+        console.log(singleSignWithAnnotation);
+        this.sendSteps('/user/wizard/update-fast-sign/' + this.newSignBookId + '?multiSign=' + multiSign + '&singleSignWithAnnotation=' + singleSignWithAnnotation + '&pending=' + self.pending, $("#update-fast-sign"), successCallback, errorCallback);
 
     }
 

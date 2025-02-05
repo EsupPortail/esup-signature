@@ -484,3 +484,9 @@ textarea:invalid {
 .entry:not(:first-of-type) {
     margin-top: 10px;
 }
+
+@media (min-width: 576px) {
+    .modal {
+        --bs-modal-margin: 0.5rem;
+    }
+}
