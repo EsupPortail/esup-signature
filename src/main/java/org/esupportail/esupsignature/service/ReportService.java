@@ -1,13 +1,12 @@
 package org.esupportail.esupsignature.service;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.Report;
-import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.ReportStatus;
 import org.esupportail.esupsignature.repository.ReportRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -48,8 +47,8 @@ public class ReportService {
     }
 
     @Transactional
-    public void addSignRequestToReport(Long id, SignRequest signRequest, ReportStatus reportStatus) {
-        reportRepository.findById(id).get().getSignRequestReportStatusMap().put(signRequest.getId(), reportStatus);
+    public void addSignRequestToReport(Long massSignReportId, Long signRequestId, ReportStatus reportStatus) {
+        reportRepository.findById(massSignReportId).get().getSignRequestReportStatusMap().put(signRequestId, reportStatus);
     }
 
     @Transactional
