@@ -1,7 +1,12 @@
 export class Nexu {
 
-    constructor(addExtra, ids, currentSignType, urlProfil) {
+    constructor(addExtra, ids, currentSignType, urlProfil, massSignReportId) {
         Nexu.urlProfil = urlProfil;
+        if(massSignReportId != null) {
+            Nexu.massSignReportId = massSignReportId;
+        } else {
+            Nexu.massSignReportId = "";
+        }
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.nexuUrl = this.globalProperties.nexuUrl;
         this.nexuVersion = this.globalProperties.nexuVersion;
@@ -94,7 +99,7 @@ export class Nexu {
             console.log("init tokenId : " + this.tokenId + "," + this.keyId);
             let url = "/nexu-sign/get-data-to-sign";
             let toSend = { signingCertificate: signingCertificate, certificateChain: certificateChain, encryptionAlgorithm: encryptionAlgorithm };
-            callUrl(Nexu.rootUrl + url + "?addExtra=" + Nexu.addExtra + "&id=" + Nexu.ids[Nexu.i], "POST", JSON.stringify(toSend), Nexu.sign, Nexu.error);
+            callUrl(Nexu.rootUrl + url + "?massSignReportId=" + Nexu.massSignReportId + "&addExtra=" + Nexu.addExtra + "&id=" + Nexu.ids[Nexu.i], "POST", JSON.stringify(toSend), Nexu.sign, Nexu.error);
         }
     }
 
@@ -117,7 +122,7 @@ export class Nexu {
         if(signatureData.response != null) {
             let signatureValue = signatureData.response.signatureValue;
             let toSend = {signatureValue: signatureValue};
-            callUrl(Nexu.rootUrl + "/nexu-sign/sign-document?id=" + Nexu.ids[Nexu.i], "POST", JSON.stringify(toSend), Nexu.downloadSignedDocument, Nexu.error);
+            callUrl(Nexu.rootUrl + "/nexu-sign/sign-document?massSignReportId=" + Nexu.massSignReportId + "&id=" + Nexu.ids[Nexu.i], "POST", JSON.stringify(toSend), Nexu.downloadSignedDocument, Nexu.error);
         } else {
             const merror = {
                 errorMessage: "Erreur au moment de la signature du document"
@@ -196,7 +201,7 @@ export class Nexu {
         $("#success").hide();
         $.ajax({
             type: "POST",
-            url: Nexu.rootUrl + "/nexu-sign/error?ids=" + Nexu.ids,
+            url: Nexu.rootUrl + "/nexu-sign/error?massSignReportId=" + Nexu.massSignReportId + "&ids=" + Nexu.ids,
             crossDomain: true,
             dataType: "json",
             async: true,
