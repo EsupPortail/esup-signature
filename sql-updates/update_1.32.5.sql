@@ -1,0 +1,2 @@
+alter table public.report_sign_request_report_status_map
+    drop constraint report_sign_request_report_s_sign_request_report_status_m_check;
