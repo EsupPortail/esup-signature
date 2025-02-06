@@ -775,6 +775,7 @@ export class WorkspacePdf {
         $('#rotateleft').css('opacity', 1);
         $('#rotateright').css('opacity', 1);
         $('#insert-btn-div').hide();
+        $('#insert-btn').hide();
         this.showAllPostits();
         $(".sign-space").each(function () {
             $(this).hide();
@@ -802,6 +803,7 @@ export class WorkspacePdf {
         $('#infos').show();
         $('#insert-btn-div').show();
         let insertBtn = $('#insert-btn');
+        insertBtn.show();
         insertBtn.removeClass("pulse-primary");
         insertBtn.removeClass("btn-outline-primary");
         insertBtn.removeClass("btn-light");
@@ -852,6 +854,7 @@ export class WorkspacePdf {
         $('#infos').show();
         $('#insert-btn-div').show();
         let insertBtn = $('#insert-btn');
+        insertBtn.show();
         insertBtn.addClass("pulse-primary");
         insertBtn.addClass("btn-outline-primary");
         insertBtn.addClass("btn-light");

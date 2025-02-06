@@ -490,3 +490,7 @@ textarea:invalid {
         --bs-modal-margin: 0.5rem;
     }
 }
+
+.form-select {
+    --bs-border-color: #ced4da;
+}
