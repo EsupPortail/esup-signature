@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service.utils.file;
 
-import jakarta.annotation.Resource;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -9,6 +8,7 @@ import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
+import org.esupportail.esupsignature.service.WsAccessTokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -37,10 +37,14 @@ public class FileService {
 
 	private final String[] faImages = {"check-solid", "times-solid", "circle-regular", "minus-solid"};
 
-	@Resource
-	private GlobalProperties globalProperties;
+	private final GlobalProperties globalProperties;
 
-	public ByteArrayOutputStream copyInputStream(InputStream inputStream) {
+
+    public FileService(GlobalProperties globalProperties) {
+        this.globalProperties = globalProperties;
+    }
+
+    public ByteArrayOutputStream copyInputStream(InputStream inputStream) {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
 			inputStream.transferTo(baos);

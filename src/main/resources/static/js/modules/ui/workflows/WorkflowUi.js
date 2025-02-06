@@ -7,6 +7,7 @@ export class WorkflowUi {
 
     initListeners() {
         $(document).ready(e => this.initDeleteListener());
+        $(document).ready(e => this.initMultiSignListener());
         $("#delete-button").on("click", e => this.confirmDelete());
         let self = this;
         $("#autoSign").on('change', function(){
@@ -31,12 +32,32 @@ export class WorkflowUi {
         });
     }
 
+    toggleAnnotationOption(element) {
+        let annotationOption;
+        let idSuffix = element.id.split('-')[1]; // Récupère le numéro (ex: '1', '2', etc.)
+        if(idSuffix === undefined) {
+            annotationOption = document.getElementById(`singleSignWithAnnotation`);
+        } else {
+            annotationOption = document.getElementById(`singleSignWithAnnotation-${idSuffix}`);
+        }
+        if (annotationOption) {
+            annotationOption.disabled = element.checked;
+        }
+    }
+
     confirmDelete() {
         bootbox.confirm("Voulez-vous vraiment supprimer ce circuit ?", function (result){
             if(result) {
                 $("#delete").submit();
             }
         })
+    }
+
+    initMultiSignListener() {
+        let self = this;
+        $(".multi-sign-btn").each(function(){
+            $(this).on("click", e => self.toggleAnnotationOption(e.currentTarget));
+        });
     }
 
     initDeleteListener() {

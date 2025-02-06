@@ -17,6 +17,8 @@ import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
+import org.esupportail.esupsignature.service.ReportService;
+import org.esupportail.esupsignature.service.TargetService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
@@ -68,6 +70,9 @@ public class MailService {
 
     private final UserShareService userShareService;
 
+    private final ReportService reportService;
+    private final TargetService targetService;
+
 
     //    @Autowired(required = false)
 //    public void setMailSender(JavaMailSenderImpl mailSender) {
@@ -77,7 +82,7 @@ public class MailService {
 //    @Resource
 //    private CertificatService certificatService;
 
-    public MailService(GlobalProperties globalProperties, @Autowired(required = false) MailConfig mailConfig, @Autowired(required = false) JavaMailSenderImpl mailSender, TemplateEngine templateEngine, UserService userService, FileService fileService, MessageSource messageSource, UserShareService userShareService) {
+    public MailService(GlobalProperties globalProperties, @Autowired(required = false) MailConfig mailConfig, @Autowired(required = false) JavaMailSenderImpl mailSender, TemplateEngine templateEngine, UserService userService, FileService fileService, MessageSource messageSource, UserShareService userShareService, ReportService reportService, TargetService targetService) {
         this.globalProperties = globalProperties;
         this.mailConfig = mailConfig;
         this.mailSender = mailSender;
@@ -86,6 +91,8 @@ public class MailService {
         this.fileService = fileService;
         this.messageSource = messageSource;
         this.userShareService = userShareService;
+        this.reportService = reportService;
+        this.targetService = targetService;
     }
 
     public void sendEmailAlerts(SignBook signBook, String userEppn, Data data, boolean forceSend) throws EsupSignatureMailException {
@@ -392,7 +399,7 @@ public class MailService {
         }
     }
 
-    public void sendFile(String title, SignBook signBook, String targetUri) throws MessagingException, IOException {
+    public void sendFile(String title, SignBook signBook, String targetUri, boolean sendDocument, boolean sendReport) throws MessagingException, IOException {
         if (!checkMailSender()) {
             return;
         }
@@ -401,11 +408,16 @@ public class MailService {
         MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
         String htmlContent = templateEngine.process("mail/email-file.html", ctx);
         addInLineImages(mimeMessage, htmlContent);
-        mimeMessage.setSubject("Nouveau document signé à télécharger : " + title);
+        mimeMessage.setSubject("Un document signé vous est transmit : " + title);
         mimeMessage.setTo(targetUri.replace("mailto:", "").split(","));
         for(SignRequest signRequest : signBook.getSignRequests()) {
-            Document toSendDocument = signRequest.getLastSignedDocument();
-            mimeMessage.addAttachment(toSendDocument.getFileName(), new ByteArrayResource(IOUtils.toByteArray(toSendDocument.getInputStream())));
+            if(sendDocument) {
+                Document toSendDocument = signRequest.getLastSignedDocument();
+                mimeMessage.addAttachment(toSendDocument.getFileName(), new ByteArrayResource(IOUtils.toByteArray(toSendDocument.getInputStream())));
+            }
+            if(sendReport) {
+                mimeMessage.addAttachment(signBook.getSubject() + "-report.zip", new ByteArrayResource(reportService.getReportBytes(signRequest)));
+            }
         }
         sendMail(mimeMessage.getMimeMessage(), signBook.getLiveWorkflow().getWorkflow());
 
