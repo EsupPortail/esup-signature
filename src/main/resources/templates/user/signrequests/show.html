@@ -556,7 +556,7 @@
                                     <span th:text="${step.description != null ?  ')' : ''}"></span>
                                 </div>
                                 <div th:if="${step.changeable == true}" class="form-group mb-1">
-                                    <label><span th:text="'Merci de saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span></label>
+                                    <label><span th:text="'Vous pouvez modifier ou saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span></label>
                                     <select class="auto-select-users"
                                             th:data-signrequest-id="${signRequest.id}"
                                             th:id="'recipientEmailsSelect_' + ${iterator.index + 1}"
