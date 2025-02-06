@@ -76,7 +76,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+	@Scheduled(initialDelay = 12000, fixedRate = 30000)
 	public void scanAllSignbooksTargets() {
 		logger.debug("scan all signRequest to export");
 		List<SignBook> signBooks = signBookRepository.findByStatusAndLiveWorkflowTargetsNotEmpty(SignRequestStatus.completed);

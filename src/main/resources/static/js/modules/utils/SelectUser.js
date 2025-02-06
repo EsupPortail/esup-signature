@@ -321,7 +321,6 @@ export default class SelectUser {
             for (let j = 0; j < response.length; j++) {
                 let user = response[j];
                 let prefixedValue = this.valuePrefix + user.email;
-                console.log(prefixedValue);
                 if (this.favorites.filter(f => f.value === prefixedValue).length === 0) {
                     favorites.push({
                         text: user.firstname + " " + user.name + " (" + user.email + ")",

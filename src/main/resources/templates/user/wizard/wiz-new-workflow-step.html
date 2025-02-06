@@ -83,11 +83,23 @@
             </div>
         </div>
         <label for="signType-1">Type de signature :</label>
-        <select class="form-select" id="signType-1" name="signType">
+        <select class="form-select mb-3" id="signType-1" name="signType">
             <th:block th:each="signType : ${signTypes}">
                 <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
             </th:block>
         </select>
+        <div class="form-check form-switch form-switch-md">
+            <label class="form-check-label">
+                Les signataires peuvent apposer plusieurs signatures
+            </label>
+            <input type="checkbox" class="form-check-input" id="multiSign-1" checked/>
+        </div>
+        <div class="form-check form-switch form-switch-md">
+            <label class="form-check-label">
+                Si signature unique, autoriser les annotation (coches, croix...)
+            </label>
+            <input type="checkbox" class="form-check-input" checked id="singleSignWithAnnotation-1" disabled/>
+        </div>
         <input type="hidden" name="name" th:value="${name}">
     </form>
 </div>

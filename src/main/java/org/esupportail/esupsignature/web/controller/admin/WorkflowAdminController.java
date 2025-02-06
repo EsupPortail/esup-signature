@@ -19,6 +19,7 @@ import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,6 +37,8 @@ import java.util.*;
 public class WorkflowAdminController {
 
 	private static final Logger logger = LoggerFactory.getLogger(WorkflowAdminController.class);
+    @Autowired
+    private TargetService targetService;
 
 	@ModelAttribute("adminMenu")
 	public String getAdminMenu() {
@@ -266,8 +269,10 @@ public class WorkflowAdminController {
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String addTarget(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 							@RequestParam("documentsTargetUri") String documentsTargetUri,
+							@RequestParam(value = "sendDocument", required = false) Boolean sendDocument,
+							@RequestParam(value = "sendRepport", required = false) Boolean sendRepport,
 							RedirectAttributes redirectAttributes) throws EsupSignatureFsException {
-		if (workflowService.addTarget(id, documentsTargetUri)) {
+		if (workflowService.addTarget(id, documentsTargetUri, sendDocument, sendRepport)) {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Destination ajoutée"));
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("warn", "Une destination mail existe déjà"));
@@ -317,4 +322,19 @@ public class WorkflowAdminController {
 		return "redirect:/admin/workflows/update/" + id;
 	}
 
+	@PutMapping("toggle-send-document/{id}/{targetId}")
+	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
+	public String toggleSendDocument(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("targetId") Long targetId, RedirectAttributes redirectAttributes) {
+		targetService.toggleSendDocument(targetId);
+		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi de document modifié"));
+		return "redirect:/admin/workflows/update/" + id;
+	}
+
+	@PutMapping("toggle-send-report/{id}/{targetId}")
+	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
+	public String toggleSendReport(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("targetId") Long targetId, RedirectAttributes redirectAttributes) {
+		targetService.toggleSendReport(targetId);
+		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi de rapport modifié"));
+		return "redirect:/admin/workflows/update/" + id;
+	}
 }
