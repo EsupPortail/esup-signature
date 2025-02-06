@@ -68,12 +68,12 @@
                                         <label class="form-check-label">
                                             Le signataire peut apposer plusieurs signatures
                                         </label>
-                                        <input type="checkbox" class="form-check-input" name="multiSign"
+                                        <input type="checkbox" class="form-check-input multi-sign-btn" name="multiSign"
                                             th:id="'multiSign-' + ${workflowStep.id}" th:checked="${workflowStep.multiSign}"/>
                                     </div>
                                     <div class="form-check form-switch form-switch-md">
                                         <label class="form-check-label">
-                                            Le signataire peut tout de même apposer des annotations
+                                            Si signature unique, autoriser les annotation (coches, croix...)
                                         </label>
                                         <input type="checkbox" class="form-check-input" name="singleSignWithAnnotation"
                                             th:id="'singleSignWithAnnotation-' + ${workflowStep.id}" th:checked="${workflowStep.singleSignWithAnnotation || workflowStep.multiSign}"

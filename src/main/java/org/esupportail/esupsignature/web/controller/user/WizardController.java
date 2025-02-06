@@ -56,7 +56,7 @@ public class WizardController {
     @GetMapping(value = "/wiz-start-sign/{type}", produces = "text/html")
     public String wizStartSign(@PathVariable String type, @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
-        String modalTile = "Création d'une nouvelle demande";
+        String modalTile = "Création d'une nouvelle demande personnalisée";
         if(workflowId != null) {
             Workflow workflow = workflowService.getById(workflowId);
             workflow.setMessageToDisplay(workflowService.getHelpMessage(userEppn, workflow));
@@ -239,7 +239,7 @@ public class WizardController {
         User user = (User) model.getAttribute("user");
         final Context context = new Context(Locale.FRENCH);
         Workflow workflow;
-        workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0).getSignType(), steps.get(0).getAllSignToComplete(), steps.get(0).getChangeable(), steps.get(0), user, false);
+        workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0), user);
         model.addAttribute("workflow", workflow);
         model.asMap().forEach(context::setVariable);
         if(end != null && end) {
