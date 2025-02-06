@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -27,17 +28,22 @@ public class TargetService {
     @Resource
     private TargetRepository targetRepository;
 
-    @Resource
-    private FsAccessFactoryService fsAccessFactoryService;
+    private final FsAccessFactoryService fsAccessFactoryService;
+
+    public TargetService(FsAccessFactoryService fsAccessFactoryService) {
+        this.fsAccessFactoryService = fsAccessFactoryService;
+    }
 
     public Target getById(Long id) {
         return targetRepository.findById(id).get();
     }
 
     @Transactional
-    public Target createTarget(String targetUri) {
+    public Target createTarget(String targetUri, Boolean sendDocument, Boolean sendReport) {
         Target target = new Target();
         target.setTargetUri(targetUri);
+        target.setSendDocument(sendDocument);
+        target.setSendReport(sendReport);
         targetRepository.save(target);
         return target;
     }
@@ -84,42 +90,51 @@ public class TargetService {
             if(signBook.getLiveWorkflow().getTargets().stream().noneMatch(t -> t != null && t.getTargetUri().equals(target.getTargetUri()))
                     && fsAccessFactoryService.getPathIOType(target.getTargetUri()) != DocumentIOType.mail
                     && target.getTargetUri() != null && !target.getTargetUri().isEmpty()) {
-                signBook.getLiveWorkflow().getTargets().add(createTarget(target.getTargetUri()));
+                signBook.getLiveWorkflow().getTargets().add(createTarget(target.getTargetUri(), target.getSendDocument(), target.getSendReport()));
             }
         }
-        signBook.getLiveWorkflow().getTargets().add(addTargetEmails(targetEmails, targets));
+        signBook.getLiveWorkflow().getTargets().addAll(addTargetEmails(targetEmails, targets));
     }
 
     @Transactional
-    public Target addTargetEmails(List<String> targetEmails, List<Target> targets) throws EsupSignatureFsException {
-        StringBuilder targetEmailsToAdd = new StringBuilder();
+    public List<Target> addTargetEmails(List<String> targetEmails, List<Target> targets) throws EsupSignatureFsException {
+        List<Target> targetsCreated = new ArrayList<>();
+        List<String> targetEmailsToAdd = new ArrayList<>();
         for(Target target1 : targets) {
             if(fsAccessFactoryService.getPathIOType(target1.getTargetUri()).equals(DocumentIOType.mail)) {
                 for(String targetEmail : target1.getTargetUri().replace("mailto:", "").split(",")) {
                     if (!targetEmailsToAdd.toString().contains(targetEmail)) {
-                        targetEmailsToAdd.append(targetEmail).append(",");
+                        targetEmailsToAdd.add(targetEmail);
+                        targetsCreated.add(createTarget("mailto:" + targetEmail, target1.getSendDocument(), target1.getSendReport()));
                     }
                 }
             }
         }
         if(targetEmails != null) {
-            targetEmailsToAdd = new StringBuilder();
             for (String targetEmail : targetEmails) {
                 if (!targetEmailsToAdd.toString().contains(targetEmail)) {
-                    targetEmailsToAdd.append(targetEmail).append(",");
+                    targetEmailsToAdd.add(targetEmail);
+                    targetsCreated.add(createTarget("mailto:" + targetEmail, true, false));
                 }
             }
         }
-        if(!targetEmailsToAdd.toString().isEmpty()) {
-            targetEmailsToAdd.insert(0,"mailto:");
-            return createTarget(targetEmailsToAdd.substring(0, targetEmailsToAdd.length() - 1));
-        } else {
-            return null;
-        }
+        return targetsCreated;
     }
 
     public void delete(Target target) {
         targetRepository.delete(target);
+    }
+
+    @Transactional
+    public void toggleSendDocument(Long id) {
+        Target target = getById(id);
+        target.setSendDocument(!target.getSendDocument());
+    }
+
+    @Transactional
+    public void toggleSendReport(Long id) {
+        Target target = getById(id);
+        target.setSendReport(!target.getSendReport());
     }
 
 }

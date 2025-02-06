@@ -73,6 +73,7 @@ export class WizUi {
     wizCreateSign(type) {
         console.info("create signbook");
         let self = this;
+        $("#multiSign").on('change', e => this.toggleAnnotationOption(e.target));
         $.ajax({
             url: "/user/wizard/wiz-create-sign/" + type + "?"+ self.csrf.parameterName + "=" + self.csrf.token,
             type: 'POST',
@@ -134,6 +135,7 @@ export class WizUi {
                 $("#update-fast-sign-submit").click();
             }
         });
+        $("#multiSign").on('change', e => this.toggleAnnotationOption(e.target));
     }
 
     fastSignSubmitDatas() {
@@ -156,7 +158,9 @@ export class WizUi {
                 $("#update-fast-sign-submit").click();
             }
         }
-        this.sendSteps('/user/wizard/update-fast-sign/' + this.newSignBookId + '?pending=' + self.pending, $("#update-fast-sign"), successCallback, errorCallback);
+        let multiSign = $("#multiSign").is(":checked");
+        let singleSignWithAnnotation = $("#singleSignWithAnnotation").is(":checked");
+        this.sendSteps('/user/wizard/update-fast-sign/' + this.newSignBookId + '?multiSign=' + multiSign + '&singleSignWithAnnotation=' + singleSignWithAnnotation + '&pending=' + self.pending, $("#update-fast-sign"), successCallback, errorCallback);
 
     }
 
@@ -271,6 +275,7 @@ export class WizUi {
             $("#recipientsEmails-1").removeAttr("required");
             self.workflowSignSubmitStepData();
         });
+        $("#multiSign-1").on('change', e => this.toggleAnnotationOption(e.target));
         $("#wiz-end").on('click', e => this.wizardEnd());
         $("#wiz-exit").on('click', e => this.wizardExit());
         $("#save-workflow").on('click', e => this.saveWorkflow());
@@ -487,10 +492,34 @@ export class WizUi {
                 step.recipientsCCEmails.push($(this).val());
             });
             step.userSignFirst = $('#userSignFirst').is(':checked');
-            step.allSignToComplete = $('#all-sign-to-complete-' + i).is(':checked');
-            step.changeable = $('#changeable-' + i).is(':checked');
-            step.autoSign = $('#autoSign-' + i).is(':checked');
-            step.signType = $('#signType-' + i).val();
+            let allSignToComplete = $('#all-sign-to-complete-' + i);
+            if(allSignToComplete.length) {
+                step.allSignToComplete = allSignToComplete.is(':checked');
+            }
+            let changeable = $('#changeable-' + i);
+            if(changeable.length) {
+                step.changeable = changeable.is(':checked');
+            }
+            let repeatable = $('#repeatable-' + i);
+            if(repeatable.length) {
+                step.repeatable = repeatable.is(':checked');
+            }
+            let autoSign = $('#autoSign-' + i);
+            if(autoSign.length) {
+                step.autoSign = autoSign.is(':checked');
+            }
+            let multiSign = $('#multiSign-' + i);
+            if(multiSign.length) {
+                step.multiSign = multiSign.is(':checked');
+            }
+            let singleSignWithAnnotation = $('#singleSignWithAnnotation-' + i);
+            if(singleSignWithAnnotation.length) {
+                step.singleSignWithAnnotation = singleSignWithAnnotation.is(':checked');
+            }
+            let signType = $('#signType-' + i);
+            if(signType.length) {
+                step.signType = signType.val();
+            }
             step.targetEmails = $('#targetEmailsSelect').val();
             step.forceAllSign = $('input[name="forceAllSign"]').is(":checked");
             steps.push(step);
@@ -503,4 +532,18 @@ export class WizUi {
             error: e => errorCallback(e)
         });
     }
+
+    toggleAnnotationOption(element) {
+        let annotationOption;
+        let idSuffix = element.id.split('-')[1]; // Récupère le numéro (ex: '1', '2', etc.)
+        if(idSuffix === undefined) {
+            annotationOption = document.getElementById(`singleSignWithAnnotation`);
+        } else {
+            annotationOption = document.getElementById(`singleSignWithAnnotation-${idSuffix}`);
+        }
+        if (annotationOption) {
+            annotationOption.disabled = element.checked;
+        }
+    }
+
 }

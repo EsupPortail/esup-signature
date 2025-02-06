@@ -7,6 +7,7 @@ export class Step {
         this.stepNumber = "";
         this.allSignToComplete = "";
         this.multiSign = "";
+        this.singleSignWithAnnotation = "";
         this.autoSign = false;
         this.signType = "pdfImageStamp";
         this.forceAllSign = false;

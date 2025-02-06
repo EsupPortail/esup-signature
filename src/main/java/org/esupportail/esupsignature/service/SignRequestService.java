@@ -964,7 +964,12 @@ public class SignRequestService {
 	@Transactional
 	public void getSignedFileAndReportResponse(Long signRequestId, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, boolean force) throws Exception {
 		SignRequest signRequest = getById(signRequestId);
-		if(!force && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null &&  BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd()) && !signRequest.getStatus().equals(SignRequestStatus.completed)) {
+		if(!force
+			&& signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
+			&& BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
+			&& (!signRequest.getStatus().equals(SignRequestStatus.completed)
+				&& !signRequest.getStatus().equals(SignRequestStatus.exported)
+				&& !signRequest.getStatus().equals(SignRequestStatus.archived))) {
 			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit");
 		}
 		webUtilsService.copyFileStreamToHttpResponse(signRequest.getParentSignBook().getSubject() + "-avec_rapport.zip", "application/zip; charset=utf-8", "attachment", new ByteArrayInputStream(getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse)), httpServletResponse);
@@ -981,7 +986,7 @@ public class SignRequestService {
 				name = documents.get(0).getFileName();
 				inputStream = documents.get(0).getInputStream();
 			}
-		} else if (signRequest.getStatus().equals(SignRequestStatus.exported)) {
+		} else if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
 			FsFile fsFile = getLastSignedFsFile(signRequest);
 			name = fsFile.getName();
 			inputStream = fsFile.getInputStream();

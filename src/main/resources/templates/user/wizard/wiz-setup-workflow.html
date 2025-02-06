@@ -54,7 +54,7 @@
                     </div>
                     <div th:if="${step.changeable == true}" class="form-group mb-1">
                         <label>
-                            <span th:text="'Merci de saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span>
+                            <span th:text="'Vous pouvez modifier ou saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span>
                             <span th:if="${step.maxRecipients < 99}" th:text="'(maximum ' + ${step.maxRecipients} + ')'" ></span>
                         </label>
                         <select th:data-es-max-recipient="${step.maxRecipients}" th:id="'recipientsEmails-' + ${iterator.index + 1}" multiple="multiple" name="recipientEmails" required="required">
@@ -65,11 +65,14 @@
                                         th:value="${user.email}"></option>
                             </th:block>
                         </select>
-                        <p class="small">
-                            Les signataires sont pré-sélectionnés en fonction de vos précédentes saisies.
-                        </p>
                     </div>
                     <div th:id="'tempUsers-recipientsEmails-' + ${iterator.index + 1}"></div>
+                    <div class="form-group mb-3" th:id="'all-sign-to-complete-div-' + ${iterator.index + 1}" th:style="${step.users.size() == 1} ? 'display: none'">
+                        <div class="form-check form-switch form-switch-md">
+                            <label  class="form-check-label" th:for="'all-sign-to-complete-' + ${iterator.index + 1}">Tous les participants doivent-ils signer ?</label>
+                            <input type="checkbox" class="form-check-input" th:checked="${step.allSignToComplete}" name="allSignToCompletes" th:value="${iterator.index + 1}" th:id="'all-sign-to-complete-' + ${iterator.index + 1}"/>
+                        </div>
+                    </div>
                 </li>
             </th:block>
             </ul>

@@ -230,6 +230,10 @@ public class Workflow {
         return targets;
     }
 
+    public List<Target> getTargetsOrdered() {
+        return targets.stream().sorted(Comparator.comparing(Target::getId)).toList();
+    }
+
     public void setTargets(List<Target> targets) {
         this.targets = targets;
     }

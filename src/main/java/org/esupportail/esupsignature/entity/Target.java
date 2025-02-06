@@ -18,6 +18,10 @@ public class Target {
 
     private Boolean targetOk = false;
 
+    private Boolean sendDocument = true;
+
+    private Boolean sendReport = false;
+
     public Boolean getTargetOk() {
         return targetOk;
     }
@@ -40,6 +44,28 @@ public class Target {
 
     public Long getId() {
         return id;
+    }
+
+    public Boolean getSendDocument() {
+        if(sendDocument == null) {
+            return true;
+        }
+        return sendDocument;
+    }
+
+    public void setSendDocument(Boolean sendDocument) {
+        this.sendDocument = sendDocument;
+    }
+
+    public Boolean getSendReport() {
+        if(sendReport == null) {
+            return false;
+        }
+        return sendReport;
+    }
+
+    public void setSendReport(Boolean sendReport) {
+        this.sendReport = sendReport;
     }
 
     @JsonIgnore
