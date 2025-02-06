@@ -186,6 +186,14 @@ public class SignBookController {
         }
     }
 
+    @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/{id}/mail")
+    public String showMail(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes, Model model) {
+        SignBook signBook = signBookService.getById(id);
+        model.addAttribute("signBook", signBook);
+        return "mail/email-otp-download";
+    }
+
     @PreAuthorize("@preAuthorizeService.signBookOwner(#id, #authUserEppn)")
     @GetMapping(value = "/restore/{id}", produces = "text/html")
     public String restore(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
@@ -272,13 +280,35 @@ public class SignBookController {
     @PostMapping(value = "/add-live-step/{id}")
     public String addStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam("recipientsEmails") List<String> recipientsEmails,
+                          @RequestParam(value = "names", required = false) List<String> names,
+                          @RequestParam(value = "firstnames", required = false) List<String> firstnames,
+                          @RequestParam(value = "phones", required = false) List<String> phones,
+                          @RequestParam(value = "forcesmses", required = false) List<String> forcesmses,
                           @RequestParam("stepNumber") int stepNumber,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                           @RequestParam(name="autoSign", required = false) Boolean autoSign,
                           @RequestParam("signType") SignType signType,
                           RedirectAttributes redirectAttributes) {
         try {
-            WorkflowStepDto workflowStepDto = recipientService.convertRecipientEmailsToStep(recipientsEmails).get(0);
+            List<RecipientWsDto> recipientWsDtos = new ArrayList<>();
+            for(String recipientsEmail: recipientsEmails) {
+                RecipientWsDto recipientWsDto = new RecipientWsDto(recipientsEmail);
+                int index = recipientsEmails.indexOf(recipientsEmail);
+                if (names != null && names.size() > index) {
+                    recipientWsDto.setName(names.get(index));
+                }
+                if(firstnames != null && firstnames.size() > index) {
+                    recipientWsDto.setFirstName(firstnames.get(index));
+                }
+                if(phones != null && phones.size() > index) {
+                    recipientWsDto.setPhone(phones.get(index));
+                }
+                if(forcesmses != null && forcesmses.size() > index) {
+                    recipientWsDto.setForceSms(Boolean.parseBoolean(forcesmses.get(index)));
+                }
+                recipientWsDtos.add(recipientWsDto);
+            }
+            WorkflowStepDto workflowStepDto = recipientService.getWorkflowStepDtos(recipientWsDtos).get(0);
             workflowStepDto.setAutoSign(autoSign);
             workflowStepDto.setAllSignToComplete(allSignToComplete);
             workflowStepDto.setSignType(signType);

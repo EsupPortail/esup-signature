@@ -230,6 +230,10 @@ public class Workflow {
         return targets;
     }
 
+    public List<Target> getTargetsOrdered() {
+        return targets.stream().sorted(Comparator.comparing(Target::getId)).toList();
+    }
+
     public void setTargets(List<Target> targets) {
         this.targets = targets;
     }
@@ -294,7 +298,7 @@ public class Workflow {
     }
 
     public Boolean getSendAlertToAllRecipients() {
-        return sendAlertToAllRecipients;
+        return Objects.requireNonNullElse(sendAlertToAllRecipients, false);
     }
 
     public void setSendAlertToAllRecipients(Boolean sendAlertToAllRecipients) {

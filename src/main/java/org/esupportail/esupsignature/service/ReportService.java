@@ -1,13 +1,20 @@
 package org.esupportail.esupsignature.service;
 
+import jakarta.annotation.Resource;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Report;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.ReportStatus;
 import org.esupportail.esupsignature.repository.ReportRepository;
+import org.esupportail.esupsignature.repository.WsAccessTokenRepository;
+import org.jetbrains.annotations.Nullable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
-import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -18,8 +25,15 @@ public class ReportService {
     @Resource
     private ReportRepository reportRepository;
 
-    @Resource
-    private UserService userService;
+    private final UserService userService;
+    private final GlobalProperties globalProperties;
+    private final WsAccessTokenRepository wsAccessTokenRepository;
+
+    public ReportService(UserService userService, GlobalProperties globalProperties, WsAccessTokenRepository wsAccessTokenRepository) {
+        this.userService = userService;
+        this.globalProperties = globalProperties;
+        this.wsAccessTokenRepository = wsAccessTokenRepository;
+    }
 
     public Report getById(Long id) {
         return reportRepository.findById(id).get();
@@ -48,8 +62,8 @@ public class ReportService {
     }
 
     @Transactional
-    public void addSignRequestToReport(Long id, SignRequest signRequest, ReportStatus reportStatus) {
-        reportRepository.findById(id).get().getSignRequestReportStatusMap().put(signRequest.getId(), reportStatus);
+    public void addSignRequestToReport(Long massSignReportId, Long signRequestId, ReportStatus reportStatus) {
+        reportRepository.findById(massSignReportId).get().getSignRequestReportStatusMap().put(signRequestId, reportStatus);
     }
 
     @Transactional
@@ -64,6 +78,20 @@ public class ReportService {
         for (Report report : reports) {
             report.setUser(userService.getAnonymousUser());
         }
+    }
+
+    public byte @Nullable [] getReportBytes(SignRequest signRequest) {
+        RestTemplate restTemplate = new RestTemplate();
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.set("X-Api-Key", wsAccessTokenRepository.findByWorkflowsContains(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow()).stream().findFirst().orElse(null).getToken());
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        ResponseEntity<byte[]> response = restTemplate.exchange(
+                globalProperties.getRootUrl() + "/ws/signrequests/get-last-file-and-report/" + signRequest.getId(),
+                HttpMethod.GET,
+                entity,
+                byte[].class
+        );
+        return response.getBody();
     }
 
 }

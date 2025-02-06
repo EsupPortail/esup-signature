@@ -13,6 +13,8 @@ public class Otp {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
+    private Boolean signature;
+
     private String urlId;
 
     private String phoneNumber;
@@ -41,6 +43,17 @@ public class Otp {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Boolean isSignature() {
+        if(signature == null) {
+            return true;
+        }
+        return signature;
+    }
+
+    public void setSignature(boolean signature) {
+        this.signature = signature;
     }
 
     public String getUrlId() {

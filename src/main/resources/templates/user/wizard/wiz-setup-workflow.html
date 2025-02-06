@@ -52,9 +52,9 @@
                             Étape automatique
                         </th:block>
                     </div>
-                    <div th:if="${step.changeable == true}" class="form-group mb-1">
+                    <div th:if="${step.changeable == true && !step.autoSign}" class="form-group mb-1">
                         <label>
-                            <span th:text="'Merci de saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span>
+                            <span th:text="'Vous pouvez modifier ou saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span>
                             <span th:if="${step.maxRecipients < 99}" th:text="'(maximum ' + ${step.maxRecipients} + ')'" ></span>
                         </label>
                         <select th:data-es-max-recipient="${step.maxRecipients}" th:id="'recipientsEmails-' + ${iterator.index + 1}" multiple="multiple" name="recipientEmails" required="required">
@@ -65,11 +65,14 @@
                                         th:value="${user.email}"></option>
                             </th:block>
                         </select>
-                        <p class="small">
-                            Les signataires sont pré-sélectionnés en fonction de vos précédentes saisies.
-                        </p>
+                        <div th:id="'tempUsers-recipientsEmails-' + ${iterator.index + 1}"></div>
+                        <div class="form-group mb-3" th:id="'all-sign-to-complete-div-' + ${iterator.index + 1}" th:style="${step.users.size() == 1} ? 'display: none'">
+                            <div class="form-check form-switch form-switch-md">
+                                <label  class="form-check-label" th:for="'all-sign-to-complete-' + ${iterator.index + 1}">Tous les participants doivent-ils signer ?</label>
+                                <input type="checkbox" class="form-check-input" th:checked="${step.allSignToComplete}" name="allSignToCompletes" th:value="${iterator.index + 1}" th:id="'all-sign-to-complete-' + ${iterator.index + 1}"/>
+                            </div>
+                        </div>
                     </div>
-                    <div th:id="'tempUsers-recipientsEmails-' + ${iterator.index + 1}"></div>
                 </li>
             </th:block>
             </ul>
@@ -98,17 +101,19 @@
                 </th:block>
             </th:block>
         </div>
+        <ul th:if="${!signBook.liveWorkflow.workflow.targets.isEmpty()}" class="list-group striped-list mt-1">
         <th:block th:each="target, iterator : ${signBook.liveWorkflow.workflow.targets}">
-                <div th:if="${target.targetUri.contains('mailto:')}" class="form-group mb-3">
-                    <label>Étape finale : Envoi par mail à </label>
+            <li th:if="${target.targetUri.contains('mailto:')}" class="list-group-item border-secondary">
+                    <b>Étape finale :</b> Envoi par mail à
                     <select class="select-users" id="targetEmailsSelect" multiple="multiple" name="targetEmails">
                         <option data-placeholder="true"></option>
                         <th:block th:each="targetEmail : ${target.targetUri.replace('mailto:', '').split(',')}">
                             <option selected="selected" th:if="${targetEmail != ''}" th:text="${targetEmail}" th:value="${targetEmail}"></option>
                         </th:block>
                     </select>
-                </div>
+                </li>
             </th:block>
+        </ul>
     </form>
 </div>
 <div class="modal-footer">

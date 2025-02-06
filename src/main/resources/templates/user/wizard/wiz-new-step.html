@@ -84,21 +84,37 @@
                 </label>
                 <input type="checkbox" class="form-check-input" id="all-sign-to-complete-1" name="allSignToComplete"/>
             </div>
-            <label class="form-label" for="signType-1">Type de signature :</label>
+            <label class="form-label mb-2" for="signType-1">Type de signature :</label>
             <select class="form-select" id="signType-1" name="signType">
                 <th:block th:each="signType : ${signTypes}">
                     <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
                 </th:block>
             </select>
+            <div class="form-check form-switch form-switch-md ">
+                <label class="form-check-label">
+                    Les signataires peuvent apposer plusieurs signatures
+                </label>
+                <input type="checkbox" class="form-check-input" id="multiSign-1" checked/>
+            </div>
+            <div class="form-check form-switch form-switch-md">
+                <label class="form-check-label">
+                    Si signature unique, autoriser les annotation (coches, croix...)
+                </label>
+                <input type="checkbox" class="form-check-input" checked id="singleSignWithAnnotation-1" disabled/>
+            </div>
         </div>
     </form>
 </div>
 <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
     <button type="button" id="save-step" value="true" class="btn btn-primary float-end m-1">
-        <i class="fa-solid fa-save"></i> Enregistrer cette étape
+        <i class="fa-solid fa-plus"></i> Enregistrer cette étape
     </button>
     <button formnovalidate id="end-workflow-sign" name="end-workflow-sign" value="true" th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" type="button" class="btn btn-success float-end m-1">
-        <i class="fa-solid fa-paper-plane"></i> Envoyer la demande sans ajouter d’étape supplémentaire
+        <i class="fa-solid fa-save"></i> Valider le circuit puis annoter le document
+    </button>
+    <button formnovalidate id="end-workflow-sign-start" name="end-workflow-sign" value="true" th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" type="button" class="btn btn-success float-end m-1">
+        <i class="fa-solid fa-paper-plane"></i> Valider le circuit et envoyer le document
     </button>
 </div>
 </html>

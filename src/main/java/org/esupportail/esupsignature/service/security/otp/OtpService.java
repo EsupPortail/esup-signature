@@ -81,6 +81,7 @@ public class OtpService {
                 otp.setPhoneNumber(extUser.getPhone());
             }
             otp.setUser(extUser);
+            otp.setSignature(signature);
             otp.setSignBook(signBook);
             otp.setForceSms(extUser.getForceSms() != null && extUser.getForceSms());
             String urlId = UUID.randomUUID().toString();
@@ -93,7 +94,7 @@ public class OtpService {
                 userService.updatePhone(extUser.getEppn(), phone);
             }
             otpRepository.save(otp);
-            mailService.sendOtp(otp, urlId, signBook, signature);
+            mailService.sendOtp(otp, signBook, signature);
             logger.info("new url for otp : " + urlId);
             return true;
         } else {

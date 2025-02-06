@@ -197,7 +197,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public Workflow addStepToWorkflow(Long id, SignType signType, Boolean allSignToComplete, Boolean changeable, WorkflowStepDto step, User user, boolean recipientsRequired) {
+    public Workflow addStepToWorkflow(Long id, WorkflowStepDto step, User user) {
         Workflow workflow;
         if (id != null && id != -1) {
             workflow = getById(id);
@@ -206,7 +206,13 @@ public class WorkflowService {
         }
         if(workflow.getCreateBy().getEppn().equals(user.getEppn())) {
             logger.info("add new workflow step to Workflow " + workflow.getId());
-            WorkflowStep workflowStep = workflowStepService.createWorkflowStep("", allSignToComplete, signType, changeable, step.getRecipients().toArray(RecipientWsDto[]::new));
+            WorkflowStep workflowStep = workflowStepService.createWorkflowStep("", step.getAllSignToComplete(), step.getSignType(), step.getChangeable(), step.getRecipients().toArray(RecipientWsDto[]::new));
+            if(step.getMultiSign() != null) {
+                workflowStep.setMultiSign(step.getMultiSign());
+            }
+            if(step.getSingleSignWithAnnotation() != null) {
+                workflowStep.setSingleSignWithAnnotation(step.getSingleSignWithAnnotation());
+            }
             workflow.getWorkflowSteps().add(workflowStep);
             userPropertieService.createUserPropertieFromMails(user, Collections.singletonList(step));
         }
@@ -356,11 +362,14 @@ public class WorkflowService {
                                 }
                             }
                         }
-                        if (step.get().getAllSignToComplete()) {
-                            workflowStep.setAllSignToComplete(true);
+                        if (step.get().getAllSignToComplete() != null) {
+                            workflowStep.setAllSignToComplete(step.get().getAllSignToComplete());
                         }
                         if (step.get().getSignType() != null) {
                             workflowStep.setSignType(step.get().getSignType());
+                        }
+                        if (step.get().getChangeable() != null) {
+                            workflowStep.setChangeable(step.get().getChangeable());
                         }
                         if (step.get().getRepeatable() != null) {
                             workflowStep.setRepeatable(step.get().getRepeatable());
@@ -554,11 +563,11 @@ public class WorkflowService {
     }
 
     @Transactional
-    public boolean addTarget(Long id, String documentsTargetUri) throws EsupSignatureFsException {
+    public boolean addTarget(Long id, String documentsTargetUri, Boolean sendDocument, Boolean sendRepport) throws EsupSignatureFsException {
         Workflow workflow = getById(id);
         DocumentIOType targetType = fsAccessFactoryService.getPathIOType(documentsTargetUri);
         if(!targetType.equals("mail") || workflow.getTargets().stream().map(Target::getTargetUri).noneMatch(tt -> tt.contains("mailto"))) {
-            Target target = targetService.createTarget(documentsTargetUri);
+            Target target = targetService.createTarget(documentsTargetUri, sendDocument, sendRepport);
             workflow.getTargets().add(target);
             return true;
         }
@@ -601,7 +610,9 @@ public class WorkflowService {
         Workflow workflow = getById(id);
         String savedName = workflow.getName();
         String savedTitle = workflow.getTitle();
+        String savedDescription = workflow.getDescription();
         Workflow workflowSetup = objectMapper.readValue(inputStream.readAllBytes(), Workflow.class);
+        workflowSetup.setId(id);
         workflow.getWorkflowSteps().clear();
         for(WorkflowStep workflowStepSetup : workflowSetup.getWorkflowSteps()) {
             Optional<WorkflowStep> optionalWorkflowStep = workflow.getWorkflowSteps().stream().filter(workflowStep1 -> workflowStep1.getId().equals(workflowStepSetup.getId())).findFirst();
@@ -619,13 +630,14 @@ public class WorkflowService {
             }
         }
         workflow.getTargets().clear();
-        update(workflow, workflowSetup.getCreateBy(), null, workflowSetup.getManagers());
+        update(workflowSetup, workflowSetup.getCreateBy(), null, workflowSetup.getManagers());
         for(Target target : workflowSetup.getTargets()) {
-            Target newTarget = targetService.createTarget(target.getTargetUri());
+            Target newTarget = targetService.createTarget(target.getTargetUri(), target.getSendDocument(), target.getSendReport());
             workflow.getTargets().add(newTarget);
         }
         workflow.setName(savedName);
         workflow.setTitle(savedTitle);
+        workflow.setDescription(savedDescription);
     }
 
     @Transactional

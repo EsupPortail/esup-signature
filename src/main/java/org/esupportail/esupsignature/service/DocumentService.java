@@ -108,26 +108,25 @@ public class DocumentService {
 		try {
 			URI baseURI = new URI(path.replace(" ", "%20")).normalize();
 			URI resolvedURI = baseURI.resolve(subPath.replace(" ", "%20")).normalize();
-			return exportDocument(fsAccessFactoryService.getPathIOType(path), path + resolvedURI.getPath(), signedFile, name.replaceAll("[^a-zA-Z0-9]", "_"));
+			return exportDocument(fsAccessFactoryService.getPathIOType(path), path + resolvedURI.getPath(), signedFile.getInputStream(), signedFile.getFileName(), name.replaceAll("[^a-zA-Z0-9]", "_"));
 		} catch (EsupSignatureRuntimeException | URISyntaxException e) {
 			logger.error(e.getMessage());
 		}
         return null;
 	}
 
-	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile, String name) throws EsupSignatureRuntimeException {
+	public String exportDocument(DocumentIOType documentIOType, String targetUrl, InputStream inputStream, String fileName, String name) throws EsupSignatureRuntimeException {
 		String documentUri;
 		FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(targetUrl);
 		if(fsAccessService != null) {
 			try {
 				fsAccessService.createURITree(targetUrl);
-				InputStream inputStream = signedFile.getInputStream();
 				if(name == null) {
-					name = signedFile.getFileName();
+					name = fileName;
 				} else {
 					String extension = fileService.getExtension(name);
-					if(!StringUtils.hasText(extension) || !extension.equals(fileService.getExtension(signedFile.getFileName()))) {
-						name = name + "." + fileService.getExtension(signedFile.getFileName());
+					if(!StringUtils.hasText(extension) || !extension.equals(fileService.getExtension(fileName))) {
+						name = name + "." + fileService.getExtension(fileName);
 					}
 				}
 				name = sanitizeFileName(name);

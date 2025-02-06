@@ -5,16 +5,17 @@ export class Step {
         this.comment = "";
         this.workflowId = "";
         this.stepNumber = "";
-        this.allSignToComplete = false;
-        this.multiSign = true;
+        this.allSignToComplete = "";
+        this.multiSign = "";
+        this.singleSignWithAnnotation = "";
         this.autoSign = false;
         this.signType = "pdfImageStamp";
         this.forceAllSign = false;
         this.userSignFirst = false;
-        this.changeable = false;
+        this.changeable = "";
         this.recipients = [];
         this.recipientsCCEmails = [];
-        this.repeatable = false;
+        this.repeatable = "";
         this.targetEmails = [];
         Object.assign(this, step);
     }

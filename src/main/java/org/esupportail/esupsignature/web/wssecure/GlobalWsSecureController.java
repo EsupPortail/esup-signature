@@ -108,7 +108,12 @@ public class GlobalWsSecureController {
     @PreAuthorize("@preAuthorizeService.documentView(#documentId, #userEppn, #authUserEppn)")
     @GetMapping(value = "/get-file/{documentId}")
     public ResponseEntity<Void> getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("documentId") Long documentId, HttpServletResponse httpServletResponse) throws IOException {
-        signRequestService.getFileResponse(documentId, httpServletResponse);
+        try {
+            signRequestService.getFileResponse(documentId, httpServletResponse);
+        } catch (Exception e) {
+            logger.warn(e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         return ResponseEntity.ok().build();
     }
 

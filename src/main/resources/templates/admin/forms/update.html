@@ -39,7 +39,8 @@
             </ul>
             <div class="card text-bg-light col-lg-11 m-2">
                 <div class="card-body">
-                    <h3>FORM ID : <input type="text" readonly disabled th:value="${form.id}"></h3>
+                    <h3>FORM ID : <input type="text" readonly disabled th:value="${form.id}"> Circuit : <a th:if="${form.workflow != null}" th:href="'/admin/workflows/update/' + ${form.workflow.id}" th:text="${form.workflow.description}"></a></h3>
+
                     <div class="alert alert-dark bg-white mb-2">
                         <p><strong>Modification du modèle </strong>(<span th:if="${form.document != null}">Modele actuel : <a th:href="'/admin/forms/get-file/' + ${form.id}" target="_blank"><span th:text="${form.document.fileName}"></span></a></span>)</p>
                         <form id="formUpdateModel" th:action="'/admin/forms/update-model/' + ${form.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">

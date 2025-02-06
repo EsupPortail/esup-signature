@@ -25,26 +25,42 @@
                 <input type="checkbox" class="form-check-input" name="userSignFirst" id="userSignFirst">
             </div>
         </div>
-        <div class="form-group mb-3">
-            <label class="form-label" for="signType-1">Choisir un type de signature</label>
-            <select class="form-select" name="signType" id="signType-1">
-                <th:block th:each="signType : ${signTypes}">
-                    <option th:value="${signType}"
-                            th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
-                </th:block>
-            </select>
-        </div>
-        <div class="form-group mb-3">
-            <label class="form-label" for="recipientsEmails-1">Choisir les participants</label>
-            <select class="select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmails-1" multiple="multiple" required="required">
-                <option data-placeholder="true"></option>
-            </select>
-            <div id="tempUsers-recipientsEmails-1"></div>
-        </div>
-        <div class="form-group mb-3" id="all-sign-to-complete-div-1" style="display: none">
-            <div class="form-check form-switch form-switch-md">
-                <label  class="form-check-label" for="all-sign-to-complete-1">Tous les participants doivent-ils signer ?</label>
-                <input type="checkbox" class="form-check-input" name="allSignToComplete" id="all-sign-to-complete-1"/>
+        <div class="w-100 d-inline-flex gap-2">
+            <div class="w-50" style="min-width: 50%;">
+                <div class="form-group mb-3">
+                    <label class="form-label" for="recipientsEmails-1">Choisir les participants</label>
+                    <select class="select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmails-1" multiple="multiple" required="required">
+                        <option data-placeholder="true"></option>
+                    </select>
+                    <div id="tempUsers-recipientsEmails-1"></div>
+                </div>
+                <div class="form-check form-switch form-switch-md" id="all-sign-to-complete-div-1" style="display: none">
+                    <label  class="form-check-label" for="all-sign-to-complete-1">Tous les participants doivent-ils signer ?</label>
+                    <input type="checkbox" class="form-check-input" name="allSignToComplete" id="all-sign-to-complete-1"/>
+                </div>
+            </div>
+            <div class="w-50 align-self-start">
+                <div class="form-group">
+                    <label class="form-label" for="signType-1">Choisir un type de signature</label>
+                    <select class="form-select" name="signType" id="signType-1">
+                        <th:block th:each="signType : ${signTypes}">
+                            <option th:value="${signType}"
+                                    th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
+                        </th:block>
+                    </select>
+                </div>
+                <div class="form-check form-switch form-switch-md " id="sign-options">
+                    <label class="form-check-label">
+                        Les signataires peuvent apposer plusieurs signatures
+                    </label>
+                    <input type="checkbox" class="form-check-input" id="multiSign" checked/>
+                </div>
+                <div class="form-check form-switch form-switch-md mb-3">
+                    <label class="form-check-label">
+                        Si signature unique, autoriser les annotation (coches, croix...)
+                    </label>
+                    <input type="checkbox" class="form-check-input" checked id="singleSignWithAnnotation" disabled/>
+                </div>
             </div>
         </div>
         <div class="form-group mb-3">
@@ -53,7 +69,7 @@
                 <option data-placeholder="true"></option>
             </select>
         </div>
-        <div class="form-group mb-3">
+        <div class="form-group">
             <label class="form-label" for="comment" >Commentaire (facultatif)</label>
             <textarea id="comment" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible par tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
         </div>

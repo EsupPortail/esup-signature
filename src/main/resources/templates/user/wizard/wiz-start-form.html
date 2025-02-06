@@ -52,7 +52,7 @@
                                 </div>
                                 <span th:if="${step.repeatable}"> (cette étape peut donner lieu à plusieurs validations en série)</span>
                             </div>
-                            <div th:if="${step.changeable == true}" class="form-group mb-3">
+                            <div th:if="${step.changeable == true && !step.autoSign}" class="form-group mb-3">
                                 <label><span th:text="'Merci de saisir le' + ${step.maxRecipients != null && step.maxRecipients > 1 ? '(s)' : ''} + ' participant' + ${step.maxRecipients != null && step.maxRecipients > 1 ? '(s)' : ''} + ' pour l\'étape ' + ${iterator.index + 1}"></span></label>
                                 <select class="select-users" th:id="'recipientsEmails-' + ${iterator.index + 1}"
                                         multiple="multiple" name="recipientEmails" required="required" th:maxlength="${step.maxRecipients}">
@@ -64,30 +64,28 @@
                                                 th:value="${user.email}"></option>
                                     </th:block>
                                 </select>
-                                <p class="small">
-                                    Les signataires sont pré-sélectionnés en fonction de vos précédentes saisies.
-                                </p>
                                 <div th:id="'tempUsers-recipientsEmails-' + ${iterator.index + 1}"></div>
-                                <div class="form-group mb-3" th:id="'all-sign-to-complete-div-' + ${iterator.index + 1}" style="display: none">
+                                <div class="form-group mb-3" th:id="'all-sign-to-complete-div-' + ${iterator.index + 1}" th:style="${step.users.size() == 1} ? 'display: none'">
                                     <div class="form-check form-switch form-switch-md">
                                         <label  class="form-check-label" th:for="'all-sign-to-complete-' + ${iterator.index + 1}">Tous les participants doivent-ils signer ?</label>
-                                        <input type="checkbox" class="form-check-input" name="allSignToCompletes" th:value="${iterator.index + 1}" th:id="'all-sign-to-complete-' + ${iterator.index + 1}"/>
+                                        <input type="checkbox" class="form-check-input" th:checked="${step.allSignToComplete}" name="allSignToCompletes" th:value="${iterator.index + 1}" th:id="'all-sign-to-complete-' + ${iterator.index + 1}"/>
                                     </div>
                                 </div>
                             </div>
                         </li>
                 </th:block>
             </ul>
+            <ul th:if="${!form.workflow.targets.isEmpty()}" class="list-group striped-list mt-1">
             <th:block th:each="target : ${form.workflow.targets}">
-                <hr>
-                <div th:if="${target.targetUri.contains('mailto:')}" class="form-group mb-3">
-                    <label>Étape finale : Envoi par mail à </label>
+                <li th:if="${target.targetUri.contains('mailto:')}" class="list-group-item border-secondary">
+                    <b>Étape finale :</b> Envoi par mail à
                     <select class="select-users" th:id="'targetEmailsSelect-' + ${form.id}" multiple="multiple" name="targetEmails">
                         <option data-placeholder="true"></option>
                         <option th:if="${target.targetUri != null && target.targetUri != ''}" th:value="${target.targetUri.split(':')[1]}" th:text="${target.targetUri.split(':')[1]}" selected></option>
                     </select>
-                </div>
+                </li>
             </th:block>
+            </ul>
         </div>
     </form>
 </div>

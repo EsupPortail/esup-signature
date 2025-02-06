@@ -100,7 +100,6 @@ public class RecipientService {
 
     @Transactional
     public List<WorkflowStepDto> convertRecipientEmailsToStep(List<String> recipientEmails) {
-        List<WorkflowStepDto> workflowStepDtos = new ArrayList<>();
         List<RecipientWsDto> recipientWsDtos = new ArrayList<>();
         if (recipientEmails != null && !recipientEmails.isEmpty()) {
             for (String recipientEmail : recipientEmails) {
@@ -122,6 +121,11 @@ public class RecipientService {
                 }
             }
         }
+        return getWorkflowStepDtos(recipientWsDtos);
+    }
+
+    public List<WorkflowStepDto> getWorkflowStepDtos(List<RecipientWsDto> recipientWsDtos) {
+        List<WorkflowStepDto> workflowStepDtos = new ArrayList<>();
         for(RecipientWsDto recipient : recipientWsDtos) {
             if(workflowStepDtos.stream().noneMatch(w -> w.getStepNumber().equals(recipient.getStep()))) {
                 WorkflowStepDto workflowStepDto = new WorkflowStepDto();
@@ -134,6 +138,7 @@ public class RecipientService {
         }
         return workflowStepDtos;
     }
+
 
     public List<WorkflowStepDto> convertRecipientJsonStringToWorkflowStepDtos(String recipientsJsonString) {
         try {

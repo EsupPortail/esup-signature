@@ -37,7 +37,7 @@ export class ListSignBooksUi {
         this.rowHeight = null;
         this.certTypeSelect = $("#certType");
         $("#password").hide();
-        new Nexu(null, null, null, null);
+        new Nexu(null, null, null, null, null);
 
     }
 
@@ -71,7 +71,7 @@ export class ListSignBooksUi {
 
     checkSignOptions() {
         console.info("check sign options");
-        new Nexu(null, null, null, null);
+        new Nexu(null, null, null, null, null);
     }
 
     checkAfterChangeSignType() {

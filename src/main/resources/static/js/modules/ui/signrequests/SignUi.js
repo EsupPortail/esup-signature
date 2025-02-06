@@ -200,7 +200,7 @@ export class SignUi {
     checkSignOptions() {
         console.info("check sign options");
         if (this.signable) {
-            new Nexu(null, null, this.currentSignType, null);
+            new Nexu(null, null, this.currentSignType, null, null);
         }
     }
 

@@ -56,7 +56,7 @@ public class WizardController {
     @GetMapping(value = "/wiz-start-sign/{type}", produces = "text/html")
     public String wizStartSign(@PathVariable String type, @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
-        String modalTile = "Création d'une nouvelle demande";
+        String modalTile = "Création d'une nouvelle demande personnalisée";
         if(workflowId != null) {
             Workflow workflow = workflowService.getById(workflowId);
             workflow.setMessageToDisplay(workflowService.getHelpMessage(userEppn, workflow));
@@ -111,10 +111,12 @@ public class WizardController {
     public ResponseEntity<String> updateFastSign(@PathVariable("signBookId") Long signBookId,
                                          @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                          @RequestBody List<WorkflowStepDto> steps,
+                                         @RequestParam(value = "multiSign", required = false) Boolean multiSign,
+                                         @RequestParam(value = "singleSignWithAnnotation", required = false) Boolean singleSignWithAnnotation,
                                          @RequestParam(value = "pending", required = false) Boolean pending) throws EsupSignatureRuntimeException {
         if(pending == null) pending = false;
         try {
-            signBookService.startFastSignBook(signBookId, pending, steps, userEppn, authUserEppn, false);
+            signBookService.startFastSignBook(signBookId, pending, steps, userEppn, authUserEppn, multiSign, singleSignWithAnnotation);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -237,7 +239,7 @@ public class WizardController {
         User user = (User) model.getAttribute("user");
         final Context context = new Context(Locale.FRENCH);
         Workflow workflow;
-        workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0).getSignType(), steps.get(0).getAllSignToComplete(), steps.get(0).getChangeable(), steps.get(0), user, false);
+        workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0), user);
         model.addAttribute("workflow", workflow);
         model.asMap().forEach(context::setVariable);
         if(end != null && end) {
