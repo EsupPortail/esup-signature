@@ -43,8 +43,6 @@ public class LiveWorkflow {
         this.id = id;
     }
 
-    
-
     public String getTitle() {
         return title;
     }
@@ -52,8 +50,6 @@ public class LiveWorkflow {
     public void setTitle(String title) {
         this.title = title;
     }
-
-    
 
     public List<LiveWorkflowStep> getLiveWorkflowSteps() {
         return liveWorkflowSteps;

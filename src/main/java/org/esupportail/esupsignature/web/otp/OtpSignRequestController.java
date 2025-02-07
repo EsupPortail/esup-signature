@@ -102,8 +102,12 @@ public class OtpSignRequestController {
         model.addAttribute("attachmentRequire", attachmentRequire);
         model.addAttribute("currentSignType", signRequest.getCurrentSignType());
         model.addAttribute("currentStepNumber", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
-        if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null) {
-            model.addAttribute("currentStepId", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getId());
+        model.addAttribute("currentStepMultiSign", true);
+        model.addAttribute("currentStepSingleSignWithAnnotation", true);
+        if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
+            if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null) {
+                model.addAttribute("currentStepId", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getId());
+            }
             model.addAttribute("currentStepMultiSign", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign());
             model.addAttribute("currentStepSingleSignWithAnnotation", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSingleSignWithAnnotation());
         }
@@ -140,7 +144,7 @@ public class OtpSignRequestController {
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
         model.addAttribute("signable", signable);
-        model.addAttribute("editable", false);
+        model.addAttribute("editable", signRequestService.isEditable(id, userEppn));
         model.addAttribute("isNotSigned", !signService.isSigned(signRequest, reports));
         model.addAttribute("isTempUsers", false);
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
