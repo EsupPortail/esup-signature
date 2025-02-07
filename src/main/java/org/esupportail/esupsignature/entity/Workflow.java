@@ -100,6 +100,8 @@ public class Workflow {
     @Transient
     private String messageToDisplay;
 
+    private Boolean externalCanEdit = false;
+
     public Long getId() {
         return id;
     }
@@ -385,4 +387,14 @@ public class Workflow {
         this.signRequestParamsDetectionPattern = signRequestParamsDetectionPattern;
     }
 
+    public Boolean getExternalCanEdit() {
+        if(externalCanEdit == null) {
+            return false;
+        }
+        return externalCanEdit;
+    }
+
+    public void setExternalCanEdit(Boolean extrenalCanEdit) {
+        this.externalCanEdit = extrenalCanEdit;
+    }
 }
