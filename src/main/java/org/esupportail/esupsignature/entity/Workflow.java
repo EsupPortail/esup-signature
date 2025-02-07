@@ -388,6 +388,9 @@ public class Workflow {
     }
 
     public Boolean getExternalCanEdit() {
+        if(externalCanEdit == null) {
+            return false;
+        }
         return externalCanEdit;
     }
 
