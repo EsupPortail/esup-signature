@@ -3,7 +3,7 @@
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div th:fragment="tools" id="tools" class="tools" th:if="${toSignDocument != null}">
 	<div class="d-flex mb-1">
-		<th:block th:if="${!user.userType.name.equals('external')}">
+		<th:block th:if="${editable}">
 			<div class="rounded-2 bg-light d-none d-xl-inline-flex mb-1 text-dark p-1" style="cursor: default;">
 				<div class="ms-2">Mode :</div>
 				<div class="ms-2 me-2 d-none d-lg-block">

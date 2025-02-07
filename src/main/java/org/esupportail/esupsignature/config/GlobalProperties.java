@@ -298,6 +298,12 @@ public class GlobalProperties {
     private Boolean watermarkForExternals;
 
     /**
+     * Activer les annotations pour les utilisateurs externes (pour les demandes hors circuit)
+     */
+
+    private Boolean externalCanEdit = false;
+
+    /**
      * Delai d’alerte avant expiration des certificats serveur
      */
     private Integer nbDaysBeforeCertifWarning = 60;
@@ -815,5 +821,13 @@ public class GlobalProperties {
 
     public void setFrenchPhoneNumberOnly(Boolean frenchPhoneNumberOnly) {
         this.frenchPhoneNumberOnly = frenchPhoneNumberOnly;
+    }
+
+    public Boolean getExternalCanEdit() {
+        return externalCanEdit;
+    }
+
+    public void setExternalCanEdit(Boolean externalCanEdit) {
+        this.externalCanEdit = externalCanEdit;
     }
 }
