@@ -18,7 +18,6 @@ import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.service.ReportService;
-import org.esupportail.esupsignature.service.TargetService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
@@ -71,8 +70,6 @@ public class MailService {
     private final UserShareService userShareService;
 
     private final ReportService reportService;
-    private final TargetService targetService;
-
 
     //    @Autowired(required = false)
 //    public void setMailSender(JavaMailSenderImpl mailSender) {
@@ -82,7 +79,7 @@ public class MailService {
 //    @Resource
 //    private CertificatService certificatService;
 
-    public MailService(GlobalProperties globalProperties, @Autowired(required = false) MailConfig mailConfig, @Autowired(required = false) JavaMailSenderImpl mailSender, TemplateEngine templateEngine, UserService userService, FileService fileService, MessageSource messageSource, UserShareService userShareService, ReportService reportService, TargetService targetService) {
+    public MailService(GlobalProperties globalProperties, @Autowired(required = false) MailConfig mailConfig, @Autowired(required = false) JavaMailSenderImpl mailSender, TemplateEngine templateEngine, UserService userService, FileService fileService, MessageSource messageSource, UserShareService userShareService, ReportService reportService) {
         this.globalProperties = globalProperties;
         this.mailConfig = mailConfig;
         this.mailSender = mailSender;
@@ -92,7 +89,6 @@ public class MailService {
         this.messageSource = messageSource;
         this.userShareService = userShareService;
         this.reportService = reportService;
-        this.targetService = targetService;
     }
 
     public void sendEmailAlerts(SignBook signBook, String userEppn, Data data, boolean forceSend) throws EsupSignatureMailException {

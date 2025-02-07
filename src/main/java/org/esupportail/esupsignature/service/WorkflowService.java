@@ -538,6 +538,7 @@ public class WorkflowService {
         workflowToUpdate.setForbidDownloadsBeforeEnd(workflow.getForbidDownloadsBeforeEnd());
         workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
         workflowToUpdate.setSendAlertToAllRecipients(workflow.getSendAlertToAllRecipients());
+        workflowToUpdate.setExternalCanEdit(workflow.getExternalCanEdit());
         workflowToUpdate.getRoles().clear();
         workflowToUpdate.getRoles().addAll(workflow.getRoles());
         workflowToUpdate.getDashboardRoles().clear();

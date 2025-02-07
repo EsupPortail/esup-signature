@@ -117,6 +117,8 @@ public class SignRequestController {
         model.addAttribute("attachmentRequire", attachmentRequire);
         model.addAttribute("currentSignType", signRequest.getCurrentSignType());
         model.addAttribute("currentStepNumber", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
+        model.addAttribute("currentStepMultiSign", true);
+        model.addAttribute("currentStepSingleSignWithAnnotation", true);
         if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
             if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null) {
                 model.addAttribute("currentStepId", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getId());

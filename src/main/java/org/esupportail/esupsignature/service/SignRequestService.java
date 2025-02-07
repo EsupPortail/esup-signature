@@ -190,13 +190,20 @@ public class SignRequestService {
 		SignRequest signRequest = getById(id);
 		User user = userService.getByEppn(userEppn);
 		SignBook signBook = signRequest.getParentSignBook();
-		if ((signRequest.getStatus().equals(SignRequestStatus.pending)
-				&& !signRequest.getDeleted()
-				&& (isUserInRecipients(signRequest, userEppn)
-				|| signRequest.getCreateBy().getEppn().equals(userEppn)
-				|| signBook.getViewers().contains(user)))
-				|| (signRequest.getStatus().equals(SignRequestStatus.draft)
-				&& signRequest.getCreateBy().getEppn().equals(user.getEppn()))
+		if (
+			(
+				!signRequest.getDeleted() && signRequest.getStatus().equals(SignRequestStatus.pending)
+				&&
+				(!user.getUserType().equals(UserType.external) || (signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().getExternalCanEdit()) || (signBook.getLiveWorkflow().getWorkflow() == null && globalProperties.getExternalCanEdit()))
+				&&
+				(
+					isUserInRecipients(signRequest, userEppn)
+					|| signRequest.getCreateBy().getEppn().equals(userEppn)
+					|| signBook.getViewers().contains(user)
+				)
+			)
+			||
+			(signRequest.getStatus().equals(SignRequestStatus.draft) && signRequest.getCreateBy().getEppn().equals(user.getEppn()))
 		) {
 			return true;
 		}
