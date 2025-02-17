@@ -9,7 +9,7 @@ export class Step {
         this.multiSign = "";
         this.singleSignWithAnnotation = "";
         this.autoSign = false;
-        this.signType = "pdfImageStamp";
+        this.signType = null;
         this.forceAllSign = false;
         this.userSignFirst = false;
         this.changeable = "";
