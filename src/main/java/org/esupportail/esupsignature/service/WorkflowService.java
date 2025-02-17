@@ -495,8 +495,9 @@ public class WorkflowService {
             workflows.removeAll(getClassesWorkflows());
             workflows.removeAll(getWorkflowsBySystemUser());
         }
-        return workflows.stream().sorted(Comparator.comparing(Workflow::getDescription, Comparator.nullsFirst(Comparator.naturalOrder()))).collect(Collectors.toList());
-    }
+        return workflows.stream()
+                .sorted(Comparator.comparing(Workflow::getDescription, Comparator.nullsFirst(String::compareTo)))
+                .collect(Collectors.toList());    }
 
     @Transactional
     public Workflow update(Workflow workflow, User user, String[] types, Set<String> managers) {
