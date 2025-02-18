@@ -148,6 +148,9 @@ public class WorkflowStep {
     }
 
     public Boolean getChangeable() {
+        if(changeable == null) {
+            return false;
+        }
         return changeable;
     }
 
