@@ -38,10 +38,11 @@ import org.springframework.util.FileCopyUtils;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UncheckedIOException;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.util.List;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -421,8 +422,13 @@ public class MailService {
 
     private void addInLineImages(MimeMessageHelper mimeMessage, String htmlContent) throws MessagingException {
         mimeMessage.setText(htmlContent, true);
-        mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class));
-        mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class));
+        try {
+            mimeMessage.addInline("logo", resizeImage(new ClassPathResource("/static/images/logo.png", MailService.class).getInputStream(), 30));
+            mimeMessage.addInline("logo-univ", resizeImage(new ClassPathResource("/static/images/logo-univ.png", MailService.class).getInputStream(), 30));
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         mimeMessage.addInline("logo-file", new ClassPathResource("/static/images/fa-file.png", MailService.class));
     }
 
@@ -479,28 +485,46 @@ public class MailService {
     }
 
     private void setTemplate(Context ctx, SignBook signBook) {
-        try {
-            ctx.setVariable("user", signBook.getCreateBy());
-            ctx.setVariable("url", globalProperties.getRootUrl() + "/user/signbooks/"+ signBook.getId());
-            ctx.setVariable("urlControl", globalProperties.getRootUrl() + "/public/control/" + signBook.getSignRequests().get(0).getToken());
-            ctx.setVariable("signBook", signBook);
-            ctx.setVariable("signRequests", signBook.getSignRequests());
-            PersonLdap personLdap = userService.findPersonLdapByUser(signBook.getCreateBy());
-            if(personLdap != null) {
-                OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
-                ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
-            }
-            ctx.setVariable("logo", fileService.getBase64Image(new ClassPathResource("/static/images/logo.png", MailService.class).getInputStream(), "logo.png"));
-            ctx.setVariable("logoUrn", fileService.getBase64Image(new ClassPathResource("/static/images/logo-univ.png", MailService.class).getInputStream(), "logo-univ.png"));
-            try (Reader reader = new InputStreamReader(new ClassPathResource("/static/css/bootstrap.min.css", MailService.class).getInputStream(), UTF_8)) {
-                ctx.setVariable("css", FileCopyUtils.copyToString(reader));
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-
-        } catch (IOException e) {
-            logger.error("unable to set template", e);
+        ctx.setVariable("user", signBook.getCreateBy());
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/user/signbooks/"+ signBook.getId());
+        ctx.setVariable("urlControl", globalProperties.getRootUrl() + "/public/control/" + signBook.getSignRequests().get(0).getToken());
+        ctx.setVariable("signBook", signBook);
+        ctx.setVariable("signRequests", signBook.getSignRequests());
+        PersonLdap personLdap = userService.findPersonLdapByUser(signBook.getCreateBy());
+        if(personLdap != null) {
+            OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
+            ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
         }
+        try (Reader reader = new InputStreamReader(new ClassPathResource("/static/css/bootstrap.min.css", MailService.class).getInputStream(), UTF_8)) {
+            ctx.setVariable("css", FileCopyUtils.copyToString(reader));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
+    }
+
+    public File resizeImage(InputStream inputStream, int targetHeight) throws IOException {
+        // Lire l'image depuis l'InputStream
+        BufferedImage originalImage = ImageIO.read(inputStream);
+
+        // Calculer le ratio de redimensionnement
+        int originalWidth = originalImage.getWidth();
+        int originalHeight = originalImage.getHeight();
+        double ratio = (double) targetHeight / originalHeight;
+        int targetWidth = (int) (originalWidth * ratio);
+
+        // Redimensionner l'image
+        Image scaledImage = originalImage.getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
+
+        // Convertir l'image redimensionnée en BufferedImage
+        BufferedImage resizedImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = resizedImage.createGraphics();
+        g.drawImage(scaledImage, 0, 0, null);
+        g.dispose();
+        File tempFile = File.createTempFile("resized-image", ".png");
+        tempFile.deleteOnExit(); // Supprimer le fichier à la fermeture de l'application
+        ImageIO.write(resizedImage, "PNG", tempFile);
+        return tempFile;
     }
 
     private boolean checkMailSender() {
