@@ -4,24 +4,26 @@ html {
 
 @-moz-document url-prefix() {
     * {
-        scrollbar-color: #E10F46 darkgray;
-        scrollbar-track-color: darkgray;
-        scrollbar-gutter: stable;
-        scrollbar-width: unset;
+        scrollbar-color: #E10F46 transparent;
+        scrollbar-track-color: transparent;
+        scrollbar-gutter: both-edges stable;
+        scrollbar-width: auto;
     }
 }
 
-::-webkit-scrollbar {
-    background-color: darkgray;
-    width: 12px;
-    height: 12px;
+*::-webkit-scrollbar {
+    background-color: transparent;
+    width: 4px;
 }
 
-::-webkit-scrollbar-thumb {
+*::-webkit-scrollbar-track {
+    background-color: transparent;
+    border-radius: 6px;
+}
+
+*::-webkit-scrollbar-thumb {
     border-radius: 6px;
     background-color: #E10F46;
-    width: 6px !important;
-    border: 3px solid darkgray;
 }
 
 body {
@@ -823,4 +825,24 @@ button.close {
     font-size: 48px;
     font-family: Arial, sans-serif;
     pointer-events: none;
-    user-select: none;}
+    user-select: none;
+}
+
+.postitarea {
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-y: scroll;
+    text-overflow: ellipsis;
+}
+
+.postitarea-auto {
+    width: 84%;
+    height: auto;
+}
+
+.postitarea-basic {
+    -webkit-line-clamp: revert !important;
+    height: 75%;
+}
