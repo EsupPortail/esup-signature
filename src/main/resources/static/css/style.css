@@ -6,22 +6,23 @@ html {
     * {
         scrollbar-color: #E10F46 transparent;
         scrollbar-track-color: transparent;
-        scrollbar-gutter: both-edges stable;
-        scrollbar-width: auto;
+        scrollbar-gutter: stable;
+        scrollbar-width: unset;
     }
 }
 
-*::-webkit-scrollbar {
+::-webkit-scrollbar {
     background-color: transparent;
     width: 4px;
+    height: 4px;
 }
 
-*::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
     background-color: transparent;
     border-radius: 6px;
 }
 
-*::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
     border-radius: 6px;
     background-color: #E10F46;
 }

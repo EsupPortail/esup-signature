@@ -1654,7 +1654,9 @@ public class SignBookService {
                                             try {
                                                 byte[] fileBytes = reportService.getReportBytes(signRequest);
                                                 String name = generateName(id, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), false, false);
-                                                documentService.exportDocument(documentIOType, targetUrl, new ByteArrayInputStream(fileBytes), "report.zip",  name + "-report");
+                                                if(fileBytes != null) {
+                                                    documentService.exportDocument(documentIOType, targetUrl, new ByteArrayInputStream(fileBytes), "report.zip", name + "-report");
+                                                }
                                             } catch (Exception e) {
                                                 throw new RuntimeException(e);
                                             }
