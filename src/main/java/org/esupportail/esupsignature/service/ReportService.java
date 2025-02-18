@@ -4,6 +4,7 @@ import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Report;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.WsAccessToken;
 import org.esupportail.esupsignature.entity.enums.ReportStatus;
 import org.esupportail.esupsignature.repository.ReportRepository;
 import org.esupportail.esupsignature.repository.WsAccessTokenRepository;
@@ -83,7 +84,10 @@ public class ReportService {
     public byte @Nullable [] getReportBytes(SignRequest signRequest) {
         RestTemplate restTemplate = new RestTemplate();
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-        headers.set("X-Api-Key", wsAccessTokenRepository.findByWorkflowsContains(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow()).stream().findFirst().orElse(null).getToken());
+        WsAccessToken wsAccessToken =  wsAccessTokenRepository.findByWorkflowsContains(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow()).stream().findFirst().orElse(null);
+        if(wsAccessToken != null) {
+            headers.set("X-Api-Key", wsAccessToken.getToken());
+        }
         HttpEntity<String> entity = new HttpEntity<>(headers);
         ResponseEntity<byte[]> response = restTemplate.exchange(
                 globalProperties.getRootUrl() + "/ws/signrequests/get-last-file-and-report/" + signRequest.getId(),
