@@ -5,6 +5,7 @@ import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.util.ByteArrayDataSource;
 import jakarta.transaction.Transactional;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -445,10 +446,8 @@ public class MailService {
     }
 
     private void sendMail(MimeMessageHelper mimeMessageHelper, Workflow workflow) throws MessagingException, IOException {
-        File logoFile = resizeImage(new ClassPathResource("/static/images/logo.png", MailService.class).getInputStream(), 30);
-        mimeMessageHelper.addInline("logo", logoFile);
-        File logoUnivFile = resizeImage(new ClassPathResource("/static/images/logo-univ.png", MailService.class).getInputStream(), 30);
-        mimeMessageHelper.addInline("logo-univ", logoUnivFile);
+        mimeMessageHelper.addInline("logo", resizeImage(new ClassPathResource("/static/images/logo.png", MailService.class).getInputStream(), 30));
+        mimeMessageHelper.addInline("logo-univ", resizeImage(new ClassPathResource("/static/images/logo-univ.png", MailService.class).getInputStream(), 30));
         mimeMessageHelper.addInline("logo-file", new ClassPathResource("/static/images/fa-file.png", MailService.class));        MimeMessage mimeMessage = mimeMessageHelper.getMimeMessage();
         if(workflow != null && BooleanUtils.isTrue(workflow.getDisableEmailAlerts())) {
             logger.debug("email alerts are disabled for this workflow " + workflow.getName());
@@ -484,9 +483,6 @@ public class MailService {
             if(!(e instanceof SMTPAddressFailedException)) {
                 throw new RuntimeException(e);
             }
-        } finally {
-            logoFile.delete();
-            logoUnivFile.delete();
         }
     }
 
@@ -509,7 +505,7 @@ public class MailService {
 
     }
 
-    public File resizeImage(InputStream inputStream, int targetHeight) throws IOException {
+    public ByteArrayDataSource resizeImage(InputStream inputStream, int targetHeight) throws IOException {
         BufferedImage originalImage = ImageIO.read(inputStream);
         int originalWidth = originalImage.getWidth();
         int originalHeight = originalImage.getHeight();
@@ -520,10 +516,10 @@ public class MailService {
         Graphics2D g = resizedImage.createGraphics();
         g.drawImage(scaledImage, 0, 0, null);
         g.dispose();
-        File tempFile = File.createTempFile("resized-image", ".png");
-        tempFile.deleteOnExit();
-        ImageIO.write(resizedImage, "PNG", tempFile);
-        return tempFile;
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ImageIO.write(resizedImage, "PNG", byteArrayOutputStream);
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        return new ByteArrayDataSource(byteArrayInputStream.readAllBytes(), "image/png");
     }
 
     private boolean checkMailSender() {
