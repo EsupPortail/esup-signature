@@ -1127,6 +1127,21 @@ public class SignBookService {
         List<SignRequestParams> signRequestParamses;
         if (signRequestParamsJsonString == null) {
             signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
+            for(SignRequestParams signRequestParamse : signRequestParamses) {
+                User user = userService.getByEppn(userEppn);
+                if(user.getFavoriteSignRequestParams() != null) {
+                    signRequestParamse.setAddImage(user.getFavoriteSignRequestParams().getAddImage());
+                    signRequestParamse.setSignImageNumber(user.getDefaultSignImageNumber());
+                    signRequestParamse.setAddWatermark(user.getFavoriteSignRequestParams().getAddWatermark());
+                    signRequestParamse.setAddExtra(user.getFavoriteSignRequestParams().getAddExtra());
+                    signRequestParamse.setExtraText(user.getFavoriteSignRequestParams().getExtraText());
+                    signRequestParamse.setTextPart(user.getFavoriteSignRequestParams().getTextPart());
+                    signRequestParamse.setExtraDate(user.getFavoriteSignRequestParams().getExtraDate());
+                    signRequestParamse.setExtraType(user.getFavoriteSignRequestParams().getExtraType());
+                    signRequestParamse.setExtraName(user.getFavoriteSignRequestParams().getExtraName());
+                    signRequestParamse.setExtraOnTop(user.getFavoriteSignRequestParams().getExtraOnTop());
+                }
+            }
         } else {
             signRequestParamses = userService.getSignRequestParamsesFromJson(signRequestParamsJsonString, userEppn);
         }

@@ -19,6 +19,7 @@ export class SignRequestParams extends EventFactory {
         this.extraName = null;
         this.extraDate = null;
         this.isExtraText = null;
+        this.signImageNumber = 0;
         Object.assign(this, signRequestParamsModel);
         this.isExtraText = !(this.extraText !== "");
         this.originalWidth = this.signWidth;
@@ -56,7 +57,6 @@ export class SignRequestParams extends EventFactory {
         this.pdSignatureFieldName = null;
         this.restoreExtraOnTop = false;
         this.allPages = false;
-        this.signImageNumber = 0;
         this.extraWidth = 0;
         this.extraHeight = 0;
         this.savedText = "";
@@ -150,17 +150,16 @@ export class SignRequestParams extends EventFactory {
         this.createTools();
         this.updateSize();
         this.toggleMinimalTools();
-        this.signWidth=150
-        this.signHeight=75;
-        this.cross.css('width', (this.signWidth * this.currentScale));
-        this.cross.css('height', (this.signHeight * this.currentScale));
-        this.cross.css('background-color', 'rgba(189, 255, 189, .5)');
+        this.cross.css('background-color', 'rgba(189, 255, 189, 0.9)');
         this.cross.append("<p class='text-black'>Positionner le champ de signature et cliquer sur enregistrer</p>");
+        this.cross.css("width", Math.round(150 * this.currentScale) + "px");
+        this.cross.css("height", Math.round(75 * this.currentScale) + "px");
         this.cross.css("font-size", Math.round(12 * this.currentScale)  + "px");
         this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute bottom-0 end-0' style='z-index: 4;'><i class='fas fa-save'></i></button>");
         $("#submit-add-spot").on("click", function () {
             $("#spot-modal").modal("show");
         });
+        $('#saveSpotButton').unbind();
         $('#saveSpotButton').on('click', e => this.saveSpot(e));
     }
 
@@ -172,7 +171,7 @@ export class SignRequestParams extends EventFactory {
         } else {
             let commentUrlParams = "comment=" + encodeURIComponent($("#spotComment").val()) +
                 "&commentPosX=" + Math.round(this.xPos) +
-                "&commentPosY=" + (Math.round(this.yPos) - 10) +
+                "&commentPosY=" + Math.round(this.yPos) +
                 "&commentPageNumber=" + this.signPageNumber +
                 "&spotStepNumber=" + spotStepNumber +
                 "&" + this.csrf.parameterName + "=" + this.csrf.token;
@@ -187,11 +186,8 @@ export class SignRequestParams extends EventFactory {
                 success: function (result) {
                     $("#spot-modal").modal("hide");
                     self.id = result;
-                    self.disableSpot();
                     $(window).unbind("beforeunload");
-                    if (self.signType === "form") {
-                        location.reload();
-                    }
+                    location.reload();
                 }
             });
         }
@@ -259,7 +255,7 @@ export class SignRequestParams extends EventFactory {
             this.extraDate = !this.extraDate;
             this.toggleDate();
             this.extraText = text;
-            this.isExtraText = !(this.extraText !== "");
+            this.isExtraText = !(this.extraText !== "" && this.extraText !== null);
             this.toggleText();
             this.textareaExtra.val(text);
         } else {
@@ -832,7 +828,9 @@ export class SignRequestParams extends EventFactory {
 
     displayMoreTools() {
         $("#extraTools_" + this.id).toggleClass("d-none");
-        this.cross.resizable("disable");
+        if(!this.light) {
+            this.cross.resizable("disable");
+        }
     }
 
     createColorPicker() {
@@ -1352,7 +1350,7 @@ export class SignRequestParams extends EventFactory {
                 };
                 i.src = file
             } else {
-                resolved({w: 200, h: 75})
+                resolved({w: 300, h: 150})
             }
         })
     }

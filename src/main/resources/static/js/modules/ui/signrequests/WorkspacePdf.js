@@ -221,13 +221,13 @@ export class WorkspacePdf {
                     signSpaceDiv.removeClass("sign-field");
                 }
                 signSpaceDiv.show();
-                let offset = Math.round($("#page_" + currentSignRequestParams.signPageNumber).offset().top - this.pdfViewer.initialOffset + 10);
+                let offset = Math.round($("#page_" + currentSignRequestParams.signPageNumber).offset().top - this.pdfViewer.initialOffset);
                 let xPos = Math.round(currentSignRequestParams.xPos * this.pdfViewer.scale);
                 let yPos = Math.round(currentSignRequestParams.yPos * this.pdfViewer.scale + offset);
                 signSpaceDiv.css("top", yPos);
                 signSpaceDiv.css("left", xPos);
-                signSpaceDiv.css("width", Math.round(parseInt(signSpaceDiv.attr("data-es-width")) * this.pdfViewer.scale) + "px");
-                signSpaceDiv.css("height", Math.round(parseInt(signSpaceDiv.attr("data-es-height")) * this.pdfViewer.scale) + "px");
+                signSpaceDiv.css("width", Math.round(150 * this.pdfViewer.scale) + "px");
+                signSpaceDiv.css("height", Math.round(75 * this.pdfViewer.scale) + "px");
                 signSpaceDiv.css("font-size", 13 *  this.pdfViewer.scale);
                 this.makeItDroppable(signSpaceDiv);
             }
@@ -533,7 +533,7 @@ export class WorkspacePdf {
                     let pageOffset = $("#page_" + comment.pageNumber).offset();
                     let offset = 10;
                     if(pageOffset) {
-                        offset = pageOffset.top - this.pdfViewer.initialOffset + 10;
+                        offset = pageOffset.top - this.pdfViewer.initialOffset ;
                     }
                     postitDiv.css('top', ((parseInt(comment.posY) * this.pdfViewer.scale) - 48 + offset) + "px");
                     postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
@@ -573,15 +573,15 @@ export class WorkspacePdf {
                     let page = $("#page_" + spot.pageNumber);
                     let offset = 0;
                     if(page.offset() != null) {
-                        offset = page.offset().top - this.pdfViewer.initialOffset + 10;
+                        offset = page.offset().top - this.pdfViewer.initialOffset ;
                     }
                     let posX = Math.round((parseInt(spot.posX) * this.pdfViewer.scale));
                     let posY = Math.round((parseInt(spot.posY) * this.pdfViewer.scale) + offset);
                     console.log("spot pos : " + posX + ", " + posY);
                     spotDiv.css('left',  posX + "px");
                     spotDiv.css('top',  posY + "px");
+                    spotDiv.width(300 * this.pdfViewer.scale);
                     spotDiv.width(150 * this.pdfViewer.scale);
-                    spotDiv.width(75 * this.pdfViewer.scale);
                     if(signDiv != null) {
                         signDiv.css("width", Math.round(150 * self.pdfViewer.scale) + "px");
                         signDiv.css("height", Math.round(75 * self.pdfViewer.scale) + "px");
@@ -647,7 +647,7 @@ export class WorkspacePdf {
                     let signRequestParams = Array.from(self.signPosition.signRequestParamses.values())[i];
                     let cross = signRequestParams.cross;
                     if (cross.attr("id") === ui.draggable.attr("id")) {
-                        let offset = Math.round($("#page_" + signSpaceDiv.attr("data-es-pos-page")).offset().top) - self.pdfViewer.initialOffset + 10;
+                        let offset = Math.round($("#page_" + signSpaceDiv.attr("data-es-pos-page")).offset().top) - self.pdfViewer.initialOffset ;
                         signRequestParams.xPos = signSpaceDiv.attr("data-es-pos-x");
                         signRequestParams.yPos = signSpaceDiv.attr("data-es-pos-y");
                         signRequestParams.applyCurrentSignRequestParams(offset);

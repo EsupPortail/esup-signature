@@ -21,9 +21,9 @@ public class SignRequestParams {
 
     private Integer signDocumentNumber = 0;
 
-    private Integer signWidth = 150;
+    private Integer signWidth = 300;
 
-    private Integer signHeight = 75;
+    private Integer signHeight = 150;
 
 	private Integer xPos = 0;
 
@@ -48,10 +48,6 @@ public class SignRequestParams {
     private Boolean extraDate = false;
 
     private Boolean extraOnTop = true;
-
-    private Integer extraWidth = 0;
-
-    private Integer extraHeight = 0;
 
     private String textPart = null;
 
@@ -138,10 +134,16 @@ public class SignRequestParams {
     }
 
     public void setxPos(Integer xPos) {
+        if(xPos < 0) {
+            xPos = 0;
+        }
         this.xPos = xPos;
     }
 
     public Integer getyPos() {
+        if(yPos < 0) {
+            yPos = 0;
+        }
         return yPos;
     }
 
@@ -227,22 +229,6 @@ public class SignRequestParams {
 
     public void setExtraOnTop(Boolean extraOnTop) {
         this.extraOnTop = extraOnTop;
-    }
-
-    public Integer getExtraWidth() {
-        return extraWidth;
-    }
-
-    public void setExtraWidth(Integer extraWidth) {
-        this.extraWidth = extraWidth;
-    }
-
-    public Integer getExtraHeight() {
-        return extraHeight;
-    }
-
-    public void setExtraHeight(Integer extraHeight) {
-        this.extraHeight = extraHeight;
     }
 
     public String getTextPart() {

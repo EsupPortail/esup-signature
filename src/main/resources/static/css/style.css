@@ -676,7 +676,6 @@ textarea:placeholder-shown.required-field {
 .spot {
     display: none;
     position: absolute;
-    opacity: 0.6;
     cursor: pointer;
     z-index: 3;
     color: #1e7e34;
