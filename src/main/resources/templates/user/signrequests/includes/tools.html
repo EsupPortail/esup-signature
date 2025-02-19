@@ -3,6 +3,9 @@
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div th:fragment="tools" id="tools" class="tools" th:if="${toSignDocument != null}">
 	<div class="d-flex mb-1">
+		<button id="display-side-btn" type="button" class="btn btn-warning me-1 d-block d-xl-none">
+			<i class="fa-solid fa-eye"></i> <span class="d-none d-sm-inline">Statut:<span th:text="#{'signbook.status.' + ${signBook.status}}"></span></span>
+		</button>
 		<th:block th:if="${editable}">
 			<div class="rounded-2 bg-light d-none d-xl-inline-flex mb-1 text-dark p-1" style="cursor: default;">
 				<div class="ms-2">Mode :</div>
@@ -149,7 +152,7 @@
 					data-bs-target="#addCommentModal">
 				<i class="fa-solid fa-sticky-note"></i> <span class="d-none d-xxxl-inline">Post-it</span>
 			</button>
-			<button th:if="${signable && !#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" id="signImageBtn" class="btn btn-light btn-outline-dark me-1" title="Gérer mes images de signature">
+			<button th:if="${signable && !#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" id="signImageBtn" class="btn btn-light btn-outline-dark me-1 d-none d-lg-block" title="Gérer mes images de signature">
 				<i class="fa-solid fa-images"></i> <span class="d-none d-xxxxl-inline">Mes signatures</span>
 			</button>
 			<form th:if="${displayNotif}"

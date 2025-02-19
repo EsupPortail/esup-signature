@@ -33,6 +33,23 @@
         width: 100%;
     }
 
+    #breadcrumb {
+        display: none;
+    }
+
+    .tools {
+        top: 50px;
+        overflow-x: scroll;
+    }
+
+    .workspace-pdf {
+        margin-top: 55px;
+    }
+
+    .workspace {
+        margin-top: 0;
+    }
+
     .content {
         margin-top: 100px;
         width: 100vw;
@@ -86,8 +103,7 @@
     }
 
     #breadcrumb {
-        width: 100vw;
-        margin: 0;
+        display: none;
     }
 
     .workspace-sign {
@@ -124,10 +140,6 @@
         -webkit-box-direction: revert;
         -ms-flex-direction: revert;
         flex-direction: revert;
-    }
-
-    .sidebar-label {
-        display: inline !important;
     }
 
     .nav-item-label {

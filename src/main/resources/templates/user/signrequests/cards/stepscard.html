@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<div id="stepscard" th:fragment="stepscard" class="d-none d-lg-block">
+<div id="stepscard" th:fragment="stepscard">
     <div class="hr">Étapes du circuit</div>
     <div class="card card-body bg-light mb-1">
             <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps != null}">

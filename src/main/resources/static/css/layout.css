@@ -199,6 +199,16 @@ header {
     max-width: 60px;
 }
 
+.sidebar-mobile {
+    display: block !important;
+    width: 260px !important;
+    max-width: 260px !important;
+    position: absolute !important;
+    top: 100px !important;
+    height: calc(100vh - 138px) !important;
+    z-index: 1 !important;
+}
+
 .tools {
     top: 81px;
     padding-top: 5px;
