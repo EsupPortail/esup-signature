@@ -98,7 +98,7 @@
             </div>
             <div class="form-check form-switch form-switch-md">
                 <label class="form-check-label">
-                    Si signature unique, autoriser les annotation (coches, croix...)
+                    Si signature unique, autoriser les annotations (coches, croix...)
                 </label>
                 <input type="checkbox" class="form-check-input" checked id="singleSignWithAnnotation-1" disabled/>
             </div>
@@ -111,10 +111,10 @@
         <i class="fa-solid fa-plus"></i> Enregistrer cette étape
     </button>
     <button formnovalidate id="end-workflow-sign" name="end-workflow-sign" value="true" th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" type="button" class="btn btn-success float-end m-1">
-        <i class="fa-solid fa-save"></i> Valider le circuit puis annoter le document
+        <i class="fa-solid fa-save"></i> Terminer et annoter
     </button>
     <button formnovalidate id="end-workflow-sign-start" name="end-workflow-sign" value="true" th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" type="button" class="btn btn-success float-end m-1">
-        <i class="fa-solid fa-paper-plane"></i> Valider le circuit et envoyer le document
+        <i class="fa-solid fa-paper-plane"></i> Terminer et envoyer
     </button>
 </div>
 </html>

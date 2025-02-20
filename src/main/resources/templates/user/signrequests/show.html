@@ -79,7 +79,7 @@
                             <i class="fa-solid fa-people-arrows fa-2xl text-dark"></i>
                         </a>
                     </li>
-                    <li th:if="${signRequest.createBy.eppn != userEppn && signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                    <li th:if="${signable && (currentStepNumber > 1 || signRequest.createBy.eppn != userEppn)}">
                         <button id="refuseLaunchButton" class="btn-floating btn-lg bg-danger border-0" title="Refuser"
                             th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"><i
                                 class="fa-solid fa-file-excel fa-2xl" style="margin-top: -8px;"></i></button>
@@ -161,8 +161,6 @@
                         </a>
                     </li>
                 </ul>
-                <a th:if="${nextSignRequest != null && otp == null}" id="nextSignRequest" th:href="'/user/signrequests/' + ${nextSignRequest.id}" class="d-none"></a>
-                <a th:if="${nextSignRequest != null && otp != null}" id="nextSignRequest" th:href="'/otp/signrequests/' + ${nextSignRequest.id}" class="d-none"></a>
             </div>
             <div th:replace="~{user/signrequests/includes/tools :: tools}"></div>
             <div style="position: absolute;top: 200px;">
