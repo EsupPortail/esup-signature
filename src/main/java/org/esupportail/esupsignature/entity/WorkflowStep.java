@@ -105,7 +105,7 @@ public class WorkflowStep {
     }
 
     public Boolean getMultiSign() {
-        return multiSign;
+        return Objects.requireNonNullElse(multiSign, true);
     }
 
     public void setMultiSign(Boolean multiSign) {
@@ -148,6 +148,9 @@ public class WorkflowStep {
     }
 
     public Boolean getChangeable() {
+        if(changeable == null) {
+            return false;
+        }
         return changeable;
     }
 

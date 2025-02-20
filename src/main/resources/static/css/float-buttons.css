@@ -120,18 +120,18 @@
     pointer-events: none;
     position: fixed;
     right: 1vw;
-    bottom: 25px;
-    margin-bottom: 0;
+    bottom: 40px;
     z-index: 1000;
-    overflow: hidden;
-    height: 600px;
+    overflow-y: auto;
+    height: calc(100% - 180px);
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
     -webkit-box-align: end;
     -ms-flex-align: end;
     align-items: flex-end;
-    padding: 20px 50px 20px 50px;
+    padding-left: 50px;
+    padding-right: 50px;
 }
 
 .fixed-action-btns ul {
@@ -149,16 +149,18 @@
     -webkit-box-direction: normal;
     -ms-flex-direction: column;
     flex-direction: column;
-    padding: 0;
     text-align: center;
     -webkit-transition: 400ms all;
     transition: 400ms all;
+    max-height: 100%;
+    padding-top: 14px;
 }
 
 .fixed-action-btns li {
     display: -webkit-box;
     display: -ms-flexbox;
     margin-right: auto;
-    margin-bottom: 15px;
+    margin-top: 7px;
+    margin-bottom: 7px;
     margin-left: auto;
 }

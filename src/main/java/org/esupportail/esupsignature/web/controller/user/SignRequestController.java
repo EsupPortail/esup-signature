@@ -166,11 +166,11 @@ public class SignRequestController {
                 }
             }
         }
-        boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
         model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest));
         model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn, true));
         model.addAttribute("allSignWiths", SignWith.values());
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
+        boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
         model.addAttribute("signable", signable);
         model.addAttribute("editable", signRequestService.isEditable(id, userEppn));
         model.addAttribute("isNotSigned", !signService.isSigned(signRequest, reports));
