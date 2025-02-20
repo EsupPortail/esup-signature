@@ -82,7 +82,7 @@ public class ValidationService {
             InputStream is = defaultPolicy.getInputStream();
             return documentValidator.validateDocument(is);
         } catch (Exception e) {
-            logger.warn("Unable to validate document : " + e.getMessage());
+            logger.warn("Unable to validate document : " + e.getMessage(), e);
         }
         return null;
     }

@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
@@ -70,7 +71,7 @@ public class SignRequestParamsService {
 
     public List<SignRequestParams> scanSignatureFields(InputStream inputStream, int docNumber, Workflow workflow, boolean persist) throws EsupSignatureIOException {
         try {
-            PDDocument pdDocument = PDDocument.load(inputStream);
+            PDDocument pdDocument = Loader.loadPDF(inputStream.readAllBytes());
             List<SignRequestParams> signRequestParamses = getSignRequestParamsFromPdf(pdDocument, workflow);
             for(SignRequestParams signRequestParams : signRequestParamses) {
                 signRequestParams.setSignDocumentNumber(docNumber);

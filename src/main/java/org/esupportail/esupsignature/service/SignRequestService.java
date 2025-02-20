@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.zxing.WriterException;
-import eu.europa.esig.dss.diagnostic.DiagnosticData;
 import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
@@ -299,8 +298,7 @@ public class SignRequestService {
 			documentService.addSignedFile(signRequest, new ByteArrayInputStream(signedBytes), signRequest.getTitle() + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType(), user);
 		} else {
 			reports = validationService.validate(getToValidateFile(signRequest.getId()), null);
-			DiagnosticData diagnosticData = reports.getDiagnosticData();
-			if(diagnosticData.getAllSignatures().isEmpty()) {
+			if (reports == null || reports.getDiagnosticData().getAllSignatures().isEmpty()) {
 				if (signRequestParamses.size() > 1) {
 					for (SignRequestParams signRequestParams : signRequestParamses) {
 						filledInputStream = pdfService.stampImage(filledInputStream, signRequest, signRequestParams, 1, signerUser, date, userService.getRoles(userEppn).contains("ROLE_OTP"), true);

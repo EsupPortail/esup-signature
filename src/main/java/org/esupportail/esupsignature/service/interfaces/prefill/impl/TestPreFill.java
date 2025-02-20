@@ -1,9 +1,11 @@
 package org.esupportail.esupsignature.service.interfaces.prefill.impl;
 
+import jakarta.annotation.Resource;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.esupportail.esupsignature.entity.Field;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
@@ -12,7 +14,6 @@ import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValueService
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.Resource;
 import java.util.*;
 
 @Component
@@ -45,7 +46,7 @@ public class TestPreFill implements PreFill {
 	@Override
 	public List<Field> preFillFields(List<Field> fields, User user, SignRequest signRequest) {
 		List<Field> filledFields = new ArrayList<>();
-		PDFont font = PDType1Font.HELVETICA;
+		PDFont font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
 		PDResources resources = new PDResources();
 		resources.put(COSName.getPDFName("Helvetica"), font);
 		ExtValue extDefaultValue = extValueService.getExtValueServiceByName("default");

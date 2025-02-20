@@ -14,6 +14,7 @@ import jakarta.annotation.Resource;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.*;
@@ -113,7 +114,7 @@ public class PdfService {
         SignType signType = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
         PdfParameters pdfParameters;
         try {
-            PDDocument pdDocument = PDDocument.load(inputStream);
+            PDDocument pdDocument = Loader.loadPDF(inputStream);
             pdDocument.setAllSecurityToBeRemoved(true);
             pdfParameters = getPdfParameters(pdDocument, signRequestParams.getSignPageNumber());
             if(signRequestParams.getAllPages() != null && signRequestParams.getAllPages() && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign()) {
@@ -281,7 +282,7 @@ public class PdfService {
     }
 
     public InputStream addQrCode(SignRequest signRequest, InputStream inputStream) throws IOException, WriterException {
-        PDDocument pdDocument = PDDocument.load(inputStream);
+        PDDocument pdDocument = Loader.loadPDF(inputStream.readAllBytes());
         for(int i = 0; i < pdDocument.getNumberOfPages(); i++) {
             PDPage pdPage = pdDocument.getPage(i);
             PDFTextStripper pdfTextStripper = new PDFTextStripper();
@@ -331,7 +332,7 @@ public class PdfService {
     public Map<String, String> readMetadatas(InputStream inputStream) {
         Map<String, String> metadatas = new HashMap<>();
         try {
-            PDDocument pdDocument = PDDocument.load(inputStream);
+            PDDocument pdDocument = Loader.loadPDF(inputStream.readAllBytes());
             PDDocumentInformation info = pdDocument.getDocumentInformation();
             if(checkMetadataKeys(info.getMetadataKeys())) {
                 for (String metaName : info.getMetadataKeys()) {
@@ -382,7 +383,7 @@ public class PdfService {
     public byte[] writeMetadatas(byte[] inputStream, String fileName, SignRequest signRequest, List<Log> additionnalLogs) {
 
         try {
-            PDDocument pdDocument = PDDocument.load(inputStream);
+            PDDocument pdDocument = Loader.loadPDF(inputStream);
             pdDocument.setAllSecurityToBeRemoved(true);
             pdDocument.setVersion(1.7f);
             COSDictionary trailer = pdDocument.getDocument().getTrailer();
@@ -633,7 +634,7 @@ public class PdfService {
     public byte[] fill(InputStream pdfFile, Map<String, String> datas, boolean isLastStep, boolean isForm) {
         ByteArrayOutputStream interimOut = new ByteArrayOutputStream();
         try {
-            PDDocument pdDocument = PDDocument.load(pdfFile);
+            PDDocument pdDocument = Loader.loadPDF(pdfFile.readAllBytes());
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
             if(pdAcroForm != null) {
                 PDType0Font pdFont = PDType0Font.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), false);
@@ -719,7 +720,7 @@ public class PdfService {
             pdDocument.close();
 
             ByteArrayInputStream interimInput = new ByteArrayInputStream(interimOut.toByteArray());
-            PDDocument pdDocument2 = PDDocument.load(interimInput);
+            PDDocument pdDocument2 = Loader.loadPDF(interimInput.readAllBytes());
             PDAcroForm pdAcroForm2 = pdDocument2.getDocumentCatalog().getAcroForm();
             if (isLastStep && pdAcroForm2 != null) {
                 pdDocument.getDocumentCatalog().getCOSObject().setNeedToBeUpdated(true);
@@ -752,7 +753,7 @@ public class PdfService {
 
     public InputStream removeSignField(InputStream pdfFile, Workflow workflow) {
         try {
-            PDDocument pdDocument = PDDocument.load(pdfFile);
+            PDDocument pdDocument = Loader.loadPDF(pdfFile.readAllBytes());
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
             if(pdAcroForm != null) {
                 PDFont pdFont = PDType0Font.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), true);
@@ -857,7 +858,7 @@ public class PdfService {
     public PdfParameters getPdfParameters(InputStream pdfFile, int pageNumber) {
         PDDocument pdDocument = null;
         try {
-            pdDocument = PDDocument.load(pdfFile);
+            pdDocument = Loader.loadPDF(pdfFile.readAllBytes());
             return getPdfParameters(pdDocument, pageNumber);
         } catch (Exception e) {
             logger.error("error on get pdf parameters", e);
@@ -882,7 +883,7 @@ public class PdfService {
         BufferedImage bufferedImage = null;
         PDDocument pdDocument = null;
         try {
-            pdDocument = PDDocument.load(pdfFile);
+            pdDocument = Loader.loadPDF(pdfFile.readAllBytes());
             PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
             bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfConfig.getPdfProperties().getPdfToImageDpi(), ImageType.RGB);
         } catch (IOException e) {
@@ -967,7 +968,7 @@ public class PdfService {
     }
 
     public boolean isAcroForm(ByteArrayInputStream byteArrayInputStream) throws IOException {
-        PDDocument pdDocument = PDDocument.load(byteArrayInputStream);
+        PDDocument pdDocument = Loader.loadPDF(byteArrayInputStream.readAllBytes());
         PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
         return pdAcroForm != null && !pdAcroForm.getFields().isEmpty();
     }
@@ -978,8 +979,8 @@ public class PdfService {
         }
         try {
             PdfPermissionsChecker pdfPermissionsChecker = new PdfPermissionsChecker();
-            pdfPermissionsChecker.checkSignatureRestrictionDictionaries(new PdfBoxDocumentReader(PDDocument.load(multipartFile.getBytes())), new SignatureFieldParameters());
-            pdfPermissionsChecker.checkDocumentPermissions(new PdfBoxDocumentReader(PDDocument.load(multipartFile.getBytes())), new SignatureFieldParameters());
+            pdfPermissionsChecker.checkSignatureRestrictionDictionaries(new PdfBoxDocumentReader(Loader.loadPDF(multipartFile.getBytes())), new SignatureFieldParameters());
+            pdfPermissionsChecker.checkDocumentPermissions(new PdfBoxDocumentReader(Loader.loadPDF(multipartFile.getBytes())), new SignatureFieldParameters());
         } catch (IOException e) {
             logger.error("error on check pdf permitions", e);
             throw new EsupSignatureRuntimeException("error on check pdf permitions", e);
