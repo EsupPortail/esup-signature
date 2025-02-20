@@ -8,9 +8,9 @@ public class SignRequestParamsWsDto {
 
     private Integer signDocumentNumber = 0;
 
-    private Integer signWidth = 300;
+    private Integer signWidth = 150;
 
-    private Integer signHeight = 150;
+    private Integer signHeight = 75;
 
     private Integer xPos = 0;
 

@@ -59,7 +59,7 @@ public class SignRequestParams {
 
     private Integer blue = 0;
 
-    private Integer fontSize = 12;
+    private Integer fontSize = 16;
 
     private String comment = "";
 

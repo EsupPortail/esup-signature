@@ -381,10 +381,11 @@ public class UserService {
 
     @Transactional
     public void updateUserAndSignRequestParams(String authUserEppn, String signImageBase64, Boolean saveSignRequestParams, Boolean returnToHomeAfterSign, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, String signRequestParamsJsonString) throws IOException {
-        SignRequestParams signRequestParams = new SignRequestParams();
+        SignRequestParams signRequestParams = null;
         if(BooleanUtils.isNotTrue(saveSignRequestParams)) {
             try {
                 SignRequestParams signRequestParamsJson = objectMapper.readValue(signRequestParamsJsonString, SignRequestParams.class);
+                signRequestParams = new SignRequestParams();
                 signRequestParams.setSignWidth(signRequestParamsJson.getSignWidth());
                 signRequestParams.setSignHeight(signRequestParamsJson.getSignHeight());
                 signRequestParams.setxPos(signRequestParamsJson.getxPos());

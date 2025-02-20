@@ -8,8 +8,8 @@ export class SignRequestParams extends EventFactory {
     constructor(signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone, light, signImages, scrollTop, csrf, signType) {
         super();
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
-        this.signWidth = 300;
-        this.signHeight = 150;
+        this.signWidth = 150;
+        this.signHeight = 75;
         this.addWatermark = null;
         this.extraText = "";
         this.addExtra = false;
@@ -82,7 +82,7 @@ export class SignRequestParams extends EventFactory {
             this.red = 0;
             this.green = 0;
             this.blue = 0;
-            this.fontSize = 12;
+            this.fontSize = 8;
             this.restoreExtra = false;
             this.addImage = true;
             if(restore && !isVisa) {
@@ -468,9 +468,9 @@ export class SignRequestParams extends EventFactory {
                 "</div>";
             $("#pdf").prepend(div);
             this.cross = $("#" + divName);
-            this.cross.css("width", "300");
+            this.cross.css("width", "150");
             this.canvas = $("#canvas_" + this.id);
-            this.canvas.css("width", 300);
+            this.canvas.css("width", 150);
         } else {
             div = "<div id='" + divName + "' class='cross'>" +
                 "</div>"+
@@ -770,8 +770,8 @@ export class SignRequestParams extends EventFactory {
             this.originalWidth = Math.round((result.w));
             this.originalHeight = Math.round((result.h));
             if(this.isSign) {
-                this.originalWidth = Math.round((300));
-                this.originalHeight = Math.round((150));
+                this.originalWidth = Math.round((150));
+                this.originalHeight = Math.round((75));
             }
             this.signWidth = Math.round(this.originalWidth * this.signScale) + this.extraWidth;
             this.signHeight = Math.round(this.originalHeight * this.signScale) + this.extraHeight;
