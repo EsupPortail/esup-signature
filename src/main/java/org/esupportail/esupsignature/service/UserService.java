@@ -423,8 +423,6 @@ public class UserService {
         if(signRequestParams != null) {
             signRequestParams.setxPos(0);
             signRequestParams.setyPos(0);
-            signRequestParams.setSignWidth(300);
-            signRequestParams.setSignHeight(150);
             signRequestParamsRepository.save(signRequestParams);
         }
         authUser.setFavoriteSignRequestParams(signRequestParams);

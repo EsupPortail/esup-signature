@@ -1129,9 +1129,12 @@ public class SignBookService {
             signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
             for(SignRequestParams signRequestParamse : signRequestParamses) {
                 User user = userService.getByEppn(userEppn);
+                signRequestParamse.setAddExtra(true);
+                signRequestParamse.setExtraDate(true);
+                signRequestParamse.setAddWatermark(true);
+                signRequestParamse.setSignImageNumber(user.getDefaultSignImageNumber());
                 if(user.getFavoriteSignRequestParams() != null) {
                     signRequestParamse.setAddImage(user.getFavoriteSignRequestParams().getAddImage());
-                    signRequestParamse.setSignImageNumber(user.getDefaultSignImageNumber());
                     signRequestParamse.setAddWatermark(user.getFavoriteSignRequestParams().getAddWatermark());
                     signRequestParamse.setAddExtra(user.getFavoriteSignRequestParams().getAddExtra());
                     signRequestParamse.setExtraText(user.getFavoriteSignRequestParams().getExtraText());

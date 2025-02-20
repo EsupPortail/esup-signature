@@ -199,7 +199,7 @@ public class SignRequestParamsService {
             if (signRequest.getSignRequestParams().size() >= i + 1) {
                 signRequestParams = signRequest.getSignRequestParams().get(i);
             } else {
-                signRequestParams = createSignRequestParams(signRequestParamses.get(i).getSignPageNumber(), signRequestParamses.get(i).getxPos(), signRequestParamses.get(i).getyPos(), signRequestParamses.get(i).getSignWidth(), signRequestParamses.get(i).getSignHeight());
+                signRequestParams = createSignRequestParams(signRequestParamses.get(i).getSignPageNumber(), signRequestParamses.get(i).getxPos(), signRequestParamses.get(i).getyPos());
             }
             signRequestParams.setSignImageNumber(signRequestParamses.get(i).getSignImageNumber());
             signRequestParams.setSignPageNumber(signRequestParamses.get(i).getSignPageNumber());
@@ -227,13 +227,11 @@ public class SignRequestParamsService {
         }
     }
 
-    public SignRequestParams createSignRequestParams(Integer signPageNumber, Integer xPos, Integer yPos, Integer width, Integer height) {
+    public SignRequestParams createSignRequestParams(Integer signPageNumber, Integer xPos, Integer yPos) {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignPageNumber(signPageNumber);
         signRequestParams.setxPos(xPos);
         signRequestParams.setyPos(yPos);
-        signRequestParams.setSignWidth(width);
-        signRequestParams.setSignHeight(height);
         signRequestParamsRepository.save(signRequestParams);
         return signRequestParams;
     }

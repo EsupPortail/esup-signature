@@ -3,7 +3,6 @@ import {Color} from "../modules/utils/Color.js?version=@version@";
 import {UserUi} from '../modules/ui/users/UserUi.js?version=@version@';
 import {UserSignaturePad} from "../modules/ui/users/UserSignaturePad.js?version=@version@";
 
-
 export class SignRequestParams extends EventFactory {
 
     constructor(signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone, light, signImages, scrollTop, csrf, signType) {
@@ -246,8 +245,6 @@ export class SignRequestParams extends EventFactory {
         this.addExtra = !this.addExtra;
         this.toggleExtra();
         if(this.divExtra != null) {
-            this.extraOnTop = !this.extraOnTop;
-            this.toggleExtraOnTop();
             this.extraType = !this.extraType;
             this.toggleType();
             this.extraName = !this.extraName;
@@ -258,6 +255,10 @@ export class SignRequestParams extends EventFactory {
             this.isExtraText = !(this.extraText !== "" && this.extraText !== null);
             this.toggleText();
             this.textareaExtra.val(text);
+            if(!this.extraOnTop) {
+                this.extraOnTop = !this.extraOnTop;
+                this.toggleExtraOnTop();
+            }
         } else {
             this.extraType = true;
             this.extraName = true;
@@ -881,9 +882,13 @@ export class SignRequestParams extends EventFactory {
         console.log("toggle sign image");
         if(this.addImage) {
             if(this.addExtra) {
-                if(this.extraOnTop) {
-                    this.restoreExtraOnTop = true;
-                    this.toggleExtraOnTop();
+                if(!this.light) {
+                    if(this.extraOnTop) {
+                        this.restoreExtraOnTop = true;
+                        this.toggleExtraOnTop();
+                    }
+                }else {
+                    this.canvas.hide();
                 }
                 this.divExtra.removeClass("div-extra-right");
                 this.divExtra.addClass("div-extra-top");
@@ -904,6 +909,7 @@ export class SignRequestParams extends EventFactory {
                 this.updateSize();
             }
         } else {
+            this.canvas.show();
             if(!this.extraOnTop) {
                 this.divExtra.removeClass("div-extra-top");
                 this.divExtra.addClass("div-extra-right");
@@ -1010,11 +1016,15 @@ export class SignRequestParams extends EventFactory {
                 this.refreshExtraDiv();
                 this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
                 this.signHeight = this.originalHeight * this.signScale + this.extraHeight
-                this.cross.css("width", this.signWidth * this.currentScale + "px");
-                this.cross.css("height", this.signHeight * this.currentScale + "px");
                 if(this.light == null || !this.light) {
                     this.canvas.css("width", (this.signWidth - this.extraWidth - this.padMargin) * this.currentScale + "px");
                     this.canvas.css("height", (this.signHeight - this.extraHeight - this.padMargin) * this.currentScale + "px");
+                    this.cross.css("width", this.signWidth * this.currentScale + "px");
+                    this.cross.css("height", this.signHeight * this.currentScale + "px");
+                } else {
+                    this.cross.css("width", 300 * this.currentScale + "px");
+                    this.cross.css("height", (150 + this.extraHeight) * this.currentScale + "px");
+                    this.canvas.css("height", 150 + "px")
                 }
                 this.divExtra.addClass("div-extra-top");
                 this.divExtra.removeClass("div-extra-right");
@@ -1029,19 +1039,21 @@ export class SignRequestParams extends EventFactory {
                 this.divExtra.addClass("d-none");
                 this.signHeight -= this.extraHeight;
                 this.extraHeight = 0;
-                this.updateSize();
+                // this.updateSize();
                 this.divExtra.removeClass("d-none");
                 this.extraOnTop = false;
                 this.refreshExtraDiv();
                 this.signWidth = parseInt(this.cross.css("width")) / this.currentScale * 2;
                 this.extraWidth = this.signWidth / 2;
-                this.cross.css("width", this.signWidth * this.currentScale + "px");
-                this.cross.css("height", this.signHeight * this.currentScale + "px");
                 if(this.light == null || !this.light) {
+                    this.cross.css("width", this.signWidth * this.currentScale + "px");
+                    this.cross.css("height", this.signHeight * this.currentScale + "px");
                     this.canvas.css("width", (this.signWidth - this.extraWidth - this.padMargin) * this.currentScale + "px");
                     this.canvas.css("height", (this.signHeight - this.extraHeight - this.padMargin) * this.currentScale + "px");
+                } else {
+                    this.cross.css("width", 600 * this.currentScale + "px");
+                    this.cross.css("height", 150 * this.currentScale + "px");
                 }
-                // this.divExtra.css("width", this.extraWidth * this.currentScale + "px");
                 this.divExtra.addClass("div-extra-right");
                 this.divExtra.removeClass("div-extra-top");
             }
@@ -1130,27 +1142,23 @@ export class SignRequestParams extends EventFactory {
     }
 
     updateSize() {
-        if(this.light == null || !this.light) {
-            if(this.extraOnTop) {
-                this.signHeight -= this.extraHeight;
-                this.extraHeight = 0;
-                if(this.divExtra != null) {
-                    this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
-                }
-                this.signHeight += this.extraHeight;
-                this.cross.css("height", this.signHeight * this.currentScale + "px");
-                this.canvas.css("height", (this.signHeight - this.extraHeight - this.padMargin) * this.currentScale + "px");
-            } else {
-                this.signWidth -= this.extraWidth;
-                if(this.addImage) {
-                    this.extraWidth = Math.round(this.originalWidth * this.signScale);
-                }
-                this.signWidth += this.extraWidth;
-                this.cross.css("width", this.signWidth * this.currentScale + "px");
-                this.canvas.css("width", (this.signWidth - this.extraWidth - this.padMargin) * this.currentScale + "px");
+        if(this.extraOnTop) {
+            this.signHeight -= this.extraHeight;
+            this.extraHeight = 0;
+            if(this.divExtra != null) {
+                this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
             }
-        } else {
+            this.signHeight += this.extraHeight;
             this.cross.css("height", this.signHeight * this.currentScale + "px");
+            this.canvas.css("height", (this.signHeight - this.extraHeight - this.padMargin) * this.currentScale + "px");
+        } else {
+            this.signWidth -= this.extraWidth;
+            if(this.addImage) {
+                this.extraWidth = Math.round(this.originalWidth * this.signScale);
+            }
+            this.signWidth += this.extraWidth;
+            this.cross.css("width", this.signWidth * this.currentScale + "px");
+            this.canvas.css("width", (this.signWidth - this.extraWidth - this.padMargin) * this.currentScale + "px");
         }
     }
 
