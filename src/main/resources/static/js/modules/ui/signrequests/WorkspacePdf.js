@@ -925,6 +925,7 @@ export class WorkspacePdf {
 
     showAllPostits() {
         $(".postit-global").each(function () {
+            let element = $(this);
             $(this).removeClass("d-none");
             $(this).draggable();
             $(this).on('mousedown', function (e) {
@@ -937,12 +938,38 @@ export class WorkspacePdf {
                     }
                 });
             });
+            $(this).find("p").first().on('mousedown', function (e) {
+                $(this).parent().toggleClass("postitarea-auto");
+            });
+            //on scroll remove webkitLineClamp
+            $(this).find("p").first().on('scroll', function (e) {
+                $(this).addClass("postitarea-basic");
+            });
             $(this).resizable({
-                aspectRatio: true
+                aspectRatio: true,
+                resize: function( event, ui ) {
+                    let postit = document.querySelector(".postitarea");
+                    let parent = postit.closest("#potit-comment");
+
+                    if (postit && parent) {
+                        let lineHeight = parseFloat(window.getComputedStyle(postit).lineHeight);
+                        let availableHeight = parent.clientHeight;
+                        let lines = Math.floor(availableHeight / lineHeight);
+                        postit.style.webkitLineClamp = lines;
+                    }
+                }
             });
         });
     }
 
+    truncateWithPlus(element, maxLength) {
+        if (element) {
+            let text = element.textContent.trim();
+            if (text.length > maxLength) {
+                element.textContent = text.slice(0, maxLength) + "...+";
+            }
+        }
+    }
     enableCommentAdd(e) {
         // $("#addSpotButton").toggleAttribute("disabled", true);
         let saveCommentButton = $('#saveCommentButton');
