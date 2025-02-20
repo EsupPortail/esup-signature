@@ -187,7 +187,7 @@
                         <button th:es-postit-id="${postit.id}" type="button" title="Copier le texte du postit" class="postit-copy btn btn-sm btn-transparent text-dark">
                             <i th:es-postit-id="${postit.id}" class="fa-regular fa-copy"></i>
                         </button>
-                        <p th:class="${postit.createBy.eppn == userEppn} ? 'd-none' : ''" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></p>
+                        <p th:classappend="${postit.createBy.eppn == userEppn} ? 'd-none' : ''" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></p>
                         <form style="height: 70%;" th:if="${postit.createBy.eppn == userEppn}" th:action="${'/user/signrequests/comment/' + signRequest.id + '/update/' + postit.id}" th:method="put">
                             <textarea th:style="'width: 100%;height: 75%;resize:none;background-color: ' + ${postit.postitColor}" name="comment" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></textarea>
                             <button type="submit" class="btn btn-sm btn-dark float-end position-absolute" style="bottom: 10px;right: 25px;" title="Enregistrer"><i class="fa fa-save"></i></button>
