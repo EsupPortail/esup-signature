@@ -54,8 +54,8 @@ export class SignUi {
         let self = this;
         $("#password").on('keyup', function (e) {
             if (e.keyCode === 13) {
-                let nextSignRequest = $("#nextSignRequest");
-                if (nextSignRequest.length > 0) {
+                let checkValidateSignButtonNext = $("#checkValidateSignButtonNext");
+                if (checkValidateSignButtonNext.length > 0) {
                     self.launchSign(true);
             	} else {
                     self.launchSign(false);
@@ -408,7 +408,7 @@ export class SignUi {
                     document.location.href="/nexu-sign/start?ids=" + self.signRequestId;
                 } else {
                     if (self.gotoNext) {
-                        document.location.href = $("#nextSignRequest").attr('href');
+                        document.location.href = $("#checkValidateSignButtonNext").attr('href');
                     } else {
                         if(self.isOtp== null || !self.isOtp) {
                             if(self.returnToHome == null) {
