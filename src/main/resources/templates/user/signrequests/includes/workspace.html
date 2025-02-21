@@ -192,7 +192,7 @@
                     class="btn btn-sm btn-light text-start"
                     disabled
                     style="z-index: 3;">
-                <i class="fa-solid fa-retweet"></i> Textes au dessus
+                <i class="fa-solid fa-retweet"></i> <span>Au dessus</span>
             </button>
             <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')') && isNotSigned && currentStepMultiSign}" type="button" id="allPages_x"
                     title="Répéter sur toutes les pages"
