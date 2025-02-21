@@ -879,9 +879,8 @@ export class SignRequestParams extends EventFactory {
                         this.restoreExtraOnTop = true;
                         this.toggleExtraOnTop();
                     }
-                }else {
-                    this.canvas.hide();
                 }
+                this.canvas.hide();
                 this.divExtra.removeClass("div-extra-right");
                 this.divExtra.addClass("div-extra-top");
                 this.signImageNumber = 0;
@@ -901,7 +900,10 @@ export class SignRequestParams extends EventFactory {
                 this.updateSize();
             }
         } else {
-            this.canvas.show();
+            console.log(this.canvas);
+            if(this.canvas.css("touch-action") === "none") {
+                this.canvas.show();
+            }
             if(!this.extraOnTop) {
                 this.divExtra.removeClass("div-extra-top");
                 this.divExtra.addClass("div-extra-right");
@@ -1017,6 +1019,7 @@ export class SignRequestParams extends EventFactory {
                 this.divExtra.addClass("div-extra-top");
                 this.divExtra.removeClass("div-extra-right");
                 $("#signExtraOnTop_" + this.id).addClass("btn-outline-dark");
+                $("#signExtraOnTop_" + this.id).children().next().text("Au dessus");
 
             } else {
                 if(this.addWatermark) {
@@ -1024,6 +1027,7 @@ export class SignRequestParams extends EventFactory {
                     this.cross.removeClass("watermark-width")
                 }
                 $("#signExtraOnTop_" + this.id).removeClass("btn-outline-dark");
+                $("#signExtraOnTop_" + this.id).children().next().text("À droite");
                 this.divExtra.addClass("d-none");
                 this.signHeight -= this.extraHeight;
                 this.extraHeight = 0;
