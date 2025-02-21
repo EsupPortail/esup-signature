@@ -358,6 +358,7 @@
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>
                     </button>
                     <button id="checkValidateSignButtonNext" th:if="${nextSignRequest != null}"
+                            th:data-es-next-url="'/user/signrequests/' + ${nextSignRequest.id}"
                             class="btn btn-success" title="Signer/viser et aller à la suivante" th:value="${signRequest.id}" autofocus>
                         <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer et aller à la suivante </span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser et aller à la suivante </span>
