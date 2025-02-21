@@ -31,7 +31,7 @@ export class WheelDetector extends EventFactory {
     }
 
     computeWhellEvent(event) {
-        const workspace = document.getElementById("workspace");
+        const workspace = document.getElementById("pdf");
         if (event.ctrlKey) {
             if(workspace && workspace.contains(event.target))  {
                 event.preventDefault();
