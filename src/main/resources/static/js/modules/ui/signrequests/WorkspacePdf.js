@@ -287,8 +287,9 @@ export class WorkspacePdf {
             }
             this.wheelDetector.addEventListener("down", e => this.pdfViewer.checkCurrentPage(e));
             this.wheelDetector.addEventListener("up", e => this.pdfViewer.checkCurrentPage(e));
-            this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
-            this.wheelDetector.addEventListener("zoomout", e => this.pdfViewer.zoomOut());
+            this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomOut(e));
+            this.wheelDetector.addEventListener("zoomout", e => this.pdfViewer.zoomIn(e));
+            this.wheelDetector.addEventListener("zoominit", e => this.pdfViewer.zoomInit(e));
             if(this.currentSignType === "form") {
                 this.enableCommentMode();
             }
