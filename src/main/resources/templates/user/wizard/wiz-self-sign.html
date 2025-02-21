@@ -9,7 +9,7 @@
         <form id="start-workflow-form" enctype="multipart/form-data">
             <div class="col-lg-12">
                 <div class="form-group mb-3">
-                    <label class="form-label" for="multipartFiles">Choix des fichiers à signer</label>
+                    <label class="form-label" for="multipartFiles">Choix des fichiers à signer *</label>
                     <input id="multipartFiles" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''" required>
                 </div>
                 <input type="hidden" name="signType" value="pdfImageStamp">

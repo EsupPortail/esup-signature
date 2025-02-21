@@ -444,7 +444,7 @@
                 </button>
                 <form id="infiniteForm" class="d-none">
                     <input type="submit" id="infiniteFormSubmit" class="d-none">
-                    <label for="recipientsEmails">Choisir les participants</label>
+                    <label for="recipientsEmails">Choisir les participants *</label>
                     <div class="form-group mb-3">
                         <select class="auto-select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmails" multiple="multiple" required="required">
                             <option data-placeholder="true"></option>
@@ -463,7 +463,7 @@
                         </div>
                     </div>
                     <div class="form-group mb-3" th:if="${signRequest.parentSignBook.liveWorkflow.currentStep.repeatableSignType == null}">
-                        <label for="signType">Choisir un type de signature</label>
+                        <label for="signType">Choisir un type de signature *</label>
                         <select name="signType" id="signType" class="form-select">
                             <th:block th:each="signType : ${signTypes}">
                                 <option th:value="${signType}"
