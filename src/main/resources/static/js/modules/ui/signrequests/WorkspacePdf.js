@@ -946,7 +946,7 @@ export class WorkspacePdf {
                 $(this).addClass("postitarea-basic");
             });
             $(this).resizable({
-                aspectRatio: true,
+                aspectRatio: false,
                 resize: function( event, ui ) {
                     let postit = document.querySelector(".postitarea");
                     let parent = postit.closest("#potit-comment");
@@ -962,14 +962,6 @@ export class WorkspacePdf {
         });
     }
 
-    truncateWithPlus(element, maxLength) {
-        if (element) {
-            let text = element.textContent.trim();
-            if (text.length > maxLength) {
-                element.textContent = text.slice(0, maxLength) + "...+";
-            }
-        }
-    }
     enableCommentAdd(e) {
         // $("#addSpotButton").toggleAttribute("disabled", true);
         let saveCommentButton = $('#saveCommentButton');
