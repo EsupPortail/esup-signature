@@ -159,8 +159,8 @@ header {
 }
 
 .extra-tools {
-    right: calc(-100% + 20px);
-    top: 42px;
+    right: -186px;
+    top: -1px;
     position: absolute;
 }
 
