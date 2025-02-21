@@ -162,7 +162,9 @@ export class SignPosition extends EventFactory {
                 }
                 this.signRequestParamses.set(id, new SignRequestParams(favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, this.signType === "certSign" || this.signType === "nexuSign", this.isOtp, this.phone, false, null, this.scrollTop));
             }
-            this.signRequestParamses.get(id).changeSignImage(signImageNumber);
+            if(signImageNumber !== 999999) {
+                this.signRequestParamses.get(id).changeSignImage(signImageNumber);
+            }
         } else {
             if(this.currentStepMultiSign === false && this.currentStepSingleSignWithAnnotation === false) {
                 alert("Impossible d'ajouter des annotations sur cette étape");

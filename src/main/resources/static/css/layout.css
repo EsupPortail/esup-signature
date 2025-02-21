@@ -159,8 +159,8 @@ header {
 }
 
 .extra-tools {
-    right: calc(-100% + 20px);
-    top: 42px;
+    right: -174px;
+    top: -1px;
     position: absolute;
 }
 
@@ -197,6 +197,16 @@ header {
 #sidebar.active {
     min-width: 60px;
     max-width: 60px;
+}
+
+.sidebar-mobile {
+    display: block !important;
+    width: 260px !important;
+    max-width: 260px !important;
+    position: absolute !important;
+    top: 100px !important;
+    height: calc(100vh - 138px) !important;
+    z-index: 1 !important;
 }
 
 .tools {

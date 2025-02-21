@@ -4,6 +4,7 @@ import eu.europa.esig.dss.cades.CAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.SignatureAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.enumerations.ValidationDataEncapsulationStrategy;
 import eu.europa.esig.dss.model.*;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.signature.AbstractSignatureParameters;
@@ -296,6 +297,7 @@ public class NexuService {
 		DocumentSignatureService service = signService.getSignatureService(containerType, signatureForm);
 		AbstractSignatureParameters parameters = getSignatureParameters(containerType, signatureForm);
 		parameters.setSignatureLevel(extensionForm.getSignatureLevel());
+		parameters.setValidationDataEncapsulationStrategy(ValidationDataEncapsulationStrategy.CERTIFICATE_REVOCATION_VALUES_AND_TIMESTAMP_VALIDATION_DATA);
 		if (Utils.isCollectionNotEmpty(originalDocuments)) {
 			parameters.setDetachedContents(originalDocuments);
 		}

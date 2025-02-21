@@ -77,6 +77,7 @@ export default class SelectUser {
                 maxValuesShown: 40,
             },
             events: {
+                error: e => e => this.error(e),
                 afterChange: e => this.displayTempUsers(e),
                 addable: e => this.validateEmail(e),
                 searchFilter: (option, search) => {
@@ -356,4 +357,7 @@ export default class SelectUser {
         });
     }
 
+    error(e) {
+        console.error(e);
+    }
 }

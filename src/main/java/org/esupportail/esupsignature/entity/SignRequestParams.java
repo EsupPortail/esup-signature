@@ -49,10 +49,6 @@ public class SignRequestParams {
 
     private Boolean extraOnTop = true;
 
-    private Integer extraWidth = 0;
-
-    private Integer extraHeight = 0;
-
     private String textPart = null;
 
 	private Float signScale = 1F;
@@ -63,7 +59,7 @@ public class SignRequestParams {
 
     private Integer blue = 0;
 
-    private Integer fontSize = 12;
+    private Integer fontSize = 16;
 
     private String comment = "";
 
@@ -138,10 +134,16 @@ public class SignRequestParams {
     }
 
     public void setxPos(Integer xPos) {
+        if(xPos < 0) {
+            xPos = 0;
+        }
         this.xPos = xPos;
     }
 
     public Integer getyPos() {
+        if(yPos < 0) {
+            yPos = 0;
+        }
         return yPos;
     }
 
@@ -227,22 +229,6 @@ public class SignRequestParams {
 
     public void setExtraOnTop(Boolean extraOnTop) {
         this.extraOnTop = extraOnTop;
-    }
-
-    public Integer getExtraWidth() {
-        return extraWidth;
-    }
-
-    public void setExtraWidth(Integer extraWidth) {
-        this.extraWidth = extraWidth;
-    }
-
-    public Integer getExtraHeight() {
-        return extraHeight;
-    }
-
-    public void setExtraHeight(Integer extraHeight) {
-        this.extraHeight = extraHeight;
     }
 
     public String getTextPart() {

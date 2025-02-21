@@ -88,9 +88,6 @@ public class SignRequestController {
     private OtpService otpService;
 
     @Resource
-    private GlobalProperties globalProperties;
-
-    @Resource
     private XSLTService xsltService;
 
     @GetMapping()

@@ -278,7 +278,8 @@ dd {
     padding:3px;
     text-decoration:none;
     color:#000;
-    height:200px;
+    /*height:200px;*/
+    max-height: 60%;
     width:220px;
     float:left;
     -moz-box-shadow: 1px 1px 6px 3px rgba(0, 0, 0, 0.5);
@@ -286,6 +287,7 @@ dd {
     box-shadow: 1px 1px 6px 3px rgba(0, 0, 0, 0.5);
     position:relative;
     top:-5px;
+    overflow-y: scroll !important;
     /*z-index: 10000 !important;*/
 }
 
@@ -294,6 +296,25 @@ dd {
     background-color: #FFF740 !important;
     color: black;
     border: 1px solid black !important;
+}
+
+.postit-global > .ui-resizable-s {
+    height: 0;
+}
+
+.postitarea {
+    /*overflow-y: scroll;*/
+    margin-bottom: 0;
+}
+
+.postitarea-auto {
+    width: 84%;
+    height: auto;
+}
+
+.postitarea-basic {
+    -webkit-line-clamp: revert !important;
+    height: 75%;
 }
 
 .hr {
@@ -676,7 +697,6 @@ textarea:placeholder-shown.required-field {
 .spot {
     display: none;
     position: absolute;
-    opacity: 0.6;
     cursor: pointer;
     z-index: 3;
     color: #1e7e34;
@@ -827,23 +847,4 @@ button.close {
     font-family: Arial, sans-serif;
     pointer-events: none;
     user-select: none;
-}
-
-.postitarea {
-    display: -webkit-box;
-    -webkit-line-clamp: 6;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    overflow-y: scroll;
-    text-overflow: ellipsis;
-}
-
-.postitarea-auto {
-    width: 84%;
-    height: auto;
-}
-
-.postitarea-basic {
-    -webkit-line-clamp: revert !important;
-    height: 75%;
 }
