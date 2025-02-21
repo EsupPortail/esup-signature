@@ -735,7 +735,13 @@ export class PdfViewer extends EventFactory {
         return this.pageNum >= this.numPages;
     }
 
-    zoomIn() {
+    zoomInit(e) {
+        this.scale = 1.2;
+        console.info('zoom in, scale = ' + this.scale);
+        this.fireEvent('scaleChange', ['in']);
+    }
+
+    zoomIn(e) {
         if (this.scale >= 1.9) {
             return;
         }
@@ -744,7 +750,7 @@ export class PdfViewer extends EventFactory {
         this.fireEvent('scaleChange', ['in']);
     }
 
-    zoomOut() {
+    zoomOut(e) {
         if (this.scale <= 0.4) {
             return;
         }

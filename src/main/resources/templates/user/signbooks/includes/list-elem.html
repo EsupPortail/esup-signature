@@ -27,7 +27,10 @@
                         th:text="${signBook.postits.size() + 1}" type="button"
                         class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
                 </button>
-                <ul class="dropdown-menu striped-list" th:aria-labelledby="'commentButton-' + ${signBook.id}">
+                <ul class="dropdown-menu striped-list" th:aria-labelledby="'commentButton-' + ${signBook.id}" style="width: 50%;">
+                    <li th:if="${signBook.description != null}" class="dropdown-item">
+                        <pre class="me-1" th:text="${signBook.description}"></pre>
+                    </li>
                     <th:block th:each="postit : ${signBook.postits}">
                         <li th:if="${postit}" class="dropdown-item">
                             <pre class="me-1" th:text="${postit.createBy.firstname} + ' ' + ${postit.createBy.name} + ' : ' + ${postit.text}"></pre>
