@@ -8,7 +8,6 @@ import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.service.WsAccessTokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -35,10 +34,11 @@ public class FileService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
 
+	private static final Float initialFontSize = 16f;
+
 	private final String[] faImages = {"check-solid", "times-solid", "circle-regular", "minus-solid"};
 
 	private final GlobalProperties globalProperties;
-
 
     public FileService(GlobalProperties globalProperties) {
         this.globalProperties = globalProperties;
@@ -186,11 +186,26 @@ public class FileService {
 		if(signRequestParams.getAddExtra()) {
 			int qualityFactor = globalProperties.getSignatureImageDpi() / 100;
 			final BufferedImage signImage = ImageIO.read(imageStream);
-			int widthOffset = (int) (signRequestParams.getExtraWidth() * qualityFactor * globalProperties.getFixFactor());
-			int heightOffset = (int) (signRequestParams.getExtraHeight() * qualityFactor * globalProperties.getFixFactor());
-			int width = (int) (signRequestParams.getSignWidth() * qualityFactor * globalProperties.getFixFactor());
-			int height = (int) (signRequestParams.getSignHeight() * qualityFactor * globalProperties.getFixFactor());
-
+			int extraWidth = 0;
+			int extraHeight = 0;
+			int nbExtra = 0;
+			if (signRequestParams.getExtraType()) nbExtra++;
+			if (signRequestParams.getExtraName()) nbExtra++;
+			if (signRequestParams.getExtraDate()) nbExtra++;
+			if (StringUtils.hasText(signRequestParams.getExtraText())) {
+				nbExtra += signRequestParams.getExtraText().split("\\s*\n\\s*").length;
+			}
+			if (!signRequestParams.getExtraOnTop()) {
+				extraWidth = 300;
+			} else {
+				extraHeight = 25 * nbExtra;
+			}
+			int widthOffset = (int) (extraWidth * signRequestParams.getSignScale() * qualityFactor * globalProperties.getFixFactor());
+			int heightOffset = (int) (extraHeight  * signRequestParams.getSignScale() * qualityFactor * globalProperties.getFixFactor());
+			int width = (int) ((300 + extraWidth)  * signRequestParams.getSignScale() * qualityFactor * globalProperties.getFixFactor());
+			int height = (int) ((150 + extraHeight)  * signRequestParams.getSignScale() * qualityFactor * globalProperties.getFixFactor());
+			signRequestParams.setSignWidth(Math.round((float) width / 2 / qualityFactor / globalProperties.getFixFactor()));
+			signRequestParams.setSignHeight(Math.round((float) height / 2 / qualityFactor / globalProperties.getFixFactor()));
 			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 			changeColor(signImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
 			Graphics2D graphics2D = (Graphics2D) image.getGraphics();
@@ -202,7 +217,7 @@ public class FileService {
 			graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 			int lineCount = 0;
 			Map<TextAttribute, Object> attributes = new Hashtable<>();
-			int fontSize = (int) (12 * qualityFactor * signRequestParams.getSignScale() * globalProperties.getFixFactor());
+			int fontSize = (int) (initialFontSize * qualityFactor * signRequestParams.getSignScale() * globalProperties.getFixFactor());
 			setQualityParams(graphics2D);
 			try {
 				Font font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.PLAIN).deriveFont((float) fontSize);
@@ -360,10 +375,10 @@ public class FileService {
 			Font font;
 			int fontSize;
 			if(StringUtils.hasText(firstname) && StringUtils.hasText(name)) {
-				font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/Signature.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(12f);
+				font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/Signature.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(initialFontSize);
 				fontSize = findFontSize(word, Math.round(250 / fixFactor), font);
 			} else {
-				font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(12f);
+				font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(initialFontSize);
 				fontSize = findFontSize(email, Math.round(500 / fixFactor), font);
 			}
 			font = font.deriveFont((float) fontSize);
@@ -405,7 +420,7 @@ public class FileService {
 			word = (firstname.charAt(0)  + "" + name.charAt(0)).toUpperCase();
 		}
 		try {
-			Font font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/Signature.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(12f);
+			Font font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/Signature.ttf").getInputStream()).deriveFont(Font.BOLD).deriveFont(initialFontSize);
 			int fontSize = findFontSize(word, Math.round(250 / fixFactor), font);
 			font = font.deriveFont((float) fontSize);
 			graphics2D.setFont(font);

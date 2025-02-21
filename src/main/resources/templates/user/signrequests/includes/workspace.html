@@ -68,7 +68,7 @@
                 <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}" title="Cliquer pour supprimer l'emplacement de signature"
                     th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').removeClass(\'circle-border\');'">
-                    <div th:id="'inDocSign_' + ${spot.id}" style="width: 150px; height: 75px; color: #000;" class="sign-field" th:data-es-delete="${isManager} ? 'true' :''">
+                    <div th:id="'inDocSign_' + ${spot.id}" style="width: 300px; height: 150px; color: #000;" class="sign-field" th:data-es-delete="${isManager} ? 'true' :''">
                         <span th:if="${isManager}" th:text="'Cliquer pour supprimer l’emplacement de signature étape ' + ${spot.stepNumber}"></span>
                         <span th:unless="${isManager}" th:text="'Emplacement de signature pour l\'étape ' + ${spot.stepNumber}"></span>
                     </div>
@@ -140,12 +140,6 @@
                     style="z-index: 3;">
                 <i class="fa-solid fa-chevron-down"></i>
             </button>
-            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')') && isNotSigned && currentStepMultiSign}" type="button" id="allPages_x"
-                    title="Répéter sur toutes les pages"
-                    class="btn btn-sm btn-light"
-                    style="z-index: 3;">
-                <i class="fa-regular fa-copy"></i>
-            </button>
             <button type="button" id="displayMoreTools_x"
                     title="Plus d'outils"
                     class="btn btn-sm btn-light"
@@ -153,7 +147,7 @@
                 <i class="fa-solid fa-ellipsis-v"></i>
             </button>
         </div>
-        <div id="extraTools_x" class="alert opacity-100 bg-light border-secondary-subtle extra-tools d-flex flex-column d-none text-start gap-1" onclick="event.stopPropagation();">
+        <div id="extraTools_x" class="alert p-2 opacity-100 bg-light border-secondary-subtle extra-tools d-flex flex-column d-none text-start gap-1" onclick="event.stopPropagation();">
             <input id="signColorPicker_x" value='#000000' class="d-none"/>
             <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="watermark_x"
                     title="Filigrane"
@@ -161,18 +155,38 @@
                     style="z-index: 3;">
                 <i class="fab fa-markdown"></i> Filigrane
             </button>
-            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signImage_x"
-                    title="Masquer l'image de votre signature"
-                    class="btn btn-sm btn-light text-start"
-                    style="z-index: 3;">
-                <i class="fa-solid fa-eye-slash"></i> Masquer l'image
-            </button>
+            <hr style="margin: 1px;">
             <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signExtra_x"
                     title="Ajouter les informations complémentaires (nom, date et heure...)"
-                    class="btn btn-sm btn-light text-start"
+                    class="btn btn-sm btn-light text-start d-none"
                     style="z-index: 3;">
                 <i class="fa-solid fa-receipt"></i> Textes complémentaires
             </button>
+            <button type="button" id="extraType_x"
+                    title="Afficher/Masquer le type de signature"
+                    class="btn btn-sm btn-light text-start"
+                    style="z-index: 3;">
+                <i class="fa-solid fa-shield-halved"></i> Type de signature
+            </button>
+            <button type="button" id="extraName_x"
+                    title="Afficher/Masquer le nom"
+                    class="btn btn-sm btn-light text-start"
+                    style="z-index: 3;">
+                <i class="fa-regular fa-user"></i> Prénom et nom
+            </button>
+            <button type="button" id="extraDate_x"
+                    title="Afficher/Masquer la date"
+                    class="btn btn-sm btn-light text-start"
+                    style="z-index: 3;">
+                <i class="fa-regular fa-clock"></i> Date de signature
+            </button>
+            <button type="button" id="extraText_x"
+                    title="Ajouter/Masquer un texte libre"
+                    class="btn btn-sm btn-light text-start"
+                    style="z-index: 3;">
+                <i class="fa-solid fa-font"></i> Texte libre
+            </button>
+            <hr style="margin: 1px;">
             <button type="button" id="signExtraOnTop_x"
                     title="Texte au dessus/texte sur la droite"
                     class="btn btn-sm btn-light text-start"
@@ -180,30 +194,17 @@
                     style="z-index: 3;">
                 <i class="fa-solid fa-retweet"></i> Textes au dessus
             </button>
-            <hr>
-            <button type="button" id="extraType_x"
-                    title="Afficher/Masquer le type de signature"
-                    class="btn btn-sm btn-light btn-outline-dark text-start"
+            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')') && isNotSigned && currentStepMultiSign}" type="button" id="allPages_x"
+                    title="Répéter sur toutes les pages"
+                    class="btn btn-sm btn-light text-start"
                     style="z-index: 3;">
-                <li>Type de signature</li>
+                <i class="fa-regular fa-copy"></i> Répéter
             </button>
-            <button type="button" id="extraName_x"
-                    title="Afficher/Masquer le nom"
-                    class="btn btn-sm btn-light btn-outline-dark text-start"
+            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signImage_x"
+                    title="Masquer l'image de votre signature"
+                    class="btn btn-sm btn-light text-start"
                     style="z-index: 3;">
-                <li>Prénom et nom</li>
-            </button>
-            <button type="button" id="extraDate_x"
-                    title="Afficher/Masquer la date"
-                    class="btn btn-sm btn-light btn-outline-dark text-start"
-                    style="z-index: 3;">
-                <li>Date de signature</li>
-            </button>
-            <button type="button" id="extraText_x"
-                    title="Ajouter/Masquer un texte libre"
-                    class="btn btn-sm btn-light btn-outline-dark text-start"
-                    style="z-index: 3;">
-                <li>Texte libre</li>
+                <i class="fa-solid fa-eye-slash"></i> Masquer l'image
             </button>
         </div>
     </div>

@@ -1,70 +1,58 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="signrequestparam">
-    <div id="crossTools" class="badge bg-primary btn-small cross-tools text-left">
-        <div id="defaultTools">
-            <button type="button" id="textReduce"
-                    title="Agrandir le text"
-                    class="btn btn-sm btn-transparent text-white"
-                    style="z-index: 3; display: none">
-                <b style="font-size: 11px;">A</b>
-            </button>
-            <button type="button" id="textGrow"
-                    title="Reduire le text"
-                    class="btn btn-sm btn-transparent text-white"
-                    style="z-index: 3; display: none">
-                <b style="font-size: 14px;">A</b>
+    <div id="crossTools" class="badge bg-light cross-tools">
+        <div id="defaultTools_0" class="">
+            <input id="signColorPicker_0" value='#000000' class="d-none"/>
+            <button type="button" id="watermark_0"
+                    title="Filigrane"
+                    class="btn btn-sm btn-light text-start"
+                    style="z-index: 3;">
+                <i class="fab fa-markdown"></i> Filigrane
             </button>
             <button type="button" id="signImage_0"
-                    title="Ajouter une image de votre signature"
-                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    title="Masquer l'image de votre signature"
+                    class="btn btn-sm btn-light text-start"
                     style="z-index: 3;">
-                <i class="fa-solid fa-signature"></i>
+                <i class="fa-solid fa-eye-slash"></i> Masquer l'image
             </button>
             <button type="button" id="signExtra_0"
                     title="Ajouter les informations complémentaires (nom, date et heure...)"
-                    class="btn btn-sm btn-transparent text-white"
+                    class="btn btn-sm btn-light text-start d-none"
                     style="z-index: 3;">
-                <i class="fa-solid fa-receipt"></i>
+                <i class="fa-solid fa-receipt"></i> Textes complémentaires
             </button>
             <button type="button" id="signExtraOnTop_0"
                     title="Texte au dessus/texte sur la droite"
-                    class="btn btn-sm btn-transparent text-white"
+                    class="btn btn-sm btn-light text-start mb-1"
                     disabled
                     style="z-index: 3;">
-                <i class="fa-solid fa-retweet"></i>
+                <i class="fa-solid fa-retweet"></i> Textes au dessus
             </button>
-            <button type="button" id="watermark_0"
-                    title="Filigrane"
-                    class="btn btn-sm btn-transparent text-white"
-                    style="z-index: 3;">
-                <i class="fab fa-markdown"></i>
-            </button>
-        </div>
-        <div id="extraTools_0" class="d-none">
+            <br>
             <button type="button" id="extraType_0"
                     title="Afficher/Masquer le type de signature"
-                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    class="btn btn-sm btn-light text-start"
                     style="z-index: 3;">
-                Type
+                <li>Type de signature</li>
             </button>
             <button type="button" id="extraName_0"
                     title="Afficher/Masquer le nom"
-                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    class="btn btn-sm btn-light text-start"
                     style="z-index: 3;">
-                Nom
+                <li>Prénom et nom</li>
             </button>
             <button type="button" id="extraDate_0"
                     title="Afficher/Masquer la date"
-                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    class="btn btn-sm btn-light text-start"
                     style="z-index: 3;">
-                Date
+                <li>Date de signature</li>
             </button>
             <button type="button" id="extraText_0"
                     title="Ajouter/Masquer un texte libre"
-                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    class="btn btn-sm btn-light text-start"
                     style="z-index: 3;">
-                Texte
+                <li>Texte libre</li>
             </button>
         </div>
     </div>
