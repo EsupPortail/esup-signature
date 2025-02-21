@@ -140,12 +140,6 @@
                     style="z-index: 3;">
                 <i class="fa-solid fa-chevron-down"></i>
             </button>
-            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')') && isNotSigned && currentStepMultiSign}" type="button" id="allPages_x"
-                    title="Répéter sur toutes les pages"
-                    class="btn btn-sm btn-light"
-                    style="z-index: 3;">
-                <i class="fa-regular fa-copy"></i>
-            </button>
             <button type="button" id="displayMoreTools_x"
                     title="Plus d'outils"
                     class="btn btn-sm btn-light"
@@ -153,7 +147,7 @@
                 <i class="fa-solid fa-ellipsis-v"></i>
             </button>
         </div>
-        <div id="extraTools_x" class="alert opacity-100 bg-light border-secondary-subtle extra-tools d-flex flex-column d-none text-start gap-1" onclick="event.stopPropagation();">
+        <div id="extraTools_x" class="alert p-2 opacity-100 bg-light border-secondary-subtle extra-tools d-flex flex-column d-none text-start gap-1" onclick="event.stopPropagation();">
             <input id="signColorPicker_x" value='#000000' class="d-none"/>
             <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="watermark_x"
                     title="Filigrane"
@@ -199,6 +193,12 @@
                     disabled
                     style="z-index: 3;">
                 <i class="fa-solid fa-retweet"></i> Textes au dessus
+            </button>
+            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')') && isNotSigned && currentStepMultiSign}" type="button" id="allPages_x"
+                    title="Répéter sur toutes les pages"
+                    class="btn btn-sm btn-light text-start"
+                    style="z-index: 3;">
+                <i class="fa-regular fa-copy"></i> Répéter
             </button>
             <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signImage_x"
                     title="Masquer l'image de votre signature"
