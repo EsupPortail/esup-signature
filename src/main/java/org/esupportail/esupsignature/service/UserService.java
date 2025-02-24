@@ -281,7 +281,7 @@ public class UserService {
                 throw new EsupSignatureRuntimeException("Impossible d'ajouter un utilisateur de la fédération car le service Shibboleth n'est pas activé");
             }
         }
-        logger.error("user not found with mail : " + mail);
+        logger.warn("user not found with mail : " + mail);
         return null;
     }
 

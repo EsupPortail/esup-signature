@@ -85,7 +85,7 @@ export class WizUi {
                     self.files = self.input.fileinput('getFileList');
                     self.input.fileinput('upload');
                 } else {
-                    if(self.files.size() > 0) {
+                    if(!self.files.size || self.files.size() > 0) {
                         self.input.on('filebatchselected', function (event) {
                             self.input.fileinput('upload');
                         });
