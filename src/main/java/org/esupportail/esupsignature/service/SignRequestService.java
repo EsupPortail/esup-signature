@@ -1080,11 +1080,13 @@ public class SignRequestService {
 		boolean displayNotif = false;
 		if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) &&
 				(signRequest.getCreateBy().getEppn().equals(userEppn)
-						|| (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail()))
+						|| (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null &&
+						(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail())
+						|| !Collections.disjoint(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getDashboardRoles(), user.getRoles())))
 				)
 				&&
-				((signRequest.getParentSignBook().getLastNotifDate() == null && Duration.between(signRequest.getParentSignBook().getCreateDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()) ||
-						(signRequest.getParentSignBook().getLastNotifDate() != null && Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours() > globalProperties.getHoursBeforeRefreshNotif()))) {
+				((signRequest.getParentSignBook().getLastNotifDate() == null && Duration.between(signRequest.getParentSignBook().getCreateDate().toInstant(), new Date().toInstant()).toHours() >= globalProperties.getHoursBeforeRefreshNotif()) ||
+						(signRequest.getParentSignBook().getLastNotifDate() != null && Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours() >= globalProperties.getHoursBeforeRefreshNotif()))) {
 			displayNotif = true;
 		}
 		return displayNotif;

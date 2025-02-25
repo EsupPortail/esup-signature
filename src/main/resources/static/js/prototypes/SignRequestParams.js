@@ -369,10 +369,12 @@ export class SignRequestParams extends EventFactory {
             this.isExtraText = false;
             this.toggleText();
             $("#signExtra_" + this.id).hide();
+            $("#extraType_" + this.id).hide();
+            $("#extraName_" + this.id).hide();
+            this.extraName = true;
             this.toggleName();
+            this.extraType = true;
             this.toggleType();
-            $("#extraType_" + this.id).addClass("d-none");
-            $("#extraName_" + this.id).addClass("d-none");
             this.savedText = this.userName + "\nP.O.\n" + this.authUserName;
             this.extraText = this.savedText;
             this.textareaExtra.val(this.savedText);
@@ -732,7 +734,13 @@ export class SignRequestParams extends EventFactory {
     }
 
     handleKeydown(event) {
-        if (event.key === "Delete" || event.keyCode === 46) {
+        const activeElement = document.activeElement;
+
+        if (
+            (event.key === "Delete" || event.keyCode === 46) &&
+            activeElement.tagName !== "INPUT" &&
+            activeElement.tagName !== "TEXTAREA"
+        ) {
             this.deleteSign();
         }
     }
