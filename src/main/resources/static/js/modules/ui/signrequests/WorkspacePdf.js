@@ -119,7 +119,6 @@ export class WorkspacePdf {
                 let snackbar = document.getElementById("snackbar");
                 snackbar.className = "show";
                 let text = $("#postit-text-" + $(e.target).attr("es-postit-id")).text();
-
                 try {
                     if (navigator.clipboard && navigator.clipboard.writeText) {
                         await navigator.clipboard.writeText(text);
