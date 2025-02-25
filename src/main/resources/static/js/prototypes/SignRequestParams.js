@@ -743,7 +743,13 @@ export class SignRequestParams extends EventFactory {
     }
 
     handleKeydown(event) {
-        if (event.key === "Delete" || event.keyCode === 46) {
+        const activeElement = document.activeElement;
+
+        if (
+            (event.key === "Delete" || event.keyCode === 46) &&
+            activeElement.tagName !== "INPUT" &&
+            activeElement.tagName !== "TEXTAREA"
+        ) {
             this.deleteSign();
         }
     }
