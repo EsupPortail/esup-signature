@@ -171,10 +171,10 @@
                         <i class="fa-solid fa-eye"></i>
                     </button>
                     <b>Note</b>
-                    <button es-postit-id="comment" type="button" title="Copier le texte du postit" class="postit-copy btn btn-sm btn-transparent text-dark">
-                        <i es-postit-id="comment" class="fa-regular fa-copy"></i>
+                    <button th:es-postit-id="${signRequest.id}" type="button" title="Copier le texte du postit" class="postit-copy btn btn-sm btn-transparent text-dark">
+                        <i th:es-postit-id="${signRequest.id}" class="fa-regular fa-copy"></i>
                     </button>
-                    <p class="postitarea" th:text="${signRequest.parentSignBook.description}"></p>
+                    <p th:id="'postit-text-' + ${signRequest.id}" class="postitarea" th:text="${signRequest.parentSignBook.description}"></p>
                 </div>
                 <th:block th:each="postit, iterate : ${postits}">
                     <div th:id="'postit-' + ${postit.id}" class="postit-global d-none overflow-hidden"

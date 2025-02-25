@@ -115,18 +115,44 @@ export class WorkspacePdf {
                 });
             });
 
-            $(".postit-copy").on('click', function (e) {
+            $(".postit-copy").on("click", async function (e) {
                 let snackbar = document.getElementById("snackbar");
                 snackbar.className = "show";
                 let text = $("#postit-text-" + $(e.target).attr("es-postit-id")).text();
-                if (window.isSecureContext && navigator.clipboard) {
-                    navigator.clipboard.writeText(text);
-                    snackbar.innerText = "Texte copié dans le presse papier";
-                } else {
-                    snackbar.innerText = "Impossible de copier le texte d'une application non sécurisée";
+                try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(text);
+                        snackbar.innerText = "Texte copié dans le presse-papier";
+                    } else {
+                        throw new Error("Accès au presse-papier non supporté");
+                    }
+                } catch (err) {
+                    console.warn("Erreur clipboard, utilisation du fallback :", err);
+
+                    let tempTextarea = document.createElement("textarea");
+                    tempTextarea.value = text;
+                    document.body.appendChild(tempTextarea);
+                    tempTextarea.style.position = "absolute";
+                    tempTextarea.style.left = "-9999px";
+                    tempTextarea.select();
+                    tempTextarea.setSelectionRange(0, 99999); // Support mobile
+
+                    try {
+                        let success = document.execCommand("copy");
+                        snackbar.innerText = success ? "Texte copié..." : "Échec de la copie";
+                    } catch (error) {
+                        console.error("Impossible de copier le texte :", error);
+                        snackbar.innerText = "Erreur : Impossible de copier le texte";
+                    }
+
+                    document.body.removeChild(tempTextarea);
                 }
-                setTimeout(function(){ snackbar.className = snackbar.className.replace("show", ""); }, 3000);
+
+                setTimeout(() => {
+                    snackbar.className = snackbar.className.replace("show", "");
+                }, 3000);
             });
+
             if(this.postits != null) {
                 this.postits.forEach((postit, index) => {
                     let postitButton = $('#postit' + postit.id);
