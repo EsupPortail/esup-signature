@@ -567,13 +567,19 @@ public class WorkflowService {
     @Transactional
     public boolean addTarget(Long id, String documentsTargetUri, Boolean sendDocument, Boolean sendRepport) throws EsupSignatureFsException {
         Workflow workflow = getById(id);
-        DocumentIOType targetType = fsAccessFactoryService.getPathIOType(documentsTargetUri);
-        if(!targetType.equals("mail") || workflow.getTargets().stream().map(Target::getTargetUri).noneMatch(tt -> tt.contains("mailto"))) {
-            Target target = targetService.createTarget(documentsTargetUri, sendDocument, sendRepport);
+        if(documentsTargetUri.equals("mailto:")) {
+            Target target = targetService.createTarget("mailto:", sendDocument, sendRepport);
             workflow.getTargets().add(target);
             return true;
+        } else {
+            DocumentIOType targetType = fsAccessFactoryService.getPathIOType(documentsTargetUri);
+            if (!targetType.equals("mail") || workflow.getTargets().stream().map(Target::getTargetUri).noneMatch(tt -> tt.contains("mailto"))) {
+                Target target = targetService.createTarget(documentsTargetUri, sendDocument, sendRepport);
+                workflow.getTargets().add(target);
+                return true;
+            }
+            return false;
         }
-        return false;
     }
 
     @Transactional

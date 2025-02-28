@@ -134,6 +134,9 @@ export class SignPosition extends EventFactory {
             if (signImageNumber === 999999) {
                 id = 999999;
                 this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, false, false, false, signImageNumber, this.scrollTop, this.csrf, this.signType));
+                this.signRequestParamses.get(id).addEventListener("sizeChanged", e => this.signRequestParamses.get(id).simulateDrop());
+                this.signRequestParamses.get(id).changeSignSize(null);
+
             } else if(signImageNumber >= 0) {
                 if(this.currentStepMultiSign === false && this.signsList.length > 0) {
                     alert("Impossible d'ajouter plusieurs signatures sur cette étape");
