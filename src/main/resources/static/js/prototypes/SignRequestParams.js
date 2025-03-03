@@ -714,6 +714,7 @@ export class SignRequestParams extends EventFactory {
         this.cross.draggable("enable");
         this.border.removeClass("anim-border");
         this.border.addClass("static-border");
+        this.tools.addClass("d-none");
         if(this.userSignaturePad != null) {
             this.userSignaturePad.signaturePad.off();
             this.canvas.css("cursor", "move");
