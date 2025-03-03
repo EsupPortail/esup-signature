@@ -88,8 +88,8 @@ public class TargetService {
     public void copyTargets(List<Target> targets, SignBook signBook, List<String> targetEmails) throws EsupSignatureFsException {
         for(Target target : targets) {
             if(signBook.getLiveWorkflow().getTargets().stream().noneMatch(t -> t != null && t.getTargetUri().equals(target.getTargetUri()))
-                    && fsAccessFactoryService.getPathIOType(target.getTargetUri()) != DocumentIOType.mail
-                    && target.getTargetUri() != null && !target.getTargetUri().isEmpty()) {
+                    && target.getTargetUri() != null && !target.getTargetUri().isEmpty() && !target.getTargetUri().equals("mailto:")
+                    && fsAccessFactoryService.getPathIOType(target.getTargetUri()) != DocumentIOType.mail) {
                 signBook.getLiveWorkflow().getTargets().add(createTarget(target.getTargetUri(), target.getSendDocument(), target.getSendReport()));
             }
         }
@@ -101,7 +101,7 @@ public class TargetService {
         List<Target> targetsCreated = new ArrayList<>();
         List<String> targetEmailsToAdd = new ArrayList<>();
         for(Target target1 : targets) {
-            if(fsAccessFactoryService.getPathIOType(target1.getTargetUri()).equals(DocumentIOType.mail)) {
+            if(!target1.getTargetUri().equals("mailto:") && fsAccessFactoryService.getPathIOType(target1.getTargetUri()).equals(DocumentIOType.mail)) {
                 for(String targetEmail : target1.getTargetUri().replace("mailto:", "").split(",")) {
                     if (!targetEmailsToAdd.toString().contains(targetEmail)) {
                         targetEmailsToAdd.add(targetEmail);

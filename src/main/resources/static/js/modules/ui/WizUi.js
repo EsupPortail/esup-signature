@@ -426,6 +426,9 @@ export class WizUi {
         });
         $("#send-form-button").on("click", e => this.sendForm(e));
         $('button[id^="markHelpAsReadButton_"]').each((index, e) => this.listenHelpMarkAsReadButton(e));
+        if($("#targetEmailsSelect").length) {
+            new SelectUser("targetEmailsSelect", null, null, this.csrf);
+        }
     }
 
     sendForm(e) {
