@@ -738,15 +738,9 @@ public class PdfService {
     }
 
     public PDFieldTree getFields(PDDocument pdDocument) throws EsupSignatureRuntimeException {
-        try {
-            PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
-            if(pdAcroForm != null) {
-                PDFieldTree fields = new PDFieldTree(pdAcroForm);
-                pdDocument.close();
-                return fields;
-            }
-        } catch (IOException e) {
-            logger.error("file read error", e);
+        PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+        if(pdAcroForm != null) {
+            return new PDFieldTree(pdAcroForm);
         }
         return null;
     }
@@ -950,7 +944,6 @@ public class PdfService {
     }
 
     public Map<String, Integer> getPageNumberByAnnotDict(PDDocument pdDocument) throws IOException {
-        Iterator<PDPage> pages = pdDocument.getDocumentCatalog().getPages().iterator();
         PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
         Map<String, Integer> pageNrByAnnotDict = new HashMap<>();
         for (PDField field : pdAcroForm.getFieldTree()) {
