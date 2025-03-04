@@ -395,7 +395,7 @@ public class SignService {
 				}
 				bytes = inputStream.readAllBytes();
 				if(!isSigned(signRequest, null) && !pdfService.isPdfAComplient(bytes)) {
-					bytes = pdfService.convertGS(pdfService.writeMetadatas(bytes, toSignFile.getFileName(), signRequest, new ArrayList<>()));
+					bytes = pdfService.convertToPDFA(pdfService.writeMetadatas(bytes, toSignFile.getFileName(), signRequest, new ArrayList<>()));
 				}
 			} else {
 				signatureForm = signProperties.getDefaultSignatureForm();

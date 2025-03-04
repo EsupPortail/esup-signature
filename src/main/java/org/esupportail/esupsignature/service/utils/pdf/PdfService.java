@@ -489,7 +489,7 @@ public class PdfService {
         return inputStream;
     }
 
-    public byte[] convertGS(byte[] originalBytes) throws EsupSignatureRuntimeException {
+    public byte[] convertToPDFA(byte[] originalBytes) throws EsupSignatureRuntimeException {
         if (!isPdfAComplient(originalBytes) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             String params = pdfConfig.getPdfProperties().getGsCommandParams();
             if(!pdfConfig.getPdfProperties().isAutoRotate()) {
@@ -525,7 +525,7 @@ public class PdfService {
                     while ((line = reader.readLine()) != null) {
                         output.append(line).append("\n");
                     }
-                    logger.warn(output.toString());
+//                    logger.warn(output.toString());
                     logger.warn("PDF/A conversion failure : document will be signed without conversion");
                     return originalBytes;
                 }
@@ -543,14 +543,27 @@ public class PdfService {
         }
     }
 
-    public byte[] normalizeGS(byte[] originalBytes) throws IOException, EsupSignatureRuntimeException {
+    public byte[] normalizePDF(byte[] originalBytes) throws IOException, EsupSignatureRuntimeException {
+        ByteArrayOutputStream repairedOriginalBytes = new ByteArrayOutputStream();
+        PDDocument pdDocument = Loader.loadPDF(originalBytes);
+        for (int i = 0; i < pdDocument.getNumberOfPages(); i++) {
+            List<PDAnnotation> annotations = pdDocument.getPage(i).getAnnotations();
+            for (PDAnnotation annotation : annotations) {
+                if (annotation.getPage() == null) {
+                        annotation.setPage(pdDocument.getPage(i));
+                }
+            }
+        }
+        pdDocument.save(repairedOriginalBytes);
+        pdDocument.close();
+        originalBytes = repairedOriginalBytes.toByteArray();
         Reports reports = validationService.validate(new ByteArrayInputStream(originalBytes), null);
         if (!isAcroForm(new ByteArrayInputStream(originalBytes)) && (reports == null || reports.getSimpleReport() == null || reports.getSimpleReport().getSignatureIdList().isEmpty())) {
             String params = "";
             if(!pdfConfig.getPdfProperties().isAutoRotate()) {
                 params = params + " -dAutoRotatePages=/None";
             }
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + "-dPDFSTOPONERROR -dPreserveAnnots=true -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
             logger.info("GhostScript normalize : " + cmd);
             ProcessBuilder processBuilder = new ProcessBuilder();
             if(SystemUtils.IS_OS_WINDOWS) {
@@ -579,7 +592,8 @@ public class PdfService {
                         output.append(line + "\n");
                     }
                     logger.warn(output.toString());
-                    throw new EsupSignatureSignException("PDF/A convertion failure");
+                    logger.warn("PDF/A conversion failure : document will be added without conversion");
+                    return originalBytes;
                 }
             } catch (InterruptedException e) {
                 logger.error("GhostScript launcs error : check installation or path", e);
@@ -637,6 +651,7 @@ public class PdfService {
             PDDocument pdDocument = Loader.loadPDF(pdfFile.readAllBytes());
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
             if(pdAcroForm != null) {
+                Map<String, Integer> pageNrByAnnotDict = getPageNumberByAnnotDict(pdDocument);
                 PDType0Font pdFont = PDType0Font.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), false);
                 PDResources resources = pdAcroForm.getDefaultResources();
                 resources.put(COSName.getPDFName("LiberationSans"), pdFont);
@@ -644,8 +659,16 @@ public class PdfService {
                 pdAcroForm.setDefaultAppearance("/LiberationSans 10 Tf 0 g");
                 List<PDField> fields = pdAcroForm.getFields();
                 for(PDField pdField : fields) {
+                    if(pdField instanceof PDSignatureField) {
+                        for(PDAnnotationWidget pdAnnotationWidget : pdField.getWidgets()) {
+                            pdAnnotationWidget.setPage(pdDocument.getPage(0));
+                        }
+                        continue;
+                    }
+                    int page = pageNrByAnnotDict.get(pdField.getPartialName());
                     for(PDAnnotationWidget pdAnnotationWidget : pdField.getWidgets()) {
                         pdAnnotationWidget.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
+                        pdAnnotationWidget.setPage(pdDocument.getPage(page));
                     }
                     String filedName = pdField.getPartialName().split("\\$|#|!")[0];
                     if(datas.containsKey(filedName)) {
@@ -684,8 +707,6 @@ public class PdfService {
                                 pdTextField.setValue(value);
                                 pdAcroForm.getFields().add(pdTextField);
                                 pdAcroForm.getFields().remove(pdListBox);
-                                Map<String, Integer> pageNrByAnnotDict = getPageNumberByAnnotDict(pdDocument);
-                                int page = pageNrByAnnotDict.get(pdField.getPartialName());
                                 int countPage = 1;
                                 for (PDPage pdPage : pdDocument.getPages()) {
                                     pdPage.getAnnotations().removeAll(pdListBox.getWidgets());
@@ -696,17 +717,15 @@ public class PdfService {
                                 }
                             }
                         } else {
-                            if (!(pdField instanceof PDSignatureField)) {
-                                String value = datas.get(filedName);
-                                pdField.getCOSObject().setNeedToBeUpdated(true);
-                                pdField.getCOSObject().removeItem(COSName.AA);
-                                pdField.getCOSObject().removeItem(COSName.AP);
-                                pdField.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
-                                try {
-                                    pdField.setValue(value);
-                                } catch (Exception e) {
-                                    logger.warn("error on set value " + filedName + ", cause : " +e.getMessage());
-                                }
+                            String value = datas.get(filedName);
+                            pdField.getCOSObject().setNeedToBeUpdated(true);
+                            pdField.getCOSObject().removeItem(COSName.AA);
+                            pdField.getCOSObject().removeItem(COSName.AP);
+                            pdField.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
+                            try {
+                                pdField.setValue(value);
+                            } catch (Exception e) {
+                                logger.warn("error on set value " + filedName + ", cause : " +e.getMessage());
                             }
                         }
                     }
@@ -961,9 +980,10 @@ public class PdfService {
     }
 
     public boolean isAcroForm(ByteArrayInputStream byteArrayInputStream) throws IOException {
-        PDDocument pdDocument = Loader.loadPDF(byteArrayInputStream.readAllBytes());
-        PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
-        return pdAcroForm != null && !pdAcroForm.getFields().isEmpty();
+        try (PDDocument pdDocument = Loader.loadPDF(byteArrayInputStream.readAllBytes())) {
+            PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+            return pdAcroForm != null && !pdAcroForm.getFields().isEmpty();
+        }
     }
 
     public void checkPdfPermitions(MultipartFile multipartFile) throws EsupSignatureRuntimeException {
