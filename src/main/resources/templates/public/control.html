@@ -19,7 +19,7 @@
                     <li>Soit, le document a été modifié depuis qu’il a été signé</li>
                 </ul>
             </div>
-            <th:block th:if="${(auditTrail != null && (auditTrailChecked != null && auditTrailChecked) || signRequest != null) && (viewAccess != null && viewAccess)}">
+            <th:block th:if="${(auditTrail != null && (auditTrailChecked != null && auditTrailChecked) && signRequest != null) || (viewAccess != null && viewAccess)}">
                 <th:block th:if="${auditTrail != null}">
                     <div class="alert alert-success mb-1 text-center" th:if="${auditTrail.getDocumentCheckSum() != null}">
                         <h5>Le document est conforme.</h5>
@@ -155,7 +155,7 @@
                     </div>
                 </th:block>
             </th:block>
-            <th:block th:if="${(auditTrail != null && (auditTrailChecked != null && auditTrailChecked) || signRequest != null) && !(viewAccess != null && viewAccess)}">
+            <th:block th:unless="${(auditTrail != null && (auditTrailChecked != null && auditTrailChecked) && signRequest != null) || (viewAccess != null && viewAccess)}">
                 <div class="alert alert-success mx-auto mt-1 mb-1" th:if="${auditTrail != null}">
                     <h4>Le document est bien référencé comme signé sur cette plateforme</h4>
                     <dl class="row border-bottom m-0">
