@@ -52,7 +52,6 @@ import org.esupportail.esupsignature.config.pdf.PdfConfig;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
@@ -80,8 +79,8 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -525,13 +524,13 @@ public class PdfService {
                     while ((line = reader.readLine()) != null) {
                         output.append(line).append("\n");
                     }
-//                    logger.warn(output.toString());
+                    logger.warn(output.toString());
                     logger.warn("PDF/A conversion failure : document will be signed without conversion");
                     return originalBytes;
                 }
             } catch (IOException | InterruptedException e) {
-                logger.error("GhostScript launch error : check installation or path", e);
-                throw new EsupSignatureSignException("GhostScript launch error");
+                logger.error("GhostScript error", e);
+                return originalBytes;
             } finally {
                 if(process != null) {
                     process.destroy();
@@ -563,7 +562,7 @@ public class PdfService {
             if(!pdfConfig.getPdfProperties().isAutoRotate()) {
                 params = params + " -dAutoRotatePages=/None";
             }
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + "-dPDFSTOPONERROR -dPreserveAnnots=true -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + "-dPDFSTOPONERROR  -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
             logger.info("GhostScript normalize : " + cmd);
             ProcessBuilder processBuilder = new ProcessBuilder();
             if(SystemUtils.IS_OS_WINDOWS) {
@@ -589,15 +588,15 @@ public class PdfService {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(result)));
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        output.append(line + "\n");
+                        output.append(line).append("\n");
                     }
                     logger.warn(output.toString());
                     logger.warn("PDF/A conversion failure : document will be added without conversion");
                     return originalBytes;
                 }
-            } catch (InterruptedException e) {
-                logger.error("GhostScript launcs error : check installation or path", e);
-                throw new EsupSignatureSignException("GhostScript launch error");
+            } catch (IOException | InterruptedException e) {
+                logger.error("GhostScript error", e);
+                return originalBytes;
             } finally {
                 if(process != null) {
                     process.destroy();
