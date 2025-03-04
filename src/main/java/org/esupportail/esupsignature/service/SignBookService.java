@@ -780,7 +780,7 @@ public class SignBookService {
             throw new EsupSignatureRuntimeException("Ce formulaire ne peut pas être instancié car il ne possède pas de modèle");
         }
         if(computedWorkflow.getWorkflowSteps().isEmpty()) {
-            toAddFile = pdfService.convertGS(toAddFile);
+            toAddFile = pdfService.convertToPDFA(toAddFile);
         }
         String fileName = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "") + ".pdf";
         MultipartFile multipartFile = new DssMultipartFile(fileName, fileName, "application/pdf", toAddFile);
