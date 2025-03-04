@@ -496,7 +496,7 @@ public class WorkflowService {
             workflows.removeAll(getWorkflowsBySystemUser());
         }
         return workflows.stream()
-                .sorted(Comparator.comparing(Workflow::getDescription, Comparator.nullsFirst(String::compareTo)))
+                .sorted(Comparator.comparing(w -> w.getDescription().toLowerCase(), Comparator.nullsFirst(String::compareTo)))
                 .collect(Collectors.toList());    }
 
     @Transactional
