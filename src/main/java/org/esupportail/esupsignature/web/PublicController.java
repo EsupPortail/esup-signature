@@ -63,14 +63,18 @@ public class PublicController {
         this.preAuthorizeService = preAuthorizeService;
     }
 
+    @GetMapping(value = "/control")
+    public String control() {
+        return "public/control";
+    }
+
     @GetMapping(value = "/control/{token}")
-    public String control(@PathVariable String token, Model model) throws EsupSignatureFsException, IOException {
+    public String controlToken(@PathVariable String token, Model model) throws EsupSignatureFsException, IOException {
         AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(token);
         if(auditTrail == null) {
             return "error";
         }
         model.addAttribute("auditTrailChecked", false);
-        model.addAttribute("size", auditTrail.getDocumentSize());
         model.addAttribute("auditTrail", auditTrail);
         Optional<SignRequest> signRequest = signRequestService.getSignRequestByToken(token);
         if(signRequest.isPresent()) {
@@ -107,7 +111,11 @@ public class PublicController {
                             Model model, HttpSession httpSession) throws IOException {
         String checksum = fileService.getFileChecksum(multipartFile.getInputStream());
         AuditTrail auditTrail = auditTrailService.getAuditTrailFromCheksum(checksum);
-        if(auditTrail != null && auditTrail.getToken().equals(token)) {
+        if(auditTrail != null) {
+            if("null".equals(token)) {
+                token = auditTrail.getToken();
+                model.addAttribute("token", token);
+            }
             model.addAttribute("auditTrailChecked", true);
             List<Log> logs = logService.getFullByToken(token);
             model.addAttribute("logs", logs);
@@ -136,7 +144,6 @@ public class PublicController {
             }
         } else {
             model.addAttribute("error", true);
-            return "public/control";
         }
         return "public/control";
     }
