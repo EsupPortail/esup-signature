@@ -664,10 +664,11 @@ public class PdfService {
                         }
                         continue;
                     }
-                    int page = pageNrByAnnotDict.get(pdField.getPartialName());
-                    for(PDAnnotationWidget pdAnnotationWidget : pdField.getWidgets()) {
-                        pdAnnotationWidget.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
-                        pdAnnotationWidget.setPage(pdDocument.getPage(page));
+                    if(pageNrByAnnotDict.containsKey(pdField.getPartialName())) {
+                        for (PDAnnotationWidget pdAnnotationWidget : pdField.getWidgets()) {
+                            pdAnnotationWidget.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
+                            pdAnnotationWidget.setPage(pdDocument.getPage(pageNrByAnnotDict.get(pdField.getPartialName())));
+                        }
                     }
                     String filedName = pdField.getPartialName().split("\\$|#|!")[0];
                     if(datas.containsKey(filedName)) {
@@ -709,7 +710,7 @@ public class PdfService {
                                 int countPage = 1;
                                 for (PDPage pdPage : pdDocument.getPages()) {
                                     pdPage.getAnnotations().removeAll(pdListBox.getWidgets());
-                                    if(countPage == page) {
+                                    if(pageNrByAnnotDict.containsKey(pdField.getPartialName()) && countPage == pageNrByAnnotDict.get(pdField.getPartialName())) {
                                         pdPage.getAnnotations().add(pdAnnotationWidget);
                                     }
                                     countPage++;
