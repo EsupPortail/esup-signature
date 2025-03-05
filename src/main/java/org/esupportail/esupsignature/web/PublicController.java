@@ -15,6 +15,7 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
+import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.security.core.Authentication;
@@ -50,8 +51,9 @@ public class PublicController {
     private final XSLTService xsltService;
 
     private final PreAuthorizeService preAuthorizeService;
+    private final ValidationService validationService;
 
-    public PublicController(@Autowired(required = false) BuildProperties buildProperties, LogService logService, SignRequestService signRequestService, AuditTrailService auditTrailService, FileService fileService, UserService userService, SignService signService, XSLTService xsltService, PreAuthorizeService preAuthorizeService) {
+    public PublicController(@Autowired(required = false) BuildProperties buildProperties, LogService logService, SignRequestService signRequestService, AuditTrailService auditTrailService, FileService fileService, UserService userService, SignService signService, XSLTService xsltService, PreAuthorizeService preAuthorizeService, ValidationService validationService) {
         this.buildProperties = buildProperties;
         this.logService = logService;
         this.signRequestService = signRequestService;
@@ -61,6 +63,7 @@ public class PublicController {
         this.signService = signService;
         this.xsltService = xsltService;
         this.preAuthorizeService = preAuthorizeService;
+        this.validationService = validationService;
     }
 
     @GetMapping(value = "/control")
@@ -143,6 +146,8 @@ public class PublicController {
                 }
             }
         } else {
+            Reports reports = validationService.validate(multipartFile.getInputStream(), null);
+            model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
             model.addAttribute("error", true);
         }
         return "public/control";
