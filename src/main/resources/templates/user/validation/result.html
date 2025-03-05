@@ -42,44 +42,135 @@
 
                     <div th:if="${simpleReport} != null" role="tabcard" class="tab-pane fade in active show report" id="simple-report">
                         <div class="position-relative">
-                            <div id="simple-report-buttons" class="btn-group d-print-none" role="toolbar">
-                                <button type="button" class="btn btn-light"
-                                        onclick="window.print();">
-                                    <i class="fa fa-print"></i>&nbsp;<span th:text="#{label.print}"></span>
-                                </button>
-                                <a class="btn btn-light"
-                                   th:href="@{/ws-secure/validation/download-simple-report}" role="button"
-                                   th:if="${displayDownloadPdf}">
-                                    <i class="fa fa-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>
-                                </a>
+                            <div class="alert alert-danger" th:if="${auditTrail == null && signCount == 0}">
+                                Ce document ne comporte pas de signature reconnue par le système de contrôle.
                             </div>
-                            <div class="w-100" th:utext="${simpleReport}"></div>
+                            <th:block th:if="${auditTrail != null}">
+                                <div class="alert alert-success mb-1 text-center" th:if="${auditTrail.getDocumentCheckSum() != null}">
+                                    <h5>Le document est conforme. Il n’a pas été modifié depuis sa signature.</h5>
+                                </div>
+                                <div class="alert alert-info mb-1" th:if="${signRequest != null && viewAccess != null && viewAccess}">
+                                    Vous avez accès à cette demande : <a th:href="'/user/signrequests/' + ${signRequest.id}">Voir la demande</a>
+                                </div>
+                                <div class="row">
+                                    <div class="alert alert-light border-secondary mx-auto mb-1" th:if="${auditTrail.getDocumentCheckSum() != null}">
+                                        <h4>Informations générales sur le document</h4>
+                                        <dl class="row border-bottom m-0">
+                                            <dt class="col-3">Nom de document : </dt>
+                                            <dd class="col-9" th:text="${auditTrail.documentName}"></dd>
+                                        </dl>
+                                        <dl class="row border-bottom m-0">
+                                            <dt class="col-3">Type de document : </dt>
+                                            <dd class="col-9" th:text="${auditTrail.documentType}"></dd>
+                                        </dl>
+                                        <dl class="row border-bottom m-0">
+                                            <dt class="col-3">Taille : </dt>
+                                            <dd class="col-9" th:text="${size} + ' (' + ${auditTrail.documentSize} + ')'"></dd>
+                                        </dl>
+                                    </div>
+                                    <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
+                                        <h4>Signatures</h4>
+                                        <table class="table table-sm table-hover">
+                                            <thead class="table-secondary">
+                                            <tr>
+                                                <th></th>
+                                                <th>Date</th>
+                                                <th>Nom</th>
+                                                <th>Email</th>
+                                                <th>Document lu</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <th:block th:each="auditStep, iterator : ${auditTrail.auditSteps}">
+                                                <tr data-bs-toggle="collapse" th:data-bs-target="'#collapse-' + ${iterator.index}" style="cursor: pointer;" title="Cliquez ici pour afficher le detail">
+                                                    <td><i class="fa-solid fa-signature"></i></td>
+                                                    <td class="text-left"><span
+                                                            th:text="${#dates.format(auditStep.timeStampDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
+                                                    <td class="text-left"><span th:text="${auditStep.firstname} + ' ' + ${auditStep.name}"></span></td>
+                                                    <td class="text-left"><span th:text="${auditStep.email}"></span></td>
+                                                    <td class="text-left" th:text="${auditStep.getAllScrolled()} ? 'lu' : 'non lu'"></td>
+                                                </tr>
+                                                <tr class="collapse" th:id="'collapse-' + ${iterator.index}">
+                                                    <td colspan="6">
+                                                        <dl class="row border-bottom m-0">
+                                                            <dt class="col-lg-5">Login : </dt>
+                                                            <dd th:text="${auditStep.authenticationDetails}"></dd>
+                                                        </dl>
+                                                        <dl class="row border-bottom m-0">
+                                                            <dt class="col-lg-5">Authentification : </dt>
+                                                            <dd th:text="${auditStep.authenticationDetails}"></dd>
+                                                        </dl>
+                                                        <dl class="row border-bottom m-0">
+                                                            <dt class="col-lg-5">Id signature : </dt>
+                                                            <dd th:text="${auditStep.signId}"></dd>
+                                                        </dl>
+                                                        <dl class="row border-bottom m-0">
+                                                            <dt class="col-lg-5">Certificat signature : </dt>
+                                                            <dd th:text="${auditStep.signCertificat}"></dd>
+                                                        </dl>
+                                                        <dl class="row border-bottom m-0">
+                                                            <dt class="col-lg-5">Id timestamp : </dt>
+                                                            <dd th:text="${auditStep.timeStampId}"></dd>
+                                                        </dl>
+                                                        <dl class="row border-bottom m-0">
+                                                            <dt class="col-lg-5">Certificat timestamp : </dt>
+                                                            <dd th:text="${auditStep.timeStampCertificat}"></dd>
+                                                        </dl>
+                                                    </td>
+                                                </tr>
+                                            </th:block>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </th:block>
+                            <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
+                                <div id="simple-report-buttons" class="btn-group d-print-none" role="toolbar">
+                                    <h4>Signatures avec certificats</h4>
+
+                                    <button type="button" class="btn btn-light float-end"
+                                            onclick="window.print();">
+                                        <i class="fa fa-print"></i>&nbsp;<span th:text="#{label.print}"></span>
+                                    </button>
+                                    <a class="btn btn-light float-end"
+                                       th:href="@{/ws-secure/validation/download-simple-report}" role="button"
+                                       th:if="${displayDownloadPdf}">
+                                        <i class="fa fa-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>
+                                    </a>
+                                </div>
+                                <div th:if="${simpleReport != null}" th:utext="${simpleReport}" class="mt-2"></div>
+                            </div>
+
                         </div>
                     </div>
 
                     <div th:if="${detailedReport} != null" role="tabcard" class="tab-pane fade report" id="detailed-report">
                         <div class="position-relative">
-                            <div id="detailed-report-buttons" class="btn-group ml-auto align-self-center d-print-none" role="toolbar">
-                                <button type="button" class="btn btn-light switch-annotations">
-                                    <i class="icon fa fa-commenting-o"></i>&nbsp;
-                                    <span class="label-show" th:text="#{label.annotations.show}"></span>
-                                    <span class="label-hide d-none" th:text="#{label.annotations.hide}"></span>
-                                </button>
-                                <button type="button" class="btn btn-light"
-                                        onclick="window.print();">
-                                    <i class="fa fa-print"></i>&nbsp;<span th:text="#{label.print}"></span>
-                                </button>
-                                <a class="btn btn-light"
-                                   th:href="@{/ws-secure/validation/download-detailed-report}" role="button"
-                                   th:if="${displayDownloadPdf}">
-                                    <i class="fa fa-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>
-                                </a>
+                            <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
+                                <div id="detailed-report-buttons" class="btn-group ml-auto align-self-center d-print-none" role="toolbar">
+                                    <button type="button" class="btn btn-light switch-annotations">
+                                        <i class="icon fa fa-commenting-o"></i>&nbsp;
+                                        <span class="label-show" th:text="#{label.annotations.show}"></span>
+                                        <span class="label-hide d-none" th:text="#{label.annotations.hide}"></span>
+                                    </button>
+                                    <button type="button" class="btn btn-light"
+                                            onclick="window.print();">
+                                        <i class="fa fa-print"></i>&nbsp;<span th:text="#{label.print}"></span>
+                                    </button>
+                                    <a class="btn btn-light"
+                                       th:href="@{/ws-secure/validation/download-detailed-report}" role="button"
+                                       th:if="${displayDownloadPdf}">
+                                        <i class="fa fa-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>
+                                    </a>
+                                </div>
+                                <div class="w-100" th:utext="${detailedReport}"></div>
                             </div>
-
-                            <div class="w-100" th:utext="${detailedReport}"></div>
                         </div>
                     </div>
+
                     <div th:if="${diagnosticDataXml} != null" role="tabcard" class="tab-pane fade report" id="diagnostic-tree">
+                        <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
+
                         <div class="card mb-2">
                             <div class="card-header collapsed cursor-pointer" data-toggle="collapse"
                                  data-target="#downloads" aria-expanded='false'>
@@ -185,9 +276,13 @@
                             </div>
                         </div>
                         <pre class="prettyprint"><code class="language-xml" th:text="${diagnosticDataXml}"></code></pre>
+                        </div>
                     </div>
+
                     <div th:if="${etsiValidationReport} != null" role="tabcard" class="tab-pane fade report" id="etsi-validation-report">
-                        <pre class="prettyprint"><code class="language-xml" th:text="${etsiValidationReport}"></code></pre>
+                        <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
+                            <pre class="prettyprint"><code class="language-xml" th:text="${etsiValidationReport}"></code></pre>
+                        </div>
                     </div>
                     <div th:if="${pdfaReport != null}" class="tab-pane fade" id="pdfa" role="tabpanel" aria-labelledby="profile-tab">
                         <div th:class="'alert alert-' + ${pdfaReport[0]}">

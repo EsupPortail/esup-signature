@@ -15,14 +15,20 @@ import eu.europa.esig.validationreport.jaxb.ValidationReportType;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.apache.commons.io.FileUtils;
 import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.dss.service.XSLTService;
+import org.esupportail.esupsignature.entity.AuditTrail;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
+import org.esupportail.esupsignature.service.AuditTrailService;
 import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -47,6 +53,10 @@ import java.util.Arrays;
 public class ValidationController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ValidationController.class);
+    @Autowired
+    private AuditTrailService auditTrailService;
+    @Autowired
+    private FileService fileService;
 
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
@@ -77,14 +87,15 @@ public class ValidationController {
 	public String validate(@RequestParam(name = "multipartSignedDoc") MultipartFile multipartSignedDoc, @RequestParam(name = "multipartSignature", required = false) MultipartFile multipartSignature, Model model) throws IOException {
 		InputStream docInputStream = multipartSignedDoc.getInputStream();
 		InputStream sigInputStream = multipartSignature.getInputStream();
-		extracted(docInputStream, sigInputStream, model);
+		createValidationReport(docInputStream, sigInputStream, null, model);
 		return "user/validation/result";
 	}
 
-	private void extracted(InputStream docInputStream, InputStream sigInputStream, Model model) throws IOException {
+	private void createValidationReport(InputStream docInputStream, InputStream sigInputStream, Long id, Model model) throws IOException {
 		byte[] docBytes = docInputStream.readAllBytes();
 		Reports reports = validationService.validate(new ByteArrayInputStream(docBytes), sigInputStream);
 		if(reports != null) {
+			model.addAttribute("signCount", reports.getSimpleReport().getSignatureIdList().size());
 			String xmlSimpleReport = reports.getXmlSimpleReport();
 			model.addAttribute("simpleReport", xsltService.generateSimpleReport(xmlSimpleReport));
 			model.addAttribute("simpleReportXml", reports.getXmlSimpleReport());
@@ -98,6 +109,7 @@ public class ValidationController {
 			}
 			model.addAttribute("diagnosticDataXml", reports.getXmlDiagnosticData());
 		} else {
+			model.addAttribute("signCount", 0);
 			model.addAttribute("simpleReport", "<h2>Impossible de valider ce document</h2>");
 			model.addAttribute("detailedReport", "<h2>Impossible de valider ce document</h2>");
 		}
@@ -107,11 +119,23 @@ public class ValidationController {
 			model.addAttribute("pdfaReport", Arrays.asList("danger", "Impossible de valider ce document"));
 			logger.error(e.getMessage());
 		}
+		AuditTrail auditTrail;
+		if(id != null) {
+			SignRequest signRequest = signRequestService.getById(id);
+			auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
+		} else {
+			String checksum = fileService.getFileChecksum(docInputStream);
+			auditTrail = auditTrailService.getAuditTrailFromCheksum(checksum);
+		}
+		if(auditTrail != null) {
+			model.addAttribute("auditTrail", auditTrail);
+			model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
+		}
 	}
 
 	@GetMapping(value = "/document/{id}")
-	public String validateDocument(@PathVariable(name="id") long id, Model model) throws IOException {
-		extracted(signRequestService.getToValidateFile(id), null, model);
+	public String validateDocument(@PathVariable(name="id") Long id, Model model) throws IOException {
+		createValidationReport(signRequestService.getToValidateFile(id), null, id, model);
 		return "user/validation/result";
 	}
 

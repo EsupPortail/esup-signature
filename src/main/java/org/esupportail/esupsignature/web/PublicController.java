@@ -15,6 +15,7 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
+import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.security.core.Authentication;
@@ -50,8 +51,9 @@ public class PublicController {
     private final XSLTService xsltService;
 
     private final PreAuthorizeService preAuthorizeService;
+    private final ValidationService validationService;
 
-    public PublicController(@Autowired(required = false) BuildProperties buildProperties, LogService logService, SignRequestService signRequestService, AuditTrailService auditTrailService, FileService fileService, UserService userService, SignService signService, XSLTService xsltService, PreAuthorizeService preAuthorizeService) {
+    public PublicController(@Autowired(required = false) BuildProperties buildProperties, LogService logService, SignRequestService signRequestService, AuditTrailService auditTrailService, FileService fileService, UserService userService, SignService signService, XSLTService xsltService, PreAuthorizeService preAuthorizeService, ValidationService validationService) {
         this.buildProperties = buildProperties;
         this.logService = logService;
         this.signRequestService = signRequestService;
@@ -61,16 +63,21 @@ public class PublicController {
         this.signService = signService;
         this.xsltService = xsltService;
         this.preAuthorizeService = preAuthorizeService;
+        this.validationService = validationService;
+    }
+
+    @GetMapping(value = "/control")
+    public String control() {
+        return "public/control";
     }
 
     @GetMapping(value = "/control/{token}")
-    public String control(@PathVariable String token, Model model) throws EsupSignatureFsException, IOException {
+    public String controlToken(@PathVariable String token, Model model) throws EsupSignatureFsException, IOException {
         AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(token);
         if(auditTrail == null) {
             return "error";
         }
         model.addAttribute("auditTrailChecked", false);
-        model.addAttribute("size", auditTrail.getDocumentSize());
         model.addAttribute("auditTrail", auditTrail);
         Optional<SignRequest> signRequest = signRequestService.getSignRequestByToken(token);
         if(signRequest.isPresent()) {
@@ -107,7 +114,11 @@ public class PublicController {
                             Model model, HttpSession httpSession) throws IOException {
         String checksum = fileService.getFileChecksum(multipartFile.getInputStream());
         AuditTrail auditTrail = auditTrailService.getAuditTrailFromCheksum(checksum);
-        if(auditTrail != null && auditTrail.getToken().equals(token)) {
+        if(auditTrail != null) {
+            if("null".equals(token)) {
+                token = auditTrail.getToken();
+                model.addAttribute("token", token);
+            }
             model.addAttribute("auditTrailChecked", true);
             List<Log> logs = logService.getFullByToken(token);
             model.addAttribute("logs", logs);
@@ -135,8 +146,9 @@ public class PublicController {
                 }
             }
         } else {
+            Reports reports = validationService.validate(multipartFile.getInputStream(), null);
+            model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
             model.addAttribute("error", true);
-            return "public/control";
         }
         return "public/control";
     }
