@@ -112,7 +112,9 @@ public class PreAuthorizeService {
     public boolean signRequestCreator(Long id, String userEppn) {
         if(userEppn != null) {
             SignRequest signRequest = signRequestService.getById(id);
-            return signRequest.getCreateBy().getEppn().equals(userEppn);
+            if(signRequest != null) {
+                return signRequest.getCreateBy().getEppn().equals(userEppn);
+            }
         }
         return false;
     }
@@ -120,8 +122,10 @@ public class PreAuthorizeService {
     public boolean signRequestOwner(Long id, String userEppn) {
         if(userEppn != null) {
             SignRequest signRequest = signRequestService.getById(id);
-            boolean isManager = isManager(userEppn, signRequest.getParentSignBook());
-            return signRequest.getCreateBy().getEppn().equals(userEppn) || isManager;
+            if(signRequest != null) {
+                boolean isManager = isManager(userEppn, signRequest.getParentSignBook());
+                return signRequest.getCreateBy().getEppn().equals(userEppn) || isManager;
+            }
         }
         return false;
     }
@@ -129,8 +133,10 @@ public class PreAuthorizeService {
     public boolean signRequestDelete(Long id, String userEppn) {
         if(userEppn != null) {
             SignRequest signRequest = signRequestService.getById(id);
-            boolean isManager = isManager(userEppn, signRequest.getParentSignBook());
-            return signRequestService.isDeletetable(signRequest, userEppn) && (signRequest.getCreateBy().getEppn().equals(userEppn) || isManager);
+            if(signRequest != null) {
+                boolean isManager = isManager(userEppn, signRequest.getParentSignBook());
+                return signRequestService.isDeletetable(signRequest, userEppn) && (signRequest.getCreateBy().getEppn().equals(userEppn) || isManager);
+            }
         }
         return false;
     }
