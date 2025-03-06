@@ -122,7 +122,7 @@
                             <label for="spotStepNumber">Choisir l’étape concernée</label>
                             <br/>
                             <select th:if="${workflow != null}" id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
-                                <option data-placeholder="true"></option>
+                                <option data-placeholder="true">Choisir une étape</option>
                                 <th:block th:each="step, iterator : ${workflow.workflowSteps}">
                                     <option th:unless="${srpMap.containsKey(iterator.index + 1)}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}"></option>
                                 </th:block>
@@ -132,7 +132,7 @@
                         <button id="hideSpotButton" type="button" class="btn btn-sm btn-dark float-start" data-bs-dismiss="modal">
                             <i class="fa-solid fa-times"></i>
                         </button>
-                        <button id="saveSpotButton" th:data-es-signrequest-id="${form.id}" type="button" class="btn btn-sm btn-dark float-end">
+                        <button id="save-spot-button" th:data-es-signrequest-id="${form.id}" type="button" class="btn btn-sm btn-dark float-end">
                             <i class="fa-solid fa-save"></i>
                         </button>
                     </form>

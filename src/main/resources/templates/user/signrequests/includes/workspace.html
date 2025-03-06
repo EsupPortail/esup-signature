@@ -240,7 +240,7 @@
                             <label for="spotStepNumber">Choisir l’étape concernée</label>
                             <br/>
                             <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
-                                <option data-placeholder="true"></option>
+                                <option data-placeholder="true">Choisir une étape</option>
                                 <th:block th:each="step, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
                                     <option th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}" th:selected="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 1}"></option>
                                 </th:block>
@@ -250,7 +250,7 @@
                         <button id="hideSpotButton" type="button" class="btn btn-sm btn-secondary float-start" data-bs-dismiss="modal">
                             Annuler
                         </button>
-                        <button id="saveSpotButton" th:data-es-signrequest-id="${signRequest.id}" type="button" class="btn btn-sm btn-success float-end">
+                        <button id="save-spot-button" th:data-es-signrequest-id="${signRequest.id}" type="button" class="btn btn-sm btn-success float-end">
                             <i class="fa-solid fa-save"></i> Enregistrer
                         </button>
                     </form>
