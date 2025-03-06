@@ -100,12 +100,12 @@
                     <li th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a class="btn-lg btn-floating bg-primary"
                             th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank"
-                            title="Télécharger le document"><i class="fa-solid fa-file-download fa-2xl"></i></a>
+                            title="Télécharger le document"><i class="fa-solid fa-download fa-2xl"></i></a>
                     </li>
                     <li th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a class="btn-lg btn-floating bg-primary"
                             th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank"
-                            title="Télécharger la dernière version du document"><i class="fa-solid fa-file-download fa-2xl"></i></a>
+                            title="Télécharger la dernière version du document"><i class="fa-solid fa-download fa-2xl"></i></a>
                     </li>
                     <li th:if="${signRequest.parentSignBook.signRequests.size() > 1 && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a class="btn-lg btn-floating bg-primary"

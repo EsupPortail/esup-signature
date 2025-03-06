@@ -6,18 +6,6 @@
 		<button id="display-side-btn" type="button" class="btn btn-warning me-1 d-block d-xl-none">
 			<i class="fa-solid fa-eye"></i> <span class="d-none d-sm-inline">Statut:<span th:text="#{'signbook.status.' + ${signBook.status}}"></span></span>
 		</button>
-		<th:block th:if="${editable}">
-			<div class="rounded-2 bg-light d-none d-xl-inline-flex mb-1 text-dark p-1" style="cursor: default;">
-				<div class="ms-2">Mode :</div>
-				<div class="ms-2 me-2 d-none d-lg-block">
-					<input class="form-check-input" type="checkbox" name="changeMode" id="changeMode1">
-					<label class="form-check-label" for="changeMode1">
-						Annotations
-					</label>
-				</div>
-			</div>
-			<div class="border d-none d-lg-block ms-1 me-2"></div>
-		</th:block>
 		<a th:unless="${user.userType.name() == 'external'}" class="btn btn-light btn-outline-dark d-none d-lg-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
 			<i class="fa-solid fa-info-circle"></i>
 		</a>
@@ -63,6 +51,11 @@
 				<i class="fa-solid fa-redo"></i>
 			</button>
 			<div class="border ms-1 me-2"></div>
+			<th:block th:if="${editable}">
+				<button class="btn btn-warning me-1 d-none d-lg-block"
+						name="changeMode"
+						id="changeMode1"></button>
+			</th:block>
 			<div id="insert-btn-sign-div" class="d-block d-lg-none">
 				<div th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="me-1">
 					<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp

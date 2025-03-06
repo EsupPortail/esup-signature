@@ -791,6 +791,7 @@ export class WorkspacePdf {
     }
 
     enableReadMode() {
+        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fas fa-wrench"></i> Mode édition');
         console.info("enable read mode");
         this.disableAllModes();
         this.mode = 'read';
@@ -811,6 +812,7 @@ export class WorkspacePdf {
     }
 
     enableCommentMode() {
+        $("#changeMode1").removeClass('btn-warning').addClass('btn-outline-dark').html('<i class="far fa-eye"></i> Mode consultation')
         console.info("enable comments mode");
         localStorage.setItem('mode', 'comment');
         $("#postitHelp").remove();
@@ -853,6 +855,7 @@ export class WorkspacePdf {
     }
 
     enableSignMode() {
+        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fas fa-wrench"></i> Mode édition')
         console.info("enable sign mode");
         localStorage.setItem('mode', 'sign');
         this.disableAllModes();
