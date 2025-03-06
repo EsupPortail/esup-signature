@@ -45,12 +45,14 @@ export class SignRequestParams extends EventFactory {
         this.firstLaunch = true;
         this.firstCrossAlert = true;
         this.cross = null;
+        this.submitAddSpotBtn = null;
         this.border = null;
         this.tools = null;
         this.divExtra = null;
         this.textareaExtra = null;
         this.textareaPart = null;
         this.signRequestId = null;
+        this.spotStepNumber = null;
         this.textPart = null;
         this.signColorPicker = null;
         this.pdSignatureFieldName = null;
@@ -150,31 +152,33 @@ export class SignRequestParams extends EventFactory {
         this.updateSize();
         this.toggleMinimalTools();
         this.cross.css('background-color', 'rgba(189, 255, 189, 0.9)');
-        this.cross.append("<p class='text-black'>Positionner le champ de signature et cliquer sur enregistrer</p>");
+        this.cross.append("<p class='text-black' style='font-weight: bold;'>Positionner le champ de signature et cliquer sur enregistrer</p>");
         this.cross.css("width", Math.round(150 * this.currentScale) + "px");
         this.cross.css("height", Math.round(75 * this.currentScale) + "px");
         this.cross.css("font-size", Math.round(12 * this.currentScale)  + "px");
         this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute bottom-0 end-0' style='z-index: 4;'><i class='fas fa-save'></i></button>");
-        $("#submit-add-spot").on("click", function () {
+        this.submitAddSpotBtn = $("#submit-add-spot");
+        this.submitAddSpotBtn.on("click", function () {
             $("#spot-modal").modal("show");
         });
-        $('#saveSpotButton').unbind();
-        $('#saveSpotButton').on('click', e => this.saveSpot(e));
+        this.saveSpotButton = $("#save-spot-button")
+        this.saveSpotButton.unbind();
+        this.saveSpotButton.on('click', e => this.saveSpot(e));
     }
 
     saveSpot() {
         let self = this;
-        let spotStepNumber = $("#spotStepNumber").val();
-        if(spotStepNumber == null || spotStepNumber === "") {
+        this.spotStepNumber = $("#spotStepNumber").val();
+        if(this.spotStepNumber == null || this.spotStepNumber === "") {
             alert("Merci de selectionner une étape");
         } else {
             let commentUrlParams = "comment=" + encodeURIComponent($("#spotComment").val()) +
                 "&commentPosX=" + Math.round(this.xPos) +
                 "&commentPosY=" + Math.round(this.yPos) +
                 "&commentPageNumber=" + this.signPageNumber +
-                "&spotStepNumber=" + spotStepNumber +
+                "&spotStepNumber=" + this.spotStepNumber +
                 "&" + this.csrf.parameterName + "=" + this.csrf.token;
-            this.signRequestId = $("#saveSpotButton").attr("data-es-signrequest-id");
+            this.signRequestId = $("#save-spot-button").attr("data-es-signrequest-id");
             let url = "/user/signrequests/comment/" + this.signRequestId + "?" + commentUrlParams;
             if (this.signType === "form") {
                 url = "/admin/forms/add-spot/" + this.signRequestId + "?" + commentUrlParams;
@@ -186,7 +190,7 @@ export class SignRequestParams extends EventFactory {
                     $("#spot-modal").modal("hide");
                     self.id = result;
                     $(window).unbind("beforeunload");
-                    location.reload();
+                    self.disableSpot();
                 }
             });
         }
@@ -194,21 +198,23 @@ export class SignRequestParams extends EventFactory {
 
     disableSpot() {
         console.log("disable spot");
-        let self = this;
-        this.cross.html("<p>Cliquer pour supprimer l’emplacement de signature</p>");
+        this.cross.html("<p>Cliquer pour supprimer l’emplacement de signature étape " + this.spotStepNumber + "</p>");
         this.cross.draggable("disable");
         this.cross.removeAttr("id");
         this.cross.removeAttr("data-id");
         this.cross.css("cursor", "default");
         this.cross.css("color", "black");
         this.cross.addClass("sign-field");
-        this.cross.css("opacity", "0.6");
-        $('#saveSpotButton').unbind();
+        $('#save-spot-button').unbind();
         $("#addCommentButton").attr("disabled", false);
         $("#addSpotButton").attr("disabled", false);
+        this.cross.on("mouseover", function() {
+            $("#liveStep-" + this.spotStepNumber).addClass("circle-border");
+        });
         this.border.remove();
         this.tools.remove();
         $('#submit-add-spot').remove();
+        let self = this;
         this.cross.on('mouseup', function (e) {
             e.stopPropagation();
             bootbox.confirm("Supprimer cet emplacement de signature ?", function (result) {

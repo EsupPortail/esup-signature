@@ -280,6 +280,13 @@ export class SignUi {
         if(value === "imageStamp") {
             $("#alert-sign-present").show();
         }
+        if(value === "userCert" || value === "sealCert" || value === "nexuCert") {
+            if(this.workspace.signPosition.signRequestParamses.size > 1) {
+                $("#alert-multi-sign-present").show();
+            }
+        } else {
+            $("#alert-multi-sign-present").hide();
+        }
     }
 
     launchNoInfiniteSign(next) {

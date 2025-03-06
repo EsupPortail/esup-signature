@@ -628,7 +628,8 @@ export class WorkspacePdf {
                                         method: 'DELETE',
                                         url: url,
                                         success: function () {
-                                            location.reload();
+                                            spotDiv.remove();
+                                            // location.reload();
                                         }
                                     });
                                 }
@@ -790,6 +791,7 @@ export class WorkspacePdf {
     }
 
     enableReadMode() {
+        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fas fa-wrench"></i> Mode édition');
         console.info("enable read mode");
         this.disableAllModes();
         this.mode = 'read';
@@ -810,6 +812,7 @@ export class WorkspacePdf {
     }
 
     enableCommentMode() {
+        $("#changeMode1").removeClass('btn-warning').addClass('btn-outline-dark').html('<i class="far fa-eye"></i> Mode consultation')
         console.info("enable comments mode");
         localStorage.setItem('mode', 'comment');
         $("#postitHelp").remove();
@@ -852,6 +855,7 @@ export class WorkspacePdf {
     }
 
     enableSignMode() {
+        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fas fa-wrench"></i> Mode édition')
         console.info("enable sign mode");
         localStorage.setItem('mode', 'sign');
         this.disableAllModes();
@@ -990,43 +994,48 @@ export class WorkspacePdf {
     }
 
     enableCommentAdd(e) {
-        // $("#addSpotButton").toggleAttribute("disabled", true);
         let saveCommentButton = $('#saveCommentButton');
         let hideCommentButton = $('#hideCommentButton');
         saveCommentButton.unbind();
         hideCommentButton.unbind();
         $('#pdf').mousemove(e => this.moveAction(e));
         let addCommentButton = $("#addCommentButton");
-        addCommentButton.toggleClass("btn-primary");
-        addCommentButton.toggleClass("btn-outline-light");
         // this.hideComment(e);
         if (this.addCommentEnabled) {
-            this.addCommentEnabled = false;
-            this.disablePointer();
-            $("#addSpotButton").attr("disabled", false);
-            $("#divSpotStepNumber").show();
-            $(".textLayer").each(function(){
-                $(this).removeClass("text-disable-selection");
-            });
+            this.disableAddComment();
         } else {
-            let postit = $("#postit");
-            postit.removeClass("alert-success");
-            postit.addClass("alert-warning");
-            this.addCommentEnabled = true;
-            this.displayCommentPointer();
-            $("#divSpotStepNumber").hide();
-            $("#postitComment").attr("required", true);
-            $("#addSpotButton").attr("disabled", true);
-            $(".textLayer").each(function(){
-               $(this).addClass("text-disable-selection");
-            });
+            this.enableAddComment();
         }
         this.addSpotEnabled = false;
         saveCommentButton.on('click', e => this.saveComment(e));
         hideCommentButton.on('click', e => this.hideComment(e));
     }
 
+    disableAddComment() {
+        this.addCommentEnabled = false;
+        this.disablePointer();
+        $("#divSpotStepNumber").show();
+        $(".textLayer").each(function () {
+            $(this).removeClass("text-disable-selection");
+        });
+    }
+
+    enableAddComment() {
+        let postit = $("#postit");
+        postit.removeClass("alert-success");
+        postit.addClass("alert-warning");
+        this.addCommentEnabled = true;
+        this.displayCommentPointer();
+        $("#divSpotStepNumber").hide();
+        $("#postitComment").attr("required", true);
+        // $("#addSpotButton").attr("disabled", true);
+        $(".textLayer").each(function () {
+            $(this).addClass("text-disable-selection");
+        });
+    }
+
     enableSpotAdd(e) {
+        this.disableAddComment();
         $("#commentHelp").remove();
         $("#addSpotButton").attr("disabled", true);
         $("#addCommentButton").attr("disabled", true);

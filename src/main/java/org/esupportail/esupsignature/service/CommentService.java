@@ -4,8 +4,10 @@ import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.CommentRepository;
+import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,8 @@ public class CommentService {
 
     @Resource
     private UserService userService;
+    @Autowired
+    private LiveWorkflowStepRepository liveWorkflowStepRepository;
 
     @Transactional
     public Comment getById(Long id) {
@@ -65,13 +69,16 @@ public class CommentService {
             }
             if (comment.get().getStepNumber() != null && comment.get().getStepNumber() > 0 && signRequest.getSignRequestParams().size() > comment.get().getStepNumber() - 1) {
                 if(signRequest.getSignRequestParams().size() > comment.get().getStepNumber() - 1) {
-                    SignRequestParams signRequestParams = signRequest.getSignRequestParams().get(comment.get().getStepNumber() - 1);
                     if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size() > comment.get().getStepNumber() - 1) {
                         LiveWorkflowStep liveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(comment.get().getStepNumber() - 1);
-                        liveWorkflowStep.getSignRequestParams().remove(signRequestParams);
+                        Optional<SignRequestParams> signRequestParams = liveWorkflowStep.getSignRequestParams().stream().filter(srp -> srp.getxPos().equals(comment.get().getPosX()) && srp.getyPos().equals(comment.get().getPosY()) && srp.getSignPageNumber().equals(comment.get().getPageNumber())).findFirst();
+                        if(signRequestParams.isPresent()) {
+                            liveWorkflowStep.getSignRequestParams().remove(signRequestParams.get());
+                            liveWorkflowStepRepository.save(liveWorkflowStep);
+                            signRequest.getSignRequestParams().remove(signRequestParams.get());
+                            signRequestParamsRepository.delete(signRequestParams.get());
+                        }
                     }
-                    signRequest.getSignRequestParams().remove(signRequestParams);
-                    signRequestParamsRepository.delete(signRequestParams);
                 }
             }
             signRequest.getComments().remove(comment.get());
