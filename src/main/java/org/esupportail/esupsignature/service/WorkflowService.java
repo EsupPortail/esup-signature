@@ -725,6 +725,7 @@ public class WorkflowService {
             int finalI = i;
             Optional<WorkflowStepDto> optionalStep = steps.stream().filter(s -> s.getStepNumber() == finalI).findFirst();
             if(optionalStep.isPresent()) step = optionalStep.get();
+            step.getRecipients().removeIf(r -> r.getEmail().equals("creator"));
             for (User user : workflowStep.getUsers()) {
                 if (user.equals(userService.getCreatorUser())) {
                     user = signBook.getCreateBy();
