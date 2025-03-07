@@ -275,9 +275,9 @@ export default class SelectUser {
         if(data.phone == null) {
             data.phone = "";
         }
+        let html = "<div class='alert alert-primary' id='recipient_" + id + "'>";
         if(this.globalProperties.smsRequired) {
-            tempUsersDiv.append(
-                "<div class='alert alert-primary' id='recipient_" + id + "'>" +
+            html +=
                 "<b>Destinataire externe : <span>" + id + "</span></b>" +
                 "<input id=\"email\" class=\"form-control \" type=\"hidden\" name=\"email\" value=\"" + id + "\">" +
                 "<div class=\"d-flex col-12\"><label for=\"name\" class='col-3'>Nom</label>" +
@@ -285,20 +285,18 @@ export default class SelectUser {
                 "<div class=\"d-flex col-12\"><label for=\"firstname\" class='col-3'>Prénom</label>" +
                 "<input id=\"firstname_" + id + "\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + data.firstname + "\" required></div>" +
                 "<div class=\"d-flex col-12\"><label for=\"phones\" class='col-3'>Mobile</label>" +
-                "<input id=\"phones_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + data.phone + "\" required>" +
-                "<span id=\"valid-msg\" class=\"text-success my-auto d-none\">✓ Valid</span>\n" +
-                "<span id=\"error-msg\" class=\"text-danger my-auto d-none\"></span>" +
-                "</div>" +
-                "</div>");
+                "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + data.phone + "\" required>" +
+                "<span id=\"valid-msg_" + id + "\" class=\"text-success my-auto d-none\">✓ Ok</span>\n" +
+                "<span id=\"error-msg_" + id + "\" class=\"text-danger my-auto d-none\"></span>";
         } else {
-            let html = "<div class='alert alert-primary' id='recipient_" + id + "'>" +
+            html +=
                 "<b>Destinataire externe : <span>" + id + "</span></b>" +
                 "<input id=\"email\" class=\"form-control \" type=\"hidden\" name=\"email\" value=\"" + id + "\">" +
                 "<div class=\"d-flex col-12\"><label for=\"name\" class='col-3'>Nom</label>" +
                 "<input id=\"name_" + id + "\" class=\"form-control \" type=\"text\" name=\"names\" value=\"" + data.name + "\" required></div>" +
                 "<div class=\"d-flex col-12\"><label for=\"firstname\" class='col-3'>Prénom</label>" +
                 "<input id=\"firstname_" + id + "\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + data.firstname + "\" required></div>";
-            if(this.enableSms) {
+            if (this.enableSms) {
                 html += "<div class=\"d-flex col-12\"><label for=\"phones\" class='col-3'>Mobile</label>" +
                     "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + data.phone + "\" required>" +
                     "<span id=\"valid-msg_" + id + "\" class=\"text-success my-auto d-none\">✓ Ok</span>\n" +
@@ -307,32 +305,36 @@ export default class SelectUser {
                     "<div class=\"d-flex col-12\"><label for=\"forcesms\" class='col-3'>Autentification SMS</label>" +
                     "<input id=\"forcesms_" + id + "\" class=\"form-check-input \" type=\"checkbox\" name=\"forcesmses\" value='1'></div>";
             }
-            html += "</div>";
-            tempUsersDiv.append(html);
-            let phonesInput = document.querySelector("#phone_" + id);
-            let iti = intlTelInput(phonesInput, {
-                validationNumberTypes: "FIXED_LINE_OR_MOBILE",
-                strictMode: true,
-                countryOrder: ["fr"],
-                customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
-                searchPlaceholder: "Rechercher",
-            });
-            iti.setCountry("fr");
-            phonesInput.addEventListener("focusout", e => this.validatePhone(iti, id));
         }
+        html += "</div>";
+        tempUsersDiv.append(html);
+        let phonesInput = document.querySelector("#phone_" + id);
+        let iti = intlTelInput(phonesInput, {
+            validationNumberTypes: "FIXED_LINE_OR_MOBILE",
+            strictMode: true,
+            separateDialCode: false,
+            nationalMode: true,
+            countryOrder: ["fr"],
+            customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
+            searchPlaceholder: "Rechercher",
+        });
+        if(data.phone == null || data.phone === "") {
+            iti.setCountry("fr");
+        }
+        phonesInput.addEventListener("focusout", e => this.validatePhone(iti, id));
     }
 
     validatePhone(iti, id) {
         const errorMsg = document.querySelector("#error-msg_" + id);
         const validMsg = document.querySelector("#valid-msg_" + id);
-        if(!iti.isValidNumber()) {
-            $("#phones").addClass("error");
+        if(iti.isValidNumber()) {
+            errorMsg.classList.add("d-none");
+            validMsg.classList.remove("d-none");
+            $("#phone_" + id).val(iti.getNumber());
+        } else {
             errorMsg.innerHTML = this.itiErrorMap[iti.getValidationError()];
             errorMsg.classList.remove("d-none");
             validMsg.classList.add("d-none");
-        } else {
-            errorMsg.classList.add("d-none");
-            validMsg.classList.remove("d-none");
         }
     }
 
