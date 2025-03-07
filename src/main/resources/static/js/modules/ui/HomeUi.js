@@ -73,6 +73,7 @@ export class HomeUi {
         $('.noWorkflow').toggleClass('d-none');
         this.menuToggled = !this.menuToggled;
         localStorage.setItem('menuToggled', this.menuToggled);
+        $('#toggle-new-grid').toggleClass("btn-grid-display2")
     }
 
     hideAll() {
