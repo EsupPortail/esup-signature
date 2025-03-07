@@ -118,10 +118,12 @@ public class OtpService {
         }
     }
 
-    public String generateOtpPassword(String urlId) {
+    @Transactional
+    public String generateOtpPassword(String urlId, String phone) {
         Otp otp = getOtpFromDatabase(urlId);
         String password = randomOtpPassword();
         otp.setPassword(hashPassword(password));
+        otp.setPhoneNumber(phone);
         otpCache.put(urlId, otp);
         logger.info("new password for otp " + urlId + " : " + password);
         return password;
@@ -227,4 +229,9 @@ public class OtpService {
         }
     }
 
+    @Transactional
+    public void setSmsSended(String urlId) {
+        Otp otp = getOtpFromDatabase(urlId);
+        otp.setSmsSended(true);
+    }
 }

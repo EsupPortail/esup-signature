@@ -128,7 +128,9 @@ export class WizUi {
             alert(e);
         });
         $("#send-pending-button").on('click', function() {
-            if(self.recipientsEmailsSelect.slimSelect.getSelected().length > 0) {
+            let fileCount = self.input.fileinput('getFilesCount');
+
+            if(fileCount > 0 &&  self.recipientsEmailsSelect.slimSelect.getSelected().length > 0) {
                 self.pending = true;
                 self.wizCreateSign("fast");
             } else {
@@ -463,11 +465,12 @@ export class WizUi {
                 recipientsEmails.forEach(function (email) {
                     let recipient = new Recipient();
                     recipient.email = email;
-                    let extInfos = $("div[id='recipient_" + email + "']");
-                    recipient.name = extInfos.find("#names").val();
-                    recipient.firstName = extInfos.find("#firstnames").val();
-                    recipient.phone = extInfos.find("#phones").val();
-                    recipient.forceSms = extInfos.find("#forcesmses").prop("checked");
+                    let id = email.replaceAll("@", "_").replaceAll(".", "_");
+                    let extInfos = $("div[id='recipient_" + id + "']");
+                    recipient.name = extInfos.find("#name_" + id).val();
+                    recipient.firstName = extInfos.find("#firstname_" + id).val();
+                    recipient.phone = extInfos.find("#phone_" + id).val();
+                    recipient.forceSms = extInfos.find("#forcesms_" + id).prop("checked");
                     step.recipients.push(recipient);
                 });
             }

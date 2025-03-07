@@ -6,14 +6,42 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class SmsProperties {
 
     private boolean enableSms;
+    /**
+     * Nom du service de SMS (SMSU, OVH)
+     */
     private String serviceName;
+    /**
+     * URL du service
+     */
     private String url;
+    /**
+     * Login
+     */
     private String username;
+    /**
+     * Mot de passe
+     */
     private String password;
+    /**
+     * OVH : clé API (X-Ovh-Application)
+     */
     private String apiKey;
+    /**
+     * OVH : mot de passe API pour le calcul de la signature (X-Ovh-Signature)
+     */
     private String apiSecret;
+    /**
+     * OVH : clé client (X-Ovh-Consumer)
+     */
     private String consumerKey;
-
+    /**
+     * OVH : true permet de mettre un nom alpha numérique en sender au lieu d’un numéro court
+     */
+    private boolean senderForResponse = true;
+    /**
+     * OVH : true désactive la possibilité de répondre au SMS
+     */
+    private boolean noStopClause = false;
 
     public Boolean getEnableSms() {
         return enableSms;
@@ -77,5 +105,21 @@ public class SmsProperties {
 
     public void setConsumerKey(String consumerKey) {
         this.consumerKey = consumerKey;
+    }
+
+    public boolean getSenderForResponse() {
+        return senderForResponse;
+    }
+
+    public void setSenderForResponse(boolean senderForResponse) {
+        this.senderForResponse = senderForResponse;
+    }
+
+    public boolean isNoStopClause() {
+        return noStopClause;
+    }
+
+    public void setNoStopClause(boolean noStopClause) {
+        this.noStopClause = noStopClause;
     }
 }
