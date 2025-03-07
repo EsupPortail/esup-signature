@@ -853,6 +853,7 @@ public class SignRequestService {
 		return nbAttachmentAdded > 0;
 	}
 
+	@Transactional
 	public void removeAttachement(Long id, Long attachementId, RedirectAttributes redirectAttributes) {
 		SignRequest signRequest = getById(id);
 		Document attachement = documentService.getById(attachementId);
@@ -864,6 +865,7 @@ public class SignRequestService {
 		}
 	}
 
+	@Transactional
 	public void removeLink(Long id, Integer linkId) {
 		SignRequest signRequest = getById(id);
 		String toRemove = new ArrayList<>(signRequest.getLinks()).get(linkId);
