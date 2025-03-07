@@ -11,7 +11,39 @@
                 <div class="col-4">
                     <input name="urlId" type="hidden" th:value="${urlId}">
                     <div class="mb-3">
-                        <input name="phone" type="text" class="form-control" maxlength="10" placeholder="Numéro de mobile" autofocus>
+                        <input id="phone" name="phone" type="text" class="form-control" placeholder="Numéro de mobile" autofocus>
+                        <span id="valid-msg" class="text-success my-auto d-none">✓ Ok</span>
+                        <span id="error-msg" class="text-danger my-auto d-none"></span>
+                        <script type="module">
+                            let phonesInput = document.querySelector("#phone");
+                            let iti = intlTelInput(phonesInput, {
+                                validationNumberTypes: "FIXED_LINE_OR_MOBILE",
+                                strictMode: true,
+                                separateDialCode: false,
+                                nationalMode: true,
+                                countryOrder: ["fr"],
+                                customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
+                                searchPlaceholder: "Rechercher",
+                            });
+                            if(phonesInput.text == null || phonesInput.text === "") {
+                                iti.setCountry("fr");
+                            }
+                            phonesInput.addEventListener("focusout", e => validatePhone(iti));
+
+                            function validatePhone(iti) {
+                                const errorMsg = document.querySelector("#error-msg");
+                                const validMsg = document.querySelector("#valid-msg");
+                                if(iti.isValidNumber()) {
+                                    errorMsg.classList.add("d-none");
+                                    validMsg.classList.remove("d-none");
+                                    $("#phone").val(iti.getNumber());
+                                } else {
+                                    errorMsg.innerHTML = "Erreur de saisie";
+                                    errorMsg.classList.remove("d-none");
+                                    validMsg.classList.add("d-none");
+                                }
+                            }
+                        </script>
                     </div>
                     <input type="submit" class="btn btn-success" value="Valider">
                 </div>

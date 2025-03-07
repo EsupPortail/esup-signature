@@ -72,6 +72,8 @@ export class UserUi {
     save() {
         this.userSignaturePad.checkSignatureUpdate();
         if(!this.saveSignRequestParams) {
+            this.signRequestParams.xPos = 0;
+            this.signRequestParams.yPos = 0;
             let signRequestParams = JSON.stringify(this.signRequestParams);
             $("#sign-request-params").val(signRequestParams);
         }

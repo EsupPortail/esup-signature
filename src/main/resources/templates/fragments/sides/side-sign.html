@@ -3,8 +3,8 @@
 <!--/*@thymesVar id="toSignDocument" type="org.esupportail.esupsignature.entity.Document"*/-->
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <nav th:fragment="side-sign">
-    <div class="ms-1 mt-3 d-none d-lg-block">
-        <div class="hr sidebar-label">Statut</div>
+    <div class="ms-1 mt-3">
+        <div class="hr">Statut</div>
         <div class="card card-body bg-light">
             <th:block th:if="${signRequest != null}">
                 <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}" class="mb-1"></div>
@@ -41,9 +41,6 @@
 <!--            <i class="ms-1 fa-solid fa-comment"></i><i class="me-2"></i> <span class="sidebar-label">Annoter</span>-->
 <!--            <span th:if="${signRequest.comments.size() > 0}" class="float-end badge bg-warning mt-1" ><span th:text="${signRequest.comments.size()}"></span></span>-->
 <!--        </button>-->
-
-        <!--    <div th:replace="user/signbooks/includes/statusdetails :: statusdetails"></div>-->
-
 
         <div th:if="${signRequest != null}" th:insert="~{user/signrequests/cards/stepscard :: stepscard}"></div>
     </div>

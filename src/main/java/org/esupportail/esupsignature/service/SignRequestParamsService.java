@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
@@ -70,7 +71,7 @@ public class SignRequestParamsService {
 
     public List<SignRequestParams> scanSignatureFields(InputStream inputStream, int docNumber, Workflow workflow, boolean persist) throws EsupSignatureIOException {
         try {
-            PDDocument pdDocument = PDDocument.load(inputStream);
+            PDDocument pdDocument = Loader.loadPDF(inputStream.readAllBytes());
             List<SignRequestParams> signRequestParamses = getSignRequestParamsFromPdf(pdDocument, workflow);
             for(SignRequestParams signRequestParams : signRequestParamses) {
                 signRequestParams.setSignDocumentNumber(docNumber);
@@ -199,7 +200,7 @@ public class SignRequestParamsService {
             if (signRequest.getSignRequestParams().size() >= i + 1) {
                 signRequestParams = signRequest.getSignRequestParams().get(i);
             } else {
-                signRequestParams = createSignRequestParams(signRequestParamses.get(i).getSignPageNumber(), signRequestParamses.get(i).getxPos(), signRequestParamses.get(i).getyPos(), signRequestParamses.get(i).getSignWidth(), signRequestParamses.get(i).getSignHeight());
+                signRequestParams = createSignRequestParams(signRequestParamses.get(i).getSignPageNumber(), signRequestParamses.get(i).getxPos(), signRequestParamses.get(i).getyPos());
             }
             signRequestParams.setSignImageNumber(signRequestParamses.get(i).getSignImageNumber());
             signRequestParams.setSignPageNumber(signRequestParamses.get(i).getSignPageNumber());
@@ -208,8 +209,6 @@ public class SignRequestParamsService {
             signRequestParams.setyPos(signRequestParamses.get(i).getyPos());
             signRequestParams.setSignWidth(signRequestParamses.get(i).getSignWidth());
             signRequestParams.setSignHeight(signRequestParamses.get(i).getSignHeight());
-            signRequestParams.setExtraWidth(signRequestParamses.get(i).getExtraWidth());
-            signRequestParams.setExtraHeight(signRequestParamses.get(i).getExtraHeight());
             signRequestParams.setExtraType(signRequestParamses.get(i).getExtraType());
             signRequestParams.setExtraName(signRequestParamses.get(i).getExtraName());
             signRequestParams.setExtraDate(signRequestParamses.get(i).getExtraDate());
@@ -229,13 +228,11 @@ public class SignRequestParamsService {
         }
     }
 
-    public SignRequestParams createSignRequestParams(Integer signPageNumber, Integer xPos, Integer yPos, Integer width, Integer height) {
+    public SignRequestParams createSignRequestParams(Integer signPageNumber, Integer xPos, Integer yPos) {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignPageNumber(signPageNumber);
         signRequestParams.setxPos(xPos);
         signRequestParams.setyPos(yPos);
-        signRequestParams.setSignWidth(width);
-        signRequestParams.setSignHeight(height);
         signRequestParamsRepository.save(signRequestParams);
         return signRequestParams;
     }

@@ -100,9 +100,21 @@ header {
     width: calc(100vw - 280px);
 }
 
+.btn-grid-display {
+    position: absolute;
+    top: 55px;
+    right: 55px;
+    z-index: 2
+}
+
+.btn-grid-display2 {
+    top: 0px;
+    right: 55px;
+}
+
 .new-height {
     height: calc(100vh - 120px) !important;
-    overflow: auto;
+    overflow-y: auto;
 }
 
 .workspace {
@@ -159,8 +171,8 @@ header {
 }
 
 .extra-tools {
-    right: calc(-100% + 20px);
-    top: 42px;
+    right: -174px;
+    top: -1px;
     position: absolute;
 }
 
@@ -197,6 +209,16 @@ header {
 #sidebar.active {
     min-width: 60px;
     max-width: 60px;
+}
+
+.sidebar-mobile {
+    display: block !important;
+    width: 260px !important;
+    max-width: 260px !important;
+    position: absolute !important;
+    top: 100px !important;
+    height: calc(100vh - 138px) !important;
+    z-index: 1 !important;
 }
 
 .tools {
@@ -242,10 +264,11 @@ header {
     position: fixed;
     margin-left: 260px;
     width: calc(100vw - 269px);
-    z-index: 1028;
+    z-index: 1;
 }
 
 .breadcrumb-nav-full {
+    z-index: 1;
     padding: 5px;
     margin-left: 60px;
     width: calc(100vw - 75px);

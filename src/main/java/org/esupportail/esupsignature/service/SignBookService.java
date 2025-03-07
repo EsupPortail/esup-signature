@@ -780,7 +780,7 @@ public class SignBookService {
             throw new EsupSignatureRuntimeException("Ce formulaire ne peut pas être instancié car il ne possède pas de modèle");
         }
         if(computedWorkflow.getWorkflowSteps().isEmpty()) {
-            toAddFile = pdfService.convertGS(toAddFile);
+            toAddFile = pdfService.convertToPDFA(toAddFile);
         }
         String fileName = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "") + ".pdf";
         MultipartFile multipartFile = new DssMultipartFile(fileName, fileName, "application/pdf", toAddFile);
@@ -1127,6 +1127,24 @@ public class SignBookService {
         List<SignRequestParams> signRequestParamses;
         if (signRequestParamsJsonString == null) {
             signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
+            for(SignRequestParams signRequestParamse : signRequestParamses) {
+                User user = userService.getByEppn(userEppn);
+                signRequestParamse.setAddExtra(true);
+                signRequestParamse.setExtraDate(true);
+                signRequestParamse.setAddWatermark(true);
+                signRequestParamse.setSignImageNumber(user.getDefaultSignImageNumber());
+                if(user.getFavoriteSignRequestParams() != null) {
+                    signRequestParamse.setAddImage(user.getFavoriteSignRequestParams().getAddImage());
+                    signRequestParamse.setAddWatermark(user.getFavoriteSignRequestParams().getAddWatermark());
+                    signRequestParamse.setAddExtra(user.getFavoriteSignRequestParams().getAddExtra());
+                    signRequestParamse.setExtraText(user.getFavoriteSignRequestParams().getExtraText());
+                    signRequestParamse.setTextPart(user.getFavoriteSignRequestParams().getTextPart());
+                    signRequestParamse.setExtraDate(user.getFavoriteSignRequestParams().getExtraDate());
+                    signRequestParamse.setExtraType(user.getFavoriteSignRequestParams().getExtraType());
+                    signRequestParamse.setExtraName(user.getFavoriteSignRequestParams().getExtraName());
+                    signRequestParamse.setExtraOnTop(user.getFavoriteSignRequestParams().getExtraOnTop());
+                }
+            }
         } else {
             signRequestParamses = userService.getSignRequestParamsesFromJson(signRequestParamsJsonString, userEppn);
         }

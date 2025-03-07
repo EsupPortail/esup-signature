@@ -281,7 +281,7 @@ public class UserService {
                 throw new EsupSignatureRuntimeException("Impossible d'ajouter un utilisateur de la fédération car le service Shibboleth n'est pas activé");
             }
         }
-        logger.error("user not found with mail : " + mail);
+        logger.warn("user not found with mail : " + mail);
         return null;
     }
 
@@ -381,10 +381,11 @@ public class UserService {
 
     @Transactional
     public void updateUserAndSignRequestParams(String authUserEppn, String signImageBase64, Boolean saveSignRequestParams, Boolean returnToHomeAfterSign, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, String signRequestParamsJsonString) throws IOException {
-        SignRequestParams signRequestParams = new SignRequestParams();
+        SignRequestParams signRequestParams = null;
         if(BooleanUtils.isNotTrue(saveSignRequestParams)) {
             try {
                 SignRequestParams signRequestParamsJson = objectMapper.readValue(signRequestParamsJsonString, SignRequestParams.class);
+                signRequestParams = new SignRequestParams();
                 signRequestParams.setSignWidth(signRequestParamsJson.getSignWidth());
                 signRequestParams.setSignHeight(signRequestParamsJson.getSignHeight());
                 signRequestParams.setxPos(signRequestParamsJson.getxPos());
@@ -423,8 +424,6 @@ public class UserService {
         if(signRequestParams != null) {
             signRequestParams.setxPos(0);
             signRequestParams.setyPos(0);
-            signRequestParams.setSignWidth(300);
-            signRequestParams.setSignHeight(150);
             signRequestParamsRepository.save(signRequestParams);
         }
         authUser.setFavoriteSignRequestParams(signRequestParams);

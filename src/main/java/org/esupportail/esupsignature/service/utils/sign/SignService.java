@@ -208,7 +208,7 @@ public class SignService {
 				if((abstractKeyStoreTokenConnection instanceof OpenSCSignatureToken
                         || abstractKeyStoreTokenConnection instanceof Pkcs11SignatureToken
                         || abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken)
-                        && signRequestParamsesForSign.size() == 1 && !user.getEppn().equals("system")) {
+                        && !signRequestParamsesForSign.isEmpty() && !user.getEppn().equals("system")) {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequestParamsesForSign.get(0) , new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign().getBytes()), user, signatureDocumentForm.getSigningDate());
 				} else {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, user);
@@ -254,7 +254,7 @@ public class SignService {
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
-		if(signRequestParams.getSignImageNumber() >= 0 && (signRequestParams.getSignImageNumber() == null || user.getSignImages().size() >= signRequestParams.getSignImageNumber() || user.getEppn().equals("system"))) {
+		if(signRequestParams.getSignImageNumber() >= 0 && (signRequestParams.getSignImageNumber() == null || signRequestParams.getSignImageNumber() == 999998 || signRequestParams.getSignImageNumber() == 999999 || user.getSignImages().size() >= signRequestParams.getSignImageNumber() || user.getEppn().equals("system"))) {
 			InputStream inputStream;
 			if(user.getSignImages().size() > signRequestParams.getSignImageNumber() && signRequestParams.getAddImage()) {
 				inputStream = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
@@ -395,7 +395,7 @@ public class SignService {
 				}
 				bytes = inputStream.readAllBytes();
 				if(!isSigned(signRequest, null) && !pdfService.isPdfAComplient(bytes)) {
-					bytes = pdfService.convertGS(pdfService.writeMetadatas(bytes, toSignFile.getFileName(), signRequest, new ArrayList<>()));
+					bytes = pdfService.convertToPDFA(pdfService.writeMetadatas(bytes, toSignFile.getFileName(), signRequest, new ArrayList<>()));
 				}
 			} else {
 				signatureForm = signProperties.getDefaultSignatureForm();
