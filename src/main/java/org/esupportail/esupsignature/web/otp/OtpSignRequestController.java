@@ -86,6 +86,7 @@ public class OtpSignRequestController {
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
         SignRequest signRequest = signRequestService.getById(id);
+        model.addAttribute("urlProfil", "otp");
         model.addAttribute("displayNotif", false);
         model.addAttribute("notifTime", 0);
         model.addAttribute("signRequest", signRequest);
