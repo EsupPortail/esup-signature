@@ -283,6 +283,11 @@
 			<artifactId>bs-stepper</artifactId>
 			<version>1.7.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.webjars.npm</groupId>
+			<artifactId>intl-tel-input</artifactId>
+			<version>23.1.0</version>
+		</dependency>
 
 		<!-- DSS Framework dependencies -->
 
@@ -573,7 +578,7 @@
 		<dependency>
 			<groupId>com.googlecode.libphonenumber</groupId>
 			<artifactId>libphonenumber</artifactId>
-			<version>8.13.4</version>
+			<version>9.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.agno3.jcifs</groupId>

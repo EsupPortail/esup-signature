@@ -31,6 +31,7 @@ export class WorkspacePdf {
         this.forcePageNum = null;
         this.pointItEnable = true;
         this.first = true;
+        this.actionInitialyzed = false;
         this.saveAlert = false;
         this.scrollTop = 0;
         if(fields != null) {
@@ -1140,8 +1141,11 @@ export class WorkspacePdf {
     }
 
     initFormAction() {
-        console.debug("debug - " + "eval : " + this.action);
-        jQuery.globalEval(this.action);
+        if(!this.actionInitialyzed) {
+            console.debug("debug - " + "eval : " + this.action);
+            jQuery.globalEval(this.action);
+            this.actionInitialyzed = true;
+        }
     }
 
     autocollapse() {
