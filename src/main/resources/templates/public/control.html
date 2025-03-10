@@ -9,7 +9,7 @@
 <main role="main">
     <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
         <ol id="breadcrumb-ol" class="breadcrumb">
-            <li th:if="${auditTrail != null || simpleReport != null}" class="breadcrumb-item active"><a href="/public/control">Retour</a></li>
+            <li th:if="${auditTrail != null || simpleReport != null || (error != null && error)}" class="breadcrumb-item active"><a href="/public/control">Retour</a></li>
         </ol>
     </nav>
     <div class="content content-full">
@@ -18,35 +18,35 @@
                 <h5>Vérification de la conformité du document <span th:if="${token != null && token != 'null'}" th:text="' : ' + ${token}"></span></h5>
             </div>
             <div th:if="${error}" class="alert alert-warning mb-1">
-                <h5>Le document que vous avez fourni est inconnu.</h5>
+                <h5>Le document que vous avez fourni ne peux pas être totalement validé sur cette plateforme :</h5>
                 <ul>
                     <li>Soit, le document a été modifié depuis qu’il a été signé</li>
                     <li>Soit, le document n’a pas été signé sur cette plateforme</li>
                 </ul>
             </div>
-            <th:block th:if="${(auditTrail != null && (auditTrailChecked != null && auditTrailChecked) && signRequest != null) || (viewAccess != null && viewAccess)}">
+            <th:block th:if="${(auditTrail != null) || signRequest != null || (viewAccess != null && viewAccess)}">
                 <th:block th:if="${auditTrail != null}">
-                    <div class="alert alert-success mb-1 text-center" th:if="${auditTrail.getDocumentCheckSum() != null}">
-                        <h5>Le document est bien référencé comme signé sur cette plateforme. Il n’a pas été modifié depuis sa signature.</h5>
+                    <div class="alert alert-success mx-auto mt-1 mb-1">
+                        <h5>Le document est bien référencé comme signé sur cette plateforme.</h5>
+                        <dl class="row border-bottom m-0">
+                            <dt class="col-3">Nom de document : </dt>
+                            <dd class="col-9" th:text="${auditTrail.documentName}"></dd>
+                        </dl>
+                        <dl class="row border-bottom m-0">
+                            <dt class="col-3">Type de document : </dt>
+                            <dd class="col-9" th:text="${auditTrail.documentType}"></dd>
+                        </dl>
+                        <dl class="row border-bottom m-0">
+                            <dt class="col-3">Taille : </dt>
+                            <dd class="col-9" th:text="${size} + ' (' + ${auditTrail.documentSize} + ')'"></dd>
+                        </dl>
+                        <div class="alert alert-info mb-1" th:if="${signRequest != null && viewAccess != null && viewAccess}">
+                            Vous avez accès à cette demande : <a th:href="'/user/signrequests/' + ${signRequest.id}">Voir la demande</a>
+                        </div>
                     </div>
-                    <div class="alert alert-info mb-1" th:if="${signRequest != null && viewAccess != null && viewAccess}">
-                        Vous avez accès à cette demande : <a th:href="'/user/signrequests/' + ${signRequest.id}">Voir la demande</a>
-                    </div>
-                    <div class="row">
-                        <div class="alert alert-light border-secondary mx-auto mb-1" th:if="${auditTrail.getDocumentCheckSum() != null}">
-                            <h4>Informations générales sur le document</h4>
-                            <dl class="row border-bottom m-0">
-                                <dt class="col-3">Nom de document : </dt>
-                                <dd class="col-9" th:text="${auditTrail.documentName}"></dd>
-                            </dl>
-                            <dl class="row border-bottom m-0">
-                                <dt class="col-3">Type de document : </dt>
-                                <dd class="col-9" th:text="${auditTrail.documentType}"></dd>
-                            </dl>
-                            <dl class="row border-bottom m-0">
-                                <dt class="col-3">Taille : </dt>
-                                <dd class="col-9" th:text="${size} + ' (' + ${auditTrail.documentSize} + ')'"></dd>
-                            </dl>
+                    <div class="row" th:if="${(auditTrailChecked != null && auditTrailChecked) || (signRequest != null && viewAccess != null && viewAccess)}">
+                        <div class="alert alert-success mx-auto mb-1">
+                            <h5>Le document n’a pas été modifié depuis sa signature.</h5>
                         </div>
                         <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
                             <h4>Signatures</h4>
@@ -102,9 +102,42 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                    <div class="alert alert-success mb-1 text-center" th:if="${signRequest == null}">
-                        <h5>Le document a bien été signé sur cette plateforme</h5>
+                        <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: auto;">
+                            <h4>Journal des actions</h4>
+                            <table class="table table-sm table-hover">
+                                <thead class="table-secondary">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Nom</th>
+                                    <th>Statut</th>
+                                    <th>Action</th>
+                                    <th>Commentaire</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <th:block th:each="log : ${logs}">
+                                    <tr>
+                                        <td class="text-left"><span
+                                                th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
+                                        <td class="text-left"><span th:if="${log.user != null}" th:text="${log.user.firstname} + ' ' + ${log.user.name}"></span></td>
+                                        <td class="text-left">
+                                            <span th:text="#{'signbook.status.' + ${log.finalStatus}}"></span>
+                                        </td>
+                                        <td class="text-left">
+                                            <span th:text="${log.action}"></span>
+                                        </td>
+                                        <td class="text-left" th:if="${log.action == 'Apposition de la signature'}">
+                                            <span th:text="'Apposition d`un visuel en page ' + ${log.pageNumber} + ' aux coordonnées (' + ${log.posX} + ', ' + ${log.posY} + ')'"></span>
+                                        </td>
+                                        <td class="text-left" th:unless="${log.action == 'Apposition de la signature'}">
+                                            <span th:text="${log.comment}"></span>
+                                        </td>
+                                    </tr>
+                                </th:block>
+                                </tbody>
+                            </table>
+                        </div>
+
                     </div>
                 </th:block>
                 <th:block th:if="${auditTrail == null}">
@@ -112,41 +145,6 @@
                         <h5>Le document est en cours de signature</h5>
                     </div>
                 </th:block>
-                <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: auto;">
-                    <h4>Journal des actions</h4>
-                    <table class="table table-sm table-hover">
-                        <thead class="table-secondary">
-                        <tr>
-                            <th>Date</th>
-                            <th>Nom</th>
-                            <th>Statut</th>
-                            <th>Action</th>
-                            <th>Commentaire</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <th:block th:each="log : ${logs}">
-                            <tr>
-                                <td class="text-left"><span
-                                        th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
-                                <td class="text-left"><span th:if="${log.user != null}" th:text="${log.user.firstname} + ' ' + ${log.user.name}"></span></td>
-                                <td class="text-left">
-                                    <span th:text="#{'signbook.status.' + ${log.finalStatus}}"></span>
-                                </td>
-                                <td class="text-left">
-                                    <span th:text="${log.action}"></span>
-                                </td>
-                                <td class="text-left" th:if="${log.action == 'Apposition de la signature'}">
-                                    <span th:text="'Apposition d`un visuel en page ' + ${log.pageNumber} + ' aux coordonnées (' + ${log.posX} + ', ' + ${log.posY} + ')'"></span>
-                                </td>
-                                <td class="text-left" th:unless="${log.action == 'Apposition de la signature'}">
-                                    <span th:text="${log.comment}"></span>
-                                </td>
-                            </tr>
-                        </th:block>
-                        </tbody>
-                    </table>
-                </div>
                 <th:block th:if="${auditTrail != null && auditTrail.getDocumentCheckSum() == null && usersHasRefused != null && !usersHasRefused.isEmpty()}">
                     <div class="alert alert-danger mb-1 mt-1">
                         <h5>Le document a été refusé</h5>
@@ -156,23 +154,8 @@
                     </div>
                 </th:block>
             </th:block>
-            <th:block th:unless="${(auditTrail != null && (auditTrailChecked != null && auditTrailChecked) && signRequest != null) || (viewAccess != null && viewAccess)}">
-                <div class="alert alert-success mx-auto mt-1 mb-1" th:if="${auditTrail != null}">
-                    <h4>Le document est bien référencé comme signé sur cette plateforme.</h4>
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-3">Nom de document : </dt>
-                        <dd class="col-9" th:text="${auditTrail.documentName}"></dd>
-                    </dl>
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-3">Type de document : </dt>
-                        <dd class="col-9" th:text="${auditTrail.documentType}"></dd>
-                    </dl>
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-3">Taille : </dt>
-                        <dd class="col-9" th:text="${size} + ' (' + ${auditTrail.documentSize} + ')'"></dd>
-                    </dl>
-                </div>
-                <div class="alert alert-light border-secondary" th:if="${simpleReport == null}">
+            <th:block th:if="${(auditTrailChecked == null || !auditTrailChecked) && (error == null || !error) && signRequest == null}">
+                <div class="alert alert-light border-secondary">
                     <h5>Vous pouvez déposer ici le document en votre possession pour vérifier sa conformité et accéder aux informations détaillées</h5>
                     <form th:action="'/public/control/' + ${token} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                         <input required class="form-control mb-2" data-buttontext="Choisir fichier" id="multipartFile" name="multipartFile" type="file">
@@ -180,10 +163,10 @@
                     </form>
                 </div>
             </th:block>
-            <div class="alert alert-success mb-1 text-center" th:if="${simpleReport != null}">
+            <div class="alert alert-info mb-1 gap-1" th:if="${simpleReport != null}">
                 <h5>Le document contient une ou plusieurs signature(s) électronique(s).</h5>
+                <div th:utext="${simpleReport}"></div>
             </div>
-            <div th:if="${simpleReport != null}" th:utext="${simpleReport}" class="mt-2"></div>
         </div>
     </div>
 </main>

@@ -149,8 +149,14 @@ public class SignRequestController {
         }
         model.addAttribute("signatureIds", new ArrayList<>());
         Reports reports = signService.validate(id);
-        if (reports != null) {
+        if(reports != null) {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+            model.addAttribute("signatureIssue", false);
+            for(String signatureId : reports.getSimpleReport().getSignatureIdList()) {
+                if(!reports.getSimpleReport().isValid(signatureId)) {
+                    model.addAttribute("signatureIssue", true);
+                }
+            }
         }
         if(!signRequest.getStatus().equals(SignRequestStatus.draft) && !signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getStatus().equals(SignRequestStatus.refused) && !signRequest.getDeleted()) {
             if (reports != null) {

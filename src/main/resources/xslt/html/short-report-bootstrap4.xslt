@@ -30,7 +30,7 @@
                 <xsl:when test="$indicationText='TOTAL_FAILED'">danger</xsl:when>
             </xsl:choose>
         </xsl:variable>
-            <div class="alert alert-info mb-1">
+            <div class="alert alert-light mb-1">
                 <xsl:attribute name="id"><xsl:value-of select="$id"/></xsl:attribute>
                 <xsl:attribute name="name"><xsl:value-of select="$idToken"/></xsl:attribute>
 
