@@ -154,7 +154,7 @@
                     </div>
                 </th:block>
             </th:block>
-            <th:block th:if="${(auditTrailChecked == null || !auditTrailChecked) && (error == null || !error)}">
+            <th:block th:if="${(auditTrailChecked == null || !auditTrailChecked) && (error == null || !error) && signRequest == null}">
                 <div class="alert alert-light border-secondary">
                     <h5>Vous pouvez déposer ici le document en votre possession pour vérifier sa conformité et accéder aux informations détaillées</h5>
                     <form th:action="'/public/control/' + ${token} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
