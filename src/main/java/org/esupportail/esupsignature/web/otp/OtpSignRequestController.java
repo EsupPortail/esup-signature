@@ -141,6 +141,12 @@ public class OtpSignRequestController {
         Reports reports = signService.validate(id);
         if(reports != null) {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+            model.addAttribute("signatureIssue", false);
+            for(String signatureId : reports.getSimpleReport().getSignatureIdList()) {
+                if(!reports.getSimpleReport().isValid(signatureId)) {
+                    model.addAttribute("signatureIssue", true);
+                }
+            }
         }
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
