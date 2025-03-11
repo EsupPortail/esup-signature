@@ -98,15 +98,15 @@ export class SignUi {
                     data +
                     "</div></div></div></div>";
                 $("body").append(modal);
-                $('#reportModal').on('hidden.bs.modal', function () {
-                    $("div[id^='report_']").each(function() {
-                        $(this).show();
-                    });
-                })
-                $("#reportModalBtn").removeClass("d-none");
-                $("#reportModalBtn").on('click', function (){
-                    $("#alertSign").remove();
-                });
+                // $('#reportModal').on('hidden.bs.modal', function () {
+                //     $("div[id^='report_']").each(function() {
+                //         $(this).show();
+                //     });
+                // })
+                $("#reportSpinner").hide();
+                let reportModalBtn = $("#reportModalBtn");
+                reportModalBtn.removeClass("d-none");
+                $("#reportModal .modal-content").addClass(reportModalBtn.attr("es-modal-style"));
             }
         });
     }
@@ -441,7 +441,9 @@ export class SignUi {
                 $("#signSpinner").hide();
                 console.error("sign error : " + data.responseText);
                 document.getElementById("signError").style.display = "block";
-                document.getElementById("signError").innerHTML = " Erreur du système de signature : <br>" + data.responseText;
+                document.getElementById("signError").innerHTML =
+                    "<p>Une erreur s’est produite lors de la signature du document.</p>" +
+                    "<small>Message retourné par le système de signature : " + JSON.parse(data.responseText).message + "</small>";
                 document.getElementById("closeModal").style.display = "block";
             }
         });

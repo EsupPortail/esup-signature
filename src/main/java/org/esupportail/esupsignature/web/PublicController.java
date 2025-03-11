@@ -77,7 +77,9 @@ public class PublicController {
         if(auditTrail == null) {
             return "error";
         }
-        model.addAttribute("auditTrailChecked", false);
+        if(auditTrail.getDocumentSize() != null) {
+            model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
+        }
         model.addAttribute("auditTrail", auditTrail);
         Optional<SignRequest> signRequest = signRequestService.getSignRequestByToken(token);
         if(signRequest.isPresent()) {
@@ -85,19 +87,17 @@ public class PublicController {
                 Reports reports = signService.validate(signRequest.get().getId());
                 if (reports != null) {
                     model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
-                } else {
-                    model.addAttribute("signRequest", signRequest.get());
                 }
-            } else{
-                model.addAttribute("signRequest", signRequest.get());
             }
+        } else {
+            model.addAttribute("auditTrailChecked", false);
         }
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && !auth.getName().equals("anonymousUser")) {
+            model.addAttribute("auditTrailChecked", true);
             String eppn = userService.tryGetEppnFromLdap(auth);
             if(eppn != null && userService.getByEppn(eppn) != null) {
-                model.addAttribute("signRequest", signRequest.get());
-                setControlValues(model, signRequest.get(), auditTrail, eppn);
+                setControlValues(model, signRequest, auditTrail, eppn);
             }
         }
         if (buildProperties != null) {
@@ -112,20 +112,20 @@ public class PublicController {
     @PostMapping(value = "/control/{token}")
     public String checkFile(@PathVariable String token, @RequestParam(value = "multipartFile") MultipartFile multipartFile,
                             Model model, HttpSession httpSession) throws IOException {
+        model.addAttribute("token", token);
         String checksum = fileService.getFileChecksum(multipartFile.getInputStream());
         AuditTrail auditTrail = auditTrailService.getAuditTrailFromCheksum(checksum);
         if(auditTrail != null) {
+            if(auditTrail.getDocumentSize() != null) {
+                model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
+            }
             if("null".equals(token)) {
                 token = auditTrail.getToken();
-                model.addAttribute("token", token);
             }
             model.addAttribute("auditTrailChecked", true);
             List<Log> logs = logService.getFullByToken(token);
             model.addAttribute("logs", logs);
             Optional<SignRequest> signRequest = signRequestService.getSignRequestByToken(token);
-            if(signRequest.isPresent()) {
-                model.addAttribute("signRequest", signRequest.get());
-            }
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String eppn = null;
             if (auth != null && !auth.getName().equals("anonymousUser")) {
@@ -138,30 +138,29 @@ public class PublicController {
                 model.addAttribute("version", buildProperties.getVersion());
             }
             model.addAttribute("auditTrail", auditTrail);
-            if(signRequest.isPresent()) {
-                setControlValues(model, signRequest.get(), auditTrail, eppn);
-                if(auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
-                    Reports reports = signService.validate(signRequest.get().getId());
-                    model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
-                }
-            }
-        } else {
+            setControlValues(model, signRequest, auditTrail, eppn);
+        } else if (token == null || token.equals("null")) {
             Reports reports = validationService.validate(multipartFile.getInputStream(), null);
             model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
+            model.addAttribute("error", true);
+        } else {
             model.addAttribute("error", true);
         }
         return "public/control";
     }
 
-    private void setControlValues(Model model, SignRequest signRequest, AuditTrail auditTrail, String eppn) {
-        model.addAttribute("usersHasSigned", auditTrailService.checkUserResponseSigned(signRequest));
-        model.addAttribute("usersHasRefused", auditTrailService.checkUserResponseRefused(signRequest));
-        model.addAttribute("signRequest", signRequest);
-        if(auditTrail.getDocumentSize() != null) {
-            model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
-        }
-        if(eppn != null) {
-            model.addAttribute("viewAccess", preAuthorizeService.checkUserViewRights(signRequest, eppn, eppn));
+    private void setControlValues(Model model, Optional<SignRequest> signRequest, AuditTrail auditTrail, String eppn) throws IOException {
+        if(signRequest.isPresent()) {
+            model.addAttribute("signRequest", signRequest.get());
+            model.addAttribute("usersHasSigned", auditTrailService.checkUserResponseSigned(signRequest.get()));
+            model.addAttribute("usersHasRefused", auditTrailService.checkUserResponseRefused(signRequest.get()));
+            if (eppn != null) {
+                model.addAttribute("viewAccess", preAuthorizeService.checkUserViewRights(signRequest.get(), eppn, eppn));
+            }
+            if(auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
+                Reports reports = signService.validate(signRequest.get().getId());
+                model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
+            }
         }
     }
 }
