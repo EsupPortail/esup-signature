@@ -98,4 +98,9 @@ public class ReportService {
         return response.getBody();
     }
 
+    @Transactional
+    public void deleteAll(String authUserEppn) {
+        List<Report> reports = reportRepository.findByUserEppn(authUserEppn);
+        reportRepository.deleteAll(reports);
+    }
 }

@@ -56,4 +56,11 @@ public class ReportController {
         redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
         return "redirect:/user/reports";
     }
+
+    @DeleteMapping(value = "/all/", produces = "text/html")
+    public String deleteAll(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
+        reportService.deleteAll(authUserEppn);
+        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
+        return "redirect:/user/reports";
+    }
 }
