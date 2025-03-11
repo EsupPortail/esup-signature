@@ -102,47 +102,6 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: auto;">
-                            <h4>Journal des actions</h4>
-                            <table class="table table-sm table-hover">
-                                <thead class="table-secondary">
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Nom</th>
-                                    <th>Statut</th>
-                                    <th>Action</th>
-                                    <th>Commentaire</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <th:block th:each="log : ${logs}">
-                                    <tr>
-                                        <td class="text-left"><span
-                                                th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
-                                        <td class="text-left"><span th:if="${log.user != null}" th:text="${log.user.firstname} + ' ' + ${log.user.name}"></span></td>
-                                        <td class="text-left">
-                                            <span th:text="#{'signbook.status.' + ${log.finalStatus}}"></span>
-                                        </td>
-                                        <td class="text-left">
-                                            <span th:text="${log.action}"></span>
-                                        </td>
-                                        <td class="text-left" th:if="${log.action == 'Apposition de la signature'}">
-                                            <span th:text="'Apposition d`un visuel en page ' + ${log.pageNumber} + ' aux coordonnées (' + ${log.posX} + ', ' + ${log.posY} + ')'"></span>
-                                        </td>
-                                        <td class="text-left" th:unless="${log.action == 'Apposition de la signature'}">
-                                            <span th:text="${log.comment}"></span>
-                                        </td>
-                                    </tr>
-                                </th:block>
-                                </tbody>
-                            </table>
-                        </div>
-
-                    </div>
-                </th:block>
-                <th:block th:if="${auditTrail == null}">
-                    <div class="alert alert-warning mb-1">
-                        <h5>Le document est en cours de signature</h5>
                     </div>
                 </th:block>
                 <th:block th:if="${auditTrail != null && auditTrail.getDocumentCheckSum() == null && usersHasRefused != null && !usersHasRefused.isEmpty()}">
@@ -153,6 +112,46 @@
                         </ul>
                     </div>
                 </th:block>
+                <th:block th:if="${auditTrail == null}">
+                    <div class="alert alert-warning mb-1 text-center">
+                        <h5>Le document est en cours de signature</h5>
+                    </div>
+                </th:block>
+                <div th:if="${signRequest != null || (auditTrailChecked != null && auditTrailChecked)}" class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: auto;">
+                    <h4>Journal des actions</h4>
+                    <table class="table table-sm table-hover">
+                        <thead class="table-secondary">
+                        <tr>
+                            <th>Date</th>
+                            <th>Nom</th>
+                            <th>Statut</th>
+                            <th>Action</th>
+                            <th>Commentaire</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="log : ${logs}">
+                            <tr>
+                                <td class="text-left"><span
+                                        th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
+                                <td class="text-left"><span th:if="${log.user != null}" th:text="${log.user.firstname} + ' ' + ${log.user.name}"></span></td>
+                                <td class="text-left">
+                                    <span th:text="#{'signbook.status.' + ${log.finalStatus}}"></span>
+                                </td>
+                                <td class="text-left">
+                                    <span th:text="${log.action}"></span>
+                                </td>
+                                <td class="text-left" th:if="${log.action == 'Apposition de la signature'}">
+                                    <span th:text="'Apposition d`un visuel en page ' + ${log.pageNumber} + ' aux coordonnées (' + ${log.posX} + ', ' + ${log.posY} + ')'"></span>
+                                </td>
+                                <td class="text-left" th:unless="${log.action == 'Apposition de la signature'}">
+                                    <span th:text="${log.comment}"></span>
+                                </td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                </div>
             </th:block>
             <th:block th:if="${(auditTrailChecked == null || !auditTrailChecked) && (error == null || !error) && signRequest == null}">
                 <div class="alert alert-light border-secondary">
@@ -163,7 +162,7 @@
                     </form>
                 </div>
             </th:block>
-            <div class="alert alert-info mb-1 gap-1" th:if="${simpleReport != null}">
+            <div class="alert alert-primary mb-1 gap-1" th:if="${simpleReport != null}">
                 <h5>Le document contient une ou plusieurs signature(s) électronique(s).</h5>
                 <div th:utext="${simpleReport}"></div>
             </div>
