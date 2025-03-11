@@ -321,6 +321,7 @@ export default class SelectUser {
         if(data.phone == null || data.phone === "") {
             iti.setCountry("fr");
         }
+        this.validatePhone(iti, id)
         phonesInput.addEventListener("focusout", e => this.validatePhone(iti, id));
     }
 
