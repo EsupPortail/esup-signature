@@ -1341,7 +1341,8 @@ public class SignBookService {
     }
 
     @Transactional
-    public boolean startLiveWorkflow(SignBook signBook, String userEppn, String authUserEppn, Boolean start) throws EsupSignatureRuntimeException {
+    public boolean startLiveWorkflow(Long signBookId, String userEppn, String authUserEppn, Boolean start) throws EsupSignatureRuntimeException {
+        SignBook signBook = getById(signBookId);
         if(!signBook.getLiveWorkflow().getLiveWorkflowSteps().isEmpty()) {
             signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
             if(start != null && start) {
