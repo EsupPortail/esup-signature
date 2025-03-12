@@ -313,3 +313,18 @@ header {
     bottom: 100px;
     left: 300px;
 }
+
+.pdf-spinner {
+    position: fixed;
+    z-index: 0;
+    margin-top: 200px;
+    width: 7rem;
+    height: 7rem;
+    opacity: 0.6;
+    -webkit-transition:
+    opacity 0.2s linear;
+    -moz-transition: visibility 0.2s linear,
+    opacity 0.2s linear;
+    -o-transition: visibility 0.2s linear,
+    opacity 0.2s linear;
+}

@@ -5,6 +5,8 @@
 <!--/*@thymesVar id="spots" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <div th:fragment="workspace" id="workspace" class="alert justify-content-center border-0" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'workspace-sign' : 'workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? 'alert-secondary' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
+    <div id="pdf-spinner" class="spinner-border pdf-spinner" role="status">
+    </div>
     <div style="top:0; position: absolute; z-index: 5; width: 100%; ">
         <div id="warningSelectDiv" class="alert alert-danger border-dark" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}">
             Aucun type de signature n’est disponible pour signer ce document.

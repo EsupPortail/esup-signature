@@ -52,8 +52,10 @@ export class PdfViewer extends EventFactory {
                     '/webjars/pdfjs-dist/4.6.82/legacy/build/pdf.worker.min.mjs',
                     import.meta.url
                 ).toString();
-                globalThis.pdfjsLib.getDocument(self.url).promise.then(pdf => self.startRender(pdf));
-
+                let loadingTask = globalThis.pdfjsLib.getDocument(self.url);
+                loadingTask.promise.then(function(pdf) {
+                    self.startRender(pdf)
+                });
             }
         });
     }
@@ -210,6 +212,7 @@ export class PdfViewer extends EventFactory {
     }
 
     render() {
+        $("#pdf-spinner").css("opacity", 0.6);
         this.renderedPages++;
         let self = this;
         this.pdfDoc.getPage(this.renderedPages).then(page => this.renderTask(page, this.renderedPages).then(function (){
@@ -221,6 +224,7 @@ export class PdfViewer extends EventFactory {
                 $(document).trigger("renderFinished");
                 if(self.pages.length === self.numPages) {
                     self.postRenderAll();
+                    $("#pdf-spinner").css("opacity", 0);
                 }
             }
         }));
