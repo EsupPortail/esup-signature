@@ -314,17 +314,13 @@ header {
     left: 300px;
 }
 
-.pdf-spinner {
+.progress {
+    width: calc(100% - 300px);
     position: fixed;
-    z-index: 0;
-    margin-top: 200px;
-    width: 7rem;
-    height: 7rem;
-    opacity: 0.6;
-    -webkit-transition:
-    opacity 0.2s linear;
-    -moz-transition: visibility 0.2s linear,
-    opacity 0.2s linear;
-    -o-transition: visibility 0.2s linear,
-    opacity 0.2s linear;
+    z-index: 1;
+    bottom: 40px;
+    opacity: 1;
+    -webkit-transition:opacity 2s linear;
+    -moz-transition: opacity 2s linear;
+    -o-transition:opacity 2s linear;
 }

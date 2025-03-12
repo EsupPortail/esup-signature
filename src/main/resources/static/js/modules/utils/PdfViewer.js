@@ -9,6 +9,7 @@ export class PdfViewer extends EventFactory {
         console.info("Starting PDF Viewer, signable : " + signable);
         this.viewed = false;
         this.url= url;
+        this.interval = null;
         this.initialOffset = 0;
         this.pages = [];
         this.signable = signable;
@@ -194,7 +195,7 @@ export class PdfViewer extends EventFactory {
     }
 
     startRender(pdf) {
-        this.pdfDiv.css('opacity', 0);
+        // this.pdfDiv.css('opacity', 0);
         this.saveScrolling = window.scrollY / this.scale;
         $(".pdf-page").each(function(e) {
            $(this).remove();
@@ -206,13 +207,15 @@ export class PdfViewer extends EventFactory {
         document.getElementById('page_count').textContent = this.pdfDoc.numPages;
         this.renderedPages = 0;
         this.pages = [];
+        this.resetProgress();
+        $("#pdf-progress-bar").css("opacity", 1);
+        this.startProgress();
         this.render();
         this.refreshTools();
         this.fireEvent("ready", ['ok']);
     }
 
     render() {
-        $("#pdf-spinner").css("opacity", 0.6);
         this.renderedPages++;
         let self = this;
         this.pdfDoc.getPage(this.renderedPages).then(page => this.renderTask(page, this.renderedPages).then(function (){
@@ -223,8 +226,9 @@ export class PdfViewer extends EventFactory {
                 self.fireEvent('renderFinished', ['ok']);
                 $(document).trigger("renderFinished");
                 if(self.pages.length === self.numPages) {
+                    self.stopProgress();
                     self.postRenderAll();
-                    $("#pdf-spinner").css("opacity", 0);
+                    $("#pdf-progress-bar").css("opacity", 0);
                 }
             }
         }));
@@ -910,4 +914,25 @@ export class PdfViewer extends EventFactory {
         });
     }
 
+    startProgress() {
+        let self = this;
+        this.interval = setInterval(function() {
+            let progress = Math.round(self.renderedPages / self.numPages * 100)
+            $(".progress-bar")
+                .css("width", progress + "%")
+                .attr("aria-valuenow", progress)
+                .text("Chargement de la page " + self.renderedPages + "/" + self.numPages);
+
+        }, 100);
+    }
+
+    stopProgress(){
+        $(".progress-bar").css("width","100%").attr("aria-valuenow", 100).text("Chargement terminé");
+        clearInterval(this.interval);
+    }
+
+    resetProgress() {
+        $(".progress-bar").css("width","0%").attr("aria-valuenow", 0);
+        clearInterval(this.interval);
+    }
 }
