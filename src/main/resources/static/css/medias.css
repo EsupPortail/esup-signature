@@ -43,6 +43,10 @@
         width: 100%;
     }
 
+    .second-tools {
+        top: 104px;
+    }
+
     #breadcrumb {
         display: none;
     }
