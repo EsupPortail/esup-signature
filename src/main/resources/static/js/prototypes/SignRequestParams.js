@@ -812,7 +812,7 @@ export class SignRequestParams extends EventFactory {
     simulateDrop() {
         if(this.firstLaunch) {
             let x = Math.round(this.xPos * this.currentScale);
-            let y = Math.round(this.yPos * this.currentScale + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top + (10 * (parseInt(this.signPageNumber))));
+            let y = Math.round(this.yPos * this.currentScale + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top);
             let self = this;
             this.cross.on("dragstop", function () {
                 let test = self.scrollTop + $(window).height();
@@ -826,6 +826,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     simulateDrag(x, y) {
+        console.log("simulate drag : (" + x + ", " + y + ")");
         this.cross.simulate("drag", {
             handle: "corner",
             moves: 1,
@@ -1194,13 +1195,17 @@ export class SignRequestParams extends EventFactory {
     }
 
     addTextArea() {
-        let divExtraHtml = "<textarea id='textExtra_" + this.id + "' class='sign-textarea align-top' style='display: none;' rows='1' cols='30'></textarea>";
+        let divExtraHtml = "<textarea id='textExtra_" + this.id + "' tabindex='0' class='sign-textarea align-top' style='display: none;' rows='1' cols='30'></textarea>";
         this.divExtra.append(divExtraHtml);
         this.textareaExtra = $("#textExtra_" + this.id);
         this.textareaExtra.css('width', '100%');
         this.textareaExtra.attr('cols', '30');
         this.textareaExtra.attr('rows', '1');
         this.textareaExtra.on("input", e => this.refreshExtraDiv());
+        document.getElementById("textExtra_" + this.id).addEventListener('touchstart', function(event) {
+            event.preventDefault();
+            this.focus();
+        });
     }
 
     refreshExtraDiv() {

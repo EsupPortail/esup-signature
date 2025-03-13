@@ -201,7 +201,7 @@ public class WizardController {
             model.addAttribute("close", close);
             model.asMap().forEach(context::setVariable);
             if(end) {
-                if(signBookService.startLiveWorkflow(signBook, userEppn, authUserEppn, start)) {
+                if(signBookService.startLiveWorkflow(signBookId, userEppn, authUserEppn, start)) {
                     return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-save", context));
                 } else {
                     return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-end", context));
