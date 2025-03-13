@@ -313,3 +313,14 @@ header {
     bottom: 100px;
     left: 300px;
 }
+
+.progress {
+    width: calc(100% - 300px);
+    position: fixed;
+    z-index: 1;
+    bottom: 40px;
+    opacity: 1;
+    -webkit-transition:opacity 2s linear;
+    -moz-transition: opacity 2s linear;
+    -o-transition:opacity 2s linear;
+}

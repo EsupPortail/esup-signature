@@ -812,7 +812,7 @@ export class SignRequestParams extends EventFactory {
     simulateDrop() {
         if(this.firstLaunch) {
             let x = Math.round(this.xPos * this.currentScale);
-            let y = Math.round(this.yPos * this.currentScale + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top + (10 * (parseInt(this.signPageNumber))));
+            let y = Math.round(this.yPos * this.currentScale + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top);
             let self = this;
             this.cross.on("dragstop", function () {
                 let test = self.scrollTop + $(window).height();
@@ -826,6 +826,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     simulateDrag(x, y) {
+        console.log("simulate drag : (" + x + ", " + y + ")");
         this.cross.simulate("drag", {
             handle: "corner",
             moves: 1,

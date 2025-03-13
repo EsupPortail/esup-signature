@@ -274,4 +274,7 @@
     <button id="end-button" th:unless="${signRequest.viewedBy.contains(user)}" class="btn not-viewed jumping not-viewed-position" title="Pour valider la lecture du document, il faut le faire défiler jusqu'au bas du document">
         <i class="fa-solid fa-arrows-down-to-line fa-2x d-none d-sm-block"></i>
     </button>
+    <div id="pdf-progress-bar" class="progress">
+        <div class="progress-bar bg-dark progress-bar-animated" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
 </div>

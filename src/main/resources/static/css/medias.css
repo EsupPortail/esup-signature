@@ -20,11 +20,21 @@
     .d-xxxl-inline {
         display: inline !important;
     }
+    .d-xxxl-inline-flex {
+        display: inline-flex !important;
+        flex-direction: row;
+        align-items: center;
+    }
 }
 
 @media (min-width: 1800px) {
     .d-xxxxl-inline {
         display: inline !important;
+    }
+    .d-xxxl-inline-flex {
+        display: inline-flex !important;
+        flex-direction: row;
+        align-items: center;
     }
 }
 

@@ -498,3 +498,10 @@ textarea:invalid {
 .theme-explorer-fa6 .file-actions-cell {
     height: initial;
 }
+
+.form-control-xs {
+    min-height: calc(1.3em + .5rem + calc(var(--bs-border-width)* 2));
+    font-size: 0.875rem;
+    padding: 0.15rem 0.25rem;
+    border-radius: var(--bs-border-radius-sm);
+}

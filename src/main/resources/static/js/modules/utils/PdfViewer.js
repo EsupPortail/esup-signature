@@ -9,6 +9,7 @@ export class PdfViewer extends EventFactory {
         console.info("Starting PDF Viewer, signable : " + signable);
         this.viewed = false;
         this.url= url;
+        this.interval = null;
         this.initialOffset = 0;
         this.pages = [];
         this.signable = signable;
@@ -52,8 +53,10 @@ export class PdfViewer extends EventFactory {
                     '/webjars/pdfjs-dist/4.6.82/legacy/build/pdf.worker.min.mjs',
                     import.meta.url
                 ).toString();
-                globalThis.pdfjsLib.getDocument(self.url).promise.then(pdf => self.startRender(pdf));
-
+                let loadingTask = globalThis.pdfjsLib.getDocument(self.url);
+                loadingTask.promise.then(function(pdf) {
+                    self.startRender(pdf)
+                });
             }
         });
     }
@@ -68,6 +71,7 @@ export class PdfViewer extends EventFactory {
         $(window).on('resize', e => this.adjustZoom(e));
         // this.addEventListener("renderFinished", e => this.listenToSearchCompletion());
         // this.addEventListener("ready", e => this.restoreScrolling());
+        $('#page_num').on('change', e => this.scrollToPage(e.target.value));
    }
 
    restoreScrolling() {
@@ -155,7 +159,7 @@ export class PdfViewer extends EventFactory {
         for(let i = 1; i < numPages + 1; i++) {
             if(e > $("#page_" + i).offset().top - 250) {
                 this.pageNum = i;
-                document.getElementById('page_num').textContent = this.pageNum;
+                document.getElementById('page_num').value = this.pageNum;
                 if(this.pageNum === this.numPages && !this.viewed) {
                     this.viewed = true;
                     this.fireEvent('reachEnd', ['ok'])
@@ -192,7 +196,7 @@ export class PdfViewer extends EventFactory {
     }
 
     startRender(pdf) {
-        this.pdfDiv.css('opacity', 0);
+        // this.pdfDiv.css('opacity', 0);
         this.saveScrolling = window.scrollY / this.scale;
         $(".pdf-page").each(function(e) {
            $(this).remove();
@@ -204,6 +208,9 @@ export class PdfViewer extends EventFactory {
         document.getElementById('page_count').textContent = this.pdfDoc.numPages;
         this.renderedPages = 0;
         this.pages = [];
+        this.resetProgress();
+        $("#pdf-progress-bar").css("opacity", 1);
+        this.startProgress();
         this.render();
         this.refreshTools();
         this.fireEvent("ready", ['ok']);
@@ -220,7 +227,9 @@ export class PdfViewer extends EventFactory {
                 self.fireEvent('renderFinished', ['ok']);
                 $(document).trigger("renderFinished");
                 if(self.pages.length === self.numPages) {
+                    self.stopProgress();
                     self.postRenderAll();
+                    $("#pdf-progress-bar").css("opacity", 0);
                 }
             }
         }));
@@ -238,7 +247,7 @@ export class PdfViewer extends EventFactory {
     }
 
     refreshTools() {
-        document.getElementById('page_num').textContent = this.pageNum;
+        document.getElementById('page_num').value = this.pageNum;
         document.getElementById('zoom').textContent = Math.round(100 * this.scale);
         if(this.pdfDoc.numPages === 1) {
             $('#prev').prop('disabled', true);
@@ -906,4 +915,25 @@ export class PdfViewer extends EventFactory {
         });
     }
 
+    startProgress() {
+        let self = this;
+        this.interval = setInterval(function() {
+            let progress = Math.round(self.renderedPages / self.numPages * 100)
+            $(".progress-bar")
+                .css("width", progress + "%")
+                .attr("aria-valuenow", progress)
+                .text("Chargement de la page " + self.renderedPages + "/" + self.numPages);
+
+        }, 100);
+    }
+
+    stopProgress(){
+        $(".progress-bar").css("width","100%").attr("aria-valuenow", 100).text("Chargement terminé");
+        clearInterval(this.interval);
+    }
+
+    resetProgress() {
+        $(".progress-bar").css("width","0%").attr("aria-valuenow", 0);
+        clearInterval(this.interval);
+    }
 }
