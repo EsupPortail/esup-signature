@@ -1195,13 +1195,17 @@ export class SignRequestParams extends EventFactory {
     }
 
     addTextArea() {
-        let divExtraHtml = "<textarea id='textExtra_" + this.id + "' class='sign-textarea align-top' style='display: none;' rows='1' cols='30'></textarea>";
+        let divExtraHtml = "<textarea id='textExtra_" + this.id + "' tabindex='0' class='sign-textarea align-top' style='display: none;' rows='1' cols='30'></textarea>";
         this.divExtra.append(divExtraHtml);
         this.textareaExtra = $("#textExtra_" + this.id);
         this.textareaExtra.css('width', '100%');
         this.textareaExtra.attr('cols', '30');
         this.textareaExtra.attr('rows', '1');
         this.textareaExtra.on("input", e => this.refreshExtraDiv());
+        document.getElementById("textExtra_" + this.id).addEventListener('touchstart', function(event) {
+            event.preventDefault();
+            this.focus();
+        });
     }
 
     refreshExtraDiv() {

@@ -56,27 +56,27 @@
 						name="changeMode"
 						id="changeMode1"><i class="fas fa-wrench"></i> <span class="d-none d-xl-inline">Mode édition</span></button>
 			</th:block>
-			<div id="insert-btn-sign-div" class="d-block d-lg-none">
-				<div th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="me-1">
-					<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp
-									||
-									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign
-									||
-									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign
-									}"
-							id="addSignButton3"
-							role="button"
-							class="btn btn-light btn-outline-primary text-start">
-						<i class="fa-solid fa-file-signature"></i>
-					</button>
-				</div>
-			</div>
-			<div id="insert-btn-div" class="d-none d-lg-block">
+<!--			<div id="insert-btn-sign-div" class="d-block d-lg-none">-->
+<!--				<div th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="me-1">-->
+<!--					<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp-->
+<!--									||-->
+<!--									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign-->
+<!--									||-->
+<!--									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign-->
+<!--									}"-->
+<!--							id="addSignButton3"-->
+<!--							role="button"-->
+<!--							class="btn btn-light btn-outline-primary text-start d-none d-md-block">-->
+<!--						<i class="fa-solid fa-file-signature"></i>-->
+<!--					</button>-->
+<!--				</div>-->
+<!--			</div>-->
+			<div id="insert-btn-div" class="d-none d-sm-block">
 				<button id="insert-btn" th:if="${editable}" class="btn btn-light btn-outline-primary pulse-primary me-1"
 					data-bs-toggle="collapse" href="#second-tools">
 					<i class="fa-solid fa-plus"></i> <span class="d-none d-xxl-inline">Menu insertion</span>
 				</button>
-				<div id="second-tools" class="second-tools position-absolute collapse">
+				<div id="second-tools" class="second-tools position-fixed collapse">
 					<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
 						<div id="signTools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="alert alert-light d-flex flex-column text-start gap-1">
 							<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp
