@@ -500,8 +500,8 @@ textarea:invalid {
 }
 
 .form-control-xs {
-    min-height: calc(1.3em + .5rem + calc(var(--bs-border-width)* 2));
-    font-size: 0.875rem;
-    padding: 0.15rem 0.25rem;
+    /*min-height: calc(1.3em + .5rem + calc(var(--bs-border-width)* 2));*/
+    font-size: 1rem;
+    padding: 0 0 0 0.5rem;
     border-radius: var(--bs-border-radius-sm);
 }

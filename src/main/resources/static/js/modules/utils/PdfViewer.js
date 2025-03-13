@@ -208,6 +208,7 @@ export class PdfViewer extends EventFactory {
         document.getElementById('page_count').textContent = this.pdfDoc.numPages;
         this.renderedPages = 0;
         this.pages = [];
+        this.disableScrollBtn();
         this.resetProgress();
         $("#pdf-progress-bar").css("opacity", 1);
         this.startProgress();
@@ -230,6 +231,7 @@ export class PdfViewer extends EventFactory {
                     self.stopProgress();
                     self.postRenderAll();
                     $("#pdf-progress-bar").css("opacity", 0);
+                    self.enableScrollBtn();
                 }
             }
         }));
@@ -238,20 +240,34 @@ export class PdfViewer extends EventFactory {
     scrollToPage(num) {
         let self = this;
         let page = $("#page_" + num);
+        self.disableScrollBtn();
         if(page.length) {
             let scrollTo = page.offset().top - self.initialOffset;
             $([document.documentElement, document.body]).animate({
                 scrollTop: scrollTo
-            }, 500);
+            }, 500, function (){
+                self.enableScrollBtn();
+            });
         }
+    }
+
+    enableScrollBtn() {
+        $('#prev').prop('disabled', false);
+        $('#next').prop('disabled', false);
+        $('#page_num').prop('disabled', false);
+    }
+
+    disableScrollBtn() {
+        $('#prev').prop('disabled', true);
+        $('#next').prop('disabled', true);
+        $('#page_num').prop('disabled', true);
     }
 
     refreshTools() {
         document.getElementById('page_num').value = this.pageNum;
         document.getElementById('zoom').textContent = Math.round(100 * this.scale);
         if(this.pdfDoc.numPages === 1) {
-            $('#prev').prop('disabled', true);
-            $('#next').prop('disabled', true);
+            this.disableScrollBtn();
         }
         // this.pdfDoc.getPage(this.pageNum).then(page => this.renderTask(page));
     }
@@ -715,7 +731,7 @@ export class PdfViewer extends EventFactory {
         if (!this.isFirstPage()) {
             this.pageNum--;
         }
-        this.scroll();
+        this.scrollToPage(this.pageNum);
         return true;
     }
 
@@ -724,16 +740,8 @@ export class PdfViewer extends EventFactory {
             return false;
         }
         this.pageNum++;
-        this.scroll();
+        this.scrollToPage(this.pageNum);
         return true;
-    }
-
-    scroll() {
-        let page = $("#page_" + this.pageNum);
-        if(page != null && page.offset() != null)
-            $([document.documentElement, document.body]).animate({
-                scrollTop: page.offset().top - this.initialOffset
-            }, 500);
     }
 
     isFirstPage() {
