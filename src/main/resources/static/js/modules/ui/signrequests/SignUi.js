@@ -91,10 +91,11 @@ export class SignUi {
             url: "/ws-secure/validation/short/" + self.signRequestId,
             type: 'GET',
             success: function (data, textStatus, xhr) {
-                let modal = "<div class=\"modal fade\" id=\"reportModal\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">" +
+                let modal = "<div class=\"modal fade\" data-bs-focus=\"false\" id=\"reportModal\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">" +
                     "<div class=\"modal-dialog modal-lg\">" +
                     "<div class=\"modal-content\">" +
                     "<div class=\"modal-body\">" +
+                    "<button class=\"btn btn-sm btn-close text-dark float-end position-relative\" style='z-index: 2' onclick=\"$('#reportModal').modal('toggle');\"></button>" +
                     data +
                     "</div></div></div></div>";
                 $("body").append(modal);

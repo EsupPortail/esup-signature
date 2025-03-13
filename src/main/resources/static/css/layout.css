@@ -236,7 +236,7 @@ header {
 }
 
 .second-tools {
-    top: 48px;
+    top: 130px;
     z-index: 1;
 }
 
@@ -312,4 +312,22 @@ header {
     position: fixed;
     bottom: 100px;
     left: 300px;
+}
+
+#pdf-progress-bar {
+    width: calc(100% - 300px);
+    position: fixed;
+    z-index: 1;
+    bottom: 40px;
+    opacity: 1;
+    -webkit-transition:opacity 2s linear;
+    -moz-transition: opacity 2s linear;
+    -o-transition:opacity 2s linear;
+}
+
+.pdf-alerts {
+    top:130px;
+    position: fixed;
+    width: calc(100% - 285px);
+    z-index: 5;
 }

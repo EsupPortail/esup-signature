@@ -4,7 +4,7 @@
 <div th:fragment="tools" id="tools" class="tools" th:if="${toSignDocument != null}">
 	<div class="d-flex mb-1">
 		<button id="display-side-btn" type="button" class="btn btn-warning me-1 d-block d-xl-none">
-			<i class="fa-solid fa-eye"></i> <span class="d-none d-sm-inline">Statut:<span th:text="#{'signbook.status.' + ${signBook.status}}"></span></span>
+			<i class="fa-solid fa-eye"></i> <span class="d-none d-md-inline">Statut:<span th:text="#{'signbook.status.' + ${signBook.status}}"></span></span>
 		</button>
 		<a th:unless="${user.userType.name() == 'external'}" class="btn btn-light btn-outline-dark d-none d-lg-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
 			<i class="fa-solid fa-info-circle"></i>
@@ -38,8 +38,8 @@
 			<button id="prev" title="Page précédente" class="btn btn-light btn-outline-dark me-1" aria-label="Précédent">
 				<i class="fa-solid fa-arrow-up"></i>
 			</button>
-			<div class="bg-light me-1 p-1 pt-2 d-none d-xxxl-inline fw-bold text-center" style="min-width: 150px;">
-				<span>Page <span id="page_num"></span> / <span id="page_count"></span></span>
+			<div class="bg-light me-1 p-1 pt-2 d-none d-xxxl-inline-flex fw-bold" style="min-width: 150px;">
+				<span>Page </span><input type="text" id="page_num" class="form-control fw-bold form-control-xs ms-1" style="width: 50px;"/><span> / </span> <span id="page_count"></span>
 			</div>
 			<button id="next" title="Page suivante" class="btn btn-light btn-outline-dark me-1" aria-label="Prochain">
 				<i class="fa-solid fa-arrow-down"></i>
@@ -54,29 +54,29 @@
 			<th:block th:if="${editable}">
 				<button class="btn btn-warning me-1 d-none d-lg-block"
 						name="changeMode"
-						id="changeMode1"><i class="fas fa-wrench"></i> Mode édition</button>
+						id="changeMode1"><i class="fas fa-wrench"></i> <span class="d-none d-xl-inline">Mode édition</span></button>
 			</th:block>
-			<div id="insert-btn-sign-div" class="d-block d-lg-none">
-				<div th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="me-1">
-					<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp
-									||
-									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign
-									||
-									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign
-									}"
-							id="addSignButton3"
-							role="button"
-							class="btn btn-light btn-outline-primary text-start">
-						<i class="fa-solid fa-file-signature"></i>
-					</button>
-				</div>
-			</div>
-			<div id="insert-btn-div" class="d-none d-lg-block">
+<!--			<div id="insert-btn-sign-div" class="d-block d-lg-none">-->
+<!--				<div th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="me-1">-->
+<!--					<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp-->
+<!--									||-->
+<!--									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign-->
+<!--									||-->
+<!--									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign-->
+<!--									}"-->
+<!--							id="addSignButton3"-->
+<!--							role="button"-->
+<!--							class="btn btn-light btn-outline-primary text-start d-none d-md-block">-->
+<!--						<i class="fa-solid fa-file-signature"></i>-->
+<!--					</button>-->
+<!--				</div>-->
+<!--			</div>-->
+			<div id="insert-btn-div" class="d-none d-sm-block">
 				<button id="insert-btn" th:if="${editable}" class="btn btn-light btn-outline-primary pulse-primary me-1"
 					data-bs-toggle="collapse" href="#second-tools">
 					<i class="fa-solid fa-plus"></i> <span class="d-none d-xxl-inline">Menu insertion</span>
 				</button>
-				<div id="second-tools" class="second-tools position-absolute collapse">
+				<div id="second-tools" class="second-tools position-fixed collapse">
 					<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
 						<div id="signTools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="alert alert-light d-flex flex-column text-start gap-1">
 							<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp

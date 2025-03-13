@@ -738,6 +738,7 @@ textarea:placeholder-shown.required-field {
 }
 
 .sign-textarea {
+    position: relative;
     font-family: "LiberationSans-Regular", serif !important;
     color: black;
     -webkit-box-sizing: border-box;
@@ -747,7 +748,7 @@ textarea:placeholder-shown.required-field {
     border: 1px solid #acacac;
     background: rgba(255, 255, 255, .5);
     resize: none;
-    z-index: 6;
+    z-index: 1000;
     pointer-events: all;
 }
 
