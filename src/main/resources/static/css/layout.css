@@ -314,7 +314,7 @@ header {
     left: 300px;
 }
 
-.progress {
+#pdf-progress-bar {
     width: calc(100% - 300px);
     position: fixed;
     z-index: 1;
