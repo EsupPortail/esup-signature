@@ -71,6 +71,7 @@ export class PdfViewer extends EventFactory {
         $(window).on('resize', e => this.adjustZoom(e));
         // this.addEventListener("renderFinished", e => this.listenToSearchCompletion());
         // this.addEventListener("ready", e => this.restoreScrolling());
+        $('#page_num').on('change', e => this.scrollToPage(e.target.value));
    }
 
    restoreScrolling() {
@@ -158,7 +159,7 @@ export class PdfViewer extends EventFactory {
         for(let i = 1; i < numPages + 1; i++) {
             if(e > $("#page_" + i).offset().top - 250) {
                 this.pageNum = i;
-                document.getElementById('page_num').textContent = this.pageNum;
+                document.getElementById('page_num').value = this.pageNum;
                 if(this.pageNum === this.numPages && !this.viewed) {
                     this.viewed = true;
                     this.fireEvent('reachEnd', ['ok'])
@@ -246,7 +247,7 @@ export class PdfViewer extends EventFactory {
     }
 
     refreshTools() {
-        document.getElementById('page_num').textContent = this.pageNum;
+        document.getElementById('page_num').value = this.pageNum;
         document.getElementById('zoom').textContent = Math.round(100 * this.scale);
         if(this.pdfDoc.numPages === 1) {
             $('#prev').prop('disabled', true);
