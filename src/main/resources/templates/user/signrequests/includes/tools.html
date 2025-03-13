@@ -4,7 +4,7 @@
 <div th:fragment="tools" id="tools" class="tools" th:if="${toSignDocument != null}">
 	<div class="d-flex mb-1">
 		<button id="display-side-btn" type="button" class="btn btn-warning me-1 d-block d-xl-none">
-			<i class="fa-solid fa-eye"></i> <span class="d-none d-sm-inline">Statut:<span th:text="#{'signbook.status.' + ${signBook.status}}"></span></span>
+			<i class="fa-solid fa-eye"></i> <span class="d-none d-md-inline">Statut:<span th:text="#{'signbook.status.' + ${signBook.status}}"></span></span>
 		</button>
 		<a th:unless="${user.userType.name() == 'external'}" class="btn btn-light btn-outline-dark d-none d-lg-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
 			<i class="fa-solid fa-info-circle"></i>
@@ -54,7 +54,7 @@
 			<th:block th:if="${editable}">
 				<button class="btn btn-warning me-1 d-none d-lg-block"
 						name="changeMode"
-						id="changeMode1"><i class="fas fa-wrench"></i> Mode édition</button>
+						id="changeMode1"><i class="fas fa-wrench"></i> <span class="d-none d-xl-inline">Mode édition</span></button>
 			</th:block>
 			<div id="insert-btn-sign-div" class="d-block d-lg-none">
 				<div th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="me-1">

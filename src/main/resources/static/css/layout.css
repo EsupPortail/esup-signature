@@ -324,3 +324,10 @@ header {
     -moz-transition: opacity 2s linear;
     -o-transition:opacity 2s linear;
 }
+
+.pdf-alerts {
+    top:130px;
+    position: fixed;
+    width: calc(100% - 285px);
+    z-index: 5;
+}
