@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.zxing.WriterException;
-import eu.europa.esig.dss.diagnostic.DiagnosticData;
 import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
@@ -291,7 +290,7 @@ public class SignRequestService {
 				auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Visa", "Pas de timestamp", "", "", date, isViewed, null, null, null);
 			}
 			if (isStepAllSignDone(signRequest.getParentSignBook()) && (reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty())) {
-				signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest, lastSignLogs));
+				signedInputStream = pdfService.convertToPDFA(pdfService.writeMetadatas(signedInputStream, fileName, signRequest, lastSignLogs));
 			}
 			byte[] signedBytes = signedInputStream;
 
@@ -299,13 +298,14 @@ public class SignRequestService {
 			documentService.addSignedFile(signRequest, new ByteArrayInputStream(signedBytes), signRequest.getTitle() + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType(), user);
 		} else {
 			reports = validationService.validate(getToValidateFile(signRequest.getId()), null);
-			DiagnosticData diagnosticData = reports.getDiagnosticData();
-			if(diagnosticData.getAllSignatures().isEmpty()) {
+			if (reports == null || reports.getDiagnosticData().getAllSignatures().isEmpty()) {
 				if (signRequestParamses.size() > 1) {
 					for (SignRequestParams signRequestParams : signRequestParamses) {
-						filledInputStream = pdfService.stampImage(filledInputStream, signRequest, signRequestParams, 1, signerUser, date, userService.getRoles(userEppn).contains("ROLE_OTP"), true);
-						lastSignLogs.add(updateStatus(signRequest.getId(), signRequest.getStatus(), "Ajout d'un élément", null, "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn));
-						auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Ajout d'un élément", "Pas de timestamp", "", "", date, isViewed, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
+						if(signRequestParams.getSignImageNumber() < 0) {
+							filledInputStream = pdfService.stampImage(filledInputStream, signRequest, signRequestParams, 1, signerUser, date, userService.getRoles(userEppn).contains("ROLE_OTP"), true);
+							lastSignLogs.add(updateStatus(signRequest.getId(), signRequest.getStatus(), "Ajout d'un élément", null, "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn));
+							auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Ajout d'un élément", "Pas de timestamp", "", "", date, isViewed, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
+						}
 					}
 				}
 			} else {
@@ -429,13 +429,13 @@ public class SignRequestService {
 				InputStream inputStream = new ByteArrayInputStream(bytes);
 				if (multipartFiles.length == 1 && bytes.length > 0) {
 					if("application/pdf".equals(multipartFiles[0].getContentType()) && (scanSignatureFields || (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && StringUtils.hasText(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSignRequestParamsDetectionPattern())))) {
-						bytes = pdfService.normalizeGS(bytes);
+						bytes = pdfService.normalizePDF(bytes);
 						List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
 						if(signRequestParamses.isEmpty()) {
 							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), docNumber, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), true);
 						} else {
 							for (SignRequestParams signRequestParams : signRequestParamses) {
-								toAddSignRequestParams.add(signRequestParamsService.createSignRequestParams(signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequestParams.getSignWidth(), signRequestParams.getSignHeight()));
+								toAddSignRequestParams.add(signRequestParamsService.createSignRequestParams(signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
 							}
 						}
 						addAllSignRequestParamsToSignRequest(signRequest, toAddSignRequestParams);
@@ -853,6 +853,7 @@ public class SignRequestService {
 		return nbAttachmentAdded > 0;
 	}
 
+	@Transactional
 	public void removeAttachement(Long id, Long attachementId, RedirectAttributes redirectAttributes) {
 		SignRequest signRequest = getById(id);
 		Document attachement = documentService.getById(attachementId);
@@ -864,6 +865,7 @@ public class SignRequestService {
 		}
 	}
 
+	@Transactional
 	public void removeLink(Long id, Integer linkId) {
 		SignRequest signRequest = getById(id);
 		String toRemove = new ArrayList<>(signRequest.getLinks()).get(linkId);
@@ -876,7 +878,7 @@ public class SignRequestService {
 		User user = userService.getByEppn(userEppn);
 		if(spotStepNumber == null || signRequest.getCreateBy().equals(user) || signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail())) {
 			if (spotStepNumber != null && spotStepNumber > 0) {
-				SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY, 150, 75);
+				SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
 				int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
 				signRequestParams.setSignDocumentNumber(docNumber);
 				signRequestParams.setComment(commentText);

@@ -7,19 +7,18 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.2</version>
+		<version>3.4.3</version>
 		<relativePath />
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.32.8</version>
+	<version>1.33.2</version>
 	<name>esup-signature</name>
 	<properties>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
 		<java.version>17</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<dss.framework.version>6.1</dss.framework.version>
-		<dss.framework.safeVersion>5.4.3</dss.framework.safeVersion>
+		<dss.framework.version>6.2</dss.framework.version>
 		<skipDockerCompose>true</skipDockerCompose>
 		<skipSurefire>false</skipSurefire>
 	</properties>
@@ -150,8 +149,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
-			<artifactId>prettify</artifactId>
-			<version>4-Mar-2013-1</version>
+			<artifactId>highlightjs</artifactId>
+			<version>11.10.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
@@ -262,12 +261,12 @@
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>summernote</artifactId>
-			<version>0.8.20</version>
+			<version>0.9.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>slim-select</artifactId>
-			<version>2.7.0</version>
+			<version>2.9.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
@@ -283,6 +282,11 @@
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>bs-stepper</artifactId>
 			<version>1.7.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars.npm</groupId>
+			<artifactId>intl-tel-input</artifactId>
+			<version>25.3.0</version>
 		</dependency>
 
 		<!-- DSS Framework dependencies -->
@@ -426,12 +430,6 @@
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-pades-pdfbox</artifactId>
 			<version>${dss.framework.version}</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>pdfbox</artifactId>
-					<groupId>org.apache.pdfbox</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<!-- SEDA dependencies -->
@@ -473,7 +471,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.12.0</version>
+			<version>3.17.0</version>
 		</dependency>
 
 		<!-- Other dependencies -->
@@ -492,32 +490,27 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk18on</artifactId>
-			<version>1.78.1</version>
+			<version>1.80</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcmail-jdk18on</artifactId>
-			<version>1.78.1</version>
+			<version>1.80</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15to18</artifactId>
-			<version>1.78.1</version>
+			<version>1.80</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpg-jdk18on</artifactId>
-			<version>1.78.1</version>
+			<version>1.80</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpkix-jdk18on</artifactId>
-			<version>1.78.1</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.flexjson</groupId>
-			<artifactId>flexjson</artifactId>
-			<version>3.3</version>
+			<version>1.80</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -532,7 +525,7 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>2.0.32</version>
+			<version>3.0.4</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>commons-logging</artifactId>
@@ -548,12 +541,12 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox-tools</artifactId>
-			<version>2.0.31</version>
+			<version>3.0.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>xmpbox</artifactId>
-			<version>2.0.31</version>
+			<version>3.0.4</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>commons-logging</artifactId>
@@ -565,6 +558,12 @@
 			<groupId>org.verapdf</groupId>
 			<artifactId>validation-model</artifactId>
 			<version>1.22.2</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>jaxb-api</artifactId>
+					<groupId>javax.xml.bind</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.google.zxing</groupId>
@@ -579,7 +578,7 @@
 		<dependency>
 			<groupId>com.googlecode.libphonenumber</groupId>
 			<artifactId>libphonenumber</artifactId>
-			<version>8.13.4</version>
+			<version>9.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.agno3.jcifs</groupId>
@@ -603,12 +602,7 @@
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
 			<artifactId>jaxb-core</artifactId>
-			<version>4.0.4</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.xml.bind</groupId>
-			<artifactId>jaxb-api</artifactId>
-			<version>2.3.1</version>
+			<version>4.0.5</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
@@ -616,19 +610,14 @@
 			<version>2.3.1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.chemistry.opencmis</groupId>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>2.3.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.kgs-software</groupId>
 			<artifactId>chemistry-opencmis-client-impl</artifactId>
-			<version>1.1.0</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>jaxb-impl</artifactId>
-					<groupId>com.sun.xml.bind</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>jaxb-core</artifactId>
-					<groupId>com.sun.xml.bind</groupId>
-				</exclusion>
-			</exclusions>
+			<version>1.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -638,7 +627,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-vfs2</artifactId>
-			<version>2.9.0</version>
+			<version>2.10.0</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>commons-logging</artifactId>
@@ -652,24 +641,24 @@
 			<version>3.9.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.openhtmltopdf</groupId>
-			<artifactId>openhtmltopdf-core</artifactId>
-			<version>1.0.10</version>
-		</dependency>
-		<dependency>
-			<groupId>com.openhtmltopdf</groupId>
+			<groupId>io.github.openhtmltopdf</groupId>
 			<artifactId>openhtmltopdf-pdfbox</artifactId>
-			<version>1.0.10</version>
+			<version>1.1.24</version>
 			<exclusions>
-				<exclusion>
-					<artifactId>xmpbox</artifactId>
-					<groupId>org.apache.pdfbox</groupId>
-				</exclusion>
 				<exclusion>
 					<artifactId>pdfbox</artifactId>
 					<groupId>org.apache.pdfbox</groupId>
 				</exclusion>
+				<exclusion>
+					<artifactId>xmpbox</artifactId>
+					<groupId>org.apache.pdfbox</groupId>
+				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>io.github.openhtmltopdf</groupId>
+			<artifactId>openhtmltopdf-core</artifactId>
+			<version>1.1.24</version>
 		</dependency>
 		<dependency>
 			<groupId>de.codecentric</groupId>
@@ -679,21 +668,7 @@
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>fop</artifactId>
-			<version>2.9</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>commons-logging</artifactId>
-					<groupId>commons-logging</groupId>
-				</exclusion>
-				<exclusion>
-					<groupId>xalan</groupId>
-					<artifactId>xalan</artifactId>
-				</exclusion>
-				<exclusion>
-					<artifactId>fontbox</artifactId>
-					<groupId>org.apache.pdfbox</groupId>
-				</exclusion>
-			</exclusions>
+			<version>2.10</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springdoc</groupId>

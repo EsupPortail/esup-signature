@@ -86,6 +86,7 @@ public class OtpSignRequestController {
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
         SignRequest signRequest = signRequestService.getById(id);
+        model.addAttribute("urlProfil", "otp");
         model.addAttribute("displayNotif", false);
         model.addAttribute("notifTime", 0);
         model.addAttribute("signRequest", signRequest);
@@ -140,6 +141,12 @@ public class OtpSignRequestController {
         Reports reports = signService.validate(id);
         if(reports != null) {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+            model.addAttribute("signatureIssue", false);
+            for(String signatureId : reports.getSimpleReport().getSignatureIdList()) {
+                if(!reports.getSimpleReport().isValid(signatureId)) {
+                    model.addAttribute("signatureIssue", true);
+                }
+            }
         }
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);

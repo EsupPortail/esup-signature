@@ -76,15 +76,17 @@
                 </th:block>
             </ul>
             <ul th:if="${!form.workflow.targets.isEmpty()}" class="list-group striped-list mt-1">
-            <th:block th:each="target : ${form.workflow.targets}">
-                <li th:if="${target.targetUri.contains('mailto:')}" class="list-group-item border-secondary">
-                    <b>Étape finale :</b> Envoi par mail à
-                    <select class="select-users" th:id="'targetEmailsSelect-' + ${form.id}" multiple="multiple" name="targetEmails">
-                        <option data-placeholder="true"></option>
-                        <option th:if="${target.targetUri != null && target.targetUri != ''}" th:value="${target.targetUri.split(':')[1]}" th:text="${target.targetUri.split(':')[1]}" selected></option>
-                    </select>
-                </li>
-            </th:block>
+                <th:block th:each="target, iterator : ${form.workflow.targets}">
+                    <li th:if="${target.targetUri.contains('mailto:')}" class="list-group-item border-secondary">
+                        <b>Étape finale :</b> Envoi par mail à
+                        <select class="select-users" id="targetEmailsSelect" multiple="multiple" name="targetEmails">
+                            <option data-placeholder="true"></option>
+                            <th:block th:each="targetEmail : ${target.targetUri.replace('mailto:', '').split(',')}">
+                                <option selected="selected" th:if="${targetEmail != ''}" th:text="${targetEmail}" th:value="${targetEmail}"></option>
+                            </th:block>
+                        </select>
+                    </li>
+                </th:block>
             </ul>
         </div>
     </form>

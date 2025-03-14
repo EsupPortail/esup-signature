@@ -85,6 +85,10 @@ export class GlobalUi {
             window.history.back();
         });
 
+        $("#display-side-btn").on('click', function(e) {
+           $("#sidebar").toggleClass("sidebar-mobile");
+        });
+
         window.addEventListener('resize', e => this.adjustUi());
         $(document).ready(e => this.onDocumentLoad());
         let self = this;
@@ -279,6 +283,9 @@ export class GlobalUi {
     hideMenus(event) {
         $("#second-tools").collapse('hide');
         var clickover = $(event.target);
+        if(clickover.attr("id") !== "display-side-btn" && clickover.parent().attr("id") !== "display-side-btn" && clickover.parent().parent().attr("id") !== "display-side-btn") {
+            $("#sidebar").removeClass("sidebar-mobile");
+        }
         $("div[id^='menu-']").each(function() {
             var _opened = $(this).hasClass("collapse show");
             if (_opened === true && !clickover.hasClass("toggle-mini-menu")) {

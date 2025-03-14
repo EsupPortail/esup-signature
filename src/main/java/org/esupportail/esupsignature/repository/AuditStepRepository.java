@@ -19,7 +19,7 @@ public interface AuditStepRepository extends CrudRepository<AuditStep, Long>  {
             select cast(date_part('Year', aus.time_stamp_date) as int) as year, count(*) as count from audit_trail at
             join public.audit_trail_audit_steps atas on at.id = atas.audit_trail_id
             join audit_step aus on atas.audit_steps_id = aus.id
-            where aus.sign_certificat not like 'Signature simple'
+            where aus.sign_certificat != '' and aus.sign_certificat not like 'Signature simple'
             group by date_part('Year', aus.time_stamp_date) order by date_part('Year', aus.time_stamp_date) desc
             """)
     List<CountByYearsChartDto> countAllCertByYears();

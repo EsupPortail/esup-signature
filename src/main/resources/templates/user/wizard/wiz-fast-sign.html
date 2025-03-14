@@ -12,12 +12,12 @@
             <input type="text" id="title" class="form-control" name="title" placeholder="Vous pouvez saisir un titre pour retrouver votre demande">
         </div>
         <div class="form-group mb-3">
-            <label class="form-label" for="multipartFiles">Choix des fichiers à signer</label>
+            <label class="form-label" for="multipartFiles">Choix des fichiers à signer *</label>
             <input id="multipartFiles" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''" required>
         </div>
         <div id="forceAllSign" class="form-check form-switch form-switch-md d-none">
             <input id="force-all-sign" class="form-check-input" type="checkbox" name="forceAllSign">
-            <label for="force-all-sign" class="form-check-label">Forcer la signature de tous les documents</label>
+            <label for="force-all-sign" class="form-check-label">Imposer la signature de tous les documents envoyés (hors pièces jointes)</label>
         </div>
         <div class="form-group mb-3">
             <div class="form-check form-switch form-switch-md">
@@ -28,7 +28,7 @@
         <div class="w-100 d-inline-flex gap-2">
             <div class="w-50" style="min-width: 50%;">
                 <div class="form-group mb-3">
-                    <label class="form-label" for="recipientsEmails-1">Choisir les participants</label>
+                    <label class="form-label" for="recipientsEmails-1">Choisir les participants *</label>
                     <select class="select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmails-1" multiple="multiple" required="required">
                         <option data-placeholder="true"></option>
                     </select>
@@ -41,7 +41,7 @@
             </div>
             <div class="w-50 align-self-start">
                 <div class="form-group">
-                    <label class="form-label" for="signType-1">Choisir un type de signature</label>
+                    <label class="form-label" for="signType-1">Choisir un type de signature *</label>
                     <select class="form-select" name="signType" id="signType-1">
                         <th:block th:each="signType : ${signTypes}">
                             <option th:value="${signType}"

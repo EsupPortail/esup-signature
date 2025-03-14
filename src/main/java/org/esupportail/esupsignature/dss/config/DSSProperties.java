@@ -19,6 +19,7 @@ public class DSSProperties {
     private String lotlUrl;
     private String lotlCountryCode;
     private String ojUrl;
+    private String rootUrlInTlBrowser;
     private String country;
     private String stateOrProvince;
     private String postalCode;
@@ -120,6 +121,14 @@ public class DSSProperties {
 
     public void setOjUrl(String ojUrl) {
         this.ojUrl = ojUrl;
+    }
+
+    public String getRootUrlInTlBrowser() {
+        return rootUrlInTlBrowser;
+    }
+
+    public void setRootUrlInTlBrowser(String rootUrlInTlBrowser) {
+        this.rootUrlInTlBrowser = rootUrlInTlBrowser;
     }
 
     public String getCountry() {

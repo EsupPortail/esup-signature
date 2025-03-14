@@ -43,6 +43,7 @@ export default class SelectUser {
            $(this).removeAttr("style");
         });
         this.selectField.slim = this.slimSelect;
+        this.itiErrorMap = ["Numéro invalide", "Pays invalide", "Trop court", "Trop long", "Numéro invalide"];
         this.initListeners();
     }
 
@@ -77,6 +78,7 @@ export default class SelectUser {
                 maxValuesShown: 40,
             },
             events: {
+                error: e => e => this.error(e),
                 afterChange: e => this.displayTempUsers(e),
                 addable: e => this.validateEmail(e),
                 searchFilter: (option, search) => {
@@ -186,7 +188,7 @@ export default class SelectUser {
                         dataType: 'json',
                         async: true,
                         data: JSON.stringify(recipientEmails),
-                        success: data => this.displayTempUsersSuccess(data),
+                        success: datas => this.displayTempUsersSuccess(datas),
                         error: e => this.displayExternalsError()
                     });
                 }
@@ -259,47 +261,81 @@ export default class SelectUser {
         }
     }
 
-    displayTempUsersSuccess(data) {
+    displayTempUsersSuccess(datas) {
         console.log("display temp users");
         let tempUsersDiv = $('#tempUsers-' + this.selectField.attr("id"));
         tempUsersDiv.empty();
-        data.forEach(e => this.appendTempUser(e));
+        datas.forEach(e => this.appendTempUser(e));
     }
 
-    appendTempUser(e) {
-        let name = '#tempUsers-' + this.selectField.attr("id");
+    appendTempUser(data) {
+        let id = data.email.replaceAll("@", "_").replaceAll(".", "_")
+        let name = "#tempUsers-" + this.selectField.attr("id");
         let tempUsersDiv = $(name);
-        if(e.phone == null) {
-            e.phone = "";
+        if(data.phone == null) {
+            data.phone = "";
         }
+        let html = "<div class='alert alert-primary' id='recipient_" + id + "'>";
         if(this.globalProperties.smsRequired) {
-            tempUsersDiv.append(
-                "<div class='alert alert-primary' id='recipient_" + e.email + "'>" +
-                "<b>Destinataire externe : <span>" + e.email + "</span></b>" +
-                "<input id=\"emails\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\"" + e.email + "\">" +
+            html +=
+                "<b>Destinataire externe : <span>" + id + "</span></b>" +
+                "<input id=\"email\" class=\"form-control \" type=\"hidden\" name=\"email\" value=\"" + id + "\">" +
                 "<div class=\"d-flex col-12\"><label for=\"name\" class='col-3'>Nom</label>" +
-                "<input id=\"names\" class=\"form-control \" type=\"text\" name=\"names\" value=\"" + e.name + "\" required></div>" +
+                "<input id=\"name_" + id + "\" class=\"form-control \" type=\"text\" name=\"names\" value=\"" + data.name + "\" required></div>" +
                 "<div class=\"d-flex col-12\"><label for=\"firstname\" class='col-3'>Prénom</label>" +
-                "<input id=\"firstnames\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + e.firstname + "\" required></div>" +
+                "<input id=\"firstname_" + id + "\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + data.firstname + "\" required></div>" +
                 "<div class=\"d-flex col-12\"><label for=\"phones\" class='col-3'>Mobile</label>" +
-                "<input id=\"phones\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + e.phone + "\" required></div>" +
-                "</div>");
+                "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + data.phone + "\" required>" +
+                "<span id=\"valid-msg_" + id + "\" class=\"text-success my-auto d-none\">✓ Ok</span>\n" +
+                "<span id=\"error-msg_" + id + "\" class=\"text-danger my-auto d-none\"></span>";
         } else {
-            let html ="<div class='alert alert-primary' id='recipient_" + e.email + "'>" +
-                "<b>Destinataire externe : <span>" + e.email + "</span></b>" +
-                "<input id=\"emails\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\"" + e.email + "\">" +
+            html +=
+                "<b>Destinataire externe : <span>" + id + "</span></b>" +
+                "<input id=\"email\" class=\"form-control \" type=\"hidden\" name=\"email\" value=\"" + id + "\">" +
                 "<div class=\"d-flex col-12\"><label for=\"name\" class='col-3'>Nom</label>" +
-                "<input id=\"names\" class=\"form-control \" type=\"text\" name=\"names\" value=\"" + e.name + "\" required></div>" +
+                "<input id=\"name_" + id + "\" class=\"form-control \" type=\"text\" name=\"names\" value=\"" + data.name + "\" required></div>" +
                 "<div class=\"d-flex col-12\"><label for=\"firstname\" class='col-3'>Prénom</label>" +
-                "<input id=\"firstnames\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + e.firstname + "\" required></div>";
-            if(this.enableSms) {
+                "<input id=\"firstname_" + id + "\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + data.firstname + "\" required></div>";
+            if (this.enableSms) {
                 html += "<div class=\"d-flex col-12\"><label for=\"phones\" class='col-3'>Mobile</label>" +
-                    "<input id=\"phones\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + e.phone + "\"></div>" +
+                    "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + data.phone + "\" required>" +
+                    "<span id=\"valid-msg_" + id + "\" class=\"text-success my-auto d-none\">✓ Ok</span>\n" +
+                    "<span id=\"error-msg_" + id + "\" class=\"text-danger my-auto d-none\"></span>" +
+                    "</div>" +
                     "<div class=\"d-flex col-12\"><label for=\"forcesms\" class='col-3'>Autentification SMS</label>" +
-                    "<input id=\"forcesmses\" class=\"form-check-input \" type=\"checkbox\" name=\"forcesmses\" value='1'></div>";
+                    "<input id=\"forcesms_" + id + "\" class=\"form-check-input \" type=\"checkbox\" name=\"forcesmses\" value='1'></div>";
             }
-            html += "</div>";
-            tempUsersDiv.append(html);
+        }
+        html += "</div>";
+        tempUsersDiv.append(html);
+        let phonesInput = document.querySelector("#phone_" + id);
+        let iti = intlTelInput(phonesInput, {
+            validationNumberTypes: "FIXED_LINE_OR_MOBILE",
+            strictMode: true,
+            separateDialCode: false,
+            nationalMode: true,
+            countryOrder: ["fr"],
+            customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
+            searchPlaceholder: "Rechercher",
+        });
+        if(data.phone == null || data.phone === "") {
+            iti.setCountry("fr");
+        }
+        this.validatePhone(iti, id)
+        phonesInput.addEventListener("focusout", e => this.validatePhone(iti, id));
+    }
+
+    validatePhone(iti, id) {
+        const errorMsg = document.querySelector("#error-msg_" + id);
+        const validMsg = document.querySelector("#valid-msg_" + id);
+        if(iti.isValidNumber()) {
+            errorMsg.classList.add("d-none");
+            validMsg.classList.remove("d-none");
+            $("#phone_" + id).val(iti.getNumber());
+        } else {
+            errorMsg.innerHTML = this.itiErrorMap[iti.getValidationError()];
+            errorMsg.classList.remove("d-none");
+            validMsg.classList.add("d-none");
         }
     }
 
@@ -356,4 +392,7 @@ export default class SelectUser {
         });
     }
 
+    error(e) {
+        console.error(e);
+    }
 }

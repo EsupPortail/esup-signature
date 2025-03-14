@@ -63,12 +63,12 @@ public class DataController {
 	@PostMapping("/send-form/{id}")
 	@ResponseBody
 	public ResponseEntity<String> sendForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
-						   @RequestParam(required = false) List<String> targetEmails,
 						   @RequestBody List<WorkflowStepDto> steps,
 						   @PathVariable("id") Long id) throws EsupSignatureRuntimeException {
 		logger.info("create form " + id);
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			Data data = dataService.addData(id, userEppn);
+			List<String> targetEmails = steps.stream().flatMap(step -> step.getTargetEmails().stream()).distinct().toList();
 			SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, null, userEppn, authUserEppn, false, null, null, null, null, true, null);
 			return ResponseEntity.ok().body(signBook.getId().toString());
 		}

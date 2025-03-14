@@ -54,8 +54,8 @@ export class SignUi {
         let self = this;
         $("#password").on('keyup', function (e) {
             if (e.keyCode === 13) {
-                let nextSignRequest = $("#nextSignRequest");
-                if (nextSignRequest.length > 0) {
+                let checkValidateSignButtonNext = $("#checkValidateSignButtonNext");
+                if (checkValidateSignButtonNext.length > 0) {
                     self.launchSign(true);
             	} else {
                     self.launchSign(false);
@@ -91,22 +91,23 @@ export class SignUi {
             url: "/ws-secure/validation/short/" + self.signRequestId,
             type: 'GET',
             success: function (data, textStatus, xhr) {
-                let modal = "<div class=\"modal fade\" id=\"reportModal\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">" +
+                let modal = "<div class=\"modal fade\" data-bs-focus=\"false\" id=\"reportModal\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">" +
                     "<div class=\"modal-dialog modal-lg\">" +
                     "<div class=\"modal-content\">" +
                     "<div class=\"modal-body\">" +
+                    "<button class=\"btn btn-sm btn-close text-dark float-end position-relative\" style='z-index: 2' onclick=\"$('#reportModal').modal('toggle');\"></button>" +
                     data +
                     "</div></div></div></div>";
                 $("body").append(modal);
-                $('#reportModal').on('hidden.bs.modal', function () {
-                    $("div[id^='report_']").each(function() {
-                        $(this).show();
-                    });
-                })
-                $("#reportModalBtn").removeClass("d-none");
-                $("#reportModalBtn").on('click', function (){
-                    $("#alertSign").remove();
-                });
+                // $('#reportModal').on('hidden.bs.modal', function () {
+                //     $("div[id^='report_']").each(function() {
+                //         $(this).show();
+                //     });
+                // })
+                $("#reportSpinner").hide();
+                let reportModalBtn = $("#reportModalBtn");
+                reportModalBtn.removeClass("d-none");
+                $("#reportModal .modal-content").addClass(reportModalBtn.attr("es-modal-style"));
             }
         });
     }
@@ -280,6 +281,13 @@ export class SignUi {
         if(value === "imageStamp") {
             $("#alert-sign-present").show();
         }
+        if(value === "userCert" || value === "sealCert" || value === "nexuCert") {
+            if(this.workspace.signPosition.signRequestParamses.size > 1) {
+                $("#alert-multi-sign-present").show();
+            }
+        } else {
+            $("#alert-multi-sign-present").hide();
+        }
     }
 
     launchNoInfiniteSign(next) {
@@ -408,7 +416,7 @@ export class SignUi {
                     document.location.href="/nexu-sign/start?ids=" + self.signRequestId;
                 } else {
                     if (self.gotoNext) {
-                        document.location.href = $("#nextSignRequest").attr('href');
+                        document.location.href = $("#checkValidateSignButtonNext").attr('data-es-next-url');
                     } else {
                         if(self.isOtp== null || !self.isOtp) {
                             if(self.returnToHome == null) {
@@ -434,7 +442,9 @@ export class SignUi {
                 $("#signSpinner").hide();
                 console.error("sign error : " + data.responseText);
                 document.getElementById("signError").style.display = "block";
-                document.getElementById("signError").innerHTML = " Erreur du système de signature : <br>" + data.responseText;
+                document.getElementById("signError").innerHTML =
+                    "<p>Une erreur s’est produite lors de la signature du document.</p>" +
+                    "<small>Message retourné par le système de signature : " + JSON.parse(data.responseText).message + "</small>";
                 document.getElementById("closeModal").style.display = "block";
             }
         });

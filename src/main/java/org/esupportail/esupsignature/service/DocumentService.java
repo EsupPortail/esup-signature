@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.BigFile;
@@ -179,7 +180,7 @@ public class DocumentService {
 
 	public long getNbPages(InputStream inputStream) {
 		try {
-			PDDocument pdDocument = PDDocument.load(inputStream);
+			PDDocument pdDocument = Loader.loadPDF(inputStream.readAllBytes());
 			return pdDocument.getNumberOfPages();
 		} catch (Exception e) {
 			logger.debug(e.getMessage(), e);

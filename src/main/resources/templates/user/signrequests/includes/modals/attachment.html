@@ -26,10 +26,10 @@
                             <td th:text="${attachment.fileName}"></td>
                             <td><span th:if="${attachment.createBy != null}" th:text="${attachment.createBy.firstname} + ' ' + ${attachment.createBy.name}"></span></td>
                             <td>
-                                <a th:href="'/user/signrequests/get-attachment/' + ${signRequest.id} + '/' + ${attachment.id}" target="_blank" class="btn btn-primary"><i class="fa-solid fa-download"></i></a>
+                                <a th:href="'/' + ${urlProfil} + '/signrequests/get-attachment/' + ${signRequest.id} + '/' + ${attachment.id}" target="_blank" class="btn btn-primary"><i class="fa-solid fa-download"></i></a>
                             </td>
                             <td th:if="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn) || signRequest.createBy.eppn == userEppn}">
-                                <form th:action="'/user/signrequests/remove-attachment/' + ${signRequest.id} + '/' + ${attachment.id}" th:method="delete">
+                                <form th:action="'/' + ${urlProfil} + '/signrequests/remove-attachment/' + ${signRequest.id} + '/' + ${attachment.id}" th:method="delete">
                                     <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;"><i class="fa fa-trash-alt"></i></button>
                                 </form>
                             </td>
@@ -44,17 +44,22 @@
                             <td>
                                 <a th:href="${link}" target="_blank" th:text="${link}"></a>
                             </td>
+                            <td> </td>
+                            <td> </td>
                             <td th:if="${signRequest.createBy.eppn == userEppn}">
-                                <form th:action="'/user/signrequests/remove-link/' + ${signRequest.id} + '/' + ${iterator.index}" th:method="delete">
+                                <form th:action="'/' + ${urlProfil} + '/signrequests/remove-link/' + ${signRequest.id} + '/' + ${iterator.index}" th:method="delete">
                                     <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;"><i class="fa fa-trash-alt"></i></button>
                                 </form>
+                            </td>
+                            <td th:unless="${signRequest.createBy.eppn == userEppn}">
+                                <button type="submit" onclick="return confirm('Suppression à la charge du créateur de la demande');" class="btn btn-secondary float-end" title="Supprimer" style="bottom: 10px;"><i class="fa fa-trash-alt"></i></button>
                             </td>
                         </tr>
                     </th:block>
                 </table>
-                <div th:unless="${attachments.size() > 0}" class="alert alert-secondary">Aucune pièce jointe</div>
+                <div th:if="${attachments.size() == 0 && signRequest.links.size() == 0}" class="alert alert-secondary">Aucune pièce jointe</div>
                 <hr/>
-                <form th:action="'/user/signrequests/add-attachment/' + ${signRequest.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
+                <form th:action="'/' + ${urlProfil} + '/signrequests/add-attachment/' + ${signRequest.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                     <div th:if="${editable}" class="form-group mb-3">
                         <label>Ajouter une pièce jointe</label>
                         <div class="custom-file">

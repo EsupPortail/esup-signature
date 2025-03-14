@@ -88,9 +88,6 @@ public class SignRequestController {
     private OtpService otpService;
 
     @Resource
-    private GlobalProperties globalProperties;
-
-    @Resource
     private XSLTService xsltService;
 
     @GetMapping()
@@ -102,6 +99,7 @@ public class SignRequestController {
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
         SignRequest signRequest = signRequestService.getById(id);
+        model.addAttribute("urlProfil", "user");
         model.addAttribute("isManager", signBookService.checkUserManageRights(signRequest.getParentSignBook().getId(), userEppn));
         model.addAttribute("displayNotif", signRequestService.isDisplayNotif(signRequest, userEppn));
         model.addAttribute("signRequest", signRequest);
@@ -151,8 +149,14 @@ public class SignRequestController {
         }
         model.addAttribute("signatureIds", new ArrayList<>());
         Reports reports = signService.validate(id);
-        if (reports != null) {
+        if(reports != null) {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+            model.addAttribute("signatureIssue", false);
+            for(String signatureId : reports.getSimpleReport().getSignatureIdList()) {
+                if(!reports.getSimpleReport().isValid(signatureId)) {
+                    model.addAttribute("signatureIssue", true);
+                }
+            }
         }
         if(!signRequest.getStatus().equals(SignRequestStatus.draft) && !signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getStatus().equals(SignRequestStatus.refused) && !signRequest.getDeleted()) {
             if (reports != null) {

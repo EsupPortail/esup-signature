@@ -5,7 +5,7 @@
 <!--/*@thymesVar id="spots" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <div th:fragment="workspace" id="workspace" class="alert justify-content-center border-0" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'workspace-sign' : 'workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? 'alert-secondary' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
-    <div style="top:0; position: absolute; z-index: 5; width: 100%; ">
+    <div class="pdf-alerts">
         <div id="warningSelectDiv" class="alert alert-danger border-dark" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}">
             Aucun type de signature n’est disponible pour signer ce document.
         </div>
@@ -13,11 +13,24 @@
             <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
             <span th:text="${signRequest.parentSignBook.description}"></span>
         </div>
-        <div id="alertSign" class="alert alert-primary border-dark" th:if="${signatureIds.size() > 0}" style="width: 100%;">
-            <span th:if="${signatureIds.size() > 1}">Ce document contient des signatures électroniques
-            <button id="reportModalBtn" class="btn btn-sm btn-secondary d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir les signatures</button></span>
-            <span th:unless="${signatureIds.size() > 1}">Ce document contient une signature électronique
-            <button id="reportModalBtn" class="btn btn-sm btn-secondary d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la signature</button>
+        <div id="alertSign" class="alert border-dark" th:classappend="${signatureIssue ? 'alert-danger' : 'alert-success'}" th:if="${signatureIds.size() > 0}" style="width: 100%;">
+            <span style="line-height: 33px;" th:if="${!signatureIssue && signatureIds.size() > 1}">Ce document contient des signatures électroniques
+                <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
+                    <span class="sr-only">En cours...</span>
+                </div>
+                <button es-modal-style="bg-success" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir les signatures</button>
+            </span>
+            <span style="line-height: 33px;" th:if="${!signatureIssue && signatureIds.size() == 1}">Ce document contient une signature électronique
+                <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
+                    <span class="sr-only">En cours...</span>
+                </div>
+                <button es-modal-style="bg-success" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la signature</button>
+            </span>
+            <span style="line-height: 33px;" th:if="${signatureIssue}">Ce document contient au moins une signature en erreur. La signature de ce document pourra générer des erreurs
+                <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
+                    <span class="sr-only">En cours...</span>
+                </div>
+                <button es-modal-style="bg-danger" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la/les signature(s)</button>
             </span>
             <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
         </div>
@@ -68,7 +81,7 @@
                 <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}" title="Cliquer pour supprimer l'emplacement de signature"
                     th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').removeClass(\'circle-border\');'">
-                    <div th:id="'inDocSign_' + ${spot.id}" style="width: 150px; height: 75px; color: #000;" class="sign-field" th:data-es-delete="${isManager} ? 'true' :''">
+                    <div th:id="'inDocSign_' + ${spot.id}" style="width: 300px; height: 150px; color: #000;" class="sign-field" th:data-es-delete="${isManager} ? 'true' :''">
                         <span th:if="${isManager}" th:text="'Cliquer pour supprimer l’emplacement de signature étape ' + ${spot.stepNumber}"></span>
                         <span th:unless="${isManager}" th:text="'Emplacement de signature pour l\'étape ' + ${spot.stepNumber}"></span>
                     </div>
@@ -140,12 +153,6 @@
                     style="z-index: 3;">
                 <i class="fa-solid fa-chevron-down"></i>
             </button>
-            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')') && isNotSigned && currentStepMultiSign}" type="button" id="allPages_x"
-                    title="Répéter sur toutes les pages"
-                    class="btn btn-sm btn-light"
-                    style="z-index: 3;">
-                <i class="fa-regular fa-copy"></i>
-            </button>
             <button type="button" id="displayMoreTools_x"
                     title="Plus d'outils"
                     class="btn btn-sm btn-light"
@@ -153,7 +160,7 @@
                 <i class="fa-solid fa-ellipsis-v"></i>
             </button>
         </div>
-        <div id="extraTools_x" class="alert opacity-100 bg-light border-secondary-subtle extra-tools d-flex flex-column d-none text-start gap-1" onclick="event.stopPropagation();">
+        <div id="extraTools_x" class="alert p-2 opacity-100 bg-light border-secondary-subtle extra-tools d-flex flex-column d-none text-start gap-1" onclick="event.stopPropagation();">
             <input id="signColorPicker_x" value='#000000' class="d-none"/>
             <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="watermark_x"
                     title="Filigrane"
@@ -161,49 +168,56 @@
                     style="z-index: 3;">
                 <i class="fab fa-markdown"></i> Filigrane
             </button>
-            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signImage_x"
-                    title="Masquer l'image de votre signature"
-                    class="btn btn-sm btn-light text-start"
-                    style="z-index: 3;">
-                <i class="fa-solid fa-eye-slash"></i> Masquer l'image
-            </button>
+            <hr style="margin: 1px;">
             <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signExtra_x"
                     title="Ajouter les informations complémentaires (nom, date et heure...)"
-                    class="btn btn-sm btn-light text-start"
+                    class="btn btn-sm btn-light text-start d-none"
                     style="z-index: 3;">
                 <i class="fa-solid fa-receipt"></i> Textes complémentaires
             </button>
+            <button type="button" id="extraType_x"
+                    title="Afficher/Masquer le type de signature"
+                    class="btn btn-sm btn-light text-start"
+                    style="z-index: 3;">
+                <i class="fa-solid fa-shield-halved"></i> Type de signature
+            </button>
+            <button type="button" id="extraName_x"
+                    title="Afficher/Masquer le nom"
+                    class="btn btn-sm btn-light text-start"
+                    style="z-index: 3;">
+                <i class="fa-regular fa-user"></i> Prénom et nom
+            </button>
+            <button type="button" id="extraDate_x"
+                    title="Afficher/Masquer la date"
+                    class="btn btn-sm btn-light text-start"
+                    style="z-index: 3;">
+                <i class="fa-regular fa-clock"></i> Date de signature
+            </button>
+            <button type="button" id="extraText_x"
+                    title="Ajouter/Masquer un texte libre"
+                    class="btn btn-sm btn-light text-start"
+                    style="z-index: 3;">
+                <i class="fa-solid fa-font"></i> Texte libre
+            </button>
+            <hr style="margin: 1px;">
             <button type="button" id="signExtraOnTop_x"
                     title="Texte au dessus/texte sur la droite"
                     class="btn btn-sm btn-light text-start"
                     disabled
                     style="z-index: 3;">
-                <i class="fa-solid fa-retweet"></i> Textes au dessus
+                <i class="fa-solid fa-retweet"></i> <span>Au dessus</span>
             </button>
-            <hr>
-            <button type="button" id="extraType_x"
-                    title="Afficher/Masquer le type de signature"
-                    class="btn btn-sm btn-light btn-outline-dark text-start"
+            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')') && isNotSigned && currentStepMultiSign}" type="button" id="allPages_x"
+                    title="Répéter sur toutes les pages"
+                    class="btn btn-sm btn-light text-start"
                     style="z-index: 3;">
-                <li>Type de signature</li>
+                <i class="fa-regular fa-copy"></i> Répéter
             </button>
-            <button type="button" id="extraName_x"
-                    title="Afficher/Masquer le nom"
-                    class="btn btn-sm btn-light btn-outline-dark text-start"
+            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signImage_x"
+                    title="Masquer l'image de votre signature"
+                    class="btn btn-sm btn-light text-start"
                     style="z-index: 3;">
-                <li>Prénom et nom</li>
-            </button>
-            <button type="button" id="extraDate_x"
-                    title="Afficher/Masquer la date"
-                    class="btn btn-sm btn-light btn-outline-dark text-start"
-                    style="z-index: 3;">
-                <li>Date de signature</li>
-            </button>
-            <button type="button" id="extraText_x"
-                    title="Ajouter/Masquer un texte libre"
-                    class="btn btn-sm btn-light btn-outline-dark text-start"
-                    style="z-index: 3;">
-                <li>Texte libre</li>
+                <i class="fa-solid fa-eye-slash"></i> Masquer l'image
             </button>
         </div>
     </div>
@@ -239,7 +253,7 @@
                             <label for="spotStepNumber">Choisir l’étape concernée</label>
                             <br/>
                             <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
-                                <option data-placeholder="true"></option>
+                                <option data-placeholder="true">Choisir une étape</option>
                                 <th:block th:each="step, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
                                     <option th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}" th:selected="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 1}"></option>
                                 </th:block>
@@ -249,7 +263,7 @@
                         <button id="hideSpotButton" type="button" class="btn btn-sm btn-secondary float-start" data-bs-dismiss="modal">
                             Annuler
                         </button>
-                        <button id="saveSpotButton" th:data-es-signrequest-id="${signRequest.id}" type="button" class="btn btn-sm btn-success float-end">
+                        <button id="save-spot-button" th:data-es-signrequest-id="${signRequest.id}" type="button" class="btn btn-sm btn-success float-end">
                             <i class="fa-solid fa-save"></i> Enregistrer
                         </button>
                     </form>
@@ -260,4 +274,7 @@
     <button id="end-button" th:unless="${signRequest.viewedBy.contains(user)}" class="btn not-viewed jumping not-viewed-position" title="Pour valider la lecture du document, il faut le faire défiler jusqu'au bas du document">
         <i class="fa-solid fa-arrows-down-to-line fa-2x d-none d-sm-block"></i>
     </button>
+    <div id="pdf-progress-bar" class="progress">
+        <div class="progress-bar bg-dark progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
 </div>

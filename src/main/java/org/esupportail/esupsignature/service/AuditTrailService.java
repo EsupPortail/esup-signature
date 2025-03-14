@@ -222,4 +222,5 @@ public class AuditTrailService {
             addAuditStep(signRequest.getToken(), userEppn, signId, timestampId, certificat, timestamp, reports.getSimpleReport().getBestSignatureTime(reports.getSimpleReport().getFirstSignatureId()), isViewed, 0, 0, 0);
         }
     }
+
 }
