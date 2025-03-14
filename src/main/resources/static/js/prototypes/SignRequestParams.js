@@ -400,7 +400,7 @@ export class SignRequestParams extends EventFactory {
             } else {
                 $("#extraTypeDiv_" + this.id).html("<span>Signature OTP<br></span>");
             }
-            $("#extraTools_" + this.id).remove();
+            // $("#extraTools_" + this.id).remove();
             $("#crossTools_" + this.id).css("top", "-45px");
             if(this.globalProperties.externalSignatureParams != null) {
                 this.addWatermark = !this.globalProperties.externalSignatureParams.addWatermark;
@@ -421,7 +421,7 @@ export class SignRequestParams extends EventFactory {
                 }
                 this.extraOnTop = !this.globalProperties.externalSignatureParams.extraOnTop;
                 this.toggleExtraOnTop();
-                $("#displayMoreTools_" + this.id).remove();
+                // $("#displayMoreTools_" + this.id).remove();
             }
         }
         this.cross.attr("page", this.signPageNumber);
