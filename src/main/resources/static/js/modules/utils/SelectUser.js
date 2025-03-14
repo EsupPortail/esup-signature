@@ -36,7 +36,6 @@ export default class SelectUser {
             this.limit = limit;
         }
         this.createUserSelect(selectName,  this.valuePrefix);
-        this.populateWithFavorites();
         // this.selectField.addClass("slim-select-hack");
         $("." + this.slimSelect.settings.id).each(function() {
         // $("." + this.slimSelect.config.id).each(function() {
@@ -78,7 +77,9 @@ export default class SelectUser {
                 maxValuesShown: 40,
             },
             events: {
+                beforeOpen: e => this.populateWithFavorites(),
                 error: e => e => this.error(e),
+                beforeChange: e=> this.checkSelect(e),
                 afterChange: e => this.displayTempUsers(e),
                 addable: e => this.validateEmail(e),
                 searchFilter: (option, search) => {
@@ -152,6 +153,11 @@ export default class SelectUser {
 
     getSelected() {
         return this.slimSelect.getSelected();
+    }
+
+    checkSelect(emails) {
+        console.log(emails);
+        this.slimSelect.setData(emails);
     }
 
     displayTempUsers(e) {
@@ -285,7 +291,7 @@ export default class SelectUser {
                 "<div class=\"d-flex col-12\"><label for=\"firstname\" class='col-3'>Prénom</label>" +
                 "<input id=\"firstname_" + id + "\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + data.firstname + "\" required></div>" +
                 "<div class=\"d-flex col-12\"><label for=\"phones\" class='col-3'>Mobile</label>" +
-                "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + data.phone + "\" required>" +
+                "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + data.phone + "\">" +
                 "<span id=\"valid-msg_" + id + "\" class=\"text-success my-auto d-none\">✓ Ok</span>\n" +
                 "<span id=\"error-msg_" + id + "\" class=\"text-danger my-auto d-none\"></span>";
         } else {
@@ -298,7 +304,7 @@ export default class SelectUser {
                 "<input id=\"firstname_" + id + "\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + data.firstname + "\" required></div>";
             if (this.enableSms) {
                 html += "<div class=\"d-flex col-12\"><label for=\"phones\" class='col-3'>Mobile</label>" +
-                    "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + data.phone + "\" required>" +
+                    "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + data.phone + "\">" +
                     "<span id=\"valid-msg_" + id + "\" class=\"text-success my-auto d-none\">✓ Ok</span>\n" +
                     "<span id=\"error-msg_" + id + "\" class=\"text-danger my-auto d-none\"></span>" +
                     "</div>" +
@@ -342,10 +348,12 @@ export default class SelectUser {
     validateEmail(email) {
         const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         if(re.test(String(email).toLowerCase())) {
-            return {
+            let emailObject = {
                 text: email,
                 value: this.valuePrefix + email
-            }
+            };
+            this.slimSelect.setData(this.slimSelect.getData().filter(d => d.value !== email));
+            return emailObject;
         }
         return false;
     }
@@ -358,11 +366,13 @@ export default class SelectUser {
                 let user = response[j];
                 let prefixedValue = this.valuePrefix + user.email;
                 if (this.favorites.filter(f => f.value === prefixedValue).length === 0) {
-                    favorites.push({
-                        text: user.firstname + " " + user.name + " (" + user.email + ")",
-                        value: prefixedValue,
-                        selected: false
-                    });
+                    if(favorites.filter(f => f.value === prefixedValue).length === 0) {
+                        favorites.push({
+                            text: user.firstname + " " + user.name + " (" + user.email + ")",
+                            value: prefixedValue,
+                            selected: false
+                        });
+                    }
                 }
                 if(favorites.length > 0) {
                     this.slimSelect.setData(favorites);

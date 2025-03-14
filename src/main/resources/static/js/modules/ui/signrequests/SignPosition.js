@@ -36,9 +36,6 @@ export class SignPosition extends EventFactory {
         if(localStorage.getItem("scale") != null) {
             this.currentScale = localStorage.getItem("scale");
         }
-        if (this.signType === "visa") {
-            $("#visualButton").remove();
-        }
         this.initListeners();
     }
 
