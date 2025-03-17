@@ -306,10 +306,8 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	
 	@Override
 	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws EsupSignatureFsException {
-
 		boolean success = false;
 		FileObject newFile = null;
-				
 		try {
 			FileObject folder = cd(dir);
 			newFile = folder.resolveFile(filename);

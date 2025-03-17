@@ -22,6 +22,10 @@ public class Target {
 
     private Boolean sendReport = false;
 
+    private Boolean sendAttachment = false;
+
+    private Boolean sendZip = false;
+
     public Boolean getTargetOk() {
         return targetOk;
     }
@@ -66,6 +70,28 @@ public class Target {
 
     public void setSendReport(Boolean sendReport) {
         this.sendReport = sendReport;
+    }
+
+    public Boolean getSendAttachment() {
+        if(sendAttachment == null) {
+            return false;
+        }
+        return sendAttachment;
+    }
+
+    public void setSendAttachment(Boolean sendAttachment) {
+        this.sendAttachment = sendAttachment;
+    }
+
+    public Boolean getSendZip() {
+        if(sendZip == null) {
+            return false;
+        }
+        return sendZip;
+    }
+
+    public void setSendZip(Boolean sendZip) {
+        this.sendZip = sendZip;
     }
 
     @JsonIgnore

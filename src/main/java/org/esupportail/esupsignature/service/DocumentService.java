@@ -7,7 +7,6 @@ import org.esupportail.esupsignature.entity.BigFile;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.DocumentRepository;
@@ -28,7 +27,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
@@ -109,14 +107,14 @@ public class DocumentService {
 		try {
 			URI baseURI = new URI(path.replace(" ", "%20")).normalize();
 			URI resolvedURI = baseURI.resolve(subPath.replace(" ", "%20")).normalize();
-			return exportDocument(fsAccessFactoryService.getPathIOType(path), path + resolvedURI.getPath(), signedFile.getInputStream(), signedFile.getFileName(), name.replaceAll("[^a-zA-Z0-9]", "_"));
+			return exportDocument(path + resolvedURI.getPath(), signedFile.getInputStream(), signedFile.getFileName(), name.replaceAll("[^a-zA-Z0-9]", "_"));
 		} catch (EsupSignatureRuntimeException | URISyntaxException e) {
 			logger.error(e.getMessage());
 		}
         return null;
 	}
 
-	public String exportDocument(DocumentIOType documentIOType, String targetUrl, InputStream inputStream, String fileName, String name) throws EsupSignatureRuntimeException {
+	public String exportDocument(String targetUrl, InputStream inputStream, String fileName, String name) throws EsupSignatureRuntimeException {
 		String documentUri;
 		FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(targetUrl);
 		if(fsAccessService != null) {
@@ -131,7 +129,7 @@ public class DocumentService {
 					}
 				}
 				name = sanitizeFileName(name);
-				logger.info("send to " + documentIOType.name() + " in " + targetUrl + name);
+				logger.info("sending to : " + targetUrl + "/" + name);
 				if (fsAccessService.putFile(targetUrl, name, inputStream, UploadActionType.OVERRIDE)) {
 					if(!targetUrl.endsWith("/")) {
 						targetUrl += "/";
@@ -150,11 +148,8 @@ public class DocumentService {
 	}
 
 	public String sanitizeFileName(String fileName) {
-        String decodedFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
-        return URLEncoder.encode(decodedFileName, StandardCharsets.UTF_8)
-                .replace("+", "%20")
-                .replace("%2F", "/");
-    }
+		return URLDecoder.decode(fileName, StandardCharsets.UTF_8);
+	}
 
 	public Document getById(Long id) {
 		return documentRepository.findById(id).orElseThrow();

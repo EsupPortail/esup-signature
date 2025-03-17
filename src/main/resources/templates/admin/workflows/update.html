@@ -283,8 +283,9 @@
                                 <th class="text-left">URI</th>
                                 <th class="text-left">Envoyer le document</th>
                                 <th class="text-left">Envoyer le rapport</th>
-                                <th>Supprimer
-                                </th>
+                                <th class="text-left">Envoyer les PJ</th>
+                                <th class="text-left">Envoyer zippé</th>
+                                <th>Supprimer</th>
                                 <th>
                                     <button title="Ajouter une destination" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTarget">
                                         <i class="fa-solid fa-plus"></i>
@@ -306,6 +307,16 @@
                                     <td class="text-left w-100">
                                         <form th:id="'toggle-send-report-' + ${target.id}" th:action="'/admin/workflows/toggle-send-report/' + ${workflow.id} + '/' + ${target.id}" th:method="'put'">
                                             <input type="checkbox" th:checked="${target.sendReport}" th:onclick="'$(\'#toggle-send-report-' + ${target.id} + '\').submit()'"/>
+                                        </form>
+                                    </td>
+                                    <td class="text-left w-100">
+                                        <form th:id="'toggle-send-attachment-' + ${target.id}" th:action="'/admin/workflows/toggle-send-attachment/' + ${workflow.id} + '/' + ${target.id}" th:method="'put'">
+                                            <input type="checkbox" th:checked="${target.sendAttachment}" th:onclick="'$(\'#toggle-send-attachment-' + ${target.id} + '\').submit()'"/>
+                                        </form>
+                                    </td>
+                                    <td class="text-left w-100">
+                                        <form th:id="'toggle-send-zip-' + ${target.id}" th:action="'/admin/workflows/toggle-send-zip/' + ${workflow.id} + '/' + ${target.id}" th:method="'put'">
+                                            <input type="checkbox" th:checked="${target.sendZip}" th:onclick="'$(\'#toggle-send-zip-' + ${target.id} + '\').submit()'"/>
                                         </form>
                                     </td>
                                     <td>
