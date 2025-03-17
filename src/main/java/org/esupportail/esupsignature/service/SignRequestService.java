@@ -50,8 +50,6 @@ import java.io.InputStream;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 @Service
 @EnableConfigurationProperties(GlobalProperties.class)
@@ -985,8 +983,7 @@ public class SignRequestService {
 	}
 
 	public byte[] getZipWithDocAndReport(SignRequest signRequest, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
+		Map<InputStream, String> inputStreams = new HashMap<>();
 		String name = "";
 		InputStream inputStream = null;
 		if (signRequest.getStatus().equals(SignRequestStatus.completed)) {
@@ -1002,38 +999,28 @@ public class SignRequestService {
 		} else {
 			throw new EsupSignatureException("Impossible de générer le zip, la demande n'est pas signée");
 		}
-
 		if(inputStream != null) {
+			byte[] fileByte = inputStream.readAllBytes();
+			inputStreams.put(new ByteArrayInputStream(fileByte), name);
 			int i = 0;
 			for(Document document : signRequest.getAttachments()) {
-				zipOutputStream.putNextEntry(new ZipEntry(i + "_" + document.getFileName()));
-				IOUtils.copy(document.getInputStream(), zipOutputStream);
-				zipOutputStream.write(document.getInputStream().readAllBytes());
-				zipOutputStream.closeEntry();
+				inputStreams.put(document.getInputStream(), i + "_" + document.getFileName());
 				i++;
 			}
 
-			byte[] fileBytes = inputStream.readAllBytes();
-			zipOutputStream.putNextEntry(new ZipEntry(name));
-			IOUtils.copy(new ByteArrayInputStream(fileBytes), zipOutputStream);
-			zipOutputStream.closeEntry();
-
 			ByteArrayOutputStream auditTrail = auditTrailService.generateAuditTrailPdf(signRequest, httpServletRequest, httpServletResponse);
-			zipOutputStream.putNextEntry(new ZipEntry("dossier-de-preuve.pdf"));
-			auditTrail.writeTo(zipOutputStream);
-			zipOutputStream.closeEntry();
+			inputStreams.put(new ByteArrayInputStream(auditTrail.toByteArray()), "dossier-de-preuve.pdf");
 
-			Reports reports = validationService.validate(new ByteArrayInputStream(fileBytes), null);
+			Reports reports = validationService.validate(new ByteArrayInputStream(fileByte), null);
 			if(reports != null) {
 				ByteArrayOutputStream reportByteArrayOutputStream = new ByteArrayOutputStream();
 				fopService.generateSimpleReport(reports.getXmlSimpleReport(), reportByteArrayOutputStream);
-				zipOutputStream.putNextEntry(new ZipEntry("rapport-signature.pdf"));
-				IOUtils.copy(new ByteArrayInputStream(reportByteArrayOutputStream.toByteArray()), zipOutputStream);
+				inputStreams.put(new ByteArrayInputStream(reportByteArrayOutputStream.toByteArray()), "rapport-signature.pdf");
+
 			}
-			zipOutputStream.closeEntry();
+			return fileService.zipDocuments(inputStreams);
 		}
-		zipOutputStream.close();
-		return outputStream.toByteArray();
+		return null;
 	}
 
 	@Transactional

@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service.utils.file;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequestParams;
@@ -28,6 +29,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 public class FileService {
@@ -469,4 +472,18 @@ public class FileService {
 		return DigestUtils.sha3_256Hex(inputStream);
 	}
 
+	public byte[] zipDocuments(Map<InputStream, String> inputStreams) throws IOException {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
+		int i = 0;
+		for(Map.Entry<InputStream, String> inputStream : inputStreams.entrySet()) {
+			zipOutputStream.putNextEntry(new ZipEntry(i + "-" + inputStream.getValue()));
+			IOUtils.copy(inputStream.getKey(), zipOutputStream);
+			zipOutputStream.write(inputStream.getKey().readAllBytes());
+			zipOutputStream.closeEntry();
+			i++;
+		}
+		zipOutputStream.close();
+		return outputStream.toByteArray();
+	}
 }

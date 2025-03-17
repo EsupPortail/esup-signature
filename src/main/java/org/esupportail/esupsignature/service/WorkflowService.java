@@ -565,16 +565,16 @@ public class WorkflowService {
     }
 
     @Transactional
-    public boolean addTarget(Long id, String documentsTargetUri, Boolean sendDocument, Boolean sendRepport) throws EsupSignatureFsException {
+    public boolean addTarget(Long id, String documentsTargetUri, Boolean sendDocument, Boolean sendRepport, Boolean sendAttachment, Boolean sendZip) throws EsupSignatureFsException {
         Workflow workflow = getById(id);
         if(documentsTargetUri.equals("mailto:")) {
-            Target target = targetService.createTarget("mailto:", sendDocument, sendRepport);
+            Target target = targetService.createTarget("mailto:", sendDocument, sendRepport, sendAttachment, sendZip);
             workflow.getTargets().add(target);
             return true;
         } else {
             DocumentIOType targetType = fsAccessFactoryService.getPathIOType(documentsTargetUri);
             if (!targetType.equals("mail") || workflow.getTargets().stream().map(Target::getTargetUri).noneMatch(tt -> tt.contains("mailto"))) {
-                Target target = targetService.createTarget(documentsTargetUri, sendDocument, sendRepport);
+                Target target = targetService.createTarget(documentsTargetUri, sendDocument, sendRepport, sendAttachment, sendZip);
                 workflow.getTargets().add(target);
                 return true;
             }
@@ -640,7 +640,7 @@ public class WorkflowService {
         workflow.getTargets().clear();
         update(workflowSetup, workflowSetup.getCreateBy(), null, workflowSetup.getManagers());
         for(Target target : workflowSetup.getTargets()) {
-            Target newTarget = targetService.createTarget(target.getTargetUri(), target.getSendDocument(), target.getSendReport());
+            Target newTarget = targetService.createTarget(target.getTargetUri(), target.getSendDocument(), target.getSendReport(), target.getSendAttachment(), target.getSendZip());
             workflow.getTargets().add(newTarget);
         }
         workflow.setName(savedName);

@@ -200,6 +200,7 @@ export class WizUi {
                     self.newSignBookId = signBookId
                     self.fileInput.signBookId = self.newSignBookId;
                     self.input.fileinput("upload")
+                    $("#wiz-start-button").attr('disabled','disabled');
                 }
             });
         });
