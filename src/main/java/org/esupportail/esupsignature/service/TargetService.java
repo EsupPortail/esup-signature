@@ -39,11 +39,13 @@ public class TargetService {
     }
 
     @Transactional
-    public Target createTarget(String targetUri, Boolean sendDocument, Boolean sendReport) {
+    public Target createTarget(String targetUri, Boolean sendDocument, Boolean sendReport, Boolean sendAttachment, Boolean sendZip) {
         Target target = new Target();
         target.setTargetUri(targetUri);
         target.setSendDocument(sendDocument);
         target.setSendReport(sendReport);
+        target.setSendAttachment(sendAttachment);
+        target.setSendZip(sendZip);
         targetRepository.save(target);
         return target;
     }
@@ -90,7 +92,7 @@ public class TargetService {
             if(signBook.getLiveWorkflow().getTargets().stream().noneMatch(t -> t != null && t.getTargetUri().equals(target.getTargetUri()))
                     && target.getTargetUri() != null && !target.getTargetUri().isEmpty() && !target.getTargetUri().equals("mailto:")
                     && fsAccessFactoryService.getPathIOType(target.getTargetUri()) != DocumentIOType.mail) {
-                signBook.getLiveWorkflow().getTargets().add(createTarget(target.getTargetUri(), target.getSendDocument(), target.getSendReport()));
+                signBook.getLiveWorkflow().getTargets().add(createTarget(target.getTargetUri(), target.getSendDocument(), target.getSendReport(), target.getSendAttachment(), target.getSendZip()));
             }
         }
         signBook.getLiveWorkflow().getTargets().addAll(addTargetEmails(targetEmails, targets));
@@ -105,7 +107,7 @@ public class TargetService {
                 for(String targetEmail : target1.getTargetUri().replace("mailto:", "").split(",")) {
                     if (!targetEmailsToAdd.toString().contains(targetEmail)) {
                         targetEmailsToAdd.add(targetEmail);
-                        targetsCreated.add(createTarget("mailto:" + targetEmail, target1.getSendDocument(), target1.getSendReport()));
+                        targetsCreated.add(createTarget("mailto:" + targetEmail, target1.getSendDocument(), target1.getSendReport(), target1.getSendAttachment(), target1.getSendZip()));
                     }
                 }
             }
@@ -114,7 +116,7 @@ public class TargetService {
             for (String targetEmail : targetEmails) {
                 if (!targetEmailsToAdd.toString().contains(targetEmail)) {
                     targetEmailsToAdd.add(targetEmail);
-                    targetsCreated.add(createTarget("mailto:" + targetEmail, true, false));
+                    targetsCreated.add(createTarget("mailto:" + targetEmail, true, false, false, false));
                 }
             }
         }
@@ -137,4 +139,15 @@ public class TargetService {
         target.setSendReport(!target.getSendReport());
     }
 
+    @Transactional
+    public void toggleSendAttachment(Long id) {
+        Target target = getById(id);
+        target.setSendAttachment(!target.getSendAttachment());
+    }
+
+    @Transactional
+    public void toggleSendZip(Long id) {
+        Target target = getById(id);
+        target.setSendZip(!target.getSendZip());
+    }
 }

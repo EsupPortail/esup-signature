@@ -270,9 +270,11 @@ public class WorkflowAdminController {
 	public String addTarget(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 							@RequestParam("documentsTargetUri") String documentsTargetUri,
 							@RequestParam(value = "sendDocument", required = false) Boolean sendDocument,
-							@RequestParam(value = "sendRepport", required = false) Boolean sendRepport,
+							@RequestParam(value = "sendReport", required = false) Boolean sendReport,
+							@RequestParam(value = "sendDocument", required = false) Boolean sendAttachment,
+							@RequestParam(value = "sendZip", required = false) Boolean sendZip,
 							RedirectAttributes redirectAttributes) throws EsupSignatureFsException {
-		if (workflowService.addTarget(id, documentsTargetUri, sendDocument, sendRepport)) {
+		if (workflowService.addTarget(id, documentsTargetUri, sendDocument, sendReport, sendAttachment, sendZip)) {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Destination ajoutée"));
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("warn", "Une destination mail existe déjà"));
@@ -326,7 +328,7 @@ public class WorkflowAdminController {
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String toggleSendDocument(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("targetId") Long targetId, RedirectAttributes redirectAttributes) {
 		targetService.toggleSendDocument(targetId);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi de document modifié"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi des documents modifié"));
 		return "redirect:/admin/workflows/update/" + id;
 	}
 
@@ -334,7 +336,23 @@ public class WorkflowAdminController {
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String toggleSendReport(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("targetId") Long targetId, RedirectAttributes redirectAttributes) {
 		targetService.toggleSendReport(targetId);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi de rapport modifié"));
+		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi du rapport modifié"));
+		return "redirect:/admin/workflows/update/" + id;
+	}
+
+	@PutMapping("toggle-send-attachment/{id}/{targetId}")
+	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
+	public String toggleSendAttachment(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("targetId") Long targetId, RedirectAttributes redirectAttributes) {
+		targetService.toggleSendAttachment(targetId);
+		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi des pièces jointes modifié"));
+		return "redirect:/admin/workflows/update/" + id;
+	}
+
+	@PutMapping("toggle-send-zip/{id}/{targetId}")
+	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
+	public String toggleSendZip(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("targetId") Long targetId, RedirectAttributes redirectAttributes) {
+		targetService.toggleSendZip(targetId);
+		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi par ZIP"));
 		return "redirect:/admin/workflows/update/" + id;
 	}
 }

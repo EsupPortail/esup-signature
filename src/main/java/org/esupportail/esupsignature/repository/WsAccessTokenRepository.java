@@ -13,4 +13,5 @@ public interface WsAccessTokenRepository extends CrudRepository<WsAccessToken, L
     List<WsAccessToken> findByTokenAndWorkflowsContains(String token, Workflow workflow);
     List<WsAccessToken> findByTokenIsNullAndWorkflowsEmpty();
     WsAccessToken findByToken(String token);
+    List<WsAccessToken> findByWorkflowsEmpty();
 }
