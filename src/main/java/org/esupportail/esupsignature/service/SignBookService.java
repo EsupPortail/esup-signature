@@ -1797,14 +1797,14 @@ public class SignBookService {
     public String generateName(Long signRequestId, Workflow workflow, User user, Boolean target, Boolean archive, Long signBookId) {
         SignBook signBook;
         SignRequest signRequest = null;
-        if(signRequestId != null) {
-            signRequest = signRequestService.getById(signRequestId);
-            signBook = signRequest.getParentSignBook();
-        } else {
+        if(signBookId != null) {
             signBook = getById(signBookId);
             if(!signBook.getSignRequests().isEmpty()) {
                 signRequest = signBook.getSignRequests().get(0);
             }
+        } else {
+            signRequest = signRequestService.getById(signRequestId);
+            signBook = signRequest.getParentSignBook();
         }
         String template = globalProperties.getNamingTemplate();
         if(archive && StringUtils.hasText(globalProperties.getNamingTemplateArchive())) {
