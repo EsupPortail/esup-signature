@@ -143,6 +143,7 @@ public class AuditTrailService {
         vars.put("usersHasRefused", checkUserResponseRefused(signRequest));
         vars.put("signRequest", signRequest);
         vars.put("print", true);
+        vars.put("generatePdf", true);
 
         vars.put(AbstractTemplateView.SPRING_MACRO_REQUEST_CONTEXT_ATTRIBUTE, requestContext);
         vars.put(SpringContextVariableNames.SPRING_REQUEST_CONTEXT, requestContext);
