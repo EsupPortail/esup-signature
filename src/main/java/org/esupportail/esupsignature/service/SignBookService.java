@@ -1796,13 +1796,15 @@ public class SignBookService {
     @Transactional
     public String generateName(Long signRequestId, Workflow workflow, User user, Boolean target, Boolean archive, Long signBookId) {
         SignBook signBook;
-        SignRequest signRequest;
+        SignRequest signRequest = null;
         if(signRequestId != null) {
             signRequest = signRequestService.getById(signRequestId);
             signBook = signRequest.getParentSignBook();
         } else {
             signBook = getById(signBookId);
-            signRequest = signBook.getSignRequests().get(0);
+            if(!signBook.getSignRequests().isEmpty()) {
+                signRequest = signBook.getSignRequests().get(0);
+            }
         }
         String template = globalProperties.getNamingTemplate();
         if(archive && StringUtils.hasText(globalProperties.getNamingTemplateArchive())) {
@@ -1825,7 +1827,7 @@ public class SignBookService {
             }
         }
         if(!StringUtils.hasText(signBook.getSubject())) {
-            if(!signBook.getSignRequests().isEmpty()) {
+            if(!signBook.getSignRequests().isEmpty() && signRequest != null) {
                 signBook.setSubject(fileService.getNameOnly(signRequest.getOriginalDocuments().get(0).getFileName()));
                 if(signBook.getSignRequests().size() > 1) {
                     signBook.setSubject(fileService.getNameOnly(signRequest.getOriginalDocuments().get(0).getFileName()) + ", ...");
@@ -1852,7 +1854,7 @@ public class SignBookService {
             template = template.replace("[title]", signBook.getSubject());
         }
         if(template.contains("[originalFileName]")) {
-            if(!signBook.getSignRequests().isEmpty() && !signRequest.getOriginalDocuments().isEmpty()) {
+            if(!signBook.getSignRequests().isEmpty() && signRequest != null && !signRequest.getOriginalDocuments().isEmpty()) {
                 template = template.replace("[originalFileName]", signRequest.getOriginalDocuments().get(0).getFileName());
             } else {
                 logger.warn("no original file name");
@@ -1860,7 +1862,7 @@ public class SignBookService {
             }
         }
         if(template.contains("[signedFileName]")) {
-            if(!signBook.getSignRequests().isEmpty() && !signRequest.getSignedDocuments().isEmpty()) {
+            if(!signBook.getSignRequests().isEmpty() && signRequest != null && !signRequest.getSignedDocuments().isEmpty()) {
                 template = template.replace("[signedFileName]", signRequest.getSignedDocuments().get(0).getFileName());
             } else {
                 logger.warn("no signed file name");
@@ -1868,16 +1870,16 @@ public class SignBookService {
             }
         }
         if(template.contains("[fileNameOnly]")) {
-            if(!signBook.getSignRequests().isEmpty() && !signRequest.getSignedDocuments().isEmpty()) {
+            if(!signBook.getSignRequests().isEmpty() && signRequest != null && !signRequest.getSignedDocuments().isEmpty()) {
                 template = template.replace("[fileNameOnly]", fileService.getNameOnly(signRequest.getSignedDocuments().get(0).getFileName()));
-            } if(!signBook.getSignRequests().isEmpty() && !signRequest.getOriginalDocuments().isEmpty()) {
+            } if(!signBook.getSignRequests().isEmpty() && signRequest != null && !signRequest.getOriginalDocuments().isEmpty()) {
                 template = template.replace("[fileNameOnly]", fileService.getNameOnly(signRequest.getOriginalDocuments().get(0).getFileName()));
             } else {
                 logger.warn("no file name");
                 template = template.replace("[fileNameOnly]", "");
             }
         }
-        if(template.contains("[fileExtension]")) {
+        if(template.contains("[fileExtension]") && signRequest != null) {
             template = template.replace("[fileExtension]", fileService.getExtension(signRequest.getSignedDocuments().get(0).getFileName()));
         }
         if(template.contains("[worflowName]")) {
