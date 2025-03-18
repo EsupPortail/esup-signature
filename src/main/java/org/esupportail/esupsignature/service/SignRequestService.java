@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
+import org.esupportail.esupsignature.dto.json.SignRequestStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
@@ -975,8 +976,9 @@ public class SignRequestService {
 			&& signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
 			&& BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
 			&& (!signRequest.getStatus().equals(SignRequestStatus.completed)
-				&& !signRequest.getStatus().equals(SignRequestStatus.exported)
-				&& !signRequest.getStatus().equals(SignRequestStatus.archived))) {
+			&& !signRequest.getStatus().equals(SignRequestStatus.refused)
+			&& !signRequest.getStatus().equals(SignRequestStatus.exported)
+			&& !signRequest.getStatus().equals(SignRequestStatus.archived))) {
 			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit");
 		}
 		webUtilsService.copyFileStreamToHttpResponse(signRequest.getParentSignBook().getSubject() + "-avec_rapport.zip", "application/zip; charset=utf-8", "attachment", new ByteArrayInputStream(getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse)), httpServletResponse);
@@ -986,7 +988,7 @@ public class SignRequestService {
 		Map<InputStream, String> inputStreams = new HashMap<>();
 		String name = "";
 		InputStream inputStream = null;
-		if (signRequest.getStatus().equals(SignRequestStatus.completed)) {
+		if (signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.refused)) {
 			if(signService.getToSignDocuments(signRequest.getId()).size() == 1) {
 				List<Document> documents = signService.getToSignDocuments(signRequest.getId());
 				name = documents.get(0).getFileName();
@@ -1300,4 +1302,39 @@ public class SignRequestService {
 		SignRequest signRequest = getById(signRequestId);
 		return signRequest.getParentSignBook().getTeam().stream().filter(user -> user.getUserType().equals(UserType.external)).map(user -> new RecipientWsDto(user.getId(), user.getEmail())).collect(Collectors.toList());
     }
+
+	@Transactional
+	public List<SignRequestStepDto> getStepsDto(Long id) {
+		List<SignRequestStepDto> signRequestStepsDto = new ArrayList<>();
+		SignRequest signRequest = getById(id);
+		int i = 1;
+		for(LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
+			for(Recipient recipient : liveWorkflowStep.getRecipients()) {
+				SignRequestStepDto signRequestStepDto = new SignRequestStepDto();
+				signRequestStepDto.setStepNumber(i);
+				Action action = signRequest.getRecipientHasSigned().get(recipient);
+				signRequestStepDto.setActionDate(action.getDate());
+				signRequestStepDto.setActionType(action.getActionType().name());
+				if(action.getActionType().equals(ActionType.refused)) {
+					Optional<Log> refuseLog = logService.getRefuseLogs(signRequest.getParentSignBook().getId()).stream().filter(l -> l.getComment() != null).findAny();
+                    refuseLog.ifPresent(l -> signRequestStepDto.setRefuseComment(l.getComment()));
+				}
+				User user = recipient.getUser();
+				signRequestStepDto.setUserEppn(user.getEppn());
+				signRequestStepDto.setUserName(user.getName());
+				signRequestStepDto.setUserFirstname(user.getFirstname());
+				signRequestStepDto.setUserEmail(user.getEmail());
+				AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
+				if(auditTrail.getAuditSteps().size() >= i) {
+					AuditStep auditStep = auditTrailService.getAuditTrailByToken(signRequest.getToken()).getAuditSteps().get(i - 1);
+					signRequestStepDto.setSignPageNumber(auditStep.getPage());
+					signRequestStepDto.setSignPosX(auditStep.getPosX());
+					signRequestStepDto.setSignPosY(auditStep.getPosY());
+				}
+				signRequestStepsDto.add(signRequestStepDto);
+			}
+			i++;
+		}
+		return signRequestStepsDto;
+	}
 }
