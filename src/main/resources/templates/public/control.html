@@ -9,7 +9,7 @@
 <main role="main">
     <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
         <ol id="breadcrumb-ol" class="breadcrumb">
-            <li th:if="${auditTrail != null || simpleReport != null || (error != null && error)}" class="breadcrumb-item active"><a href="/public/control">Retour</a></li>
+            <li th:if="${(auditTrail != null || simpleReport != null || (error != null && error)) && generatePdf != true}" class="breadcrumb-item active"><a href="/public/control">Retour</a></li>
         </ol>
     </nav>
     <div class="content content-full">

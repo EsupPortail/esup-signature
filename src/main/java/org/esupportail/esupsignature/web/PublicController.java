@@ -141,7 +141,9 @@ public class PublicController {
             setControlValues(model, signRequest, auditTrail, eppn);
         } else if (token == null || token.equals("null")) {
             Reports reports = validationService.validate(multipartFile.getInputStream(), null);
-            model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
+            if(reports != null) {
+                model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
+            }
             model.addAttribute("error", true);
         } else {
             model.addAttribute("error", true);
