@@ -122,7 +122,7 @@ export class SignRequestParams extends EventFactory {
                 e.stopPropagation();
             });
         }
-        $("#signDrop_" + this.id).on("mousedown", e => this.deleteSign());
+        $("#signDrop_" + this.id).on("mousedown", e => this.deleteSign()    );
         $("#signNextImage_" + this.id).on("mousedown", e => this.changeSignImage(parseInt(this.signImageNumber) + 1));
         $("#signPrevImage_" + this.id).on("mousedown", e => this.prevSignImage());
         $("#displayMoreTools_" + this.id).on("mousedown", e => this.displayMoreTools());
@@ -400,7 +400,7 @@ export class SignRequestParams extends EventFactory {
             } else {
                 $("#extraTypeDiv_" + this.id).html("<span>Signature OTP<br></span>");
             }
-            $("#extraTools_" + this.id).remove();
+            // $("#extraTools_" + this.id).remove();
             $("#crossTools_" + this.id).css("top", "-45px");
             if(this.globalProperties.externalSignatureParams != null) {
                 this.addWatermark = !this.globalProperties.externalSignatureParams.addWatermark;
@@ -421,7 +421,7 @@ export class SignRequestParams extends EventFactory {
                 }
                 this.extraOnTop = !this.globalProperties.externalSignatureParams.extraOnTop;
                 this.toggleExtraOnTop();
-                $("#displayMoreTools_" + this.id).remove();
+                // $("#displayMoreTools_" + this.id).remove();
             }
         }
         this.cross.attr("page", this.signPageNumber);
@@ -642,6 +642,7 @@ export class SignRequestParams extends EventFactory {
     deleteSign() {
         let self = this;
         this.cross.attr("remove", "true");
+        this.cross.draggable("enable");
         this.cross.on("drag", function(e) {
             self.cross.remove();
             self.fireEvent("delete", ["ok"]);
@@ -1280,6 +1281,7 @@ export class SignRequestParams extends EventFactory {
         this.cross.append(divExtraHtml);
         this.textareaPart = $("#textPart_" + this.id);
         this.textareaPart.css('width', '100%');
+        this.fontSize = 13;
         this.textareaPart.on("input", function () {
             self.resizeText();
         });

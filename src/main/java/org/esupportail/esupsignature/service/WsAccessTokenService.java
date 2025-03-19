@@ -106,6 +106,7 @@ public class WsAccessTokenService {
     public boolean allAccess(String token) {
         return !wsAccessTokenRepository.findAll().iterator().hasNext()
             || !wsAccessTokenRepository.findByTokenIsNullAndWorkflowsEmpty().isEmpty()
+            || wsAccessTokenRepository.findByWorkflowsEmpty().stream().anyMatch(WsAccessToken::getPublicAccess)
             || wsAccessTokenRepository.findByTokenAndWorkflowsEmpty(token).stream().anyMatch(WsAccessToken::getReadSignrequest);
     }
 

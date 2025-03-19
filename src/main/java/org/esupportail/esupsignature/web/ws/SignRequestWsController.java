@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
+import org.esupportail.esupsignature.dto.json.SignRequestStepDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.AuditTrail;
 import org.esupportail.esupsignature.entity.SignBook;
@@ -196,9 +197,18 @@ public class SignRequestWsController {
     }
 
     @CrossOrigin
+    @GetMapping(value = "/{id}/steps", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération d'une demande de signature",
+            responses = @ApiResponse(description = "SignRequest", content = @Content(schema = @Schema(implementation = SignRequest.class))))
+    @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
+    public List<SignRequestStepDto> getSteps(@Parameter(description = "Identifiant de la demande", required = true) @PathVariable Long id,
+                                             @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
+        return signRequestService.getStepsDto(id);
+    }
+
+    @CrossOrigin
     @GetMapping(value = "/status/{id}")
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération du statut d'une demande de signature")
-    @ResponseBody
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public String getStatus(@Parameter(description = "Identifiant de la demande") @PathVariable Long id,
                             @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
@@ -208,7 +218,6 @@ public class SignRequestWsController {
     @CrossOrigin
     @GetMapping(value = "/audit-trail/{id}")
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération du dossier de preuve de la demande", responses = @ApiResponse(description = "AuditTrail", content = @Content(schema = @Schema(implementation = AuditTrail.class))))
-    @ResponseBody
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public String getAuditTail(@Parameter(description = "Dossier de preuve de la demande") @PathVariable Long id,
                                @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
@@ -271,7 +280,6 @@ public class SignRequestWsController {
     }
 
     @GetMapping(value = "/get-last-file/{id}")
-    @ResponseBody
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = MediaType.APPLICATION_PDF_VALUE)))
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id,
@@ -281,7 +289,6 @@ public class SignRequestWsController {
     }
 
     @GetMapping(value = "/get-last-file-and-report/{id}")
-    @ResponseBody
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = MediaType.APPLICATION_PDF_VALUE)))
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<Void> getLastFileAndReport(@PathVariable("id") Long id,
@@ -296,7 +303,6 @@ public class SignRequestWsController {
     }
 
     @GetMapping(value = "/print-with-code/{id}")
-    @ResponseBody
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande avec un datamatrix apposé dessus", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = MediaType.APPLICATION_PDF_VALUE)))
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<Void> printWithCode(@PathVariable("id") Long id,
@@ -306,7 +312,6 @@ public class SignRequestWsController {
     }
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer toutes les demandes", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = List.class), mediaType = MediaType.APPLICATION_JSON_VALUE)))
     @PreAuthorize("@wsAccessTokenService.isTokenExist(#xApiKey)")
     public ResponseEntity<String> getAllSignRequests(@ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
@@ -315,7 +320,6 @@ public class SignRequestWsController {
 
     @GetMapping(value = "/return-test")
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
-    @ResponseBody
     public ResponseEntity<Void> returnTest(@RequestParam("signRequestId") String signRequestId, @RequestParam("status") String status, @RequestParam("step") String step,
                                            @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         logger.info(signRequestId + ", " + status + ", " + step);
