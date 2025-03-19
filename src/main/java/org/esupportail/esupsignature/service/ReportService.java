@@ -84,9 +84,9 @@ public class ReportService {
     public byte @Nullable [] getReportBytes(SignRequest signRequest) {
         RestTemplate restTemplate = new RestTemplate();
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-        WsAccessToken wsAccessToken =  wsAccessTokenRepository.findByWorkflowsContains(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow()).stream().findFirst().orElse(null);
-        if(wsAccessToken != null) {
-            headers.set("X-Api-Key", wsAccessToken.getToken());
+        List<WsAccessToken> wsAccessTokens = wsAccessTokenRepository.findByWorkflowsEmpty();
+        if(!wsAccessTokens.isEmpty()) {
+            headers.set("X-Api-Key", wsAccessTokens.get(0).getToken());
         }
         HttpEntity<String> entity = new HttpEntity<>(headers);
         ResponseEntity<byte[]> response = restTemplate.exchange(

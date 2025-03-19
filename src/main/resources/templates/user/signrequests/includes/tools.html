@@ -96,10 +96,6 @@
 									class="btn btn-light btn-outline-primary text-start">
 								<i class="fa-solid fa-file-signature"></i> <span class="d-inline">Insérer un visa</span>
 							</button>
-							<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
-									id="visualButton" title="Afficher/Masquer le visuel"
-									class="btn btn-light btn-outline-primary text-start"> Afficher/Masquer le visuel
-							</button>
 							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addCheck" class="btn btn-light btn-outline-primary text-start"
 								th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">
 								<i class="fa-solid fa-check"></i> Insérer une coche
