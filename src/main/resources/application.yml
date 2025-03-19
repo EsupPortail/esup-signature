@@ -47,6 +47,7 @@ global:
         extra-on-top: true
 #        extra-text: ""
     french-phone-number-only: false
+    search-for-external-users: false
 #    test-email: toto@univ-ville.fr
 
 #tomcat:
