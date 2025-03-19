@@ -468,78 +468,81 @@ public class UserService {
     public List<PersonLightLdap> getPersonLdapsLight(String searchString, String authUserEppn) {
         List<PersonLightLdap> personLightLdaps = new ArrayList<>();
         Set<User> users = new HashSet<>();
-        users.addAll(userRepository.findByEppnStartingWith(searchString));
-        users.addAll(userRepository.findByNameStartingWithIgnoreCase(searchString.toUpperCase()));
-        users.addAll(userRepository.findByEmailStartingWith(searchString));
-        users.removeIf(user -> user.getEppn().equals("system") || user.getEppn().equals("scheduler"));
-        if (ldapPersonLightService != null && !searchString.trim().isEmpty() && searchString.length() > 2) {
-            List<PersonLightLdap> ldapSearchList = ldapPersonLightService.searchLight(searchString);
-            if (!ldapSearchList.isEmpty()) {
-                List<PersonLightLdap> personLdapListResult = ldapSearchList.stream().sorted(Comparator.comparing(PersonLightLdap::getCn)).toList();
-                for (PersonLightLdap personLightLdap : personLdapListResult) {
-                    if (personLightLdap.getMail() != null) {
-                        if (personLightLdaps.stream().noneMatch(personLdap -> personLdap != null &&  personLdap.getMail() != null && personLdap.getMail().equalsIgnoreCase(personLightLdap.getMail()))) {
-                            personLightLdaps.add(personLightLdap);
+        if(!searchString.trim().isEmpty() && searchString.length() > 2) {
+            users.addAll(userRepository.findByEppnStartingWith(searchString));
+            users.addAll(userRepository.findByNameStartingWithIgnoreCase(searchString.toUpperCase()));
+            users.addAll(userRepository.findByEmailStartingWith(searchString));
+            users.removeIf(user -> user.getEppn().equals("system") || user.getEppn().equals("scheduler") || (!globalProperties.getSearchForExternalUsers() && (user.getUserType().equals(UserType.external)) || user.getEmail().equals(searchString)));
+            for (User user : users) {
+                personLightLdaps.add(getPersonLdapLightFromUser(user));
+            }
+            if (ldapPersonLightService != null) {
+                List<PersonLightLdap> ldapSearchList = ldapPersonLightService.searchLight(searchString);
+                if (!ldapSearchList.isEmpty()) {
+                    List<PersonLightLdap> personLdapListResult = ldapSearchList.stream().sorted(Comparator.comparing(PersonLightLdap::getCn)).toList();
+                    for (PersonLightLdap personLightLdap : personLdapListResult) {
+                        if (personLightLdap.getMail() != null) {
+                            if (personLightLdaps.stream().noneMatch(personLdap -> personLdap != null && personLdap.getMail() != null && personLdap.getMail().equalsIgnoreCase(personLightLdap.getMail()))) {
+                                if (personLightLdaps.stream().noneMatch(p -> p.getMail().equals(personLightLdap.getMail()))) {
+                                    personLightLdaps.add(personLightLdap);
+                                }
+                            }
                         }
                     }
                 }
             }
-        } else {
+            List<PersonLightLdap> personLightLdapsToRemove = new ArrayList<>();
+            List<User> personLightLdapsToAdd = new ArrayList<>();
+            for(PersonLightLdap personLightLdap : personLightLdaps) {
+                User user = isUserByEmailExist(personLightLdap.getMail());
+                if(user != null && user.getReplaceByUser() != null) {
+                    personLightLdapsToRemove.add(personLightLdap);
+                    personLightLdapsToAdd.add(user);
+                }
+            }
+            personLightLdaps.removeAll(personLightLdapsToRemove);
             for (User user : users) {
-                personLightLdaps.add(getPersonLdapLightFromUser(user));
-            }
-            users.clear();
-        }
-        List<PersonLightLdap> personLightLdapsToRemove = new ArrayList<>();
-        List<User> personLightLdapsToAdd = new ArrayList<>();
-        for(PersonLightLdap personLightLdap : personLightLdaps) {
-            User user = isUserByEmailExist(personLightLdap.getMail());
-            if(user != null && user.getReplaceByUser() != null) {
-                personLightLdapsToRemove.add(personLightLdap);
-                personLightLdapsToAdd.add(user);
-            }
-        }
-        personLightLdaps.removeAll(personLightLdapsToRemove);
-        for (User user : users) {
-            if(user.getEppn().equals("creator")) {
-                personLightLdaps.add(getPersonLdapLightFromUser(user));
-            }
-            if(!personLightLdaps.isEmpty() && personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && personLightLdap.getMail().equalsIgnoreCase(user.getEmail()))) {
-                PersonLightLdap personLightLdap = getPersonLdapLightFromUser(user);
-                if(user.getUserType().equals(UserType.group)) {
-                    personLightLdap.setDisplayName(personLightLdap.getDisplayName());
+                if(user.getEppn().equals("creator")) {
+                    personLightLdaps.add(getPersonLdapLightFromUser(user));
                 }
-                personLightLdaps.add(personLightLdap);
-            }
-        }
-        for(User userToAdd : personLightLdapsToAdd) {
-            if(personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap.getEduPersonPrincipalName().equals(userToAdd.getEppn()))) {
-                personLightLdaps.add(getPersonLdapLightFromUser(userToAdd));
-            }
-        }
-        for(Map.Entry<String,String> string : userListService.getListsNames(searchString).entrySet()) {
-            if(personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && personLightLdap.getMail().equals(string.getKey()))) {
-                PersonLightLdap personLightLdap = new PersonLightLdap();
-                personLightLdap.setMail(string.getKey());
-                if(string.getValue() != null) {
-                    personLightLdap.setDisplayName(string.getValue());
-                } else {
-                    personLightLdap.setDisplayName(string.getKey());
+                if(!personLightLdaps.isEmpty() && personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && personLightLdap.getMail().equalsIgnoreCase(user.getEmail()))) {
+                    PersonLightLdap personLightLdap = getPersonLdapLightFromUser(user);
+                    if(user.getUserType().equals(UserType.group)) {
+                        personLightLdap.setDisplayName(personLightLdap.getDisplayName());
+                    }
+                    personLightLdaps.add(personLightLdap);
                 }
-                personLightLdaps.add(personLightLdap);
+            }
+            for(User userToAdd : personLightLdapsToAdd) {
+                if(personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap.getEduPersonPrincipalName().equals(userToAdd.getEppn()))) {
+                    personLightLdaps.add(getPersonLdapLightFromUser(userToAdd));
+                }
+            }
+            for(Map.Entry<String,String> string : userListService.getListsNames(searchString).entrySet()) {
+                if(personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && personLightLdap.getMail().equals(string.getKey()))) {
+                    PersonLightLdap personLightLdap = new PersonLightLdap();
+                    personLightLdap.setMail(string.getKey());
+                    if(string.getValue() != null) {
+                        personLightLdap.setDisplayName(string.getValue());
+                    } else {
+                        personLightLdap.setDisplayName(string.getKey());
+                    }
+                    personLightLdaps.add(personLightLdap);
+                }
+            }
+            if(ldapAliasService != null) {
+                for (AliasLdap aliasLdap : ldapAliasService.searchByMail(searchString, false)) {
+                    personLightLdaps.add(new PersonLightLdap(aliasLdap.getMail()));
+                }
+            }
+            User user = getByEppn(authUserEppn);
+            if(user.getRoles().contains("ROLE_ADMIN")) {
+                return personLightLdaps.stream().toList();
+            } else {
+                return personLightLdaps.stream().filter(personLightLdap -> !webSecurityProperties.getExcludedEmails().contains(personLightLdap.getMail())).collect(Collectors.toList());
             }
         }
-        if(ldapAliasService != null) {
-            for (AliasLdap aliasLdap : ldapAliasService.searchByMail(searchString, false)) {
-                personLightLdaps.add(new PersonLightLdap(aliasLdap.getMail()));
-            }
-        }
-        User user = getByEppn(authUserEppn);
-        if(user.getRoles().contains("ROLE_ADMIN")) {
-            return personLightLdaps.stream().toList();
-        } else {
-            return personLightLdaps.stream().filter(personLightLdap -> !webSecurityProperties.getExcludedEmails().contains(personLightLdap.getMail())).collect(Collectors.toList());
-        }
+        return new ArrayList<>();
     }
 
     public PersonLdap getPersonLdapFromUser(User user) {
