@@ -363,7 +363,7 @@ export class SignRequestParams extends EventFactory {
                 this.restoreUserParams();
             }
         }
-        if(this.isShare) {
+        if(this.isShare && this.isSign) {
             if(this.signColorPicker != null) {
                 this.signColorPicker.spectrum("destroy");
                 this.signColorPicker.hide();
