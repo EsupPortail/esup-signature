@@ -308,7 +308,7 @@ public class GlobalProperties {
      *
      */
 
-    private Boolean searchForExternalUsers = true;
+    private Boolean searchForExternalUsers = false;
 
     /**
      * Delai d’alerte avant expiration des certificats serveur

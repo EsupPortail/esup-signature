@@ -1305,7 +1305,7 @@ export class SignRequestParams extends EventFactory {
             self.cross.draggable("enable");
             self.textareaPart.css('pointer-events', 'none');
         });
-        this.cross.dblclick(function (){
+        this.cross.mouseup(function (){
             self.cross.draggable("disable");
             self.textareaPart.css('pointer-events', 'auto');
             self.textareaPart.focus();
