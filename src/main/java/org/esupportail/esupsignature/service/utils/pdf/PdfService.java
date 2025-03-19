@@ -516,16 +516,8 @@ public class PdfService {
                 if (exitVal == 0) {
                     logger.info("Convert success");
                 } else {
-                    logger.warn("Convert fail");
-                    logger.warn(cmd);
-                    StringBuilder output = new StringBuilder();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(result)));
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        output.append(line).append("\n");
-                    }
-                    logger.warn(output.toString());
                     logger.warn("PDF/A conversion failure : document will be signed without conversion");
+                    logger.warn("Convert command fail : " + cmd);
                     return originalBytes;
                 }
             } catch (IOException | InterruptedException e) {
@@ -582,16 +574,8 @@ public class PdfService {
                 if (exitVal == 0) {
                     logger.info("Convert success");
                 } else {
-                    logger.warn("Convert fail");
-                    logger.warn(cmd);
-                    StringBuilder output = new StringBuilder();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(result)));
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        output.append(line).append("\n");
-                    }
-                    logger.warn(output.toString());
                     logger.warn("PDF/A conversion failure : document will be added without conversion");
+                    logger.warn("Convert command fail : " + cmd);
                     return originalBytes;
                 }
             } catch (IOException | InterruptedException e) {
