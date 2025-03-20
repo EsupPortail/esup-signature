@@ -319,7 +319,7 @@
                         Attention vous allez signer avec un certificat alors que le document comporte plusieurs insertions. Seule la dernière signature, ainsi que les coches, seront visible sur le document final.
                     </div>
                     <div id="warningSelectDiv" class="alert alert-danger" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}">
-                        Aucun type de signature n’est disponible pour signer ce document.
+                        En raison de la configuration des prochaines étapes, aucun mode de signature n'est disponible pour garantir l'intégrité du document ou de la signature. Merci de contacter le gestionnaire du circuit si besoin.
                     </div>
                     <div id="signCommentDiv" class="mb-1">
                         <label for="signComment">Commentaire (facultatif)</label>

@@ -13,7 +13,8 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
-import org.esupportail.esupsignature.dto.json.SignRequestStepDto;
+import org.esupportail.esupsignature.dto.json.RecipientsActionsDto;
+import org.esupportail.esupsignature.dto.json.SignRequestStepsDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
@@ -274,11 +275,11 @@ public class SignRequestService {
 			int nbSign = 0;
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
 				for(SignRequestParams signRequestParams : signRequestParamses) {
-					if((signRequestParams.getSignImageNumber() < 0 || signRequestParams.getIsExtraText()) && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign() || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSingleSignWithAnnotation())) {
+					if((signRequestParams.getSignImageNumber() < 0 || StringUtils.hasText(signRequestParams.getTextPart())) && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign() || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSingleSignWithAnnotation())) {
 						signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, 1, signerUser, date, userService.getRoles(userEppn).contains("ROLE_OTP"), false);
 						lastSignLogs.add(updateStatus(signRequest.getId(), signRequest.getStatus(), "Ajout d'un élément", null, "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn));
 						auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Ajout d'un élément", "Pas de timestamp", "", "", date, isViewed, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
-					} else if(signRequestParams.getSignImageNumber() >= 0 && !signRequestParams.getIsExtraText() && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign() || nbSign == 0)) {
+					} else if(signRequestParams.getSignImageNumber() >= 0 && !StringUtils.hasText(signRequestParams.getTextPart()) && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign() || nbSign == 0)) {
 						signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, 1, signerUser, date, userService.getRoles(userEppn).contains("ROLE_OTP"), false);
 						lastSignLogs.add(updateStatus(signRequest.getId(), signRequest.getStatus(), "Apposition de la signature", null, "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn));
 						auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Signature simple", "Pas de timestamp", "", "", date, isViewed, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
@@ -1304,37 +1305,44 @@ public class SignRequestService {
     }
 
 	@Transactional
-	public List<SignRequestStepDto> getStepsDto(Long id) {
-		List<SignRequestStepDto> signRequestStepsDto = new ArrayList<>();
+	public List<SignRequestStepsDto> getStepsDto(Long id) {
+		List<SignRequestStepsDto> signRequestStepsDtos = new ArrayList<>();
 		SignRequest signRequest = getById(id);
 		int i = 1;
 		for(LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
+			SignRequestStepsDto signRequestStepsDto = new SignRequestStepsDto();
+			signRequestStepsDto.setStepNumber(i);
+			signRequestStepsDto.setSignType(liveWorkflowStep.getSignType().name());
+			signRequestStepsDto.setAllSignToComplete(liveWorkflowStep.getAllSignToComplete());
 			for(Recipient recipient : liveWorkflowStep.getRecipients()) {
-				SignRequestStepDto signRequestStepDto = new SignRequestStepDto();
-				signRequestStepDto.setStepNumber(i);
+				RecipientsActionsDto recipientsActionsDto = new RecipientsActionsDto();
+				recipientsActionsDto.setStepNumber(i);
 				Action action = signRequest.getRecipientHasSigned().get(recipient);
-				signRequestStepDto.setActionDate(action.getDate());
-				signRequestStepDto.setActionType(action.getActionType().name());
-				if(action.getActionType().equals(ActionType.refused)) {
-					Optional<Log> refuseLog = logService.getRefuseLogs(signRequest.getParentSignBook().getId()).stream().filter(l -> l.getComment() != null).findAny();
-                    refuseLog.ifPresent(l -> signRequestStepDto.setRefuseComment(l.getComment()));
+				if(action != null) {
+					recipientsActionsDto.setActionDate(action.getDate());
+					recipientsActionsDto.setActionType(action.getActionType().name());
+					if (action.getActionType().equals(ActionType.refused)) {
+						Optional<Log> refuseLog = logService.getRefuseLogs(signRequest.getParentSignBook().getId()).stream().filter(l -> l.getComment() != null).findAny();
+						refuseLog.ifPresent(l -> recipientsActionsDto.setRefuseComment(l.getComment()));
+					}
 				}
 				User user = recipient.getUser();
-				signRequestStepDto.setUserEppn(user.getEppn());
-				signRequestStepDto.setUserName(user.getName());
-				signRequestStepDto.setUserFirstname(user.getFirstname());
-				signRequestStepDto.setUserEmail(user.getEmail());
+				recipientsActionsDto.setUserEppn(user.getEppn());
+				recipientsActionsDto.setUserName(user.getName());
+				recipientsActionsDto.setUserFirstname(user.getFirstname());
+				recipientsActionsDto.setUserEmail(user.getEmail());
 				AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
-				if(auditTrail.getAuditSteps().size() >= i) {
+				if(auditTrail != null && auditTrail.getAuditSteps().size() >= i) {
 					AuditStep auditStep = auditTrailService.getAuditTrailByToken(signRequest.getToken()).getAuditSteps().get(i - 1);
-					signRequestStepDto.setSignPageNumber(auditStep.getPage());
-					signRequestStepDto.setSignPosX(auditStep.getPosX());
-					signRequestStepDto.setSignPosY(auditStep.getPosY());
+					recipientsActionsDto.setSignPageNumber(auditStep.getPage());
+					recipientsActionsDto.setSignPosX(auditStep.getPosX());
+					recipientsActionsDto.setSignPosY(auditStep.getPosY());
 				}
-				signRequestStepsDto.add(signRequestStepDto);
+				signRequestStepsDto.getRecipientsActions().add(recipientsActionsDto);
 			}
+			signRequestStepsDtos.add(signRequestStepsDto);
 			i++;
 		}
-		return signRequestStepsDto;
+		return signRequestStepsDtos;
 	}
 }

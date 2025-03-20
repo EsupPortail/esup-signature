@@ -300,14 +300,12 @@ public class GlobalProperties {
     /**
      * Activer les annotations pour les utilisateurs externes (pour les demandes hors circuit)
      */
-
     private Boolean externalCanEdit = false;
 
     /**
      * Faire apparaitre les users externes dans la recherche full texte
      *
      */
-
     private Boolean searchForExternalUsers = false;
 
     /**

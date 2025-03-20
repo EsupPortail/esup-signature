@@ -117,11 +117,15 @@
     </form>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
+    <button id="fast-form-close" type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
     <button type="button" id="send-draft-button" class="btn btn-success" name="draft" value="true">
+        <div class="send-form-spinner spinner-border d-none" style="width: 1rem; height: 1rem;">
+        </div>
         <i class="fa-solid fa-save"></i> Placer des champs signature ou annoter
     </button>
     <button type="button" id="send-pending-button" class="btn btn-success">
+        <div class="send-form-spinner spinner-border d-none" style="width: 1rem; height: 1rem;">
+        </div>
         <i class="fa-solid fa-paper-plane"></i> Envoyer immédiatement la demande
     </button>
 </div>

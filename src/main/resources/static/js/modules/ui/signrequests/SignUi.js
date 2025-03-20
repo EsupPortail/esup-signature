@@ -297,6 +297,8 @@ export class SignUi {
     }
 
     launchSign(gotoNext) {
+        $("#checkValidateSignButtonNext").attr("disabled", "disabled");
+        $("#checkValidateSignButtonEnd").attr("disabled", "disabled");
         let signModal = $('#signModal');
         if(this.certTypeSelect.val() === '' || this.certTypeSelect.val() === null) {
             bootbox.alert("<div class='alert alert-danger'>Merci de choisir un type de signature dans la liste déroulante</div>", null);
@@ -439,12 +441,14 @@ export class SignUi {
                 }
             },
             error: function(data, textStatus, xhr) {
+                $("#checkValidateSignButtonEnd").removeAttr("disabled");
+                $("#checkValidateSignButtonNext").removeAttr("disabled");
                 $("#signSpinner").hide();
                 console.error("sign error : " + data.responseText);
                 document.getElementById("signError").style.display = "block";
                 document.getElementById("signError").innerHTML =
                     "<p>Une erreur s’est produite lors de la signature du document.</p>" +
-                    "<small>Message retourné par le système de signature : " + JSON.parse(data.responseText).message + "</small>";
+                    "<small>Message retourné par le système de signature : " + data.responseText + "</small>";
                 document.getElementById("closeModal").style.display = "block";
             }
         });
