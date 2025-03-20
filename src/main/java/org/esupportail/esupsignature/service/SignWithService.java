@@ -6,8 +6,7 @@ import com.google.common.cache.LoadingCache;
 import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.jetbrains.annotations.NotNull;
@@ -17,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -57,8 +57,14 @@ public class SignWithService {
         if(signRequest.getCurrentSignType() != null) {
             signWiths.removeIf(signWith -> signWith.getValue() < signRequest.getCurrentSignType().getValue());
         }
-        if(dataService.getBySignBook(signRequest.getParentSignBook()) != null && signRequestService.isMoreWorkflowStepAndNotAutoSign(signRequest.getParentSignBook())) {
-            signWiths.removeIf(signWith -> signWith.getValue() > 2);
+        if(signRequest.getData() != null && signRequest.getData().getForm() != null) {
+            int stepNumber = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber();
+            Form form = signRequest.getData().getForm();
+            Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
+            List<WorkflowStep> workflowSteps = workflow.getWorkflowSteps().stream().filter(ws -> workflow.getWorkflowSteps().indexOf(ws) > stepNumber - 1).toList();
+            if(!workflowSteps.isEmpty() && form.getFields().stream().anyMatch(f -> new HashSet<>(f.getWorkflowSteps()).containsAll(workflowSteps))) {
+                signWiths.removeIf(signWith -> signWith.getValue() > 2);
+            }
         }
         return signWiths;
     }

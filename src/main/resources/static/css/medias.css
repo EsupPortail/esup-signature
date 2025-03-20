@@ -105,7 +105,6 @@
         top:104px;
         position: fixed;
         width: calc(100% - 26px);
-        z-index: 5;
     }
 }
 
@@ -221,7 +220,6 @@
         left:0px;
         position: fixed;
         width: calc(100%);
-        z-index: 5;
     }
 
     .pdf-alerts .btn {
