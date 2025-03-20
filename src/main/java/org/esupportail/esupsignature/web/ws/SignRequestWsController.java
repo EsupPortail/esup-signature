@@ -15,7 +15,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
-import org.esupportail.esupsignature.dto.json.SignRequestStepDto;
+import org.esupportail.esupsignature.dto.json.SignRequestStepsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.AuditTrail;
 import org.esupportail.esupsignature.entity.SignBook;
@@ -201,8 +201,8 @@ public class SignRequestWsController {
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération d'une demande de signature",
             responses = @ApiResponse(description = "SignRequest", content = @Content(schema = @Schema(implementation = SignRequest.class))))
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
-    public List<SignRequestStepDto> getSteps(@Parameter(description = "Identifiant de la demande", required = true) @PathVariable Long id,
-                                             @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
+    public List<SignRequestStepsDto> getSteps(@Parameter(description = "Identifiant de la demande", required = true) @PathVariable Long id,
+                                              @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
         return signRequestService.getStepsDto(id);
     }
 
