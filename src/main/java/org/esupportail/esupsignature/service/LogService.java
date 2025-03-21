@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -94,7 +95,7 @@ public class LogService {
                 log.setUser(user);
             }
         }
-        return logs;
+        return logs.stream().sorted(Comparator.comparing(Log::getLogDate)).toList();
     }
 
     @Transactional
@@ -106,7 +107,7 @@ public class LogService {
                 log.setUser(user);
             }
         }
-        return logs;
+        return logs.stream().sorted(Comparator.comparing(Log::getLogDate)).toList();
     }
 
     @Transactional

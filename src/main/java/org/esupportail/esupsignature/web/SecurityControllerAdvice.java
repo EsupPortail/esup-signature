@@ -2,11 +2,17 @@ package org.esupportail.esupsignature.web;
 
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.service.UserService;
+import org.hibernate.exception.ConstraintViolationException;
+import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller", "org.esupportail.esupsignature.web.otp", "org.esupportail.esupsignature.web.wssecure"})
@@ -63,6 +69,14 @@ public class SecurityControllerAdvice {
         }
         logger.debug("authUserEppn used is : " + eppn);
         return eppn;
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<String> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        if(ex.getCause() instanceof ConstraintViolationException || ex.getCause() instanceof PSQLException) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Action déjà effectuée.");
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur interne.");
     }
 
 }

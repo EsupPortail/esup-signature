@@ -72,6 +72,7 @@ export default class FilesInput extends EventFactory {
             minFileSize: 1,
             maxFileSize: this.maxSize,
             showClose: false,
+            showCancel: false,
             showBrowse: true,
             showUpload: false,
             showUploadStats: false,

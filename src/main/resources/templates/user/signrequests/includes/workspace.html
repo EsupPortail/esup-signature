@@ -7,7 +7,7 @@
 <div th:fragment="workspace" id="workspace" class="alert justify-content-center border-0" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'workspace-sign' : 'workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? 'alert-secondary' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
     <div class="pdf-alerts">
         <div id="warningSelectDiv" class="alert alert-danger border-dark" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}">
-            Aucun type de signature n’est disponible pour signer ce document.
+            En raison de la configuration des prochaines étapes, aucun mode de signature n'est disponible pour garantir l'intégrité du document ou de la signature. Merci de contacter le gestionnaire du circuit si besoin.
         </div>
         <div id="signBookDesc" class="d-none alert alert-warning border-dark" th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}" style="width: 100%;">
             <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>

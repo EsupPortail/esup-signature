@@ -72,6 +72,7 @@ export class WizUi {
 
     wizCreateSign(type) {
         console.info("create signbook");
+        this.disableButtons();
         let self = this;
         $("#multiSign").on('change', e => this.toggleAnnotationOption(e.target));
         $.ajax({
@@ -85,17 +86,43 @@ export class WizUi {
                     self.files = self.input.fileinput('getFileList');
                     self.input.fileinput('upload');
                 } else {
-                    if(!self.files.size || self.files.size() > 0) {
+                    if(self.files != null && self.files.size() > 0) {
                         self.input.on('filebatchselected', function (event) {
                             self.input.fileinput('upload');
                         });
                         self.input.fileinput('clear');
                         self.input.fileinput('clearFileStack');
                         self.input.fileinput('readFiles', self.files);
+                    } else {
+                        $("#fast-form-submit").click();
+                        self.enableButtons();
                     }
                 }
+            },
+            error: function() {
+                self.enableButtons();
             }
         });
+    }
+
+    disableButtons() {
+        $("#fast-sign-button").attr("disabled", "disabled");
+        $(".send-form-spinner").removeClass("d-none");
+        $("#fast-form-close").attr("disabled", "disabled");
+        $("#send-draft-button").attr("disabled", "disabled");
+        $("#send-pending-button").attr("disabled", "disabled");
+        $("#wiz-start-button").attr("disabled", "disabled");
+        $('button[aria-label="Close"]').attr("disabled", "disabled");
+    }
+
+    enableButtons() {
+        $(".send-form-spinner").addClass("d-none");
+        $("#fast-sign-button").removeAttr("disabled");
+        $("#fast-form-close").removeAttr("disabled");
+        $("#send-draft-button").removeAttr("disabled");
+        $("#send-pending-button").removeAttr("disabled");
+        $("#wiz-start-button").removeAttr("disabled");
+        $('button[aria-label="Close"]').removeAttr("disabled")
     }
 
     fastStartSign() {
@@ -128,13 +155,14 @@ export class WizUi {
             alert(e);
         });
         $("#send-pending-button").on('click', function() {
+            self.disableButtons();
             let fileCount = self.input.fileinput('getFilesCount');
-
             if(fileCount > 0 &&  self.recipientsEmailsSelect.slimSelect.getSelected().length > 0) {
                 self.pending = true;
                 self.wizCreateSign("fast");
             } else {
                 $("#update-fast-sign-submit").click();
+                self.enableButtons();
             }
         });
         $("#multiSign").on('change', e => this.toggleAnnotationOption(e.target));
@@ -191,18 +219,27 @@ export class WizUi {
             self.workflowSignNextStep();
         });
         $("#wiz-start-button").on('click', function (){
-            let title = $("#title-wiz").val();
-            let comment = $("#comment-wiz").val();
-            $.ajax({
-                type: "POST",
-                url: '/user/wizard/wiz-create-workflow-sign?workflowId=' + self.workflowId + "&title=" + title + "&comment=" + comment + "&" + self.csrf.parameterName + "=" + self.csrf.token,
-                success: function(signBookId) {
-                    self.newSignBookId = signBookId
-                    self.fileInput.signBookId = self.newSignBookId;
-                    self.input.fileinput("upload")
-                    $("#wiz-start-button").attr('disabled','disabled');
-                }
-            });
+            self.disableButtons();
+            let fileCount = self.input.fileinput('getFilesCount');
+            if(fileCount > 0) {
+                let title = $("#title-wiz").val();
+                let comment = $("#comment-wiz").val();
+                $.ajax({
+                    type: "POST",
+                    url: '/user/wizard/wiz-create-workflow-sign?workflowId=' + self.workflowId + "&title=" + title + "&comment=" + comment + "&" + self.csrf.parameterName + "=" + self.csrf.token,
+                    success: function (signBookId) {
+                        self.newSignBookId = signBookId
+                        self.fileInput.signBookId = self.newSignBookId;
+                        self.input.fileinput("upload")
+                    },
+                    error: function () {
+                        $("#wiz-start-button").removeAttr("disabled");
+                    }
+                });
+            } else {
+                $("#start-workflow-submit").click();
+                self.enableButtons();
+            }
         });
         $('button[id^="markHelpAsReadButton_"]').each((index, e) => this.listenHelpMarkAsReadButton(e));
     }
@@ -315,11 +352,13 @@ export class WizUi {
     }
 
     workflowSignSubmitLastStepData(pending) {
+        this.disableButtons()
         let self = this;
         let successCallback = function() {
             location.href = "/user/signbooks/" + self.newSignBookId;
         }
         let errorCallback = function(e) {
+            self.enableButtons();
             if(e.responseText !== "")  {
                 bootbox.alert("Une erreur s’est produite lors du démarrage du circuit :<br>" + e.responseText, function () {});
             } else {

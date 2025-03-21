@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.dto.json;
 
 import java.util.Date;
 
-public class SignRequestStepDto {
+public class RecipientsActionsDto {
 
     String userEppn;
     String userEmail;

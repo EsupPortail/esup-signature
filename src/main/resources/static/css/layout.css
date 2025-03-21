@@ -264,7 +264,7 @@ header {
     position: fixed;
     margin-left: 260px;
     width: calc(100vw - 269px);
-    z-index: 6;
+    z-index: 999;
 }
 
 .breadcrumb-nav-full {
@@ -329,5 +329,5 @@ header {
     top:130px;
     position: fixed;
     width: calc(100% - 285px);
-    z-index: 5;
+    z-index: 999;
 }
