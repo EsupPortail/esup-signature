@@ -3,12 +3,12 @@ package org.esupportail.esupsignature.service;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.SignWith;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
@@ -24,24 +24,15 @@ import java.util.concurrent.TimeUnit;
 @EnableConfigurationProperties({GlobalProperties.class, SignProperties.class})
 public class SignWithService {
 
-    @Resource
-    private UserService userService;
-
-    @Resource
-    private DataService dataService;
-
-    @Resource
-    private SignRequestService signRequestService;
-
-    @Resource
-    private CertificatService certificatService;
-
-    @Resource
+    private final UserService userService;
+    private final CertificatService certificatService;
     private final GlobalProperties globalProperties;
 
     private static LoadingCache<String, Boolean> sealCertOKCache;
 
-    public SignWithService(GlobalProperties globalProperties) {
+    public SignWithService(UserService userService, CertificatService certificatService, GlobalProperties globalProperties) {
+        this.userService = userService;
+        this.certificatService = certificatService;
         this.globalProperties = globalProperties;
         sealCertOKCache = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<>() {
             @Override
@@ -75,7 +66,8 @@ public class SignWithService {
         if(globalProperties.getDisableCertStorage() || user.getKeystore() == null) {
             signWiths.remove(SignWith.userCert);
         }
-        if(!checkSealCertificat(userEppn, false) || !userService.getRoles(userEppn).contains("ROLE_SEAL")) {
+        if(!checkSealCertificat(userEppn, false)
+            || (!userService.getRoles(userEppn).contains("ROLE_SEAL") && !(globalProperties.getSealForExternals() || !user.getUserType().equals(UserType.external)))) {
             signWiths.remove(SignWith.sealCert);
         }
         if(certificatService.getCertificatByUser(user.getEppn()).isEmpty()) {
@@ -98,7 +90,8 @@ public class SignWithService {
 
     public boolean checkSealCertificat(String userEppn, boolean force) {
         if(Boolean.TRUE.equals(sealCertOKCache.getIfPresent("sealOK"))) return true;
-        if(userService.getRoles(userEppn).contains("ROLE_SEAL") &&
+        User user = userService.getByEppn(userEppn);
+        if((user.getRoles().contains("ROLE_SEAL") || (globalProperties.getSealForExternals() && user.getUserType().equals(UserType.external))) &&
                 StringUtils.hasText(globalProperties.getSealCertificatPin()) &&
                 (
                     (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11) && StringUtils.hasText(globalProperties.getSealCertificatDriver()))
