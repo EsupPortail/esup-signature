@@ -1296,7 +1296,22 @@ public class SignRequestService {
 	public void replaceRecipientsToWorkflowStep(Long signBookId, Integer stepNumber, List<RecipientWsDto> recipientWsDtos) throws EsupSignatureException {
 		SignBook signBook = signBookRepository.findById(signBookId).orElseThrow();
 		LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber - 1);
-		liveWorkflowStepService.replaceRecipientsToWorkflowStep(signBook, liveWorkflowStep, recipientWsDtos);
+		if (signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(liveWorkflowStep) + 1 < signBook.getLiveWorkflow().getCurrentStepNumber()) {
+			throw new EsupSignatureException("Impossible de modifier les destinataires d'une étape déjà passée");
+		}
+		List<Recipient> oldRecipients = new ArrayList<>(liveWorkflowStep.getRecipients());
+		liveWorkflowStep.getRecipients().clear();
+		List<Recipient> recipients = liveWorkflowStepService.addRecipientsToWorkflowStep(signBook, liveWorkflowStep, recipientWsDtos);
+		if (signBook.getLiveWorkflow().getCurrentStep().equals(liveWorkflowStep)) {
+			for (SignRequest signRequest : signBook.getSignRequests()) {
+				for (Recipient recipient : oldRecipients) {
+					signRequest.getRecipientHasSigned().remove(recipient);
+				}
+				for (Recipient recipient : recipients) {
+					signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
+				}
+			}
+		}
 	}
 
     public List<RecipientWsDto> getExternalRecipients(Long signRequestId) {
