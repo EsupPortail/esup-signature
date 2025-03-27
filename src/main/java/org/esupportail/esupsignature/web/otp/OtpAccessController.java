@@ -69,7 +69,7 @@ public class OtpAccessController {
     public String signin(@PathVariable String urlId, Model model, HttpServletRequest httpServletRequest) throws NumberParseException {
         boolean signature = true;
         model.addAttribute("urlId", urlId);
-        Otp otp = otpService.getOtpFromDatabase(urlId);
+        Otp otp = otpService.getAndCheckOtpFromDatabase(urlId);
         if(otp != null) {
             if(!otp.getSignBook().getStatus().equals(SignRequestStatus.pending) && otp.isSignature()) {
                 return "redirect:/otp-access/completed";
@@ -96,11 +96,8 @@ public class OtpAccessController {
                     return "otp/enter-phonenumber";
                 }
             } else if (!globalProperties.getSmsRequired() && !otp.isForceSms()) {
-                Otp cachedOtp = otpService.getAndCheckOtpFromCache(urlId);
-                if (cachedOtp != null && urlId.equals(cachedOtp.getUrlId())) {
-                    authOtp(model, httpServletRequest, user);
-                    return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
-                }
+                authOtp(model, httpServletRequest, user);
+                return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
             }
         }
         if(signBookService.renewOtp(urlId, signature)) {
