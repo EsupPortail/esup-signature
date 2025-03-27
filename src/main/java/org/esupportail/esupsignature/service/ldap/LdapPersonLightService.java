@@ -62,7 +62,7 @@ public class LdapPersonLightService {
         }
         LdapQuery ldapQuery = LdapQueryBuilder.query().countLimit(10).base(ldapProperties.getSearchBase()).filter(formattedFilter);
         logQuery(ldapQuery);
-        return ldapTemplate.search(ldapQuery, new PersonLightLdapAttributesMapper());
+        return ldapTemplate.search(ldapQuery, new PersonLightLdapAttributesMapper()).stream().filter(personLightLdap -> StringUtils.hasText(personLightLdap.getMail())).toList();
     }
 
     private void logQuery(LdapQuery ldapQuery) {
