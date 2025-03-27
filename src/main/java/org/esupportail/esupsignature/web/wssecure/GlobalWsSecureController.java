@@ -88,7 +88,7 @@ public class GlobalWsSecureController {
     @PreAuthorize("@preAuthorizeService.signRequestView(#signRequestId, #userEppn, #authUserEppn)")
     @ResponseBody
     @PostMapping(value = "/viewed/{signRequestId}")
-    public ResponseEntity<Void> sign(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signRequestId") Long signRequestId) {
+    public ResponseEntity<Void> viewedBy(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signRequestId") Long signRequestId) {
         signRequestService.viewedBy(signRequestId, userEppn);
         return ResponseEntity.ok().build();
     }

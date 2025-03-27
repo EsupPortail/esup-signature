@@ -29,6 +29,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -38,17 +40,11 @@ public class OtpService {
     private static final Logger logger = LoggerFactory.getLogger(OtpService.class);
 
     private final SignBookRepository signBookRepository;
-
     private final OtpRepository otpRepository;
-
     private final MailService mailService;
-
     private final UserService userService;
-
     private final GlobalProperties globalProperties;
-
     private final SmsService smsService;
-
     private static LoadingCache<String, Otp> otpCache;
 
     public OtpService(SignBookRepository signBookRepository, OtpRepository otpRepository, MailService mailService, UserService userService, GlobalProperties globalProperties, @Autowired(required = false) SmsService smsService) {
@@ -110,14 +106,6 @@ public class OtpService {
         }
     }
 
-    public void deleteOtpBySignBookId(Long id) {
-        for (Map.Entry<String, Otp> otpEntry : otpCache.asMap().entrySet()) {
-            if(otpEntry.getValue().getSignBook().getId().equals(id)) {
-                clearOTP(otpEntry.getKey());
-            }
-        }
-    }
-
     @Transactional
     public String generateOtpPassword(String urlId, String phone) {
         Otp otp = getOtpFromDatabase(urlId);
@@ -129,12 +117,18 @@ public class OtpService {
         return password;
     }
 
-    public Otp getAndCheckOtpFromCache(String urlId){
-        try{
-            Otp otp = otpCache.get(urlId);
-            return otp;
-        }catch (Exception e){
-            logger.warn("error on get otp : " + e.getMessage());
+    public Otp getAndCheckOtpFromDatabase(String urlId){
+        Otp otp = otpRepository.findByUrlId(urlId);
+        if(otp != null) {
+            LocalDateTime validDate = otp.getCreateDate()
+                    .toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime()
+                    .plusMinutes(globalProperties.getOtpValidity());
+            LocalDateTime now = LocalDateTime.now();
+            if (validDate.isAfter(now)) {
+                return otpRepository.findByUrlId(urlId);
+            }
         }
         return null;
     }

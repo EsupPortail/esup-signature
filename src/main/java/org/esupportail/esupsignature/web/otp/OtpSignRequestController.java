@@ -16,6 +16,7 @@ import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -48,6 +49,8 @@ public class OtpSignRequestController {
 
     @Resource
     private DataService dataService;
+    @Autowired
+    private GlobalProperties globalProperties;
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
@@ -124,7 +127,7 @@ public class OtpSignRequestController {
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
         model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest));
-        model.addAttribute("sealCertOK", false);
+        model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn, true));
         model.addAttribute("otp", true);
         if(!signRequest.getStatus().equals(SignRequestStatus.draft)) {
             try {

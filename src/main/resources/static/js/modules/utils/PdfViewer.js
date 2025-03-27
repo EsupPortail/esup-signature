@@ -160,7 +160,7 @@ export class PdfViewer extends EventFactory {
             if(e > $("#page_" + i).offset().top - 250) {
                 this.pageNum = i;
                 document.getElementById('page_num').value = this.pageNum;
-                if(this.pageNum === this.numPages && !this.viewed) {
+                if((this.pageNum === this.numPages || this.numPages === 1) && !this.viewed) {
                     this.viewed = true;
                     this.fireEvent('reachEnd', ['ok'])
                 }
@@ -267,6 +267,10 @@ export class PdfViewer extends EventFactory {
         document.getElementById('page_num').value = this.pageNum;
         document.getElementById('zoom').textContent = Math.round(100 * this.scale);
         if(this.pdfDoc.numPages === 1) {
+            if((this.pageNum === this.numPages || this.numPages === 1) && !this.viewed) {
+                this.viewed = true;
+                this.fireEvent('reachEnd', ['ok'])
+            }
             this.disableScrollBtn();
         }
         // this.pdfDoc.getPage(this.pageNum).then(page => this.renderTask(page));
