@@ -71,7 +71,7 @@
 <!--					</button>-->
 <!--				</div>-->
 <!--			</div>-->
-			<div id="insert-btn-div" class="d-none d-sm-block">
+			<div id="insert-btn-div" class="d-none d-sm-block" th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
 				<button id="insert-btn" th:if="${editable}" class="btn btn-light btn-outline-primary pulse-primary me-1"
 					data-bs-toggle="collapse" href="#second-tools">
 					<i class="fa-solid fa-plus"></i> <span class="d-none d-xxl-inline">Menu insertion</span>
