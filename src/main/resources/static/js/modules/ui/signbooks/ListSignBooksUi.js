@@ -31,6 +31,7 @@ export class ListSignBooksUi {
         }
         this.csrf = new CsrfToken(csrf);
         this.signRequestTable = $("#signRequestTable");
+        this.listSignRequestTable = $('#listSignRequestTable');
         this.page = 0;
         this.initListeners();
         this.launchMassSignButtonHide = true;
@@ -59,7 +60,18 @@ export class ListSignBooksUi {
         $('#downloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         $('#menuDownloadMultipleButton').on("click", e => this.downloadMultiple());
         $('#menuDownloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
-        $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
+        this.listSignRequestTable.on('scroll', e => this.detectEndDiv(e));
+        this.listSignRequestTable.focus();
+        let self = this;
+        $(document).on('click', function(){
+            self.listSignRequestTable.focus();
+        });
+        $(document).on('wheel', function(e){
+            e.preventDefault();
+            let delta = e.originalEvent.deltaY;
+            let scrollAmount = delta > 0 ? 20 : -20;
+            self.listSignRequestTable.scrollTop(self.listSignRequestTable.scrollTop() + scrollAmount);
+        });
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
         this.refreshListeners();
@@ -247,8 +259,8 @@ export class ListSignBooksUi {
 
     addToPage() {
         console.info("Add to page");
-        $('#listSignRequestTable').unbind('scroll');
-        $("#listSignRequestTable").addClass("wait");
+        this.listSignRequestTable.unbind('scroll');
+        this.listSignRequestTable.addClass("wait");
         $("#loader").show();
         this.page++;
         let self = this;
@@ -260,15 +272,19 @@ export class ListSignBooksUi {
         $.get("/" + this.mode + "/signbooks/list-ws?statusFilter=" + this.statusFilter + "&sort=" + sort + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=15", function (data) {
             self.signRequestTable.append(data);
             let clickableRows = $(".clickable-row");
-            clickableRows.unbind();
-            clickableRows.on('click',  function() {
-                window.location = $(this).closest('tr').attr('data-href');
+            clickableRows.off('click').on('click', function(e) {
+                let url = $(this).closest('tr').attr('data-href');
+                if (e.ctrlKey || e.metaKey) {
+                    window.open(url, '_blank');
+                } else {
+                    window.location = url;
+                }
             });
             $(document).trigger("refreshClickableTd");
-            $("#listSignRequestTable").removeClass("wait");
+            self.listSignRequestTable.removeClass("wait");
             $("#loader").hide();
             self.refreshListeners();
-            $('#listSignRequestTable').on('scroll', e => self.detectEndDiv(e));
+            self.listSignRequestTable.on('scroll', e => self.detectEndDiv(e));
             let displayedElements = $("#signRequestTable tr").length;
             self.totalElementsToDisplay = self.signRequests.totalElements - displayedElements;
         });

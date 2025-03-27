@@ -13,7 +13,7 @@
             <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
             <span th:text="${signRequest.parentSignBook.description}"></span>
         </div>
-        <div id="alertSign" class="alert border-dark" th:classappend="${signatureIssue ? 'alert-danger' : 'alert-success'}" th:if="${signatureIds.size() > 0}" style="width: 100%;">
+        <div id="alertSign" class="alert border-dark" th:classappend="${signatureIssue ? 'alert-warning' : 'alert-success'}" th:if="${signatureIds.size() > 0}" style="width: 100%;">
             <span style="line-height: 33px;" th:if="${!signatureIssue && signatureIds.size() > 1}">Ce document contient des signatures électroniques
                 <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
                     <span class="sr-only">En cours...</span>
@@ -26,11 +26,11 @@
                 </div>
                 <button es-modal-style="bg-success" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la signature</button>
             </span>
-            <span style="line-height: 33px;" th:if="${signatureIssue}">Ce document contient au moins une signature en erreur. La signature de ce document pourra générer des erreurs
+            <span style="line-height: 33px;" th:if="${signatureIssue}">Ce document contient au moins une signature en non qualifiée. La signature de ce document pourrait générer des problèmes de compatibilité
                 <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
                     <span class="sr-only">En cours...</span>
                 </div>
-                <button es-modal-style="bg-danger" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la/les signature(s)</button>
+                <button es-modal-style="bg-warning" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la/les signature(s)</button>
             </span>
             <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
         </div>

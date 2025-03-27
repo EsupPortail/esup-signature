@@ -166,6 +166,20 @@ export class WizUi {
             }
         });
         $("#multiSign").on('change', e => this.toggleAnnotationOption(e.target));
+        $('#signType-1').on('change', function (e) {
+            if($(this).val() === "hiddenVisa") {
+                let multiSign = $('#multiSign');
+                multiSign.prop('checked', false);
+                multiSign.prop('disabled', 'disabled');
+                $('#singleSignWithAnnotation').prop('checked', false);
+            }
+            else {
+                let multiSign = $('#multiSign');
+                multiSign.prop('checked', true);
+                multiSign.removeAttr('disabled')
+                $('#singleSignWithAnnotation').prop('checked', true);
+            }
+        });
     }
 
     fastSignSubmitDatas() {
@@ -314,6 +328,20 @@ export class WizUi {
             self.start = false;
             $("#recipientsEmails-1").removeAttr("required");
             self.workflowSignSubmitStepData();
+        });
+        $('#signType-1').on('change', function (e) {
+            if($(this).val() === "hiddenVisa") {
+                let multiSign = $('#multiSign-1');
+                multiSign.prop('checked', false);
+                multiSign.prop('disabled', 'disabled');
+                $('#singleSignWithAnnotation-1').prop('checked', false);
+            }
+            else {
+                let multiSign = $('#multiSign-1');
+                multiSign.prop('checked', true);
+                multiSign.removeAttr('disabled')
+                $('#singleSignWithAnnotation-1').prop('checked', true);
+            }
         });
         $("#multiSign-1").on('change', e => this.toggleAnnotationOption(e.target));
         $("#wiz-end").on('click', e => this.wizardEnd());
@@ -566,6 +594,20 @@ export class WizUi {
             if(signType.length) {
                 step.signType = signType.val();
             }
+            signType.on('change', function (e) {
+                if($(this).val() === "hiddenVisa") {
+                    let multiSign = $('#multiSign-' + i);
+                    multiSign.prop('checked', false);
+                    multiSign.prop('disabled', 'disabled');
+                    $('#singleSignWithAnnotation-' + i).prop('checked', false);
+                }
+                else {
+                    let multiSign = $('#multiSign-' + i);
+                    multiSign.prop('checked', true);
+                    multiSign.removeAttr('disabled')
+                    $('#singleSignWithAnnotation' + i).prop('checked', true);
+                }
+            });
             step.targetEmails = $('#targetEmailsSelect').val();
             step.forceAllSign = $('input[name="forceAllSign"]').is(":checked");
             steps.push(step);

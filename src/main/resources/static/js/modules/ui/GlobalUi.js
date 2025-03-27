@@ -66,8 +66,13 @@ export class GlobalUi {
         $("#closeUserInfo").on('click', function() {
             $("#user-toggle").click();
         });
-        this.clickableRow.on('click',  function() {
-            window.location = $(this).closest('tr').attr('data-href');
+        this.clickableRow.off('click').on('click', function(e) {
+            let url = $(this).closest('tr').attr('data-href');
+            if (e.ctrlKey || e.metaKey) {
+                window.open(url, '_blank');
+            } else {
+                window.location = url;
+            }
         });
         this.refreshClickableTd();
         this.inputFiles.on('change', e => this.changeFileInputName(e));
@@ -605,16 +610,16 @@ export class GlobalUi {
 
     refreshClickableTd() {
         this.clickableTd = $(".clickable-td");
-        this.clickableTd.unbind();
-        this.clickableTd.on('click',  function() {
-            let test = false;
-            $(".card").each(function (index, e) {
-                if(e.classList.contains("show")) {
-                    test = true;
+        this.clickableTd.off('click').on('click', function(e) {
+            let test = $(".card.show").length > 0;
+
+            if (!test) {
+                let url = $(this).closest('tr').attr('data-href');
+                if (e.ctrlKey || e.metaKey) {
+                    window.open(url, '_blank');
+                } else {
+                    window.location = url;
                 }
-            });
-            if(!test) {
-                window.location = $(this).closest('tr').attr('data-href');
             }
         });
     }
