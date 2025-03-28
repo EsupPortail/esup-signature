@@ -131,18 +131,27 @@ public class TargetService {
     public void toggleSendDocument(Long id) {
         Target target = getById(id);
         target.setSendDocument(!target.getSendDocument());
+        checkSendZip(target);
     }
 
     @Transactional
     public void toggleSendReport(Long id) {
         Target target = getById(id);
         target.setSendReport(!target.getSendReport());
+        checkSendZip(target);
     }
 
     @Transactional
     public void toggleSendAttachment(Long id) {
         Target target = getById(id);
         target.setSendAttachment(!target.getSendAttachment());
+        checkSendZip(target);
+    }
+
+    public void checkSendZip(Target target) {
+        if(!target.getSendAttachment() && !target.getSendReport() && ! target.getSendDocument()) {
+            target.setSendZip(false);
+        }
     }
 
     @Transactional
