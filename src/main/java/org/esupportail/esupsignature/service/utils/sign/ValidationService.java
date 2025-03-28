@@ -75,7 +75,6 @@ public class ValidationService {
             }
             documentValidator.setSignaturePolicyProvider(new SignaturePolicyProvider());
             documentValidator.setTokenExtractionStrategy(TokenExtractionStrategy.NONE);
-            documentValidator.setLocale(Locale.FRENCH);
             documentValidator.setValidationLevel(ValidationLevel.LONG_TERM_DATA);
             documentValidator.setSignaturePolicyProvider(signaturePolicyProvider);
             documentValidator.setIncludeSemantics(true);
