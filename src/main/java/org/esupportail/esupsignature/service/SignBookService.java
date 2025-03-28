@@ -1668,6 +1668,8 @@ public class SignBookService {
                                         }
                                         if (target.getSendDocument()) {
                                             Document signedFile = signRequest.getLastSignedDocument();
+                                            String extension = "." + fileService.getExtension(signedFile.getFileName());
+                                            if(!name.endsWith(extension)) name += extension;
                                             inputStreams.put(signedFile.getInputStream(), name);
                                         }
                                         if (target.getSendReport()) {
