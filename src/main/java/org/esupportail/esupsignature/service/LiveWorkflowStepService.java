@@ -25,24 +25,17 @@ public class LiveWorkflowStepService {
     private static final Logger logger = LoggerFactory.getLogger(LiveWorkflowStepService.class);
 
     private final LiveWorkflowStepRepository liveWorkflowStepRepository;
-
     private final RecipientService recipientService;
-
     private final UserService userService;
-
     private final SignTypeService signTypeService;
-
     private final SignService signService;
 
-    private final ActionService actionService;
-
-    public LiveWorkflowStepService(LiveWorkflowStepRepository liveWorkflowStepRepository, RecipientService recipientService, UserService userService, SignTypeService signTypeService, SignService signService, ActionService actionService) {
+    public LiveWorkflowStepService(LiveWorkflowStepRepository liveWorkflowStepRepository, RecipientService recipientService, UserService userService, SignTypeService signTypeService, SignService signService) {
         this.liveWorkflowStepRepository = liveWorkflowStepRepository;
         this.recipientService = recipientService;
         this.userService = userService;
         this.signTypeService = signTypeService;
         this.signService = signService;
-        this.actionService = actionService;
     }
 
     public LiveWorkflowStep getById(Long liveWorkflowStepId) {
@@ -79,6 +72,37 @@ public class LiveWorkflowStepService {
         }
         liveWorkflowStep.setRepeatableSignType(step.getRepeatableSignType());
         addRecipientsToWorkflowStep(signBook, liveWorkflowStep, step.getRecipients());
+        liveWorkflowStepRepository.save(liveWorkflowStep);
+        return liveWorkflowStep;
+    }
+
+    public LiveWorkflowStep cloneLiveWorkflowStep(SignBook signBook, WorkflowStep workflowStep, LiveWorkflowStep step) {
+        LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
+        liveWorkflowStep.setWorkflowStep(workflowStep);
+        liveWorkflowStep.setRepeatable(Objects.requireNonNullElse(step.getRepeatable(), false));
+        liveWorkflowStep.setMultiSign(Objects.requireNonNullElse(step.getMultiSign(), true));
+        liveWorkflowStep.setSingleSignWithAnnotation(Objects.requireNonNullElse(step.getSingleSignWithAnnotation(), false));
+        liveWorkflowStep.setAutoSign(Objects.requireNonNullElse(step.getAutoSign(), false));
+        liveWorkflowStep.setAllSignToComplete(Objects.requireNonNullElse(step.getAllSignToComplete(), false));
+        liveWorkflowStep.setAttachmentAlert(Objects.requireNonNullElse(step.getAttachmentAlert(), false));
+        liveWorkflowStep.setAttachmentRequire(Objects.requireNonNullElse(step.getAttachmentRequire(), false));
+        if(step.getSignType() == null) {
+            int minLevel = 2;
+            if(signService.isSigned(signBook, null)) {
+                minLevel = 3;
+            }
+            if(liveWorkflowStep.getSignType() == null || liveWorkflowStep.getSignType().getValue() < minLevel) {
+                liveWorkflowStep.setSignType(signTypeService.getLessSignType(minLevel));
+            }
+        } else {
+            liveWorkflowStep.setSignType(step.getSignType());
+        }
+        liveWorkflowStep.setRepeatableSignType(step.getRepeatableSignType());
+        List<RecipientWsDto> recipientWsDtos = new ArrayList<>();
+        for(Recipient recipient : step.getRecipients()) {
+            recipientWsDtos.add(recipient.getRecipientDto());
+        }
+        addRecipientsToWorkflowStep(signBook, liveWorkflowStep, recipientWsDtos);
         liveWorkflowStepRepository.save(liveWorkflowStep);
         return liveWorkflowStep;
     }

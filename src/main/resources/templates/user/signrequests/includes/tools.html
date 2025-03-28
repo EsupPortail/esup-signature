@@ -158,9 +158,13 @@
 		<a th:if="${isManager}" class="btn btn-light btn-outline-dark d-none d-lg-block ms-1 me-1" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal">
 			<i class="fa-solid fa-users-viewfinder"></i>
 		</a>
-		<a th:if="${isManager}" class="btn btn-light btn-outline-dark d-none d-md-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/update/' + ${signRequest.parentSignBook.id}">
+		<a th:if="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}" class="btn btn-light btn-outline-dark d-none d-md-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/update/' + ${signRequest.parentSignBook.id}">
 			<i class="fa-solid fa-pencil-alt"></i>
 		</a>
+		<button th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="btn btn-light btn-outline-dark me-1" data-bs-toggle="modal" title="Ajouter un post-it"
+				data-bs-target="#cloneModal">
+			<i class="fa-solid fa-refresh"></i> <span class="d-none d-xxxl-inline">Redémarrer</span>
+		</button>
 	</div>
 	<ul id="ws-tabs" class="nav nav-tabs" th:if="${nbSignRequestInSignBookParent > 1}">
 		<th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
