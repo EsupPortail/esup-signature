@@ -661,7 +661,10 @@ export class PdfViewer extends EventFactory {
             inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
             if (inputField.length) {
                 inputField.addClass("field-type-textarea");
-                inputField.on('input', e => this.fireEvent('change', ['checked']));
+                inputField.on('input', function(e) {
+                    clearTimeout(self.timer);
+                    self.timer = setTimeout(e => self.fireEvent('change', ['checked']), 500);
+                });
                 inputField.removeAttr("hidden");
                 if(dataField == null) continue;
                 this.disableInput(inputField, dataField, items[i].readOnly);
