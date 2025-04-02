@@ -256,13 +256,29 @@ public class WebSecurityConfig {
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/")).permitAll());
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/ws/workflows/**/datas/csv"))
 				.access(new WebExpressionAuthorizationManager("hasIpAddress('" + webSecurityProperties.getCsvAccessAuthorizeMask() + "')")));
+		setIpsAutorizations(http, webSecurityProperties.getWsAccessAuthorizeIps());
+		setIpsAutorizations(http, webSecurityProperties.getActuatorsAccessAuthorizeIps());
+		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
+				.requestMatchers(antMatcher("/api-docs/**")).hasAnyRole("ADMIN")
+				.requestMatchers(antMatcher("/swagger-ui/**")).hasAnyRole("ADMIN")
+				.requestMatchers(antMatcher("/swagger-ui.html")).hasAnyRole("ADMIN")
+				.requestMatchers(antMatcher("/admin/**")).hasAnyRole("ADMIN")
+				.requestMatchers(antMatcher("/manager/**")).hasAnyRole("MANAGER")
+				.requestMatchers(antMatcher("/user/**")).hasAnyRole("USER")
+				.requestMatchers(antMatcher("/nexu-sign/**")).hasAnyRole("USER", "OTP", "FRANCECONNECT")
+				.requestMatchers(antMatcher("/otp/**")).hasAnyRole("OTP", "FRANCECONNECT")
+				.requestMatchers(antMatcher("/ws-secure/**")).hasAnyRole("USER", "OTP", "FRANCECONNECT")
+				.anyRequest().permitAll());
+	}
+
+	private void setIpsAutorizations(HttpSecurity http, String[] authorizeIps) throws Exception {
 		StringBuilder hasIpAddresses = new StringBuilder();
 		int nbIps = 0;
-		if(webSecurityProperties.getWsAccessAuthorizeIps() != null && webSecurityProperties.getWsAccessAuthorizeIps().length > 0) {
-			for (String ip : webSecurityProperties.getWsAccessAuthorizeIps()) {
+		if(authorizeIps != null && authorizeIps.length > 0) {
+			for (String ip : authorizeIps) {
 				nbIps++;
 				hasIpAddresses.append("hasIpAddress('").append(ip).append("')");
-				if(nbIps < webSecurityProperties.getWsAccessAuthorizeIps().length) {
+				if(nbIps < authorizeIps.length) {
 					hasIpAddresses.append(" or ");
 				}
 			}
@@ -281,17 +297,6 @@ public class WebSecurityConfig {
 			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/ws/**")).denyAll());
 			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/actuator/**")).denyAll());
 		}
-		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
-				.requestMatchers(antMatcher("/api-docs/**")).hasAnyRole("ADMIN")
-				.requestMatchers(antMatcher("/swagger-ui/**")).hasAnyRole("ADMIN")
-				.requestMatchers(antMatcher("/swagger-ui.html")).hasAnyRole("ADMIN")
-				.requestMatchers(antMatcher("/admin/**")).hasAnyRole("ADMIN")
-				.requestMatchers(antMatcher("/manager/**")).hasAnyRole("MANAGER")
-				.requestMatchers(antMatcher("/user/**")).hasAnyRole("USER")
-				.requestMatchers(antMatcher("/nexu-sign/**")).hasAnyRole("USER", "OTP", "FRANCECONNECT")
-				.requestMatchers(antMatcher("/otp/**")).hasAnyRole("OTP", "FRANCECONNECT")
-				.requestMatchers(antMatcher("/ws-secure/**")).hasAnyRole("USER", "OTP", "FRANCECONNECT")
-				.anyRequest().permitAll());
 	}
 
 	@Bean
