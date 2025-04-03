@@ -66,7 +66,7 @@ public class NexuService {
 		AbstractSignatureParameters<?> parameters = signService.getASiCSignatureParameters(signatureMultipleDocumentsForm.getContainerType(), signatureMultipleDocumentsForm.getSignatureForm());
 		List<DssMultipartFile> dssMultipartFiles = new ArrayList<>();
 		for(Document document : documentsToSign) {
-			dssMultipartFiles.add(new DssMultipartFile(document.getFileName(), document.getFileName(), document.getContentType(), document.getInputStream()));
+			dssMultipartFiles.add(document.getMultipartFile());
 		}
 		parameters.getDetachedContents().addAll(dssUtilsService.toDSSDocuments(dssMultipartFiles));
 		signService.fillCommonsParameters(parameters, signatureMultipleDocumentsForm);
@@ -86,7 +86,7 @@ public class NexuService {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		logger.info("Start getDataToSign with one document");
 		DocumentSignatureService service = signService.getSignatureService(signatureDocumentForm.getContainerType(), signatureDocumentForm.getSignatureForm());
-		DSSDocument toSignDocument = dssUtilsService.toDSSDocument(new DssMultipartFile(documentsToSign.get(0).getFileName(), documentsToSign.get(0).getFileName(), documentsToSign.get(0).getContentType(), documentsToSign.get(0).getInputStream()));
+		DSSDocument toSignDocument = dssUtilsService.toDSSDocument(documentsToSign.get(0).getMultipartFile());
 		AbstractSignatureParameters parameters = getSignatureParameters(signRequest, userEppn, signatureDocumentForm, documentsToSign);
 		ToBeSigned toBeSigned = service.getDataToSign(toSignDocument, parameters);
 		logger.info("End getDataToSign with one document");
@@ -202,16 +202,16 @@ public class NexuService {
 	}
 
 	@Transactional
-	public AbstractSignatureForm getAbstractSignatureFormFromNexuSignature(NexuSignature nexuSignature) throws IOException {
+	public AbstractSignatureForm getAbstractSignatureFormFromNexuSignature(NexuSignature nexuSignature) {
 		AbstractSignatureForm abstractSignatureForm = null;
 		if(nexuSignature.getDocumentToSign().size() > 1) {
 			abstractSignatureForm = new SignatureMultipleDocumentsForm();
 			for(Document document : nexuSignature.getDocumentToSign()) {
-				((SignatureMultipleDocumentsForm) abstractSignatureForm).getDocumentsToSign().add(new DssMultipartFile(document.getFileName(), document.getFileName(), document.getContentType(), document.getInputStream()));
+				((SignatureMultipleDocumentsForm) abstractSignatureForm).getDocumentsToSign().add(document.getMultipartFile());
 			}
 		} else {
 			abstractSignatureForm = new SignatureDocumentForm();
-			((SignatureDocumentForm) abstractSignatureForm).setDocumentToSign(new DssMultipartFile(nexuSignature.getDocumentToSign().get(0).getFileName(), nexuSignature.getDocumentToSign().get(0).getFileName(), nexuSignature.getDocumentToSign().get(0).getContentType(), nexuSignature.getDocumentToSign().get(0).getInputStream()));
+			((SignatureDocumentForm) abstractSignatureForm).setDocumentToSign(nexuSignature.getDocumentToSign().get(0).getMultipartFile());
 		}
 		abstractSignatureForm.setSigningDate(nexuSignature.getSigningDate());
 		abstractSignatureForm.setSignatureValue(nexuSignature.getSignatureValue());

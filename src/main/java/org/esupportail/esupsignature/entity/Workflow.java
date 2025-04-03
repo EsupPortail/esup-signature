@@ -102,6 +102,8 @@ public class Workflow {
 
     private Boolean externalCanEdit = false;
 
+    private Boolean autorizeClone = false;
+
     public Long getId() {
         return id;
     }
@@ -396,5 +398,16 @@ public class Workflow {
 
     public void setExternalCanEdit(Boolean extrenalCanEdit) {
         this.externalCanEdit = extrenalCanEdit;
+    }
+
+    public Boolean getAutorizeClone() {
+        if(autorizeClone == null) {
+            return false;
+        }
+        return autorizeClone;
+    }
+
+    public void setAutorizeClone(Boolean autorizeClone) {
+        this.autorizeClone = autorizeClone;
     }
 }
