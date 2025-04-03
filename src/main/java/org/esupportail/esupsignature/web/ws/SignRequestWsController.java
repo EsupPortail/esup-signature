@@ -197,8 +197,8 @@ public class SignRequestWsController {
     }
 
     @CrossOrigin
-    @GetMapping(value = "/{id}/steps", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération d'une demande de signature",
+    @GetMapping(value = {"/{id}/steps", "/steps/{id}" }, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération des étapes d'une demande",
             responses = @ApiResponse(description = "SignRequest", content = @Content(schema = @Schema(implementation = SignRequest.class))))
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public List<SignRequestStepsDto> getSteps(@Parameter(description = "Identifiant de la demande", required = true) @PathVariable Long id,
@@ -207,7 +207,7 @@ public class SignRequestWsController {
     }
 
     @CrossOrigin
-    @GetMapping(value = "/status/{id}")
+    @GetMapping(value = {"/{id}/status", "/status/{id}"})
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération du statut d'une demande de signature")
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public String getStatus(@Parameter(description = "Identifiant de la demande") @PathVariable Long id,
@@ -216,7 +216,7 @@ public class SignRequestWsController {
     }
 
     @CrossOrigin
-    @GetMapping(value = "/audit-trail/{id}")
+    @GetMapping(value = {"/{id}/audit-trail", "/audit-trail/{id}"})
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération du dossier de preuve de la demande", responses = @ApiResponse(description = "AuditTrail", content = @Content(schema = @Schema(implementation = AuditTrail.class))))
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public String getAuditTail(@Parameter(description = "Dossier de preuve de la demande") @PathVariable Long id,
@@ -225,7 +225,7 @@ public class SignRequestWsController {
     }
 
     @CrossOrigin
-    @PostMapping(value = "/update-recipients/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = {"/{id}/update-recipients", "/update-recipients/{id}"}, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Modifier les destinataires d'une étape de demande de signature")
     @PreAuthorize("@wsAccessTokenService.updateWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<String> updateRecipients(@PathVariable Long id,

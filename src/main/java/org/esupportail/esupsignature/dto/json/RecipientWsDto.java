@@ -80,4 +80,5 @@ public class RecipientWsDto {
     public void setForceSms(Boolean forceSms) {
         this.forceSms = forceSms;
     }
+
 }

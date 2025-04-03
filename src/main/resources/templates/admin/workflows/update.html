@@ -175,6 +175,10 @@
                             <label for="externalCanEdit" class="form-check-label">Les extérieurs peuvent mettre des annotations</label>
                         </div>
                         <div class="form-check mb-2">
+                            <input id="autorizeClone" type="checkbox" class="form-check-input" th:field="*{autorizeClone}"/>
+                            <label for="autorizeClone" class="form-check-label">Autoriser le propriétaire à relancer une nouvelle demande (clonage)</label>
+                        </div>
+                        <div class="form-check mb-2">
                             <input id="scanPdfMetadatas" type="checkbox" class="form-check-input" th:field="*{scanPdfMetadatas}"/>
                             <label for="scanPdfMetadatas" class="form-check-label">Construction du circuit à partir des métadonnées des pdf importés</label>
                             <button class="btn btn-sm btn-transparent" data-bs-target="#help-scan-meta" data-bs-toggle="collapse"

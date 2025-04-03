@@ -6,14 +6,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.DataService;
+import org.esupportail.esupsignature.service.FormService;
+import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -55,9 +55,6 @@ public class DataController {
 	private PdfService pdfService;
 
 	@Resource
-	private UserService userService;
-
-	@Resource
 	private ObjectMapper objectMapper;
 
 	@PostMapping("/send-form/{id}")
@@ -81,10 +78,9 @@ public class DataController {
 	public String addData(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 						  @PathVariable("id") Long id,
 						  @RequestParam String dataId,
-						  @RequestParam MultiValueMap<String, String> formData, Model model,
+						  @RequestParam MultiValueMap<String, String> formData,
 						  RedirectAttributes redirectAttributes) throws JsonProcessingException {
-		User user = (User) model.getAttribute("user");
-		User authUser = userService.getByEppn(authUserEppn);
+		logger.info("aa");
 		TypeReference<HashMap<String, String>> type = new TypeReference<>(){};
 		Map<String, String> datas = objectMapper.readValue(formData.getFirst("formData"), type);
 		Long dataLongId = null;
@@ -93,7 +89,7 @@ public class DataController {
 		} catch (NumberFormatException e) {
 			logger.debug("dataId is null");
 		}
-		Data data = dataService.addData(id, dataLongId , datas, user, authUser);
+		Data data = dataService.addData(id, dataLongId , datas, userEppn, authUserEppn);
 		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Données enregistrées"));
 		return data.getId().toString();
 	}

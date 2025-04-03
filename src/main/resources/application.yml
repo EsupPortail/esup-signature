@@ -258,6 +258,7 @@ security:
             for.esup-signature.admin: ROLE_ADMIN
             for.esup-signature.user: ROLE_USER
         ws-access-authorize-ips:
+        actuators-access-authorize-ips:
 #        group-mapping-spel:
 #            for.esup-signature.user: "true"	
 
