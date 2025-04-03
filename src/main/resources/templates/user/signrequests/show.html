@@ -833,7 +833,7 @@
     </div>
 </div>
 
-<div data-bs-focus="false" class="modal fade" id="cloneModal"  role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="cloneModal"  role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true" th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.autorizeClone) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequest.createBy.eppn == userEppn}">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form th:action="'/user/signrequests/clone/' + ${signRequest.id}" method="post" enctype="multipart/form-data">
@@ -946,9 +946,10 @@
                 </div>
                 <div class="modal-body">
                     <textarea name="comment" class="form-control" rows="3" style="background-color: #FFF740;"></textarea>
+                    <br>
                     <input type="hidden" name="postit" value="on" />
-                    <div class="form-check mb-3" th:if="${globalProperties.sendPostitByEmail == false}">
-                        <label for="forceSend" class="form-check-label">Forcer l'envoi par mail</label>
+                    <div class="form-check mb-3">
+                        <label for="forceSend" class="form-check-label">Forcer l’envoi par mail à tous les participants</label>
                         <input type="checkbox" class="form-check-input" id="forceSend" name="forceSend">
                     </div>
                 </div>

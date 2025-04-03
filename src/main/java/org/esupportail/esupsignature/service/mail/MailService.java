@@ -180,7 +180,7 @@ public class MailService {
         return null;
     }
 
-    public void sendPostit(SignBook signBook, Comment comment) throws EsupSignatureMailException {
+    public void sendPostit(SignBook signBook, Comment comment, String userEppn, Boolean sendToAll) throws EsupSignatureMailException {
         if (!checkMailSender()) {
             return;
         }
@@ -189,6 +189,11 @@ public class MailService {
         ctx.setVariable("comment", comment);
         Set<String> toEmails = new HashSet<>();
         if(!signBook.getCreateBy().getEppn().equals("system")) toEmails.add(signBook.getCreateBy().getEmail());
+        if(BooleanUtils.isTrue(sendToAll)) {
+            toEmails.addAll(signBook.getTeam().stream().map(User::getEmail).toList());
+        }
+        User user = userService.getByEppn(userEppn);
+        toEmails.removeIf(e -> e.equals(user.getEmail()));
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-postit.html", ctx);

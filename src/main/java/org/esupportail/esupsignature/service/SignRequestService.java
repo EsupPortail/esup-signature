@@ -888,9 +888,9 @@ public class SignRequestService {
 			Comment comment = commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, "on".equals(postit), null, authUserEppn);
 			if (!(spotStepNumber != null && spotStepNumber > 0)) {
 				updateStatus(signRequest.getId(), null, "Ajout d'un commentaire", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
-				if ((globalProperties.getSendPostitByEmail() || forceSend) && !authUserEppn.equals(signRequest.getCreateBy().getEppn())) {
+				if ((globalProperties.getSendPostitByEmail() || forceSend)) {
 					try {
-						mailService.sendPostit(signRequest.getParentSignBook(), comment);
+						mailService.sendPostit(signRequest.getParentSignBook(), comment, userEppn, forceSend);
 					} catch (EsupSignatureMailException e) {
 						logger.warn("postit not sended", e);
 					}
