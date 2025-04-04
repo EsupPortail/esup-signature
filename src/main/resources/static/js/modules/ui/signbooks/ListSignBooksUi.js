@@ -33,13 +33,12 @@ export class ListSignBooksUi {
         this.signRequestTable = $("#signRequestTable");
         this.listSignRequestTable = $('#listSignRequestTable');
         this.page = 0;
-        this.initListeners();
         this.launchMassSignButtonHide = true;
         this.rowHeight = null;
         this.certTypeSelect = $("#certType");
         $("#password").hide();
         new Nexu(null, null, null, null, null);
-
+        $(document).ready(e => this.initListeners());
     }
 
     initListeners() {
@@ -49,7 +48,10 @@ export class ListSignBooksUi {
         $('#launchMassSignButton').on('click', e => this.launchMassSign());
         //$('#massSignModalButton').on("click", e => this.checkCertSign());
         $('#workflowFilter').on('change', e => this.buildUrlFilter());
-        $('#recipientsFilter').on('change', e => this.buildUrlFilter());
+        let self = this;
+        document.querySelector('#recipientsFilter').slim.events.afterChange = function() {
+            self.buildUrlFilter();
+        }
         $('#docTitleFilter').on('change', e => this.buildUrlFilter());
         $('#creatorFilter').on('change', e => this.buildUrlFilter());
         $('#statusFilter').on('change', e => this.buildUrlFilter());
@@ -62,16 +64,15 @@ export class ListSignBooksUi {
         $('#menuDownloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         this.listSignRequestTable.on('scroll', e => this.detectEndDiv(e));
         this.listSignRequestTable.focus();
-        let self = this;
         $(document).on('click', function(){
             self.listSignRequestTable.focus();
         });
-        $(document).on('wheel', function(e){
-            e.preventDefault();
-            let delta = e.originalEvent.deltaY;
-            let scrollAmount = delta > 0 ? 20 : -20;
-            self.listSignRequestTable.scrollTop(self.listSignRequestTable.scrollTop() + scrollAmount);
-        });
+        // $(document).on('wheel', function(e){
+        //     e.preventDefault();
+        //     let delta = e.originalEvent.deltaY;
+        //     let scrollAmount = delta > 0 ? 20 : -20;
+        //     self.listSignRequestTable.scrollTop(self.listSignRequestTable.scrollTop() + scrollAmount);
+        // });
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
         this.refreshListeners();

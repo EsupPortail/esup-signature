@@ -161,7 +161,7 @@ public class SignBookService {
         }
         User userFilter = null;
         if(recipientsFilter != null && !recipientsFilter.equals("%") && !recipientsFilter.isEmpty()) {
-            userFilter = userService.getByEppn(recipientsFilter);
+            userFilter = userService.getUserByEmail(recipientsFilter);
         }
         Calendar calendar = Calendar.getInstance();
         calendar.set(9999, Calendar.DECEMBER, 31);
@@ -210,7 +210,7 @@ public class SignBookService {
         }
         User userFilter = null;
         if(recipientsFilter != null && !recipientsFilter.equals("%") && !recipientsFilter.isEmpty()) {
-            userFilter = userService.getByEppn(recipientsFilter);
+            userFilter = userService.getUserByEmail(recipientsFilter);
         }
         if(statusFilter.isEmpty() || statusFilter.equals("all")) {
             if(userFilter != null) {

@@ -40,8 +40,10 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
 
 @Controller
 @RequestMapping("/user/signbooks")
@@ -122,7 +124,6 @@ public class SignBookController {
         }
         model.addAttribute("creators", signBookService.getCreators(userEppn, workflowFilter, docTitleFilter, creatorFilter));
         model.addAttribute("workflowNames", workflowNames);
-        model.addAttribute("signRequestRecipients", signBookService.getRecipientsNames(userEppn).stream().filter(Objects::nonNull).collect(Collectors.toList()));
         model.addAttribute("nbFollowByMe", signRequestService.nbFollowedByMe(userEppn));
         model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
         return "user/signbooks/list";

@@ -61,13 +61,9 @@
                             </div>
                         </th>
                         <th class="d-none d-xl-table-cell">
-                            <select name="recipientsFilter" id="recipientsFilter" class="slim-select-filter sign-request-filter" data-placeholder="Participants" data-allow-deselect="true" onchange="submit();">
+                            <select id="recipientsFilter" class="auto-select-users sign-request-filter" data-es-check-cert="false" data-placeholder="Participants" data-allow-deselect="true">
                                 <option data-placeholder="true"></option>
                                 <option value="all">Tout</option>
-                                <th:block th:each="signRequestRecipient : ${signRequestRecipients}">
-                                    <option th:unless="${#strings.isEmpty(signRequestRecipient.firstname) && #strings.isEmpty(signRequestRecipient.name)}" th:value="${signRequestRecipient.eppn}" th:selected="${recipientsFilter == signRequestRecipient.eppn}" th:text="${signRequestRecipient.firstname + ' ' + signRequestRecipient.name}"></option>
-                                    <option th:if="${#strings.isEmpty(signRequestRecipient.firstname) && #strings.isEmpty(signRequestRecipient.name)}" th:value="${signRequestRecipient.eppn}" th:selected="${recipientsFilter == signRequestRecipient.eppn}" th:text="${signRequestRecipient.email}"></option>
-                                </th:block>
                             </select>
                         </th>
                         <th class="d-none d-xxxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date dernière modification</a></th>
