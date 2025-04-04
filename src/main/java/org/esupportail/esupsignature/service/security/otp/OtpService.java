@@ -153,7 +153,7 @@ public class OtpService {
 
     public void clearOTP(String urlId){
         otpCache.invalidate(urlId);
-        logger.info("disable url for otp : " + urlId);
+        logger.debug("disable url for otp : " + urlId);
     }
 
     public Boolean checkOtp(String urlId, String password) {
