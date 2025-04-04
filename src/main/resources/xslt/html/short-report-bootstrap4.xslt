@@ -163,7 +163,21 @@
                     <xsl:with-param name="indicationClass" select="$indicationCssClass"/>
                 </xsl:apply-templates>
 
-                <xsl:apply-templates select="dss:AdESValidationDetails" />
+                <dl>
+                    <xsl:attribute name="class">row mb-0</xsl:attribute>
+                    <dt>
+                        <xsl:attribute name="class">col-sm-5</xsl:attribute>
+
+                    </dt>
+                    <xsl:choose>
+                    <xsl:when test="dss:AdESValidationDetails">
+                    <dd>
+                        <xsl:attribute name="class">col-sm-7</xsl:attribute>
+                        <xsl:value-of select="dss:AdESValidationDetails" />
+                    </dd>
+                    </xsl:when>
+                    </xsl:choose>
+                </dl>
 
                 <dl>
                     <xsl:attribute name="class">row mb-0</xsl:attribute>

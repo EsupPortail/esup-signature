@@ -20,13 +20,13 @@
                 </div>
                 <button es-modal-style="bg-success" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir les signatures</button>
             </span>
-            <span style="line-height: 33px;" th:if="${!signatureIssue && signatureIds.size() == 1}">Ce document contient une signature électronique
+            <span style="line-height: 33px;" th:if="${!signatureIssue && signatureIds.size() == 1}"><i class="fa-solid fa-circle-check"></i> Ce document contient une signature électronique qualifiée (eIDas)
                 <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
                     <span class="sr-only">En cours...</span>
                 </div>
                 <button es-modal-style="bg-success" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la signature</button>
             </span>
-            <span style="line-height: 33px;" th:if="${signatureIssue}">Ce document contient au moins une signature en non qualifiée. La signature de ce document pourrait générer des problèmes de compatibilité
+            <span style="line-height: 33px;" th:if="${signatureIssue}"><i class="fa-solid fa-circle-exclamation"></i> Ce document contient une signature non qualifiée (eIDAS) qui, bien que techniquement conforme, pourrait poser des problèmes pour les signatures ultérieures.
                 <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
                     <span class="sr-only">En cours...</span>
                 </div>

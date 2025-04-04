@@ -1,12 +1,14 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import org.esupportail.esupsignature.dss.model.DssMultipartFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import jakarta.persistence.*;
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Date;
@@ -53,6 +55,16 @@ public class Document {
             }
         } catch (SQLException e) {
             logger.error("unable to get inputStream", e);
+        }
+        return null;
+    }
+
+    @JsonIgnore
+    public DssMultipartFile getMultipartFile() {
+        try {
+            return new DssMultipartFile(fileName, fileName, contentType, getInputStream());
+        } catch (IOException e) {
+            logger.error("unable to get multipartfile", e);
         }
         return null;
     }

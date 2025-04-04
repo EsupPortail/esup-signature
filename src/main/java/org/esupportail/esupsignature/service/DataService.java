@@ -152,7 +152,7 @@ public class DataService {
     }
 
     @Transactional
-    public Data addData(Long id, Long dataId, Map<String, String> datas, User user, User authUser) {
+    public Data addData(Long id, Long dataId, Map<String, String> datas, String userEppn, String authUserEppn) {
         Form form = formService.getById(id);
         Data data;
         if(dataId != null) {
@@ -160,6 +160,8 @@ public class DataService {
         } else {
             data = new Data();
         }
+        User user = userService.getByEppn(userEppn);
+        User authUser = userService.getByEppn(authUserEppn);
         return updateDatas(form, data, datas, user, authUser);
     }
 

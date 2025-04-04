@@ -7,6 +7,7 @@ export class PdfViewer extends EventFactory {
     constructor(url, signable, editable, currentStepNumber, forcePageNum, fields, disableAllFields) {
         super();
         console.info("Starting PDF Viewer, signable : " + signable);
+        this.timer = null;
         this.viewed = false;
         this.url= url;
         this.interval = null;
@@ -497,6 +498,7 @@ export class PdfViewer extends EventFactory {
     }
 
     renderPdfFormWithFields(items) {
+        let self = this;
         let datePickerIndex = 40;
         console.debug("debug - " + "rending pdfForm items");
         let signFieldNumber = 0;
@@ -522,7 +524,11 @@ export class PdfViewer extends EventFactory {
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if (inputField.length) {
                 inputField.addClass("field-type-text");
-                inputField.on('input', e => this.fireEvent('change', ['checked']));
+                inputField.on('input', function(e) {
+                    clearTimeout(self.timer);
+                    self.timer = setTimeout(e => self.fireEvent('change', ['checked']), 500);
+
+                });
                 inputField.removeAttr("hidden");
                 if(dataField == null) continue;
                 this.disableInput(inputField, dataField, items[i].readOnly);
@@ -655,7 +661,10 @@ export class PdfViewer extends EventFactory {
             inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
             if (inputField.length) {
                 inputField.addClass("field-type-textarea");
-                inputField.on('input', e => this.fireEvent('change', ['checked']));
+                inputField.on('input', function(e) {
+                    clearTimeout(self.timer);
+                    self.timer = setTimeout(e => self.fireEvent('change', ['checked']), 500);
+                });
                 inputField.removeAttr("hidden");
                 if(dataField == null) continue;
                 this.disableInput(inputField, dataField, items[i].readOnly);

@@ -1668,6 +1668,8 @@ public class SignBookService {
                                         }
                                         if (target.getSendDocument()) {
                                             Document signedFile = signRequest.getLastSignedDocument();
+                                            String extension = "." + fileService.getExtension(signedFile.getFileName());
+                                            if(!name.endsWith(extension)) name += extension;
                                             inputStreams.put(signedFile.getInputStream(), name);
                                         }
                                         if (target.getSendReport()) {
@@ -2106,4 +2108,31 @@ public class SignBookService {
     public List<UserDto> getSignBooksForManagersRecipientsUsers(Long workflowId) {
         return signBookRepository.findByWorkflowNameRecipientsUsers(workflowId);
     }
+
+    @Transactional
+    public Long clone(Long id, MultipartFile[] multipartFiles, String comment, String authUserEppn) {
+        SignRequest signRequest = signRequestService.getById(id);
+        SignBook signBook = signRequest.getParentSignBook();
+        if(signBook.getLiveWorkflow().getWorkflow() != null && ! signBook.getLiveWorkflow().getWorkflow().getAutorizeClone()) {
+            throw new RuntimeException("clonage non autorisé pour : " + id);
+        }
+        SignBook newSignBook = createSignBook(
+                signBook.getSubject(),
+                signBook.getLiveWorkflow().getWorkflow(),
+                signBook.getLiveWorkflow().getWorkflow().getName(),
+                authUserEppn,
+                true,
+                comment
+        );
+        for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+            newSignBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.cloneLiveWorkflowStep(newSignBook, null, liveWorkflowStep));
+        }
+        newSignBook.getLiveWorkflow().setCurrentStep(newSignBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
+        SignRequest newSignRequest = signRequestService.createSignRequest(signRequest.getTitle(), newSignBook, authUserEppn, authUserEppn);
+        signRequestService.addDocsToSignRequest(newSignRequest, true, 0, new ArrayList<>(), multipartFiles);
+        pendingSignBook(newSignBook, null, authUserEppn, authUserEppn, false, true);
+        signRequestService.addAttachement(null, globalProperties.getRootUrl() + "/user/signrequests/" + id, newSignRequest.getId(), authUserEppn);
+        return newSignRequest.getId();
+    }
+
 }

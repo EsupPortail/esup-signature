@@ -329,7 +329,7 @@ public class WorkflowAdminController {
 	public String toggleSendDocument(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("targetId") Long targetId, RedirectAttributes redirectAttributes) {
 		targetService.toggleSendDocument(targetId);
 		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi des documents modifié"));
-		return "redirect:/admin/workflows/update/" + id;
+		return "redirect:/admin/workflows/update/" + id + "#targets";
 	}
 
 	@PutMapping("toggle-send-report/{id}/{targetId}")
@@ -337,7 +337,7 @@ public class WorkflowAdminController {
 	public String toggleSendReport(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("targetId") Long targetId, RedirectAttributes redirectAttributes) {
 		targetService.toggleSendReport(targetId);
 		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi du rapport modifié"));
-		return "redirect:/admin/workflows/update/" + id;
+		return "redirect:/admin/workflows/update/" + id + "#targets";
 	}
 
 	@PutMapping("toggle-send-attachment/{id}/{targetId}")
@@ -345,7 +345,7 @@ public class WorkflowAdminController {
 	public String toggleSendAttachment(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("targetId") Long targetId, RedirectAttributes redirectAttributes) {
 		targetService.toggleSendAttachment(targetId);
 		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi des pièces jointes modifié"));
-		return "redirect:/admin/workflows/update/" + id;
+		return "redirect:/admin/workflows/update/" + id + "#targets";
 	}
 
 	@PutMapping("toggle-send-zip/{id}/{targetId}")
@@ -353,6 +353,6 @@ public class WorkflowAdminController {
 	public String toggleSendZip(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("targetId") Long targetId, RedirectAttributes redirectAttributes) {
 		targetService.toggleSendZip(targetId);
 		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi par ZIP"));
-		return "redirect:/admin/workflows/update/" + id;
+		return "redirect:/admin/workflows/update/" + id + "#targets";
 	}
 }

@@ -106,6 +106,7 @@ export class WizUi {
     }
 
     disableButtons() {
+        $("#send-form-button").attr("disabled", "disabled");
         $("#fast-sign-button").attr("disabled", "disabled");
         $(".send-form-spinner").removeClass("d-none");
         $("#fast-form-close").attr("disabled", "disabled");
@@ -118,6 +119,7 @@ export class WizUi {
     enableButtons() {
         $(".send-form-spinner").addClass("d-none");
         $("#fast-sign-button").removeAttr("disabled");
+        $("#send-form-button").removeAttr("disabled");
         $("#fast-form-close").removeAttr("disabled");
         $("#send-draft-button").removeAttr("disabled");
         $("#send-pending-button").removeAttr("disabled");
@@ -502,6 +504,7 @@ export class WizUi {
     }
 
     sendForm(e) {
+        this.disableButtons();
         let formId = $(e.target).attr('data-es-form-id');
         let spinner = $("#send-form-spinner");
         spinner.removeClass("d-none");

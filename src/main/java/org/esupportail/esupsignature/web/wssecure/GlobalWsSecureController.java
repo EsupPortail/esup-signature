@@ -105,6 +105,18 @@ public class GlobalWsSecureController {
         return ResponseEntity.notFound().build();
     }
 
+    @PreAuthorize("@preAuthorizeService.signRequestCreator(#id, #authUserEppn)")
+    @GetMapping(value = "/get-original-file/{id}")
+    public ResponseEntity<Void> getOriginalFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
+        try {
+            signRequestService.getOriginalFileResponse(id, httpServletResponse);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error("get file error", e);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
     @PreAuthorize("@preAuthorizeService.documentView(#documentId, #userEppn, #authUserEppn)")
     @GetMapping(value = "/get-file/{documentId}")
     public ResponseEntity<Void> getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("documentId") Long documentId, HttpServletResponse httpServletResponse) throws IOException {

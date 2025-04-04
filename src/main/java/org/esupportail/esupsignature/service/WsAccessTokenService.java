@@ -9,8 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class WsAccessTokenService {
@@ -114,7 +116,9 @@ public class WsAccessTokenService {
     public List<WsAccessToken> getAll() {
         List<WsAccessToken> list = new ArrayList<>();
         wsAccessTokenRepository.findAll().forEach(list::add);
-        return list;
+        return list.stream()
+                .sorted(Comparator.comparing(WsAccessToken::getAppName, Comparator.nullsFirst(Comparator.naturalOrder())))
+                .collect(Collectors.toList());
     }
 
     @Transactional

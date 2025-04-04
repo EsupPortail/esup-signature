@@ -89,20 +89,24 @@
                             <i class="fa-solid fa-trash-restore fa-2xl"></i>
                         </a>
                     </li>
-                    <li th:if="${@preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn) && (!signRequest.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || signBook.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}">
-                        <button id="trashLaunchButton" class="btn btn-floating btn-lg bg-danger"
-                            th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
-                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
-                            <i th:if="${signRequest.deleted}" class="fa-solid fa-dumpster-fire fa-xl" style="margin-top: -8px;"></i>
-                            <i th:if="${!signRequest.deleted}" class="fa-solid fa-trash-alt fa-xl" style="margin-top: -8px;"></i>
-                        </button>
+                    <li th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequest.createBy.eppn == userEppn}">
+                        <a class="btn-lg btn-floating bg-primary"
+                           th:href="'/ws-secure/global/get-original-file/' + ${id}" target="_blank"
+                           title="Télécharger le document original"><i class="fa-solid fa-download fa-2xl"></i></a>
+                    </li>
+                    <li th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.autorizeClone) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequest.createBy.eppn == userEppn}">
+                        <a type="button"
+                           class="btn-lg btn-floating bg-primary" data-bs-toggle="modal" title="Relancer cette demande"
+                           data-bs-target="#cloneModal">
+                            <i class="fa-solid fa-refresh fa-2xl"></i>
+                        </a>
                     </li>
                     <li th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a class="btn-lg btn-floating bg-primary"
                             th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank"
                             title="Télécharger le document"><i class="fa-solid fa-download fa-2xl"></i></a>
                     </li>
-                    <li th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                    <li th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
                         <a class="btn-lg btn-floating bg-primary"
                             th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank"
                             title="Télécharger la dernière version du document"><i class="fa-solid fa-download fa-2xl"></i></a>
@@ -117,6 +121,14 @@
                             onclick='alert("Le document ainsi téléchargé est destiné exclusivement à l`impression. Les signatures éléctroniques ne sont présentes que dans la version numérique")'
                             th:href="'/ws-secure/global/print-with-code/' + ${id}" target="_blank"
                             title="Imprimer avec un code datamatrix"><i class="fa-solid fa-print fa-2xl"></i></a>
+                    </li>
+                    <li th:if="${@preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn) && (!signRequest.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || signBook.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}">
+                        <button id="trashLaunchButton" class="btn btn-floating btn-lg bg-danger"
+                                th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
+                                data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
+                            <i th:if="${signRequest.deleted}" class="fa-solid fa-dumpster-fire fa-xl" style="margin-top: -8px;"></i>
+                            <i th:if="${!signRequest.deleted}" class="fa-solid fa-trash-alt fa-xl" style="margin-top: -8px;"></i>
+                        </button>
                     </li>
                     <th:block id="signButtons" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" th:unless="${signable}" class="fixed-action-btns active">
                         <li>
@@ -178,7 +190,7 @@
                 </div>
                 <th:block th:each="postit, iterate : ${postits}">
                     <div th:id="'postit-' + ${postit.id}" class="postit-global d-none overflow-hidden"
-                        th:style="'z-index: 1000; cursor: move;background-color: ' + ${postit.postitColor} + ';position: fixed; left: ' + ${290 + (iterate.index * 15)} + 'px; top : ' + ${230 + (iterate.index * 70)} + 'px;'">
+                        th:style="'z-index: 1000; cursor: move;background-color: ' + ${postit.postitColor} + ';position: fixed; left: ' + ${290 + (iterate.index * 15)} + 'px; top : ' + ${150 + (iterate.index * 70)} + 'px;'">
                         <button type="button" class="postit-global-close close">
                             <i class="fa-solid fa-eye"></i>
                         </button>
@@ -821,6 +833,108 @@
     </div>
 </div>
 
+<div data-bs-focus="false" class="modal fade" id="cloneModal"  role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true" th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.autorizeClone) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequest.createBy.eppn == userEppn}">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form th:action="'/user/signrequests/clone/' + ${signRequest.id}" method="post" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="cloneLabel">Redémarrer cette demande</h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="alert alert-primary mb-1">
+                        Cette action permet de créer une nouvelle demande signature en reprenant le même circuit. Le nouveau circuit sera cloné et redémarré de zéro, merci donc de déposer un document, corrigé, ne contenant pas les signatures faites via le circuit actuel.
+                    </p>
+                    <label for="multipartFiles1">
+                        <b>Nouveau document</b>
+                    </label>
+                    <br>
+                    <input id="multipartFiles1" name="multipartFiles" type="file" multiple="multiple" />
+                        <script th:inline="javascript" type="module">
+                            $("#multipartFiles1").fileinput({
+                                    language: "fr",
+                                    showCaption: false,
+                                    minFileSize: 1,
+                                    showClose: false,
+                                    showCancel: false,
+                                    showBrowse: true,
+                                    showUpload: false,
+                                    showUploadStats: false,
+                                    progressDelay: 50,
+                                    maxAjaxThreads: 1,
+                                    uploadAsync: false,
+                                    theme: 'explorer-fa6',
+                                    pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
+                                    overwriteInitial: false,
+                                    preferIconicPreview: true,
+                                    showRemove: true,
+                                    dropZoneEnabled: true,
+                                    browseOnZoneClick: true,
+                                    allowedFileTypes : [],
+                                    previewFileIconSettings: {
+                                        'pdf': '<i class="fas fa-file-pdf text-danger fa-xl"></i>',
+                                        'doc': '<i class="fas fa-file-word text-primary fa-xl"></i>',
+                                        'xls': '<i class="fas fa-file-excel text-success fa-xl"></i>',
+                                        'ppt': '<i class="fas fa-file-powerpoint text-danger fa-xl"></i>',
+                                        'zip': '<i class="fas fa-file-archive text-muted fa-xl"></i>',
+                                        'htm': '<i class="fas fa-file-code text-info fa-xl"></i>',
+                                        'txt': '<i class="fas fa-file-alt text-info fa-xl"></i>',
+                                        'mov': '<i class="fas fa-file-video text-warning fa-xl"></i>',
+                                        'mp3': '<i class="fas fa-file-audio text-warning fa-xl"></i>',
+                                        'jpg': '<i class="fas fa-file-image text-danger fa-xl"></i>',
+                                        'gif': '<i class="fas fa-file-image text-muted fa-xl"></i>',
+                                        'png': '<i class="fas fa-file-image text-primary fa-xl"></i>',
+                                        'other': '<i class="fas fa-file text-muted fa-xl"></i>'
+                                    },
+                                    previewFileExtSettings: {
+                                        'other': function() {
+                                            return true;
+                                        },
+                                        'pdf': function(ext) {
+                                            return ext.match(/(pdf)$/i);
+                                        },
+                                        'doc': function(ext) {
+                                            return ext.match(/(doc|docx|odt)$/i);
+                                        },
+                                        'xls': function(ext) {
+                                            return ext.match(/(xls|xlsx)$/i);
+                                        },
+                                        'ppt': function(ext) {
+                                            return ext.match(/(odp|ppt|pptx)$/i);
+                                        },
+                                        'zip': function(ext) {
+                                            return ext.match(/(zip|rar|tar|gzip|gz|7z)$/i);
+                                        },
+                                        'htm': function(ext) {
+                                            return ext.match(/(htm|html)$/i);
+                                        },
+                                        'txt': function(ext) {
+                                            return ext.match(/(txt|ini|csv|java|php|js|css)$/i);
+                                        },
+                                        'mov': function(ext) {
+                                            return ext.match(/(avi|mpg|mkv|mov|mp4|3gp|webm|wmv)$/i);
+                                        },
+                                        'mp3': function(ext) {
+                                            return ext.match(/(mp3|wav)$/i);
+                                        }
+                                    }
+                                }
+                            );
+                        </script>
+                    <br>
+                    <label for="comment">
+                        <b>Commentaire (obligatoire)</b>
+                    </label>
+                    <textarea id="comment" name="comment" class="form-control" rows="3" style="background-color: #FFF740;" required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="submit" class="btn btn-success">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <div data-bs-focus="false" class="modal fade" id="addCommentModal"  role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -832,9 +946,10 @@
                 </div>
                 <div class="modal-body">
                     <textarea name="comment" class="form-control" rows="3" style="background-color: #FFF740;"></textarea>
+                    <br>
                     <input type="hidden" name="postit" value="on" />
-                    <div class="form-check mb-3" th:if="${globalProperties.sendPostitByEmail == false}">
-                        <label for="forceSend" class="form-check-label">Forcer l'envoi par mail</label>
+                    <div class="form-check mb-3">
+                        <label for="forceSend" class="form-check-label">Forcer l’envoi par mail à tous les participants</label>
                         <input type="checkbox" class="form-check-input" id="forceSend" name="forceSend">
                     </div>
                 </div>

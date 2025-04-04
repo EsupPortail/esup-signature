@@ -1,8 +1,8 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import jakarta.persistence.*;
+import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 
 @Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -43,5 +43,17 @@ public class Recipient {
 
     public void setSigned(Boolean signed) {
         this.signed = signed;
+    }
+
+    public RecipientWsDto getRecipientDto() {
+        RecipientWsDto recipientWsDto = new RecipientWsDto();
+        recipientWsDto.setId(id);
+        if (user != null) {
+            recipientWsDto.setEmail(user.getEmail());
+            recipientWsDto.setPhone(user.getPhone());
+            recipientWsDto.setName(user.getName());
+            recipientWsDto.setFirstName(user.getFirstname());
+        }
+        return recipientWsDto;
     }
 }

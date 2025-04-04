@@ -888,9 +888,9 @@ public class SignRequestService {
 			Comment comment = commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, "on".equals(postit), null, authUserEppn);
 			if (!(spotStepNumber != null && spotStepNumber > 0)) {
 				updateStatus(signRequest.getId(), null, "Ajout d'un commentaire", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
-				if ((globalProperties.getSendPostitByEmail() || forceSend) && !authUserEppn.equals(signRequest.getCreateBy().getEppn())) {
+				if ((globalProperties.getSendPostitByEmail() || forceSend)) {
 					try {
-						mailService.sendPostit(signRequest.getParentSignBook(), comment);
+						mailService.sendPostit(signRequest.getParentSignBook(), comment, userEppn, forceSend);
 					} catch (EsupSignatureMailException e) {
 						logger.warn("postit not sended", e);
 					}
@@ -913,6 +913,13 @@ public class SignRequestService {
 	}
 
 	@Transactional
+	public boolean getOriginalFileResponse(Long signRequestId, HttpServletResponse httpServletResponse) throws IOException {
+		SignRequest signRequest = getById(signRequestId);
+		webUtilsService.copyFileStreamToHttpResponse(signRequest.getOriginalDocuments().get(0).getFileName(), signRequest.getOriginalDocuments().get(0).getContentType(), "attachment", signRequest.getOriginalDocuments().get(0).getInputStream(), httpServletResponse);
+		return true;
+	}
+
+	@Transactional
 	public boolean getAttachmentResponse(Long signRequestId, Long attachementId, HttpServletResponse httpServletResponse) throws IOException {
 		SignRequest signRequest = getById(signRequestId);
 		Document attachement = documentService.getById(attachementId);
@@ -930,6 +937,7 @@ public class SignRequestService {
 				&& signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
 				&&  BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
 				&& !signRequest.getStatus().equals(SignRequestStatus.completed)
+				&& !signRequest.getStatus().equals(SignRequestStatus.refused)
 				&& !signRequest.getStatus().equals(SignRequestStatus.archived)
 				&& !signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit");
@@ -1360,4 +1368,5 @@ public class SignRequestService {
 		}
 		return signRequestStepsDtos;
 	}
+
 }
