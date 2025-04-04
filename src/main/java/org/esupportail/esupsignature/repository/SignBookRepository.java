@@ -66,12 +66,12 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             and (:docTitleFilter is null or sb.subject = :docTitleFilter)
             and (:recipientUser is null or key(rhs).user = :recipientUser or :recipientUser in (u))
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
-            and (:statusFilter is null or sb.status = :statusFilter)
-            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
+            and (:statusFilter is null or :statusFilter = 'deleted' or sb.status = :statusFilter)
+            and (:statusFilter is null or (sb.deleted is null and :statusFilter != 'deleted') or sb.deleted = :deleted)
             and size(sb.signRequests) > 0
             and (sb.createDate between :startDateFilter and :endDateFilter)
             """)
-    Page<SignBook> findByWorkflowName(User recipientUser, SignRequestStatus statusFilter, Long workflowId, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
+    Page<SignBook> findByWorkflowName(User recipientUser, SignRequestStatus statusFilter, Boolean deleted, Long workflowId, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     @Query("""
             select distinct sb.subject from SignBook sb

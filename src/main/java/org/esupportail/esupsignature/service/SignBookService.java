@@ -154,7 +154,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public Page<SignBook> getSignBooksForManagers(String userEppn, String authUserEppn, SignRequestStatus statusFilter, String recipientsFilter, Long workflowId, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
+    public Page<SignBook> getSignBooksForManagers(SignRequestStatus statusFilter, String recipientsFilter, Long workflowId, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
         User creatorFilterUser = null;
         if(creatorFilter != null) {
             creatorFilterUser = userService.getByEppn(creatorFilter);
@@ -180,7 +180,7 @@ public class SignBookService {
                 logger.error("unable to parse date : " + dateFilter);
             }
         }
-        return signBookRepository.findByWorkflowName(userFilter, statusFilter, workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
+        return signBookRepository.findByWorkflowName(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
     }
 
     @Transactional
