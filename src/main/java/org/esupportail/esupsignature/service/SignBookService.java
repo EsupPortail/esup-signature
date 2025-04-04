@@ -723,9 +723,9 @@ public class SignBookService {
         return sharedSignBook;
     }
 
-    public List<String> getAllDocTitles(String userEppn) {
+    public List<String> getAllDocTitles(String userEppn, String searchString) {
         User user = userService.getByEppn(userEppn);
-        Set<String> docTitles = new HashSet<>(signBookRepository.findSubjects(user));
+        Set<String> docTitles = new HashSet<>(signBookRepository.findSubjects(user, "%"+searchString+"%"));
         return docTitles.stream().filter(s -> s != null && !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
@@ -2097,8 +2097,8 @@ public class SignBookService {
         }
     }
 
-    public List<String> getSignBooksForManagersSubjects(Long workflowId) {
-        return signBookRepository.findByWorkflowNameSubjects(workflowId);
+    public List<String> getSignBooksForManagersSubjects(Long workflowId, String searchString) {
+        return signBookRepository.findByWorkflowNameSubjects(workflowId, "%"+searchString+"%");
     }
 
     public List<UserDto> getSignBooksForManagersCreators(Long workflowId) {
@@ -2116,10 +2116,12 @@ public class SignBookService {
         if(signBook.getLiveWorkflow().getWorkflow() != null && ! signBook.getLiveWorkflow().getWorkflow().getAutorizeClone()) {
             throw new RuntimeException("clonage non autorisé pour : " + id);
         }
+        String name = "Demande simple";
+        if(signBook.getLiveWorkflow().getWorkflow() != null) name = signBook.getLiveWorkflow().getWorkflow().getName();
         SignBook newSignBook = createSignBook(
                 signBook.getSubject(),
                 signBook.getLiveWorkflow().getWorkflow(),
-                signBook.getLiveWorkflow().getWorkflow().getName(),
+                name,
                 authUserEppn,
                 true,
                 comment

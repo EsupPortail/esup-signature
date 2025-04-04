@@ -76,9 +76,10 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("""
             select distinct sb.subject from SignBook sb
             where (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId)
+            and sb.subject like :searchString
             and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             """)
-    List<String> findByWorkflowNameSubjects(Long workflowId);
+    List<String> findByWorkflowNameSubjects(Long workflowId, String searchString);
 
     @Query("""
             select distinct sb.createBy.name as name, sb.createBy.firstname as firstname, sb.createBy.eppn as eppn, sb.createBy.email as email from SignBook sb
@@ -251,6 +252,16 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     List<String> findSubjects(User user);
 
     @Query("""
+            select distinct sb.subject from SignBook sb
+            left join sb.team team
+            where (team = :user) and sb.subject like :searchString
+            and :user not member of sb.hidedBy
+            and size(sb.signRequests) > 0
+            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
+            """)
+    List<String> findSubjects(User user, String searchString);
+
+    @Query("""
             select distinct sb.createBy.name as name, sb.createBy.firstname as firstname, sb.createBy.eppn as eppn, sb.createBy.email as email from SignBook sb
             left join sb.team team
             where (sb.workflowName = :workflowFilter or :workflowFilter is null)
@@ -266,13 +277,13 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     Page<SignBook> findAll(Pageable pageable);
 
     @Query("""
-            select distinct u.name as name, u.firstname as firstname, u.eppn as eppn, u.email from SignBook sb
+            select distinct u.name as name, u.firstname as firstname, u.eppn as eppn, u.email as email from SignBook sb
             left join sb.team team
             left join sb.liveWorkflow lw
             left join lw.liveWorkflowSteps lws
             left join lws.recipients r
             left join r.user u
-            where (team = :user)
+            where (team = :user) and u.email is not null
             and :user not member of sb.hidedBy
             and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             """)

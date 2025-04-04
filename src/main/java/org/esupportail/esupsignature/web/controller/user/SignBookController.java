@@ -115,21 +115,25 @@ public class SignBookController {
         model.addAttribute("dateFilter", dateFilter);
         model.addAttribute("recipientsFilter", recipientsFilter);
         LinkedHashSet<String> workflowNames = new LinkedHashSet<>();
-        LinkedHashSet<String> docTitles = new LinkedHashSet<>();
         if(statusFilter.isEmpty() && (workflowFilter == null || workflowFilter.equals("Hors circuit")) && docTitleFilter == null && recipientsFilter == null) {
-            docTitles.addAll(signBookService.getAllDocTitles(userEppn));
             workflowNames.addAll(signBookService.getWorkflowNames(userEppn));
         } else {
-            docTitles.addAll(signBooks.stream().map(SignBook::getSubject).toList());
             workflowNames.addAll(signBooks.stream().map(SignBook::getWorkflowName).toList());
         }
         model.addAttribute("creators", signBookService.getCreators(userEppn, workflowFilter, docTitleFilter, creatorFilter));
-        model.addAttribute("docTitles", docTitles);
         model.addAttribute("workflowNames", workflowNames);
         model.addAttribute("signRequestRecipients", signBookService.getRecipientsNames(userEppn).stream().filter(Objects::nonNull).collect(Collectors.toList()));
         model.addAttribute("nbFollowByMe", signRequestService.nbFollowedByMe(userEppn));
         model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
         return "user/signbooks/list";
+    }
+
+    @GetMapping(value = "/search-doc-titles")
+    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn)")
+    @ResponseBody
+    public List<String> searchDocTitles(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                       @RequestParam(value = "searchString", required = false) String searchString) {
+        return signBookService.getAllDocTitles(userEppn, searchString);
     }
 
     @GetMapping(value = "/list-ws")

@@ -37,12 +37,9 @@
                     <tr style="z-index: 2;">
                         <form>
                         <th class="text-center" style="width: 10%;">
-                            <select id="docTitleFilter" class="slim-select-filter sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
+                            <select es-search-text="Titre du document" th:es-search-url="'/user/manage/workflow/' + ${workflow.id} + '/search-doc-titles'" id="docTitleFilter" class="slim-select-filter-search sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
                                 <option data-placeholder="true"></option>
                                 <option value="all">Tout</option>
-                                <th:block th:each="docTitle : ${docTitles}">
-                                    <option th:value="${docTitle}" th:selected="${docTitleFilter == docTitle}" th:text="${docTitle}"></option>
-                                </th:block>
                             </select>
                         </th>
                         <th class="d-none d-xxl-table-cell">
