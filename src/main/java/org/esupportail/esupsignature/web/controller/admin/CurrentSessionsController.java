@@ -78,8 +78,10 @@ public class CurrentSessionsController {
 			}
 		}
 
-        List<HttpSessionViewDto> sessions = new ArrayList<>(allSessions.values());
-
+		List<HttpSessionViewDto> sessions;
+		synchronized(allSessions) {
+			sessions = new ArrayList<>(allSessions.values());
+		}
 		sessions.sort(Comparator.comparing(HttpSessionViewDto::getLastRequest,
 				Comparator.nullsLast(Comparator.naturalOrder())).reversed());
 
