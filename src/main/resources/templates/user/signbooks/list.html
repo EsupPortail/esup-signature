@@ -105,12 +105,9 @@
                         </select>
                     </th>
                     <th class="text-center" style="width: 10%;">
-                        <select id="docTitleFilter" class="slim-select-filter sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
+                        <select es-search-text="Titre du document" es-search-url="/user/signbooks/search-doc-titles" id="docTitleFilter" class="slim-select-filter-search sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
                             <option data-placeholder="true"></option>
                             <option value="all">Tout</option>
-                            <th:block th:each="docTitle : ${docTitles}">
-                                <option th:value="${docTitle}" th:selected="${docTitleFilter == docTitle}" th:text="${docTitle}"></option>
-                            </th:block>
                         </select>
                     </th>
                     <th class="d-none d-xxxxl-table-cell">
@@ -132,12 +129,9 @@
                         </div>
                     </th>
                     <th class="d-none d-xxxl-table-cell">
-                        <select id="recipientsFilter" class="slim-select-filter sign-request-filter" data-placeholder="Participants" data-allow-deselect="true">
+                        <select id="recipientsFilter" class="auto-select-users sign-request-filter" data-es-check-cert="false" data-placeholder="Participants" data-allow-deselect="true">
                             <option data-placeholder="true"></option>
                             <option value="all">Tout</option>
-                            <th:block th:each="signRequestRecipient : ${signRequestRecipients}">
-                                <option th:value="${signRequestRecipient.eppn}" th:selected="${recipientsFilter == signRequestRecipient.eppn}" th:text="${signRequestRecipient.firstname + ' ' + signRequestRecipient.name}"></option>
-                            </th:block>
                         </select>
                     </th>
                     <th class="d-none d-xxxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date dernière modification</a></th>

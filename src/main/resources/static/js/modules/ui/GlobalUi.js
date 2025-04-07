@@ -483,6 +483,69 @@ export class GlobalUi {
             self.slimSelectHack($(this))
         })
 
+        $(".slim-select-filter-search").each(function () {
+            let selectName = $(this).attr('id');
+            let url = $(this).attr('es-search-url');
+            let placeholderText = $(this).attr('es-search-text');
+            console.info("auto enable slim-select-filter-search for : " + selectName);
+            let select = $("#" + selectName);
+            new SlimSelect({
+                select: '#' + selectName,
+                settings: {
+                    placeholderText: placeholderText,
+                    searchText: 'Aucun résultat',
+                    searchingText: 'Recherche en cours',
+                    searchPlaceholder: 'Rechercher',
+                    searchHighlight: false,
+                    hideSelectedOption: true,
+                    closeOnSelect: true,
+                    maxValuesShown: 40,
+                },
+                events: {
+                    searchFilter: (option, search) => {
+                        return true;
+                    },
+                    search: (search, currentData) => {
+                        return new Promise((resolve, reject) => {
+                            if (search.length < 3) {
+                                return reject('Merci de saisir au moins 3 caractères');
+                            } else {
+                                fetch(url + '?searchString=' + search, {
+                                    method: 'get',
+                                })
+                                .then((response) => {
+                                    return response.json()
+                                })
+                                .then((json) => {$
+                                    console.log(json);
+                                    let data = []
+                                    for (let i = 0; i < json.length; i++) {
+                                        data.push({
+                                            text: json[i],
+                                            value: json[i]
+                                        });
+                                    }
+                                    if (data.length > 0) {
+                                        return resolve(data);
+                                    } else {
+                                        return reject("Pas de résultat");
+                                    }
+                                })
+                                .catch(function () {
+                                    return reject("Recherche en cours");
+                                });
+                            }
+                        });
+                    }
+                }
+            });
+            $(".ss-search > input").on("click" , function (e) {
+                e.stopPropagation();
+            });
+            select.removeClass("spinner-border");
+            self.slimSelectHack($(this))
+        })
+
         $(".slim-select-simple").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-simple for : " + selectName);
