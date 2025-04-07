@@ -888,9 +888,9 @@ public class SignRequestService {
 			Comment comment = commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, "on".equals(postit), null, authUserEppn);
 			if (!(spotStepNumber != null && spotStepNumber > 0)) {
 				updateStatus(signRequest.getId(), null, "Ajout d'un commentaire", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
-				if ((globalProperties.getSendPostitByEmail() || forceSend) && !authUserEppn.equals(signRequest.getCreateBy().getEppn())) {
+				if ((globalProperties.getSendPostitByEmail() || forceSend)) {
 					try {
-						mailService.sendPostit(signRequest.getParentSignBook(), comment);
+						mailService.sendPostit(signRequest.getParentSignBook(), comment, userEppn, forceSend);
 					} catch (EsupSignatureMailException e) {
 						logger.warn("postit not sended", e);
 					}
@@ -913,6 +913,13 @@ public class SignRequestService {
 	}
 
 	@Transactional
+	public boolean getOriginalFileResponse(Long signRequestId, HttpServletResponse httpServletResponse) throws IOException {
+		SignRequest signRequest = getById(signRequestId);
+		webUtilsService.copyFileStreamToHttpResponse(signRequest.getOriginalDocuments().get(0).getFileName(), signRequest.getOriginalDocuments().get(0).getContentType(), "attachment", signRequest.getOriginalDocuments().get(0).getInputStream(), httpServletResponse);
+		return true;
+	}
+
+	@Transactional
 	public boolean getAttachmentResponse(Long signRequestId, Long attachementId, HttpServletResponse httpServletResponse) throws IOException {
 		SignRequest signRequest = getById(signRequestId);
 		Document attachement = documentService.getById(attachementId);
@@ -930,6 +937,7 @@ public class SignRequestService {
 				&& signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
 				&&  BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
 				&& !signRequest.getStatus().equals(SignRequestStatus.completed)
+				&& !signRequest.getStatus().equals(SignRequestStatus.refused)
 				&& !signRequest.getStatus().equals(SignRequestStatus.archived)
 				&& !signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit");
@@ -1098,7 +1106,9 @@ public class SignRequestService {
 			List<Recipient> recipients = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients();
 			for(Recipient recipient : recipients) {
 				User user = recipient.getUser();
-				if(userService.findPersonLdapLightByUser(user) != null || user.getUserType().equals(UserType.external) || user.getUserType().equals(UserType.shib)) {
+				if(userService.findPersonLdapLightByUser(user) != null
+						|| user.getUserType().equals(UserType.external)
+						|| user.getUserType().equals(UserType.shib)) {
 					recipientNotPresentsignRequests.remove(signRequest);
 				}
 			}
@@ -1296,7 +1306,22 @@ public class SignRequestService {
 	public void replaceRecipientsToWorkflowStep(Long signBookId, Integer stepNumber, List<RecipientWsDto> recipientWsDtos) throws EsupSignatureException {
 		SignBook signBook = signBookRepository.findById(signBookId).orElseThrow();
 		LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber - 1);
-		liveWorkflowStepService.replaceRecipientsToWorkflowStep(signBook, liveWorkflowStep, recipientWsDtos);
+		if (signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(liveWorkflowStep) + 1 < signBook.getLiveWorkflow().getCurrentStepNumber()) {
+			throw new EsupSignatureException("Impossible de modifier les destinataires d'une étape déjà passée");
+		}
+		List<Recipient> oldRecipients = new ArrayList<>(liveWorkflowStep.getRecipients());
+		liveWorkflowStep.getRecipients().clear();
+		List<Recipient> recipients = liveWorkflowStepService.addRecipientsToWorkflowStep(signBook, liveWorkflowStep, recipientWsDtos);
+		if (signBook.getLiveWorkflow().getCurrentStep().equals(liveWorkflowStep)) {
+			for (SignRequest signRequest : signBook.getSignRequests()) {
+				for (Recipient recipient : oldRecipients) {
+					signRequest.getRecipientHasSigned().remove(recipient);
+				}
+				for (Recipient recipient : recipients) {
+					signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
+				}
+			}
+		}
 	}
 
     public List<RecipientWsDto> getExternalRecipients(Long signRequestId) {
@@ -1345,4 +1370,5 @@ public class SignRequestService {
 		}
 		return signRequestStepsDtos;
 	}
+
 }

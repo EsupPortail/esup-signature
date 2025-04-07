@@ -140,5 +140,4 @@ export class HomeUi {
             e.preventDefault();
         }
     }
-
 }

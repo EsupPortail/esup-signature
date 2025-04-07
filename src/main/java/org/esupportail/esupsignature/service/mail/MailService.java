@@ -23,7 +23,6 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLdap;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +42,8 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -56,21 +55,12 @@ public class MailService {
     private static final Logger logger = LoggerFactory.getLogger(MailService.class);
 
     private final GlobalProperties globalProperties;
-
     private final MailConfig mailConfig;
-
     private final JavaMailSenderImpl mailSender;
-
     private final TemplateEngine templateEngine;
-
     private final UserService userService;
-
-    private final FileService fileService;
-
     private final MessageSource messageSource;
-
     private final UserShareService userShareService;
-
     private final ReportService reportService;
 
     //    @Autowired(required = false)
@@ -81,13 +71,12 @@ public class MailService {
 //    @Resource
 //    private CertificatService certificatService;
 
-    public MailService(GlobalProperties globalProperties, @Autowired(required = false) MailConfig mailConfig, @Autowired(required = false) JavaMailSenderImpl mailSender, TemplateEngine templateEngine, UserService userService, FileService fileService, MessageSource messageSource, UserShareService userShareService, ReportService reportService) {
+    public MailService(GlobalProperties globalProperties, @Autowired(required = false) MailConfig mailConfig, @Autowired(required = false) JavaMailSenderImpl mailSender, TemplateEngine templateEngine, UserService userService, MessageSource messageSource, UserShareService userShareService, ReportService reportService) {
         this.globalProperties = globalProperties;
         this.mailConfig = mailConfig;
         this.mailSender = mailSender;
         this.templateEngine = templateEngine;
         this.userService = userService;
-        this.fileService = fileService;
         this.messageSource = messageSource;
         this.userShareService = userShareService;
         this.reportService = reportService;
@@ -101,14 +90,14 @@ public class MailService {
                     && (recipientUser.getEmailAlertFrequency() == null
                     || recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately)
                     || userService.checkEmailAlert(recipientUser))) {
-                sendSignRequestEmailAlert(signBook, recipientUser, data);
+                sendSignRequestAlert(Collections.singletonList(recipientUser.getEmail()), signBook);
             }
+            sendSignRequestAlertsShare(signBook, recipientUser, data);
         }
     }
 
-    public void sendSignRequestEmailAlert(SignBook signBook, User recipientUser, Data data) throws EsupSignatureMailException {
+    public void sendSignRequestAlertsShare(SignBook signBook, User recipientUser, Data data) throws EsupSignatureMailException {
         Date date = new Date();
-        sendSignRequestAlert(Collections.singletonList(recipientUser.getEmail()), signBook);
         Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
         recipientUser.setLastSendAlertDate(date);
         Map<String, UserShare> toShareEmails = new HashMap<>();
@@ -191,7 +180,7 @@ public class MailService {
         return null;
     }
 
-    public void sendPostit(SignBook signBook, Comment comment) throws EsupSignatureMailException {
+    public void sendPostit(SignBook signBook, Comment comment, String userEppn, Boolean sendToAll) throws EsupSignatureMailException {
         if (!checkMailSender()) {
             return;
         }
@@ -200,6 +189,11 @@ public class MailService {
         ctx.setVariable("comment", comment);
         Set<String> toEmails = new HashSet<>();
         if(!signBook.getCreateBy().getEppn().equals("system")) toEmails.add(signBook.getCreateBy().getEmail());
+        if(BooleanUtils.isTrue(sendToAll)) {
+            toEmails.addAll(signBook.getTeam().stream().map(User::getEmail).toList());
+        }
+        User user = userService.getByEppn(userEppn);
+        toEmails.removeIf(e -> e.equals(user.getEmail()));
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-postit.html", ctx);

@@ -175,6 +175,10 @@
                             <label for="externalCanEdit" class="form-check-label">Les extérieurs peuvent mettre des annotations</label>
                         </div>
                         <div class="form-check mb-2">
+                            <input id="autorizeClone" type="checkbox" class="form-check-input" th:field="*{autorizeClone}"/>
+                            <label for="autorizeClone" class="form-check-label">Autoriser le propriétaire à relancer une nouvelle demande (clonage)</label>
+                        </div>
+                        <div class="form-check mb-2">
                             <input id="scanPdfMetadatas" type="checkbox" class="form-check-input" th:field="*{scanPdfMetadatas}"/>
                             <label for="scanPdfMetadatas" class="form-check-label">Construction du circuit à partir des métadonnées des pdf importés</label>
                             <button class="btn btn-sm btn-transparent" data-bs-target="#help-scan-meta" data-bs-toggle="collapse"
@@ -276,14 +280,14 @@
                         </div>
                     </form>
                     <div class="form-group mb-3">
-                        <label for="documentsSourceUri"> <strong>Destination des documents en fin de circuit</strong></label>
-                        <table class="table table-borderless table-striped">
+                        <label for="documentsSourceUri"> <strong>Destination et format d'envoi des documents en fin de circuit</strong></label>
+                        <table id="targets" class="table table-borderless table-striped">
                             <thead class="table-secondary">
                             <tr>
                                 <th class="text-left">URI</th>
-                                <th class="text-left">Envoyer le document</th>
-                                <th class="text-left">Envoyer le rapport</th>
-                                <th class="text-left">Envoyer les PJ</th>
+                                <th class="text-left">Document</th>
+                                <th class="text-left">Rapports</th>
+                                <th class="text-left">Pièces jointes</th>
                                 <th class="text-left">Envoyer zippé</th>
                                 <th>Supprimer</th>
                                 <th>
@@ -316,7 +320,7 @@
                                     </td>
                                     <td class="text-left w-100">
                                         <form th:id="'toggle-send-zip-' + ${target.id}" th:action="'/admin/workflows/toggle-send-zip/' + ${workflow.id} + '/' + ${target.id}" th:method="'put'">
-                                            <input type="checkbox" th:checked="${target.sendZip}" th:onclick="'$(\'#toggle-send-zip-' + ${target.id} + '\').submit()'"/>
+                                            <input type="checkbox"        th:disabled="${!target.sendDocument and !target.sendReport and !target.sendAttachment}" th:checked="${target.sendZip}" th:onclick="'$(\'#toggle-send-zip-' + ${target.id} + '\').submit()'"/>
                                         </form>
                                     </td>
                                     <td>

@@ -71,7 +71,7 @@
 <!--					</button>-->
 <!--				</div>-->
 <!--			</div>-->
-			<div id="insert-btn-div" class="d-none d-sm-block">
+			<div id="insert-btn-div" class="d-none d-sm-block" th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
 				<button id="insert-btn" th:if="${editable}" class="btn btn-light btn-outline-primary pulse-primary me-1"
 					data-bs-toggle="collapse" href="#second-tools">
 					<i class="fa-solid fa-plus"></i> <span class="d-none d-xxl-inline">Menu insertion</span>
@@ -158,7 +158,7 @@
 		<a th:if="${isManager}" class="btn btn-light btn-outline-dark d-none d-lg-block ms-1 me-1" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal">
 			<i class="fa-solid fa-users-viewfinder"></i>
 		</a>
-		<a th:if="${isManager}" class="btn btn-light btn-outline-dark d-none d-md-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/update/' + ${signRequest.parentSignBook.id}">
+		<a th:if="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}" class="btn btn-light btn-outline-dark d-none d-md-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/update/' + ${signRequest.parentSignBook.id}">
 			<i class="fa-solid fa-pencil-alt"></i>
 		</a>
 	</div>

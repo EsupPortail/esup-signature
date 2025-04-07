@@ -106,6 +106,7 @@ export class WizUi {
     }
 
     disableButtons() {
+        $("#send-form-button").attr("disabled", "disabled");
         $("#fast-sign-button").attr("disabled", "disabled");
         $(".send-form-spinner").removeClass("d-none");
         $("#fast-form-close").attr("disabled", "disabled");
@@ -118,6 +119,7 @@ export class WizUi {
     enableButtons() {
         $(".send-form-spinner").addClass("d-none");
         $("#fast-sign-button").removeAttr("disabled");
+        $("#send-form-button").removeAttr("disabled");
         $("#fast-form-close").removeAttr("disabled");
         $("#send-draft-button").removeAttr("disabled");
         $("#send-pending-button").removeAttr("disabled");
@@ -166,6 +168,20 @@ export class WizUi {
             }
         });
         $("#multiSign").on('change', e => this.toggleAnnotationOption(e.target));
+        $('#signType-1').on('change', function (e) {
+            if($(this).val() === "hiddenVisa") {
+                let multiSign = $('#multiSign');
+                multiSign.prop('checked', false);
+                multiSign.prop('disabled', 'disabled');
+                $('#singleSignWithAnnotation').prop('checked', false);
+            }
+            else {
+                let multiSign = $('#multiSign');
+                multiSign.prop('checked', true);
+                multiSign.removeAttr('disabled')
+                $('#singleSignWithAnnotation').prop('checked', true);
+            }
+        });
     }
 
     fastSignSubmitDatas() {
@@ -314,6 +330,20 @@ export class WizUi {
             self.start = false;
             $("#recipientsEmails-1").removeAttr("required");
             self.workflowSignSubmitStepData();
+        });
+        $('#signType-1').on('change', function (e) {
+            if($(this).val() === "hiddenVisa") {
+                let multiSign = $('#multiSign-1');
+                multiSign.prop('checked', false);
+                multiSign.prop('disabled', 'disabled');
+                $('#singleSignWithAnnotation-1').prop('checked', false);
+            }
+            else {
+                let multiSign = $('#multiSign-1');
+                multiSign.prop('checked', true);
+                multiSign.removeAttr('disabled')
+                $('#singleSignWithAnnotation-1').prop('checked', true);
+            }
         });
         $("#multiSign-1").on('change', e => this.toggleAnnotationOption(e.target));
         $("#wiz-end").on('click', e => this.wizardEnd());
@@ -474,6 +504,7 @@ export class WizUi {
     }
 
     sendForm(e) {
+        this.disableButtons();
         let formId = $(e.target).attr('data-es-form-id');
         let spinner = $("#send-form-spinner");
         spinner.removeClass("d-none");
@@ -566,6 +597,20 @@ export class WizUi {
             if(signType.length) {
                 step.signType = signType.val();
             }
+            signType.on('change', function (e) {
+                if($(this).val() === "hiddenVisa") {
+                    let multiSign = $('#multiSign-' + i);
+                    multiSign.prop('checked', false);
+                    multiSign.prop('disabled', 'disabled');
+                    $('#singleSignWithAnnotation-' + i).prop('checked', false);
+                }
+                else {
+                    let multiSign = $('#multiSign-' + i);
+                    multiSign.prop('checked', true);
+                    multiSign.removeAttr('disabled')
+                    $('#singleSignWithAnnotation' + i).prop('checked', true);
+                }
+            });
             step.targetEmails = $('#targetEmailsSelect').val();
             step.forceAllSign = $('input[name="forceAllSign"]').is(":checked");
             steps.push(step);

@@ -154,14 +154,14 @@ public class SignBookService {
     }
 
     @Transactional
-    public Page<SignBook> getSignBooksForManagers(String userEppn, String authUserEppn, SignRequestStatus statusFilter, String recipientsFilter, Long workflowId, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
+    public Page<SignBook> getSignBooksForManagers(SignRequestStatus statusFilter, String recipientsFilter, Long workflowId, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
         User creatorFilterUser = null;
         if(creatorFilter != null) {
             creatorFilterUser = userService.getByEppn(creatorFilter);
         }
         User userFilter = null;
         if(recipientsFilter != null && !recipientsFilter.equals("%") && !recipientsFilter.isEmpty()) {
-            userFilter = userService.getByEppn(recipientsFilter);
+            userFilter = userService.getUserByEmail(recipientsFilter);
         }
         Calendar calendar = Calendar.getInstance();
         calendar.set(9999, Calendar.DECEMBER, 31);
@@ -180,7 +180,7 @@ public class SignBookService {
                 logger.error("unable to parse date : " + dateFilter);
             }
         }
-        return signBookRepository.findByWorkflowName(userFilter, statusFilter, workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
+        return signBookRepository.findByWorkflowName(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
     }
 
     @Transactional
@@ -210,7 +210,7 @@ public class SignBookService {
         }
         User userFilter = null;
         if(recipientsFilter != null && !recipientsFilter.equals("%") && !recipientsFilter.isEmpty()) {
-            userFilter = userService.getByEppn(recipientsFilter);
+            userFilter = userService.getUserByEmail(recipientsFilter);
         }
         if(statusFilter.isEmpty() || statusFilter.equals("all")) {
             if(userFilter != null) {
@@ -723,9 +723,9 @@ public class SignBookService {
         return sharedSignBook;
     }
 
-    public List<String> getAllDocTitles(String userEppn) {
+    public List<String> getAllDocTitles(String userEppn, String searchString) {
         User user = userService.getByEppn(userEppn);
-        Set<String> docTitles = new HashSet<>(signBookRepository.findSubjects(user));
+        Set<String> docTitles = new HashSet<>(signBookRepository.findSubjects(user, "%"+searchString+"%"));
         return docTitles.stream().filter(s -> s != null && !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
@@ -1668,6 +1668,8 @@ public class SignBookService {
                                         }
                                         if (target.getSendDocument()) {
                                             Document signedFile = signRequest.getLastSignedDocument();
+                                            String extension = "." + fileService.getExtension(signedFile.getFileName());
+                                            if(!name.endsWith(extension)) name += extension;
                                             inputStreams.put(signedFile.getInputStream(), name);
                                         }
                                         if (target.getSendReport()) {
@@ -2095,8 +2097,8 @@ public class SignBookService {
         }
     }
 
-    public List<String> getSignBooksForManagersSubjects(Long workflowId) {
-        return signBookRepository.findByWorkflowNameSubjects(workflowId);
+    public List<String> getSignBooksForManagersSubjects(Long workflowId, String searchString) {
+        return signBookRepository.findByWorkflowNameSubjects(workflowId, "%"+searchString+"%");
     }
 
     public List<UserDto> getSignBooksForManagersCreators(Long workflowId) {
@@ -2106,4 +2108,33 @@ public class SignBookService {
     public List<UserDto> getSignBooksForManagersRecipientsUsers(Long workflowId) {
         return signBookRepository.findByWorkflowNameRecipientsUsers(workflowId);
     }
+
+    @Transactional
+    public Long clone(Long id, MultipartFile[] multipartFiles, String comment, String authUserEppn) {
+        SignRequest signRequest = signRequestService.getById(id);
+        SignBook signBook = signRequest.getParentSignBook();
+        if(signBook.getLiveWorkflow().getWorkflow() != null && ! signBook.getLiveWorkflow().getWorkflow().getAutorizeClone()) {
+            throw new RuntimeException("clonage non autorisé pour : " + id);
+        }
+        String name = "Demande simple";
+        if(signBook.getLiveWorkflow().getWorkflow() != null) name = signBook.getLiveWorkflow().getWorkflow().getName();
+        SignBook newSignBook = createSignBook(
+                signBook.getSubject(),
+                signBook.getLiveWorkflow().getWorkflow(),
+                name,
+                authUserEppn,
+                true,
+                comment
+        );
+        for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+            newSignBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.cloneLiveWorkflowStep(newSignBook, null, liveWorkflowStep));
+        }
+        newSignBook.getLiveWorkflow().setCurrentStep(newSignBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
+        SignRequest newSignRequest = signRequestService.createSignRequest(signRequest.getTitle(), newSignBook, authUserEppn, authUserEppn);
+        signRequestService.addDocsToSignRequest(newSignRequest, true, 0, new ArrayList<>(), multipartFiles);
+        pendingSignBook(newSignBook, null, authUserEppn, authUserEppn, false, true);
+        signRequestService.addAttachement(null, globalProperties.getRootUrl() + "/user/signrequests/" + id, newSignRequest.getId(), authUserEppn);
+        return newSignRequest.getId();
+    }
+
 }

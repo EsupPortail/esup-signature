@@ -36,19 +36,12 @@ public class ScheduledTaskService {
 	private static final Logger logger = LoggerFactory.getLogger(ScheduledTaskService.class);
 
 	private final GlobalProperties globalProperties;
-
 	private final SignBookRepository signBookRepository;
-
 	private final SignBookService signBookService;
-
 	private final TaskService taskService;
-
 	private final WorkflowService workflowService;
-
 	private final UserService userService;
-
 	private final SignRequestRepository signRequestRepository;
-
 	private final OtpService otpService;
 
 	public ScheduledTaskService(GlobalProperties globalProperties, SignBookRepository signBookRepository, SignBookService signBookService, TaskService taskService, WorkflowService workflowService, UserService userService, SignRequestRepository signRequestRepository, OtpService otpService) {

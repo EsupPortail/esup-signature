@@ -66,8 +66,13 @@ export class GlobalUi {
         $("#closeUserInfo").on('click', function() {
             $("#user-toggle").click();
         });
-        this.clickableRow.on('click',  function() {
-            window.location = $(this).closest('tr').attr('data-href');
+        this.clickableRow.off('click').on('click', function(e) {
+            let url = $(this).closest('tr').attr('data-href');
+            if (e.ctrlKey || e.metaKey) {
+                window.open(url, '_blank');
+            } else {
+                window.location = url;
+            }
         });
         this.refreshClickableTd();
         this.inputFiles.on('change', e => this.changeFileInputName(e));
@@ -478,6 +483,69 @@ export class GlobalUi {
             self.slimSelectHack($(this))
         })
 
+        $(".slim-select-filter-search").each(function () {
+            let selectName = $(this).attr('id');
+            let url = $(this).attr('es-search-url');
+            let placeholderText = $(this).attr('es-search-text');
+            console.info("auto enable slim-select-filter-search for : " + selectName);
+            let select = $("#" + selectName);
+            new SlimSelect({
+                select: '#' + selectName,
+                settings: {
+                    placeholderText: placeholderText,
+                    searchText: 'Aucun résultat',
+                    searchingText: 'Recherche en cours',
+                    searchPlaceholder: 'Rechercher',
+                    searchHighlight: false,
+                    hideSelectedOption: true,
+                    closeOnSelect: true,
+                    maxValuesShown: 40,
+                },
+                events: {
+                    searchFilter: (option, search) => {
+                        return true;
+                    },
+                    search: (search, currentData) => {
+                        return new Promise((resolve, reject) => {
+                            if (search.length < 3) {
+                                return reject('Merci de saisir au moins 3 caractères');
+                            } else {
+                                fetch(url + '?searchString=' + search, {
+                                    method: 'get',
+                                })
+                                .then((response) => {
+                                    return response.json()
+                                })
+                                .then((json) => {$
+                                    console.log(json);
+                                    let data = []
+                                    for (let i = 0; i < json.length; i++) {
+                                        data.push({
+                                            text: json[i],
+                                            value: json[i]
+                                        });
+                                    }
+                                    if (data.length > 0) {
+                                        return resolve(data);
+                                    } else {
+                                        return reject("Pas de résultat");
+                                    }
+                                })
+                                .catch(function () {
+                                    return reject("Recherche en cours");
+                                });
+                            }
+                        });
+                    }
+                }
+            });
+            $(".ss-search > input").on("click" , function (e) {
+                e.stopPropagation();
+            });
+            select.removeClass("spinner-border");
+            self.slimSelectHack($(this))
+        })
+
         $(".slim-select-simple").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-simple for : " + selectName);
@@ -605,16 +673,16 @@ export class GlobalUi {
 
     refreshClickableTd() {
         this.clickableTd = $(".clickable-td");
-        this.clickableTd.unbind();
-        this.clickableTd.on('click',  function() {
-            let test = false;
-            $(".card").each(function (index, e) {
-                if(e.classList.contains("show")) {
-                    test = true;
+        this.clickableTd.off('click').on('click', function(e) {
+            let test = $(".card.show").length > 0;
+
+            if (!test) {
+                let url = $(this).closest('tr').attr('data-href');
+                if (e.ctrlKey || e.metaKey) {
+                    window.open(url, '_blank');
+                } else {
+                    window.location = url;
                 }
-            });
-            if(!test) {
-                window.location = $(this).closest('tr').attr('data-href');
             }
         });
     }

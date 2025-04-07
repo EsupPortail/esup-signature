@@ -56,16 +56,14 @@ public class CurrentSessionsController {
 	@GetMapping
 	public String getCurrentSessions(Model model) {
 		Map<String, HttpSessionViewDto> allSessions = httpSessionsListenerService.getSessions();
-		List<SessionInformation> sessions = new ArrayList<>();
-		for(Object principal : sessionRegistry.getAllPrincipals()) {
-			for(SessionInformation sessionInformation: sessionRegistry.getAllSessions(principal, false)) {
-				HttpSessionViewDto httpSession;
-				if (allSessions.containsKey(sessionInformation.getSessionId())) {
-					httpSession = allSessions.get(sessionInformation.getSessionId());
-					sessions.addAll(sessionRegistry.getAllSessions(principal, false));
-				} else {
+
+        for (Object principal : sessionRegistry.getAllPrincipals()) {
+			for (SessionInformation sessionInformation : sessionRegistry.getAllSessions(principal, false)) {
+				HttpSessionViewDto httpSession = allSessions.get(sessionInformation.getSessionId());
+				if (httpSession == null) {
 					httpSession = new HttpSessionViewDto();
 					httpSession.setSessionId(sessionInformation.getSessionId());
+					httpSession.setCreatedDate(new Date());
 					allSessions.put(sessionInformation.getSessionId(), httpSession);
 				}
 				httpSession.setLastRequest(sessionInformation.getLastRequest());
@@ -73,20 +71,23 @@ public class CurrentSessionsController {
 				httpSession.setExpired(sessionInformation.isExpired());
 			}
 		}
-		for(HttpSessionViewDto httpSession : allSessions.values()) {
-			if(httpSession.getLastRequest() == null) {
+
+		for (HttpSessionViewDto httpSession : allSessions.values()) {
+			if (httpSession.getLastRequest() == null) {
 				httpSession.setLastRequest(httpSession.getCreatedDate());
 			}
 		}
-		try {
-			model.addAttribute("httpSessions",
-					allSessions.values().stream()
-							.sorted(Comparator.comparing(HttpSessionViewDto::getLastRequest, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
-							.toList());
-		} catch (Exception e) {
-			model.addAttribute("httpSessions", allSessions.values());
+
+		List<HttpSessionViewDto> sessions;
+		synchronized(allSessions) {
+			sessions = new ArrayList<>(allSessions.values());
 		}
+		sessions.sort(Comparator.comparing(HttpSessionViewDto::getLastRequest,
+				Comparator.nullsLast(Comparator.naturalOrder())).reversed());
+
+		model.addAttribute("httpSessions", sessions);
 		model.addAttribute("active", "sessions");
+
 		return "admin/currentsessions";
 	}
 
