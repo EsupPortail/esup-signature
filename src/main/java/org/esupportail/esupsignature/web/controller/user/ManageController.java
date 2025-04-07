@@ -114,12 +114,18 @@ public class ManageController {
         model.addAttribute("creatorFilter", creatorFilter);
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("workflow", workflow);
-        Page<SignBook> signBooks = signBookService.getSignBooksForManagers(userEppn, authUserEppn, signRequestStatus, recipientsFilter, workflow.getId(), docTitleFilter, creatorFilter, dateFilter, pageable);
+        Page<SignBook> signBooks = signBookService.getSignBooksForManagers(signRequestStatus, recipientsFilter, workflow.getId(), docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("signBooks", signBooks);
-        model.addAttribute("docTitles", signBookService.getSignBooksForManagersSubjects(workflow.getId()));
         model.addAttribute("creators", signBookService.getSignBooksForManagersCreators(workflow.getId()));
-        model.addAttribute("signRequestRecipients", signBookService.getSignBooksForManagersRecipientsUsers(workflow.getId()));
         return "user/manage/details";
+    }
+
+    @GetMapping(value = "/workflow/{id}/search-doc-titles")
+    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn)")
+    @ResponseBody
+    public List<String> searchDocTitles(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                @PathVariable Long id, @RequestParam(value = "searchString", required = false) String searchString) {
+        return signBookService.getSignBooksForManagersSubjects(id, searchString);
     }
 
     @PreAuthorize("@preAuthorizeService.workflowManage(#id, #authUserEppn)")
