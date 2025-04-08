@@ -67,12 +67,11 @@ export class ListSignBooksUi {
         $(document).on('click', function(){
             self.listSignRequestTable.focus();
         });
-        // $(document).on('wheel', function(e){
-        //     e.preventDefault();
-        //     let delta = e.originalEvent.deltaY;
-        //     let scrollAmount = delta > 0 ? 20 : -20;
-        //     self.listSignRequestTable.scrollTop(self.listSignRequestTable.scrollTop() + scrollAmount);
-        // });
+        $(document).on('wheel', function(e){
+            let delta = e.originalEvent.deltaY;
+            let scrollAmount = delta > 0 ? 50 : -50;
+            self.listSignRequestTable.scrollTop(self.listSignRequestTable.scrollTop() + scrollAmount);
+        });
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
         this.refreshListeners();
