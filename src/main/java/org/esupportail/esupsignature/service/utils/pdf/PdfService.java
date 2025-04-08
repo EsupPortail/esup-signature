@@ -187,14 +187,18 @@ public class PdfService {
 
         if (pdfParameters.getRotation() == 0 || pdfParameters.getRotation() == 180) {
             yAdjusted = pdfParameters.getHeight() - signRequestParams.getyPos() * fixFactor - signRequestParams.getSignHeight() * fixFactor + pdPage.getCropBox().getLowerLeftY();
+            if (pdfParameters.isLandScape()) {
+                tx = pdfParameters.getWidth();
+            } else {
+                ty = pdfParameters.getHeight();
+            }
         } else {
             yAdjusted = pdfParameters.getWidth() - signRequestParams.getyPos() * fixFactor - signRequestParams.getSignHeight() * fixFactor + pdPage.getCropBox().getLowerLeftY();
-        }
-
-        if (pdfParameters.isLandScape()) {
-            tx = pdfParameters.getWidth();
-        } else {
-            ty = pdfParameters.getHeight();
+            if (pdfParameters.isLandScape()) {
+                ty = pdfParameters.getHeight();
+            } else {
+                tx = pdfParameters.getWidth();
+            }
         }
 
         PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
