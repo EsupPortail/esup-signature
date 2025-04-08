@@ -315,20 +315,22 @@ export default class SelectUser {
         html += "</div>";
         tempUsersDiv.append(html);
         let phonesInput = document.querySelector("#phone_" + id);
-        let iti = intlTelInput(phonesInput, {
-            validationNumberTypes: "FIXED_LINE_OR_MOBILE",
-            strictMode: true,
-            separateDialCode: false,
-            nationalMode: true,
-            countryOrder: ["fr"],
-            customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
-            searchPlaceholder: "Rechercher",
-        });
-        if(data.phone == null || data.phone === "") {
-            iti.setCountry("fr");
+        if(phonesInput != null) {
+            let iti = intlTelInput(phonesInput, {
+                validationNumberTypes: "FIXED_LINE_OR_MOBILE",
+                strictMode: true,
+                separateDialCode: false,
+                nationalMode: true,
+                countryOrder: ["fr"],
+                customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
+                searchPlaceholder: "Rechercher",
+            });
+            if (data.phone == null || data.phone === "") {
+                iti.setCountry("fr");
+            }
+            this.validatePhone(iti, id)
+            phonesInput.addEventListener("focusout", e => this.validatePhone(iti, id));
         }
-        this.validatePhone(iti, id)
-        phonesInput.addEventListener("focusout", e => this.validatePhone(iti, id));
     }
 
     validatePhone(iti, id) {

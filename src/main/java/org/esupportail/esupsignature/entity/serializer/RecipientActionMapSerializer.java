@@ -9,7 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RecipientActionMapSerializer extends JsonSerializer<Map<Recipient, Action>> {
 
@@ -19,12 +21,18 @@ public class RecipientActionMapSerializer extends JsonSerializer<Map<Recipient, 
     @Override
     public void serialize(Map<Recipient, Action> map, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         jsonGenerator.writeStartObject(map);
-        int i = 0;
-        for (Map.Entry<Recipient, Action> entry : map.entrySet()) {
-            jsonGenerator.writeObjectField("recipient-" + i, entry.getKey());
-            jsonGenerator.writeObjectField("action-" + i, entry.getValue());
-            i++;
-        }
+        AtomicInteger i = new AtomicInteger();
+        map.entrySet().stream()
+                .sorted(Comparator.comparingLong(e -> e.getValue().getId()))
+                .forEach(entry -> {
+                    try {
+                        jsonGenerator.writeObjectField("recipient-" + i, entry.getKey());
+                        jsonGenerator.writeObjectField("action-" + i, entry.getValue());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    i.getAndIncrement();
+                });
         jsonGenerator.writeEndObject();
     }
 

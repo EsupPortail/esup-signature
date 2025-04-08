@@ -377,7 +377,7 @@ public class SignService {
 			if(includeDocuments) {
 				List<DssMultipartFile> multipartFiles = new ArrayList<>();
 				for (Document toSignFile : documents) {
-					multipartFiles.add(new DssMultipartFile(toSignFile.getFileName(), toSignFile.getFileName(), toSignFile.getContentType(), toSignFile.getInputStream()));
+					multipartFiles.add(toSignFile.getMultipartFile());
 				}
 				((SignatureMultipleDocumentsForm) abstractSignatureForm).setDocumentsToSign(multipartFiles);
 			}
@@ -403,7 +403,7 @@ public class SignService {
 			}
 			abstractSignatureForm = new SignatureDocumentForm();
 			if(includeDocuments) {
-				((SignatureDocumentForm) abstractSignatureForm).setDocumentToSign(new DssMultipartFile(toSignFile.getFileName(), toSignFile.getFileName(), toSignFile.getContentType(), bytes));
+				((SignatureDocumentForm) abstractSignatureForm).setDocumentToSign(toSignFile.getMultipartFile());
 			} else {
 				documentService.addSignedFile(signRequest, new ByteArrayInputStream(bytes), toSignFile.getFileName(), toSignFile.getContentType(), userService.getSystemUser());
 			}

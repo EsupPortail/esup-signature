@@ -330,12 +330,13 @@ export class SignRequestParams extends EventFactory {
                 this.extraText = "";
                 this.extraType = true;
                 this.extraName = true;
-                this.extraDate = true;
+                this.extraDate = false;
                 this.isExtraText = true;
                 this.addExtra = false;
                 this.toggleMinimalTools();
                 this.toggleExtra();
                 this.toggleName();
+                this.toggleDate();
                 this.toggleType();
                 this.toggleText();
                 this.refreshExtraDiv();

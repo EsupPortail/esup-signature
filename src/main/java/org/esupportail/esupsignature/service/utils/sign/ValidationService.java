@@ -14,20 +14,21 @@ import eu.europa.esig.dss.spi.validation.CertificateVerifier;
 import eu.europa.esig.dss.spi.x509.revocation.RevocationToken;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.reports.Reports;
-import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dss.DssUtilsService;
 import org.esupportail.esupsignature.dss.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.model.DssMultipartFile;
 import org.esupportail.esupsignature.dss.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ValidationService {
@@ -35,21 +36,15 @@ public class ValidationService {
     private static final Logger logger = LoggerFactory.getLogger(ValidationService.class);
 
     private final CertificateVerifier certificateVerifier;
+    private final DssUtilsService dssUtilsService;
+    private final SignaturePolicyProvider signaturePolicyProvider;
+    private final org.springframework.core.io.Resource defaultPolicy;
 
-    @Resource
-    protected FileService fileService;
-
-    @Resource
-    protected DssUtilsService dssUtilsService;
-
-    @Resource
-    protected SignaturePolicyProvider signaturePolicyProvider;
-
-    @Resource
-    private org.springframework.core.io.Resource defaultPolicy;
-
-    public ValidationService(CertificateVerifier certificateVerifier) {
+    public ValidationService(CertificateVerifier certificateVerifier, DssUtilsService dssUtilsService, SignaturePolicyProvider signaturePolicyProvider, org.springframework.core.io.Resource defaultPolicy) {
         this.certificateVerifier = certificateVerifier;
+        this.dssUtilsService = dssUtilsService;
+        this.signaturePolicyProvider = signaturePolicyProvider;
+        this.defaultPolicy = defaultPolicy;
     }
 
     public Reports validate(InputStream docInputStream, InputStream signInputStream) {
@@ -75,7 +70,6 @@ public class ValidationService {
             }
             documentValidator.setSignaturePolicyProvider(new SignaturePolicyProvider());
             documentValidator.setTokenExtractionStrategy(TokenExtractionStrategy.NONE);
-            documentValidator.setLocale(Locale.FRENCH);
             documentValidator.setValidationLevel(ValidationLevel.LONG_TERM_DATA);
             documentValidator.setSignaturePolicyProvider(signaturePolicyProvider);
             documentValidator.setIncludeSemantics(true);

@@ -472,7 +472,7 @@ public class UserService {
             users.addAll(userRepository.findByEppnStartingWith(searchString));
             users.addAll(userRepository.findByNameStartingWithIgnoreCase(searchString.toUpperCase()));
             users.addAll(userRepository.findByEmailStartingWith(searchString));
-            users.removeIf(user -> user.getEppn().equals("system") || user.getEppn().equals("scheduler") || (!globalProperties.getSearchForExternalUsers() && (user.getUserType().equals(UserType.external)) || user.getEmail().equals(searchString)));
+            users.removeIf(user -> user.getEppn().equals("system") || user.getEppn().equals("scheduler") || (!globalProperties.getSearchForExternalUsers() && (user.getUserType().equals(UserType.external)) || user.getEmail() == null || user.getEmail().equals(searchString)));
             for (User user : users) {
                 personLightLdaps.add(getPersonLdapLightFromUser(user));
             }

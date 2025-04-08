@@ -88,7 +88,7 @@ public class GlobalWsSecureController {
     @PreAuthorize("@preAuthorizeService.signRequestView(#signRequestId, #userEppn, #authUserEppn)")
     @ResponseBody
     @PostMapping(value = "/viewed/{signRequestId}")
-    public ResponseEntity<Void> sign(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signRequestId") Long signRequestId) {
+    public ResponseEntity<Void> viewedBy(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signRequestId") Long signRequestId) {
         signRequestService.viewedBy(signRequestId, userEppn);
         return ResponseEntity.ok().build();
     }
@@ -98,6 +98,18 @@ public class GlobalWsSecureController {
     public ResponseEntity<Void> getLastFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
             signRequestService.getToSignFileResponse(id, "attachment", httpServletResponse, false);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error("get file error", e);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestCreator(#id, #authUserEppn)")
+    @GetMapping(value = "/get-original-file/{id}")
+    public ResponseEntity<Void> getOriginalFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
+        try {
+            signRequestService.getOriginalFileResponse(id, httpServletResponse);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("get file error", e);
