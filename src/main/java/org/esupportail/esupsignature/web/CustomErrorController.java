@@ -34,7 +34,7 @@ public class CustomErrorController implements ErrorController {
     @RequestMapping(produces = MediaType.TEXT_HTML_VALUE)
     public String errorHtml(HttpServletRequest request, HttpServletResponse response, HttpSession httpSession, Model model) {
         HttpStatus status = customErrorService.getStatus(request);
-        Map<String, Object> errors = new java.util.HashMap<>(Collections
+                Map<String, Object> errors = new java.util.HashMap<>(Collections
                 .unmodifiableMap(customErrorService.getErrorAttributes(request, customErrorService.getErrorAttributeOptions(request))));
         response.setStatus(status.value());
         if((int) errors.get("status") != 500) {

@@ -1260,17 +1260,26 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void updateComment(Long id, String text) {
-		Comment comment = commentService.getById(id);
-		comment.setText(text);
+	public void updateComment(Long signRequestId, Long postitId, String text) throws EsupSignatureException {
+		Comment comment = commentService.getById(postitId);
+		SignRequest signRequest = signRequestRepository.findById(signRequestId).orElseThrow();
+		if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
+			comment.setText(text);
+		} else {
+			throw new EsupSignatureException("Demande refusé, modification impossible");
+		}
 	}
 
 	@Transactional
-	public void deleteComment(Long id, Long postitId) {
+	public void deleteComment(Long signRequestId, Long postitId) throws EsupSignatureException {
 		Comment comment = commentService.getById(postitId);
-		SignRequest signRequest = signRequestRepository.findById(id).orElseThrow();
-		signRequest.getComments().remove(comment);
-		commentService.deleteComment(postitId, signRequest);
+		SignRequest signRequest = signRequestRepository.findById(signRequestId).orElseThrow();
+		if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
+			signRequest.getComments().remove(comment);
+			commentService.deleteComment(postitId, signRequest);
+		} else {
+			throw new EsupSignatureException("Demande refusé, modification impossible");
+		}
 	}
 
 	public List<SignRequest> getByIdAndRecipient(Long id, String userEppn) {
