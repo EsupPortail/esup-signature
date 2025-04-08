@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
@@ -44,53 +43,41 @@ public class WorkflowService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Resource
-    private List<Workflow> workflows;
+    private final  List<Workflow> workflows;
+    private final  WorkflowRepository workflowRepository;
+    private final  WorkflowStepService workflowStepService;
+    private final  LiveWorkflowService liveWorkflowService;
+    private final  LiveWorkflowStepService liveWorkflowStepService;
+    private final  FsAccessFactoryService fsAccessFactoryService;
+    private final  UserService userService;
+    private final  UserShareService userShareService;
+    private final UserPropertieService userPropertieService;
+    private final  TargetService targetService;
+    private final  FieldService fieldService;
+    private final  SignBookRepository signBookRepository;
+    private final  UserListService userListService;
+    private final  FormRepository formRepository;
+    private final  ObjectMapper objectMapper;
+    private final  RecipientService recipientService;
 
-    @Resource
-    private WorkflowRepository workflowRepository;
-
-    @Resource
-    private WorkflowStepService workflowStepService;
-
-    @Resource
-    private LiveWorkflowService liveWorkflowService;
-
-    @Resource
-    private LiveWorkflowStepService liveWorkflowStepService;
-
-    @Resource
-    private FsAccessFactoryService fsAccessFactoryService;
-
-    @Resource
-    private UserService userService;
-
-    @Resource
-    private UserShareService userShareService;
-
-    @Resource
-    public UserPropertieService userPropertieService;
-
-    @Resource
-    private TargetService targetService;
-
-    @Resource
-    private FieldService fieldService;
-
-    @Resource
-    private SignBookRepository signBookRepository;
-
-    @Resource
-    private UserListService userListService;
-
-    @Resource
-    private FormRepository formRepository;
-
-    @Resource
-    private ObjectMapper objectMapper;
-
-    @Resource
-    private RecipientService recipientService;
+    public WorkflowService(List<Workflow> workflows, WorkflowRepository workflowRepository, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, FsAccessFactoryService fsAccessFactoryService, UserService userService, UserShareService userShareService, UserPropertieService userPropertieService, TargetService targetService, FieldService fieldService, SignBookRepository signBookRepository, UserListService userListService, FormRepository formRepository, ObjectMapper objectMapper, RecipientService recipientService) {
+        this.workflows = workflows;
+        this.workflowRepository = workflowRepository;
+        this.workflowStepService = workflowStepService;
+        this.liveWorkflowService = liveWorkflowService;
+        this.liveWorkflowStepService = liveWorkflowStepService;
+        this.fsAccessFactoryService = fsAccessFactoryService;
+        this.userService = userService;
+        this.userShareService = userShareService;
+        this.userPropertieService = userPropertieService;
+        this.targetService = targetService;
+        this.fieldService = fieldService;
+        this.signBookRepository = signBookRepository;
+        this.userListService = userListService;
+        this.formRepository = formRepository;
+        this.objectMapper = objectMapper;
+        this.recipientService = recipientService;
+    }
 
     @PostConstruct
     public void initCreatorWorkflow() {
@@ -496,8 +483,11 @@ public class WorkflowService {
             workflows.removeAll(getWorkflowsBySystemUser());
         }
         return workflows.stream()
-                .sorted(Comparator.comparing(w -> w.getDescription().toLowerCase(), Comparator.nullsFirst(String::compareTo)))
-                .collect(Collectors.toList());    }
+                .sorted(Comparator.comparing(
+                        w -> Optional.ofNullable(w.getDescription()).orElse("").toLowerCase(),
+                        Comparator.naturalOrder()))
+                .collect(Collectors.toList());
+    }
 
     @Transactional
     public Workflow update(Workflow workflow, User user, String[] types, Set<String> managers) {
