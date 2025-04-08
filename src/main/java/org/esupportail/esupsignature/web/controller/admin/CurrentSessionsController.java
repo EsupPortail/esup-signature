@@ -86,6 +86,8 @@ public class CurrentSessionsController {
 				Comparator.nullsLast(Comparator.naturalOrder())).reversed());
 
 		model.addAttribute("httpSessions", sessions);
+		long now = System.currentTimeMillis();
+		model.addAttribute("httpSessionsAlive", sessions.stream().filter(s -> now - s.getLastRequest().getTime() < 60 * 1000).toList());
 		model.addAttribute("active", "sessions");
 
 		return "admin/currentsessions";
