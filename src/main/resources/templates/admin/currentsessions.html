@@ -20,6 +20,8 @@
                 </div>
                 <div class="card-body">
                     <span th:text="${httpSessions.size()} + ' session(s) ouverte(s)'"></span>
+                    <br>
+                    <span th:text="${httpSessionsAlive.size()} + ' session(s) live'"></span>
                 </div>
             </div>
             <div class="table-fix-head scrollbar-style rounded-3 col-sm-9 col-md-10 col-xl-11 p-0 m-2" style="height: calc(100vh - 230px);">
