@@ -450,29 +450,32 @@ public class MailService {
         }
         try {
             String systemAddress = "system@" + globalProperties.getDomain();
-            List<Address> tos = Arrays.stream(mimeMessage.getRecipients(Message.RecipientType.TO)).filter(addr -> !systemAddress.equalsIgnoreCase(((InternetAddress) addr).getAddress())).toList();
-            logger.info("send email to : " + String.join(",", tos.stream().map(Address::toString).toList()));
-            mimeMessage.setFrom(mailConfig.getMailFrom());
-            InternetAddress replyToAddress = new InternetAddress(mailConfig.getMailFrom());
-            if(workflow != null && org.springframework.util.StringUtils.hasText(workflow.getMailFrom())) {
-                replyToAddress = new InternetAddress(workflow.getMailFrom());
+            Address[] tosArray = mimeMessage.getRecipients(Message.RecipientType.TO);
+            if (tosArray != null) {
+                List<Address> tos = Arrays.stream(tosArray).filter(addr -> !systemAddress.equalsIgnoreCase(((InternetAddress) addr).getAddress())).toList();
+                logger.info("send email to : " + String.join(",", tos.stream().map(Address::toString).toList()));
+                mimeMessage.setFrom(mailConfig.getMailFrom());
+                InternetAddress replyToAddress = new InternetAddress(mailConfig.getMailFrom());
+                if (workflow != null && org.springframework.util.StringUtils.hasText(workflow.getMailFrom())) {
+                    replyToAddress = new InternetAddress(workflow.getMailFrom());
+                }
+                mimeMessage.setReplyTo(new Address[]{replyToAddress});
+                String[] toHeader = mimeMessage.getHeader("To");
+                if (toHeader == null) {
+                    return;
+                }
+                if (org.springframework.util.StringUtils.hasText(globalProperties.getTestEmail())) {
+                    tos = new ArrayList<>();
+                    tos.add(new InternetAddress(globalProperties.getTestEmail()));
+                }
+                if (!tos.isEmpty()) {
+                    mimeMessage.setHeader("To", String.join(",", tos.stream().map(Address::toString).toList()));
+                    mimeMessage.setRecipients(Message.RecipientType.TO, tos.toArray(new Address[0]));
+                    mailSender.send(mimeMessage);
+                }
             }
-            mimeMessage.setReplyTo(new Address[]{replyToAddress});
-            String[] toHeader =  mimeMessage.getHeader("To");
-            if(toHeader == null) {
-                return;
-            }
-            if(org.springframework.util.StringUtils.hasText(globalProperties.getTestEmail())) {
-                tos = new ArrayList<>();
-                tos.add(new InternetAddress(globalProperties.getTestEmail()));
-            }
-            if(!tos.isEmpty()) {
-                mimeMessage.setHeader("To", String.join(",", tos.stream().map(Address::toString).toList()));
-                mimeMessage.setRecipients(Message.RecipientType.TO, tos.toArray(new Address[0]));
-                mailSender.send(mimeMessage);
-            }
-        } catch (MessagingException e) {
-            if(!(e instanceof SMTPAddressFailedException)) {
+        } catch(MessagingException e){
+            if (!(e instanceof SMTPAddressFailedException)) {
                 throw new RuntimeException(e);
             }
         }
