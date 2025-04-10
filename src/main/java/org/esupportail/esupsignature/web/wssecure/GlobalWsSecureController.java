@@ -78,9 +78,13 @@ public class GlobalWsSecureController {
         Object userShareString = httpSession.getAttribute("userShareId");
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
-        StepStatus stepStatus = signBookService.initSign(signRequestId, signRequestParamsJsonString, comment, formData, password, certType, userShareId, userEppn, authUserEppn);
-        if(stepStatus.equals(StepStatus.nexu_redirect)) {
-            return ResponseEntity.ok().body("initNexu");
+        try {
+            StepStatus stepStatus = signBookService.initSign(signRequestId, signRequestParamsJsonString, comment, formData, password, certType, userShareId, userEppn, authUserEppn);
+            if(stepStatus.equals(StepStatus.nexu_redirect)) {
+                return ResponseEntity.ok().body("initNexu");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
         return ResponseEntity.ok().build();
     }

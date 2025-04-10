@@ -49,11 +49,25 @@ export class ListSignBooksUi {
         //$('#massSignModalButton').on("click", e => this.checkCertSign());
         $('#workflowFilter').on('change', e => this.buildUrlFilter());
         let self = this;
-        document.querySelector('#recipientsFilter').slim.events.afterChange = function() {
-            self.buildUrlFilter();
+        let creatorFilter = document.querySelector('#creatorFilter');
+        if(creatorFilter != null) {
+            creatorFilter.slim.settings.placeholderText = $(creatorFilter).attr("data-placeholder");
+            creatorFilter.slim.open();
+            creatorFilter.slim.close();
+            creatorFilter.slim.events.afterChange = function () {
+                self.buildUrlFilter();
+            }
+        }
+        let recipientsFilter = document.querySelector('#recipientsFilter');
+        if(recipientsFilter != null) {
+            recipientsFilter.slim.settings.placeholderText = $(recipientsFilter).attr("data-placeholder");
+            recipientsFilter.slim.open();
+            recipientsFilter.slim.close();
+            recipientsFilter.slim.events.afterChange = function () {
+                self.buildUrlFilter();
+            }
         }
         $('#docTitleFilter').on('change', e => this.buildUrlFilter());
-        $('#creatorFilter').on('change', e => this.buildUrlFilter());
         $('#statusFilter').on('change', e => this.buildUrlFilter());
         $('#dateFilter').on('change', e => this.buildUrlFilter());
         $('#deleteMultipleButton').on("click", e => this.deleteMultiple());

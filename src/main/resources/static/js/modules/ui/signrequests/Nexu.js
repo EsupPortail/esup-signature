@@ -157,6 +157,7 @@ export class Nexu {
         if (error!= null) {
             if (error.responseJSON !=null) {
                 let jsonResp = error.responseJSON;
+                console.error(jsonResp);
                 if (jsonResp.feedback != null && jsonResp.feedback.stacktrace != null) {
                     $("#errorcontent").html(jsonResp.feedback.stacktrace);
                     if (jsonResp.feedback.stacktrace.includes("No slot")) {
@@ -181,8 +182,10 @@ export class Nexu {
                 } else if (jsonResp.trace != null) {
                     if (jsonResp.trace.includes("is expired")) {
                         $("#errorText").html("Votre certificat est expiré");
-                    } else if (jsonResp.trace.includes("revoked") || jsonResp.message.includes("suspended")) {
+                    } else if (jsonResp.trace.includes("revoked") || (jsonResp.message != null && jsonResp.message.includes("suspended"))) {
                         $("#errorText").html("Votre certificat est révoqué");
+                    } else {
+                        $("#errorText").html("Erreur indéterminée : " + jsonResp.message);
                     }
                     $("#errorcontent").html(jsonResp.trace);
                 } else if (jsonResp.error != null) {

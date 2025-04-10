@@ -206,20 +206,20 @@ public class OtpService {
 
     @Transactional
     public void cleanEndedOtp(){
-        List<Otp> otps = otpRepository.findBySignBookStatus(SignRequestStatus.deleted);
-        otps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.refused));
-        otps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.exported));
-        otps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.archived));
-        logger.info(otps.size() + " otps to clean");
-        for(Otp otp : otps) {
+        List<Otp> toCleanOtps = otpRepository.findBySignBookStatus(SignRequestStatus.deleted);
+        toCleanOtps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.refused));
+        toCleanOtps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.exported));
+        toCleanOtps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.archived));
+        List<Otp> completedOtps = otpRepository.findBySignBookStatus(SignRequestStatus.completed);
+        for(Otp completedOtp : completedOtps) {
+            if(completedOtp.getSignBook().getEndDate() != null && completedOtp.getSignBook().getEndDate().before(new Date(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000))) {
+                toCleanOtps.add(completedOtp);
+            }
+        }
+        logger.info(toCleanOtps.size() + " otps to clean");
+        for(Otp otp : toCleanOtps) {
             clearOTP(otp.getUrlId());
             otpRepository.delete(otp);
-        }
-        for(Otp otp : otpRepository.findBySignBookStatus(SignRequestStatus.completed)) {
-            if(otp.getSignBook().getEndDate() != null && otp.getSignBook().getEndDate().before(new Date(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000))) {
-                clearOTP(otp.getUrlId());
-                otpRepository.delete(otp);
-            }
         }
     }
 

@@ -14,10 +14,7 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.esupportail.esupsignature.entity.enums.UiParams;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.exception.EsupSignatureMailException;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.exception.EsupSignatureUserException;
+import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
@@ -359,8 +356,13 @@ public class SignRequestController {
                                 @PathVariable("signRequestId") Long signRequestId,
                                 @PathVariable("postitId") Long postitId,
                                 @RequestParam(value = "comment", required = false) String comment, RedirectAttributes redirectAttributes) {
-        signRequestService.updateComment(postitId, comment);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Annotation modifiée"));
+        try {
+            signRequestService.updateComment(signRequestId, postitId, comment);
+            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Postit modifiée"));
+
+        } catch (EsupSignatureException e) {
+            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+        }
         return "redirect:/user/signrequests/" + signRequestId;
     }
 
@@ -369,8 +371,13 @@ public class SignRequestController {
     public String commentDelete(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                 @PathVariable("signRequestId") Long signRequestId,
                                 @PathVariable("postitId") Long postitId, RedirectAttributes redirectAttributes) {
-        signRequestService.deleteComment(signRequestId, postitId);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Postit supprimé"));
+        try {
+            signRequestService.deleteComment(signRequestId, postitId);
+            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Postit supprimé"));
+
+        } catch (EsupSignatureException e) {
+            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+        }
         return "redirect:/user/signrequests/" + signRequestId;
     }
     
