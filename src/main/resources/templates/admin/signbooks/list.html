@@ -76,12 +76,16 @@
                             </div>
                         </th>
                         <th class="d-none d-xxl-table-cell text-center" style="width: 10%;">
-                            <select style="width: 200px;" id="workflowFilter" name="workflowFilter" class="slim-select-filter sign-request-filter" data-placeholder="Circuit" data-allow-deselect="true">
+<!--                            <select style="width: 200px;" id="workflowFilter" name="workflowFilter" class="slim-select-filter sign-request-filter" data-placeholder="Circuit" data-allow-deselect="true">-->
+<!--                                <option data-placeholder="true"></option>-->
+<!--                                <option value="all">Tout</option>-->
+<!--                                <th:block th:each="workflow : ${workflowNames}">-->
+<!--                                    <option th:if="${workflow != 'null' && workflow != ''}" th:value="${workflow}" th:selected="${workflowFilter == workflow}" th:text="${workflow}"></option>-->
+<!--                                </th:block>-->
+<!--                            </select>-->
+                            <select es-search-text="Circuit" th:es-search-url="'/admin/signbooks/workflowNames'" id="workflowFilter" name="workflowFilter" class="slim-select-filter-search sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
                                 <option data-placeholder="true"></option>
                                 <option value="all">Tout</option>
-                                <th:block th:each="workflow : ${workflowNames}">
-                                    <option th:if="${workflow != 'null' && workflow != ''}" th:value="${workflow}" th:selected="${workflowFilter == workflow}" th:text="${workflow}"></option>
-                                </th:block>
                             </select>
                         </th>
                         <th class="text-center" style="width: 10%;">

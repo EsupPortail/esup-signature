@@ -49,8 +49,11 @@ export class ListSignBooksUi {
         //$('#massSignModalButton').on("click", e => this.checkCertSign());
         $('#workflowFilter').on('change', e => this.buildUrlFilter());
         let self = this;
-        document.querySelector('#recipientsFilter').slim.events.afterChange = function() {
-            self.buildUrlFilter();
+        let recipientsFilter = document.querySelector('#recipientsFilter');
+        if(recipientsFilter != null) {
+            document.querySelector('#recipientsFilter').slim.events.afterChange = function () {
+                self.buildUrlFilter();
+            }
         }
         $('#docTitleFilter').on('change', e => this.buildUrlFilter());
         $('#creatorFilter').on('change', e => this.buildUrlFilter());
