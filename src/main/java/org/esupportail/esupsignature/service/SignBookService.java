@@ -157,7 +157,7 @@ public class SignBookService {
     public Page<SignBook> getSignBooksForManagers(SignRequestStatus statusFilter, String recipientsFilter, Long workflowId, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
         User creatorFilterUser = null;
         if(creatorFilter != null) {
-            creatorFilterUser = userService.getByEppn(creatorFilter);
+            creatorFilterUser = userService.getUserByEmail(creatorFilter);
         }
         User userFilter = null;
         if(recipientsFilter != null && !recipientsFilter.equals("%") && !recipientsFilter.isEmpty()) {
@@ -272,7 +272,7 @@ public class SignBookService {
         }
         User creatorFilterUser = null;
         if(creatorFilter != null) {
-            creatorFilterUser = userService.getByEppn(creatorFilter);
+            creatorFilterUser = userService.getUserByEmail(creatorFilter);
         }
         SignRequestStatus status = null;
         if(statusFilter != null && !statusFilter.isEmpty()) {
