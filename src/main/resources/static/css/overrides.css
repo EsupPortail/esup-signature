@@ -505,3 +505,7 @@ textarea:invalid {
     padding: 0 0 0 0.5rem;
     border-radius: var(--bs-border-radius-sm);
 }
+
+.sign-request-filter.ss-content.ss-open-below {
+    width: revert !important;
+}

@@ -60,61 +60,33 @@ public class SignRequestService {
 	private static final Logger logger = LoggerFactory.getLogger(SignRequestService.class);
 
 	private final GlobalProperties globalProperties;
-
 	private final TargetService targetService;
-
 	private final NexuService nexuService;
-
 	private final WebUtilsService webUtilsService;
-
 	private final SignRequestRepository signRequestRepository;
-
 	private final ActionService actionService;
-
 	private final PdfService pdfService;
-
 	private final DocumentService documentService;
-
 	private final CustomMetricsService customMetricsService;
-
 	private final SignService signService;
-
 	private final SignTypeService signTypeService;
-
 	private final UserService userService;
-
 	private final DataService dataService;
-
 	private final CommentService commentService;
-
 	private final MailService mailService;
-
 	private final AuditTrailService auditTrailService;
-
 	private final UserShareService userShareService;
-
 	private final RecipientService recipientService;
-
 	private final FsAccessFactoryService fsAccessFactoryService;
-
 	private final WsAccessTokenRepository wsAccessTokenRepository;
-
 	private final FileService fileService;
-
 	private final PreFillService preFillService;
-
 	private final LogService logService;
-
 	private final SignRequestParamsService signRequestParamsService;
-
 	private final ValidationService validationService;
-
 	private final FOPService fopService;
-
 	private final ObjectMapper objectMapper;
-
 	private final SignBookRepository signBookRepository;
-
 	private final LiveWorkflowStepService liveWorkflowStepService;
 
 	public SignRequestService(GlobalProperties globalProperties, TargetService targetService, NexuService nexuService, WebUtilsService webUtilsService, SignRequestRepository signRequestRepository, ActionService actionService, PdfService pdfService, DocumentService documentService, CustomMetricsService customMetricsService, SignService signService, SignTypeService signTypeService, UserService userService, DataService dataService, CommentService commentService, MailService mailService, AuditTrailService auditTrailService, UserShareService userShareService, RecipientService recipientService, FsAccessFactoryService fsAccessFactoryService, WsAccessTokenRepository wsAccessTokenRepository, FileService fileService, PreFillService preFillService, LogService logService, SignRequestParamsService signRequestParamsService, ValidationService validationService, FOPService fopService, ObjectMapper objectMapper, SignBookRepository signBookRepository, LiveWorkflowStepService liveWorkflowStepService) {
@@ -270,7 +242,7 @@ public class SignRequestService {
 			String fileName = toSignDocuments.get(0).getFileName();
 			if(signType.equals(SignType.hiddenVisa)) visual = false;
 			if(signRequestParamses.isEmpty() && visual) {
-				throw new EsupSignatureRuntimeException("Il manque une signature !");
+				throw new EsupSignatureRuntimeException("Il faut apposer au moins un élément visuel");
 			}
 			int nbSign = 0;
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
