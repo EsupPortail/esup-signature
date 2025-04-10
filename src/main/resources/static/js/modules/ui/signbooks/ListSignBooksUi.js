@@ -55,8 +55,13 @@ export class ListSignBooksUi {
                 self.buildUrlFilter();
             }
         }
+        let creatorFilter = document.querySelector('#creatorFilter');
+        if(creatorFilter != null) {
+            document.querySelector('#creatorFilter').slim.events.afterChange = function () {
+                self.buildUrlFilter();
+            }
+        }
         $('#docTitleFilter').on('change', e => this.buildUrlFilter());
-        $('#creatorFilter').on('change', e => this.buildUrlFilter());
         $('#statusFilter').on('change', e => this.buildUrlFilter());
         $('#dateFilter').on('change', e => this.buildUrlFilter());
         $('#deleteMultipleButton').on("click", e => this.deleteMultiple());
