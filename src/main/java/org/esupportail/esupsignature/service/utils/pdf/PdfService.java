@@ -72,9 +72,13 @@ import org.verapdf.pdfa.results.ValidationResult;
 import javax.imageio.ImageIO;
 import javax.xml.transform.TransformerException;
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
@@ -202,9 +206,10 @@ public class PdfService {
         }
 
         PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
-
+        Matrix rotation = null;
         if (pdfParameters.getRotation() != 0 && pdfParameters.getRotation() != 360) {
-            contentStream.transform(Matrix.getRotateInstance(Math.toRadians(pdfParameters.getRotation()), tx, ty));
+            rotation = Matrix.getRotateInstance(Math.toRadians(pdfParameters.getRotation()), tx, ty);
+            contentStream.transform(rotation);
         }
         if (signImage != null) {
             logger.info("stamp image to " + Math.round(xAdjusted) + ", " + Math.round(yAdjusted) + " on page : " + pageNumber);
@@ -215,7 +220,7 @@ public class PdfService {
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
             contentStream.drawImage(pdImage, xAdjusted, yAdjusted, signRequestParams.getSignWidth() * fixFactor, signRequestParams.getSignHeight() * fixFactor);
             if (signRequestParams.getSignImageNumber() >= 0 && !endingWithCert) {
-                addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted);
+                addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted, rotation);
             }
         } else if (StringUtils.hasText(signRequestParams.getTextPart())) {
             float fontSize = signRequestParams.getFontSize() * fixFactor;
@@ -235,7 +240,7 @@ public class PdfService {
         contentStream.close();
     }
 
-    private void addLink(SignRequest signRequest, SignRequestParams signRequestParams, User user, double fixFactor, PDDocument pdDocument, PDPage pdPage, Date newDate, DateFormat dateFormat, float xAdjusted, float yAdjusted) throws IOException {
+    private void addLink(SignRequest signRequest, SignRequestParams signRequestParams, User user, double fixFactor, PDDocument pdDocument, PDPage pdPage, Date newDate, DateFormat dateFormat, float xAdjusted, float yAdjusted, Matrix rotation) throws IOException {
         PDFTextStripper pdfTextStripper = new PDFTextStripper();
 
         String signatureInfos =
@@ -247,8 +252,25 @@ public class PdfService {
                         globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
 
         PDAnnotationLink pdAnnotationLink = new PDAnnotationLink();
-        PDRectangle position = new PDRectangle(xAdjusted, yAdjusted, (float) (signRequestParams.getSignWidth() * fixFactor), (float) (signRequestParams.getSignHeight() * fixFactor));
+        float width = (float) (signRequestParams.getSignWidth() * fixFactor);
+        float height = (float) (signRequestParams.getSignHeight() * fixFactor);
+        PDRectangle position = new PDRectangle(xAdjusted, yAdjusted, width, height);
+        if(rotation!= null) {
+            float x0 = position.getLowerLeftX();
+            float y0 = position.getLowerLeftY();
+            float x1 = position.getUpperRightX();
+            float y1 = position.getUpperRightY();
+            Point2D.Float p0 = rotation.transformPoint(x0, y0);
+            Point2D.Float p1 = rotation.transformPoint(x1, y1);
+            position = new PDRectangle(
+                    Math.min(p0.x, p1.x),
+                    Math.min(p0.y, p1.y),
+                    Math.abs(p1.x - p0.x),
+                    Math.abs(p1.y - p0.y)
+            );
+        }
         pdAnnotationLink.setRectangle(position);
+        pdAnnotationLink.setQuadPoints(new float[0]);
         PDBorderStyleDictionary pdBorderStyleDictionary = new PDBorderStyleDictionary();
         pdBorderStyleDictionary.setStyle(PDBorderStyleDictionary.STYLE_INSET);
         pdAnnotationLink.setBorderStyle(pdBorderStyleDictionary);
@@ -261,7 +283,6 @@ public class PdfService {
         action.setURI(globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken());
         pdAnnotationLink.setAction(action);
         pdAnnotationLink.setPage(pdPage);
-        pdAnnotationLink.setQuadPoints(new float[0]);
         pdAnnotationLink.setContents(signatureInfos);
         pdPage.getAnnotations().add(pdAnnotationLink);
 
