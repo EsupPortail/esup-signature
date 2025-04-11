@@ -101,8 +101,14 @@ public class SignBookAdminController {
 		model.addAttribute("creatorFilter", creatorFilter);
 		if(!"%".equals(docTitleFilter)) model.addAttribute("docTitleFilter", docTitleFilter);
 		model.addAttribute("dateFilter", dateFilter);
-		model.addAttribute("workflowNames", signBookRepository.findAllWorkflowNames());
+//		model.addAttribute("workflowNames", signBookRepository.findAllWorkflowNames());
 		return "admin/signbooks/list";
+	}
+
+	@GetMapping("/workflowNames")
+	@ResponseBody
+	public List<String> workflows(@RequestParam(value = "searchString", required = false) String searchString) {
+		return signBookRepository.findAllWorkflowNamesByName("%"+searchString+"%");
 	}
 
 	@GetMapping("/creators")

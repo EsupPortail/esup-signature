@@ -76,7 +76,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("""
             select distinct sb.subject from SignBook sb
             where (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId)
-            and sb.subject like :searchString
+            and lower(sb.subject) like lower(:searchString)
             and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             """)
     List<String> findByWorkflowNameSubjects(Long workflowId, String searchString);
@@ -241,6 +241,9 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("select distinct sb.workflowName from SignBook sb where sb.hidedBy is empty and sb.workflowName != ''")
     List<String> findAllWorkflowNames();
 
+    @Query("select distinct sb.workflowName from SignBook sb where sb.hidedBy is empty and lower(sb.workflowName) like lower(:workflowName)")
+    List<String> findAllWorkflowNamesByName(String workflowName);
+
     @Query("""
             select distinct sb.subject from SignBook sb
             left join sb.team team
@@ -254,7 +257,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("""
             select distinct sb.subject from SignBook sb
             left join sb.team team
-            where (team = :user) and sb.subject like :searchString
+            where (team = :user) and lower(sb.subject) like lower(:searchString)
             and :user not member of sb.hidedBy
             and size(sb.signRequests) > 0
             and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
