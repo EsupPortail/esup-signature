@@ -108,6 +108,7 @@ public class WsAccessTokenService {
     public boolean allAccess(String token) {
         return !wsAccessTokenRepository.findAll().iterator().hasNext()
             || !wsAccessTokenRepository.findByTokenIsNullAndWorkflowsEmpty().isEmpty()
+            || (getGlobalToken() == null && wsAccessTokenRepository.findByToken(token) == null)
             || wsAccessTokenRepository.findByWorkflowsEmpty().stream().anyMatch(WsAccessToken::getPublicAccess)
             || wsAccessTokenRepository.findByTokenAndWorkflowsEmpty(token).stream().anyMatch(WsAccessToken::getReadSignrequest);
     }
@@ -129,7 +130,7 @@ public class WsAccessTokenService {
 
     @Transactional
     public boolean createDefaultWsAccessToken() {
-        if(!wsAccessTokenRepository.findAll().iterator().hasNext()) {
+        if(getGlobalToken() == null) {
             WsAccessToken wsAccessToken = new WsAccessToken();
             wsAccessToken.setToken(UUID.randomUUID().toString());
             wsAccessTokenRepository.save(wsAccessToken);
@@ -174,5 +175,14 @@ public class WsAccessTokenService {
     public void togglePublic(Long wsAccessTokenId) {
         WsAccessToken wsAccessToken = wsAccessTokenRepository.findById(wsAccessTokenId).get();
         wsAccessToken.setPublicAccess(!wsAccessToken.getPublicAccess());
+    }
+
+    public WsAccessToken getGlobalToken() {
+        List<WsAccessToken> wsAccessTokens = wsAccessTokenRepository.findByWorkflowsEmpty();
+        if(!wsAccessTokens.isEmpty()) {
+            return wsAccessTokens.get(0);
+        } else {
+            return null;
+        }
     }
 }
