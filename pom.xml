@@ -586,23 +586,9 @@
 			<version>9.0.0</version>
 		</dependency>
 		<dependency>
-			<groupId>eu.agno3.jcifs</groupId>
-			<artifactId>jcifs-ng</artifactId>
-			<version>2.1.10</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>bcprov-jdk15to18</artifactId>
-					<groupId>org.bouncycastle</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>bcprov-jdk15on</artifactId>
-					<groupId>org.bouncycastle</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>bcprov-jdk18on</artifactId>
-					<groupId>org.bouncycastle</groupId>
-				</exclusion>
-			</exclusions>
+			<groupId>org.codelibs</groupId>
+			<artifactId>jcifs</artifactId>
+			<version>2.1.39</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
