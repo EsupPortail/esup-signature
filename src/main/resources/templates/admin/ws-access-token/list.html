@@ -11,7 +11,7 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb col-12">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
-                <li class="breadcrumb-item active">Liste des circuits</li>
+                <li class="breadcrumb-item active">Tokens API</li>
             </ol>
         </nav>
         <div id="content" class="content">
@@ -23,8 +23,8 @@
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <h5 class="text-center"><b>Tokens d'API</b></h5>
-                    <p class="alert alert-warning" th:if="${wsAccessTokens.isEmpty()}">
-                        Configuration par défaut : les web services sont accessibles sans token, restriction par IP (voir application.yml).
+                    <p class="alert alert-warning mb-1" th:if="${globalWsAccessToken == null}">
+                        <b>Il n'y a pas de token global ! </b> Vos web services sont donc accessibles sans token, restriction par IP (voir application.yml).
                         <br><br>
                         <a class="btn btn-warning" href="/admin/ws-access-token/reset">Cliquez ici pour générer un token global</a>
                     </p>
