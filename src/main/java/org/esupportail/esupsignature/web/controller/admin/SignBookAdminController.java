@@ -92,7 +92,7 @@ public class SignBookAdminController {
 		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
 		model.addAttribute("statusFilter", statusFilter);
 		model.addAttribute("signBooks", signBooks);
-		model.addAttribute("creators", userService.getAllUsersDto());
+//		model.addAttribute("creators", userService.getAllUsersDto());
 		model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
 		model.addAttribute("statuses", SignRequestStatus.values());
 		model.addAttribute("forms", formService.getAllForms());
