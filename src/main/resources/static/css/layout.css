@@ -331,3 +331,9 @@ header {
     width: calc(100% - 285px);
     z-index: 999;
 }
+
+.bs-stepper-bottom {
+    clear: both;
+    display: block;
+    width: 100%;
+}

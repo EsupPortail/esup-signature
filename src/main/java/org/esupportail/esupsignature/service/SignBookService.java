@@ -671,8 +671,12 @@ public class SignBookService {
         if (stepNumber == -1) {
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
         } else {
-            if (stepNumber >= currentStepNumber) {
+            if (stepNumber >= currentStepNumber - 1) {
                 signBook.getLiveWorkflow().getLiveWorkflowSteps().add(stepNumber, liveWorkflowStep);
+                if(stepNumber == currentStepNumber - 1) {
+                    signBook.getLiveWorkflow().setCurrentStep(liveWorkflowStep);
+                    pendingSignBook(authUserEppn, id);
+                }
             } else {
                 if(signBook.getStatus().equals(SignRequestStatus.draft)) {
                     signBook.getLiveWorkflow().getLiveWorkflowSteps().add(stepNumber, liveWorkflowStep);
