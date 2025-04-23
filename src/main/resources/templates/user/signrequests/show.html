@@ -56,7 +56,7 @@
         <div id="content" class="content" th:data-es-signbook-id="${signRequest.parentSignBook.id}">
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
-                    <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                    <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <button id="addSignButton2" role="button" class="btn-floating btn-lg bg-white pulse-primary" title="Inserer une signature" style="border: 0px solid #0d6efd;">
                             <i class="fa-solid fa-file-signature fa-2xl text-primary" style="margin-top: -8px;"></i>
                         </button>
