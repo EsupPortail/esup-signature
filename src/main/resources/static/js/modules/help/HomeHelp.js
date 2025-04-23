@@ -73,7 +73,7 @@ export class HomeHelp {
         if($.trim($("#newWorkflow").html()) !== '') {
             this.intro.addStep({
                 element: '#newWorkflow',
-                intro: "Les boutons <i class='fas fa-project-diagram fa-2xl' style=\"font-family: 'Font Awesome 5 Free' !important\"></i> permettent de démarrer des circuits personnalisés ou pré-définis.",
+                intro: "Les boutons <i class='fa-solid fa-project-diagram fa-2xl' style=\"font-family: 'Font Awesome 5 Free' !important\"></i> permettent de démarrer des circuits personnalisés ou pré-définis.",
                 position: 'right'
             });
         }
@@ -81,7 +81,7 @@ export class HomeHelp {
         if($.trim($("#newForm").html()) !== '') {
             this.intro.addStep({
                 element: '#newForm',
-                intro: "Les boutons <i class='fas fa-file-alt fa-2xl' style=\"font-family: 'Font Awesome 5 Free' !important\"></i> permettent de remplir un formulaire.",
+                intro: "Les boutons <i class='fa-solid fa-file-alt fa-2xl' style=\"font-family: 'Font Awesome 5 Free' !important\"></i> permettent de remplir un formulaire.",
                 position: 'right'
             });
         }
