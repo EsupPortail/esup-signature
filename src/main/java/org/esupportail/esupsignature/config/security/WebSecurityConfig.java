@@ -166,7 +166,7 @@ public class WebSecurityConfig {
 	}
 
 	@Bean
-	HttpSessionEventPublisher sessionEventPublisher() {
+	public HttpSessionEventPublisher sessionEventPublisher() {
 		return new HttpSessionEventPublisher();
 	}
 

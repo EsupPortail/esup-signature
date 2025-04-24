@@ -12,7 +12,7 @@
                     <div class="bs-stepper-header container" role="tablist">
                         <th:block th:each="liveWorkflowStep, iterator : ${signBook.liveWorkflow.liveWorkflowSteps}">
                             <div class="step" th:name="'step_' + ${iterator.index}" th:data-bs-target="'#step_' + ${iterator.index}">
-                                <div class="step-trigger" th:aria-controls="'step_' + ${iterator.index}" role="tab" aria-selected="false" style="border: 1px solid #555555;">
+                                <div class="step-trigger" th:aria-controls="'step_' + ${iterator.index}" role="tab" aria-selected="false" style="min-height: 100px; border: 1px solid #555555;">
                                     <span title="Etape en cours" th:if="${iterator.index + 1 == signBook.liveWorkflow.currentStepNumber}" class="bs-stepper-circle bg-warning"><i class="fa-solid fa-hourglass-half"></i></span>
                                     <span title="Etape à venir" th:if="${iterator.index + 1 > signBook.liveWorkflow.currentStepNumber}" class="bs-stepper-circle"><i class="fa-solid fa-pause"></i></span>
                                     <span title="Etape terminée" th:unless="${iterator.index + 1 > signBook.liveWorkflow.currentStepNumber || iterator.index + 1 == signBook.liveWorkflow.currentStepNumber}" class="bs-stepper-circle bg-success"><i class="fa-solid fa-check"></i></span>
@@ -38,10 +38,10 @@
                                                 <i class="fa-solid fa-trash-alt"></i>
                                             </button>
                                         </form>
+                                        <button th:if="${iterator.index + 1 > signBook.liveWorkflow.currentStepNumber || iterator.index + 1 == signBook.liveWorkflow.currentStepNumber}" type="button" data-bs-toggle="modal" th:data-bs-target="'#modal-update-' + ${iterator.index + 1}" class="btn btn-sm float-end">
+                                            <i class="fa-solid fa-pencil-alt"></i>
+                                        </button>
                                     </div>
-                                    <button th:if="${iterator.index + 1 > signBook.liveWorkflow.currentStepNumber || iterator.index + 1 == signBook.liveWorkflow.currentStepNumber}" type="button" data-bs-toggle="modal" th:data-bs-target="'#modal-update-' + ${iterator.index + 1}" class="btn btn-sm float-end">
-                                        <i class="fa-solid fa-pencil-alt"></i>
-                                    </button>
                                     <div data-bs-focus="false" role="dialog" class="modal modal-lg fade" th:id="'modal-update-' + ${iterator.index + 1}" tabindex="-1" aria-labelledby="modal-update-label" aria-hidden="true">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
@@ -73,26 +73,24 @@
                             </div>
                             <div th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
                         </th:block>
-                        <th:block th:if="${signBook.liveWorkflow.workflow != null}">
-                            <th:block th:each="target : ${signBook.liveWorkflow.workflow.targets}">
-                                <div class="bs-stepper-line"></div>
-                                <div class="step" name="target" data-bs-target="#target">
-                                    <div aria-controls="target" class="step-trigger bg-light" role="tab" aria-selected="false" style="border: 1px solid #555555">
-                                        <span th:classappend="${target.targetOk} ? 'bg-success' : 'bg_secondary'" class="bs-stepper-circle"><i class="fa-solid fa-file-export"></i></span>
-                                        <span class="bs-stepper-label"><p>Export : <span th:text="${target.targetUri}"></span></p></span>
-                                    </div>
-                                </div>
-                            </th:block>
-                        </th:block>
                     </div>
                 </div>
+                <div id="stepper2" class="bs-stepper mt-4">
+                <div class="bs-stepper-header container" role="tablist">
+                <th:block th:if="${signBook.liveWorkflow.workflow != null}">
+                    <th:block th:each="target : ${signBook.liveWorkflow.workflow.targets}">
+                        <div class="bs-stepper-line"></div>
+                        <div class="step" name="target" data-bs-target="#target">
+                            <div aria-controls="target" class="step-trigger bg-light" role="tab" aria-selected="false" style="border: 1px solid #555555">
+                                <span th:classappend="${target.targetOk} ? 'bg-success' : 'bg_secondary'" class="bs-stepper-circle"><i class="fa-solid fa-file-export"></i></span>
+                                <span class="bs-stepper-label"><p>Export : <span th:text="${target.targetUri}"></span></p></span>
+                            </div>
+                        </div>
+                    </th:block>
+                </th:block>
+                </div>
+                </div>
             </th:block>
-            <a title="Ajouter une étape au circuit" role="button" data-bs-toggle="modal" data-bs-target="#addStep" class="btn-floating btn-lg bg-primary float-end m-2">
-                <span class="fa-stack fa-1x">
-                    <i class="fas fa-shoe-prints fa-stack-1x" style="margin-top: 27px; margin-left: 20px"></i>
-                    <i class="fas fa-plus fa-stack-2x" style="margin-top: 8px; margin-left: 8px"></i>
-                </span>
-            </a>
         </div>
     </div>
 </div>
