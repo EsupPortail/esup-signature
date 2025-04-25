@@ -54,7 +54,7 @@
 			<th:block th:if="${editable}">
 				<button class="btn btn-warning me-1 d-none d-lg-block"
 						name="changeMode"
-						id="changeMode1"><i class="fas fa-wrench"></i> <span class="d-none d-xl-inline">Mode édition</span></button>
+						id="changeMode1"><i class="fa-solid fa-wrench"></i> <span class="d-none d-xl-inline">Mode édition</span></button>
 			</th:block>
 <!--			<div id="insert-btn-sign-div" class="d-block d-lg-none">-->
 <!--				<div th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="me-1">-->
@@ -71,7 +71,7 @@
 <!--					</button>-->
 <!--				</div>-->
 <!--			</div>-->
-			<div id="insert-btn-div" class="d-none d-sm-block" th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
+			<div id="insert-btn-div" class="d-none d-sm-block">
 				<button id="insert-btn" th:if="${editable}" class="btn btn-light btn-outline-primary pulse-primary me-1"
 					data-bs-toggle="collapse" href="#second-tools">
 					<i class="fa-solid fa-plus"></i> <span class="d-none d-xxl-inline">Menu insertion</span>
@@ -96,25 +96,29 @@
 									class="btn btn-light btn-outline-primary text-start">
 								<i class="fa-solid fa-file-signature"></i> <span class="d-inline">Insérer un visa</span>
 							</button>
-							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addCheck" class="btn btn-light btn-outline-primary text-start"
+							<button th:if="${signatureIds.size() == 0 && isNotSigned && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addCheck" class="btn btn-light btn-outline-primary text-start"
 								th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">
 								<i class="fa-solid fa-check"></i> Insérer une coche
 							</button>
-							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addTimes" class="btn btn-light btn-outline-primary text-start"
+							<button th:if="${signatureIds.size() == 0 && isNotSigned && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addTimes" class="btn btn-light btn-outline-primary text-start"
 								th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">
 								<i class="fa-solid fa-times"></i> Insérer une croix
 							</button>
-							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addCircle" class="btn btn-light btn-outline-primary text-start"
+							<button th:if="${signatureIds.size() == 0 && isNotSigned && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addCircle" class="btn btn-light btn-outline-primary text-start"
 								th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">
 								<i class="fa-regular fa-circle"></i> Insérer un cercle
 							</button>
-							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addMinus" class="btn btn-light btn-outline-primary text-start"
+							<button th:if="${signatureIds.size() == 0 && isNotSigned && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addMinus" class="btn btn-light btn-outline-primary text-start"
 								th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">
 								<i class="fa-solid fa-minus"></i> Insérer un trait
 							</button>
-							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addText" class="btn btn-light btn-outline-primary text-start"
+							<button th:if="${signatureIds.size() == 0 && isNotSigned && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addText" class="btn btn-light btn-outline-primary text-start"
 								th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">
 								<i class="fa-solid fa-i-cursor"></i><i class="fa-solid fa-font d-none d-md-inline"></i> Insérer un texte
+							</button>
+							<button th:if="${signatureIds.size() == 0 && isNotSigned && signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="btn btn-light btn-outline-primary text-start"
+									th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">
+								<i class="fa-solid fa-xmark"></i> Non disponible pour un visa caché
 							</button>
 						</div>
 						<div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable}" class="alert alert-light d-flex flex-column d-none text-start gap-1" style="display: none;">

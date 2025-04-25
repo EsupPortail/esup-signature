@@ -608,7 +608,7 @@ export class PdfViewer extends EventFactory {
                             previous: 'fa fa-chevron-left',
                             next: 'fa fa-chevron-right',
                             today: 'fa fa-screenshot',
-                            clear: 'fas fa-trash-alt',
+                            clear: 'fa-solid fa-trash-alt',
                             close: 'fa fa-check'
                         },
                         toolbarPlacement: 'bottom',
@@ -639,7 +639,7 @@ export class PdfViewer extends EventFactory {
                             previous: 'fa fa-chevron-left',
                             next: 'fa fa-chevron-right',
                             today: 'fa fa-screenshot',
-                            clear: 'fas fa-trash-alt',
+                            clear: 'fa-solid fa-trash-alt',
                             close: 'fa fa-check'
                         },
                         toolbarPlacement: 'bottom',
