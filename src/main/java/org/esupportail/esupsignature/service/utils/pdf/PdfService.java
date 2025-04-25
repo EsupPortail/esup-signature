@@ -228,7 +228,7 @@ public class PdfService {
             PDFont pdFont = PDType0Font.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), true);
             contentStream.beginText();
             contentStream.setFont(pdFont, fontSize);
-            String[] lines = signRequestParams.getTextPart().split("\n");
+            String[] lines = signRequestParams.getTextPart().split("\n", -1);
             PDFontDescriptor descriptor = pdFont.getFontDescriptor();
             float lineHeight = descriptor.getCapHeight() / 1000 * signRequestParams.getFontSize() / fixFactor;
             yAdjusted = yAdjusted + (lineHeight * (lines.length - 1));
