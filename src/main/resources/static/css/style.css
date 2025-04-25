@@ -738,6 +738,7 @@ textarea:placeholder-shown.required-field {
 }
 
 .sign-textarea {
+    line-height: 1.2;
     position: relative;
     font-family: "LiberationSans-Regular", serif !important;
     color: black;

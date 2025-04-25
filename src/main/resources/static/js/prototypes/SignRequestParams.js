@@ -156,7 +156,7 @@ export class SignRequestParams extends EventFactory {
         this.cross.css("width", Math.round(150 * this.currentScale) + "px");
         this.cross.css("height", Math.round(75 * this.currentScale) + "px");
         this.cross.css("font-size", Math.round(12 * this.currentScale)  + "px");
-        this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute bottom-0 end-0' style='z-index: 4;'><i class='fas fa-save'></i></button>");
+        this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute bottom-0 end-0' style='z-index: 4;'><i class='fa-solid fa-save'></i></button>");
         this.submitAddSpotBtn = $("#submit-add-spot");
         this.submitAddSpotBtn.on("click", function () {
             $("#spot-modal").modal("show");
@@ -1197,7 +1197,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     addTextArea() {
-        let divExtraHtml = "<textarea id='textExtra_" + this.id + "' tabindex='0' class='sign-textarea align-top' style='display: none;' rows='1' cols='30'></textarea>";
+        let divExtraHtml = "<textarea id='textExtra_" + this.id + "' tabindex='0' class='sign-textarea align-top' style='display: none;line-height: 1.3 !important;' rows='1' cols='30'></textarea>";
         this.divExtra.append(divExtraHtml);
         this.textareaExtra = $("#textExtra_" + this.id);
         this.textareaExtra.css('width', '100%');
