@@ -615,14 +615,7 @@ export class SignRequestParams extends EventFactory {
                     bootbox.alert("Attention votre signature superpose un autre élément du document cela pourrait nuire à sa lecture. Vous pourrez tout de même la valider même si elle est de couleur orange", null);
                 }
                 if(!self.dropped) {
-                    self.signPageNumber = self.cross.attr("page");
-                    self.xPos = Math.round(ui.position.left / self.currentScale);
-                    self.yPos = Math.round((ui.position.top - (($("#page_" + self.signPageNumber).offset().top) - $("#page_1").offset().top)) / self.currentScale);
-                    if (self.yPos < 0) self.yPos = 0;
-                    console.log("x : " + self.xPos + ", y : " + self.yPos);
-                    if(self.textareaPart != null) {
-                        self.resizeText();
-                    }
+                    self.afterDropRefresh(ui);
                 } else {
                     self.dropped = false;
                 }
@@ -633,6 +626,18 @@ export class SignRequestParams extends EventFactory {
                 }
             }
         });
+    }
+
+    afterDropRefresh(ui) {
+        let self = this;
+        self.signPageNumber = self.cross.attr("page");
+        self.xPos = Math.round(ui.position.left / self.currentScale);
+        self.yPos = Math.round((ui.position.top - (($("#page_" + self.signPageNumber).offset().top) - $("#page_1").offset().top)) / self.currentScale);
+        if (self.yPos < 0) self.yPos = 0;
+        console.log("x : " + self.xPos + ", y : " + self.yPos);
+        if(self.textareaPart != null) {
+            self.resizeText();
+        }
     }
 
     applyCurrentSignRequestParams(offset) {
@@ -735,6 +740,13 @@ export class SignRequestParams extends EventFactory {
         }
         $(document).unbind('keydown');
         this.canvasBtn.removeClass("d-none");
+        const ui = {
+            position: {
+                left: parseInt(this.cross.css('left'), 10),
+                top: parseInt(this.cross.css('top'), 10)
+            }
+        };
+        this.afterDropRefresh(ui);
     }
 
     wantUnlock() {
