@@ -208,6 +208,7 @@ export class SignPosition extends EventFactory {
             signRequestParams.turnToText();
             signRequestParams.cross.css("background-image", "");
             signRequestParams.changeSignSize(null);
+            signRequestParams.textareaPart.focus();
         }
     }
 }
