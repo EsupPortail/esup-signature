@@ -96,19 +96,19 @@ export default class FilesInput extends EventFactory {
             preferIconicPreview: true,
             allowedFileTypes : [],
             previewFileIconSettings: {
-                'pdf': '<i class="fas fa-file-pdf text-danger fa-xl"></i>',
-                'doc': '<i class="fas fa-file-word text-primary fa-xl"></i>',
-                'xls': '<i class="fas fa-file-excel text-success fa-xl"></i>',
-                'ppt': '<i class="fas fa-file-powerpoint text-danger fa-xl"></i>',
-                'zip': '<i class="fas fa-file-archive text-muted fa-xl"></i>',
-                'htm': '<i class="fas fa-file-code text-info fa-xl"></i>',
-                'txt': '<i class="fas fa-file-alt text-info fa-xl"></i>',
-                'mov': '<i class="fas fa-file-video text-warning fa-xl"></i>',
-                'mp3': '<i class="fas fa-file-audio text-warning fa-xl"></i>',
-                'jpg': '<i class="fas fa-file-image text-danger fa-xl"></i>',
-                'gif': '<i class="fas fa-file-image text-muted fa-xl"></i>',
-                'png': '<i class="fas fa-file-image text-primary fa-xl"></i>',
-                'other': '<i class="fas fa-file text-muted fa-xl"></i>'
+                'pdf': '<i class="fa-solid fa-file-pdf text-danger fa-xl"></i>',
+                'doc': '<i class="fa-solid fa-file-word text-primary fa-xl"></i>',
+                'xls': '<i class="fa-solid fa-file-excel text-success fa-xl"></i>',
+                'ppt': '<i class="fa-solid fa-file-powerpoint text-danger fa-xl"></i>',
+                'zip': '<i class="fa-solid fa-file-archive text-muted fa-xl"></i>',
+                'htm': '<i class="fa-solid fa-file-code text-info fa-xl"></i>',
+                'txt': '<i class="fa-solid fa-file-alt text-info fa-xl"></i>',
+                'mov': '<i class="fa-solid fa-file-video text-warning fa-xl"></i>',
+                'mp3': '<i class="fa-solid fa-file-audio text-warning fa-xl"></i>',
+                'jpg': '<i class="fa-solid fa-file-image text-danger fa-xl"></i>',
+                'gif': '<i class="fa-solid fa-file-image text-muted fa-xl"></i>',
+                'png': '<i class="fa-solid fa-file-image text-primary fa-xl"></i>',
+                'other': '<i class="fa-solid fa-file text-muted fa-xl"></i>'
             },
             previewFileExtSettings: {
                 'other': function() {

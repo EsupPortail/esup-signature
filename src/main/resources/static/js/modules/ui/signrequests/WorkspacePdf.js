@@ -792,7 +792,7 @@ export class WorkspacePdf {
     }
 
     enableReadMode() {
-        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fas fa-wrench"></i> <span class="d-none d-xl-inline">Mode édition</span>');
+        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fa-solid fa-wrench"></i> <span class="d-none d-xl-inline">Mode édition</span>');
         console.info("enable read mode");
         this.disableAllModes();
         this.mode = 'read';
@@ -813,7 +813,7 @@ export class WorkspacePdf {
     }
 
     enableCommentMode() {
-        $("#changeMode1").removeClass('btn-warning').addClass('btn-outline-dark').html('<i class="far fa-eye"></i> <span class="d-none d-xl-inline">Mode consultation</span>')
+        $("#changeMode1").removeClass('btn-warning').addClass('btn-outline-dark').html('<i class="fa-regular fa-eye"></i> <span class="d-none d-xl-inline">Mode consultation</span>')
         console.info("enable comments mode");
         localStorage.setItem('mode', 'comment');
         $("#postitHelp").remove();
@@ -856,7 +856,7 @@ export class WorkspacePdf {
     }
 
     enableSignMode() {
-        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fas fa-wrench"></i> <span class="d-none d-xl-inline">Mode édition</span>')
+        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fa-solid fa-wrench"></i> <span class="d-none d-xl-inline">Mode édition</span>')
         console.info("enable sign mode");
         localStorage.setItem('mode', 'sign');
         this.disableAllModes();
@@ -1079,7 +1079,7 @@ export class WorkspacePdf {
         let data = [];
         if(this.signable) {
             data.push({
-                html: '<div style="width: 200px;"><i style="font-size: 0.6rem;" class="fas fa-signature text-success"></i><i class="fas fa-pen text-success pr-2"></i></i> <b>Signature</b></div>',
+                html: '<div style="width: 200px;"><i style="font-size: 0.6rem;" class="fa-solid fa-signature text-success"></i><i class="fa-solid fa-pen text-success pr-2"></i></i> <b>Signature</b></div>',
                 text: 'Signature',
                 value: 'sign',
                 selected: true
@@ -1087,20 +1087,20 @@ export class WorkspacePdf {
         }
         if(this.status === "draft" || this.status === "pending") {
             data.push({
-                html: '<div style="width: 200px;"><i class="fas fa-comment text-warning pr-2 m-1"></i><b>Annotation</b></div>',
+                html: '<div style="width: 200px;"><i class="fa-solid fa-comment text-warning pr-2 m-1"></i><b>Annotation</b></div>',
                 text: 'Annotation',
                 value: 'comment'
             });
         }
         if(this.status !== "draft" && this.status !== "pending" && this.postits.length > 0) {
             data.push({
-                html: '<div style="width: 200px;"><i class="fas fa-comment text-warning pr-2 m-1"></i><b>Voir les annotations</b></div>',
+                html: '<div style="width: 200px;"><i class="fa-solid fa-comment text-warning pr-2 m-1"></i><b>Voir les annotations</b></div>',
                 text: 'Consulter les annotations',
                 value: 'comment'
             });
         }
         // data.push({
-        //     html: '<div style="width: 200px;"><i class="fas fa-eye text-info pr-2 m-1"></i><b>Mode lecture</b></div>',
+        //     html: '<div style="width: 200px;"><i class="fa-solid fa-eye text-info pr-2 m-1"></i><b>Mode lecture</b></div>',
         //     text: 'Lecture',
         //     value: 'read'
         // });

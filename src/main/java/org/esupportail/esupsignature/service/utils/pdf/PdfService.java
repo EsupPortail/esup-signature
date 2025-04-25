@@ -22,6 +22,7 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDFontDescriptor;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
@@ -228,12 +229,13 @@ public class PdfService {
             contentStream.beginText();
             contentStream.setFont(pdFont, fontSize);
             String[] lines = signRequestParams.getTextPart().split("\n");
-            float fontHeight = (pdFont.getFontDescriptor().getCapHeight()) / 1000 * signRequestParams.getFontSize();
-            yAdjusted = yAdjusted + (fontHeight * lines.length * fixFactor);
-            contentStream.newLineAtOffset(xAdjusted + 1, yAdjusted);
+            PDFontDescriptor descriptor = pdFont.getFontDescriptor();
+            float lineHeight = descriptor.getCapHeight() / 1000 * signRequestParams.getFontSize() / fixFactor;
+            yAdjusted = yAdjusted + (lineHeight * (lines.length - 1));
+            contentStream.newLineAtOffset(xAdjusted + 1, yAdjusted + lineHeight * fixFactor / 2);
             for (String line : lines) {
                 contentStream.showText(line);
-                contentStream.newLineAtOffset(0, -fontSize / fixFactor);
+                contentStream.newLineAtOffset(0, -lineHeight);
             }
             contentStream.endText();
         }
