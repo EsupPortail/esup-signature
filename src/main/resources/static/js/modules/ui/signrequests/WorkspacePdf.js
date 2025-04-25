@@ -323,7 +323,7 @@ export class WorkspacePdf {
         }
         this.refreshAfterPageChange();
         this.initForm();
-        this.pdfViewer.pdfDiv.on('mousedown', e => this.clickAction(e));
+        $("#content").on('mousedown', e => this.clickAction(e));
 
     }
 
