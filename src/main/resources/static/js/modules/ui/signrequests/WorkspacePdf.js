@@ -233,7 +233,7 @@ export class WorkspacePdf {
                     signSpaceDiv.unbind();
                     signSpaceDiv.remove();
                 }
-                let signSpaceHtml = "<div id='signSpace_" + i + "' title='Emplacement de signature : " + currentSignRequestParams.comment + "' class='sign-field sign-space' data-es-pos-page='" + currentSignRequestParams.signPageNumber + "' data-es-pos-x='" + currentSignRequestParams.xPos + "' data-es-sign-name='" + currentSignRequestParams.pdSignatureFieldName + "' data-es-pos-y='" + currentSignRequestParams.yPos + "' data-es-width='" + currentSignRequestParams.signWidth + "' data-es-height='" + currentSignRequestParams.signHeight + "'></div>";
+                let signSpaceHtml = "<div id='signSpace_" + i + "' title='Emplacement de signature : " + currentSignRequestParams.comment + "' class='sign-field sign-space' data-es-pos-page='" + currentSignRequestParams.signPageNumber + "' data-es-pos-x='" + currentSignRequestParams.xPos + "' data-es-sign-name='" + currentSignRequestParams.pdSignatureFieldName + "' data-es-pos-y='" + currentSignRequestParams.yPos + "' data-es-sign-width='" + currentSignRequestParams.signWidth + "' data-es-sign-height='" + currentSignRequestParams.signHeight + "'></div>";
                 $("#pdf").append(signSpaceHtml);
                 signSpaceDiv = $("#signSpace_" + i);
                 signSpaceDiv.on("click", e => this.addSign(i, e));
@@ -253,8 +253,8 @@ export class WorkspacePdf {
                 let yPos = Math.round(currentSignRequestParams.yPos * this.pdfViewer.scale + offset);
                 signSpaceDiv.css("top", yPos);
                 signSpaceDiv.css("left", xPos);
-                signSpaceDiv.css("width", Math.round(currentSignRequestParams.signWidth * this.pdfViewer.scale) + "px");
-                signSpaceDiv.css("height", Math.round(currentSignRequestParams.signHeight * this.pdfViewer.scale) + "px");
+                signSpaceDiv.css("width", Math.round(currentSignRequestParams.signWidth / .75 * this.pdfViewer.scale) + "px");
+                signSpaceDiv.css("height", Math.round(currentSignRequestParams.signHeight /.75 * this.pdfViewer.scale) + "px");
                 signSpaceDiv.css("font-size", 13 *  this.pdfViewer.scale);
                 this.makeItDroppable(signSpaceDiv);
             }
@@ -679,16 +679,31 @@ export class WorkspacePdf {
                         let offset = Math.round($("#page_" + signSpaceDiv.attr("data-es-pos-page")).offset().top) - self.pdfViewer.initialOffset ;
                         signRequestParams.xPos = signSpaceDiv.attr("data-es-pos-x");
                         signRequestParams.yPos = signSpaceDiv.attr("data-es-pos-y");
+                        let signWidth = signSpaceDiv.attr("data-es-sign-width");
+                        let signHeight = signSpaceDiv.attr("data-es-sign-height");
                         signRequestParams.applyCurrentSignRequestParams(offset);
                         let ui = { size: { width: 0, height: 0 }};
-                        ui.size.width = parseInt(signSpaceDiv.css("width"));
                         let width = parseInt(cross.css("width"));
                         let height = parseInt(cross.css("height"));
-                        ui.size.height = height * (ui.size.width / width);
+                        if(signWidth / signHeight <= 2) {
+                            ui.size.width = parseInt(signSpaceDiv.css("width"));
+                            ui.size.height = height * (ui.size.width / width);
+                        } else {
+                            ui.size.height = parseInt(signSpaceDiv.css("height"));
+                            ui.size.width = width * (ui.size.height / height);
+                        }
                         signRequestParams.resize(ui);
                         cross.css("width", signRequestParams.signWidth * self.pdfViewer.scale);
                         cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale);
                         cross.css("height", signRequestParams.signHeight * self.pdfViewer.scale);
+                        let xOffset = Math.round((signWidth / .75 * self.pdfViewer.scale - signRequestParams.signWidth * self.pdfViewer.scale) / 2);
+                        let yOffset = Math.round((signHeight / .75 * self.pdfViewer.scale - signRequestParams.signHeight * self.pdfViewer.scale) / 2);
+                        let oldLeft = parseInt(cross.css("left"));
+                        let oldTop = parseInt(cross.css("top"));
+                        let newLeft = oldLeft + xOffset;
+                        let newTop = oldTop + yOffset;
+                        cross.css("left", newLeft);
+                        cross.css("top", newTop);
                         signRequestParams.dropped = true;
                         console.log("real place : " + signRequestParams.xPos +", " + signRequestParams.yPos + " - offset " + offset);
                         cross.resizable("disable");
