@@ -1014,6 +1014,24 @@ public class PdfService {
         }
     }
 
+    public PDSignatureField getSignatureField(MultipartFile documentToSign, SignRequestParams signRequestParams) {
+        try (PDDocument pdDocument = Loader.loadPDF(documentToSign.getBytes())) {
+            PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+            if (pdAcroForm != null) {
+                for (PDField pdField : pdAcroForm.getFields()) {
+                    if (pdField instanceof PDSignatureField) {
+                        if (pdField.getPartialName().equals(signRequestParams.getPdSignatureFieldName())) {
+                            return (PDSignatureField) pdField;
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.error("error on get signature field", e);
+        }
+        return null;
+    }
+
 //    public InputStream convertDocToPDF(InputStream doc) {
 //        try {
 //            Docx2PDFViaDocx4jConverter docx2PDFViaDocx4jConverter = Docx2PDFViaDocx4jConverter.getInstance();

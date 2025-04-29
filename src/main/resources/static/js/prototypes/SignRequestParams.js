@@ -19,6 +19,7 @@ export class SignRequestParams extends EventFactory {
         this.extraDate = null;
         this.isExtraText = null;
         this.signImageNumber = 0;
+        this.pdSignatureFieldName = null;
         Object.assign(this, signRequestParamsModel);
         this.isExtraText = !(this.extraText !== "");
         this.originalWidth = this.signWidth;
@@ -55,7 +56,6 @@ export class SignRequestParams extends EventFactory {
         this.spotStepNumber = null;
         this.textPart = null;
         this.signColorPicker = null;
-        this.pdSignatureFieldName = null;
         this.restoreExtraOnTop = false;
         this.allPages = false;
         this.extraWidth = 0;

@@ -26,6 +26,7 @@ import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.validation.reports.Reports;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 import jakarta.annotation.Resource;
+import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.dss.DssUtilsService;
@@ -267,31 +268,36 @@ public class SignService {
 				fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, outputStream, signRequestParams.getExtraOnTop());
 				signImage = new ByteArrayInputStream(outputStream.toByteArray());
 			}
+			SignatureFieldParameters signatureFieldParameters = imageParameters.getFieldParameters();
+			imageParameters.getFieldParameters().setRotation(VisualSignatureRotation.AUTOMATIC);
+			PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile, signRequestParams.getSignPageNumber());
+			int widthAdjusted = Math.round(signRequestParams.getSignWidth() * globalProperties.getFixFactor());
+			int heightAdjusted = Math.round(signRequestParams.getSignHeight() * globalProperties.getFixFactor());
+			PDSignatureField pdSignatureField = pdfService.getSignatureField(signatureDocumentForm.getDocumentToSign(), signRequestParams);
+			if(pdSignatureField != null && StringUtils.hasText(signRequestParams.getPdSignatureFieldName())) {
+				signImage = fileService.resizeImage(signImage, pdSignatureField.getWidgets().get(0).getRectangle().getWidth() * 3, pdSignatureField.getWidgets().get(0).getRectangle().getHeight() * 3);
+				signatureFieldParameters.setFieldId(signRequestParams.getPdSignatureFieldName());
+			}
+			else {
+				signatureFieldParameters.setPage(signRequestParams.getSignPageNumber());
+				if (pdfParameters.getRotation() == 0) {
+					signatureFieldParameters.setWidth(widthAdjusted);
+					signatureFieldParameters.setHeight(heightAdjusted);
+					signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() * globalProperties.getFixFactor()));
+				} else {
+					signatureFieldParameters.setWidth(heightAdjusted);
+					signatureFieldParameters.setHeight(widthAdjusted);
+					signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() - 50 * globalProperties.getFixFactor()));
+				}
+			}
 			BufferedImage bufferedSignImage = ImageIO.read(signImage);
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			ImageIO.write(bufferedSignImage, "png", os);
 			fileDocumentImage = new InMemoryDocument(new ByteArrayInputStream(os.toByteArray()), "sign.png");
 			fileDocumentImage.setMimeType(MimeTypeEnum.PNG);
 			imageParameters.setImage(fileDocumentImage);
-			SignatureFieldParameters signatureFieldParameters = imageParameters.getFieldParameters();
-			signatureFieldParameters.setPage(signRequestParams.getSignPageNumber());
-			imageParameters.getFieldParameters().setRotation(VisualSignatureRotation.AUTOMATIC);
-			PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile, signRequestParams.getSignPageNumber());
-
-			int widthAdjusted = Math.round(signRequestParams.getSignWidth() * globalProperties.getFixFactor());
-			int heightAdjusted = Math.round(signRequestParams.getSignHeight() * globalProperties.getFixFactor());
-
-			if(pdfParameters.getRotation() == 0) {
-				signatureFieldParameters.setWidth(widthAdjusted);
-				signatureFieldParameters.setHeight(heightAdjusted);
-				signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() * globalProperties.getFixFactor()));
-			} else {
-				signatureFieldParameters.setWidth(heightAdjusted);
-				signatureFieldParameters.setHeight(widthAdjusted);
-				signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() - 50 * globalProperties.getFixFactor()));
-			}
 			int yPos = Math.round(signRequestParams.getyPos() * globalProperties.getFixFactor());
-			if(yPos < 0) yPos = 0;
+			if (yPos < 0) yPos = 0;
 			signatureFieldParameters.setOriginY(yPos);
 			imageParameters.setFieldParameters(signatureFieldParameters);
 			imageParameters.setDpi(globalProperties.getSignatureImageDpi());

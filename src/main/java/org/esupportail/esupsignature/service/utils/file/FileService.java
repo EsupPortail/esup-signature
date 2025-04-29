@@ -27,8 +27,8 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -485,5 +485,42 @@ public class FileService {
 		}
 		zipOutputStream.close();
 		return outputStream.toByteArray();
+	}
+
+	public InputStream resizeImage(InputStream signImage, float width, float height) throws IOException {
+		BufferedImage originalImage = ImageIO.read(signImage);
+		if (originalImage == null) {
+			throw new IOException("Invalid image input");
+		}
+
+		float originalWidth = originalImage.getWidth();
+		float originalHeight = originalImage.getHeight();
+
+		float widthRatio = width / originalWidth;
+		float heightRatio = height / originalHeight;
+		float scale = Math.min(widthRatio, heightRatio);
+
+		int newWidth = Math.round(originalWidth * scale);
+		int newHeight = Math.round(originalHeight * scale);
+
+		// redimensionner l'image
+		Image scaledImage = originalImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+
+		// créer une nouvelle image avec fond transparent
+		BufferedImage outputImage = new BufferedImage((int) width, (int) height, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g2d = outputImage.createGraphics();
+		g2d.setComposite(AlphaComposite.Clear);
+		g2d.fillRect(0, 0, (int) width, (int) height);
+
+		// centrer l'image
+		int x = ((int) width - newWidth) / 2;
+		int y = ((int) height - newHeight) / 2;
+		g2d.setComposite(AlphaComposite.SrcOver);
+		g2d.drawImage(scaledImage, x, y, null);
+		g2d.dispose();
+
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		ImageIO.write(outputImage, "png", os);
+		return new ByteArrayInputStream(os.toByteArray());
 	}
 }

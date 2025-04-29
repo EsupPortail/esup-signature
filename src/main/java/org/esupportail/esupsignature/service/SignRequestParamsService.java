@@ -65,6 +65,8 @@ public class SignRequestParamsService {
         signRequestParams.setPdSignatureFieldName(name);
         signRequestParams.setxPos(Math.round(pdRectangle.getLowerLeftX() / globalProperties.getFixFactor()));
         signRequestParams.setyPos(Math.round((pdPage.getBBox().getHeight() - pdRectangle.getLowerLeftY() - pdRectangle.getHeight()) / globalProperties.getFixFactor()));
+        signRequestParams.setSignWidth(Math.round(pdRectangle.getWidth()));
+        signRequestParams.setSignHeight(Math.round(pdRectangle.getHeight()));
         signRequestParams.setSignPageNumber(signPageNumber);
         return signRequestParams;
     }
