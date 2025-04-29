@@ -786,9 +786,7 @@ public class PdfService {
                 pdAcroForm.setDefaultResources(resources);
                 List<PDField> fields = pdAcroForm.getFields();
                 for(PDField pdField : fields) {
-                    if(pdField instanceof PDSignatureField) {
-                        removeField(pdField, pdDocument, pdAcroForm);
-                    } else if(workflow != null && StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern())) {
+                    if(workflow != null && StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern())) {
                         String className = "org.apache.pdfbox.pdmodel.interactive.form.PD" + extractTextInBrackets(workflow.getSignRequestParamsDetectionPattern());
                         try {
                             Class<?> pdFieldClass = Class.forName(className);

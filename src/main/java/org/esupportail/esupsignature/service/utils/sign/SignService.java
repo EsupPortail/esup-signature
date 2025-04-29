@@ -153,7 +153,7 @@ public class SignService {
 	}
 
 	@Transactional
-	public Document certSign(SignRequest signRequest, String userEppn, String password, SignWith signWith) throws EsupSignatureRuntimeException {
+	public Document certSign(SignRequest signRequest, String userEppn, String password, SignWith signWith, SignRequestParams signRequestParams) throws EsupSignatureRuntimeException {
 		User user = userService.getByEppn(userEppn);
 		logger.info("start certSign for signRequest : " + signRequest.getId());
 		SignatureForm signatureForm;
@@ -205,12 +205,11 @@ public class SignService {
 				aSiCWithXAdESSignatureParameters.aSiC().setMimeType("application/vnd.etsi.asic-e+zip");
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else {
-				List<SignRequestParams> signRequestParamsesForSign = signRequest.getSignRequestParams().stream().filter(srp -> signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().contains(srp) && srp.getSignImageNumber() >= 0 && srp.getTextPart() == null).toList();
 				if((abstractKeyStoreTokenConnection instanceof OpenSCSignatureToken
                         || abstractKeyStoreTokenConnection instanceof Pkcs11SignatureToken
                         || abstractKeyStoreTokenConnection instanceof Pkcs12SignatureToken)
-                        && !signRequestParamsesForSign.isEmpty() && !user.getEppn().equals("system")) {
-					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequestParamsesForSign.get(0) , new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign().getBytes()), user, signatureDocumentForm.getSigningDate());
+                        && signRequestParams != null && !user.getEppn().equals("system")) {
+					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequestParams , new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign().getBytes()), user, signatureDocumentForm.getSigningDate());
 				} else {
 					parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, user);
 				}

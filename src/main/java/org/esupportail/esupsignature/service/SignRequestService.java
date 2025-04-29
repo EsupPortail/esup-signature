@@ -287,7 +287,7 @@ public class SignRequestService {
 				signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
 				toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(filledInputStream));
 			}
-			Document signedDocument = signService.certSign(signRequest, signerUser.getEppn(), password, SignWith.valueOf(signWith));
+			Document signedDocument = signService.certSign(signRequest, signerUser.getEppn(), password, SignWith.valueOf(signWith), signRequestParamses.get(0));
 			auditTrailService.createSignAuditStep(signRequest, userEppn, signedDocument, isViewed);
 			stepStatus = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, SignType.certSign, comment);
 
@@ -332,7 +332,7 @@ public class SignRequestService {
 	@Transactional
 	public void seal(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
-		Document document = signService.certSign(signRequest, "system", "", SignWith.sealCert);
+		Document document = signService.certSign(signRequest, "system", "", SignWith.sealCert, null);
 		if(signRequest.getSignedDocuments().size() > 1) {
 			signRequest.getSignedDocuments().remove(signRequest.getSignedDocuments().size() - 1);
 		}
