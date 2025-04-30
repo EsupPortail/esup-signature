@@ -845,12 +845,16 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Long addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, String postit, Integer spotStepNumber, String authUserEppn, String userEppn, boolean forceSend) {
+	public Long addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, Integer commentWidth, Integer commentHeight, String postit, Integer spotStepNumber, String authUserEppn, String userEppn, boolean forceSend) {
 		SignRequest signRequest = getById(id);
 		User user = userService.getByEppn(userEppn);
 		if(spotStepNumber == null || signRequest.getCreateBy().equals(user) || signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail())) {
 			if (spotStepNumber != null && spotStepNumber > 0) {
 				SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
+				if(commentWidth != null && commentHeight != null) {
+					signRequestParams.setSignWidth(commentWidth);
+					signRequestParams.setSignHeight(commentHeight);
+				}
 				int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
 				signRequestParams.setSignDocumentNumber(docNumber);
 				signRequestParams.setComment(commentText);
@@ -858,6 +862,10 @@ public class SignRequestService {
 				signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getSignRequestParams().add(signRequestParams);
 			}
 			Comment comment = commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, "on".equals(postit), null, authUserEppn);
+			if(commentWidth != null && commentHeight != null) {
+				comment.setSignWidth(commentWidth);
+				comment.setSignHeight(commentHeight);
+			}
 			if (!(spotStepNumber != null && spotStepNumber > 0)) {
 				updateStatus(signRequest.getId(), null, "Ajout d'un commentaire", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
 				if ((globalProperties.getSendPostitByEmail() || forceSend)) {

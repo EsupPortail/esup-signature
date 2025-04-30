@@ -255,7 +255,7 @@ export class WorkspacePdf {
                 signSpaceDiv.css("left", xPos);
                 signSpaceDiv.css("width", Math.round(currentSignRequestParams.signWidth / .75 * this.pdfViewer.scale) + "px");
                 signSpaceDiv.css("height", Math.round(currentSignRequestParams.signHeight /.75 * this.pdfViewer.scale) + "px");
-                signSpaceDiv.css("font-size", 13 *  this.pdfViewer.scale);
+                signSpaceDiv.css("font-size", 10 *  this.pdfViewer.scale);
                 this.makeItDroppable(signSpaceDiv);
             }
         }
@@ -611,9 +611,9 @@ export class WorkspacePdf {
                     spotDiv.width(300 * this.pdfViewer.scale);
                     spotDiv.width(150 * this.pdfViewer.scale);
                     if(signDiv != null) {
-                        signDiv.css("width", Math.round(150 * self.pdfViewer.scale) + "px");
-                        signDiv.css("height", Math.round(75 * self.pdfViewer.scale) + "px");
-                        signDiv.css("font-size", 12 * self.pdfViewer.scale);
+                        signDiv.css("width", Math.round(spot.signWidth / .75 * self.pdfViewer.scale) + "px");
+                        signDiv.css("height", Math.round(spot.signHeight / .75 * self.pdfViewer.scale) + "px");
+                        signDiv.css("font-size", 10 * self.pdfViewer.scale);
                     }
                     spotDiv.unbind('mouseup');
                     if(signDiv.attr("data-es-delete")) {

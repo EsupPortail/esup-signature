@@ -31,6 +31,10 @@ public class Comment {
 
     private Integer posY;
 
+    private Integer signWidth = 150;
+
+    private Integer signHeight = 75;
+
     private Boolean isPostit;
 
     private String postitColor = "#FFF740";
@@ -97,6 +101,22 @@ public class Comment {
 
     public void setPosY(Integer posY) {
         this.posY = posY;
+    }
+
+    public Integer getSignWidth() {
+        return signWidth;
+    }
+
+    public void setSignWidth(Integer signWidth) {
+        this.signWidth = signWidth;
+    }
+
+    public Integer getSignHeight() {
+        return signHeight;
+    }
+
+    public void setSignHeight(Integer signHeight) {
+        this.signHeight = signHeight;
     }
 
     public Boolean getPostit() {
