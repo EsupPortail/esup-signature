@@ -26,7 +26,7 @@
                 </div>
                 <button es-modal-style="bg-success" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la signature</button>
             </span>
-            <span style="line-height: 33px;" th:if="${signatureIssue}"><i class="fa-solid fa-circle-exclamation"></i> Ce document contient une signature non qualifiée (eIDAS) qui, bien que techniquement conforme, pourrait poser des problèmes pour les signatures ultérieures.
+            <span style="line-height: 33px;" th:if="${signatureIssue}"><i class="fa-solid fa-circle-exclamation"></i> Ce document contient une signature qui, bien que techniquement conforme, n’a pas pu être qualifiée par le système de signature.
                 <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
                     <span class="sr-only">En cours...</span>
                 </div>
@@ -81,7 +81,7 @@
                 <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}" title="Cliquer pour supprimer l'emplacement de signature"
                     th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').removeClass(\'circle-border\');'">
-                    <div th:id="'inDocSign_' + ${spot.id}" style="width: 300px; height: 150px; color: #000;" class="sign-field" th:data-es-delete="${isManager} ? 'true' :''">
+                    <div th:id="'inDocSign_' + ${spot.id}" style="color: #000; width: 300px; height: 150px;" class="sign-field" th:data-es-delete="${isManager} ? 'true' :''">
                         <span th:if="${isManager}" th:text="'Cliquer pour supprimer l’emplacement de signature étape ' + ${spot.stepNumber}"></span>
                         <span th:unless="${isManager}" th:text="'Emplacement de signature pour l\'étape ' + ${spot.stepNumber}"></span>
                     </div>

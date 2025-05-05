@@ -402,8 +402,11 @@ public class FormAdminController {
 						  @RequestParam(value = "spotStepNumber", required = false) Integer spotStepNumber,
 						  @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
 						  @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
-						  @RequestParam(value = "commentPosY", required = false) Integer commentPosY) {
-		return formService.addSignRequestParamsSteps(id, spotStepNumber, commentPageNumber, commentPosX, commentPosY);
+						  @RequestParam(value = "commentPosY", required = false) Integer commentPosY,
+						  @RequestParam(value = "commentWidth", required = false) Integer commentWidth,
+						  @RequestParam(value = "commentHeight", required = false) Integer commentHeight
+						) {
+		return formService.addSignRequestParamsSteps(id, spotStepNumber, commentPageNumber, commentPosX, commentPosY, commentWidth, commentHeight);
 	}
 
 }

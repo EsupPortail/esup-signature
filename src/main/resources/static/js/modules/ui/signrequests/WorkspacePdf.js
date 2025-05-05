@@ -233,10 +233,10 @@ export class WorkspacePdf {
                     signSpaceDiv.unbind();
                     signSpaceDiv.remove();
                 }
-                let signSpaceHtml = "<div id='signSpace_" + i + "' title='Emplacement de signature : " + currentSignRequestParams.comment + "' class='sign-field sign-space' data-es-pos-page='" + currentSignRequestParams.signPageNumber + "' data-es-pos-x='" + currentSignRequestParams.xPos + "' data-es-pos-y='" + currentSignRequestParams.yPos + "' data-es-width='" + currentSignRequestParams.signWidth + "' data-es-height='" + currentSignRequestParams.signHeight + "'></div>";
+                let signSpaceHtml = "<div id='signSpace_" + i + "' title='Emplacement de signature : " + currentSignRequestParams.comment + "' class='sign-field sign-space' data-es-pos-page='" + currentSignRequestParams.signPageNumber + "' data-es-pos-x='" + currentSignRequestParams.xPos + "' data-es-sign-name='" + currentSignRequestParams.pdSignatureFieldName + "' data-es-pos-y='" + currentSignRequestParams.yPos + "' data-es-sign-width='" + currentSignRequestParams.signWidth + "' data-es-sign-height='" + currentSignRequestParams.signHeight + "'></div>";
                 $("#pdf").append(signSpaceHtml);
                 signSpaceDiv = $("#signSpace_" + i);
-                signSpaceDiv.on("click", e => this.addSign(i));
+                signSpaceDiv.on("click", e => this.addSign(i, e));
                 if(currentSignRequestParams.ready == null || !currentSignRequestParams.ready) {
                     if(this.currentSignType !== "visa") {
                         signSpaceDiv.html("Cliquez ici pour insérer votre signature");
@@ -253,15 +253,15 @@ export class WorkspacePdf {
                 let yPos = Math.round(currentSignRequestParams.yPos * this.pdfViewer.scale + offset);
                 signSpaceDiv.css("top", yPos);
                 signSpaceDiv.css("left", xPos);
-                signSpaceDiv.css("width", Math.round(150 * this.pdfViewer.scale) + "px");
-                signSpaceDiv.css("height", Math.round(75 * this.pdfViewer.scale) + "px");
-                signSpaceDiv.css("font-size", 13 *  this.pdfViewer.scale);
+                signSpaceDiv.css("width", Math.round(currentSignRequestParams.signWidth / .75 * this.pdfViewer.scale) + "px");
+                signSpaceDiv.css("height", Math.round(currentSignRequestParams.signHeight /.75 * this.pdfViewer.scale) + "px");
+                signSpaceDiv.css("font-size", 10 *  this.pdfViewer.scale);
                 this.makeItDroppable(signSpaceDiv);
             }
         }
     }
 
-    addSign(forceSignNumber) {
+    addSign(forceSignNumber, signField) {
         this.pdfViewer.annotationLinkRemove();
         let targetPageNumber = this.pdfViewer.pageNum;
         let signNum = this.signPosition.currentSignRequestParamsNum;
@@ -275,7 +275,7 @@ export class WorkspacePdf {
         if(JSON.parse(localStorage.getItem('signNumber')) != null && this.restore) {
             this.signImageNumber = localStorage.getItem('signNumber');
         }
-        this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, forceSignNumber);
+        this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, forceSignNumber, signField);
         if((this.currentSignType === "nexuSign" || this.currentSignType === "certSign") && !this.notSigned) {
             $("#addSignButton").attr("disabled", true);
         }
@@ -611,9 +611,9 @@ export class WorkspacePdf {
                     spotDiv.width(300 * this.pdfViewer.scale);
                     spotDiv.width(150 * this.pdfViewer.scale);
                     if(signDiv != null) {
-                        signDiv.css("width", Math.round(150 * self.pdfViewer.scale) + "px");
-                        signDiv.css("height", Math.round(75 * self.pdfViewer.scale) + "px");
-                        signDiv.css("font-size", 12 * self.pdfViewer.scale);
+                        signDiv.css("width", Math.round(spot.signWidth / .75 * self.pdfViewer.scale) + "px");
+                        signDiv.css("height", Math.round(spot.signHeight / .75 * self.pdfViewer.scale) + "px");
+                        signDiv.css("font-size", 10 * self.pdfViewer.scale);
                     }
                     spotDiv.unbind('mouseup');
                     if(signDiv.attr("data-es-delete")) {
@@ -679,16 +679,31 @@ export class WorkspacePdf {
                         let offset = Math.round($("#page_" + signSpaceDiv.attr("data-es-pos-page")).offset().top) - self.pdfViewer.initialOffset ;
                         signRequestParams.xPos = signSpaceDiv.attr("data-es-pos-x");
                         signRequestParams.yPos = signSpaceDiv.attr("data-es-pos-y");
+                        let signWidth = signSpaceDiv.attr("data-es-sign-width");
+                        let signHeight = signSpaceDiv.attr("data-es-sign-height");
                         signRequestParams.applyCurrentSignRequestParams(offset);
                         let ui = { size: { width: 0, height: 0 }};
-                        ui.size.width = parseInt(signSpaceDiv.css("width"));
                         let width = parseInt(cross.css("width"));
                         let height = parseInt(cross.css("height"));
-                        ui.size.height = height * (ui.size.width / width);
+                        if(signWidth / signHeight <= 2) {
+                            ui.size.width = parseInt(signSpaceDiv.css("width"));
+                            ui.size.height = height * (ui.size.width / width);
+                        } else {
+                            ui.size.height = parseInt(signSpaceDiv.css("height"));
+                            ui.size.width = width * (ui.size.height / height);
+                        }
                         signRequestParams.resize(ui);
                         cross.css("width", signRequestParams.signWidth * self.pdfViewer.scale);
                         cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale);
                         cross.css("height", signRequestParams.signHeight * self.pdfViewer.scale);
+                        let xOffset = Math.round((signWidth / .75 * self.pdfViewer.scale - signRequestParams.signWidth * self.pdfViewer.scale) / 2);
+                        let yOffset = Math.round((signHeight / .75 * self.pdfViewer.scale - signRequestParams.signHeight * self.pdfViewer.scale) / 2);
+                        let oldLeft = parseInt(cross.css("left"));
+                        let oldTop = parseInt(cross.css("top"));
+                        let newLeft = oldLeft + xOffset;
+                        let newTop = oldTop + yOffset;
+                        cross.css("left", newLeft);
+                        cross.css("top", newTop);
                         signRequestParams.dropped = true;
                         console.log("real place : " + signRequestParams.xPos +", " + signRequestParams.yPos + " - offset " + offset);
                         cross.resizable("disable");

@@ -55,7 +55,7 @@ public class CurrentSessionsController {
 
 	@GetMapping
 	public String getCurrentSessions(Model model) {
-		Map<String, HttpSessionViewDto> allSessions = httpSessionsListenerService.getSessions();
+		Map<String, HttpSessionViewDto> allSessions = new HashMap<>(httpSessionsListenerService.getSessions());
 
         for (Object principal : sessionRegistry.getAllPrincipals()) {
 			for (SessionInformation sessionInformation : sessionRegistry.getAllSessions(principal, false)) {
@@ -78,15 +78,13 @@ public class CurrentSessionsController {
 			}
 		}
 
-		synchronized(allSessions) {
-			List<HttpSessionViewDto> sessions;
-			sessions = new ArrayList<>(allSessions.values());
-			sessions.sort(Comparator.comparing(HttpSessionViewDto::getLastRequest,
-					Comparator.nullsLast(Comparator.naturalOrder())).reversed());
-			model.addAttribute("httpSessions", sessions);
-			long now = System.currentTimeMillis();
-			model.addAttribute("httpSessionsAlive", sessions.stream().filter(s -> now - s.getLastRequest().getTime() < 60 * 1000).toList());
-		}
+		List<HttpSessionViewDto> sessions;
+		sessions = new ArrayList<>(allSessions.values());
+		sessions.sort(Comparator.comparing(HttpSessionViewDto::getLastRequest,
+				Comparator.nullsLast(Comparator.naturalOrder())).reversed());
+		model.addAttribute("httpSessions", sessions);
+		long now = System.currentTimeMillis();
+		model.addAttribute("httpSessionsAlive", sessions.stream().filter(s -> now - s.getLastRequest().getTime() < 60 * 1000).toList());
 		model.addAttribute("active", "sessions");
 
 		return "admin/currentsessions";
