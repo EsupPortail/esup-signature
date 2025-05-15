@@ -817,6 +817,15 @@ public class SignBookService {
 
     public void replaceSignRequestParamsWithDtoParams(List<WorkflowStepDto> steps, SignRequest signRequest) {
         List<SignRequestParams> signRequestParamses = steps.stream().flatMap(s->s.getSignRequestParams().stream().map(SignRequestParamsWsDto::getSignRequestParams)).toList();
+        for(SignRequestParams signRequestParams : signRequestParamses) {
+            if(StringUtils.hasText(signRequestParams.getPdSignatureFieldName())) {
+                SignRequestParamsWsDto signRequestParamsWsDto = pdfService.getSignatureField(signRequest.getOriginalDocuments().get(0).getMultipartFile(), signRequestParams.getPdSignatureFieldName());
+                if(signRequestParamsWsDto != null) {
+                    signRequestParams.setxPos(signRequestParamsWsDto.getxPos());
+                    signRequestParams.setyPos(signRequestParamsWsDto.getyPos());
+                }
+            }
+        }
         if (!signRequestParamses.isEmpty()) {
             signRequestParamsRepository.saveAll(signRequestParamses);
             signRequest.getSignRequestParams().clear();

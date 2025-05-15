@@ -189,7 +189,8 @@ public class MailService {
         Set<String> toEmails = new HashSet<>();
         if(!signBook.getCreateBy().getEppn().equals("system")) toEmails.add(signBook.getCreateBy().getEmail());
         if(BooleanUtils.isTrue(sendToAll)) {
-            toEmails.addAll(signBook.getTeam().stream().map(User::getEmail).toList());
+            String systemAddress = "system@" + globalProperties.getDomain();
+            toEmails.addAll(signBook.getTeam().stream().map(User::getEmail).toList().stream().filter(email -> !email.equals(systemAddress) && !email.equals("system")).toList());
         }
         User user = userService.getByEppn(userEppn);
         toEmails.removeIf(e -> e.equals(user.getEmail()));
@@ -450,7 +451,7 @@ public class MailService {
             String systemAddress = "system@" + globalProperties.getDomain();
             InternetAddress[] tosArray = (InternetAddress[]) mimeMessageHelper.getMimeMessage().getRecipients(Message.RecipientType.TO);
             if (tosArray != null) {
-                List<InternetAddress> tos = Arrays.stream(tosArray).filter(addr -> !systemAddress.equalsIgnoreCase(addr.getAddress())).toList();
+                List<InternetAddress> tos = Arrays.stream(tosArray).filter(addr -> !"system".equalsIgnoreCase(addr.getAddress()) && !systemAddress.equalsIgnoreCase(addr.getAddress())).toList();
                 logger.info("send email to : " + String.join(",", tos.stream().map(Address::toString).toList()));
                 mimeMessageHelper.getMimeMessage().setFrom(mailConfig.getMailFrom());
                 InternetAddress replyToAddress = new InternetAddress(mailConfig.getMailFrom());
@@ -458,16 +459,12 @@ public class MailService {
                     replyToAddress = new InternetAddress(workflow.getMailFrom());
                 }
                 mimeMessageHelper.getMimeMessage().setReplyTo(new Address[]{replyToAddress});
-                String[] toHeader = mimeMessageHelper.getMimeMessage().getHeader("To");
-                if (toHeader == null) {
-                    return;
-                }
+
                 if (org.springframework.util.StringUtils.hasText(globalProperties.getTestEmail())) {
                     tos = new ArrayList<>();
                     tos.add(new InternetAddress(globalProperties.getTestEmail()));
                 }
                 if (!tos.isEmpty()) {
-                    mimeMessageHelper.getMimeMessage().setRecipients(Message.RecipientType.TO, tos.toArray(new Address[0]));
                     mimeMessageHelper.setTo(tos.toArray(new InternetAddress[0]));
                     mailSender.send(mimeMessageHelper.getMimeMessage());
                 }
