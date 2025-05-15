@@ -125,7 +125,7 @@ public class UserService {
     }
 
     public User getByAccessToken(String accessToken) {
-        return  userRepository.findByAccessToken(accessToken).orElse(null);
+        return userRepository.findByAccessToken(accessToken).orElse(null);
     }
 
     @Transactional
