@@ -118,6 +118,13 @@ spring:
                 enabled: false
 #    security:
 #        oauth2:
+#          client:
+#              provider:
+#                esup-signature:
+#                    issuer-uri: https://cas.univ-ville.fr/oidc
+
+## Exemple france connect
+#        oauth2:
 #            client:
 #                registration:
 #                    franceconnect:
