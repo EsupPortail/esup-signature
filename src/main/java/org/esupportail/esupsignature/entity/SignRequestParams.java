@@ -21,9 +21,9 @@ public class SignRequestParams {
 
     private Integer signDocumentNumber = 0;
 
-    private Integer signWidth = 150;
+    private Integer signWidth = 100;
 
-    private Integer signHeight = 75;
+    private Integer signHeight = 50;
 
 	private Integer xPos = 0;
 
@@ -114,6 +114,7 @@ public class SignRequestParams {
     }
 
     public Integer getSignWidth() {
+        if(signWidth == null) return 100;
         return signWidth;
     }
 
@@ -122,6 +123,7 @@ public class SignRequestParams {
     }
 
     public Integer getSignHeight() {
+        if(signHeight == null) return 50;
         return signHeight;
     }
 

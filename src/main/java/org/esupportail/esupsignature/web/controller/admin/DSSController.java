@@ -15,6 +15,8 @@ import org.esupportail.esupsignature.dss.config.DSSBeanConfig;
 import org.esupportail.esupsignature.dss.service.DSSService;
 import org.esupportail.esupsignature.dss.service.KeystoreService;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,12 +29,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Controller
 @RequestMapping(value = "/admin/dss" )
 @ConditionalOnBean(DSSBeanConfig.class)
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class DSSController {
+
+	private static final Logger logger = LoggerFactory.getLogger(DSSController.class);
 
 	@ModelAttribute("adminMenu")
 	String getCurrentMenu() {
@@ -71,10 +76,19 @@ public class DSSController {
 		try {
 			model.addAttribute("keystoreCertificates", summary.getLOTLInfos().stream()
 					.flatMap(lotlInfo -> lotlInfo.getTLInfos().stream())
-					.flatMap(tlInfo -> tlInfo.getParsingCacheInfo().getTrustServiceProviders().stream())
+					.flatMap(tlInfo -> {
+						var providers = tlInfo.getParsingCacheInfo().getTrustServiceProviders();
+						if(providers == null ) {
+							logger.warn("error on provider : " + tlInfo.getUrl());
+						}
+						return providers != null ? providers.stream() : Stream.empty();
+					})
 					.flatMap(trustServiceProvider -> trustServiceProvider.getServices().stream())
-					.flatMap(service -> service.getCertificates().stream()).distinct().count());
+					.flatMap(service -> service.getCertificates().stream())
+					.distinct()
+					.count());
 		} catch (Exception e) {
+			logger.error("error while getting certificates", e);
 			model.addAttribute("keystoreCertificates", 0);
 		}
 		model.addAttribute("currentOjUrl", dssService.getCurrentOjUrl());
