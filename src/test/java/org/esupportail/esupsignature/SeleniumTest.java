@@ -70,6 +70,7 @@ public class SeleniumTest {
     @Order(1)
     public void esupSignatureTitle() {
         driver.get("http://localhost:7070");
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("title")));
         String title = driver.getTitle();
         assertEquals("Esup Signature", title);
     }
