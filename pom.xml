@@ -706,7 +706,11 @@
 			<artifactId>docker-compose-maven-plugin</artifactId>
 			<version>4.0.0</version>
 		</dependency>
-    </dependencies>
+		<dependency>
+			<groupId>org.springframework.session</groupId>
+			<artifactId>spring-session-jdbc</artifactId>
+		</dependency>
+	</dependencies>
 	<build>
 		<finalName>esup-signature</finalName>
 		<plugins>

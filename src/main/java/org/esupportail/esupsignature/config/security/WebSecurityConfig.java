@@ -3,9 +3,7 @@ package org.esupportail.esupsignature.config.security;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
 import org.esupportail.esupsignature.config.security.jwt.CustomJwtAuthenticationConverter;
-import org.esupportail.esupsignature.config.security.jwt.DynamicJwtDecoder;
 import org.esupportail.esupsignature.config.security.jwt.MdcUsernameFilter;
-import org.esupportail.esupsignature.config.security.jwt.MissingBearerTokenFilter;
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
 import org.esupportail.esupsignature.config.security.shib.DevShibProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
@@ -24,6 +22,7 @@ import org.esupportail.esupsignature.service.security.su.SuAuthenticationSuccess
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.oauth2.client.ClientsConfiguredCondition;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -46,8 +45,8 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
+import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
@@ -140,20 +139,27 @@ public class WebSecurityConfig {
 
 	@Bean
 	@Order(4)
-	public SecurityFilterChain oauth2ResourceServerSAFilterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain wsJwtSecurityFilter(HttpSecurity http) throws Exception {
 		http.cors(AbstractHttpConfigurer::disable)
-				.securityMatcher("/ws-jwt/**")
-				.addFilterBefore(new MissingBearerTokenFilter(), BearerTokenAuthenticationFilter.class)
-				.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())
-				.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter(authService))))
-				.addFilterAfter(new MdcUsernameFilter(), AuthorizationFilter.class)
-				.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+				.securityMatcher("/ws-jwt/**");
+		if (StringUtils.hasText(issuerUri)) {
+			http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())
+					.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter(authService))));
+			http.authorizeHttpRequests(auth -> auth.anyRequest().authenticated());
+		} else {
+			http.authorizeHttpRequests(auth -> auth.anyRequest().denyAll());
+		}
+		http.addFilterAfter(new MdcUsernameFilter(), AuthorizationFilter.class);
 		return http.build();
 	}
 
+	@Value("${spring.security.oauth2.client.provider.esup-signature.issuer-uri:}")
+	private String issuerUri;
+
 	@Bean
+	@ConditionalOnProperty(name = "spring.security.oauth2.client.provider.esup-signature.issuer-uri")
 	public JwtDecoder jwtDecoder() {
-		return new DynamicJwtDecoder();
+		return JwtDecoders.fromIssuerLocation(issuerUri);
 	}
 
 	@Bean
