@@ -155,22 +155,19 @@ td {
     border-bottom : 1px solid #555;
 }
 
-.nav-link:focus {
-    outline: 2px solid rgba(13, 110, 253, 0.85);
-    outline-offset: -2px;
+.nav-link:focus-visible {
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.6);
 }
 
-.navbar .btn:focus {
-    outline: 2px solid #ffffff;
-    outline-offset: -2px;
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.85);
+.navbar .btn:focus-visible {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
 }
 
-#signLaunchButton:focus {
+#signLaunchButton:focus-visible {
     box-shadow: 0 0 0 2px #000;
 }
 
-#trashLaunchButton:focus {
+#trashLaunchButton:focus-visible {
     box-shadow: 0 0 0 2px #000;
 }
 
