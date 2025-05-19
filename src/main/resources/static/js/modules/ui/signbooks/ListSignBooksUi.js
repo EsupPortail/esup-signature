@@ -68,6 +68,7 @@ export class ListSignBooksUi {
             }
         }
         $('#docTitleFilter').on('change', e => this.buildUrlFilter());
+        $('#creatorFilter').on('change', e => this.buildUrlFilter());
         $('#statusFilter').on('change', e => this.buildUrlFilter());
         $('#dateFilter').on('change', e => this.buildUrlFilter());
         $('#deleteMultipleButton').on("click", e => this.deleteMultiple());
