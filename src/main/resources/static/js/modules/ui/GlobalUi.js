@@ -58,6 +58,16 @@ export class GlobalUi {
             return false;
         };
 
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Tab') {
+                const active = document.activeElement;
+                if (active === document.body) {
+                    e.preventDefault();
+                    document.querySelector('#link-accueil')?.focus();
+                }
+            }
+        }, { once: true });
+
         $(document).on("refreshClickableTd", e => this.refreshClickableTd());
         this.markAsReadButtons.each((index, e) => this.listenMarkAsReadButton(e));
         this.markHelpAsReadButtons.each((index, e) => this.listenHelpMarkAsReadButton(e));

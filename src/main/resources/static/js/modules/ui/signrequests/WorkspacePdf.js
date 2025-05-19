@@ -1166,8 +1166,13 @@ export class WorkspacePdf {
     autocollapse() {
         let menu = "#ws-tabs";
         let maxWidth = $("#workspace").width() - 100;
-        console.info(maxWidth);
-        if (this.navWidth >= maxWidth) {
+        console.info("maxWidth : " + maxWidth);
+        const listItems = document.querySelectorAll('#ws-tabs > li');
+        let totalWidth = 0;
+        listItems.forEach(li => {
+            totalWidth += li.offsetWidth;
+        });
+        if (totalWidth >= maxWidth) {
             $(menu + ' .dropdown').removeClass('d-none');
             while (this.navWidth > maxWidth) {
                 let children = this.wsTabs.children(menu + ' li:not(:last-child)');

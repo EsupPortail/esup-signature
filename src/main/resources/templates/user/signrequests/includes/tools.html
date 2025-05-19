@@ -6,10 +6,10 @@
 		<button id="display-side-btn" type="button" class="btn btn-warning me-1 d-block d-xl-none">
 			<i class="fa-solid fa-eye"></i> <span class="d-none d-md-inline">Statut:<span th:text="#{'signbook.status.' + ${signBook.status}}"></span></span>
 		</button>
-		<a th:unless="${user.userType.name() == 'external'}" class="btn btn-light btn-outline-dark d-none d-lg-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
+		<a tabindex="0" th:unless="${user.userType.name() == 'external'}" class="btn btn-light btn-outline-dark d-none d-lg-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
 			<i class="fa-solid fa-info-circle"></i>
 		</a>
-		<a th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
+		<a tabindex="0" th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
 		   class="btn btn-light btn-outline-dark d-none d-lg-block ms-1 me-1"
 		   onclick="printIt()" target="_blank"
 		   title="Imprimer le document"><i class="fa-solid fa-print"></i></a>
@@ -168,8 +168,8 @@
 	</div>
 	<ul id="ws-tabs" class="nav nav-tabs" th:if="${nbSignRequestInSignBookParent > 1}">
 		<th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
-			<li class="nav-item overflow-hidden ws-tab" th:classappend="${(signRequest.id == signRequestTab.id ? 'active' : '') + ' ' + (nbSignRequestInSignBookParent > 1 ? 'file-tab' : '')}">
-				<a class="nav-link" th:classappend="${(signRequest.id == signRequestTab.id ? 'current alert-secondary' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'bg-success text-light' : '') + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || (signRequestTab.deleted || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused) ? 'bg-danger text-light' : '')}"
+			<li class="nav-item ws-tab" th:classappend="${(signRequest.id == signRequestTab.id ? 'active' : '') + ' ' + (nbSignRequestInSignBookParent > 1 ? 'file-tab' : '')}">
+				<a tabindex="0" class="nav-link" th:classappend="${(signRequest.id == signRequestTab.id ? 'current alert-secondary' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'bg-success text-light' : '') + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || (signRequestTab.deleted || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused) ? 'bg-danger text-light' : '')}"
 				   th:href="${otp} ? '/otp/signrequests/' + ${signRequestTab.id} : '/user/signrequests/' + ${signRequestTab.id}"
 				   th:title="${signRequestTab.title}">
 					<div class="truncate">
