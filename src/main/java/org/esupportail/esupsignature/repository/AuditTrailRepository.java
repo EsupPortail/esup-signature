@@ -7,5 +7,6 @@ public interface AuditTrailRepository extends CrudRepository<AuditTrail, Long>  
 
     AuditTrail findByToken(String token);
     AuditTrail findByDocumentCheckSum(String checksum);
+    AuditTrail findByDocumentId(String id);
 
 }
