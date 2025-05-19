@@ -566,7 +566,7 @@
 		<dependency>
 			<groupId>org.verapdf</groupId>
 			<artifactId>validation-model</artifactId>
-			<version>1.22.2</version>
+			<version>1.28.1</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>jaxb-api</artifactId>
@@ -577,12 +577,12 @@
 		<dependency>
 			<groupId>com.google.zxing</groupId>
 			<artifactId>core</artifactId>
-			<version>3.5.0</version>
+			<version>3.5.3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.zxing</groupId>
 			<artifactId>javase</artifactId>
-			<version>3.5.0</version>
+			<version>3.5.3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.googlecode.libphonenumber</groupId>
