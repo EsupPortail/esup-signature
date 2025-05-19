@@ -173,19 +173,26 @@
 				   th:href="${otp} ? '/otp/signrequests/' + ${signRequestTab.id} : '/user/signrequests/' + ${signRequestTab.id}"
 				   th:title="${signRequestTab.title}">
 					<div class="truncate">
-						<span title="À signer" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-							<i class="fa-solid fa-clock text-warning"></i>
+						<span title="À signer" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
+							  th:classappend="${(signRequest.id == signRequestTab.id ? 'text-warning' : 'text-light')}">
+							<i class="fa-solid fa-clock"></i>
+							<span th:text="${signRequestTab.title}"></span>
 						</span>
-						<span title="Document signé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
-							<i class="fa-solid fa-check-circle text-light"></i>
+						<span title="Document signé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}"
+							  th:classappend="${(signRequest.id == signRequestTab.id ? 'text-success' : 'text-light')}">
+							<i class="fa-solid fa-check-circle"></i>
+							<span th:text="${signRequestTab.title}"></span>
 						</span>
-						<span title="Document refusé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
-							<i class="fa-solid fa-times-circle text-light"></i>
+						<span title="Document refusé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}"
+							  th:classappend="${(signRequest.id == signRequestTab.id ? 'text-danger' : 'text-light')}">
+							<i class="fa-solid fa-times-circle"></i>
+							<span th:text="${signRequestTab.title}"></span>
 						</span>
-						<span title="Document supprimé" th:if="${signRequestTab.deleted}">
-							<i class="fa-solid fa-stop-circle text-light"></i>
+						<span title="Document supprimé" th:if="${signRequestTab.deleted}"
+							  th:classappend="${(signRequest.id == signRequestTab.id ? 'text-danger' : 'text-light')}">
+							<i class="fa-solid fa-stop-circle"></i>
+							<span th:text="${signRequestTab.title}"></span>
 						</span>
-						&nbsp;<span th:text="${signRequestTab.title}"></span>
 					</div>
 				</a>
 			</li>

@@ -177,7 +177,7 @@ td {
 }
 
 .nav-item.ws-tab a {
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 .nav-item.ws-tab.active a {
@@ -199,7 +199,7 @@ td {
     color: black;
     font-weight: bold;
     border-color: #555 #555 #fff #555 !important;
-
+    background-color: white !important;
 }
 
 .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
