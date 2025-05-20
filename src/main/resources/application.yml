@@ -79,8 +79,6 @@ management:
 
 spring:
     session:
-        jdbc:
-            initialize-schema: always
         timeout: 30m
     threads:
         virtual:
