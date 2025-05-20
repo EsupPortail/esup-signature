@@ -46,7 +46,7 @@ public class UpgradeService {
 
     private final FormService formService;
 
-    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5"};
+    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5", "1.33.7"};
 
     public UpgradeService(EntityManager entityManager, GlobalProperties globalProperties, SignBookRepository signBookRepository, AppliVersionRepository appliVersionRepository, @Autowired(required = false) BuildProperties buildProperties, FileService fileService, FormService formService) {
         this.entityManager = entityManager;
@@ -291,5 +291,13 @@ public class UpgradeService {
         entityManager.createNativeQuery("alter table sign_request_params alter column x_pos drop not null").executeUpdate();
         entityManager.createNativeQuery("alter table sign_request_params alter column y_pos drop not null").executeUpdate();
         logger.info("#### Update signRequestParams completed ####");
+    }
+
+    @SuppressWarnings("unused")
+    public void update_1_33_7() {
+        logger.info("#### Starting update workflow workflow ####");
+        entityManager.createNativeQuery("update workflow set authorize_clone = autorize_clone where authorize_clone is null").executeUpdate();
+        entityManager.createNativeQuery("alter table workflow drop column autorize_clone").executeUpdate();
+        logger.info("#### Update workflow workflow completed ####");
     }
 }

@@ -2132,7 +2132,7 @@ public class SignBookService {
     public Long clone(Long id, MultipartFile[] multipartFiles, String comment, String authUserEppn) {
         SignRequest signRequest = signRequestService.getById(id);
         SignBook signBook = signRequest.getParentSignBook();
-        if(signBook.getLiveWorkflow().getWorkflow() != null && ! signBook.getLiveWorkflow().getWorkflow().getAutorizeClone()) {
+        if(signBook.getLiveWorkflow().getWorkflow() != null && ! signBook.getLiveWorkflow().getWorkflow().getAuthorizeClone()) {
             throw new RuntimeException("clonage non autorisé pour : " + id);
         }
         String name = "Demande simple";

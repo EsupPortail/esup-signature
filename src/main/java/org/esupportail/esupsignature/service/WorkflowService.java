@@ -530,7 +530,7 @@ public class WorkflowService {
         workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
         workflowToUpdate.setSendAlertToAllRecipients(workflow.getSendAlertToAllRecipients());
         workflowToUpdate.setExternalCanEdit(workflow.getExternalCanEdit());
-        workflowToUpdate.setAutorizeClone(workflow.getAutorizeClone());
+        workflowToUpdate.setAuthorizeClone(workflow.getAuthorizeClone());
         workflowToUpdate.getRoles().clear();
         workflowToUpdate.getRoles().addAll(workflow.getRoles());
         workflowToUpdate.getDashboardRoles().clear();
