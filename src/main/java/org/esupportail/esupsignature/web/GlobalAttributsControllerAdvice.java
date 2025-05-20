@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
@@ -22,6 +23,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
+import java.time.Duration;
 import java.util.List;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller", "org.esupportail.esupsignature.web.otp"})
@@ -81,10 +83,14 @@ public class GlobalAttributsControllerAdvice {
         this.certificatService = certificatService;
     }
 
+    @Value("${spring.session.timeout}")
+    private Duration sessionTimeout;
+
     @ModelAttribute
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) throws JsonProcessingException {
         model.addAttribute("currentUri", httpServletRequest.getRequestURI());
         HttpSession httpSession = httpServletRequest.getSession();
+        httpSession.setMaxInactiveInterval((int) sessionTimeout.toSeconds());
         if(userEppn != null) {
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
@@ -126,8 +132,8 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("nbToSign", signBookService.nbToSignSignBooks(userEppn));
             model.addAttribute("certificatProblem", certificatService.checkCertificatProblem(roles));
         }
-        model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
         model.addAttribute("maxInactiveInterval", httpSession.getMaxInactiveInterval());
+        model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
     }
 
 }

@@ -57,6 +57,11 @@ export class ListSignBooksUi {
             creatorFilter.slim.events.afterChange = function () {
                 self.buildUrlFilter();
             }
+            if ($(creatorFilter).hasClass('slim-select-filter')) {
+                $(creatorFilter).on('change', function () {
+                    self.buildUrlFilter();
+                });
+            }
         }
         let recipientsFilter = document.querySelector('#recipientsFilter');
         if(recipientsFilter != null) {
