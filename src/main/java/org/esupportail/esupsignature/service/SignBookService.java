@@ -418,6 +418,7 @@ public class SignBookService {
     }
 
     public void dispatchSignRequestParams(SignRequest signRequest) {
+        int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
         if(!signRequest.getSignRequestParams().isEmpty()) {
             int i = 0;
             for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
@@ -426,6 +427,7 @@ public class SignBookService {
                     if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
                         if(!workflowStep.getSignRequestParams().isEmpty()) {
                             for (SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
+                                signRequestParams.setSignDocumentNumber(docNumber);
                                 for(SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
                                     if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
                                             && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
@@ -436,6 +438,7 @@ public class SignBookService {
                             }
                         } else {
                             if(signRequest.getSignRequestParams().size() > i) {
+                                signRequest.getSignRequestParams().get(i).setSignDocumentNumber(docNumber);
                                 addSignRequestParamToStep(signRequest.getSignRequestParams().get(i), liveWorkflowStep);
                             }
                         }
@@ -459,7 +462,7 @@ public class SignBookService {
         }
     }
 
-    private static void addSignRequestParamToStep(SignRequestParams signRequestParams, LiveWorkflowStep liveWorkflowStep) {
+    private void addSignRequestParamToStep(SignRequestParams signRequestParams, LiveWorkflowStep liveWorkflowStep) {
         if(liveWorkflowStep.getSignRequestParams().stream().noneMatch(s -> s.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
                 && s.getxPos().equals(signRequestParams.getxPos())
                 && s.getyPos().equals(signRequestParams.getyPos()))) {
@@ -845,8 +848,8 @@ public class SignBookService {
 
     @Transactional
     public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn) {
-        int i = 0;
         SignBook signBook = getById(signBookId);
+        int i = signBook.getSignRequests().size();
         if(!signBook.isEditable()) {
             throw new EsupSignatureRuntimeException("Ajout impossible, la demande est déjà démarrée");
         }
